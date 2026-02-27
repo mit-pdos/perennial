@@ -32,8 +32,8 @@ depends: [
 pin-depends: [
   ["coq-coqutil.dev"           "git+https://github.com/mit-plv/coqutil#6644c132300a4da5fb1a4ce5c3860f60c135b2fa"]
   ["coq-record-update.dev"     "git+https://github.com/tchajed/coq-record-update#7b2645210331c3ec4ed75fa5ad0840a723f25151"]
-  ["rocq-stdpp.dev"            "git+https://gitlab.mpi-sws.org/iris/stdpp#3d918b797b0addee89447b0c06a988dd080f887f"]
-  ["rocq-iris.dev"             "git+https://gitlab.mpi-sws.org/iris/iris#ac6a6f465471f4dd3270f7022eeab7ed4563bcfc"]
+  ["rocq-stdpp.dev"            "git+https://gitlab.mpi-sws.org/iris/stdpp#0989202c46f352854feb5f96b6c3a1f4f91f886a"]
+  ["rocq-iris.dev"             "git+https://gitlab.mpi-sws.org/iris/iris#b641d1560959d4f3052d84daaac4047c99416c4c"]
   ["iris-named-props.dev"      "git+https://github.com/tchajed/iris-named-props#c388714a93b1c043ed42a3f446280abd5113d26f"]
 ]
 
