@@ -82,6 +82,110 @@ Definition Unwrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     else do:  #());;;
     return: ((MethodResolve (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) "Unwrap"%go (![go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]] "u")) #())).
 
+(* AsType finds the first error in err's tree that matches the type E, and
+   if one is found, returns that error value and true. Otherwise, it
+   returns the zero value of E and false.
+
+   The tree consists of err itself, followed by the errors obtained by
+   repeatedly calling its Unwrap() error or Unwrap() []error method. When
+   err wraps multiple errors, AsType examines err followed by a
+   depth-first traversal of its children.
+
+   An error err matches the type E if the type assertion err.(E) holds,
+   or if the error has a method As(any) bool such that err.As(target)
+   returns true when target is a non-nil *E. In the latter case, the As
+   method is responsible for setting target.
+
+   go: wrap.go:167:6 *)
+Definition AsTypeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
+  λ: "err",
+    exception_do (let: "err" := (GoAlloc go.error "err") in
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
+    then
+      let: "zero" := (GoAlloc E (GoZeroVal E #())) in
+      return: (![E] "zero", #false)
+    else do:  #());;;
+    let: "pe" := (GoAlloc (go.PointerType E) (GoZeroVal (go.PointerType E) #())) in
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.error] "err") in
+    let: "$a1" := "pe" in
+    (FuncResolve asType [E] #()) "$a0" "$a1")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: wrap.go:176:6 *)
+Definition asTypeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
+  λ: "err" "ppe",
+    exception_do (let: <> := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: <> := (GoAlloc E (GoZeroVal E #())) in
+    let: "ppe" := (GoAlloc (go.PointerType (go.PointerType E)) "ppe") in
+    let: "err" := (GoAlloc go.error "err") in
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: "e" := (GoAlloc E (GoZeroVal E #())) in
+      let: ("$ret0", "$ret1") := (TypeAssert2 E (![go.error] "err")) in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("e" <-[E] "$r0");;;
+      do:  ("ok" <-[go.bool] "$r1");;;
+      (if: ![go.bool] "ok"
+      then return: (![E] "e", #true)
+      else do:  #()));;;
+      (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: "x" := (GoAlloc (go.InterfaceType [go.MethodElem "As"%go (go.Signature [go.any] false [go.bool])]) (GoZeroVal (go.InterfaceType [go.MethodElem "As"%go (go.Signature [go.any] false [go.bool])]) #())) in
+      let: ("$ret0", "$ret1") := (TypeAssert2 (go.InterfaceType [go.MethodElem "As"%go (go.Signature [go.any] false [go.bool])]) (![go.error] "err")) in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("x" <-[go.InterfaceType [go.MethodElem "As"%go (go.Signature [go.any] false [go.bool])]] "$r0");;;
+      do:  ("ok" <-[go.bool] "$r1");;;
+      (if: ![go.bool] "ok"
+      then
+        (if: Convert go.untyped_bool go.bool ((![go.PointerType E] (![go.PointerType (go.PointerType E)] "ppe")) =⟨go.PointerType E⟩ (Convert go.untyped_nil (go.PointerType E) UntypedNil))
+        then
+          let: "$r0" := (GoAlloc E (GoZeroVal E #())) in
+          do:  ((![go.PointerType (go.PointerType E)] "ppe") <-[go.PointerType E] "$r0")
+        else do:  #());;;
+        (if: let: "$a0" := (Convert (go.PointerType E) go.any (![go.PointerType E] (![go.PointerType (go.PointerType E)] "ppe"))) in
+        (MethodResolve (go.InterfaceType [go.MethodElem "As"%go (go.Signature [go.any] false [go.bool])]) "As"%go (![go.InterfaceType [go.MethodElem "As"%go (go.Signature [go.any] false [go.bool])]] "x")) "$a0"
+        then return: (![E] (![go.PointerType E] (![go.PointerType (go.PointerType E)] "ppe")), #true)
+        else do:  #())
+      else do:  #()));;;
+      let: "$y" := (![go.error] "err") in
+      let: ("$x", "$ok") := (TypeAssert2 (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) "$y") in
+      (if: "$ok"
+      then
+        let: "x" := (GoAlloc (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) "$x") in
+        let: "$r0" := ((MethodResolve (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) "Unwrap"%go (![go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]] "x")) #()) in
+        do:  ("err" <-[go.error] "$r0");;;
+        (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
+        then return: (![E] "_", ![go.bool] "_")
+        else do:  #())
+      else
+        let: ("$x", "$ok") := (TypeAssert2 (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.SliceType go.error])]) "$y") in
+        (if: "$ok"
+        then
+          let: "x" := (GoAlloc (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.SliceType go.error])]) "$x") in
+          let: "$range" := ((MethodResolve (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.SliceType go.error])]) "Unwrap"%go (![go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.SliceType go.error])]] "x")) #()) in
+          (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
+          slice.for_range go.error "$range" (λ: "$key" "$value",
+            do:  ("err" <-[go.error] "$value");;;
+            do:  "$key";;;
+            (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
+            then continue: #()
+            else do:  #());;;
+            (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+            let: "x" := (GoAlloc E (GoZeroVal E #())) in
+            let: ("$ret0", "$ret1") := (let: "$a0" := (![go.error] "err") in
+            let: "$a1" := (![go.PointerType (go.PointerType E)] "ppe") in
+            (FuncResolve asType [E] #()) "$a0" "$a1") in
+            let: "$r0" := "$ret0" in
+            let: "$r1" := "$ret1" in
+            do:  ("x" <-[E] "$r0");;;
+            do:  ("ok" <-[go.bool] "$r1");;;
+            (if: ![go.bool] "ok"
+            then return: (![E] "x", #true)
+            else do:  #()))));;;
+          return: (![E] "_", ![go.bool] "_")
+        else return: (![E] "_", ![go.bool] "_"))))).
+
 #[global] Instance info' : PkgInfo pkg_id.errors :=
 {|
   pkg_imported_pkgs := []
@@ -151,5 +255,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] joinError_instance :: joinError_Assumptions;
   #[global] New_unfold :: FuncUnfold New [] (Newⁱᵐᵖˡ);
   #[global] Unwrap_unfold :: FuncUnfold Unwrap [] (Unwrapⁱᵐᵖˡ);
+  #[global] AsType_unfold E :: FuncUnfold AsType [E] (AsTypeⁱᵐᵖˡ E);
+  #[global] asType_unfold E :: FuncUnfold asType [E] (asTypeⁱᵐᵖˡ E);
 }.
 End errors.

@@ -55,4 +55,18 @@ Proof.
   - wp_auto. wp_end.
 Qed.
 
+Lemma wp_AsType (err : error.t) `[!ZeroVal T'] `[!TypedPointsto T'] `[!IntoValTyped T' T] :
+  {{{ True }}}
+    #(functions errors.AsType [T]) #err
+  {{{ (e : T') (found : bool), RET (#e, #found); True }}}.
+Proof.
+  wp_start as "#Hunwrap".
+  wp_auto. destruct err; wp_auto.
+  2:{ wp_end. }
+  wp_func_call. wp_call.
+  wp_alloc ret2 as "ret2". wp_auto.
+  wp_alloc ret1 as "ret1". wp_auto.
+  wp_for.
+Admitted.
+
 End wps.
