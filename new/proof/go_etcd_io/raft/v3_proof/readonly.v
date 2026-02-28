@@ -18,11 +18,28 @@ Require Import New.proof.go_etcd_io.raft.v3_proof.protocol.
 
    Q: what's the invariant for readOnly? Must imply that receiving heartbeats
    for the last entry implies the earlier entries are OK too.
-   A: There is no invariant; the code is buggy:
-   https://github.com/etcd-io/etcd/issues/20418#issuecomment-3974901065
-   The problem is that retries mean that old ReadIndex requests might get queued
-   *after* new ReadIndex requests. The new ReadIndex request might have started
-    after the current node was not the latest leader, but the old ReadIndex
-    might have valid heartbeat responses. Thus, when `raft.readOnly` validates
-    the entire queue up to a valid entry, it might validate a stale read index
-    for a recent request. *)
+   A: There is no invariant implying the earlier entries are OK because the code
+   is buggy: https://github.com/etcd-io/etcd/issues/20418#issuecomment-3974901065
+   The problem is that network retries mean that old ReadIndex requests might
+   get queued *after* new ReadIndex requests. The new ReadIndex request might
+   have started after the current node was not the latest leader, but the old
+   ReadIndex might have valid heartbeat responses. Thus, when `raft.readOnly`
+   validates the entire queue up to a valid entry, it might validate a stale
+   read index for a recent request.
+
+   Related raft issue (with test case linked):
+   https://github.com/etcd-io/raft/issues/392
+
+   TODO: prove fixed version of raft libary
+   TODO: prove weaker spec for existing raft library, to justify backportable
+   fix to etcd. In particular, if `ReadIndex` is only called once (i.e. if each
+   `MsgReadIndex` comes with an exclusive ghost token), then should be able to
+   create a monolist of RequestCtxes in the proof, such that if any RequestCtx
+   is validated, then all the RequestCtxes before are also valid (i.e. were
+   up-to-date when created).
+
+   Can probably avoid prophecy variables by having spec for creating a
+   RequestCtx guarantee: "valid(index, request_ctx) ∨ node is no longer leader".
+   "valid(index, request_ctx)" means that `request_ctx`'s persistent AU is
+   registered for (re)execution at some index `j` and `j ≤ index`.
+ *)
