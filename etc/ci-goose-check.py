@@ -39,7 +39,9 @@ projs = {
         "marshal", "https://github.com/upamanyus/marshal", commit="upamanyus-fixes"
     ),
     "examples": Proj.make("examples", "https://github.com/mit-pdos/perennial-examples"),
-    "etcd-raft": Proj.make("etcd-raft", "https://github.com/upamanyus/etcd-raft", commit="goose"),
+    "etcd-raft": Proj.make(
+        "etcd-raft", "https://github.com/upamanyus/etcd-raft", commit="goose"
+    ),
     "etcd": Proj.make(
         "etcd",
         "https://github.com/upamanyus/etcd",
