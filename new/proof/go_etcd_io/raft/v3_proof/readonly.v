@@ -68,13 +68,14 @@ Context (N : namespace).
 (** Ghost state for raft protocol *)
 Definition own_commit_auth γ log := mono_list_auth_own γ.(commited_gn) (1/2) log.
 Definition own_commit γ log := mono_list_auth_own γ.(commited_gn) (1/2) log.
+Definition is_commit γ log := mono_list_lb_own γ.(commited_gn) log.
 
 Definition own_term γ node_id term := own γ.(term_gn) {[ node_id := ●MN (sint.nat term) ]}.
 Definition is_term_lb γ node_id term := own γ.(term_gn) {[ node_id := ◯MN (sint.nat term) ]}.
 
-Definition is_valid_read_req γ read_req_ctx index : iProp Σ :=
+Definition is_read_req γ read_req_ctx index : iProp Σ :=
   read_req_ctx ↪[γ.(read_reqs_gn)]□ index.
-Definition own_valid_read_reqs γ (read_reqs : gmap go_string w64) : iProp Σ :=
+Definition own_read_reqs γ (read_reqs : gmap go_string w64) : iProp Σ :=
   ghost_map_auth γ.(read_reqs_gn) 1 read_reqs.
 
 Definition is_read_wit γ read_req_ctx log : iProp Σ :=
@@ -85,29 +86,53 @@ Definition is_read_wit γ read_req_ctx log : iProp Σ :=
 (* This proof assumes there's only one configuration (for now). *)
 Context (cfg : gset w64).
 
+Axiom own_committed_in_term : ∀ γ (term : w64) (log : list $ list w8), iProp Σ.
 Axiom is_committed_in_term : ∀ γ (term : w64) (log : list $ list w8), iProp Σ.
+
 Definition is_stale_term γ term : iProp Σ :=
-  ∃ Q,
-    "%Hquorum" ∷ ⌜ Q ⊆ cfg ∧ size cfg < 2 * size Q ⌝ ∗
+  ∃ quorum,
+    "%Hquorum" ∷ ⌜ quorum ⊆ cfg ∧ size cfg < 2 * size quorum ⌝ ∗
     "#Hterm_lbs" ∷
-      □(∀ node_id (HinQ : node_id ∈ Q),
+      □(∀ node_id (Hin_quorum : node_id ∈ quorum),
          ∃ term', is_term_lb γ node_id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝).
 
+(* TODO: maybe instead of arbitary continuations, could set up proof in terms of
+   linearization order of ALL ops, including reads. *)
+
 Definition Ncommit := N.@"commit".
+(* FIXME: this invariant should not even know about read_req_ctx. Either use a
+   purely ghost ID for the aus, or direct higher order ghost state for the
+   au continuation Φ. *)
 Definition is_raft_commit_inv γ : iProp Σ :=
   inv Ncommit (∃ term log read_reqs,
         "commit" ∷ own_commit_auth γ log ∗
-        "read" ∷ own_valid_read_reqs γ read_reqs ∗
+        "read" ∷ own_read_reqs γ read_reqs ∗
         "Hcommit" ∷ is_committed_in_term γ term log ∗
-        (* Permission to linearize valid reads on all future logs. *)
+        (* Permission to linearize eads on all future logs. *)
         "#Hread_aus" ∷ □(∀ read_req_ctx (Hin : read_req_ctx ∈ dom read_reqs) log,
                            own_commit_auth γ log ={⊤∖↑N}=∗
                            own_commit_auth γ log ∗ is_read_wit γ read_req_ctx log) ∗
-        (* Witnesses that valid reads were linearized on every index starting at
+        (* Witnesses that reads were linearized on every index starting at
            the one in `read_reqs`. *)
         "#Hread_wits" ∷ □(∀ read_req_ctx index (Hindex : read_reqs !! read_req_ctx = Some index)
                             index' (Hindex' : sint.nat index ≤ sint.nat index' ≤ length log),
                             is_read_wit γ read_req_ctx (take (sint.nat index') log))
     ).
+
+Definition is_read_valid γ index Φ : iProp Σ :=
+  ∀ log (Hin : sint.nat index ≤ length log) E (Hmask : ↑N ⊆ E),
+  is_commit γ log ={E}=∗ Φ log.
+
+Lemma maybe_commit_read [E] index γ term log Φ :
+  ↑N ⊆ E →
+  sint.nat index = length log →
+  "#Hinv" ∷ is_raft_commit_inv γ ∗
+  "Hcom" ∷ own_committed_in_term γ term log ∗
+  "#Hau" ∷ □(|={⊤∖↑N,∅}=> own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ Φ log))
+  ={E}=∗
+  own_committed_in_term γ term log ∗ (is_read_valid γ index Φ ∨ is_stale_term γ term).
+Proof.
+  intros. iNamed 1.
+Admitted.
 
 End global_proof.
