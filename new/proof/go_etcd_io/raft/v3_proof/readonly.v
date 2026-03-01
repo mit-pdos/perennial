@@ -1,4 +1,7 @@
+From iris.algebra.lib Require Import mono_nat.
 Require Import New.proof.go_etcd_io.raft.v3_proof.protocol.
+Require Export New.proof.proof_prelude.
+Require Export New.golang.theory.
 
 (* Q: what's the invariant for MsgHeartbeat and MsgHeartbeatResp?
    Must ensure after getting MsgHeartbeatResp, the follower was still in the
@@ -43,3 +46,68 @@ Require Import New.proof.go_etcd_io.raft.v3_proof.protocol.
    "valid(index, request_ctx)" means that `request_ctx`'s persistent AU is
    registered for (re)execution at some index `j` and `j ≤ index`.
  *)
+
+Record raft_names :=
+  {
+    commited_gn : gname;
+    prop_gn : gname;
+    term_gn : gname;
+    config_gn : gname;
+    read_reqs_gn : gname;
+    read_wits_gn : gname;
+  }.
+
+Section global_proof.
+
+Implicit Types (γ : raft_names) (log : list (list w8)) (node_id term index : w64)
+               (read_req_ctx : go_string).
+
+Context `{!invGS Σ} `{!allG Σ}.
+Context (N : namespace).
+
+(** Ghost state for raft protocol *)
+Definition own_commit_auth γ log := mono_list_auth_own γ.(commited_gn) (1/2) log.
+Definition own_commit γ log := mono_list_auth_own γ.(commited_gn) (1/2) log.
+
+Definition own_term γ node_id term := own γ.(term_gn) {[ node_id := ●MN (sint.nat term) ]}.
+Definition is_term_lb γ node_id term := own γ.(term_gn) {[ node_id := ◯MN (sint.nat term) ]}.
+
+Definition is_valid_read_req γ read_req_ctx index : iProp Σ :=
+  read_req_ctx ↪[γ.(read_reqs_gn)]□ index.
+Definition own_valid_read_reqs γ (read_reqs : gmap go_string w64) : iProp Σ :=
+  ghost_map_auth γ.(read_reqs_gn) 1 read_reqs.
+
+Definition is_read_wit γ read_req_ctx log : iProp Σ :=
+  (read_req_ctx, log) ↪[γ.(read_wits_gn)]□ ().
+
+(** Propositions defined in terms of the primitive ghost state. *)
+
+(* This proof assumes there's only one configuration (for now). *)
+Context (cfg : gset w64).
+
+Axiom is_committed_in_term : ∀ γ (term : w64) (log : list $ list w8), iProp Σ.
+Definition is_stale_term γ term : iProp Σ :=
+  ∃ Q,
+    "%Hquorum" ∷ ⌜ Q ⊆ cfg ∧ size cfg < 2 * size Q ⌝ ∗
+    "#Hterm_lbs" ∷
+      □(∀ node_id (HinQ : node_id ∈ Q),
+         ∃ term', is_term_lb γ node_id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝).
+
+Definition Ncommit := N.@"commit".
+Definition is_raft_commit_inv γ : iProp Σ :=
+  inv Ncommit (∃ term log read_reqs,
+        "commit" ∷ own_commit_auth γ log ∗
+        "read" ∷ own_valid_read_reqs γ read_reqs ∗
+        "Hcommit" ∷ is_committed_in_term γ term log ∗
+        (* Permission to linearize valid reads on all future logs. *)
+        "#Hread_aus" ∷ □(∀ read_req_ctx (Hin : read_req_ctx ∈ dom read_reqs) log,
+                           own_commit_auth γ log ={⊤∖↑N}=∗
+                           own_commit_auth γ log ∗ is_read_wit γ read_req_ctx log) ∗
+        (* Witnesses that valid reads were linearized on every index starting at
+           the one in `read_reqs`. *)
+        "#Hread_wits" ∷ □(∀ read_req_ctx index (Hindex : read_reqs !! read_req_ctx = Some index)
+                            index' (Hindex' : sint.nat index ≤ sint.nat index' ≤ length log),
+                            is_read_wit γ read_req_ctx (take (sint.nat index') log))
+    ).
+
+End global_proof.
