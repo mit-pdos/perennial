@@ -325,11 +325,11 @@ Section core.
   [*] own_valid
   [*] own_timeless
   [*] own_persistent
-  [ ] later_own
+  [*] later_own
   [*] own_alloc_strong_dep
   [*] own_updateP
   [*] own_unit
-  [ ] own_forall
+  [*] own_forall
  *)
 
 Ltac start :=
