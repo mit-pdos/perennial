@@ -67,13 +67,15 @@ Inductive cmra :=
 | fracR
 | gsetR (K : Type) `{Countable K}
 | dfracR
-| frac_authR (A : cmra)
 with ucmra :=
 | gset_disjUR (K : Type) `{Countable K}
 | max_prefix_listUR (A : ofe)
 | gmapUR (K : Type) `{Countable K} (V : cmra)
 | natUR
+| optionUR (A: cmra)
 | max_natUR.
+Definition frac_authR (A: cmra) : cmra :=
+  authR (optionUR (prodR fracR A)).
 End syntax.
 
 Section denote.
@@ -109,7 +111,6 @@ Fixpoint int_cmra (x : syntax.cmra) : cmra :=
   | syntax.fracR => fracR
   | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
-  | syntax.frac_authR A => frac_authR (int_cmra A)
   end
 with int_ucmra (x : syntax.ucmra) : ucmra :=
   match x with
@@ -118,6 +119,7 @@ with int_ucmra (x : syntax.ucmra) : ucmra :=
   | syntax.gmapUR K V => gmapUR K (int_cmra V)
   | syntax.natUR => natUR
   | syntax.max_natUR => max_natUR
+  | syntax.optionUR A => optionUR (int_cmra A)
   end.
 
 Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
@@ -145,7 +147,6 @@ Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
   | syntax.fracR => fracR
   | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
-  | syntax.frac_authR A => frac_authRF (intF_cmra A)
   end
 with intF_ucmra (x : syntax.ucmra) : urFunctor :=
 match x with
@@ -154,6 +155,7 @@ match x with
 | syntax.gmapUR K V => gmapURF K (intF_cmra V)
 | syntax.natUR => natUR
 | syntax.max_natUR => max_natUR
+| syntax.optionUR A => optionURF (intF_cmra A)
 end.
 
 Class IsCmra (A : cmra) (e : syntax.cmra) :=
@@ -237,6 +239,9 @@ Proof. s. Qed.
 Proof. s. Qed.
 #[global] Instance is_max_natUR : IsUcmra max_natUR syntax.max_natUR.
 Proof. s. Qed.
+#[global] Instance is_optionUR `{!IsCmra A Ae} : IsUcmra (optionUR A) (syntax.optionUR Ae).
+Proof. s. Qed.
+
 #[global] Instance is_unitO : IsOfe unitO syntax.unitO.
 Proof. s. Qed.
 #[global] Instance is_leibnizO A : IsOfe (leibnizO A) (syntax.leibnizO A).
@@ -281,7 +286,6 @@ Proof.
     + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
     + unfold rFunctor_apply in *. rewrite IHA //.
     + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
-    + unfold rFunctor_apply in *. rewrite IHA //.
   - induction A; simpl in *; rewrite ?I; try done.
 Qed.
 
