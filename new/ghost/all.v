@@ -30,7 +30,7 @@ From iris.algebra Require Export
   auth csum dyn_reservation_map excl functions gmultiset gset
   max_prefix_list mra numbers proofmode_classes reservation_map view.
 From iris.algebra.lib Require Export
-  dfrac_agree frac_auth gmap_view.
+  dfrac_agree gmap_view.
 From Coq Require Import Logic.ClassicalEpsilon Logic.FunctionalExtensionality.
 From iris.base_logic Require Export proofmode iprop.
 From iris.base_logic Require Import own.
@@ -74,8 +74,6 @@ with ucmra :=
 | natUR
 | optionUR (A: cmra)
 | max_natUR.
-Definition frac_authR (A: cmra) : cmra :=
-  authR (optionUR (prodR fracR A)).
 End syntax.
 
 Section denote.
@@ -224,8 +222,6 @@ Proof. s. Qed.
 #[global] Instance is_gsetR K `{Countable K} : IsCmra (gsetR K) (syntax.gsetR K).
 Proof. s. Qed.
 #[global] Instance is_dfracR : IsCmra dfracR syntax.dfracR.
-Proof. s. Qed.
-#[global] Instance is_frac_authR `{!IsCmra A Ae} : IsCmra (frac_authR A) (syntax.frac_authR Ae).
 Proof. s. Qed.
 #[global] Instance is_gset_disjUR K `{Countable K} : IsUcmra (gset_disjUR K) (syntax.gset_disjUR K).
 Proof. s. Qed.
