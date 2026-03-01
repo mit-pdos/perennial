@@ -30,7 +30,7 @@ From iris.algebra Require Export
   auth csum dyn_reservation_map excl functions gmultiset gset
   max_prefix_list mra numbers proofmode_classes reservation_map view.
 From iris.algebra.lib Require Export
-  dfrac_agree gmap_view.
+  dfrac_agree frac_auth gmap_view.
 From Coq Require Import Logic.ClassicalEpsilon Logic.FunctionalExtensionality.
 From iris.base_logic Require Export proofmode iprop.
 From iris.base_logic Require Import own.
@@ -67,6 +67,7 @@ Inductive cmra :=
 | fracR
 | gsetR (K : Type) `{Countable K}
 | dfracR
+| frac_authR (A : cmra)
 with ucmra :=
 | gset_disjUR (K : Type) `{Countable K}
 | max_prefix_listUR (A : ofe)
@@ -108,6 +109,7 @@ Fixpoint int_cmra (x : syntax.cmra) : cmra :=
   | syntax.fracR => fracR
   | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
+  | syntax.frac_authR A => frac_authR (int_cmra A)
   end
 with int_ucmra (x : syntax.ucmra) : ucmra :=
   match x with
@@ -143,6 +145,7 @@ Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
   | syntax.fracR => fracR
   | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
+  | syntax.frac_authR A => frac_authRF (intF_cmra A)
   end
 with intF_ucmra (x : syntax.ucmra) : urFunctor :=
 match x with
@@ -220,6 +223,8 @@ Proof. s. Qed.
 Proof. s. Qed.
 #[global] Instance is_dfracR : IsCmra dfracR syntax.dfracR.
 Proof. s. Qed.
+#[global] Instance is_frac_authR `{!IsCmra A Ae} : IsCmra (frac_authR A) (syntax.frac_authR Ae).
+Proof. s. Qed.
 #[global] Instance is_gset_disjUR K `{Countable K} : IsUcmra (gset_disjUR K) (syntax.gset_disjUR K).
 Proof. s. Qed.
 #[global] Instance is_max_prefix_listUR `{!IsOfe A Ae} :
@@ -276,6 +281,7 @@ Proof.
     + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
     + unfold rFunctor_apply in *. rewrite IHA //.
     + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
+    + unfold rFunctor_apply in *. rewrite IHA //.
   - induction A; simpl in *; rewrite ?I; try done.
 Qed.
 
