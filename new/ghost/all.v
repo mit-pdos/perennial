@@ -359,6 +359,35 @@ Proof. start. apply _. Qed.
 Global Instance own_core_persistent γ (a : A) : CoreId a → Persistent (own γ a).
 Proof. start. apply _. Qed.
 
+Lemma later_own γ (a: A) :
+  ▷ own γ a ⊢ ◇ ∃ (b: A), own γ b ∧ ▷ (a ≡ b).
+Proof.
+  start.
+  iIntros "H".
+  iDestruct (base_logic.lib.own.later_own with "H") as "H".
+  iMod "H" as (r) "[Hown Heq]".
+  destruct (r e) as [c|] eqn:Hrc.
+  - iApply except_0_intro. iExists c. iSplit.
+    + assert (Hincl : discrete_fun_singleton (B := optionUR ∘ int_cmra (iProp Σ)) e (Some c) ≼ r).
+      { exists (λ e', if decide (e' = e) then ε else r e').
+        unfold equiv, discrete_fun_equiv. intros x.
+        rewrite discrete_fun_lookup_op. simpl.
+        destruct (decide (x = e)) as [->|Hne].
+        - rewrite discrete_fun_lookup_singleton Hrc. by rewrite right_id.
+        - rewrite discrete_fun_lookup_singleton_ne //. by rewrite left_id. }
+      iApply (own_mono with "Hown"). exact Hincl.
+    + iNext.
+      rewrite discrete_fun_equivI.
+      iSpecialize ("Heq" $! e).
+      rewrite discrete_fun_lookup_singleton Hrc.
+      by iDestruct (option_equivI with "Heq") as "?".
+  - rewrite /bi_except_0. iLeft. iNext.
+    rewrite discrete_fun_equivI.
+    iSpecialize ("Heq" $! e).
+    rewrite discrete_fun_lookup_singleton Hrc.
+    by iDestruct (option_equivI with "Heq") as "?".
+Qed.
+
 Lemma own_updateP P γ (a : A) : a ~~>: P → own γ a ⊢ |==> ∃ a', ⌜P a'⌝ ∗ own γ a'.
 Proof.
   start. iIntros "%Hupd H". iDestruct (own_updateP with "H") as "H".
