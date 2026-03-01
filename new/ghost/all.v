@@ -28,7 +28,7 @@
 (* alphabetical to make it easier to see what we've added. *)
 From iris.algebra Require Export
   auth csum dyn_reservation_map excl functions gmultiset gset
-  max_prefix_list mra numbers proofmode_classes reservation_map view.
+  mra numbers proofmode_classes reservation_map view.
 From iris.algebra.lib Require Export
   dfrac_agree gmap_view.
 From Coq Require Import Logic.ClassicalEpsilon Logic.FunctionalExtensionality.
@@ -68,12 +68,21 @@ Inductive cmra :=
 | gsetR (K : Type) `{Countable K}
 | dfracR
 with ucmra :=
-| gset_disjUR (K : Type) `{Countable K}
-| max_prefix_listUR (A : ofe)
 | gmapUR (K : Type) `{Countable K} (V : cmra)
+| gmultisetUR (K : Type) `{Countable K}
+| gsetUR (K : Type) `{Countable K}
+| gset_disjUR (K : Type) `{Countable K}
+| unitUR
+| prodUR (A B : ucmra)
+| optionUR (A : cmra)
+| coPsetUR
+| coPset_disjUR
 | natUR
-| max_natUR.
+| max_natUR
+| ZUR
+.
 End syntax.
+
 
 Section denote.
 Context (PROP : ofe) `{!Cofe PROP} .
@@ -111,11 +120,18 @@ Fixpoint int_cmra (x : syntax.cmra) : cmra :=
   end
 with int_ucmra (x : syntax.ucmra) : ucmra :=
   match x with
-  | syntax.gset_disjUR K => gset_disjUR K
-  | syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
   | syntax.gmapUR K V => gmapUR K (int_cmra V)
+  | syntax.gmultisetUR K => gmultisetUR K
+  | syntax.gsetUR K => gsetUR K
+  | syntax.gset_disjUR K => gset_disjUR K
+  | syntax.unitUR => unitUR
+  | syntax.prodUR A B => prodUR (int_ucmra A) (int_ucmra B)
+  | syntax.optionUR A => optionUR (int_cmra A)
+  | syntax.coPsetUR => coPsetUR
+  | syntax.coPset_disjUR => coPset_disjUR
   | syntax.natUR => natUR
   | syntax.max_natUR => max_natUR
+  | syntax.ZUR => ZUR
   end.
 
 Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
@@ -146,11 +162,18 @@ Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
   end
 with intF_ucmra (x : syntax.ucmra) : urFunctor :=
 match x with
-| syntax.gset_disjUR K => gset_disjUR K
-| syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
 | syntax.gmapUR K V => gmapURF K (intF_cmra V)
+| syntax.gmultisetUR K => gmultisetUR K
+| syntax.gsetUR K => gsetUR K
+| syntax.gset_disjUR K => gset_disjUR K
+| syntax.unitUR => unitUR
+| syntax.prodUR A B => prodURF (intF_ucmra A) (intF_ucmra B)
+| syntax.optionUR A => optionURF (intF_cmra A)
+| syntax.coPsetUR => coPsetUR
+| syntax.coPset_disjUR => coPset_disjUR
 | syntax.natUR => natUR
 | syntax.max_natUR => max_natUR
+| syntax.ZUR => ZUR
 end.
 
 Class IsCmra (A : cmra) (e : syntax.cmra) :=
@@ -220,18 +243,33 @@ Proof. s. Qed.
 Proof. s. Qed.
 #[global] Instance is_dfracR : IsCmra dfracR syntax.dfracR.
 Proof. s. Qed.
-#[global] Instance is_gset_disjUR K `{Countable K} : IsUcmra (gset_disjUR K) (syntax.gset_disjUR K).
-Proof. s. Qed.
-#[global] Instance is_max_prefix_listUR `{!IsOfe A Ae} :
-  IsUcmra (max_prefix_listUR A) (syntax.max_prefix_listUR Ae).
-Proof. s. Qed.
 #[global] Instance is_gmapUR K `{Countable K} `{!IsCmra V Ve} :
   IsUcmra (gmapUR K V) (syntax.gmapUR K Ve).
+Proof. s. Qed.
+#[global] Instance is_gmultisetUR K `{Countable K} : IsUcmra (gmultisetUR K) (syntax.gmultisetUR K).
+Proof. s. Qed.
+#[global] Instance is_gsetUR K `{Countable K} : IsUcmra (gsetUR K) (syntax.gsetUR K).
+Proof. s. Qed.
+#[global] Instance is_gset_disjUR K `{Countable K} : IsUcmra (gset_disjUR K) (syntax.gset_disjUR K).
+Proof. s. Qed.
+#[global] Instance is_unitUR : IsUcmra unitUR syntax.unitUR.
+Proof. s. Qed.
+#[global] Instance is_prodUR `{!IsUcmra A Ae} `{!IsUcmra B Be} : IsUcmra (prodUR A B) (syntax.prodUR Ae Be).
+Proof. s. Qed.
+#[global] Instance is_optionUR `{!IsCmra A Ae} : IsUcmra (optionUR A) (syntax.optionUR Ae).
+Proof. s. Qed.
+#[global] Instance is_coPsetUR : IsUcmra coPsetUR syntax.coPsetUR.
+Proof. s. Qed.
+#[global] Instance is_coPset_disjUR : IsUcmra coPset_disjUR syntax.coPset_disjUR.
 Proof. s. Qed.
 #[global] Instance is_natUR : IsUcmra natUR syntax.natUR.
 Proof. s. Qed.
 #[global] Instance is_max_natUR : IsUcmra max_natUR syntax.max_natUR.
 Proof. s. Qed.
+#[global] Instance is_ZUR : IsUcmra ZUR syntax.ZUR.
+Proof. s. Qed.
+
+
 #[global] Instance is_unitO : IsOfe unitO syntax.unitO.
 Proof. s. Qed.
 #[global] Instance is_leibnizO A : IsOfe (leibnizO A) (syntax.leibnizO A).
@@ -276,7 +314,7 @@ Proof.
     + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
     + unfold rFunctor_apply in *. rewrite IHA //.
     + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
-  - induction A; simpl in *; rewrite ?I; try done.
+  - destruct A; simpl in *; rewrite ?I ?pf_u; try done.
 Qed.
 
 Global Instance subG_allΣ Σ :
