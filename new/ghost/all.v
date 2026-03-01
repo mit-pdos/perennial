@@ -325,11 +325,11 @@ Section core.
   [*] own_valid
   [*] own_timeless
   [*] own_persistent
-  [ ] later_own
+  [*] later_own
   [*] own_alloc_strong_dep
   [*] own_updateP
   [*] own_unit
-  [ ] own_forall
+  [*] own_forall
  *)
 
 Ltac start :=
@@ -358,6 +358,35 @@ Proof. start. apply _. Qed.
 
 Global Instance own_core_persistent γ (a : A) : CoreId a → Persistent (own γ a).
 Proof. start. apply _. Qed.
+
+Lemma later_own γ (a: A) :
+  ▷ own γ a ⊢ ◇ ∃ (b: A), own γ b ∧ ▷ (a ≡ b).
+Proof.
+  start.
+  iIntros "H".
+  iDestruct (base_logic.lib.own.later_own with "H") as "H".
+  iMod "H" as (r) "[Hown Heq]".
+  destruct (r e) as [c|] eqn:Hrc.
+  - iApply except_0_intro. iExists c. iSplit.
+    + assert (Hincl : discrete_fun_singleton (B := optionUR ∘ int_cmra (iProp Σ)) e (Some c) ≼ r).
+      { exists (λ e', if decide (e' = e) then ε else r e').
+        unfold equiv, discrete_fun_equiv. intros x.
+        rewrite discrete_fun_lookup_op. simpl.
+        destruct (decide (x = e)) as [->|Hne].
+        - rewrite discrete_fun_lookup_singleton Hrc. by rewrite right_id.
+        - rewrite discrete_fun_lookup_singleton_ne //. by rewrite left_id. }
+      iApply (own_mono with "Hown"). exact Hincl.
+    + iNext.
+      rewrite discrete_fun_equivI.
+      iSpecialize ("Heq" $! e).
+      rewrite discrete_fun_lookup_singleton Hrc.
+      by iDestruct (option_equivI with "Heq") as "?".
+  - rewrite /bi_except_0. iLeft. iNext.
+    rewrite discrete_fun_equivI.
+    iSpecialize ("Heq" $! e).
+    rewrite discrete_fun_lookup_singleton Hrc.
+    by iDestruct (option_equivI with "Heq") as "?".
+Qed.
 
 Lemma own_updateP P γ (a : A) : a ~~>: P → own γ a ⊢ |==> ∃ a', ⌜P a'⌝ ∗ own γ a'.
 Proof.
@@ -395,6 +424,59 @@ Proof.
     + rewrite right_id. apply cmra_transport_validN, ucmra_unit_validN.
   - intros Hbad. apply Some_validN.
     apply cmra_transport_validN, ucmra_unit_validN.
+Qed.
+
+Lemma own_forall {B: Type} `{Inhabited B} γ (f: B → A) :
+  (∀ (b:B), own γ (f b)) ⊢
+  ∃ (c: A), own γ c ∗ ∀ (b: B), Some (f b) ≼ Some c.
+Proof.
+  start.
+  iIntros "Hown".
+  iDestruct (base_logic.lib.own.own_forall with "Hown") as (r) "[Hown Hall]".
+  destruct (r e) as [c|] eqn:Hrc.
+  - iExists c. iSplitL "Hown".
+    + assert (Hincl : discrete_fun_singleton (B := optionUR ∘ int_cmra (iProp Σ)) e (Some c) ≼ r).
+      { exists (λ e', if decide (e' = e) then ε else r e').
+        unfold equiv, discrete_fun_equiv. intros x.
+        rewrite discrete_fun_lookup_op. simpl.
+        destruct (decide (x = e)) as [->|Hne].
+        - rewrite discrete_fun_lookup_singleton Hrc. by rewrite right_id.
+        - rewrite discrete_fun_lookup_singleton_ne //. by rewrite left_id. }
+      iApply (own_mono with "Hown"). exact Hincl.
+    + (* The ≼ in the conclusion is internal_included (step-indexed, not pure).
+         Unfold to work with the existential directly, then project to
+         component [e] via discrete_fun_equivI. *)
+      iIntros (b).
+      iSpecialize ("Hall" $! b).
+      rewrite /internal_included.
+      iDestruct "Hall" as (z) "Heq".
+      rewrite Some_op_opM option_equivI.
+      destruct z as [z'|]; simpl.
+      * iExists (z' e).
+        rewrite discrete_fun_equivI.
+        iSpecialize ("Heq" $! e).
+        rewrite discrete_fun_lookup_op discrete_fun_lookup_singleton Hrc.
+        done.
+      * iExists None. rewrite right_id.
+        rewrite discrete_fun_equivI.
+        iSpecialize ("Heq" $! e).
+        rewrite discrete_fun_lookup_singleton Hrc.
+        done.
+  - iExFalso.
+    iSpecialize ("Hall" $! inhabitant).
+    rewrite /internal_included.
+    iDestruct "Hall" as (z) "Heq".
+    rewrite Some_op_opM option_equivI.
+    destruct z as [z'|]; simpl.
+    + rewrite discrete_fun_equivI.
+      iSpecialize ("Heq" $! e).
+      rewrite discrete_fun_lookup_op discrete_fun_lookup_singleton Hrc.
+      rewrite Some_op_opM.
+      by iDestruct (option_equivI with "Heq") as "?".
+    + rewrite discrete_fun_equivI.
+      iSpecialize ("Heq" $! e).
+      rewrite discrete_fun_lookup_singleton Hrc.
+      by iDestruct (option_equivI with "Heq") as "?".
 Qed.
 
 End core.
