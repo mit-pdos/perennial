@@ -82,11 +82,20 @@ Proof.
   unshelve eapply as_dfractional_dfractional; try eassumption.
 Qed.
 
-Global Instance typed_pointsto_combine_sep_gives `{!TypedPointsto V} l dq1 dq2  (v1 v2 : V) :
+Global Instance typed_pointsto_combine_sep_gives `{!TypedPointsto V} l dq1 dq2 (v1 v2 : V) :
   CombineSepGives (typed_pointsto l v1 dq1) (typed_pointsto l v2 dq2) (⌜ v1 = v2 ⌝).
 Proof.
   rewrite typed_pointsto_unseal /CombineSepGives. iIntros "[H1 H2]".
   iDestruct (typed_pointsto_agree with "H1 H2") as %Heq. by iModIntro.
+Qed.
+
+Global Instance typed_pointsto_combine_sep_as `{!TypedPointsto V} l dq1 dq2 (v1 v2 : V) :
+  CombineSepAs (typed_pointsto l v1 dq1) (typed_pointsto l v2 dq2)
+    (typed_pointsto l v1 (dq1 ⋅ dq2)) | 60.
+Proof.
+  rewrite /CombineSepAs. iIntros "[H1 H2]".
+  iCombine "H1 H2" gives %->.
+  iCombine "H1 H2" as "$".
 Qed.
 
 (** [IntoValTyped V t] provides proofs that loading and storing [t] respects
