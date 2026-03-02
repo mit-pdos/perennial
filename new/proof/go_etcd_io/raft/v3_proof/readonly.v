@@ -100,7 +100,24 @@ Definition is_stale_term γ term : iProp Σ :=
 (* TODO: maybe instead of arbitary continuations, could set up proof in terms of
    linearization order of ALL ops, including reads. *)
 
-(* The "positive" resource precluding is_stale_term perhaps should be up to an index. *)
+(* The "positive" resource precluding is_stale_term perhaps should be up to an index.
+
+  Actually, it won't work to have
+    `is_readonly_ack γ term index node_id`,
+  plus a lemma
+    `∀ Q, is_quorum Q ∧ (∀ node_id, node_id ∈ Q → is_readonly_ack γ term index node_id) →
+     is_read_safe γ index`
+  because there's no connection to the req_ctx; the index is NOT unconditionally
+  safe, it's only safe for the request ctx.
+
+  And, if we add a request ctx, there's no need to have the index. Instead, the meaning of
+  `MsgHeartbeatResp(from=i, ctx=A)` is the persistent fact that `i` is not in
+  the set of "deniers" for `A`; a "denier" is a node that's part of the staleness quorum.
+ *)
+
+(* TODO: what happens if raft reuses request_ctx across terms? There might be a
+   different staleness quorum for a later term. Maybe staleness quorum is per
+   (term, req_ctx) pair. *)
 
 Definition Ncommit := N.@"commit".
 Definition is_raft_commit_inv γ : iProp Σ :=
