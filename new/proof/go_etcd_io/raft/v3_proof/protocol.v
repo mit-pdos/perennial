@@ -1,4 +1,4 @@
-Require Import New.proof.go_etcd_io.raft.v3_proof.base.
+Require Export New.proof.go_etcd_io.raft.v3_proof.base.
 From New.proof.chan_proof Require Import closeable.
 From New.proof.github_com.goose_lang.goose.model.channel
   Require Import logatom.chan_au_base idiom.handoff.handoff.

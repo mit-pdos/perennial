@@ -53,8 +53,7 @@ Record raft_names :=
     prop_gn : gname;
     term_gn : gname;
     config_gn : gname;
-    read_reqs_gn : gname;
-    read_wits_gn : gname;
+    reads_gn : gname;
   }.
 
 Section global_proof.
@@ -73,13 +72,13 @@ Definition is_commit γ log := mono_list_lb_own γ.(commited_gn) log.
 Definition own_term γ node_id term := own γ.(term_gn) {[ node_id := ●MN (sint.nat term) ]}.
 Definition is_term_lb γ node_id term := own γ.(term_gn) {[ node_id := ◯MN (sint.nat term) ]}.
 
-Definition is_read_req γ read_req_ctx index : iProp Σ :=
-  read_req_ctx ↪[γ.(read_reqs_gn)]□ index.
-Definition own_read_reqs γ (read_reqs : gmap go_string w64) : iProp Σ :=
-  ghost_map_auth γ.(read_reqs_gn) 1 read_reqs.
+Definition is_γread_index γ (γread : gname) index : iProp Σ :=
+  γread ↪[γ.(reads_gn)]□ index.
+Definition own_read_reqs γ (reads_index : gmap gname w64) : iProp Σ :=
+  ghost_map_auth γ.(reads_gn) 1 reads_index.
 
-Definition is_read_wit γ read_req_ctx log : iProp Σ :=
-  (read_req_ctx, log) ↪[γ.(read_wits_gn)]□ ().
+Definition is_read_wit γread log : iProp Σ :=
+  log ↪[γread]□ ().
 
 (** Propositions defined in terms of the primitive ghost state. *)
 
@@ -88,6 +87,8 @@ Context (cfg : gset w64).
 
 Axiom own_committed_in_term : ∀ γ (term : w64) (log : list $ list w8), iProp Σ.
 Axiom is_committed_in_term : ∀ γ (term : w64) (log : list $ list w8), iProp Σ.
+Axiom is_committed_in_term_pers : ∀ γ term log, Persistent (is_committed_in_term γ term log).
+Global Existing Instance is_committed_in_term_pers.
 
 Definition is_stale_term γ term : iProp Σ :=
   ∃ quorum,
@@ -99,40 +100,112 @@ Definition is_stale_term γ term : iProp Σ :=
 (* TODO: maybe instead of arbitary continuations, could set up proof in terms of
    linearization order of ALL ops, including reads. *)
 
+(* The "positive" resource precluding is_stale_term perhaps should be up to an index. *)
+
 Definition Ncommit := N.@"commit".
-(* FIXME: this invariant should not even know about read_req_ctx. Either use a
-   purely ghost ID for the aus, or direct higher order ghost state for the
-   au continuation Φ. *)
 Definition is_raft_commit_inv γ : iProp Σ :=
-  inv Ncommit (∃ term log read_reqs,
+  inv Ncommit (∃ term log reads_index,
         "commit" ∷ own_commit_auth γ log ∗
-        "read" ∷ own_read_reqs γ read_reqs ∗
-        "Hcommit" ∷ is_committed_in_term γ term log ∗
-        (* Permission to linearize eads on all future logs. *)
-        "#Hread_aus" ∷ □(∀ read_req_ctx (Hin : read_req_ctx ∈ dom read_reqs) log,
+        "#Hcommit" ∷ is_committed_in_term γ term log ∗
+        "read" ∷ own_read_reqs γ reads_index ∗
+        (* Permission to linearize reads on all future logs. *)
+        "#Hread_aus" ∷ □(∀ γread (Hin : γread ∈ dom reads_index) log,
                            own_commit_auth γ log ={⊤∖↑N}=∗
-                           own_commit_auth γ log ∗ is_read_wit γ read_req_ctx log) ∗
+                           own_commit_auth γ log ∗ is_read_wit γread log) ∗
         (* Witnesses that reads were linearized on every index starting at
            the one in `read_reqs`. *)
-        "#Hread_wits" ∷ □(∀ read_req_ctx index (Hindex : read_reqs !! read_req_ctx = Some index)
+        "#Hread_wits" ∷ □(∀ γread index (Hindex : reads_index !! γread = Some index)
                             index' (Hindex' : sint.nat index ≤ sint.nat index' ≤ length log),
-                            is_read_wit γ read_req_ctx (take (sint.nat index') log))
+                            is_read_wit γread (take (sint.nat index') log))
     ).
 
-Definition is_read_valid γ index Φ : iProp Σ :=
+Axiom own_read_req_ctx : ∀ γ read_req_ctx, iProp Σ.
+Axiom is_read_req_ctx : ∀ γ read_req_ctx (Φ : list (list w8) → iProp Σ), iProp Σ.
+
+Lemma start_req_ctx Φ req_ctx index γ :
+  own_read_req_ctx γ req_ctx ∗
+  □(|={⊤∖↑N,∅}=> ∃ log, own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ Φ log))
+  ={⊤}=∗
+  is_read_req_ctx γ req_ctx Φ.
+Proof.
+Admitted.
+
+Definition is_read_index γ index Φ : iProp Σ :=
   ∀ log (Hin : sint.nat index ≤ length log) E (Hmask : ↑N ⊆ E),
   is_commit γ log ={E}=∗ Φ log.
 
-Lemma maybe_commit_read [E] index γ term log Φ :
+Lemma maybe_commit_read [E] γ term log Φ :
   ↑N ⊆ E →
-  sint.nat index = length log →
   "#Hinv" ∷ is_raft_commit_inv γ ∗
   "Hcom" ∷ own_committed_in_term γ term log ∗
-  "#Hau" ∷ □(|={⊤∖↑N,∅}=> own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ Φ log))
+  "#Hau" ∷ □(|={⊤∖↑N,∅}=> ∃ log, own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ Φ log))
   ={E}=∗
-  own_committed_in_term γ term log ∗ (is_read_valid γ index Φ ∨ is_stale_term γ term).
+  own_committed_in_term γ term log ∗ (is_read_index γ (W64 (length log)) Φ ∨ is_stale_term γ term).
 Proof.
   intros. iNamed 1.
 Admitted.
 
+Definition is_MsgReadIndex γ read_req_ctx : iProp Σ :=
+  ∃ Φ, is_read_req_ctx γ read_req_ctx Φ.
+
+Definition is_MsgReadIndexResp γ read_req_ctx index : iProp Σ :=
+  ∃ Φ, is_read_req_ctx γ read_req_ctx Φ ∗
+       is_read_index γ index Φ.
+
 End global_proof.
+
+Section wps.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : raft.Assumptions}.
+
+Axiom own_raft : ∀ (γ : raft_names) (rf : raft.raft.t), iProp Σ.
+
+(* FIXME: own_ProgressTracker precondition *)
+Lemma wp_ProgressTracker__IsSingleton (p : loc) :
+  {{{ True }}}
+    p @! (go.PointerType tracker.ProgressTracker) @! "IsSingleton" #()
+  {{{ RET #false; True }}}.
+Proof.
+Admitted.
+
+Lemma wp_raft__committedEntryInCurrentTerm r rf γ :
+  {{{ r ↦ rf ∗ own_raft γ rf }}}
+    r @! (go.PointerType raft.raft) @! "committedEntryInCurrentTerm" (# ())
+  {{{ (c : bool), RET #c; r ↦ rf ∗ own_raft γ rf ∗
+                 if c then ∃ l, is_committed_in_term γ rf.(raft.raft.Term') l else True
+  }}}.
+Proof.
+Admitted.
+
+Definition MsgReadIndex := W32 15.
+Lemma wp_raft__sendMsgReadIndexresponse γ r rf m :
+  {{{ "Hr" ∷ r ↦ rf ∗
+      "Hrf" ∷ own_raft γ rf ∗
+      "%HmType" ∷ ⌜ m.(raftpb.Message.Type') = MsgReadIndex ⌝ ∗
+      "#Hcom_in_term" ∷ True
+  }}}
+    @! raft.sendMsgReadIndexResponse #r #m
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto.
+Admitted. (* TODO *)
+
+Lemma wp_raft__stepLeader_MsgReadIndex γ r (rf : raft.raft.t) (m : raftpb.Message.t) :
+  {{{ "Hr" ∷ r ↦ rf ∗
+      "Hrf" ∷ own_raft γ rf ∗
+      "%HmType" ∷ ⌜ m.(raftpb.Message.Type') = MsgReadIndex ⌝ }}}
+    @! raft.stepLeader #r #m
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start. iNamed "Hpre".
+  wp_auto. rewrite HmType.
+  wp_auto.
+  wp_apply wp_ProgressTracker__IsSingleton.
+  wp_apply (wp_raft__committedEntryInCurrentTerm with "[$]").
+  iIntros "%committedInTerm (Hr & Hrf & Hcom)".
+  wp_if_destruct.
+  - admit.
+Admitted.
+
+End wps.
