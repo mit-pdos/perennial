@@ -64,6 +64,9 @@ Variants: `wp_start_folded` (no unfold), `wp_auto --lc n` (later credits),
 
 ## IPM Tactics
 
+For the full Iris proof mode reference, search `new/proof/IRIS_PROOF_MODE.md`
+for a tactic.
+
 | Tactic | Description |
 |:--|:--|
 | `iIntros "ipat"` / `iIntros (x)` | Introduce from goal |
@@ -94,6 +97,29 @@ Variants: `wp_start_folded` (no unfold), `wp_auto --lc n` (later credits),
 
 `"[$]"` (auto-frame all), `"[$H1 H2]"` (auto-frame + explicit),
 `"[H1 H2]"` (give specific hypotheses).
+
+## Stdpp / Rocq Tactics
+
+| Tactic | Description |
+|:--|:--|
+| `done` | Solve trivial goals (combines `trivial`, `assumption`, `reflexivity`, etc.) |
+| `naive_solver` | Automated first-order logic and set solver |
+| `f_equal` | Congruence: prove `f x = f y` from `x = y` |
+| `trans y` | Transitivity: prove `x R z` via `x R y` and `y R z` |
+| `inv H` | Inversion on inductive hypothesis |
+| `destruct_and` | Recursively destruct all `∧` hypotheses |
+| `destruct_or` | Recursively destruct all `∨` hypotheses |
+| `case_match` | Case split on a `match` in the goal |
+| `case_guard` | Case split on a `guard` in the goal |
+| `case_decide` | Case split on a `decide` in the goal |
+| `opose proof as pat` | Like `pose proof` but with stdpp intro patterns |
+| `odestruct` | Destruct with stdpp intro patterns |
+| `ospecialize` | Specialize with stdpp intro patterns |
+| `simplify_eq/=` | Simplify equalities and substitute |
+| `simplify_option_eq` | Simplify `option` equalities |
+| `simplify_map_eq/=` | Simplify map equalities |
+| `list_simplifier` | Simplify list operations |
+| `set_solver` | Automated solver for set goals |
 
 ## Specification Lemmas
 

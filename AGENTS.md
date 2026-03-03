@@ -1,6 +1,6 @@
 # Perennial
 
-Perennial is a system implemented in Rocq for proving Go code correct.
+Perennial is a system implemented in Rocq for proving Go code correct. It builds on the Iris separation logic framework and uses stdpp (a Rocq standard library for Iris).
 
 Most of the implementation is in `new/`, with program proofs in `new/proof/`.
 
