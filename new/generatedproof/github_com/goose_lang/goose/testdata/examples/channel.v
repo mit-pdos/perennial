@@ -9,6 +9,61 @@ Require Export New.code.github_com.goose_lang.goose.testdata.examples.channel.
 Set Default Proof Using "Type".
 
 Module chan_spec_raw_examples.
+Module Cond.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : chan_spec_raw_examples.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Cond_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.Cond.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "L" ∷ l.[(chan_spec_raw_examples.Cond.t), "L"] ↦{dq} v.(chan_spec_raw_examples.Cond.L') ∗
+      "waiters" ∷ l.[(chan_spec_raw_examples.Cond.t), "waiters"] ↦{dq} v.(chan_spec_raw_examples.Cond.waiters') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Cond_into_val_typed
+   :
+  IntoValTypedUnderlying (chan_spec_raw_examples.Cond.t) (chan_spec_raw_examples.Condⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Cond_access_load_L l (v : (chan_spec_raw_examples.Cond.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Cond.t), "L"] ↦{dq} (v.(chan_spec_raw_examples.Cond.L')))
+    (l.[(chan_spec_raw_examples.Cond.t), "L"] ↦{dq} (v.(chan_spec_raw_examples.Cond.L')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Cond_access_store_L l (v : (chan_spec_raw_examples.Cond.t)) L' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Cond.t), "L"] ↦ (v.(chan_spec_raw_examples.Cond.L')))
+    (l.[(chan_spec_raw_examples.Cond.t), "L"] ↦ L')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.Cond.L') := L'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Cond_access_load_waiters l (v : (chan_spec_raw_examples.Cond.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Cond.t), "waiters"] ↦{dq} (v.(chan_spec_raw_examples.Cond.waiters')))
+    (l.[(chan_spec_raw_examples.Cond.t), "waiters"] ↦{dq} (v.(chan_spec_raw_examples.Cond.waiters')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Cond_access_store_waiters l (v : (chan_spec_raw_examples.Cond.t)) waiters' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Cond.t), "waiters"] ↦ (v.(chan_spec_raw_examples.Cond.waiters')))
+    (l.[(chan_spec_raw_examples.Cond.t), "waiters"] ↦ waiters')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.Cond.waiters') := waiters'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End Cond.
+
 Module LockedStack.
 Section def.
 
@@ -173,6 +228,47 @@ Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End request.
+
+Module Lock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : chan_spec_raw_examples.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Lock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.Lock.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "ch" ∷ l.[(chan_spec_raw_examples.Lock.t), "ch"] ↦{dq} v.(chan_spec_raw_examples.Lock.ch') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Lock_into_val_typed
+   :
+  IntoValTypedUnderlying (chan_spec_raw_examples.Lock.t) (chan_spec_raw_examples.Lockⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Lock_access_load_ch l (v : (chan_spec_raw_examples.Lock.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Lock.t), "ch"] ↦{dq} (v.(chan_spec_raw_examples.Lock.ch')))
+    (l.[(chan_spec_raw_examples.Lock.t), "ch"] ↦{dq} (v.(chan_spec_raw_examples.Lock.ch')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Lock_access_store_ch l (v : (chan_spec_raw_examples.Lock.t)) ch' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Lock.t), "ch"] ↦ (v.(chan_spec_raw_examples.Lock.ch')))
+    (l.[(chan_spec_raw_examples.Lock.t), "ch"] ↦ ch')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.Lock.ch') := ch'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End Lock.
 
 Module stream.
 Section def.
