@@ -37,8 +37,6 @@ Defined.
 Section select_full_buffer.
 
 (* Invariant for the “full buffer” situation                                  *)
-
-(** Invariant: channel must be Buffered [W64 0] (full for cap = 1). *)
 Definition is_select_nb_full1 (γ : chan_names) (ch : loc) : iProp Σ :=
   "#Hch"  ∷ is_chan ch γ w64 ∗
   "%Hcap1" ∷ ⌜chan_cap γ = (W64 1)⌝ ∗
@@ -258,25 +256,18 @@ Lemma wp_HelloWorldAsync :
 Proof.
   wp_start. wp_auto.
   wp_apply chan.wp_make2; first done.
-  iIntros (ch). iIntros (γ). iIntros "(#His_chan & Hcap & Hownchan)".
-  wp_auto.
-  simpl in *.
+  iIntros (ch γ) "(#His_chan & Hcap & Hownchan)".
+  wp_auto. 
   iMod ((start_handoff_buffered ch γ (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)%I)
          with "His_chan Hownchan") as "(%γdone & %Hd & #Hch)".
   iPersist "ch".
   wp_apply (wp_fork).
   {
-    wp_auto.
-    wp_apply wp_sys_hello_world.
-    iAssert (⌜"Hello, World!"%go = "Hello, World!"%go⌝)%I as "HP".
-    { iPureIntro. reflexivity. }
-  wp_apply (wp_handoff_send (V:=go_string) with "[$Hch]").
-    { done. }
-    done.
-    }
-  iApply "HΦ".
-  subst γ.
-  iFrame "∗#".
+    wp_auto. wp_apply wp_sys_hello_world.
+    iAssert (⌜"Hello, World!"%go = "Hello, World!"%go⌝)%I as "%HP";first done.
+    wp_apply (wp_handoff_send (V:=go_string) with "[$Hch]");done.
+  }
+  iApply "HΦ". subst γ. iFrame "∗#".
 Qed.
 
 Lemma wp_HelloWorldSync :
@@ -284,15 +275,11 @@ Lemma wp_HelloWorldSync :
     @! chan_spec_raw_examples.HelloWorldSync #()
   {{{ RET #("Hello, World!"); True }}}.
 Proof.
-  wp_start.
-  wp_apply wp_HelloWorldAsync.
+  wp_start. wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hchan #Hfut]".
   wp_apply (wp_handoff_receive with "Hfut").
-  iIntros (v) "%Hv".
-  wp_auto.
-  subst v.
-  iApply "HΦ".
-  done.
+  iIntros (v) "%Hv". wp_auto. subst v.
+  iApply "HΦ". done.
 Qed.
 
 End hello_world.
@@ -315,36 +302,24 @@ Lemma wp_HelloWorldCancellable
 Proof.
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
-  wp_auto_lc 4.
-  do 2 (iRename select (£1) into "Hlc2").
-  wp_apply wp_HelloWorldAsync.
+  wp_auto_lc 4. wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hch #Hfut]". wp_auto_lc 1.
-  do 2 (iRename select (£1) into "Hlc1").
   iDestruct "Hpre" as "(#H1 & H2)".
- 
   iFrame "#".
-  wp_apply chan.wp_select_blocking.
-  simpl.
-    iSplit.
+  wp_apply chan.wp_select_blocking. simpl.
+  iSplit.
     {
       repeat iExists _; iSplitR; first done. iFrame "#".
-
       iApply (handoff_rcv_au (V:=go_string)  γfuture ch with "[$Hfut] [$]").
       iNext. iIntros (v). iIntros "%Hw".
-      wp_auto.
-      subst v.
-      iApply "HΦ".
-      iPureIntro.
-      right. done.
+      wp_auto. subst v. iApply "HΦ". iPureIntro. right. done.
     }
     {
-      iSplitL; last done. repeat iExists _; iSplitR; first done. iFrame "#".
-      iSplitL "". { iApply (done_is_chan γdone done_ch (V:=unit) (t:=(go.StructType []))).  iFrame "#". }
+      iSplitL; last done. repeat iExists _; iSplitR; first done.
+      iSplitL "". { iApply (done_is_chan γdone done_ch (V:=unit) (t:=(go.StructType []))). iFrame "#". }
       iApply ((done_receive_au (V:=unit) (t:=((go.StructType []))) γdone done_ch) with "[$H1] [$H2] [HΦ Herr] [$]").
       {
-        
-        iNext. iIntros "Herr'".
-        wp_auto. iApply "HΦ". iLeft. done.
+        iNext. iIntros "Herr'". wp_auto. iApply "HΦ". iLeft. done.
       }
     }
 Qed.
@@ -359,40 +334,29 @@ Lemma wp_HelloWorldWithTimeout :
         result = "operation timed out"%go⌝
   }}}.
 Proof.
-  wp_start.
-  wp_auto. wp_apply chan.wp_make1.
+  wp_start. wp_auto. wp_apply chan.wp_make1.
   iIntros (ch γ) "(#Hchan & _Hcap & Hoc)".
-  simpl.
   iDestruct (start_done (t:=(go.StructType [])) ch γ with "Hchan") as "Hstart".
   iMod ("Hstart" with "Hoc") as (γdone) "(#Hdone & Hnot)".
-  wp_auto.
-  iPersist "done".
-
+  wp_auto. iPersist "done".
   iMod (done_alloc_notified (t:=(go.StructType []))  _ _ _ (errMsg_ptr ↦ "operation timed out"%go)%I
          with "[$Hdone] [$Hnot]") as "[HNotify HNotified]".
   wp_apply (wp_fork with "[HNotify errMsg done]").
-  { wp_auto.
-    wp_apply wp_Sleep.
+  { wp_auto. wp_apply wp_Sleep.
     wp_apply (chan.wp_close with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
     { iApply (done_is_chan (t:=(go.StructType [])) with "Hdone"). }
-    iApply (done_close_au (t:=(go.StructType [])) with "[$] [$] [$HNotify errMsg]").
-    { iFrame. }
-    iNext.
-    wp_auto.
-    done. }
+    iApply (done_close_au (t:=(go.StructType [])) with "[$] [$] [$HNotify $errMsg]").
+    iNext. wp_auto. done. 
+  }
 
   wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified] [HΦ]").
   {
-    iFrame "#".
-    iIntros (result).
-    iIntros "%Hres".
-    wp_auto.
-    iApply "HΦ".
-    iPureIntro. destruct Hres; auto. }
+    iIntros (result) "%Hres". wp_auto. iApply "HΦ".
+    iPureIntro. destruct Hres; auto.
+  }
 Qed.
 
 End cancellable.
-
 
 Section fibonacci_examples.
 
@@ -411,16 +375,13 @@ Lemma fib_list_succ (n: nat) :
 Proof.
   unfold fib_list.
   rewrite seq_S.
-  rewrite map_app.
-  simpl. reflexivity.
+  rewrite map_app. done.
 Qed.
 
 Lemma fib_list_length (n: nat) :
   length (fib_list n) = n.
 Proof.
-  unfold fib_list.
-  rewrite map_length.
-  apply seq_length.
+  unfold fib_list. rewrite map_length. apply seq_length.
 Qed.
 
 Lemma fib_succ (k:nat) :
@@ -433,7 +394,6 @@ Open Scope Z_scope.
 Lemma wp_fibonacci (n: w64) (c_ptr: loc) γ:
   0 < sint.Z n < 2^63 →
   {{{ is_pkg_init chan_spec_raw_examples ∗
-
       is_spsc γ c_ptr (λ i v, ⌜v = fib (Z.to_nat i)⌝)
                   (λ sent, ⌜sent = fib_list  (sint.nat n)⌝) ∗
       spsc_producer γ ([] : list w64)
@@ -441,13 +401,10 @@ Lemma wp_fibonacci (n: w64) (c_ptr: loc) γ:
     @! chan_spec_raw_examples.fibonacci #n #c_ptr
   {{{ RET #(); True }}}.
 Proof.
-  intros Hn.
-  wp_start.
+  intros Hn. wp_start.
   iDestruct "Hpre" as "(#Hspsc & Hprod)".
   rename c_ptr into c_ptr0.
-  wp_alloc_auto.
-  wp_auto.
-
+  wp_alloc_auto. wp_auto.
   iAssert (∃ (i: nat) (sent: list w64),
               "Hprod" ∷ spsc_producer γ sent ∗
               "x"     ∷ x_ptr ↦ fib i ∗
@@ -459,46 +416,32 @@ Proof.
               "%Hi"   ∷ ⌜0 ≤ i ≤ sint.Z n⌝)%I
     with "[x y i c Hprod]" as "IH".
   {
-    iFrame.
-    iExists 0%nat.
-    iFrame.
-    iPureIntro. simpl. unfold fib_list.
-    simpl.
-    split;first done.
-    split;first done.
-    lia.
+    iFrame. iExists 0%nat.
+    iFrame. iPureIntro. unfold fib_list.
+    simpl. repeat (split;first done). lia.
   }
 
   wp_for "IH".
   wp_if_destruct.
   {
-
     wp_apply (wp_spsc_send with "[Hspsc Hprod]").
-    { iFrame "#".  iFrame.  simpl.
+    { iFrame "#".  iFrame.
       replace (Z.to_nat (length sent)) with (length sent) by lia.
       word.
     }
-    iIntros "Hprod".
-    wp_auto.
+    iIntros "Hprod". wp_auto.
     wp_for_post.
-    iFrame.
-    iExists ((length sent) + 1)%nat.
-    iFrame.
-
-    iFrame.
+    iFrame. iExists ((length sent) + 1)%nat.
     replace (length sent + 1)%nat with (S (length sent)) by lia.
     destruct (length sent) eqn: H.
     {
-      iFrame.  iPureIntro. rewrite app_length.  rewrite H. simpl. unfold fib_list. simpl.
+      iFrame.  iPureIntro. rewrite app_length. rewrite H. simpl. unfold fib_list.
       split;first done.
       rewrite Hsl.
-      split;first done.
-      lia.
+      split;first done. lia.
     }
     iFrame.
 
-    (* y: turn the add(...) form into fib (S (length sent + 1)) *)
-    (* add (fib (S k)) (fib k) → fib (S (S k)) *)
     replace   (w64_word_instance.(word.add)
                                    (fib (S n0))
                                    (w64_word_instance.(word.add)
@@ -507,35 +450,29 @@ Proof.
       with  (fib (S (S (S n0)))).
     {
       iFrame.
-      replace ( w64_word_instance.(word.add) (W64 (S n0)) (W64 1)) with (W64 (S (S n0))).
+      replace ( w64_word_instance.(word.add) (W64 (S n0)) (W64 1)) with (W64 (S (S n0))) by word.
       {
-        iFrame. iPureIntro.
+        iFrame. iPureIntro. 
         split.
-        { rewrite length_app.  rewrite singleton_length.  rewrite H. lia.
-        }
+        { rewrite length_app.  rewrite singleton_length.  rewrite H. lia. }
         split.
         {
-          subst sent.
-          rewrite <- fib_list_succ.
-          done.
+          subst sent. rewrite <- fib_list_succ;done.
         }
-        { word. }
+        word.
       }
-      { word. }
     }
-    { rewrite !fib_succ. word. }
+    { rewrite !fib_succ;word. }
   }
   {
     wp_apply (wp_spsc_close with "[$Hspsc $Hprod]").
     { iFrame "#".   iPureIntro. rewrite Hsl.
       assert ((length sent) = sint.nat n).
       {
-        assert (length sent < 2^64). { lia. }
-        word.
+        assert (length sent < 2^64) by lia;word.
       }
-      destruct (length sent) eqn: H1.
-      { word. }
-      rewrite H. done.
+      destruct (length sent);first word.
+      set_solver.
     }
     iApply "HΦ". done.
   }
@@ -551,36 +488,22 @@ Lemma wp_fib_consumer:
 
   }}}.
 Proof.
-  wp_start. wp_auto.
-  wp_apply chan.wp_make2; first done.
+  wp_start. wp_auto. wp_apply chan.wp_make2; first done.
   iIntros (c γ) "(#Hchan & %Hcap_eq & Hown)".
   wp_auto.
-  simpl.
   iMod (start_spsc c (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
           (λ sent, ⌜sent = fib_list 10 ⌝%I)  γ
-         with "[Hchan] [Hown]") as (γspsc) "(#Hspsc & Hprod & Hcons)".
-  {
-    iFrame "#".
-  }
-  {
-    iFrame.
-  }
+         with "[$Hchan] [$Hown]") as (γspsc) "(#Hspsc & Hprod & Hcons)".
   wp_apply (chan.wp_cap with "[$Hchan]").
   wp_apply (wp_fork with "[Hprod]").
   {
-
-    wp_apply ((wp_fibonacci) with "[$Hprod]").
+    wp_apply ((wp_fibonacci) with "[$Hprod]");first word.
     {
-      word.
-    }
-    {
-      iFrame "#".
       replace (sint.nat (γ.(chan_cap))) with 10%nat by word.
       iFrame "#".
     }
     done.
   }
-  simpl.
   wp_apply wp_slice_literal as "% _".
   { iIntros. wp_auto. iFrame. }
   iAssert (∃ (i: nat) (i_v: w64) sl,
@@ -592,60 +515,30 @@ Proof.
           )%I
     with "[ i Hcons results]" as "IH".
   {
-    iExists 0%nat.
-    iFrame.
-    unfold fib_list. iFrame "#".
+    iExists 0%nat. iFrame.
+    unfold fib_list.
     iDestruct own_slice_empty as "$"; [done..|].
     iDestruct own_slice_cap_empty as "$"; done.
   }
 
-  wp_for "IH".
-   wp_apply (wp_spsc_receive with "[Hcons]").
-   { iFrame "#".  iFrame.   }
-   iIntros (v ok).
-   destruct ok.
+  wp_for "IH". wp_apply (wp_spsc_receive with "[$Hcons $Hspsc]").
+   iIntros (v ok). destruct ok.
    {
-     iIntros "[%Hfib Hcons]".
-
-
-      wp_auto.
-      iDestruct (slice.own_slice_len with "Hsl") as "[%Hl %Hcap]".
-      iDestruct (slice.own_slice_len with "Hsl") as "[%Hlen_slice %Hslgtz]".
-
-
-wp_apply wp_slice_literal. { iIntros. wp_auto. iFrame. } iIntros (sl0) "[Hsl0 _]".
-      iDestruct (slice.own_slice_len with "Hsl0") as "[%Hl0 %Hcap0]".
-      iDestruct (slice.own_slice_len with "Hsl0") as "[%Hlen_slice0 %Hslgtz0]".
-wp_auto.
-wp_apply (wp_slice_append with "[$Hsl $Hsl0 $oslc ]").
-
-     iIntros (sl') "Hsl'".
-     wp_auto.
-     wp_for_post.
-     iFrame.
-     iExists (S i).
-     iDestruct "Hsl'" as "(Hsl & Hcap3 & Hsl0)".
-     rewrite Hfib.
-     iFrame.
-iSplitL "Hcons".
-{
-  rewrite fib_list_length.
-  rewrite Nat2Z.id.
-  rewrite <- fib_list_succ.
-  iFrame.
-}
-{
-  rewrite fib_list_length.
-  rewrite Nat2Z.id.
-  rewrite <- fib_list_succ.
-  iFrame.
-}
-}
-iIntros "%Hfl". wp_auto. wp_for_post. iFrame.
-   iApply "HΦ".
-   destruct Hfl as [H1 H2].
-   rewrite H1.
-   iFrame "Hsl".
+    iIntros "[%Hfib Hcons]". wp_auto.
+    iDestruct (slice.own_slice_len with "Hsl") as "[%Hl %Hcap]".
+    iDestruct (slice.own_slice_len with "Hsl") as "[%Hlen_slice %Hslgtz]".
+    wp_apply wp_slice_literal. { iIntros. wp_auto. iFrame. }iIntros (sl0) "[Hsl0 _]".
+    iDestruct (slice.own_slice_len with "Hsl0") as "[%Hl0 %Hcap0]".
+    iDestruct (slice.own_slice_len with "Hsl0") as "[%Hlen_slice0 %Hslgtz0]".
+    wp_auto. wp_apply (wp_slice_append with "[$Hsl $Hsl0 $oslc ]").
+    iIntros (sl') "Hsl'". wp_auto. wp_for_post. iFrame.
+    iExists (S i). iDestruct "Hsl'" as "(Hsl & Hcap3 & Hsl0)".
+    rewrite Hfib.
+    rewrite fib_list_length. rewrite Nat2Z.id. do 2 rewrite <- fib_list_succ.
+    iFrame.
+   }
+  iIntros "%Hfl". wp_auto. wp_for_post. iApply "HΦ".
+  destruct Hfl as [H1 H2]; first rewrite H1. done.
 Qed.
 
 End fibonacci_examples.
@@ -672,14 +565,11 @@ Proof using dspG0 W.
     [by eauto|by eauto|..].
   iPersist "c signal".
   wp_apply (wp_fork with "[Hcsignal]").
-  { wp_auto.
-    wp_recv (l x) as "Hl".
-    wp_auto. rewrite -> decide_True; last done. wp_auto.
-    wp_send with "[$Hl]".
-    by wp_auto. }
-  wp_send with "[$val]".
-  wp_auto.
-  wp_recv as "Hl".
+  { wp_auto. wp_recv (l x) as "Hl". wp_auto. 
+    rewrite -> decide_True; last done. wp_auto.
+    wp_send with "[$Hl]". by wp_auto. 
+  }
+  wp_send with "[$val]". wp_auto. wp_recv as "Hl".
   wp_auto. by iApply "HΦ".
 Qed.
 
@@ -699,8 +589,6 @@ Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
                 end) ⌝
   ).
 
-
-(** Create the idiom from a channel in Idle state *)
 Lemma start_select_nb_only (ch : loc) (γ : chan_names) :
   is_chan ch γ unit -∗
   own_chan γ unit chanstate.Idle ={⊤}=∗
@@ -709,30 +597,22 @@ Proof.
   iIntros "#Hch Hoc".
   iMod (inv_alloc nroot with "[Hoc]") as "$".
   { iNext. iFrame. }
-  simpl.
-  by iFrame "#".
+  iFrame "#". done.
 Qed.
 
 (** Nonblocking send AU - vacuous since we ban all send preconditions *)
 Lemma select_nb_only_send_au γ ch (v : unit) :
   ∀ Φ Φnotready,
   is_select_nb_only γ ch -∗
-  ( False -∗  Φ) -∗
   Φnotready -∗
   nonblocking_send_au γ v Φ Φnotready.
 Proof.
-   intros Φ Φnotready.
-  iIntros "#Hnb _ Hnotready".
-  iNamed "Hnb".
-  iSplit.
-   - iInv "Hinv" as ">Hinv_open" "Hinv_close".
-     iNamed "Hinv_open".
-     destruct s; try done.
-     (* Only Idle case remains - all others give False from invariant *)
-     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
-     iNext.
-     iFrame.
-   - done.
+  iIntros (Φ Φnotready) "#Hnb Hnotready".
+  iNamed "Hnb". iSplit. all: try done.
+  iInv "Hinv" as ">Hinv_open" "Hinv_close". iNamed "Hinv_open".
+  destruct s; try done.
+  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iFrame.
 Qed.
 
 
@@ -740,22 +620,16 @@ Qed.
 Lemma select_nb_only_rcv_au γ ch :
    ∀ (Φ: unit → bool → iProp Σ) (Φnotready: iProp Σ),
   is_select_nb_only γ ch -∗
-  (∀ (v:unit), False -∗ Φ v true) -∗
   Φnotready -∗
   nonblocking_recv_au γ unit (λ (v:unit) (ok:bool), Φ v ok) Φnotready.
 Proof.
-  intros Φ Φnotready.
-  iIntros "#Hnb _ Hnotready".
+  iIntros (Φ Φnotready) "#Hnb Hnotready".
   iNamed "Hnb".
-  iSplit.
-  - iInv "Hinv" as ">Hinv_open" "Hinv_close".
-    iNamed "Hinv_open".
-    destruct s; try done.
-    (* Only Idle case remains - all others give False from invariant *)
-    iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
-    iNext.
-    iFrame.
-  - done.
+  iSplit. all: try done.
+  iInv "Hinv" as ">Hinv_open" "Hinv_close".
+  iNamed "Hinv_open". destruct s; try done.
+  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iFrame.
 Qed.
 
 
@@ -764,13 +638,11 @@ Lemma wp_select_nb_no_panic :
     @! chan_spec_raw_examples.select_nb_no_panic #()
   {{{ RET #(); True }}}.
 Proof.
-  wp_start. wp_auto_lc 2.
-  wp_apply chan.wp_make1.
-  iIntros (ch). iIntros (γ). iIntros "(#His_chan & _Hcap & Hownchan)".
-  iRename select (£1) into "Hlc1".
+  wp_start. wp_auto_lc 2. wp_apply chan.wp_make1.
+  iIntros (ch γ) "(#His_chan & _Hcap & Hownchan)".
+  do 2 (iRename select (£1) into "Hlc1").
   wp_auto_lc 2.
   iRename select (£1) into "Hlc2".
-  simpl.
   iPersist "ch".
   do 2 (iRename select (£1) into "Hlc4").
   iMod (start_select_nb_only ch with "[$His_chan] [$Hownchan]") as "#Hnb".
@@ -778,43 +650,27 @@ Proof.
   {
   wp_auto_lc 4.
   wp_apply chan.wp_select_nonblocking.
-    simpl.
-    iSplitL.
+  simpl. iSplitL.
   - (* Prove the receive case - will be vacuous *)
-    iSplitL.
-    +
-      repeat iExists _; iSplitR; first done.
-      (* extract is_chan *)
-      iPoseProof "Hnb" as "[$ _]".
-      (* Now use our select_nb_only_rcv_au lemma *)
-      iRename select (£1) into "Hlc1".
-      iApply (select_nb_only_rcv_au with " [$Hnb]").
-      {
-      iIntros (v).
-      iIntros "Hf".
-      done.
-      }
-      done.
-    + (* True case *)
-      done.
+    iSplitL. all: try done.
+    repeat iExists _; iSplitR; first done.
+    (* extract is_chan *)
+    iPoseProof "Hnb" as "[$ _]".
+    (* Now use our select_nb_only_rcv_au lemma *)
+    iRename select (£1) into "Hlc1".
+    iApply (select_nb_only_rcv_au with " [$Hnb]");first done.
   - (* Prove the default case *)
     wp_auto.
     done.
   }
   {
-
-  wp_apply chan.wp_select_nonblocking.
-    simpl.
-    iSplitL "Hlc1 Hlc4".
+  wp_apply chan.wp_select_nonblocking. simpl.
+  iFrame.
+  iSplitL "Hlc1 Hlc4".
   - (* Prove the receive case - will be vacuous *)
     iSplitL; last done.
     repeat iExists _; iSplitR; first done. iFrame "#". iClear "His_chan".
-    iApply (select_nb_only_send_au with "[$Hnb] []").
-    {
-      iIntros "Hf".
-      done.
-    }
-    iFrame.
+    iApply (select_nb_only_send_au with "[$Hnb] []"); first done.
   - (* Prove the default case *)
     wp_auto.
     iApply "HΦ".
@@ -1067,7 +923,6 @@ Instance service_prot_unfold Φpre Φpost :
     (service_prot_aux Φpre Φpost (service_prot Φpre Φpost)).
 Proof. apply proto_unfold_eq, (fixpoint_unfold _). Qed.
 
-(* Serve - creates stream, spawns server, returns client endpoint *)
 Lemma wp_Serve (f: func.t) Φpre Φpost  :
   {{{ is_pkg_init chan_spec_raw_examples ∗
       "#Hf_spec" ∷ □ (∀ (strng: go_string),
@@ -1077,18 +932,10 @@ Lemma wp_Serve (f: func.t) Φpre Φpost  :
       (stream.(chan_spec_raw_examples.stream.req'),
           stream.(chan_spec_raw_examples.stream.res'))  ↣{γ} service_prot Φpre Φpost }}}.
 Proof.
-  wp_start.
-  iNamed "Hpre".
-  wp_auto.
-
-  wp_apply chan.wp_make1.
-  iIntros (res_ch γ_res) "(#Hres & _ & Hown_res)".
-  wp_auto_lc 1.
-
-  (* Make req channel *)
-  wp_apply chan.wp_make1.
-  iIntros (req_ch γ_req) "(#Hreq & _ & Hown_req)".
-
+  wp_start. iNamed "Hpre".
+  wp_auto. wp_apply chan.wp_make1.
+  iIntros (res_ch γ_res) "(#Hres & _ & Hown_res)". wp_auto_lc 1.
+  wp_apply chan.wp_make1. iIntros (req_ch γ_req) "(#Hreq & _ & Hown_req)".
 
 
   (* Initialize idiom *)
@@ -1376,23 +1223,11 @@ Proof using contributionG0 dspG0 W.
   iIntros (γ2 stream2) "[Hstream2 Hc2]".
   wp_auto.
   wp_apply (@wp_mpmc_send with "[$Hmpmc $Hprod $Hstream1]").
-  iIntros "Hprod".
-  wp_auto.
+  iIntros "Hprod". wp_auto.
   wp_apply (@wp_mpmc_send with "[$Hmpmc $Hprod $Hstream2]").
-  iIntros "Hprod".
-  wp_auto.
-  (* TODO: Proofmode unification fails to find the correct channel *)
-  iRevert "Hc2 Hc1". iIntros "Hc2 Hc1".
-  wp_send with "[//]".
-  wp_auto.
-  iRevert "Hc1 Hc2". iIntros "Hc2 Hc1".
-  wp_send with "[//]".
-  wp_auto.
-  iRevert "Hc1 Hc2". iIntros "Hc2 Hc1".
+  iIntros "Hprod". wp_auto. wp_send with "[//]".
+  wp_auto. wp_send with "[//]". wp_auto. wp_recv (?) as "->". wp_auto.
   wp_recv (?) as "->". wp_auto.
-  iRevert "Hc1 Hc2". iIntros "Hc1 Hc2".
-  wp_recv (?) as "->".
-  wp_auto.
   by iApply "HΦ".
 Qed.
 
@@ -1431,8 +1266,7 @@ Lemma wp_exchangePointer :
     @! chan_spec_raw_examples.exchangePointer #()
   {{{ RET #(); True }}}.
 Proof.
-  wp_start. wp_auto.
-  wp_apply chan.wp_make1.
+  wp_start. wp_auto. wp_apply chan.wp_make1.
   iIntros (ch γ) "(#His_ch & % & Hch)". wp_auto. simpl.
   iMod (start_handshake _ (λ _, x_ptr ↦ W64 1)%I (y_ptr ↦ W64 2)%I with "[$] [$]") as "#H".
   iPersist "ch".
@@ -1451,70 +1285,41 @@ Lemma wp_BroadcastExample :
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
-
   wp_apply (chan.wp_make1). 
   iIntros (done_ch γdone) "(#Hdone_is_chan & _ & Hdone_own)". wp_auto. simpl.
   wp_apply (chan.wp_make1).
   iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
-  
   wp_apply (chan.wp_make1).
   iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
-  
   iMod (start_handoff result1_ch γr1 (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own") 
     as (γh1) "[%Heq1 #Hhandoff1]".
   iMod (start_handoff result2_ch γr2 (λ v, ⌜v = W64 10⌝)%I with "Hr2_is_chan Hr2_own")
     as (γh2) "[%Heq2 #Hhandoff2]".
-  
   iMod (start_done_with_broadcast_notified (V:=unit) (t:=go.StructType []) done_ch γdone (sharedValue_ptr ↦□ W64 2)%I with "Hdone_is_chan Hdone_own")
     as (γbc) "(#Hbc & HBcastNotif & #HBc)".
-
   iPersist "done result1 result2".
-  
   wp_apply (wp_fork with "[result1 result2 done]").
   {
-    rename done_ch into done_ch_1.
-    wp_auto_lc 1.
-    wp_apply ((wp_done_receive_broadcast (V:=unit) (t:=go.StructType []) γbc done_ch_1 ((sharedValue_ptr ↦□ W64 2)%I))  with "[$Hbc]").
-    {
-      iFrame "#".
-    }
-
-    iIntros "HShared".
-    wp_auto.
-    wp_apply (wp_handoff_send with "[$Hhandoff1]").
-    { iPureIntro. word. }
-    done.
+    rename done_ch into done_ch_1. wp_auto_lc 1.
+    wp_apply ((wp_done_receive_broadcast (V:=unit) (t:=go.StructType []) γbc done_ch_1 ((sharedValue_ptr ↦□ W64 2)%I))  with "[$Hbc $HBc]").
+    iIntros "HShared". wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff1]"); word.
   }
-
    wp_apply (wp_fork with "[result1 result2 done]").
   {
     rename done_ch into done_ch_1.
     wp_auto_lc 1.
     wp_apply ((wp_done_receive_broadcast (V:=unit) (t:=go.StructType []) γbc done_ch_1  ((sharedValue_ptr ↦□ W64 2)%I))
-    with "[$Hbc]").
-    {
-      iFrame "#".
-    }
-
-    iIntros "HShared".
-    wp_auto.
-    wp_apply (wp_handoff_send with "[$Hhandoff2]").
-    { iPureIntro. word. }
-    done.
+    with "[$Hbc $HBc]").
+    iIntros "HShared". wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff2]");word.
   }
   iPersist "sharedValue".
-
-  wp_apply ((wp_done_close (V:=unit) (t:=go.StructType []) γbc done_ch ( ((sharedValue_ptr ↦□ W64 2)%I))) with "[Hbc HBcastNotif]").
-  {
-    iFrame "#". iFrame.
-  }
+  wp_apply ((wp_done_close (V:=unit) (t:=go.StructType []) γbc done_ch ( ((sharedValue_ptr ↦□ W64 2)%I))) with "[$Hbc $HBcastNotif $sharedValue]").
   wp_apply (wp_handoff_receive with "Hhandoff1").
-  iIntros (v1) "%Hv1". subst v1.
-  wp_auto.
-  wp_apply (wp_handoff_receive with "Hhandoff2").
-  iIntros (v2) "%Hv2". subst v2.
-  wp_auto.
-  iApply "HΦ". done.
+  iIntros (v1) "%Hv1". subst v1. wp_auto.
+  wp_apply (wp_handoff_receive with "Hhandoff2"). iIntros (v2) "%Hv2".
+  subst v2. wp_auto. by iApply "HΦ".
 Qed.
 
 End broadcast_example_proof.
@@ -1523,7 +1328,7 @@ Section google_example.
 
 Context `{!chan_idiomG Σ go_string}.
 Context `{!ghost_map.ghost_mapG Σ gname (go_string → iProp Σ)}.
-  #[local] Existing Instance H.
+#[local] Existing Instance H.
 Context `{!inG Σ unitR}.
 
 Lemma wp_Web (q : go_string) :
@@ -1544,10 +1349,8 @@ Lemma wp_Video (q : go_string) :
   {{{ RET #(q ++ ".mp4"%go); True }}}.
 Proof. wp_start. wp_auto. iApply "HΦ". done. Qed.
 
-
 Definition google_expected (q: go_string) : list go_string :=
   [ q ++ ".html"%go; q ++ ".png"%go; q ++ ".mp4"%go ].
-
 
 Inductive kind := KWeb | KImg | KVid.
 
@@ -1570,133 +1373,70 @@ Definition contract_of (q:go_string) (k:kind) : go_string → iProp Σ :=
 Lemma pure_contract_of_inj (q:go_string) (k1 k2:kind) :
   pure_contract_of q k1 = pure_contract_of q k2 → k1 = k2.
 Proof.
-  
-  intro Heq.
-  destruct k1, k2; try done.
+  intro Heq. destruct k1, k2; try done.
   all: exfalso.
-  all: 
-    set v := value_of q KWeb.
+  all:  set v := value_of q KWeb.
     {
-    have Heqv : pure_contract_of q KWeb v = pure_contract_of q KImg v by (exact (f_equal (fun f => f v) Heq)).
-    rewrite /pure_contract_of in Heqv.
-     subst v.
-  unfold value_of in Heqv.
-
-  symmetry in Heqv.
-  assert (q ++ ".html"%go ≠ q ++ ".png"%go).
-  {
-   destruct q.
-   {
-    set_solver.
-   }
-   set_solver. 
-  }
-  {
-    assert ((q ++ ".html"%go = q ++ ".html"%go)).
+      have Heqv : pure_contract_of q KWeb v = pure_contract_of q KImg v by (exact (f_equal (fun f => f v) Heq)).
+      rewrite /pure_contract_of in Heqv.
+      subst v. unfold value_of in Heqv. symmetry in Heqv.
+      assert (q ++ ".html"%go ≠ q ++ ".png"%go) by set_solver.
+      assert ((q ++ ".html"%go = q ++ ".html"%go)) by done.
+      assert (q ++ ".html"%go = q ++ ".png"%go).
+      { rewrite Heqv. reflexivity. }
+      congruence.
+    }
     {
-      done.
-    }
-  assert (q ++ ".html"%go = q ++ ".png"%go).
-  { rewrite Heqv. reflexivity. }
-  congruence.
-  }
-    }
-      {
-    have Heqv : pure_contract_of q KWeb v = pure_contract_of q KVid v by (exact (f_equal (fun f => f v) Heq)).
-    rewrite /pure_contract_of in Heqv.
-     subst v.
-  unfold value_of in Heqv.
-
-  symmetry in Heqv.
-  assert (q ++ ".html"%go ≠ q ++ ".mp4"%go).
-  {
-   destruct q.
-   {
-    set_solver.
-   }
-   set_solver. 
-  }
-  {
-    assert ((q ++ ".html"%go = q ++ ".html"%go)).
-    {
-      done.
-    }
-  assert (q ++ ".html"%go = q ++ ".mp4"%go).
-  { rewrite Heqv. reflexivity. }
-  congruence.
-  }
+    have Heqv : pure_contract_of q KWeb v = pure_contract_of q KVid v by (exact (f_equal (fun f => f v) Heq)). rewrite /pure_contract_of in Heqv. subst v.
+    unfold value_of in Heqv. symmetry in Heqv.
+    assert (q ++ ".html"%go ≠ q ++ ".mp4"%go) by set_solver.
+    assert ((q ++ ".html"%go = q ++ ".html"%go)) by done.
+    assert (q ++ ".html"%go = q ++ ".mp4"%go).
+    { rewrite Heqv. reflexivity. }
+    congruence.
     }
     {
     have Heqv : pure_contract_of q KImg v = pure_contract_of q KWeb v by (exact (f_equal (fun f => f v) Heq)).
-    rewrite /pure_contract_of in Heqv.
-     subst v.
-  unfold value_of in Heqv.
-
-  symmetry in Heqv.
-  assert (q ++ ".html"%go ≠ q ++ ".png"%go).
-  {
-   destruct q.
-   {
-    set_solver.
-   }
-   set_solver. 
+    rewrite /pure_contract_of in Heqv. subst v. unfold value_of in Heqv.
+    symmetry in Heqv.
+    assert (q ++ ".html"%go ≠ q ++ ".png"%go) by set_solver.
+    assert ((q ++ ".html"%go = q ++ ".html"%go)) by done.
+    assert (q ++ ".html"%go = q ++ ".png"%go).
+    { 
+      rewrite Heqv in H1. done.
+    }
+    congruence.
   }
   {
-    assert ((q ++ ".html"%go = q ++ ".html"%go)).
-    {
-      done.
+    unfold pure_contract_of in Heq.
+    assert (value_of q KImg = value_of q KVid) as Hbad.
+    { apply (f_equal (fun f => f (value_of q KImg))) in Heq.
+      unfold value_of in Heq. simpl in Heq.
+      symmetry in Heq.
+      assert (q ++ ".png"%go = q ++ ".mp4"%go).
+      { rewrite Heq. reflexivity. }
+      assumption.
     }
-  assert (q ++ ".html"%go = q ++ ".png"%go).
-  { 
-    rewrite Heqv in H1.
-  done.
+    unfold value_of in Hbad. simpl in Hbad.
+    assert (q ++ ".png"%go ≠ q ++ ".mp4"%go) by set_solver.
+    congruence.
   }
-  congruence.
-  }
-
-    }
-
-       {
+  {
   unfold pure_contract_of in Heq.
-  assert (value_of q KImg = value_of q KVid) as Hbad.
-  { apply (f_equal (fun f => f (value_of q KImg))) in Heq.
-    unfold value_of in Heq. simpl in Heq.
-    symmetry in Heq.
-    assert (q ++ ".png"%go = q ++ ".mp4"%go).
-    { rewrite Heq. reflexivity. }
-    assumption.
-  }
-  
-  unfold value_of in Hbad. simpl in Hbad.
-  
-  assert (q ++ ".png"%go ≠ q ++ ".mp4"%go).
-  { intros Heq_bad.
-    set_solver.
-  }
-  congruence.
-       }
-         {
-  unfold pure_contract_of in Heq.
-  
   assert (value_of q KVid = value_of q KWeb) as Hbad.
-  { apply (f_equal (fun f => f (value_of q KVid))) in Heq.
-    unfold value_of in Heq. simpl in Heq.
-    symmetry in Heq.
-    assert (q ++ ".mp4"%go = q ++ ".html"%go).
-    { rewrite Heq. reflexivity. }
-    assumption.
-  }
-  
+    { apply (f_equal (fun f => f (value_of q KVid))) in Heq.
+      unfold value_of in Heq. simpl in Heq.
+      symmetry in Heq.
+      assert (q ++ ".mp4"%go = q ++ ".html"%go).
+      { rewrite Heq. reflexivity. }
+      assumption.
+    }
   unfold value_of in Hbad. simpl in Hbad.
-  assert (q ++ ".mp4"%go ≠ q ++ ".html"%go).
-  { intros Heq_bad.
-    set_solver.
-  }
+  assert (q ++ ".mp4"%go ≠ q ++ ".html"%go) by set_solver.
   congruence.
-       }
-        {
+  }
+  {
   unfold pure_contract_of in Heq.
-  
   assert (value_of q KVid = value_of q KImg) as Hbad.
   { apply (f_equal (fun f => f (value_of q KVid))) in Heq.
     unfold value_of in Heq. simpl in Heq.
@@ -1705,14 +1445,10 @@ Proof.
     { rewrite Heq. reflexivity. }
     assumption.
   }
-  
   unfold value_of in Hbad. simpl in Hbad.
-  assert (q ++ ".mp4"%go ≠ q ++ ".png"%go).
-  { intros Heq_bad.
-    set_solver.
-  }
+  assert (q ++ ".mp4"%go ≠ q ++ ".png"%go) by set_solver.
   congruence.
-       }
+  }
 Qed.
 
 Definition pendingk : list kind := [KWeb; KImg; KVid].
@@ -1747,13 +1483,10 @@ Lemma wp_Google (q : go_string) :
   {{{ (sl : slice.t), RET #sl;
       ∃ xs, sl ↦* xs ∗ ⌜xs ≡ₚ google_expected q⌝ }}}.
 Proof using All.
-  wp_start.
-  wp_auto.
-
+  wp_start. wp_auto.
   wp_apply (chan.wp_make2 (W64 3)); first done.
   iIntros (c γch) "(#Hchan & %Hcap3 & Hown)".
   simpl in *.
-
   iMod (start_future
           (V:=go_string)
           (t:=go.string)
@@ -1761,31 +1494,23 @@ Proof using All.
           c γch (chanstate.Buffered [])
         with "[$Hchan] [$Hown]") as (γmf) "(#Hmf & HAwait)".
   { right. done. }
-
   wp_auto.
-
   iMod (future_alloc_promise (t:=go.string) γmf c (contract_of q KWeb) []
         with "[$Hmf] [$HAwait]") as "(Hprom_web & HAwait)".
   iMod (future_alloc_promise (t:=go.string) γmf c (contract_of q KImg) _
         with "[$Hmf] [$HAwait]") as "(Hprom_img & HAwait)".
   iMod (future_alloc_promise (t:=go.string) γmf c (contract_of q KVid) _
         with "[$Hmf] [$HAwait]") as "(Hprom_vid & HAwait)".
-
-  simpl.
   iPersist "c query".
-
   wp_apply (wp_fork with "[Hprom_web]").
   {
-    wp_auto.
-    wp_apply (wp_Web q).
+    wp_auto. wp_apply (wp_Web q).
     wp_apply (wp_future_fulfill
                 (V:=go_string)
                 (t:=go.string)
                 (ghost_mapG0:=H)
                 γmf c (value_of q KWeb)
-              with "[$Hmf $Hprom_web]").
-    { iPureIntro. reflexivity. }
-    done.
+              with "[$Hmf $Hprom_web]");done.
   }
 
   wp_apply (wp_fork with "[Hprom_img]").
@@ -1797,9 +1522,7 @@ Proof using All.
                 (t:=go.string)
                 (ghost_mapG0:=H)
                 γmf c (value_of q KImg)
-              with "[$Hmf $Hprom_img]").
-    { iPureIntro. reflexivity. }
-    done.
+              with "[$Hmf $Hprom_img]");done.
   }
 
   wp_apply (wp_fork with "[Hprom_vid]").
@@ -1811,14 +1534,10 @@ Proof using All.
                 (t:=go.string)
                 (ghost_mapG0:=H)
                 γmf c (value_of q KVid)
-              with "[$Hmf $Hprom_vid]").
-    { iPureIntro. reflexivity. }
-    done.
+              with "[$Hmf $Hprom_vid]");done.
   }
 
-  wp_apply (wp_slice_make3 (V:=go_string) (t:=go.string)).
-  { word. }
-
+  wp_apply (wp_slice_make3 (V:=go_string) (t:=go.string));first word.
   iIntros (sl) "[Hsl [Hcap_sl %Hcap]]".
   wp_auto.
 
@@ -1836,65 +1555,44 @@ Proof using All.
       "%Hsplit"      ∷ ⌜pendingk ≡ₚ donek ++ remk⌝ ∗
       "%Hperm"       ∷ ⌜xs ≡ₚ map (value_of q) donek⌝
     )%I
-    with "[i results Hsl Hcap_sl HAwait]" as "IH".
+    with "[i $results $Hsl $Hcap_sl HAwait]" as "IH".
   {
-    iFrame.
-    iExists 0.
-    iExists ([] : list kind).
+    iExists 0, ([] : list kind).
     iFrame.
     iExists ([KWeb; KImg; KVid]).
     iSplitL "HAwait".
     { iNamedAccu. }
-    iFrame.
     repeat (iSplit; [iPureIntro; try reflexivity; try lia;
                      auto using pendingk_nodup|]).
     iPureIntro. simpl. reflexivity.
   }
-
   wp_for "IH".
   wp_if_destruct.
-
   - wp_apply (wp_future_await
                 (V:=go_string)
                 (t:=go.string)
                 (ghost_mapG0:=H)
                 γmf c (map (contract_of q) remk)
-              with "[$Hmf HAwait]").
-    { iNamedAccu. }
-
+              with "[$Hmf $HAwait]").
     iIntros (v P pre post) "(%HsplitP & HPv & HAwait')".
-
     have HPmem : P ∈ map (contract_of q) remk
       by (rewrite HsplitP; set_solver).
     destruct (mem_map_contract_of q remk P HPmem)
       as (k & Hkin & ->).
     iDestruct (contract_of_sound q k v with "HPv") as %->.
-
     wp_auto.
-
     wp_apply wp_slice_literal as "% Hsl1".
     { iIntros. wp_auto. iFrame. }
-
     wp_apply (wp_slice_append with "[$Hsl $Hcap $Hsl1]").
     iIntros (sl') "[Hsl' Hcap']".
-    wp_auto.
-
-    set j := length pre.
-    set remk' := delete j remk.
-
+    wp_auto. set j := length pre. set remk' := delete j remk.
     have Hj_lt_map : j < length (map (contract_of q) remk).
     {
-      subst j.
-      rewrite HsplitP.
-      rewrite app_length /=.
+      subst j. rewrite HsplitP. rewrite app_length /=.
       lia.
     }
 
-    have Hj_lt : j < length remk.
-    {
-      rewrite length_map in Hj_lt_map.
-      done.
-    }
+    have Hj_lt : j < length remk by rewrite length_map in Hj_lt_map.
 
     have Hlook_map :
       (map (contract_of q) remk) !! j = Some (contract_of q k).
@@ -1909,10 +1607,7 @@ Proof using All.
     apply (list_lookup_fmap_Some
              (contract_of q) remk j (contract_of q k))
       in Hlook_map as (k0 & Hk0 & Hk0eq).
-
     apply (f_equal (fun f => f (value_of q k0))) in Hk0.
-    simpl in Hk0.
-
     iAssert (⌜value_of q k0 = value_of q k⌝)%I as "%Hbad".
     {
       unfold contract_of, pure_contract_of in Hk0.
@@ -1924,8 +1619,7 @@ Proof using All.
       apply (pure_contract_of_inj q).
       unfold contract_of, pure_contract_of in Hk0.
       unfold contract_of, pure_contract_of.
-      rewrite Hbad.
-      done.
+      by rewrite Hbad.
     }
 
     have Hlook_remk : remk !! j = Some k
@@ -1947,25 +1641,21 @@ Proof using All.
     {
       subst remk' j.
       rewrite -!list_fmap_map list_fmap_delete list_fmap_map.
-      rewrite HsplitP delete_middle.
-      done.
+      by rewrite HsplitP delete_middle.
     }
 
     set donek' := donek ++ [k].
-
     have Hsplit' :
       pendingk ≡ₚ donek' ++ remk'.
     {
-      unfold donek', remk'.
-      subst j.
+      unfold donek', remk'. subst j.
       eapply Permutation_trans; [exact Hsplit|].
       rewrite (delete_take_drop remk) -Hdecomp.
       repeat rewrite -app_assoc.
-      simpl.
       apply Permutation_app_head.
+      simpl.
       rewrite Permutation_middle Hdecomp.
-      rewrite Hdecomp.
-      done.
+      by rewrite Hdecomp.
     }
 
     have Hperm' :
@@ -1998,7 +1688,7 @@ Proof using All.
         with (w64_word_instance.(word.add)
                 (W64 (length xs)) (W64 1))
         by word.
-      done.
+        done.
     }
 
     iDestruct "Hcap'" as "[Hcap Hsl]".
@@ -2013,15 +1703,12 @@ Proof using All.
              try (rewrite length_app singleton_length; lia)|]).
     iPureIntro. lia.
 
-  - iApply "HΦ".
-    iExists xs.
-    iFrame "Hsl".
-    iPureIntro.
+  - iApply "HΦ". iExists xs.
+    iFrame "Hsl". iPureIntro.
 
     have Hlenxs : length xs = 3.
     {
-      have : ¬ length xs < 3 by (intro; apply n; word).
-      lia.
+      have : ¬ length xs < 3 by (intro; apply n; word);lia. lia.
     }
 
     have Hremk_nil : remk = [].
@@ -2045,15 +1732,13 @@ Proof using All.
       Permutation_map (value_of q) Hdone.
 
     have Hexp :
-      map (value_of q) pendingk = google_expected q.
-    { reflexivity. }
+      map (value_of q) pendingk = google_expected q by reflexivity.
 
     etransitivity; [exact Hperm|].
     eapply Permutation_trans.
     { exact (Permutation_sym Hmap). }
     rewrite Hexp.
     apply Permutation_refl.
-
     Unshelve.
     all: try (typeclasses eauto).
 Qed.
