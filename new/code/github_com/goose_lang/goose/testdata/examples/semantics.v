@@ -411,6 +411,8 @@ Definition testSliceLiteral {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_
 
 Definition testSliceAppend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceAppend"%go.
 
+Definition testSliceRef {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceRef"%go.
+
 Definition testFooBarMutation {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testFooBarMutation"%go.
 
 Definition NewS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.NewS"%go.
@@ -2402,7 +2404,7 @@ Definition testSliceOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     Slice (go.SliceType go.uint64) ("$s", #(W64 0), #(W64 3))) in
     do:  ("v3" <-[go.SliceType go.uint64] "$r0");;;
     let: "v4" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
-    let: "$r0" := (IndexRef go.uint64 (![go.SliceType go.uint64] "x", #(W64 2))) in
+    let: "$r0" := (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "x", #(W64 2))) in
     do:  ("v4" <-[go.PointerType go.uint64] "$r0");;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -2562,6 +2564,19 @@ Definition testSliceAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$r0" := ((![go.bool] "ok") && ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "bytes", #(W64 2)))) =⟨go.byte⟩ #(W8 3))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
+
+(* go: slices.go:100:6 *)
+Definition testSliceRefⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "sl" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 5)) in
+    do:  ("sl" <-[go.SliceType go.uint64] "$r0");;;
+    let: "ptr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
+    let: "$r0" := (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "sl", #(W64 0))) in
+    do:  ("ptr" <-[go.PointerType go.uint64] "$r0");;;
+    let: "$r0" := #(W64 1) in
+    do:  ((![go.PointerType go.uint64] "ptr") <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "sl", #(W64 0)))) =⟨go.uint64⟩ #(W64 1))).
 
 (* go: struct_pointers.go:14:17 *)
 Definition Bar__mutateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -4486,6 +4501,7 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] testOverwriteArray_unfold :: FuncUnfold testOverwriteArray [] (testOverwriteArrayⁱᵐᵖˡ);
   #[global] testSliceLiteral_unfold :: FuncUnfold testSliceLiteral [] (testSliceLiteralⁱᵐᵖˡ);
   #[global] testSliceAppend_unfold :: FuncUnfold testSliceAppend [] (testSliceAppendⁱᵐᵖˡ);
+  #[global] testSliceRef_unfold :: FuncUnfold testSliceRef [] (testSliceRefⁱᵐᵖˡ);
   #[global] testFooBarMutation_unfold :: FuncUnfold testFooBarMutation [] (testFooBarMutationⁱᵐᵖˡ);
   #[global] NewS_unfold :: FuncUnfold NewS [] (NewSⁱᵐᵖˡ);
   #[global] testStructUpdates_unfold :: FuncUnfold testStructUpdates [] (testStructUpdatesⁱᵐᵖˡ);

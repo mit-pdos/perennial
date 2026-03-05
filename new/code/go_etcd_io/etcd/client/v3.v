@@ -1175,7 +1175,7 @@ Definition Op__toTxnRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range Cmp "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
-      let: "$r0" := (Convert (go.PointerType Cmp) (go.PointerType etcdserverpb.Compare) (IndexRef Cmp (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op"), ![go.int] "i"))) in
+      let: "$r0" := (Convert (go.PointerType Cmp) (go.PointerType etcdserverpb.Compare) (IndexRef (go.SliceType Cmp) (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op"), ![go.int] "i"))) in
       do:  ((IndexRef (go.SliceType (go.PointerType etcdserverpb.Compare)) (![go.SliceType (go.PointerType etcdserverpb.Compare)] "cmps", ![go.int] "i")) <-[go.PointerType etcdserverpb.Compare] "$r0")));;;
     return: (GoAlloc etcdserverpb.TxnRequest (let: "$v0" := (![go.SliceType (go.PointerType etcdserverpb.Compare)] "cmps") in
      let: "$v1" := (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "thenOps") in
