@@ -2401,6 +2401,7 @@ Module Cluster.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Cluster.
 
@@ -2495,6 +2496,7 @@ Module Cmp.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := etcdserverpb.Compare.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Cmp.
 
@@ -2589,6 +2591,7 @@ Module PutResponse.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := etcdserverpb.PutResponse.t.
+#[global] Arguments t : clear implicits.
 End def.
 End PutResponse.
 
@@ -2603,6 +2606,7 @@ Module GetResponse.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := etcdserverpb.RangeResponse.t.
+#[global] Arguments t : clear implicits.
 End def.
 End GetResponse.
 
@@ -2617,6 +2621,7 @@ Module DeleteResponse.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := etcdserverpb.DeleteRangeResponse.t.
+#[global] Arguments t : clear implicits.
 End def.
 End DeleteResponse.
 
@@ -2631,6 +2636,7 @@ Module TxnResponse.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := etcdserverpb.TxnResponse.t.
+#[global] Arguments t : clear implicits.
 End def.
 End TxnResponse.
 
@@ -2645,6 +2651,7 @@ Module KV.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End KV.
 
@@ -2670,7 +2677,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End OpResponse.
 
 Definition OpResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2735,6 +2741,7 @@ Module LeaseID.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End LeaseID.
 
@@ -2760,7 +2767,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End LeaseGrantResponse.
 
 Definition LeaseGrantResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2873,6 +2879,7 @@ Module Lease.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Lease.
 
@@ -3127,6 +3134,7 @@ Module opType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End opType.
 
@@ -3176,7 +3184,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Op.
 
 Definition Op'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -3331,6 +3338,7 @@ Module OpOption.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := func.t.
+#[global] Arguments t : clear implicits.
 End def.
 End OpOption.
 
@@ -3354,7 +3362,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End LeaseOp.
 
 Definition LeaseOp'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -3381,6 +3388,7 @@ Module LeaseOption.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := func.t.
+#[global] Arguments t : clear implicits.
 End def.
 End LeaseOption.
 
@@ -3555,6 +3563,7 @@ Module SortTarget.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End SortTarget.
 
@@ -3569,6 +3578,7 @@ Module SortOrder.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End SortOrder.
 
@@ -3592,7 +3602,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End SortOption.
 
 Definition SortOption'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -3619,6 +3628,7 @@ Module Txn.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Txn.
 
@@ -3649,6 +3659,7 @@ Module Event.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := mvccpb.Event.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Event.
 
@@ -3663,6 +3674,7 @@ Module WatchChan.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := chan.t.
+#[global] Arguments t : clear implicits.
 End def.
 End WatchChan.
 
@@ -3677,6 +3689,7 @@ Module Watcher.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Watcher.
 
@@ -3705,7 +3718,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End WatchResponse.
 
 Definition WatchResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [

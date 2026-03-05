@@ -352,6 +352,7 @@ Module sortedHint.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End sortedHint.
 
@@ -366,6 +367,7 @@ Module xorshift.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End xorshift.
 

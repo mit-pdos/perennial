@@ -509,6 +509,7 @@ Module MajorityConfig.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := map.t.
+#[global] Arguments t : clear implicits.
 End def.
 End MajorityConfig.
 
@@ -535,6 +536,7 @@ Module JointConfig.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := (array.t quorum.MajorityConfig.t 2).
+#[global] Arguments t : clear implicits.
 End def.
 End JointConfig.
 
@@ -559,6 +561,7 @@ Module Index'.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End Index'.
 
@@ -575,6 +578,7 @@ Module AckedIndexer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End AckedIndexer.
 
@@ -589,6 +593,7 @@ Module mapAckIndexer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := map.t.
+#[global] Arguments t : clear implicits.
 End def.
 End mapAckIndexer.
 
@@ -605,6 +610,7 @@ Module VoteResult.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w8.
+#[global] Arguments t : clear implicits.
 End def.
 End VoteResult.
 
