@@ -119,6 +119,15 @@ Definition is_stale_term γ term : iProp Σ :=
    different staleness quorum for a later term. Maybe staleness quorum is per
    (term, req_ctx) pair. *)
 
+(* When "starting" a new (read_ctx, term), if it's been started before, then
+   the old index is smaller than the current one, so this one can
+   piggyback on the old one. *)
+
+(* TODO: set this up to confirm backwards compatibility (i.e. if some raft
+   servers run the new code and some run the old code, system is still safe;
+   only the leader needs to run the new code in order for the system to tolerate
+   duplicate ReadIndex requests). *)
+
 Definition Ncommit := N.@"commit".
 Definition is_raft_commit_inv γ : iProp Σ :=
   inv Ncommit (∃ term log reads_index,
