@@ -641,7 +641,7 @@ Definition raftLog__findConflictⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
       (let: "id" := (GoAlloc entryID (GoZeroVal entryID #())) in
-      let: "$r0" := (let: "$a0" := (IndexRef raftpb.Entry (![go.SliceType raftpb.Entry] "ents", ![go.int] "i")) in
+      let: "$r0" := (let: "$a0" := (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", ![go.int] "i")) in
       (FuncResolve pbEntryID [] #()) "$a0") in
       do:  ("id" <-[entryID] "$r0");;;
       (if: (⟨go.bool⟩! (let: "$a0" := (![entryID] "id") in
@@ -4179,7 +4179,7 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
           slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
             do:  ("i" <-[go.int] "$key");;;
             let: "e" := (GoAlloc (go.PointerType raftpb.Entry) (GoZeroVal (go.PointerType raftpb.Entry) #())) in
-            let: "$r0" := (IndexRef raftpb.Entry (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), ![go.int] "i")) in
+            let: "$r0" := (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), ![go.int] "i")) in
             do:  ("e" <-[go.PointerType raftpb.Entry] "$r0");;;
             let: "cc" := (GoAlloc raftpb.ConfChangeI (GoZeroVal raftpb.ConfChangeI #())) in
             (if: Convert go.untyped_bool go.bool ((![raftpb.EntryType] (StructFieldRef raftpb.Entry "Type"%go (![go.PointerType raftpb.Entry] "e"))) =⟨raftpb.EntryType⟩ raftpb.EntryConfChange)
@@ -6910,7 +6910,7 @@ Definition logSlice__lastEntryIDⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     do:  ("ln" <-[go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "ln") ≠⟨go.int⟩ #(W64 0))
     then
-      return: (let: "$a0" := (IndexRef raftpb.Entry (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s"), (![go.int] "ln") -⟨go.int⟩ #(W64 1))) in
+      return: (let: "$a0" := (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s"), (![go.int] "ln") -⟨go.int⟩ #(W64 1))) in
        (FuncResolve pbEntryID [] #()) "$a0")
     else do:  #()));;;
     return: (![entryID] (StructFieldRef logSlice "prev"%go "s"))).
@@ -6930,7 +6930,7 @@ Definition logSlice__validⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
       let: "id" := (GoAlloc entryID (GoZeroVal entryID #())) in
-      let: "$r0" := (let: "$a0" := (IndexRef raftpb.Entry (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s"), ![go.int] "i")) in
+      let: "$r0" := (let: "$a0" := (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s"), ![go.int] "i")) in
       (FuncResolve pbEntryID [] #()) "$a0") in
       do:  ("id" <-[entryID] "$r0");;;
       (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef entryID "term"%go "id")) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef entryID "term"%go "prev"))) || ((![go.uint64] (StructFieldRef entryID "index"%go "id")) ≠⟨go.uint64⟩ ((![go.uint64] (StructFieldRef entryID "index"%go "prev")) +⟨go.uint64⟩ #(W64 1))))

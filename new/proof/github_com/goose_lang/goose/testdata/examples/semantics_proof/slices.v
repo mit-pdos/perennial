@@ -10,7 +10,7 @@ Lemma wp_testSliceRef :
   test_fun_ok semantics.testSliceRef.
 Proof.
   semantics_auto.
-  (* TODO: translation bug for reference into slice *)
+  (* TODO: finish this proof *)
 Abort.
 
 End wps.

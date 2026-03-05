@@ -2404,7 +2404,7 @@ Definition testSliceOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     Slice (go.SliceType go.uint64) ("$s", #(W64 0), #(W64 3))) in
     do:  ("v3" <-[go.SliceType go.uint64] "$r0");;;
     let: "v4" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
-    let: "$r0" := (IndexRef go.uint64 (![go.SliceType go.uint64] "x", #(W64 2))) in
+    let: "$r0" := (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "x", #(W64 2))) in
     do:  ("v4" <-[go.PointerType go.uint64] "$r0");;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -2572,7 +2572,7 @@ Definition testSliceRefⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 5)) in
     do:  ("sl" <-[go.SliceType go.uint64] "$r0");;;
     let: "ptr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
-    let: "$r0" := (IndexRef go.uint64 (![go.SliceType go.uint64] "sl", #(W64 0))) in
+    let: "$r0" := (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "sl", #(W64 0))) in
     do:  ("ptr" <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 1) in
     do:  ((![go.PointerType go.uint64] "ptr") <-[go.uint64] "$r0");;;

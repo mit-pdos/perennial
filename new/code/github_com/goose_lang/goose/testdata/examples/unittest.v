@@ -697,7 +697,7 @@ Definition usesArrayElemRefⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     do:  ("x" <-[go.ArrayType 2 go.string] "$r0");;;
     let: "$r0" := #"c"%go in
     do:  ((IndexRef (go.ArrayType 2 go.string) (![go.ArrayType 2 go.string] "x", #(W64 1))) <-[go.string] "$r0");;;
-    do:  (let: "$a0" := (IndexRef go.string (![go.ArrayType 2 go.string] "x", #(W64 1))) in
+    do:  (let: "$a0" := (IndexRef (go.ArrayType 2 go.string) (![go.ArrayType 2 go.string] "x", #(W64 1))) in
     (FuncResolve takesPtr [] #()) "$a0");;;
     return: #()).
 
@@ -2690,7 +2690,7 @@ Definition sliceOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     Slice (go.SliceType go.uint64) ("$s", #(W64 0), #(W64 3))) in
     do:  ("v3" <-[go.SliceType go.uint64] "$r0");;;
     let: "v4" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
-    let: "$r0" := (IndexRef go.uint64 (![go.SliceType go.uint64] "x", #(W64 2))) in
+    let: "$r0" := (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "x", #(W64 2))) in
     do:  ("v4" <-[go.PointerType go.uint64] "$r0");;;
     return: ((((((![go.uint64] "v1") +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "v2", #(W64 0))))) +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "v3", #(W64 1))))) +⟨go.uint64⟩ (![go.uint64] (![go.PointerType go.uint64] "v4"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.uint64] "x") in
      (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.uint64] "x") in
@@ -2708,7 +2708,7 @@ Definition sliceOfThings__getThingRefⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
   λ: "ts" "i",
     exception_do (let: "ts" := (GoAlloc sliceOfThings "ts") in
     let: "i" := (GoAlloc go.uint64 "i") in
-    return: (IndexRef thing (![go.SliceType thing] (StructFieldRef sliceOfThings "things"%go "ts"), ![go.uint64] "i"))).
+    return: (IndexRef (go.SliceType thing) (![go.SliceType thing] (StructFieldRef sliceOfThings "things"%go "ts"), Convert go.uint64 go.int (![go.uint64] "i")))).
 
 (* go: slices.go:30:6 *)
 Definition makeAliasⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
