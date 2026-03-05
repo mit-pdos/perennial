@@ -282,4 +282,45 @@ Proof. solve_pointsto_access_struct. Qed.
 End def.
 End MultiParam.
 
+Module useNonStructGeneric.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : generics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance useNonStructGeneric_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+  TypedPointsto (Σ:=Σ) (generics.useNonStructGeneric.t T') :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "x" ∷ l.[(generics.useNonStructGeneric.t T'), "x"] ↦{dq} v.(generics.useNonStructGeneric.x') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance useNonStructGeneric_into_val_typed
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  IntoValTypedUnderlying (generics.useNonStructGeneric.t T') (generics.useNonStructGenericⁱᵐᵖˡ T).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance useNonStructGeneric_access_load_x `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.useNonStructGeneric.t T')) dq :
+  AccessStrict
+    (l.[(generics.useNonStructGeneric.t T'), "x"] ↦{dq} (v.(generics.useNonStructGeneric.x')))
+    (l.[(generics.useNonStructGeneric.t T'), "x"] ↦{dq} (v.(generics.useNonStructGeneric.x')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance useNonStructGeneric_access_store_x `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.useNonStructGeneric.t T')) x' :
+  AccessStrict
+    (l.[(generics.useNonStructGeneric.t T'), "x"] ↦ (v.(generics.useNonStructGeneric.x')))
+    (l.[(generics.useNonStructGeneric.t T'), "x"] ↦ x')
+    (l ↦ v) (l ↦ (v <|(generics.useNonStructGeneric.x') := x'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End useNonStructGeneric.
+
 End generics.

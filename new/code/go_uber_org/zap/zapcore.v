@@ -1005,6 +1005,7 @@ Module FieldType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w8.
+#[global] Arguments t : clear implicits.
 End def.
 End FieldType.
 
@@ -1031,7 +1032,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Field.
 
 Definition Field'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
