@@ -54,12 +54,14 @@ Record raft_names :=
     term_gn : gname;
     config_gn : gname;
     reads_gn : gname;
+    read_req_gn : gname;
+    heartbeat_gn : gname;
   }.
 
 Section global_proof.
 
 Implicit Types (γ : raft_names) (log : list (list w8)) (node_id term index : w64)
-               (read_req_ctx : go_string).
+               (read_req_ctx ctx : go_string).
 
 Context `{!invGS Σ} `{!allG Σ}.
 Context (N : namespace).
@@ -72,13 +74,12 @@ Definition is_commit γ log := mono_list_lb_own γ.(commited_gn) log.
 Definition own_term γ node_id term := own γ.(term_gn) {[ node_id := ●MN (sint.nat term) ]}.
 Definition is_term_lb γ node_id term := own γ.(term_gn) {[ node_id := ◯MN (sint.nat term) ]}.
 
-Definition is_γread_index γ (γread : gname) index : iProp Σ :=
-  γread ↪[γ.(reads_gn)]□ index.
-Definition own_read_reqs γ (reads_index : gmap gname w64) : iProp Σ :=
-  ghost_map_auth γ.(reads_gn) 1 reads_index.
+Definition own_unused_heartbeat_ctx γ term ctx : iProp Σ :=
+  (term, ctx) ↪[γ.(heartbeat_gn)] @None (gset w64).
+Definition is_heartbeat_ctx γ term ctx (srvs : gset w64) : iProp Σ :=
+  (term, ctx) ↪[γ.(heartbeat_gn)]□ (Some srvs).
 
-Definition is_read_wit γread log : iProp Σ :=
-  log ↪[γread]□ ().
+(* Given ownership of unused (term, Context) pair, one can decide its staleness quorum. *)
 
 (** Propositions defined in terms of the primitive ghost state. *)
 
@@ -97,70 +98,36 @@ Definition is_stale_term γ term : iProp Σ :=
       □(∀ node_id (Hin_quorum : node_id ∈ quorum),
          ∃ term', is_term_lb γ node_id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝).
 
-(* TODO: maybe instead of arbitary continuations, could set up proof in terms of
-   linearization order of ALL ops, including reads. *)
-
-(* The "positive" resource precluding is_stale_term perhaps should be up to an index.
-
-  Actually, it won't work to have
-    `is_readonly_ack γ term index node_id`,
-  plus a lemma
-    `∀ Q, is_quorum Q ∧ (∀ node_id, node_id ∈ Q → is_readonly_ack γ term index node_id) →
-     is_read_safe γ index`
-  because there's no connection to the req_ctx; the index is NOT unconditionally
-  safe, it's only safe for the request ctx.
-
-  And, if we add a request ctx, there's no need to have the index. Instead, the meaning of
-  `MsgHeartbeatResp(from=i, ctx=A)` is the persistent fact that `i` is not in
-  the set of "deniers" for `A`; a "denier" is a node that's part of the staleness quorum.
- *)
-
-(* TODO: what happens if raft reuses request_ctx across terms? There might be a
-   different staleness quorum for a later term. Maybe staleness quorum is per
-   (term, req_ctx) pair. *)
-
-(* When "starting" a new (read_ctx, term), if it's been started before, then
-   the old index is smaller than the current one, so this one can
-   piggyback on the old one. *)
-
 (* TODO: set this up to confirm backwards compatibility (i.e. if some raft
    servers run the new code and some run the old code, system is still safe;
    only the leader needs to run the new code in order for the system to tolerate
    duplicate ReadIndex requests). *)
 
 Definition Ncommit := N.@"commit".
-Definition is_raft_commit_inv γ : iProp Σ :=
-  inv Ncommit (∃ term log reads_index,
+Definition is_raft_commit_inv γ : iProp Σ := (*  *)
+  inv Ncommit (∃ term log (readsΦ : list (w64 * (list $ list w8 → iProp Σ))), (*  *)
         "commit" ∷ own_commit_auth γ log ∗
         "#Hcommit" ∷ is_committed_in_term γ term log ∗
-        "read" ∷ own_read_reqs γ reads_index ∗
+        (* "read" ∷ own_read_ops γ readΦ ∗ *)
+
         (* Permission to linearize reads on all future logs. *)
-        "#Hread_aus" ∷ □(∀ γread (Hin : γread ∈ dom reads_index) log,
+        "#Hread_aus" ∷ □(∀ Φ (Hin : Φ ∈ readsΦ.*2) log,
                            own_commit_auth γ log ={⊤∖↑N}=∗
-                           own_commit_auth γ log ∗ is_read_wit γread log) ∗
-        (* Witnesses that reads were linearized on every index starting at
-           the one in `read_reqs`. *)
-        "#Hread_wits" ∷ □(∀ γread index (Hindex : reads_index !! γread = Some index)
-                            index' (Hindex' : sint.nat index ≤ sint.nat index' ≤ length log),
-                            is_read_wit γread (take (sint.nat index') log))
+                           own_commit_auth γ log ∗ Φ log) ∗
+        (* Witnesses that reads were linearized on every index starting at their
+           respective starting index. *)
+        "#Hread_wits" ∷ □(∀ start_index Φ (Hindex : (start_index, Φ) ∈ readsΦ)
+                            index (Hindex : sint.nat start_index ≤ sint.nat index ≤ length log),
+                            Φ log)
     ).
-
-Axiom own_read_req_ctx : ∀ γ read_req_ctx, iProp Σ.
-Axiom is_read_req_ctx : ∀ γ read_req_ctx (Φ : list (list w8) → iProp Σ), iProp Σ.
-
-Lemma start_req_ctx Φ req_ctx index γ :
-  own_read_req_ctx γ req_ctx ∗
-  □(|={⊤∖↑N,∅}=> ∃ log, own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ Φ log))
-  ={⊤}=∗
-  is_read_req_ctx γ req_ctx Φ.
-Proof.
-Admitted.
 
 Definition is_read_index γ index Φ : iProp Σ :=
   ∀ log (Hin : sint.nat index ≤ length log) E (Hmask : ↑N ⊆ E),
   is_commit γ log ={E}=∗ Φ log.
 
-Lemma maybe_commit_read [E] γ term log Φ :
+(** Try to add a read with continuation `Φ` to be executed forever starting at
+   the committed index from term `term`. *)
+Lemma try_read [E] γ term log Φ :
   ↑N ⊆ E →
   "#Hinv" ∷ is_raft_commit_inv γ ∗
   "Hcom" ∷ own_committed_in_term γ term log ∗
@@ -171,12 +138,40 @@ Proof.
   intros. iNamed 1.
 Admitted.
 
+Definition is_heartbeat_ctx_stale γ term ctx stale_ids : iProp Σ :=
+  is_heartbeat_ctx γ term ctx stale_ids ∗
+  □(∀ id, ⌜ id ∈ stale_ids ⌝ → ∃ term', is_term_lb γ id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝).
+
+Definition is_HeartbeatRequest γ (term : w64) (ctx : list w8) : iProp Σ :=
+  ∃ stale_ids, is_heartbeat_ctx_stale γ term ctx stale_ids.
+
+(** [is_HeartbeatResp] confirms that it was not stale back when [ctx] was
+  first used in term [term]. *)
+Definition is_HeartbeatResp γ (from : w64) (term : w64) (ctx : list w8) : iProp Σ :=
+  ∃ srvs, is_heartbeat_ctx γ term ctx srvs ∗ ⌜ from ∉ srvs ⌝.
+
+Lemma start_heartbeat stale_ids γ term ctx :
+  □(∀ id, ⌜ id ∈ stale_ids ⌝ → ∃ term', is_term_lb γ id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝) -∗
+  own_unused_heartbeat_ctx γ term ctx ==∗
+  is_heartbeat_ctx_stale γ term ctx stale_ids.
+Proof.
+Admitted.
+
+(*
+Lemma start_req_ctx Φ req_ctx index γ :
+  own_read_req_ctx γ req_ctx ∗
+  □(|={⊤∖↑N,∅}=> ∃ log, own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ Φ log))
+  ={⊤}=∗
+  is_read_req_ctx γ req_ctx Φ.
+Proof.
+Admitted.
+
 Definition is_MsgReadIndex γ read_req_ctx : iProp Σ :=
   ∃ Φ, is_read_req_ctx γ read_req_ctx Φ.
 
 Definition is_MsgReadIndexResp γ read_req_ctx index : iProp Σ :=
   ∃ Φ, is_read_req_ctx γ read_req_ctx Φ ∗
-       is_read_index γ index Φ.
+       is_read_index γ index Φ. *)
 
 End global_proof.
 
