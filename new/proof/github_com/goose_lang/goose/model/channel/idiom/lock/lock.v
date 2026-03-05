@@ -149,6 +149,45 @@ Proof.
   }
   Qed.
 
+Lemma lock_channel_trylock_au γ ch (v : V) (R : iProp Σ)  :
+∀ Φ,
+  is_lock_channel  γ ch R -∗
+  £2 -∗
+  ▷ (has_lock_channel γ ∗ R -∗ Φ) -∗
+  nonblocking_send_au γ.(lchan_name) v Φ True.
+Proof.
+  iIntros (Φ) "#Hlock (HR & Hlc) Hcont".
+  unfold has_lock_channel.
+  iDestruct "Hlock" as "[#Hchan #Hinv]".
+  iSplit. all: try done.
+  iInv "Hinv" as "Hinv_open" "Hinv_close".
+  iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
+  iNamed "Hinv_open".
+  destruct s. all: try done.
+  destruct buff. all: try done.
+  {
+    iDestruct "Hinv_open" as "(%H & H' & H'')".
+    subst locked.
+      iMod ((dghost_var_update_2 (true) γ.(locked_name) false)  with "H' Hlocked_ghost") as "[Hlock1 Hlock2]".
+      { rewrite /op /=. by rewrite /cmra_op /= Qp.half_half. }
+  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iNext. iExists (chanstate.Buffered []). iFrame "Hch".  iIntros "Hoc".
+  iMod "Hmask". 
+    iMod ("Hinv_close" with "[ $Hoc $Hlock1  ]") as "H".
+    {  iFrame "%". iNext. simpl. done.   }
+    iModIntro. iApply "Hcont". iFrame.
+  }
+  {
+    destruct buff. all: try done.
+  iDestruct "Hinv_open" as "%Hlt".
+  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iNext. iFrame. iIntros "Hch".  
+  iMod "Hmask". 
+    iDestruct (own_chan_buffer_size with "Hch") as "%Hbad".
+    rewrite Hcap in Hbad. done.
+  }
+Qed.
+
 Lemma wp_lock_channel_lock γ ch (v:V) (R : iProp Σ) :
   {{{ is_lock_channel γ ch R }}}
     chan.send t #ch #v
