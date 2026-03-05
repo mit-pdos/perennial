@@ -152,11 +152,11 @@ Proof.
 Lemma lock_channel_trylock_au γ ch (v : V) (R : iProp Σ)  :
 ∀ Φ,
   is_lock_channel  γ ch R -∗
-  £2 -∗
-  ▷ (has_lock_channel γ ∗ R -∗ Φ) -∗
+  £1 -∗
+  has_lock_channel γ ∗ R -∗ Φ -∗
   nonblocking_send_au γ.(lchan_name) v Φ True.
 Proof.
-  iIntros (Φ) "#Hlock (HR & Hlc) Hcont".
+  iIntros (Φ) "#Hlock HR HΦ Hcont".
   unfold has_lock_channel.
   iDestruct "Hlock" as "[#Hchan #Hinv]".
   iSplit. all: try done.
@@ -175,7 +175,7 @@ Proof.
   iMod "Hmask". 
     iMod ("Hinv_close" with "[ $Hoc $Hlock1  ]") as "H".
     {  iFrame "%". iNext. simpl. done.   }
-    iModIntro. iApply "Hcont". iFrame.
+    iModIntro. iApply "Hcont". 
   }
   {
     destruct buff. all: try done.
