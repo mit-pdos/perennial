@@ -10,7 +10,10 @@ Lemma wp_testSliceRef :
   test_fun_ok semantics.testSliceRef.
 Proof.
   semantics_auto.
-  (* TODO: finish this proof *)
-Abort.
+  (* TODO: `steps` should apply wp_slice_make2 instead of unfolding it? *)
+  rewrite /slice_index_ref /=.
+  iDestruct (array_acc _ 0 with "p") as "[? p]"; try done.
+  wp_auto. wp_end.
+Qed.
 
 End wps.
