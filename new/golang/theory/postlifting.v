@@ -442,7 +442,7 @@ Tactic Notation "iStructNamedPrefix" constr(H) constr(pref) :=
   iNamedPrefix H pref.
 
 Ltac solve_typed_pointsto_agree :=
-  intros l dq1 dq2 v1 v2; (destruct &v1, &v2); simpl; iIntros "H1 H2";
+  intros ??? v1 v2; (destruct &v1, &v2); simpl; iIntros "H1 H2";
   let field := (iDestruct "H1" as "[H H1]"; iDestruct "H2" as "[H' H2]";
                 iCombine "H H'" gives "->"; iClear "H H'") in
   repeat field; done.
