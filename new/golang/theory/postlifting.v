@@ -442,7 +442,7 @@ Tactic Notation "iStructNamedPrefix" constr(H) constr(pref) :=
   iNamedPrefix H pref.
 
 Ltac solve_typed_pointsto_agree :=
-  intros *;
+  intros;
   lazymatch goal with
   | [ v1 : _, v2 : _ |- _ ] => destruct v1, v2
   end;
