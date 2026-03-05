@@ -244,6 +244,7 @@ Module ConfChangeI.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End ConfChangeI.
 
@@ -258,6 +259,7 @@ Module EntryType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w32.
+#[global] Arguments t : clear implicits.
 End def.
 End EntryType.
 
@@ -272,6 +274,7 @@ Module MessageType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w32.
+#[global] Arguments t : clear implicits.
 End def.
 End MessageType.
 
@@ -286,6 +289,7 @@ Module ConfChangeTransition.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w32.
+#[global] Arguments t : clear implicits.
 End def.
 End ConfChangeTransition.
 
@@ -300,6 +304,7 @@ Module ConfChangeType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w32.
+#[global] Arguments t : clear implicits.
 End def.
 End ConfChangeType.
 
@@ -325,7 +330,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Entry.
 
 Definition Entry'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -370,7 +374,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End ConfState.
 
 Definition ConfState'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -416,7 +419,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End SnapshotMetadata.
 
 Definition SnapshotMetadata'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -455,7 +457,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Snapshot.
 
 Definition Snapshot'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -503,7 +504,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Message.
 
 Definition Message'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -576,7 +576,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End HardState.
 
 Definition HardState'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -617,7 +616,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End ConfChange.
 
 Definition ConfChange'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -676,7 +674,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End ConfChangeV2.
 
 Definition ConfChangeV2'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [

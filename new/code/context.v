@@ -1173,6 +1173,7 @@ Module Context.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Context.
 
@@ -1196,7 +1197,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End deadlineExceededError.
 
 Definition deadlineExceededError'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1231,7 +1231,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End emptyCtx.
 
 Definition emptyCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1269,7 +1268,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End backgroundCtx.
 
 Definition backgroundCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1311,7 +1309,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End todoCtx.
 
 Definition todoCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1345,6 +1342,7 @@ Module CancelFunc.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := func.t.
+#[global] Arguments t : clear implicits.
 End def.
 End CancelFunc.
 
@@ -1359,6 +1357,7 @@ Module CancelCauseFunc.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := func.t.
+#[global] Arguments t : clear implicits.
 End def.
 End CancelCauseFunc.
 
@@ -1373,6 +1372,7 @@ Module afterFuncer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End afterFuncer.
 
@@ -1400,7 +1400,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End cancelCtx.
 
 Definition cancelCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1459,7 +1458,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End afterFuncCtx.
 
 Definition afterFuncCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1506,7 +1504,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End stopCtx.
 
 Definition stopCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1541,6 +1538,7 @@ Module canceler.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End canceler.
 
@@ -1557,6 +1555,7 @@ Module stringer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End stringer.
 
@@ -1579,7 +1578,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End withoutCancelCtx.
 
 Definition withoutCancelCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1623,7 +1621,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End timerCtx.
 
 Definition timerCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -1670,7 +1667,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End valueCtx.
 
 Definition valueCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [

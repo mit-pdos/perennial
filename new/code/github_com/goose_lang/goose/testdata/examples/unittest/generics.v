@@ -28,6 +28,14 @@ Definition MultiParam {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.typ
 
 #[global] Opaque MultiParam.
 
+Definition nonStructGeneric {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.nonStructGeneric"%go [T].
+
+#[global] Opaque nonStructGeneric.
+
+Definition useNonStructGeneric {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.useNonStructGeneric"%go [T].
+
+#[global] Opaque useNonStructGeneric.
+
 Definition UnderlyingSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UnderlyingSlice"%go.
 
 Definition Clone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Clone"%go.
@@ -210,7 +218,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Box.
 
 Definition Box'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -247,7 +254,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Container.
 
 Definition Container'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -288,7 +294,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End UseContainer.
 
 Definition UseContainer'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -321,7 +326,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End OnlyIndirect.
 
 Definition OnlyIndirect'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -357,7 +361,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End MultiParam.
 
 Definition MultiParam'fds_unsealed (A : go.type) (B : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -380,6 +383,52 @@ Class MultiParam_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
   #[global] MultiParam_set_X A B A' B' (x : MultiParam.t A' B') y :: ⟦StructFieldSet (MultiParamⁱᵐᵖˡ A B) "X", (#x, #y)⟧ ⤳[under] #(x <|MultiParam.X' := y|>);
 }.
 
+Module nonStructGeneric.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t {T : Type} : Type := slice.t.
+#[global] Arguments t : clear implicits.
+End def.
+End nonStructGeneric.
+
+Definition nonStructGenericⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.SliceType T.
+
+Class nonStructGeneric_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] nonStructGeneric_underlying T :: (nonStructGeneric T) <u (nonStructGenericⁱᵐᵖˡ T);
+}.
+
+Module useNonStructGeneric.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t {T : Type} :=
+mk {
+  x' : (generics.nonStructGeneric.t T);
+}.
+
+#[global] Instance zero_val `{!ZeroVal T} : ZeroVal t := {| zero_val := mk T (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+End useNonStructGeneric.
+
+Definition useNonStructGeneric'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "x"%go (nonStructGeneric T))
+].
+Program Definition useNonStructGeneric'fds (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (useNonStructGeneric'fds_unsealed T).
+Global Instance equals_unfold_useNonStructGeneric T {ext : ffi_syntax} {go_gctx : GoGlobalContext} : useNonStructGeneric'fds T =→ useNonStructGeneric'fds_unsealed T.
+Proof. rewrite /useNonStructGeneric'fds seal_eq //. Qed.
+
+Definition useNonStructGenericⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType (useNonStructGeneric'fds T).
+
+Class useNonStructGeneric_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] useNonStructGeneric_type_repr T T' `{!ZeroVal T'} `{!TypeRepr T T'} :: go.TypeReprUnderlying (useNonStructGenericⁱᵐᵖˡ T) (useNonStructGeneric.t T');
+  #[global] useNonStructGeneric_underlying T :: (useNonStructGeneric T) <u (useNonStructGenericⁱᵐᵖˡ T);
+  #[global] useNonStructGeneric_get_x T T' (x : useNonStructGeneric.t T') :: ⟦StructFieldGet (useNonStructGenericⁱᵐᵖˡ T) "x", #x⟧ ⤳[under] #x.(useNonStructGeneric.x');
+  #[global] useNonStructGeneric_set_x T T' (x : useNonStructGeneric.t T') y :: ⟦StructFieldSet (useNonStructGenericⁱᵐᵖˡ T) "x", (#x, #y)⟧ ⤳[under] #(x <|useNonStructGeneric.x' := y|>);
+}.
+
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Box_instance :: Box_Assumptions;
@@ -387,6 +436,8 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] UseContainer_instance :: UseContainer_Assumptions;
   #[global] OnlyIndirect_instance :: OnlyIndirect_Assumptions;
   #[global] MultiParam_instance :: MultiParam_Assumptions;
+  #[global] nonStructGeneric_instance :: nonStructGeneric_Assumptions;
+  #[global] useNonStructGeneric_instance :: useNonStructGeneric_Assumptions;
   #[global] UnderlyingSlice_unfold T :: FuncUnfold UnderlyingSlice [T] (UnderlyingSliceⁱᵐᵖˡ T);
   #[global] Clone_unfold S E :: FuncUnfold Clone [S; E] (Cloneⁱᵐᵖˡ S E);
   #[global] BoxGet_unfold T :: FuncUnfold BoxGet [T] (BoxGetⁱᵐᵖˡ T);

@@ -2070,7 +2070,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Election.
 
 Definition Election'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2130,7 +2129,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Mutex.
 
 Definition Mutex'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2181,7 +2179,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End lockerMutex.
 
 Definition lockerMutex'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2230,7 +2227,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Session.
 
 Definition Session'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2287,7 +2283,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End sessionOptions.
 
 Definition sessionOptions'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2317,6 +2312,7 @@ Module SessionOption.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := func.t.
+#[global] Arguments t : clear implicits.
 End def.
 End SessionOption.
 
@@ -2331,6 +2327,7 @@ Module STM.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End STM.
 
@@ -2345,6 +2342,7 @@ Module Isolation.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End Isolation.
 
@@ -2367,7 +2365,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End stmError.
 
 Definition stmError'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2401,7 +2398,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End stmOptions.
 
 Definition stmOptions'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2431,6 +2427,7 @@ Module stmOption.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := func.t.
+#[global] Arguments t : clear implicits.
 End def.
 End stmOption.
 
@@ -2454,7 +2451,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End stmResponse.
 
 Definition stmResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2481,6 +2477,7 @@ Module readSet.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := map.t.
+#[global] Arguments t : clear implicits.
 End def.
 End readSet.
 
@@ -2501,6 +2498,7 @@ Module writeSet.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := map.t.
+#[global] Arguments t : clear implicits.
 End def.
 End writeSet.
 
@@ -2534,7 +2532,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End stm.
 
 Definition stm'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2589,7 +2586,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End stmPut.
 
 Definition stmPut'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -2625,7 +2621,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End stmSerializable.
 
 Definition stmSerializable'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [

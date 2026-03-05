@@ -7713,6 +7713,7 @@ Module Storage.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Storage.
 
@@ -7727,6 +7728,7 @@ Module Logger.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Logger.
 
@@ -7754,7 +7756,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End unstable.
 
 Definition unstable'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -7806,6 +7807,7 @@ Module entryEncodingSize.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End entryEncodingSize.
 
@@ -7836,7 +7838,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End raftLog.
 
 Definition raftLog'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -7928,7 +7929,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End DefaultLogger.
 
 Definition DefaultLogger'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -7995,6 +7995,7 @@ Module SnapshotStatus.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End SnapshotStatus.
 
@@ -8009,6 +8010,7 @@ Module StateType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End StateType.
 
@@ -8036,7 +8038,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End SoftState.
 
 Definition SoftState'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8079,7 +8080,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Ready.
 
 Definition Ready'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8140,6 +8140,7 @@ Module Node.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End Node.
 
@@ -8163,7 +8164,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Peer.
 
 Definition Peer'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8199,7 +8199,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End msgWithResult.
 
 Definition msgWithResult'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8244,7 +8243,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End node.
 
 Definition node'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8325,6 +8323,7 @@ Module ReadOnlyOption.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End ReadOnlyOption.
 
@@ -8347,7 +8346,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End lockedRand.
 
 Definition lockedRand'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8372,6 +8370,7 @@ Module CampaignType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := go_string.
+#[global] Arguments t : clear implicits.
 End def.
 End CampaignType.
 
@@ -8386,6 +8385,7 @@ Module TraceLogger.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := interface.t.
+#[global] Arguments t : clear implicits.
 End def.
 End TraceLogger.
 
@@ -8426,7 +8426,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Config.
 
 Definition Config'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8505,6 +8504,7 @@ Module entryPayloadSize.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
+#[global] Arguments t : clear implicits.
 End def.
 End entryPayloadSize.
 
@@ -8519,6 +8519,7 @@ Module stepFunc.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := func.t.
+#[global] Arguments t : clear implicits.
 End def.
 End stepFunc.
 
@@ -8572,7 +8573,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End raft.
 
 Definition raft'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8744,7 +8744,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End RawNode.
 
 Definition RawNode'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8802,6 +8801,7 @@ Module ProgressType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w8.
+#[global] Arguments t : clear implicits.
 End def.
 End ProgressType.
 
@@ -8825,7 +8825,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End ReadState.
 
 Definition ReadState'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8862,7 +8861,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End readIndexStatus.
 
 Definition readIndexStatus'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8902,7 +8900,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End readOnly.
 
 Definition readOnly'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8943,7 +8940,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End TracingEvent.
 
 Definition TracingEvent'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -8977,7 +8973,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End BasicStatus.
 
 Definition BasicStatus'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -9038,7 +9033,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End Status.
 
 Definition Status'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -9099,7 +9093,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End inMemStorageCallStats.
 
 Definition inMemStorageCallStats'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -9150,7 +9143,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End MemoryStorage.
 
 Definition MemoryStorage'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -9211,7 +9203,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End entryID.
 
 Definition entryID'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -9248,7 +9239,6 @@ mk {
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-
 End logSlice.
 
 Definition logSlice'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
@@ -9284,6 +9274,7 @@ Module EntryFormatter.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := func.t.
+#[global] Arguments t : clear implicits.
 End def.
 End EntryFormatter.
 
