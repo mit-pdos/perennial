@@ -75,9 +75,15 @@ Definition own_term γ node_id term := own γ.(term_gn) {[ node_id := ●MN (sin
 Definition is_term_lb γ node_id term := own γ.(term_gn) {[ node_id := ◯MN (sint.nat term) ]}.
 
 Definition own_unused_heartbeat_ctx γ term ctx : iProp Σ :=
-  (term, ctx) ↪[γ.(heartbeat_gn)] @None (gset w64).
+  ∃ (per_term_gn ctx_gn : gname),
+    term ↪[γ.(heartbeat_gn)]□ per_term_gn ∗
+    ctx ↪[per_term_gn]□ ctx_gn ∗
+    dghost_var ctx_gn (DfracOwn 1) (∅ : gset w64).
 Definition is_heartbeat_ctx γ term ctx (srvs : gset w64) : iProp Σ :=
-  (term, ctx) ↪[γ.(heartbeat_gn)]□ (Some srvs).
+  ∃ (per_term_gn ctx_gn : gname),
+    term ↪[γ.(heartbeat_gn)]□ per_term_gn ∗
+    ctx ↪[per_term_gn]□ ctx_gn ∗
+    dghost_var ctx_gn DfracDiscarded srvs.
 
 (* Given ownership of unused (term, Context) pair, one can decide its staleness quorum. *)
 
@@ -102,6 +108,80 @@ Definition is_stale_term γ term : iProp Σ :=
    servers run the new code and some run the old code, system is still safe;
    only the leader needs to run the new code in order for the system to tolerate
    duplicate ReadIndex requests). *)
+
+(** Ownership of the reads queue: an authoritative monotone list of
+    (start_index, saved_pred_gname) pairs. The gnames are hidden internally;
+    the caller sees only [readsΦ : list (w64 * (list (list w8) → iProp Σ))]. *)
+Definition own_reads γ (readsΦ : list (w64 * (list (list w8) → iProp Σ))) : iProp Σ :=
+  ∃ l : list (w64 * gname),
+    ⌜l.*1 = readsΦ.*1⌝ ∗
+    mono_list_auth_own γ.(reads_gn) 1 l ∗
+    ∀ i si Φ gn,
+      ⌜readsΦ !! i = Some (si, Φ)⌝ →
+      ⌜l !! i = Some (si, gn)⌝ →
+      saved_pred_own gn DfracDiscarded Φ.
+
+(** Persistent witness that (start_index, Φ) is tracked in the reads queue. *)
+Definition is_in_reads γ (si : w64) (Φ : list (list w8) → iProp Σ) : iProp Σ :=
+  ∃ i gn,
+    mono_list_idx_own γ.(reads_gn) i (si, gn) ∗
+    saved_pred_own gn DfracDiscarded Φ.
+
+Global Instance is_in_reads_persistent γ si Φ :
+  Persistent (is_in_reads γ si Φ) := _.
+
+(** Insert a new read entry at the end of the list, obtaining a persistent witness. *)
+Lemma reads_insert γ readsΦ si Φ :
+  own_reads γ readsΦ ==∗
+  own_reads γ (readsΦ ++ [(si, Φ)]) ∗ is_in_reads γ si Φ.
+Proof.
+  iIntros "(%l & %Hfst & Hauth & #Hfor)".
+  iMod (saved_pred_alloc Φ DfracDiscarded) as (gn) "#Hgn". { done. }
+  iMod (mono_list_auth_own_update_app [(si, gn)] with "Hauth") as "[Hauth #Hlb]".
+  have Hlen : length l = length readsΦ.
+  { rewrite -(length_fmap fst l) -(length_fmap fst readsΦ) Hfst //. }
+  iModIntro. iSplit.
+  - iExists (l ++ [(si, gn)]). iSplit.
+    { iPureIntro. rewrite !fmap_app /= Hfst //. }
+    iFrame "Hauth".
+    iIntros (i si' Φ' gn' Hreads Hl').
+    destruct (decide (i < length readsΦ)%nat) as [Hi|Hi%not_lt].
+    + rewrite lookup_app_l in Hreads; last done.
+      rewrite lookup_app_l in Hl'; last lia.
+      iApply ("Hfor" $! i si' Φ' gn' Hreads Hl').
+    + rewrite lookup_app_r in Hreads; last done.
+      rewrite lookup_app_r in Hl'; last lia.
+      destruct (i - length readsΦ)%nat eqn:Hdiff.
+      * have Hdiff' : (i - length l = 0)%nat by lia.
+        rewrite Hdiff' /= in Hl'. injection Hl' as [= _ <-].
+        simpl in *. simplify_eq.
+        iExact "Hgn".
+      * discriminate.
+  - iExists (length l), gn. iSplit; last done.
+    iApply (mono_list_idx_own_get with "Hlb").
+    rewrite lookup_app_r // Nat.sub_diag //.
+Qed.
+
+(** Agreement: the witness corresponds to an entry in [readsΦ] with
+    a propositionally equal predicate (up to ▷). *)
+Lemma reads_agree γ readsΦ si Φ (x : list (list w8)) :
+  own_reads γ readsΦ -∗
+  is_in_reads γ si Φ -∗
+  ∃ i Ψ,
+    ⌜readsΦ !! i = Some (si, Ψ)⌝ ∗
+    ▷ (Φ x ≡ Ψ x).
+Proof.
+  iIntros "(%l & %Hfst & Hauth & #Hfor)". iDestruct 1 as (i gn) "[#Hidx #Hgn]".
+  iDestruct (mono_list_auth_idx_lookup with "Hauth Hidx") as %Hl.
+  (* [Hl : l !! i = Some (si, gn)]; derive readsΦ !! i from Hfst *)
+  have Hsi : readsΦ.*1 !! i = Some si.
+  { rewrite -Hfst list_lookup_fmap Hl //. }
+  (* list_lookup_fmap_inv does not exist *)
+  apply list_lookup_fmap_Some_1 in Hsi as ([si' Φ'] & [= <-] & HreadsΦ).
+  iDestruct ("Hfor" $! i si Φ' gn HreadsΦ Hl) as "#HΨ".
+  iExists i, Φ'. iFrame "%".
+  iApply (saved_pred_agree with "Hgn HΨ").
+Qed.
 
 Definition Ncommit := N.@"commit".
 Definition is_raft_commit_inv γ : iProp Σ := (*  *)
@@ -136,6 +216,10 @@ Lemma try_read [E] γ term log Φ :
   own_committed_in_term γ term log ∗ (is_read_index γ (W64 (length log)) Φ ∨ is_stale_term γ term).
 Proof.
   intros. iNamed 1.
+  (* TODO now: prove this by breaking into cases of whether the term inside of
+     is_raft_commit_inv is the latest or not. If it's not the latest, then
+     is_comminted_in_term should yield an is_stale_term. If it is the latest,
+     then insert into the readsΦ list, and use the witness to establish is_read_index. *)
 Admitted.
 
 Definition is_heartbeat_ctx_stale γ term ctx stale_ids : iProp Σ :=
@@ -145,8 +229,8 @@ Definition is_heartbeat_ctx_stale γ term ctx stale_ids : iProp Σ :=
 Definition is_HeartbeatRequest γ (term : w64) (ctx : list w8) : iProp Σ :=
   ∃ stale_ids, is_heartbeat_ctx_stale γ term ctx stale_ids.
 
-(** [is_HeartbeatResp] confirms that it was not stale back when [ctx] was
-  first used in term [term]. *)
+(** [is_HeartbeatResp] confirms that [from] was not stale back when [ctx] was
+  first used in [term]. *)
 Definition is_HeartbeatResp γ (from : w64) (term : w64) (ctx : list w8) : iProp Σ :=
   ∃ srvs, is_heartbeat_ctx γ term ctx srvs ∗ ⌜ from ∉ srvs ⌝.
 
@@ -155,7 +239,15 @@ Lemma start_heartbeat stale_ids γ term ctx :
   own_unused_heartbeat_ctx γ term ctx ==∗
   is_heartbeat_ctx_stale γ term ctx stale_ids.
 Proof.
-Admitted.
+  iIntros "#Hstale Hunused".
+  iDestruct "Hunused" as (per_term_gn ctx_gn) "(#Hterm & #Hctx & Hvar)".
+  iMod (dghost_var_update stale_ids with "Hvar") as "Hvar".
+  iMod (dghost_var_persist with "Hvar") as "#Hvar".
+  iModIntro.
+  iSplit.
+  - iExists per_term_gn, ctx_gn. iFrame "#".
+  - iFrame "#".
+Qed.
 
 (*
 Lemma start_req_ctx Φ req_ctx index γ :
