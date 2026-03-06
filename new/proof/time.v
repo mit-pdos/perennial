@@ -74,6 +74,11 @@ Axiom wp_Now :
     @! time.Now #()
   {{{ (t : time.Time.t), RET #t; True }}}.
 
+Axiom wp_Until : ∀ (deadline : time.Time.t) ,
+  {{{ is_pkg_init time }}}
+    @! time.Until #deadline
+  {{{ (x : w64), RET #x; True }}}.
+
 Axiom wp_Time__Add : ∀ (t : time.Time.t) (d : time.Duration.t),
   {{{ is_pkg_init time }}}
     t @! time.Time @! "Add" #d
