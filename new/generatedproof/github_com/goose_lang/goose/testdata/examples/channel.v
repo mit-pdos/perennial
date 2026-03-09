@@ -174,6 +174,61 @@ Proof. solve_pointsto_access_struct. Qed.
 End def.
 End EliminationStack.
 
+Module Result.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : chan_spec_raw_examples.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Result_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.Result.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "value" ∷ l.[(chan_spec_raw_examples.Result.t), "value"] ↦{dq} v.(chan_spec_raw_examples.Result.value') ∗
+      "primary_won" ∷ l.[(chan_spec_raw_examples.Result.t), "primary_won"] ↦{dq} v.(chan_spec_raw_examples.Result.primary_won') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Result_into_val_typed
+   :
+  IntoValTypedUnderlying (chan_spec_raw_examples.Result.t) (chan_spec_raw_examples.Resultⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Result_access_load_value l (v : (chan_spec_raw_examples.Result.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Result.t), "value"] ↦{dq} (v.(chan_spec_raw_examples.Result.value')))
+    (l.[(chan_spec_raw_examples.Result.t), "value"] ↦{dq} (v.(chan_spec_raw_examples.Result.value')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Result_access_store_value l (v : (chan_spec_raw_examples.Result.t)) value' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Result.t), "value"] ↦ (v.(chan_spec_raw_examples.Result.value')))
+    (l.[(chan_spec_raw_examples.Result.t), "value"] ↦ value')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.Result.value') := value'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Result_access_load_primary_won l (v : (chan_spec_raw_examples.Result.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Result.t), "primary_won"] ↦{dq} (v.(chan_spec_raw_examples.Result.primary_won')))
+    (l.[(chan_spec_raw_examples.Result.t), "primary_won"] ↦{dq} (v.(chan_spec_raw_examples.Result.primary_won')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Result_access_store_primary_won l (v : (chan_spec_raw_examples.Result.t)) primary_won' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.Result.t), "primary_won"] ↦ (v.(chan_spec_raw_examples.Result.primary_won')))
+    (l.[(chan_spec_raw_examples.Result.t), "primary_won"] ↦ primary_won')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.Result.primary_won') := primary_won'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End Result.
+
 Module request.
 Section def.
 

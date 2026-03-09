@@ -22,6 +22,10 @@ Definition EliminationStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.
 
 #[global] Opaque EliminationStack.
 
+Definition Result {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.Result"%go [].
+
+#[global] Opaque Result.
+
 Definition request {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.request"%go [].
 
 #[global] Opaque request.
@@ -101,6 +105,12 @@ Definition TestFibConsumer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_s
 Definition TestSelectNbNoPanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestSelectNbNoPanic"%go.
 
 Definition TestSelectReadyCaseNoPanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestSelectReadyCaseNoPanic"%go.
+
+Definition GetPrimary {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.GetPrimary"%go.
+
+Definition GetSecondary {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.GetSecondary"%go.
+
+Definition CancellableHedgedRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CancellableHedgedRequest"%go.
 
 Definition mkRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkRequest"%go.
 
@@ -1266,6 +1276,87 @@ Definition TestSelectReadyCaseNoPanicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
       do:  ((FuncResolve select_ready_case_no_panic [] #()) #())));;;
     return: #()).
 
+(* Toy functions that resemble search query servers.
+
+   go: hedged.go:13:6 *)
+Definition GetPrimaryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "query",
+    exception_do (let: "query" := (GoAlloc go.string "query") in
+    return: ((![go.string] "query") +⟨go.string⟩ #"_primary.html"%go)).
+
+(* go: hedged.go:17:6 *)
+Definition GetSecondaryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "query",
+    exception_do (let: "query" := (GoAlloc go.string "query") in
+    return: ((![go.string] "query") +⟨go.string⟩ #"_secondary.html"%go)).
+
+(* First issues a request to the primary replica immediately. If the primary
+   does not respond within hedgeThreshold, a secondary replica is also issued.
+   The result of whichever replica responds first is returned, along with
+   whether the primary won. If done is closed before any result, errStr is set
+   to "cancelled" and a zero Result is returned.
+
+   See https://go.dev/talks/2012/concurrency.slide#50 for discussion on replicated queries and
+   https://www.barroso.org/publications/TheTailAtScale.pdf page 7 for discussion on hedging.
+
+   go: hedged.go:29:6 *)
+Definition CancellableHedgedRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "query" "threshold" "errStr" "done",
+    exception_do (let: "done" := (GoAlloc (go.ChannelType go.recvonly (go.StructType [
+
+    ])) "done") in
+    let: "errStr" := (GoAlloc (go.PointerType go.string) "errStr") in
+    let: "threshold" := (GoAlloc time.Duration "threshold") in
+    let: "query" := (GoAlloc go.string "query") in
+    let: "c" := (GoAlloc (go.ChannelType go.sendrecv Result) (GoZeroVal (go.ChannelType go.sendrecv Result) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv Result] #()) #(W64 2)) in
+    do:  ("c" <-[go.ChannelType go.sendrecv Result] "$r0");;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (let: "$chan" := (![go.ChannelType go.sendrecv Result] "c") in
+      let: "$v" := (let: "$v0" := (let: "$a0" := (![go.string] "query") in
+      (FuncResolve GetPrimary [] #()) "$a0") in
+      let: "$v1" := #true in
+      CompositeLiteral Result (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.bool "$v1")])) in
+      chan.send Result "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$ch0" := (![go.ChannelType go.sendrecv Result] "c") in
+    let: "$ch1" := (let: "$a0" := (![time.Duration] "threshold") in
+    (FuncResolve time.After [] #()) "$a0") in
+    let: "$ch2" := (![go.ChannelType go.recvonly (go.StructType [
+
+    ])] "done") in
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase Result "$ch0") (let: "r" := (GoAlloc Result (GoZeroVal Result #())) in
+    let: "$r0" := (Fst "$recvVal") in
+    do:  ("r" <-[Result] "$r0");;;
+    return: (![Result] "r"))); (CommClause (RecvCase time.Time "$ch1") (let: "$go" := (λ: <>,
+      exception_do (do:  (let: "$chan" := (![go.ChannelType go.sendrecv Result] "c") in
+      let: "$v" := (let: "$v0" := (let: "$a0" := (![go.string] "query") in
+      (FuncResolve GetSecondary [] #()) "$a0") in
+      let: "$v1" := #false in
+      CompositeLiteral Result (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.bool "$v1")])) in
+      chan.send Result "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #())))); (CommClause (RecvCase (go.StructType [
+
+    ]) "$ch2") (let: "$r0" := #"cancelled"%go in
+    do:  ((![go.PointerType go.string] "errStr") <-[go.string] "$r0");;;
+    return: (CompositeLiteral Result (LiteralValue []))))]);;;
+    let: "$ch0" := (![go.ChannelType go.sendrecv Result] "c") in
+    let: "$ch1" := (![go.ChannelType go.recvonly (go.StructType [
+
+    ])] "done") in
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase Result "$ch0") (let: "r" := (GoAlloc Result (GoZeroVal Result #())) in
+    let: "$r0" := (Fst "$recvVal") in
+    do:  ("r" <-[Result] "$r0");;;
+    return: (![Result] "r"))); (CommClause (RecvCase (go.StructType [
+
+    ]) "$ch1") (let: "$r0" := #"cancelled"%go in
+    do:  ((![go.PointerType go.string] "errStr") <-[go.string] "$r0");;;
+    return: (CompositeLiteral Result (LiteralValue []))))])).
+
 (* go: higher_order.go:8:6 *)
 Definition mkRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f",
@@ -2060,6 +2151,41 @@ Class EliminationStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoL
   #[global] EliminationStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Push" (EliminationStack__Pushⁱᵐᵖˡ);
 }.
 
+Module Result.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  value' : go_string;
+  primary_won' : bool;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+End Result.
+
+Definition Result'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "value"%go go.string);
+  (go.FieldDecl "primary_won"%go go.bool)
+].
+Program Definition Result'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Result'fds_unsealed).
+Global Instance equals_unfold_Result {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Result'fds =→ Result'fds_unsealed.
+Proof. rewrite /Result'fds seal_eq //. Qed.
+
+Definition Resultⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Result'fds).
+
+Class Result_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Result_type_repr  :: go.TypeReprUnderlying Resultⁱᵐᵖˡ Result.t;
+  #[global] Result_underlying :: (Result) <u (Resultⁱᵐᵖˡ);
+  #[global] Result_get_value (x : Result.t) :: ⟦StructFieldGet (Resultⁱᵐᵖˡ) "value", #x⟧ ⤳[under] #x.(Result.value');
+  #[global] Result_set_value (x : Result.t) y :: ⟦StructFieldSet (Resultⁱᵐᵖˡ) "value", (#x, #y)⟧ ⤳[under] #(x <|Result.value' := y|>);
+  #[global] Result_get_primary_won (x : Result.t) :: ⟦StructFieldGet (Resultⁱᵐᵖˡ) "primary_won", #x⟧ ⤳[under] #x.(Result.primary_won');
+  #[global] Result_set_primary_won (x : Result.t) y :: ⟦StructFieldSet (Resultⁱᵐᵖˡ) "primary_won", (#x, #y)⟧ ⤳[under] #(x <|Result.primary_won' := y|>);
+}.
+
 Module request.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -2213,6 +2339,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] Cond_instance :: Cond_Assumptions;
   #[global] LockedStack_instance :: LockedStack_Assumptions;
   #[global] EliminationStack_instance :: EliminationStack_Assumptions;
+  #[global] Result_instance :: Result_Assumptions;
   #[global] request_instance :: request_Assumptions;
   #[global] Lock_instance :: Lock_Assumptions;
   #[global] stream_instance :: stream_Assumptions;
@@ -2248,6 +2375,9 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] TestFibConsumer_unfold :: FuncUnfold TestFibConsumer [] (TestFibConsumerⁱᵐᵖˡ);
   #[global] TestSelectNbNoPanic_unfold :: FuncUnfold TestSelectNbNoPanic [] (TestSelectNbNoPanicⁱᵐᵖˡ);
   #[global] TestSelectReadyCaseNoPanic_unfold :: FuncUnfold TestSelectReadyCaseNoPanic [] (TestSelectReadyCaseNoPanicⁱᵐᵖˡ);
+  #[global] GetPrimary_unfold :: FuncUnfold GetPrimary [] (GetPrimaryⁱᵐᵖˡ);
+  #[global] GetSecondary_unfold :: FuncUnfold GetSecondary [] (GetSecondaryⁱᵐᵖˡ);
+  #[global] CancellableHedgedRequest_unfold :: FuncUnfold CancellableHedgedRequest [] (CancellableHedgedRequestⁱᵐᵖˡ);
   #[global] mkRequest_unfold :: FuncUnfold mkRequest [] (mkRequestⁱᵐᵖˡ);
   #[global] ho_worker_unfold :: FuncUnfold ho_worker [] (ho_workerⁱᵐᵖˡ);
   #[global] HigherOrderExample_unfold :: FuncUnfold HigherOrderExample [] (HigherOrderExampleⁱᵐᵖˡ);
