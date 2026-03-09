@@ -34,6 +34,131 @@ Proof.
   by intros [].
 Defined.
 
+Section hedged_example.
+Context `{!chan_idiomG Σ go_string}.
+Context `{!ghost_map.ghost_mapG Σ gname (go_string → iProp Σ)}.
+Context `{!inG Σ unitR}.
+
+Lemma wp_GetPrimary (q : go_string) :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.GetPrimary #q
+  {{{ RET #(q ++ "_primary.html"%go); True }}}.
+Proof. wp_start. wp_auto. iApply "HΦ". done. Qed.
+
+Lemma wp_GetSecondary (q : go_string) :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.GetSecondary #q
+  {{{ RET #(q ++ "_secondary.html"%go); True }}}.
+Proof. wp_start. wp_auto. iApply "HΦ". done. Qed.
+
+Lemma wp_CancellableHedgedRequest (query : go_string)
+    (hedgeThreshold : time.Duration.t)
+    (errStr_ptr' : loc)
+    (done_ch : loc) (γdone : done_names) :
+  {{{ is_pkg_init chan_spec_raw_examples ∗
+      is_done (V := unit) γdone done_ch ∗
+      Notified γdone (errStr_ptr' ↦ ""%go) }}}
+    @! chan_spec_raw_examples.CancellableHedgedRequest
+         #query #hedgeThreshold #errStr_ptr' #done_ch
+  {{{ (v : go_string) (b : bool),
+      RET #(chan_spec_raw_examples.Result.mk v b);
+      (* Primary won. *)
+      ⌜(v = query ++ "_primary.html"%go ∧ b = true) ∨
+      (* Hedged request won. *)
+       (v = query ++ "_secondary.html"%go ∧ b = false)⌝ ∨
+      (* Done channel closed before any result arrived — caller wrote
+         "cancelled" into errStr_ptr' and we return the zero Result.  *)
+      (errStr_ptr' ↦ "cancelled"%go ∗ ⌜v = ""%go ∧ b = false⌝) }}}.
+Proof.
+  wp_start.
+  iDestruct "Hpre" as "(#Hdone & HNotified)".
+  wp_auto.
+  wp_apply chan.wp_make2; first done.
+  iIntros (c γc) "(#Hc_is_chan & _ & Hc_own)".
+  wp_auto. iPersist "c".
+  destruct decide; first done.
+  iMod (start_handoff_buffered c γc
+    (λ v, ⌜v = Result.mk (query ++ "_primary.html"%go) true ∨
+           v = Result.mk (query ++ "_secondary.html"%go) false⌝)%I
+    with "Hc_is_chan Hc_own") as "(%γhoff & %Hd & #Hch)".
+  iPersist "query".
+  iPersist "c".
+
+  (* Fork primary goroutine: always launched immediately. *)
+  wp_apply wp_fork.
+  { wp_auto.
+    wp_apply (wp_GetPrimary query).
+    wp_apply (wp_handoff_send with "[$Hch]").
+    { iPureIntro. left. done. }
+    done. }
+
+  (* time.After gives a handoff channel that fires after the hedge threshold. *)
+  wp_apply wp_After.
+  iIntros (hedge_ch γhedge) "#Hhedge".
+  wp_auto_lc 5.
+
+  (* First select: result on c | hedge threshold fires | done closes. *)
+  wp_apply chan.wp_select_blocking. simpl.
+  iSplit.
+  { (* Branch 1: primary responded before hedge threshold. *)
+    repeat iExists _; iSplitL ""; first done. iFrame "#". rewrite Hd.
+    iApply (handoff_rcv_au (V := Result.t) γhoff c with "[$Hch] [$]").
+    iNext. iIntros (v) "%Hres". wp_auto. 
+    destruct Hres as [-> | ->].
+    - iApply "HΦ". iLeft. iPureIntro;left;done.
+    - iApply "HΦ". iLeft. iPureIntro;right;done.
+  }
+  iSplit.
+  { (* Branch 2: hedge threshold fired — launch secondary, enter 2nd select. *)
+    iExists time.Time.t, hedge_ch, γhedge.(handoff.chan_name).
+    repeat iExists _. iSplitL ""; first done. iFrame "#".
+    iSplitL "". { iApply handoff_is_chan. done. }
+    iApply (handoff_rcv_au (V := time.Time.t) γhedge hedge_ch with "[$Hhedge] [$]").
+    iNext. iIntros (v) "_". wp_auto_lc 2.
+
+    (* Fork secondary now that the hedge threshold has fired. *)
+    wp_apply wp_fork.
+    { wp_auto_lc 6.
+      wp_apply (wp_GetSecondary query).
+      wp_apply (wp_handoff_send with "[$Hch]").
+      { iPureIntro. right. done. }
+      done. 
+    }
+
+    (* Second select: result on c | done closes. *)
+    wp_apply chan.wp_select_blocking. simpl.
+    iSplit.
+    { (* Branch 2a: primary or secondary result arrives. *)
+      repeat iExists _; iSplitL ""; first done. iFrame "#". rewrite Hd.
+      iApply (handoff_rcv_au (V := Result.t) γhoff c with "[$Hch] [$]").
+      iNext. iIntros (v0) "%Hres'". wp_auto_lc 4.
+      destruct Hres' as [-> | ->].
+      - iApply "HΦ". iLeft. iPureIntro;left;done.
+      - iApply "HΦ". iLeft. iPureIntro;right;done.
+    }
+    { (* Branch 2b: done fired in second select. *)
+      iSplitR ""; last done.
+      iExists _, done_ch, γdone.(chan_name). repeat iExists _. iSplitL ""; first done.
+      iSplitL "". { iApply (done_is_chan (V := unit) (t := go.StructType []) with "Hdone"). }
+      iApply (done_receive_au (V := unit) (t := go.StructType []) γdone done_ch
+              with "[$Hdone] [$HNotified] [HΦ errStr] [$]").
+      iNext. iIntros "Herr". wp_auto. 
+      iApply "HΦ". iRight. iFrame. iPureIntro. done. 
+    } 
+  }
+  { (* Branch 3: done fired in first select. *)
+    iSplitR ""; last done.
+    iExists _, done_ch, γdone.(chan_name). repeat iExists _. iSplitL ""; first done.
+    iSplitL "". { iApply (done_is_chan (V := unit) (t := go.StructType []) with "Hdone"). }
+    iApply (done_receive_au (V := unit) (t := go.StructType []) γdone done_ch
+            with "[$Hdone] [$HNotified] [HΦ errStr] [$]").
+    iNext. iIntros "Herr". wp_auto. 
+    iApply "HΦ". iRight. iFrame. iPureIntro. done. 
+  }
+Qed.
+
+End hedged_example.
+
 Section select_full_buffer.
 
 (* Invariant for the “full buffer” situation                                  *)

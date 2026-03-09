@@ -69,6 +69,13 @@ Proof.
   by iFrame "#".
 Qed.
 
+Lemma handoff_is_chan γhandoff ch P :
+  is_chan_handoff γhandoff ch P ⊢ is_chan ch γhandoff.(chan_name) V.
+Proof.
+  iDestruct 1 as "[$ _]".
+Qed.
+
+
 Lemma handoff_rcv_au γ ch P Φ  :
   is_chan_handoff γ ch P ⊢
   £1 ∗ £1  -∗
