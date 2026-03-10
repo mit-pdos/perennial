@@ -272,7 +272,7 @@ Proof.
         rewrite take_ge; first iExact "HΦ".
         admit. (* FIXME: overflow of log0 *)
     }
-    (* TODO now: proceed with the proof. Use `is_in_reads` to prove
+    (* TODO: proceed with the proof. Use `is_in_reads` to prove
        `is_read_index`. Make a separate lemma for this for clarity. If you get
        stuck, or don't know how to make the proof work, then interview me about
        the challenges. *)
