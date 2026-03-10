@@ -1,6 +1,8 @@
 From New.proof Require Import proof_prelude.
 From New.proof Require Import sync sync.atomic strings fmt.
 From New.generatedproof Require Import x.
+From New.proof.github_com.goose_lang.goose.model.channel Require Import idioms.
+Import handoff.
 
 (*
 package main
@@ -152,28 +154,44 @@ Proof.
   iIntros "Hown". wp_auto.
 Admitted.
 
-Record γ :=
+Context `{!contributionG Σ (gmultisetR go_string)}.
+
+Record x_names :=
   {
-    docs : list string;
+    docs : gmultiset go_string;
+    task_gn : gname;
   }.
 
-(* TODO now:
-- Add fragmentary ghost state representing permission to run a task `doc` once.
-  An alternative that this proof DOES NOT use would be gmultiset. Because the
-  same task could show up once, this needs to be auth+frag gmultiset ghost state.
- *)
+Definition own_task γ (doc : go_string) : iProp Σ :=
+  own γ.(task_gn) (◯ {[+ doc +]}).
 
 Definition is_coordinator_invariant γ (total_ptr remaining_ptr : loc) : iProp Σ :=
-  (* TODO now:
-     owns authortative knowledge of the outstanding [docs] are remaining. In
-     order to decrement remaining_ptr, ownership of the relevant doc's fragment
-     will have to be returned to delete it from the gmultiset.
-   *)
-.
+  inv nroot (
+      ∃ (remaining_docs : gmultiset go_string) (total remaining : w64),
+        "Htotal" ∷ own_Int64 total_ptr (DfracOwn 1) total ∗
+        "Hremaining" ∷ own_Int64 remaining_ptr (DfracOwn 1) remaining ∗
+        "Hserver" ∷ own γ.(task_gn) remaining_docs ∗
+        "%Hremaining_size" ∷ ⌜ sint.nat remaining = size remaining_docs ⌝ ∗
+        "%Hsubset" ∷ ⌜ remaining_docs ⊆ γ.(docs) ⌝
+    ).
 
-Definition is_Worker (w_ptr : loc) : iProp Σ :=
-  w_ptr.[main.Worker.] ↦
-.
+(** Knowledge that worker.run() requires about its neighbor. *)
+Definition is_Worker_neighbor γ (w_ptr : loc) : iProp Σ :=
+  ∃ steal γsteal,
+  "#steal" ∷ w_ptr.[main.Worker.t, "steal"] ↦□ steal ∗
+  "#Hsteal" ∷ is_chan_handoff γsteal steal
+    (λ (reply : chan.t),
+       ∃ γreply, is_chan_handoff γreply reply
+                   (λ (maybe_req : loc), if decide (maybe_req = null) then True
+                                         else ∃ req, maybe_req ↦ req ∗ own_task γ req
+                   )
+    ).
+
+(** Knowledge about the worker known by the coordinator. *)
+Definition is_Worker γ (w_ptr : loc) : iProp Σ :=
+  ∃ queue γqueue,
+  "#queue" ∷ w_ptr.[main.Worker.t, "queue"] ↦□ queue ∗
+  "#Hqueue" ∷ is_chan_handoff γqueue queue (own_task γ).
 
 Lemma wp_Clone sl_b dq (b : list w8) :
   {{{
