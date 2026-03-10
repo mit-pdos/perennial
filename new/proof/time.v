@@ -1,7 +1,7 @@
 From New.proof Require Import proof_prelude.
 From New.generatedproof Require Export time.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import logatom.chan_au_base idiom.handoff.handoff.
+  Require Import logatom.chan_au_base idiom.bag.bag.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -97,20 +97,20 @@ Qed.
 Lemma wp_After (d : time.Duration.t) :
   {{{ is_pkg_init time }}}
     @! time.After #d
-  {{{ (ch: loc) γ, RET #ch; is_chan_handoff γ ch (λ (t: time.Time.t), True)%I }}}.
+  {{{ (ch: loc) γ, RET #ch; is_chan_bag γ ch (λ (t: time.Time.t), True)%I }}}.
 Proof.
   wp_start. change (go.Named "time.Time"%go []) with time.Time.
   wp_apply chan.wp_make2; first word.
   iIntros (ch γ) "(His & Hcap & Hown)".
   simpl.
-  iMod (start_handoff _ _ (λ t, True)%I
-          with "[$His] [$Hown]") as (γhandoff) "[_ #Hch]".
+  iMod (start_bag (λ t, True)%I _ _ _ I
+          with "[$His] [$Hown]") as "#Hch".
   wp_auto.
   wp_apply wp_fork.
   {
     wp_apply wp_arbitraryTime.
     iIntros (t) "_".
-    wp_apply (wp_handoff_send with "[$Hch]"). done.
+    wp_apply (wp_bag_send with "[$Hch]"). done.
   }
   iApply "HΦ".
   iFrame "#".

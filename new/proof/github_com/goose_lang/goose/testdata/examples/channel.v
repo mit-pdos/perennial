@@ -1,6 +1,6 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-Require Import idiom.base handoff future spsc done dsp dsp_proofmode mpmc join handshake.
+Require Import idiom.base bag future spsc done dsp dsp_proofmode mpmc join handshake.
 From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
@@ -77,10 +77,10 @@ Proof.
   iIntros (c γc) "(#Hc_is_chan & _ & Hc_own)".
   wp_auto. iPersist "c".
   destruct decide; first done.
-  iMod (start_handoff_buffered c γc
+  iMod (start_bag
     (λ v, ⌜v = Result.mk (query ++ "_primary.html"%go) true ∨
            v = Result.mk (query ++ "_secondary.html"%go) false⌝)%I
-    with "Hc_is_chan Hc_own") as "(%γhoff & %Hd & #Hch)".
+    _ c γc I with "Hc_is_chan Hc_own") as "#Hch".
   iPersist "query".
   iPersist "c".
 
@@ -88,7 +88,7 @@ Proof.
   wp_apply wp_fork.
   { wp_auto.
     wp_apply (wp_GetPrimary query).
-    wp_apply (wp_handoff_send with "[$Hch]").
+    wp_apply (wp_bag_send with "[$Hch]").
     { iPureIntro. left. done. }
     done. }
 
@@ -101,8 +101,8 @@ Proof.
   wp_apply chan.wp_select_blocking. simpl.
   iSplit.
   { (* Branch 1: primary responded before hedge threshold. *)
-    repeat iExists _; iSplitL ""; first done. iFrame "#". rewrite Hd.
-    iApply (handoff_rcv_au (V := Result.t) γhoff c with "[$Hch] [$]").
+    repeat iExists _; iSplitL ""; first done. iFrame "#".
+    iApply (bag_recv_au (V := Result.t) γc c with "[$Hch] [$]").
     iNext. iIntros (v) "%Hres". wp_auto. 
     destruct Hres as [-> | ->].
     - iApply "HΦ". iLeft. iPureIntro;left;done.
@@ -110,17 +110,17 @@ Proof.
   }
   iSplit.
   { (* Branch 2: hedge threshold fired — launch secondary, enter 2nd select. *)
-    iExists time.Time.t, hedge_ch, γhedge.(handoff.chan_name).
+    iExists time.Time.t, hedge_ch, γhedge.
     repeat iExists _. iSplitL ""; first done. iFrame "#".
-    iSplitL "". { iApply handoff_is_chan. done. }
-    iApply (handoff_rcv_au (V := time.Time.t) γhedge hedge_ch with "[$Hhedge] [$]").
+    iSplitL "". { iApply is_bag_is_chan. done. }
+    iApply (bag_recv_au (V := time.Time.t) γhedge hedge_ch with "[$Hhedge] [$]").
     iNext. iIntros (v) "_". wp_auto_lc 2.
 
     (* Fork secondary now that the hedge threshold has fired. *)
     wp_apply wp_fork.
     { wp_auto_lc 6.
       wp_apply (wp_GetSecondary query).
-      wp_apply (wp_handoff_send with "[$Hch]").
+      wp_apply (wp_bag_send with "[$Hch]").
       { iPureIntro. right. done. }
       done. 
     }
@@ -129,8 +129,8 @@ Proof.
     wp_apply chan.wp_select_blocking. simpl.
     iSplit.
     { (* Branch 2a: primary or secondary result arrives. *)
-      repeat iExists _; iSplitL ""; first done. iFrame "#". rewrite Hd.
-      iApply (handoff_rcv_au (V := Result.t) γhoff c with "[$Hch] [$]").
+      repeat iExists _; iSplitL ""; first done. iFrame "#".
+      iApply (bag_recv_au (V := Result.t) γc c with "[$Hch] [$]").
       iNext. iIntros (v0) "%Hres'". wp_auto_lc 4.
       destruct Hres' as [-> | ->].
       - iApply "HΦ". iLeft. iPureIntro;left;done.
@@ -374,25 +374,25 @@ Qed.
 Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples  }}}
     @! chan_spec_raw_examples.HelloWorldAsync #()
-  {{{ (ch: loc)  (γfut: handoff_names), RET #ch;
-       is_chan ch γfut.(handoff.chan_name) go_string ∗
-  is_chan_handoff (V:=go_string) γfut ch (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)
+  {{{ (ch: loc)  (γfut: chan_names), RET #ch;
+       is_chan ch γfut go_string ∗
+  is_chan_bag (V:=go_string) γfut ch (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)
     }}}.
 Proof.
   wp_start. wp_auto.
   wp_apply chan.wp_make2; first done.
   iIntros (ch γ) "(#His_chan & Hcap & Hownchan)".
-  wp_auto. 
-  iMod ((start_handoff_buffered ch γ (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)%I)
-         with "His_chan Hownchan") as "(%γdone & %Hd & #Hch)".
+  wp_auto.
+  iMod (start_bag (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)%I
+         _ ch γ I with "His_chan Hownchan") as "#Hch".
   iPersist "ch".
   wp_apply (wp_fork).
   {
     wp_auto. wp_apply wp_sys_hello_world.
     iAssert (⌜"Hello, World!"%go = "Hello, World!"%go⌝)%I as "%HP";first done.
-    wp_apply (wp_handoff_send (V:=go_string) with "[$Hch]");done.
+    wp_apply (wp_bag_send (V:=go_string) with "[$Hch]");done.
   }
-  iApply "HΦ". subst γ. iFrame "∗#".
+  iApply "HΦ". iFrame "∗#".
 Qed.
 
 Lemma wp_HelloWorldSync :
@@ -402,7 +402,7 @@ Lemma wp_HelloWorldSync :
 Proof.
   wp_start. wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hchan #Hfut]".
-  wp_apply (wp_handoff_receive with "Hfut").
+  wp_apply (wp_bag_receive with "Hfut").
   iIntros (v) "%Hv". wp_auto. subst v.
   iApply "HΦ". done.
 Qed.
@@ -435,7 +435,7 @@ Proof.
   iSplit.
     {
       repeat iExists _; iSplitR; first done. iFrame "#".
-      iApply (handoff_rcv_au (V:=go_string)  γfuture ch with "[$Hfut] [$]").
+      iApply (bag_recv_au (V:=go_string)  γfuture ch with "[$Hfut] [$]").
       iNext. iIntros (v). iIntros "%Hw".
       wp_auto. subst v. iApply "HΦ". iPureIntro. right. done.
     }
@@ -859,7 +859,7 @@ Qed.
 Qed.
 
 Definition is_request_chan γ (ch: loc): iProp Σ :=
-  is_chan_handoff (V:=chan_spec_raw_examples.request.t) γ ch (λ r, ∃ γfut Q, do_request r γfut Q)%I.
+  is_chan_bag (V:=chan_spec_raw_examples.request.t) γ ch (λ r, ∃ γfut Q, do_request r γfut Q)%I.
 
 Lemma wp_ho_worker γ ch :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_request_chan γ ch }}}
@@ -873,7 +873,7 @@ Lemma wp_ho_worker γ ch :
       "r" ∷ r_ptr ↦ r0
     )%I with "[$r]" as "IH".
   wp_for "IH".
-  wp_apply (wp_handoff_receive with "[$His]") as "%r Hreq".
+  wp_apply (wp_bag_receive with "[$His]") as "%r Hreq".
   iNamed "Hreq".
   wp_bind.
   iApply (wp_wand with "[Hf]").
@@ -897,8 +897,8 @@ Lemma wp_HigherOrderExample :
   wp_apply chan.wp_make1.
   iIntros (req_ch γ) "(His & _Hcap & Hown)".
   simpl.
-  iMod (start_handoff with "His Hown") as "(%γdone & %Hsimpch & #Hch)".
-  iAssert (is_request_chan γdone req_ch) with "[$Hch]" as "#Hreqs".
+  iMod (start_bag _ _ _ _ I with "His Hown") as "#Hch".
+  iAssert (is_request_chan γ req_ch) with "[$Hch]" as "#Hreqs".
   wp_auto.
   wp_apply (wp_fork).
   {
@@ -927,9 +927,9 @@ Lemma wp_HigherOrderExample :
     wp_auto.
     eauto.
   }
-  wp_apply (wp_handoff_send with "[$Hch $Hdo_r1]").
-  wp_apply (wp_handoff_send with "[$Hch $Hdo_r2]").
-  wp_apply (wp_handoff_send with "[$Hch $Hdo_r3]").
+  wp_apply (wp_bag_send with "[$Hch $Hdo_r1]").
+  wp_apply (wp_bag_send with "[$Hch $Hdo_r2]").
+  wp_apply (wp_bag_send with "[$Hch $Hdo_r3]").
   wp_apply (wp_get_response with "[$Hawait_r1]") as "%s %Heq".
   subst.
   wp_apply (wp_get_response with "[$Hawait_r2]") as "%s %Heq".
@@ -1416,10 +1416,10 @@ Proof.
   iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
   wp_apply (chan.wp_make1).
   iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
-  iMod (start_handoff result1_ch γr1 (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own") 
-    as (γh1) "[%Heq1 #Hhandoff1]".
-  iMod (start_handoff result2_ch γr2 (λ v, ⌜v = W64 10⌝)%I with "Hr2_is_chan Hr2_own")
-    as (γh2) "[%Heq2 #Hhandoff2]".
+  iMod (start_bag (λ v, ⌜v = W64 6⌝)%I _ result1_ch γr1 I with "Hr1_is_chan Hr1_own")
+    as "#Hbag1".
+  iMod (start_bag (λ v, ⌜v = W64 10⌝)%I _ result2_ch γr2 I with "Hr2_is_chan Hr2_own")
+    as "#Hbag2".
   iMod (start_done_with_broadcast_notified (V:=unit) (t:=go.StructType []) done_ch γdone (sharedValue_ptr ↦□ W64 2)%I with "Hdone_is_chan Hdone_own")
     as (γbc) "(#Hbc & HBcastNotif & #HBc)".
   iPersist "done result1 result2".
@@ -1428,7 +1428,7 @@ Proof.
     rename done_ch into done_ch_1. wp_auto_lc 1.
     wp_apply ((wp_done_receive_broadcast (V:=unit) (t:=go.StructType []) γbc done_ch_1 ((sharedValue_ptr ↦□ W64 2)%I))  with "[$Hbc $HBc]").
     iIntros "HShared". wp_auto.
-    wp_apply (wp_handoff_send with "[$Hhandoff1]"); word.
+    wp_apply (wp_bag_send with "[$Hbag1]"); word.
   }
    wp_apply (wp_fork with "[result1 result2 done]").
   {
@@ -1437,13 +1437,13 @@ Proof.
     wp_apply ((wp_done_receive_broadcast (V:=unit) (t:=go.StructType []) γbc done_ch_1  ((sharedValue_ptr ↦□ W64 2)%I))
     with "[$Hbc $HBc]").
     iIntros "HShared". wp_auto.
-    wp_apply (wp_handoff_send with "[$Hhandoff2]");word.
+    wp_apply (wp_bag_send with "[$Hbag2]");word.
   }
   iPersist "sharedValue".
   wp_apply ((wp_done_close (V:=unit) (t:=go.StructType []) γbc done_ch ( ((sharedValue_ptr ↦□ W64 2)%I))) with "[$Hbc $HBcastNotif $sharedValue]").
-  wp_apply (wp_handoff_receive with "Hhandoff1").
+  wp_apply (wp_bag_receive with "Hbag1").
   iIntros (v1) "%Hv1". subst v1. wp_auto.
-  wp_apply (wp_handoff_receive with "Hhandoff2"). iIntros (v2) "%Hv2".
+  wp_apply (wp_bag_receive with "Hbag2"). iIntros (v2) "%Hv2".
   subst v2. wp_auto. by iApply "HΦ".
 Qed.
 

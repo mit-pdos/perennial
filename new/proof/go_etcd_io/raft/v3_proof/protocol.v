@@ -1,7 +1,7 @@
 Require Export New.proof.go_etcd_io.raft.v3_proof.base.
 From New.proof.chan_proof Require Import closeable.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import logatom.chan_au_base idiom.handoff.handoff.
+  Require Import logatom.chan_au_base idiom.bag.bag.
 
 Module node.
 Axiom t : Type.
@@ -55,12 +55,12 @@ Definition own_propose_message γraft (pm : raft.msgWithResult.t) : iProp Σ :=
   "data_sl" ∷ data_sl ↦* data ∗
   "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True)) ∗
   (* FIXME: probably can only send once. *)
-  "Hresult" ∷ is_chan_handoff γch pm.(raft.msgWithResult.result') (λ (_ : error.t), True%I)
+  "Hresult" ∷ is_chan_bag γch pm.(raft.msgWithResult.result') (λ (_ : error.t), True%I)
 .
 
 Local Definition is_node_inner γraft (n : raft.node.t) : iProp Σ :=
   ∃ γp γa γd,
-  "#Hpropc" ∷ is_chan_handoff γp n.(raft.node.propc') (λ (_ : error.t), True%I) ∗
+  "#Hpropc" ∷ is_chan_bag γp n.(raft.node.propc') (λ (_ : error.t), True%I) ∗
   "#Hadvancec_is" ∷ is_chan n.(raft.node.advancec') γa unit ∗
   "#Hadvancec" ∷ inv nroot (∃ s, own_chan γa unit s) ∗
   "#Hdone" ∷ own_closeable_chan n.(raft.node.done') γd True closeable.Unknown.

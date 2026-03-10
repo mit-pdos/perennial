@@ -261,7 +261,7 @@ Proof.
 Qed.
 
 (* FIXME *)
-Transparent handoff.is_chan_handoff.
+Transparent bag.is_chan_bag.
 
 Lemma wp_EliminationStack__Push v γ s N :
   ∀ Φ,
@@ -338,7 +338,7 @@ Proof.
   - iSplit; last done.
     repeat iExists _; iSplitR; first done. iFrame "#".
     iPoseProof "Hafter" as "[$ _]".
-    iApply (handoff.handoff_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
+    iApply (bag.bag_recv_au (V:=time.Time.t) with "[$Hafter] [$]").
     iIntros (t) "_ !>". wp_auto_lc 1.
     wp_apply wp_LockedStack__Push.
     { iFrame "#". }
@@ -437,9 +437,9 @@ Proof.
     + done.
   - iSplitL; last done.
     repeat iExists _; iSplitR; first done. iFrame "#".
-    (* FIXME: need to break is_handoff to get is_chan *)
+    (* FIXME: need to break is_chan_bag to get is_chan *)
     iPoseProof "Hafter" as "[$ _]".
-    iApply (handoff.handoff_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
+    iApply (bag.bag_recv_au (V:=time.Time.t) with "[$Hafter] [$]").
     iIntros (t) "_ !>". wp_auto_lc 1.
     wp_apply wp_LockedStack__Pop.
     { iFrame "#". }

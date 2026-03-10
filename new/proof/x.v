@@ -4,7 +4,7 @@ From New.proof Require Import sync sync.atomic strings fmt
 
 From New.generatedproof Require Import x.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import idioms.
-Import handoff.
+Import bag.
 From New.proof Require Import chan_proof.closeable.
 
 (*
@@ -191,17 +191,16 @@ Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
         "%Hsubset" ∷ ⌜ ∀ (i : nat), i ∈ dom remaining_docs → i < length γ.(docs) ⌝
     ).
 
-(* FIXME: clean up handoff idiom. Avoid wrapping gname into a record? Keep
-   is_chan inside is_chan_handoff? *)
+(* FIXME: clean up bag idiom. Keep is_chan inside is_chan_bag? *)
 Definition is_Worker γ (w : loc) : iProp Σ :=
   ∃ wv γsteal γqueue,
   "#w" ∷ w ↦□ wv ∗
-  "#Hqueue_is" ∷ is_chan wv.(main.Worker.queue') γqueue.(chan_name) go_string ∗
-  "#Hqueue" ∷ is_chan_handoff γqueue wv.(main.Worker.queue') (own_task γ) ∗
-  "#Hsteal_is" ∷ is_chan wv.(main.Worker.steal') γsteal.(chan_name) chan.t ∗
-  "#Hsteal" ∷ is_chan_handoff γsteal wv.(main.Worker.steal')
+  "#Hqueue_is" ∷ is_chan wv.(main.Worker.queue') γqueue go_string ∗
+  "#Hqueue" ∷ is_chan_bag γqueue wv.(main.Worker.queue') (own_task γ) ∗
+  "#Hsteal_is" ∷ is_chan wv.(main.Worker.steal') γsteal chan.t ∗
+  "#Hsteal" ∷ is_chan_bag γsteal wv.(main.Worker.steal')
     (λ (reply : chan.t),
-       ∃ γreply, is_chan_handoff γreply reply
+       ∃ γreply, is_chan_bag γreply reply
                    (λ (maybe_req : loc), if decide (maybe_req = null) then True
                                          else ∃ req, maybe_req ↦ req ∗ own_task γ req
                    )
@@ -234,7 +233,7 @@ Proof.
     { (* done. *)
       iNamedSuffix "Hcoord" "coord".
       repeat iExists _. iSplitR; first done. iFrame "#".
-      iApply blocking_rcv_implies_nonblocking. (* FIXME: rename lemma to use `recv`. *)
+      iApply blocking_rcv_implies_nonblocking. (* TODO now: rename lemma to use `recv`. *)
       iApply (closeable_chan_receive with "[$]").
       iIntros "[#H●_done Hclosed]".
       wp_auto. wp_for_post.
@@ -247,7 +246,7 @@ Proof.
     { (* get a request *)
       repeat iExists _. iSplitR; first done. iFrame "#".
       iApply blocking_rcv_implies_nonblocking.
-      iApply (handoff_rcv_au with "[] [$]"). (* FIXME: rename rcv_au into recv_au *)
+      iApply (bag_recv_au with "[$]").
       { iFrame "#". }
       iNext. iIntros "%v Hv". simpl subst.
       wp_auto.
@@ -258,7 +257,7 @@ Proof.
     { (* help a worker steal from this one. *)
       repeat iExists _. iSplitR; first done. iFrame "#".
       iApply blocking_rcv_implies_nonblocking.
-      iApply (handoff_rcv_au with "[] [$]").
+      iApply (bag_recv_au with "[$]").
       { iFrame "#". }
       iNext. iIntros "%reply_ch #Hreply_ch". simpl subst.
       wp_auto_lc 2.
@@ -268,7 +267,7 @@ Proof.
         rewrite big_andL_singleton.
         repeat iExists _. iSplitR; first done. iFrame "#".
         iApply blocking_rcv_implies_nonblocking.
-        iApply (handoff_rcv_au with "[] [$]").
+        iApply (bag_recv_au with "[$]").
         { iFrame "#". }
         iNext. iIntros "%v Hv".
         (* FIXME: translation bug with nested selects with receive. *)
@@ -276,14 +275,14 @@ Proof.
         simpl subst.
         wp_auto_lc 2.
         iDestruct "Hreply_ch" as "(% & #Hreply_ch)".
-        wp_apply (wp_handoff_send with "[Hv doc]").
+        wp_apply (wp_bag_send with "[Hv doc]").
         { iFrame "#∗". destruct decide; first done. iFrame. }
         wp_for_post.
         iFrame.
       - (* no work, so send nil *)
         wp_auto.
         iDestruct "Hreply_ch" as "(% & #Hreply_ch)".
-        wp_apply (wp_handoff_send with "[]").
+        wp_apply (wp_bag_send with "[]").
         { iFrame "#∗". }
         wp_for_post.
         iFrame.
@@ -295,19 +294,8 @@ Proof.
     wp_apply chan.wp_make2 as "%reply %γreply (#Hreply_is & _ & Hown)"; first done.
     iNamedSuffix "Hneighbor" "neighbor".
     wp_auto_lc 2.
-    (* FIXME: handoff should not be specific to unbuffered channels. *)
-    (* iMod (start_handoff with "Hreply Hown") as "H". *)
-    iAssert (
-        ∃ γreply_handoff,
-          "%" ∷ ⌜ γreply = γreply_handoff.(chan_name) ⌝  ∗
-          "#Hreply" ∷ is_chan_handoff γreply_handoff reply
-            (λ maybe_req : loc,
-               if decide (maybe_req = null)
-               then True
-               else ∃ req : go_string, maybe_req ↦ req ∗ own_task γ req))%I with
-      "[Hreply_is Hown]" as "H".
-    { admit. }
-    iNamed "H".
+    iMod (start_bag with "Hreply_is Hown") as "#Hreply".
+    { done. }
     wp_apply chan.wp_select_blocking.
     rewrite big_andL_cons. iSplit.
     { (* done. *)
@@ -324,11 +312,11 @@ Proof.
     { (* request to steal was sent *)
       iNamedSuffix "Hcoord" "coord".
       repeat iExists _. iSplitR; first done. iFrame "#".
-      (* FIXME: lemma statements are screwed up. *)
-      iApply (handoff_send_au γsteal0 with "[$]").
+      iApply (bag_send_au with "[$]").
+      { iFrame "#". }
       { iFrame "#". }
       iNext. wp_auto.
-      wp_apply (wp_handoff_receive with "[$]") as "%v Hv".
+      wp_apply (wp_bag_receive with "[$]") as "%v Hv".
       wp_if_destruct.
       { wp_for_post. iFrame. }
       rewrite decide_False //.
@@ -339,8 +327,7 @@ Proof.
     rewrite big_andL_cons. iSplit.
     { (* received local work while trying to steal. *)
       repeat iExists _. iSplitR; first done. iFrame "#".
-      (* FIXME: lemma statements are screwed up. *)
-      iApply (handoff_rcv_au with "[] [$]").
+      iApply (bag_recv_au with "[$]").
       { iFrame "#". }
       iNext. wp_auto. iIntros "%v Hv". simpl subst. wp_auto.
       admit. (* TODO: spec for Worker.process *)
