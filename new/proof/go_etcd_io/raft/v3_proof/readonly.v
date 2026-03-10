@@ -104,6 +104,18 @@ Definition is_stale_term γ term : iProp Σ :=
       □(∀ node_id (Hin_quorum : node_id ∈ quorum),
          ∃ term', is_term_lb γ node_id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝).
 
+Axiom committed_in_term_agree : ∀ γ term log1 log2,
+  own_committed_in_term γ term log1 -∗
+  is_committed_in_term γ term log2 -∗
+  ⌜ prefix log2 log1 ⌝.
+
+(* When own and is have different terms, the own term is stale. *)
+Axiom committed_in_term_stale : ∀ γ term1 term2 log1 log2,
+  term1 ≠ term2 →
+  own_committed_in_term γ term1 log1 -∗
+  is_committed_in_term γ term2 log2 -∗
+  is_stale_term γ term1.
+
 (* TODO: set this up to confirm backwards compatibility (i.e. if some raft
    servers run the new code and some run the old code, system is still safe;
    only the leader needs to run the new code in order for the system to tolerate
@@ -188,9 +200,11 @@ Definition is_raft_commit_inv γ : iProp Σ := (*  *)
   inv Ncommit (∃ term log (readsΦ : list (w64 * (list $ list w8 → iProp Σ))), (*  *)
         "commit" ∷ own_commit_auth γ log ∗
         "#Hcommit" ∷ is_committed_in_term γ term log ∗
-        (* "read" ∷ own_read_ops γ readΦ ∗ *)
+        "reads" ∷ own_reads γ readsΦ ∗
 
-        (* Permission to linearize reads on all future logs. *)
+        (* Permission to linearize reads on all future logs.
+           For any Φ stored in the reads queue, firing its AU against the
+           current committed log produces Φ applied to that log. *)
         "#Hread_aus" ∷ □(∀ Φ (Hin : Φ ∈ readsΦ.*2) log,
                            own_commit_auth γ log ={⊤∖↑N}=∗
                            own_commit_auth γ log ∗ Φ log) ∗
@@ -198,28 +212,77 @@ Definition is_raft_commit_inv γ : iProp Σ := (*  *)
            respective starting index. *)
         "#Hread_wits" ∷ □(∀ start_index Φ (Hindex : (start_index, Φ) ∈ readsΦ)
                             index (Hindex : sint.nat start_index ≤ sint.nat index ≤ length log),
-                            Φ log)
+                            Φ (take (sint.nat index) log))
     ).
 
+(* A read index witness: given any committed log at least as long as [index],
+   opening the invariant at mask ⊤ lets us fire the stored AU to get [Φ log].
+   Needs £ 2: one credit to open the invariant (strip ▷), one to strip the ▷
+   from saved_pred_agree. *)
 Definition is_read_index γ index Φ : iProp Σ :=
-  ∀ log (Hin : sint.nat index ≤ length log) E (Hmask : ↑N ⊆ E),
-  is_commit γ log ={E}=∗ Φ log.
+  ∀ log (Hin : sint.nat index ≤ length log),
+  £ 2 -∗ is_commit γ log ={⊤}=∗ Φ log.
 
 (** Try to add a read with continuation `Φ` to be executed forever starting at
    the committed index from term `term`. *)
-Lemma try_read [E] γ term log Φ :
-  ↑N ⊆ E →
+Lemma try_read γ term log Φ :
+  "Hlc" ∷ £ 1 ∗
   "#Hinv" ∷ is_raft_commit_inv γ ∗
   "Hcom" ∷ own_committed_in_term γ term log ∗
-  "#Hau" ∷ □(|={⊤∖↑N,∅}=> ∃ log, own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ Φ log))
-  ={E}=∗
+  "#Hau" ∷ □(|={⊤∖↑N,∅}=> ∃ log, own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ □ Φ log))
+  ={⊤}=∗
   own_committed_in_term γ term log ∗ (is_read_index γ (W64 (length log)) Φ ∨ is_stale_term γ term).
 Proof.
-  intros. iNamed 1.
-  (* TODO now: prove this by breaking into cases of whether the term inside of
-     is_raft_commit_inv is the latest or not. If it's not the latest, then
-     is_comminted_in_term should yield an is_stale_term. If it is the latest,
-     then insert into the readsΦ list, and use the witness to establish is_read_index. *)
+  iNamed 1.
+  iInv "Hinv" as "Hi". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iDestruct "Hi" as (inv_term inv_log inv_readsΦ)
+    "(Hcommit_auth & #Hcommit_term & Hreads & #Hread_aus & #Hread_wits)".
+  destruct (decide (term = inv_term)) as [<- | Hneq].
+  - (* Same term: the committed log in the invariant matches our term. *)
+    iDestruct (committed_in_term_agree with "Hcom Hcommit_term") as %Hle.
+    (* Insert (W64 (length inv_log), Φ) into the reads queue. *)
+    iMod (reads_insert _ _ (W64 (length inv_log)) Φ with "Hreads") as "[Hreads #Hin_reads]".
+    (* Re-establish Hread_aus for the extended list. *)
+    iAssert (□(∀ Φ0 (Hin : Φ0 ∈ (inv_readsΦ ++ [(W64 (length inv_log), Φ)]).*2) log0,
+                 own_commit_auth γ log0 ={⊤∖↑N}=∗ own_commit_auth γ log0 ∗ Φ0 log0))%I
+      as "#Hread_aus_new".
+    { iIntros "!>" (Φ0 Hin log0) "Hca".
+      rewrite fmap_app /= in Hin.
+      apply elem_of_app in Hin as [Hin|Hin].
+      - iApply ("Hread_aus" $! Φ0 Hin log0 with "Hca").
+      - apply list_elem_of_singleton in Hin as ->.
+        iMod "Hau" as (log_au) "[Hcommit Hclose]".
+        iDestruct (mono_list_auth_own_agree with "Hca Hcommit") as %[_ <-].
+        iMod ("Hclose" with "Hcommit") as "#HΦ".
+        iModIntro. iFrame "∗#%". }
+    (* Close the invariant with the extended reads list. *)
+    iSplitR "Hcom".
+    {
+      iMod fupd_mask_subseteq as "Hmask"; last iMod "Hau" as "H"; first solve_ndisj.
+      iDestruct "H" as (?) "(Hcom & Hclose)".
+      iDestruct (mono_list_auth_own_agree with "Hcom Hcommit_auth") as %Heq.
+      iMod ("Hclose" with "Hcom") as "#HΦ". iMod "Hmask". iModIntro.
+      iExists term, inv_log, (inv_readsΦ ++ [(W64 (length inv_log), Φ)]).
+      iFrame "∗#".
+      destruct Heq as [_ <-].
+      iNext. iIntros "!>" (start_index Φ0 Hindex index Hindex2).
+      apply elem_of_app in Hindex as [Hindex|Hindex].
+      - iApply ("Hread_wits" $! start_index Φ0 Hindex index Hindex2).
+      - apply list_elem_of_singleton in Hindex as [= -> <-].
+        rewrite take_ge; first iExact "HΦ".
+        admit. (* FIXME: overflow of log0 *)
+    }
+    (* TODO now: proceed with the proof. Use `is_in_reads` to prove
+       `is_read_index`. Make a separate lemma for this for clarity. If you get
+       stuck, or don't know how to make the proof work, then interview me about
+       the challenges. *)
+    admit.
+  - (* Different term: term is stale. *)
+    iDestruct (committed_in_term_stale with "Hcom Hcommit_term") as "#Hstale".
+    { done. }
+    iSplitR "Hcom".
+    { iExists inv_term, inv_log, inv_readsΦ. iFrame "∗#". done. }
+    iModIntro. iFrame "Hcom". iRight. iExact "Hstale".
 Admitted.
 
 Definition is_heartbeat_ctx_stale γ term ctx stale_ids : iProp Σ :=
