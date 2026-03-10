@@ -53,10 +53,7 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       let: "$ch2" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] "w"))) in
       SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-      ]) "$ch0") (return: (#()))); (CommClause (SendCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch1" "$v1") (do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"stole"%go) in
-      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Println [] #()) "$a0");;;
-      (let: "doc" := (GoAlloc (go.PointerType go.string) (GoZeroVal (go.PointerType go.string) #())) in
+      ]) "$ch0") (return: (#()))); (CommClause (SendCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch1" "$v1") ((let: "doc" := (GoAlloc (go.PointerType go.string) (GoZeroVal (go.PointerType go.string) #())) in
       let: "$r0" := (Fst (chan.receive (go.PointerType go.string) (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply"))) in
       do:  ("doc" <-[go.PointerType go.string] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.PointerType go.string] "doc") ≠⟨go.PointerType go.string⟩ (Convert go.untyped_nil (go.PointerType go.string) UntypedNil))
@@ -102,7 +99,7 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       chan.send (go.PointerType go.string) "$chan" "$v")))])))]));;;
     return: #()).
 
-(* go: x.go:64:18 *)
+(* go: x.go:63:18 *)
 Definition Worker__processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "w" "doc" "total" "remaining" "done",
     exception_do (let: "w" := (GoAlloc (go.PointerType Worker) "w") in
@@ -128,7 +125,7 @@ Definition Worker__processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     else do:  #());;;
     return: #()).
 
-(* go: x.go:71:6 *)
+(* go: x.go:70:6 *)
 Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "docs",
     exception_do (let: "docs" := (GoAlloc (go.SliceType go.string) "docs") in
@@ -198,7 +195,7 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Wait"%go "wg") #());;;
     return: ((MethodResolve (go.PointerType atomic.Int64) "Load"%go "total") #())).
 
-(* go: x.go:107:6 *)
+(* go: x.go:106:6 *)
 Definition mainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "docs" := (GoAlloc (go.SliceType go.string) (GoZeroVal (go.SliceType go.string) #())) in
