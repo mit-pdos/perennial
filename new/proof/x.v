@@ -1,5 +1,7 @@
 From New.proof Require Import proof_prelude.
-From New.proof Require Import sync sync.atomic strings fmt.
+From New.proof Require Import sync sync.atomic strings fmt
+  chan_proof.closeable.
+
 From New.generatedproof Require Import x.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import idioms.
 Import handoff.
@@ -166,11 +168,14 @@ Definition own_task γ (doc : go_string) : iProp Σ :=
 Definition own_task_auth γ (remaining_docs : gmap nat go_string) : iProp Σ :=
   ghost_map_auth γ.(task_gn) 1 remaining_docs.
 
+Definition is_tasks_done γ : iProp Σ :=
+  inv nroot (own_task_auth γ ∅).
+
 Axiom word_count : ∀ (doc : go_string), nat.
 
 Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
   ∃ γdone,
-  "#Hdone" ∷ own_closeable_chan done γdone (inv nroot (own_task_auth γ ∅)) closeable.Unknown ∗
+  "#Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ) closeable.Unknown ∗
   "#Hdone_is" ∷ is_chan done γdone unit ∗
   "#Hi" ∷ inv nroot (
       ∃ (remaining_docs : gmap nat go_string) (totalv remainingv : w64),
@@ -204,9 +209,11 @@ Definition is_Worker γ (w : loc) : iProp Σ :=
 
 Lemma wp_Worker__run γ w neighbor total remaining done (wg : loc) :
   {{{
+        is_pkg_init main ∗
         "#Hw" ∷ is_Worker γ w ∗
         "#Hneighbor" ∷ is_Worker γ neighbor ∗
-        "#Hcoord" ∷ is_coordinator γ total remaining done
+        "#Hcoord" ∷ is_coordinator γ total remaining done ∗
+        "Hwg" ∷ join.own_Done wg (is_tasks_done γ)
   }}}
     w @! (go.PointerType main.Worker) @! "run" #neighbor #total #remaining #done #wg
   {{{
@@ -231,7 +238,10 @@ Proof.
       iApply (closeable_chan_receive with "[$]").
       iIntros "[#H●_done Hclosed]".
       wp_auto. wp_for_post.
-      admit. (* TODO: waitgroup join spec. *) }
+      wp_apply (join.wp_WaitGroup__Done with "[$Hwg]").
+      { iFrame "#". }
+      wp_end.
+    }
     rewrite big_andL_cons.
     iSplit.
     { (* get a request *)
@@ -306,7 +316,9 @@ Proof.
       iApply (closeable_chan_receive with "[$]").
       iIntros "[#H●_done Hclosed]".
       wp_auto. wp_for_post.
-      admit. (* TODO: wg join. *)
+      wp_apply (join.wp_WaitGroup__Done with "[$Hwg]").
+      { iFrame "#". }
+      wp_end.
     }
     rewrite big_andL_cons. iSplit.
     { (* request to steal was sent *)
