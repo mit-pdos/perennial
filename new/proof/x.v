@@ -160,38 +160,46 @@ Record x_names :=
   {
     docs : list go_string;
     task_gn : gname;
+    done_gn : gname;
   }.
 
 Definition own_task γ (doc : go_string) : iProp Σ :=
-  ∃ (i : nat), i ↪[γ.(task_gn)] doc.
+  ∃ (i : nat), i ↪[γ.(task_gn)] (Some doc).
 
-Definition own_task_auth γ (remaining_docs : gmap nat go_string) : iProp Σ :=
+(* A task being `None` means that `total` has it, but remaining hasn't been
+   decremented yet. *)
+Definition own_task_auth γ (remaining_docs : gmap nat (option go_string)) : iProp Σ :=
   ghost_map_auth γ.(task_gn) 1 remaining_docs.
-
-Definition is_tasks_done γ : iProp Σ :=
-  inv nroot (own_task_auth γ ∅).
 
 Axiom word_count : ∀ (doc : go_string), nat.
 
+Definition is_tasks_done γ total : iProp Σ :=
+  own_Int64 total DfracDiscarded (W64 (sum_list (word_count <$> γ.(docs)))).
+
 Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
   ∃ γdone,
-  "#Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ) closeable.Unknown ∗
+  "#Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ total) closeable.Unknown ∗
   "#Hdone_is" ∷ is_chan done γdone unit ∗
   "#Hi" ∷ inv nroot (
-      ∃ (remaining_docs : gmap nat go_string) (totalv remainingv : w64),
-        "Htotal" ∷ own_Int64 total (DfracOwn 1) totalv ∗
-        "Hremaining" ∷ own_Int64 remaining (DfracOwn 1) remainingv ∗
-        "H●" ∷ own_task_auth γ remaining_docs ∗
-        "%Htotal" ∷ ⌜ sint.nat totalv = sum_list (imap (λ i doc,
-                                                        match (remaining_docs !! i) with
-                                                        | None => word_count doc
-                                                        | _ => O
-                                                        end) γ.(docs)) ⌝ ∗
-        "%Hremaining_size" ∷ ⌜ sint.nat remainingv = size remaining_docs ⌝ ∗
-        "%Hsubset" ∷ ⌜ ∀ (i : nat), i ∈ dom remaining_docs → i < length γ.(docs) ⌝
-    ).
+      ∃ remaining_docs (remainingv : w64),
+        "H" ∷ (if decide (remainingv = W64 0) then True
+               else
+                 ∃ totalv,
+                 "Htotal" ∷ own_Int64 total (DfracOwn 1) totalv ∗
+                 "Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ total) closeable.Open ∗
+                 "%Htotal" ∷ ⌜ sint.nat totalv = sum_list (imap (λ i doc,
+                                                                 match (remaining_docs !! i) with
+                                                                 | Some (Some _) => O
+                                                                 | _ => word_count doc
+                                                                 end) γ.(docs)) ⌝
+          ) ∗
 
-(* FIXME: clean up bag idiom. Keep is_chan inside is_chan_bag? *)
+         "Hremaining" ∷ own_Int64 remaining (DfracOwn 1) remainingv ∗
+         "H●" ∷ own_task_auth γ remaining_docs ∗
+         "%Hremaining_size" ∷ ⌜ sint.nat remainingv = size remaining_docs ⌝ ∗
+         "%Hsubset" ∷ ⌜ map_Forall (λ (i : nat) _, i < length γ.(docs)) remaining_docs ⌝
+        ).
+
 Definition is_Worker γ (w : loc) : iProp Σ :=
   ∃ wv γsteal γqueue,
   "#w" ∷ w ↦□ wv ∗
@@ -205,6 +213,106 @@ Definition is_Worker γ (w : loc) : iProp Σ :=
                                          else ∃ req, maybe_req ↦ req ∗ own_task γ req
                    )
     ).
+
+Axiom wp_strings_Fields :
+  ∀ `{!strings.Assumptions} (s : go_string),
+  {{{ is_pkg_init strings }}}
+    @! strings.Fields #s
+  {{{ sl (ss : list go_string), RET #sl; sl ↦* ss ∗ ⌜ length ss = word_count s ⌝ }}}.
+
+Lemma wp_Worker__process γ w doc total remaining done :
+  {{{
+        is_pkg_init main ∗
+        "#Hw" ∷ is_Worker γ w ∗
+        "#Hcoord" ∷ is_coordinator γ total remaining done ∗
+        "Hdoc" ∷ own_task γ doc
+  }}}
+    w @! (go.PointerType main.Worker) @! "process" #doc #total #remaining #done
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto.
+  wp_apply wp_strings_Fields as "* [Hsl %]".
+  iDestruct (own_slice_len with "Hsl") as %Hlen.
+  iNamed "Hcoord".
+
+  wp_apply wp_Int64__Add. iInv "Hi" as "H" "Hclose".
+  iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
+  iNext. iNamedSuffix "H" "inv".
+  iDestruct "Hdoc" as "(% & Hdoc)".
+  iCombine "H●inv Hdoc" gives %Hlookup.
+  destruct decide.
+  { exfalso. subst.
+    symmetry in Hremaining_sizeinv.
+    apply map_size_empty_inv in Hremaining_sizeinv.
+    subst. done. }
+  iNamedSuffix "Hinv" "inv". iFrame. iIntros "Htotal_inv".
+  iMod (ghost_map_update None with "H●inv Hdoc") as "[H●inv Hdoc]".
+  iCombineNamed "*inv" as "H".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[H]") as "_".
+  {
+    iNamed "H". iFrame. destruct decide; first done. iFrame.
+    iPureIntro.
+    split_and!.
+    - destruct Hlen as [Hlen ?].
+      replace (sint.nat _) with
+        (sint.nat totalv + length ss)%nat.
+      2:{ admit. (* TODO: overflow *) }
+      admit.
+      (* TODO: pure fact *)
+    - rewrite map_size_insert_Some //.
+    - apply map_Forall_insert_2; try done.
+      by eapply map_Forall_lookup_1 in Hsubsetinv.
+  }
+  iModIntro.
+  wp_auto.
+
+  wp_apply wp_Int64__Add. iInv "Hi" as "H" "Hclose".
+  iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
+  iNext. iNamedSuffix "H" "inv". iFrame. iIntros "Hremaining_inv".
+  iCombine "H●inv Hdoc" gives %?.
+  iMod (ghost_map_delete with "H●inv Hdoc") as "H●inv".
+
+  destruct (decide (w64_word_instance.(word.add) remainingv0 (W64 (- (1))) = W64 0)).
+  - (* about to close done. *)
+    rewrite decide_False.
+    2:{ word. }
+    iNamedSuffix "Hinv" "done".
+    iCombineNamed "*inv" as "H".
+    iMod "Hmask" as "_".
+    iMod ("Hclose" with "[H]") as "_".
+    {
+      iNamed "H". iFrame "∗#%". destruct decide; last done.
+      iFrame "#".
+      iPureIntro. split_and!.
+      - admit.
+      -
+        rewrite map_size_delete_Some //.
+        assert (size remaining_docs0 > 0) by admit.
+        word.
+      - apply map_Forall_delete. done.
+    }
+    iModIntro. wp_auto. wp_if_destruct.
+    2:{ exfalso. done. }
+    Transparent own_Int64. (* FIXME: persist instances *)
+    iPersist "Htotaldone".
+    Opaque own_Int64.
+    wp_apply (wp_closeable_chan_close with "[Hdonedone]").
+    { iFrame. iModIntro.
+      Transparent own_Int64. (* FIXME: above *)
+      rewrite /is_tasks_done.
+      rewrite /own_Int64.
+      Opaque own_Int64.
+      iExactEq "Htotaldone".
+      f_equal. f_equal.
+      admit. (* TODO: pure reasoning *)
+    }
+    iIntros "#Hcl".
+    wp_auto. wp_end.
+  - (* not going to close done *)
+Abort.
 
 Lemma wp_Worker__run γ w neighbor total remaining done (wg : loc) :
   {{{
@@ -233,7 +341,7 @@ Proof.
     { (* done. *)
       iNamedSuffix "Hcoord" "coord".
       repeat iExists _. iSplitR; first done. iFrame "#".
-      iApply blocking_rcv_implies_nonblocking. (* TODO now: rename lemma to use `recv`. *)
+      iApply blocking_rcv_implies_nonblocking. (* TODO: rename lemma to use `recv`. *)
       iApply (closeable_chan_receive with "[$]").
       iIntros "[#H●_done Hclosed]".
       wp_auto. wp_for_post.
