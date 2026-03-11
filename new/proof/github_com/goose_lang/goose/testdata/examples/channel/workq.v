@@ -1,5 +1,5 @@
 From New.proof Require Import proof_prelude.
-From New.proof Require Import sync sync.atomic strings fmt
+From New.proof Require Import sync.atomic strings fmt
   chan_proof.closeable.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples.channel
   Require Import workq.
@@ -29,15 +29,12 @@ Proof.
   iIntros "Hown". wp_auto.
   wp_apply (atomic.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  wp_apply (sync.wp_initialize' with "[$Hown]") as "(Hown & #?)".
-  { naive_solver. }
 Admitted.
 
-Record x_names :=
+Record workq_names :=
   {
     docs : list go_string;
     task_gn : gname;
-    done_gn : gname;
   }.
 
 Definition own_task γ (doc : go_string) : iProp Σ :=
@@ -200,22 +197,19 @@ Proof.
     wp_end.
 Admitted.
 
-Lemma wp_Worker__run γ w neighbor total remaining done (wg : loc) :
+Lemma wp_Worker__run γ w neighbor total remaining done :
   {{{
         is_pkg_init workq ∗
         "#Hw" ∷ is_Worker γ w ∗
         "#Hneighbor" ∷ is_Worker γ neighbor ∗
-        "#Hcoord" ∷ is_coordinator γ total remaining done ∗
-        "Hwg" ∷ join.own_Done wg (is_tasks_done γ total)
+        "#Hcoord" ∷ is_coordinator γ total remaining done
   }}}
-    w @! (go.PointerType workq.Worker) @! "run" #neighbor #total #remaining #done #wg
+    w @! (go.PointerType workq.Worker) @! "run" #neighbor #total #remaining #done
   {{{
         RET #(); True
   }}}.
 Proof.
-  wp_start. iNamed "Hpre".
-  wp_apply wp_with_defer as "%defer defer". simpl subst.
-  wp_auto.
+  wp_start as "@". wp_auto.
   wp_for.
   iNamedSuffix "Hw" "w".
   wp_auto_lc 2.
@@ -231,8 +225,6 @@ Proof.
       iApply (closeable_chan_receive with "[$]").
       iIntros "[#H●_done Hclosed]".
       wp_auto. wp_for_post.
-      wp_apply (join.wp_WaitGroup__Done with "[$Hwg]").
-      { iFrame "#". }
       wp_end.
     }
     rewrite big_andL_cons.
@@ -302,8 +294,6 @@ Proof.
       iApply (closeable_chan_receive with "[$]").
       iIntros "[#H●_done Hclosed]".
       wp_auto. wp_for_post.
-      wp_apply (join.wp_WaitGroup__Done with "[$Hwg]").
-      { iFrame "#". }
       wp_end.
     }
     rewrite big_andL_cons. iSplit.
@@ -357,16 +347,21 @@ Proof.
   rename i_ptr into j_ptr. iRename "i" into "j".
   wp_auto.
 
+  iMod (ghost_map_alloc (map_seq O (Some <$> docs))) as (γtask_gn) "[H● Htasks]".
+
+  set (γ:={| docs := docs; task_gn := γtask_gn |}).
   iAssert (
       ∃ (i j : w64) workers,
         "i" ∷ i_ptr ↦ i ∗
         "j" ∷ j_ptr ↦ j ∗
         "workers_sl" ∷
           workers_sl ↦* (workers ++ replicate (sint.nat numWorkers - sint.nat i) (zero_val loc)) ∗
+        "#Hworkers" ∷ □(∀ w, ⌜ w ∈ workers ⌝ → is_Worker γ w) ∗
         "%Hi" ∷ ⌜ 0 ≤ sint.Z i ≤ sint.Z numWorkers ⌝
     )%I with "[i j workers_sl]" as "HH".
   { iFrame. rewrite Nat.sub_0_r. iExists [].
-    iFrame. done. }
+    iFrame. iSplit; last done.
+    iIntros "!# * %Hbad". exfalso. rewrite elem_of_nil // in Hbad. }
   wp_for "HH".
   wp_if_destruct.
   { (* inside loop *)
@@ -383,6 +378,22 @@ Proof.
     wp_apply chan.wp_make2 as "%queue %γqueue queue"; first done.
     wp_apply chan.wp_make1 as "%steal %γsteal steal".
     wp_alloc wr as "wr". wp_auto.
+
+    iPersist "wr".
+    iAssert (|={⊤}=> is_Worker γ wr)%I with "[queue steal]" as ">#Hwr".
+    {
+      iFrame "#".
+      iDestruct "queue" as "(#? & % & q)".
+      iDestruct "steal" as "(#? & % & s)".
+      iMod (start_bag with "[] q") as "$".
+      { by destruct decide. }
+      { iFrame "#". }
+      iMod (start_bag with "[] s") as "$".
+      { done. }
+      { iFrame "#". }
+      done.
+    }
+
     rewrite -> (decide_True (P:=(_ ≤ _ < _)%Z)).
     2:{ subst numWorkers. word. }
     wp_auto.
@@ -391,6 +402,146 @@ Proof.
     iIntros "workers_sl". wp_auto.
     wp_for_post.
     iFrame. iExists (workers ++ [wr]).
-TODO:
+    iSplitL "workers_sl".
+    { rewrite /named. iExactEq "workers_sl".
+      f_equal.
+      replace (sint.nat numWorkers - sint.nat i)%nat with
+        (S (sint.nat numWorkers - sint.nat i - 1))%nat by word.
+      simpl.
+      rewrite list_insert_middle; last word.
+      rewrite -app_assoc.
+      f_equal. f_equal.
+      f_equal. word.
+    }
+    iSplitL.
+    {
+      iModIntro. iIntros "%w %Hw".
+      rewrite elem_of_app in Hw. destruct Hw as [?|Hw].
+      { iApply "Hworkers". done. }
+      rewrite list_elem_of_singleton in Hw. subst.
+      iFrame "#".
+    }
+    word.
+  }
+
+  replace (sint.nat numWorkers - sint.nat i)%nat with O by word.
+  clear dependent j i.
+  rewrite app_nil_r.
+  iDestruct (own_slice_len with "workers_sl") as "%Hworkers_len'".
+
+  iAssert (
+      ∃ (i : w64) (_unused_doc : go_string),
+        "doc" ∷ doc_ptr ↦ _unused_doc ∗
+        "i" ∷ i_ptr ↦ i ∗
+        "%Hi" ∷ ⌜ 0 ≤ sint.Z i ≤ sint.Z docs_sl.(slice.len) ⌝ ∗
+        "Htasks" ∷ [∗ list] doc ∈ (drop (sint.nat i) docs), own_task γ doc
+    )%I with "[i Htasks doc]" as "HH".
+  { iFrame. rewrite drop_0. iSplitR; first word.
+    rewrite big_sepM_map_seq.
+    rewrite big_sepL_fmap.
+    iApply (big_sepL_impl with "Htasks").
+    iIntros "!# * %Hin $". }
+  wp_for "HH".
+  wp_if_destruct.
+  { (* loop iteration *)
+    rewrite -> decide_True; last word.
+    list_elem docs (sint.nat i) as doc.
+    wp_apply (wp_load_slice_index with "[$Hdocs]").
+    { word. }
+    { done. }
+    iIntros "Hdocs".
+    wp_auto.
+    list_elem workers O as w.
+    { subst numWorkers. word. }
+    rewrite -> decide_True.
+    2:{ subst numWorkers. word. }
+    wp_apply (wp_load_slice_index with "[$workers_sl]").
+    { word. }
+    { done. }
+    iIntros "workers_sl".
+    wp_auto.
+    iDestruct ("Hworkers" $! w with "[%]") as "H".
+    { apply list_elem_of_lookup_2 in Hw_lookup. done. }
+    iNamed "H".
+    wp_auto.
+    erewrite drop_S; last done.
+    iDestruct "Htasks" as "[Hdoc Htasks]".
+    wp_apply (wp_bag_send with "[Hdoc]").
+    { iFrame "#∗". }
+    wp_for_post.
+    iFrame.
+    replace (sint.nat (word.add _ _)) with (S (sint.nat i)) by word.
+    iFrame. word.
+  }
+  wp_apply wp_Int64__Store.
+  iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
+  iNext. iFrame. iIntros "remaining". iMod "Hmask" as "_". iModIntro.
+  wp_auto.
+  wp_apply chan.wp_make1 as "%done %γdone (#Hdone_is & % & Hdone)".
+
+  iAssert (|={⊤}=> is_coordinator γ total_ptr remaining_ptr done)%I
+            with "[Hdone H● total remaining]" as ">#Hcoord".
+  {
+    iMod (alloc_closeable_chan with "[$] [$]") as "Hopen".
+    iDestruct (own_closeable_chan_Unknown with "Hopen") as "#$".
+    iFrame "#".
+    iMod (inv_alloc with "[-]") as "$"; last done.
+    iFrame. iSplitL "Hopen total".
+    { destruct decide; iFrame; try done.
+      iPureIntro.
+      admit. (* TODO: pure reasoning *) }
+    iPureIntro.
+    admit. (* TODO: pure reasoning about map_seq. *)
+  }
+
+  rename i_ptr into j_ptr. iRename "i" into "j".
+  wp_auto.
+  iClear "Htasks". clear dependent i.
+  iAssert (
+      ∃ (i j : w64) (_unused_w : loc),
+        "w" ∷ w_ptr ↦ _unused_w ∗
+        "i" ∷ i_ptr ↦ i ∗
+        "j" ∷ j_ptr ↦ j ∗
+        "%Hi" ∷ ⌜ 0 ≤ sint.Z i ≤ length workers ⌝
+    )%I with "[i w j]" as "HH".
+  { iFrame. word. }
+  wp_for "HH".
+  wp_if_destruct.
+  { (* inside loop *)
+    rewrite -> decide_True.
+    2:{ word. }
+    wp_bind.
+    list_elem workers (sint.nat i) as w.
+    wp_apply (wp_load_slice_index with "[$workers_sl]") as "workers_sl".
+    { word. }
+    { done. }
+
+    rewrite -> decide_True.
+    2:{ subst numWorkers. admit. (* TODO: pure reasoning about modulo *) }
+    list_elem workers
+    (sint.Z (w64_word_instance.(word.mods) (w64_word_instance.(word.add) i (W64 1)) (W64 2))) as
+    neighbor.
+    { admit. (* TODO; pure reasoning about modulo *)}
+    wp_apply (wp_load_slice_index with "[$workers_sl]") as "workers_sl".
+    { admit. (* TODO: pure reasoning about modulo *) }
+    { done. }
+    iDestruct ("Hworkers" $! w with "[%]") as "#Hw".
+    { by apply list_elem_of_lookup_2 in Hw_lookup. }
+    iDestruct ("Hworkers" $! neighbor with "[%]") as "#Hn".
+    { by apply list_elem_of_lookup_2 in Hneighbor_lookup. }
+    wp_apply (wp_fork with "[]").
+    { wp_apply (wp_Worker__run with "[]"); iFrame "#". }
+    wp_for_post. iFrame. word.
+  }
+  iNamedSuffix "Hcoord" "coord".
+  wp_apply (chan.wp_receive with "[$]") as "_".
+  iApply (closeable_chan_receive with "[$]").
+  iIntros "[#Htotal #Hclosed]".
+  wp_auto. wp_apply wp_Int64__Load.
+  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iFrame "#". iNext. iIntros "?". iMod "Hmask" as "_".
+  iModIntro. wp_auto.
+  wp_end.
+Admitted.
 
 End wps.
