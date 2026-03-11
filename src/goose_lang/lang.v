@@ -153,6 +153,7 @@ Inductive go_operator : Type :=
 | GoShiftr.
 
 Inductive go_unary_operator : Type :=
+| GoPos
 | GoNeg
 | GoNot
 | GoComplement.
