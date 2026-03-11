@@ -220,13 +220,14 @@ Definition is_raft_commit_inv γ : iProp Σ := (*  *)
    Needs £ 2: one credit to open the invariant (strip ▷), one to strip the ▷
    from saved_pred_agree. *)
 Definition is_read_index γ index Φ : iProp Σ :=
-  ∀ log (Hin : sint.nat index ≤ length log),
+  ∀ log (Hin : sint.nat index ≤ length log) (Hno_overflow : length log < 2^63),
   £ 2 -∗ is_commit γ log ={⊤}=∗ Φ log.
 
 (** Try to add a read with continuation `Φ` to be executed forever starting at
    the committed index from term `term`. *)
 Lemma try_read γ term log Φ :
   "Hlc" ∷ £ 1 ∗
+  "%Hno_overflow" ∷ ⌜ length log < 2^63 ⌝ ∗
   "#Hinv" ∷ is_raft_commit_inv γ ∗
   "Hcom" ∷ own_committed_in_term γ term log ∗
   "#Hau" ∷ □(|={⊤∖↑N,∅}=> ∃ log, own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ □ Φ log))
@@ -270,7 +271,7 @@ Proof.
       - iApply ("Hread_wits" $! start_index Φ0 Hindex index Hindex2).
       - apply list_elem_of_singleton in Hindex as [= -> <-].
         rewrite take_ge; first iExact "HΦ".
-        admit. (* FIXME: overflow of log0 *)
+        apply prefix_length in Hle. word.
     }
     (* TODO now: proceed with the proof. Use `is_in_reads` to prove
        `is_read_index`. Make a separate lemma for this for clarity. If you get
@@ -284,6 +285,31 @@ Proof.
     { iExists inv_term, inv_log, inv_readsΦ. iFrame "∗#". done. }
     iModIntro. iFrame "Hcom". iRight. iExact "Hstale".
 Admitted.
+
+Lemma is_in_reads_to_valid γ si Φ :
+  "#Hinv" ∷ is_raft_commit_inv γ ∗
+  "#Hr" ∷ is_in_reads γ si Φ -∗
+  is_read_index γ si Φ.
+Proof.
+  iNamed 1. rewrite /is_read_index.
+  iIntros "%log_wit %Hlog_wit %Hoverflow [Hlc Hlc2] #Hlog_wit". rewrite /is_read_index.
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iNamed "Hi".
+  iDestruct (mono_list_auth_lb_valid with "commit Hlog_wit") as %[_ Hle].
+  iDestruct (reads_agree with "[$] [$]") as (i Ψ) "(%Hr_lookup & #HΦ)".
+  iDestruct ("Hread_wits" $! si Ψ with "[%]") as "Hwit".
+  { by eapply list_elem_of_lookup_2. }
+  iSpecialize ("Hwit" $! (W64 (length log_wit)) with "[%]").
+  { apply prefix_length in Hle. word. }
+  replace (sint.nat (W64 (length log_wit))) with (length log_wit) by word.
+  rewrite -prefix_to_take //.
+  iMod (lc_fupd_elim_later with "[$] HΦ") as "#HΦ'".
+  iMod ("Hclose" with "[-]").
+  { iFrame "∗#%". }
+  iModIntro. instantiate (1:=log_wit).
+  iRewrite "HΦ'". done.
+Qed.
 
 Definition is_heartbeat_ctx_stale γ term ctx stale_ids : iProp Σ :=
   is_heartbeat_ctx γ term ctx stale_ids ∗
