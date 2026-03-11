@@ -62,13 +62,13 @@ Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
         "H" ∷ (if decide (remainingv = W64 0) then True
                else
                  ∃ totalv,
-                 "Htotal" ∷ own_Int64 total (DfracOwn 1) totalv ∗
-                 "Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ total) closeable.Open ∗
-                 "%Htotal" ∷ ⌜ sint.nat totalv = sum_list (imap (λ i doc,
-                                                                 match (remaining_docs !! i) with
-                                                                 | Some (Some _) => O
-                                                                 | _ => word_count doc
-                                                                 end) γ.(docs)) ⌝
+                   "Htotal" ∷ own_Int64 total (DfracOwn 1) totalv ∗
+                   "Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ total) closeable.Open ∗
+                   "%Htotal" ∷ ⌜ sint.nat totalv =
+                   sum_list (imap (λ i doc, match (remaining_docs !! i) with
+                                            | Some (Some _) => O
+                                            | _ => word_count doc
+                                            end) γ.(docs)) ⌝
           ) ∗
 
          "Hremaining" ∷ own_Int64 remaining (DfracOwn 1) remainingv ∗
@@ -152,10 +152,12 @@ Proof.
   iCombine "H●inv Hdoc" gives %?.
   iMod (ghost_map_delete with "H●inv Hdoc") as "H●inv".
 
+  pose proof (map_size_ne_0_lookup_2 remaining_docs0 i ltac:(done)).
+  destruct decide.
+  { exfalso. word. }
+
   destruct (decide (w64_word_instance.(word.add) remainingv0 (W64 (- (1))) = W64 0)).
   - (* about to close done. *)
-    rewrite decide_False.
-    2:{ word. }
     iNamedSuffix "Hinv" "done".
     iCombineNamed "*inv" as "H".
     iMod "Hmask" as "_".
@@ -164,32 +166,41 @@ Proof.
       iNamed "H". iFrame "∗#%". destruct decide; last done.
       iFrame "#".
       iPureIntro. split_and!.
-      - admit.
-      -
-        rewrite map_size_delete_Some //.
-        assert (size remaining_docs0 > 0) by admit.
+      - done.
+      - rewrite map_size_delete_Some //.
         word.
       - apply map_Forall_delete. done.
     }
     iModIntro. wp_auto. wp_if_destruct.
     2:{ exfalso. done. }
-    Transparent own_Int64. (* FIXME: persist instances *)
     iPersist "Htotaldone".
-    Opaque own_Int64.
     wp_apply (wp_closeable_chan_close with "[Hdonedone]").
     { iFrame. iModIntro.
-      Transparent own_Int64. (* FIXME: above *)
       rewrite /is_tasks_done.
-      rewrite /own_Int64.
-      Opaque own_Int64.
       iExactEq "Htotaldone".
-      f_equal. f_equal.
-      admit. (* TODO: pure reasoning *)
+      f_equal.
+      admit. (* TODO: pure reasoning. remaining_docs0 was a singleton with value
+                (Some None), so everything was already counted *)
     }
     iIntros "#Hcl".
     wp_auto. wp_end.
   - (* not going to close done *)
-Abort.
+    iNamedSuffix "Hinv" "inv".
+    iCombineNamed "*inv" as "H".
+    iMod "Hmask" as "_".
+    iMod ("Hclose" with "[H]") as "_".
+    { iNamed "H". iFrame "∗#%".
+      rewrite decide_False //.
+      iFrame. iPureIntro. split_and!.
+      - admit. (* TODO: pure, deleting an entry that used to be "Some None" makes no difference  *)
+      - rewrite map_size_delete_Some //.
+        word.
+      - apply map_Forall_delete. done.
+    }
+    iModIntro. wp_auto. wp_if_destruct.
+    { exfalso. done. }
+    wp_end.
+Admitted.
 
 Lemma wp_Worker__run γ w neighbor total remaining done (wg : loc) :
   {{{
@@ -197,7 +208,7 @@ Lemma wp_Worker__run γ w neighbor total remaining done (wg : loc) :
         "#Hw" ∷ is_Worker γ w ∗
         "#Hneighbor" ∷ is_Worker γ neighbor ∗
         "#Hcoord" ∷ is_coordinator γ total remaining done ∗
-        "Hwg" ∷ join.own_Done wg (is_tasks_done γ)
+        "Hwg" ∷ join.own_Done wg (is_tasks_done γ total)
   }}}
     w @! (go.PointerType workq.Worker) @! "run" #neighbor #total #remaining #done #wg
   {{{
@@ -234,8 +245,9 @@ Proof.
       iApply (bag_recv_au with "[$]").
       { iFrame "#". }
       iNext. iIntros "%v Hv". simpl subst.
-      wp_auto.
-      admit. (* TODO: spec for Worker.process *)
+      wp_auto. wp_apply (wp_Worker__process with "[Hv]").
+      { iFrame "∗#". }
+      wp_for_post. iFrame.
     }
     rewrite big_andL_cons.
     iSplit.
@@ -305,17 +317,20 @@ Proof.
       wp_if_destruct.
       { wp_for_post. iFrame. }
       rewrite decide_False //.
-      iDestruct "Hv" as "(% & ? & ?)".
-      wp_auto.
-      admit. (* TODO: spec for Worker.process *)
+      iDestruct "Hv" as "(% & ? & Hv)".
+      wp_auto. wp_apply (wp_Worker__process with "[Hv]").
+      { iFrame "∗ ww #". }
+      wp_for_post. iFrame.
     }
     rewrite big_andL_cons. iSplit.
     { (* received local work while trying to steal. *)
       repeat iExists _. iSplitR; first done. iFrame "#".
       iApply (bag_recv_au with "[$]").
       { iFrame "#". }
-      iNext. wp_auto. iIntros "%v Hv". simpl subst. wp_auto.
-      admit. (* TODO: spec for Worker.process *)
+      iNext. wp_auto. iIntros "%v Hv". simpl subst.
+      wp_auto. wp_apply (wp_Worker__process with "[Hv]").
+      { iFrame "∗ ww #". }
+      wp_for_post. iFrame.
     }
     rewrite big_andL_nil. done.
   }

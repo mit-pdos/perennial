@@ -121,6 +121,12 @@ Qed.
 #[global] Opaque own_Uint64.
 #[local] Transparent own_Uint64.
 Global Instance own_Uint64_timeless a b c : Timeless (own_Uint64 a b c) := _.
+Global Instance own_Uint64_dfractional u v :
+  DFractional (λ q, own_Uint64 u q v).
+Proof. apply _. Qed.
+Global Instance own_Uint64_as_dfractional u v q :
+  AsDFractional (own_Uint64 u q v) (λ q, own_Uint64 u q v) q.
+Proof. apply _. Qed.
 Global Instance own_Uint64_fractional u v :
   Fractional (λ q, own_Uint64 u (DfracOwn q) v).
 Proof. apply fractional_of_dfractional. apply _. Qed.
@@ -307,6 +313,12 @@ Qed.
   #[global] Opaque own_Int64.
   #[local] Transparent own_Int64.
   Global Instance own_Int64_timeless a b c : Timeless (own_Int64 a b c) := _.
+  Global Instance own_Int64_dfractional u v :
+    DFractional (λ q, own_Int64 u q v).
+  Proof. apply _. Qed.
+  Global Instance own_Int64_as_dfractional u v q :
+    AsDFractional (own_Int64 u q v) (λ q, own_Int64 u q v) q.
+  Proof. apply _. Qed.
   Global Instance own_Int64_fractional u v :
     Fractional (λ q, own_Int64 u (DfracOwn q) v).
   Proof. apply fractional_of_dfractional. apply _. Qed.
@@ -490,6 +502,12 @@ Qed.
   #[global] Opaque own_Uint32.
   #[local] Transparent own_Uint32.
   Global Instance own_Uint32_timeless a b c : Timeless (own_Uint32 a b c) := _.
+  Global Instance own_Uint32_dfractional u v :
+    DFractional (λ q, own_Uint32 u q v).
+  Proof. apply _. Qed.
+  Global Instance own_Uint32_as_dfractional u v q :
+    AsDFractional (own_Uint32 u q v) (λ q, own_Uint32 u q v) q.
+  Proof. apply _. Qed.
   Global Instance own_Uint32_fractional u v :
     Fractional (λ q, own_Uint32 u (DfracOwn q) v).
   Proof. apply fractional_of_dfractional. apply _. Qed.
@@ -673,6 +691,12 @@ Qed.
   #[global] Opaque own_Int32.
   #[local] Transparent own_Int32.
   Global Instance own_Int32_timeless a b c : Timeless (own_Int32 a b c) := _.
+  Global Instance own_Int32_dfractional u v :
+    DFractional (λ q, own_Int32 u q v).
+  Proof. apply _. Qed.
+  Global Instance own_Int32_as_dfractional u v q :
+    AsDFractional (own_Int32 u q v) (λ q, own_Int32 u q v) q.
+  Proof. apply _. Qed.
   Global Instance own_Int32_fractional u v :
     Fractional (λ q, own_Int32 u (DfracOwn q) v).
   Proof. apply fractional_of_dfractional. apply _. Qed.
