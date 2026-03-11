@@ -2,8 +2,8 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.fmt.
 Require Export New.generatedproof.go_etcd_io.raft.v3.quorum.
-Require Export New.generatedproof.go_etcd_io.raft.v3.quorum.slices.
 Require Export New.generatedproof.go_etcd_io.raft.v3.raftpb.
+Require Export New.generatedproof.slices.
 Require Export New.generatedproof.strings.
 Require Export New.golang.theory.
 Require Export New.code.go_etcd_io.raft.v3.tracker.

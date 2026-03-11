@@ -369,7 +369,7 @@ Lemma wp_ProgressTracker__IsSingleton (p : loc) :
     p @! (go.PointerType tracker.ProgressTracker) @! "IsSingleton" #()
   {{{ RET #false; True }}}.
 Proof.
-Admitted.
+Admitted. (* Trusted *)
 
 Lemma wp_raft__committedEntryInCurrentTerm r rf γ :
   {{{ r ↦ rf ∗ own_raft γ rf }}}
@@ -378,7 +378,29 @@ Lemma wp_raft__committedEntryInCurrentTerm r rf γ :
                  if c then ∃ l, is_committed_in_term γ rf.(raft.raft.Term') l else True
   }}}.
 Proof.
-Admitted.
+Admitted. (* Trusted *)
+
+
+(* Definition own_readOnly γ (r : loc) : iProp Σ := *)
+(*   ∃ (ro : raft.readOnly.t), *)
+(*     "r" ∷ r ↦ ro ∗ *)
+(*     "Hacks" ∷ ro.(raft.readOnly.acks') ↦$ acks ∗ *)
+(*     True *)
+(* . *)
+(*     r *)
+(*   ∃ acks_ref acks, *)
+(*   "#option" ∷ r.[raft.readOnly.t, "option"] ↦□ (W64 0) ∗ (* equals ReadOnlySafe *) *)
+(*   "#acks" ∷ r.[raft.readOnly.t, "acks"] ↦□ acks_ref ∗ *)
+(*   "unconfirmedReads" ∷ r.[raft.readOnly.t, "acks"] ↦□ acks_ref ∗ *)
+(*   "confirmedReads" ∷ r.[raft.readOnly.t, "acks"] ↦ confirmedReads *)
+(* . *)
+
+(* (* TODO: partial invariant in own_raft *)
+(*    readOnly *)
+(*  *) *)
+(* Definition own_raft_partial γ rf := *)
+(*   "" ∷ *)
+(* . *)
 
 Definition MsgReadIndex := W32 15.
 Lemma wp_raft__sendMsgReadIndexresponse γ r rf m :
@@ -391,7 +413,8 @@ Lemma wp_raft__sendMsgReadIndexresponse γ r rf m :
   {{{ RET #(); True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
-Admitted. (* TODO *)
+  iNamed "Hrf".
+Admitted.
 
 Lemma wp_raft__stepLeader_MsgReadIndex γ r (rf : raft.raft.t) (m : raftpb.Message.t) :
   {{{ "Hr" ∷ r ↦ rf ∗

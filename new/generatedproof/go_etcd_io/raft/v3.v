@@ -3,11 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.bytes.
 Require Export New.generatedproof.context.
 Require Export New.generatedproof.crypto.rand.
+Require Export New.generatedproof.encoding.binary.
 Require Export New.generatedproof.errors.
 Require Export New.generatedproof.fmt.
 Require Export New.generatedproof.go_etcd_io.raft.v3.confchange.
 Require Export New.generatedproof.go_etcd_io.raft.v3.quorum.
-Require Export New.generatedproof.go_etcd_io.raft.v3.quorum.slices.
 Require Export New.generatedproof.go_etcd_io.raft.v3.raftpb.
 Require Export New.generatedproof.go_etcd_io.raft.v3.tracker.
 Require Export New.generatedproof.io.
@@ -15,6 +15,7 @@ Require Export New.generatedproof.log.
 Require Export New.generatedproof.math.
 Require Export New.generatedproof.math.big.
 Require Export New.generatedproof.os.
+Require Export New.generatedproof.slices.
 Require Export New.generatedproof.strings.
 Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
@@ -1788,7 +1789,7 @@ Proof. Admitted.
 End def.
 End ReadState.
 
-Module readIndexStatus.
+Module readIndexRequest.
 Section def.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -1797,65 +1798,51 @@ Context {package_sem' : raft.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global]Program Instance readIndexStatus_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (raft.readIndexStatus.t) :=
+#[global]Program Instance readIndexRequest_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (raft.readIndexRequest.t) :=
   {|
     typed_pointsto_def l v dq :=
       (
-      "req" ∷ l.[(raft.readIndexStatus.t), "req"] ↦{dq} v.(raft.readIndexStatus.req') ∗
-      "index" ∷ l.[(raft.readIndexStatus.t), "index"] ↦{dq} v.(raft.readIndexStatus.index') ∗
-      "acks" ∷ l.[(raft.readIndexStatus.t), "acks"] ↦{dq} v.(raft.readIndexStatus.acks') ∗
+      "req" ∷ l.[(raft.readIndexRequest.t), "req"] ↦{dq} v.(raft.readIndexRequest.req') ∗
+      "index" ∷ l.[(raft.readIndexRequest.t), "index"] ↦{dq} v.(raft.readIndexRequest.index') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. Admitted.
 
-#[global] Instance readIndexStatus_into_val_typed
+#[global] Instance readIndexRequest_into_val_typed
    :
-  IntoValTypedUnderlying (raft.readIndexStatus.t) (raft.readIndexStatusⁱᵐᵖˡ).
+  IntoValTypedUnderlying (raft.readIndexRequest.t) (raft.readIndexRequestⁱᵐᵖˡ).
 Proof. Admitted.
-#[global] Instance readIndexStatus_access_load_req l (v : (raft.readIndexStatus.t)) dq :
+#[global] Instance readIndexRequest_access_load_req l (v : (raft.readIndexRequest.t)) dq :
   AccessStrict
-    (l.[(raft.readIndexStatus.t), "req"] ↦{dq} (v.(raft.readIndexStatus.req')))
-    (l.[(raft.readIndexStatus.t), "req"] ↦{dq} (v.(raft.readIndexStatus.req')))
+    (l.[(raft.readIndexRequest.t), "req"] ↦{dq} (v.(raft.readIndexRequest.req')))
+    (l.[(raft.readIndexRequest.t), "req"] ↦{dq} (v.(raft.readIndexRequest.req')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. Admitted.
 
-#[global] Instance readIndexStatus_access_store_req l (v : (raft.readIndexStatus.t)) req' :
+#[global] Instance readIndexRequest_access_store_req l (v : (raft.readIndexRequest.t)) req' :
   AccessStrict
-    (l.[(raft.readIndexStatus.t), "req"] ↦ (v.(raft.readIndexStatus.req')))
-    (l.[(raft.readIndexStatus.t), "req"] ↦ req')
-    (l ↦ v) (l ↦ (v <|(raft.readIndexStatus.req') := req'|>))%I.
+    (l.[(raft.readIndexRequest.t), "req"] ↦ (v.(raft.readIndexRequest.req')))
+    (l.[(raft.readIndexRequest.t), "req"] ↦ req')
+    (l ↦ v) (l ↦ (v <|(raft.readIndexRequest.req') := req'|>))%I.
 Proof. Admitted.
-#[global] Instance readIndexStatus_access_load_index l (v : (raft.readIndexStatus.t)) dq :
+#[global] Instance readIndexRequest_access_load_index l (v : (raft.readIndexRequest.t)) dq :
   AccessStrict
-    (l.[(raft.readIndexStatus.t), "index"] ↦{dq} (v.(raft.readIndexStatus.index')))
-    (l.[(raft.readIndexStatus.t), "index"] ↦{dq} (v.(raft.readIndexStatus.index')))
+    (l.[(raft.readIndexRequest.t), "index"] ↦{dq} (v.(raft.readIndexRequest.index')))
+    (l.[(raft.readIndexRequest.t), "index"] ↦{dq} (v.(raft.readIndexRequest.index')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. Admitted.
 
-#[global] Instance readIndexStatus_access_store_index l (v : (raft.readIndexStatus.t)) index' :
+#[global] Instance readIndexRequest_access_store_index l (v : (raft.readIndexRequest.t)) index' :
   AccessStrict
-    (l.[(raft.readIndexStatus.t), "index"] ↦ (v.(raft.readIndexStatus.index')))
-    (l.[(raft.readIndexStatus.t), "index"] ↦ index')
-    (l ↦ v) (l ↦ (v <|(raft.readIndexStatus.index') := index'|>))%I.
-Proof. Admitted.
-#[global] Instance readIndexStatus_access_load_acks l (v : (raft.readIndexStatus.t)) dq :
-  AccessStrict
-    (l.[(raft.readIndexStatus.t), "acks"] ↦{dq} (v.(raft.readIndexStatus.acks')))
-    (l.[(raft.readIndexStatus.t), "acks"] ↦{dq} (v.(raft.readIndexStatus.acks')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. Admitted.
-
-#[global] Instance readIndexStatus_access_store_acks l (v : (raft.readIndexStatus.t)) acks' :
-  AccessStrict
-    (l.[(raft.readIndexStatus.t), "acks"] ↦ (v.(raft.readIndexStatus.acks')))
-    (l.[(raft.readIndexStatus.t), "acks"] ↦ acks')
-    (l ↦ v) (l ↦ (v <|(raft.readIndexStatus.acks') := acks'|>))%I.
+    (l.[(raft.readIndexRequest.t), "index"] ↦ (v.(raft.readIndexRequest.index')))
+    (l.[(raft.readIndexRequest.t), "index"] ↦ index')
+    (l ↦ v) (l ↦ (v <|(raft.readIndexRequest.index') := index'|>))%I.
 Proof. Admitted.
 
 End def.
-End readIndexStatus.
+End readIndexRequest.
 
 Module readOnly.
 Section def.
@@ -1872,8 +1859,9 @@ Local Set Default Proof Using "All".
     typed_pointsto_def l v dq :=
       (
       "option" ∷ l.[(raft.readOnly.t), "option"] ↦{dq} v.(raft.readOnly.option') ∗
-      "pendingReadIndex" ∷ l.[(raft.readOnly.t), "pendingReadIndex"] ↦{dq} v.(raft.readOnly.pendingReadIndex') ∗
-      "readIndexQueue" ∷ l.[(raft.readOnly.t), "readIndexQueue"] ↦{dq} v.(raft.readOnly.readIndexQueue') ∗
+      "acks" ∷ l.[(raft.readOnly.t), "acks"] ↦{dq} v.(raft.readOnly.acks') ∗
+      "unconfirmedReads" ∷ l.[(raft.readOnly.t), "unconfirmedReads"] ↦{dq} v.(raft.readOnly.unconfirmedReads') ∗
+      "confirmedReads" ∷ l.[(raft.readOnly.t), "confirmedReads"] ↦{dq} v.(raft.readOnly.confirmedReads') ∗
       "_" ∷ True
       )%I
   |}.
@@ -1896,31 +1884,44 @@ Proof. Admitted.
     (l.[(raft.readOnly.t), "option"] ↦ option')
     (l ↦ v) (l ↦ (v <|(raft.readOnly.option') := option'|>))%I.
 Proof. Admitted.
-#[global] Instance readOnly_access_load_pendingReadIndex l (v : (raft.readOnly.t)) dq :
+#[global] Instance readOnly_access_load_acks l (v : (raft.readOnly.t)) dq :
   AccessStrict
-    (l.[(raft.readOnly.t), "pendingReadIndex"] ↦{dq} (v.(raft.readOnly.pendingReadIndex')))
-    (l.[(raft.readOnly.t), "pendingReadIndex"] ↦{dq} (v.(raft.readOnly.pendingReadIndex')))
+    (l.[(raft.readOnly.t), "acks"] ↦{dq} (v.(raft.readOnly.acks')))
+    (l.[(raft.readOnly.t), "acks"] ↦{dq} (v.(raft.readOnly.acks')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. Admitted.
 
-#[global] Instance readOnly_access_store_pendingReadIndex l (v : (raft.readOnly.t)) pendingReadIndex' :
+#[global] Instance readOnly_access_store_acks l (v : (raft.readOnly.t)) acks' :
   AccessStrict
-    (l.[(raft.readOnly.t), "pendingReadIndex"] ↦ (v.(raft.readOnly.pendingReadIndex')))
-    (l.[(raft.readOnly.t), "pendingReadIndex"] ↦ pendingReadIndex')
-    (l ↦ v) (l ↦ (v <|(raft.readOnly.pendingReadIndex') := pendingReadIndex'|>))%I.
+    (l.[(raft.readOnly.t), "acks"] ↦ (v.(raft.readOnly.acks')))
+    (l.[(raft.readOnly.t), "acks"] ↦ acks')
+    (l ↦ v) (l ↦ (v <|(raft.readOnly.acks') := acks'|>))%I.
 Proof. Admitted.
-#[global] Instance readOnly_access_load_readIndexQueue l (v : (raft.readOnly.t)) dq :
+#[global] Instance readOnly_access_load_unconfirmedReads l (v : (raft.readOnly.t)) dq :
   AccessStrict
-    (l.[(raft.readOnly.t), "readIndexQueue"] ↦{dq} (v.(raft.readOnly.readIndexQueue')))
-    (l.[(raft.readOnly.t), "readIndexQueue"] ↦{dq} (v.(raft.readOnly.readIndexQueue')))
+    (l.[(raft.readOnly.t), "unconfirmedReads"] ↦{dq} (v.(raft.readOnly.unconfirmedReads')))
+    (l.[(raft.readOnly.t), "unconfirmedReads"] ↦{dq} (v.(raft.readOnly.unconfirmedReads')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. Admitted.
 
-#[global] Instance readOnly_access_store_readIndexQueue l (v : (raft.readOnly.t)) readIndexQueue' :
+#[global] Instance readOnly_access_store_unconfirmedReads l (v : (raft.readOnly.t)) unconfirmedReads' :
   AccessStrict
-    (l.[(raft.readOnly.t), "readIndexQueue"] ↦ (v.(raft.readOnly.readIndexQueue')))
-    (l.[(raft.readOnly.t), "readIndexQueue"] ↦ readIndexQueue')
-    (l ↦ v) (l ↦ (v <|(raft.readOnly.readIndexQueue') := readIndexQueue'|>))%I.
+    (l.[(raft.readOnly.t), "unconfirmedReads"] ↦ (v.(raft.readOnly.unconfirmedReads')))
+    (l.[(raft.readOnly.t), "unconfirmedReads"] ↦ unconfirmedReads')
+    (l ↦ v) (l ↦ (v <|(raft.readOnly.unconfirmedReads') := unconfirmedReads'|>))%I.
+Proof. Admitted.
+#[global] Instance readOnly_access_load_confirmedReads l (v : (raft.readOnly.t)) dq :
+  AccessStrict
+    (l.[(raft.readOnly.t), "confirmedReads"] ↦{dq} (v.(raft.readOnly.confirmedReads')))
+    (l.[(raft.readOnly.t), "confirmedReads"] ↦{dq} (v.(raft.readOnly.confirmedReads')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. Admitted.
+
+#[global] Instance readOnly_access_store_confirmedReads l (v : (raft.readOnly.t)) confirmedReads' :
+  AccessStrict
+    (l.[(raft.readOnly.t), "confirmedReads"] ↦ (v.(raft.readOnly.confirmedReads')))
+    (l.[(raft.readOnly.t), "confirmedReads"] ↦ confirmedReads')
+    (l ↦ v) (l ↦ (v <|(raft.readOnly.confirmedReads') := confirmedReads'|>))%I.
 Proof. Admitted.
 
 End def.
