@@ -223,6 +223,32 @@ Definition is_read_index γ index Φ : iProp Σ :=
   ∀ log (Hin : sint.nat index ≤ length log) (Hno_overflow : length log < 2^63),
   £ 2 -∗ is_commit γ log ={⊤}=∗ Φ log.
 
+Lemma is_in_reads_to_valid γ i j Φ :
+  "#Hinv" ∷ is_raft_commit_inv γ ∗
+  "#Hr" ∷ is_in_reads γ j Φ ∗
+  "%Hj" ∷ ⌜ sint.nat j ≤ sint.nat i ⌝ -∗
+  is_read_index γ i Φ.
+Proof.
+  iNamed 1. rewrite /is_read_index.
+  iIntros "%log_wit %Hlog_wit %Hoverflow [Hlc Hlc2] #Hlog_wit". rewrite /is_read_index.
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iNamed "Hi".
+  iDestruct (mono_list_auth_lb_valid with "commit Hlog_wit") as %[_ Hle].
+  iDestruct (reads_agree with "[$] [$]") as (? Ψ) "(%Hr_lookup & #HΦ)".
+  iDestruct ("Hread_wits" $! j Ψ with "[%]") as "Hwit".
+  { by eapply list_elem_of_lookup_2. }
+  iSpecialize ("Hwit" $! (W64 (length log_wit)) with "[%]").
+  { apply prefix_length in Hle. word. }
+  replace (sint.nat (W64 (length log_wit))) with (length log_wit) by word.
+  rewrite -prefix_to_take //.
+  iMod (lc_fupd_elim_later with "[$] HΦ") as "#HΦ'".
+  iMod ("Hclose" with "[-]").
+  { iFrame "∗#%". }
+  iModIntro. instantiate (1:=log_wit).
+  iRewrite "HΦ'". done.
+Qed.
+
 (** Try to add a read with continuation `Φ` to be executed forever starting at
    the committed index from term `term`. *)
 Lemma try_read γ term log Φ :
@@ -273,42 +299,16 @@ Proof.
         rewrite take_ge; first iExact "HΦ".
         apply prefix_length in Hle. word.
     }
-    (* TODO now: proceed with the proof. Use `is_in_reads` to prove
-       `is_read_index`. Make a separate lemma for this for clarity. If you get
-       stuck, or don't know how to make the proof work, then interview me about
-       the challenges. *)
-    admit.
+    iModIntro. iModIntro. iFrame.
+    iLeft.
+    iDestruct (is_in_reads_to_valid with "[]") as "$".
+    iFrame "#". iPureIntro. apply prefix_length in Hle. word.
   - (* Different term: term is stale. *)
     iDestruct (committed_in_term_stale with "Hcom Hcommit_term") as "#Hstale".
     { done. }
     iSplitR "Hcom".
     { iExists inv_term, inv_log, inv_readsΦ. iFrame "∗#". done. }
     iModIntro. iFrame "Hcom". iRight. iExact "Hstale".
-Admitted.
-
-Lemma is_in_reads_to_valid γ si Φ :
-  "#Hinv" ∷ is_raft_commit_inv γ ∗
-  "#Hr" ∷ is_in_reads γ si Φ -∗
-  is_read_index γ si Φ.
-Proof.
-  iNamed 1. rewrite /is_read_index.
-  iIntros "%log_wit %Hlog_wit %Hoverflow [Hlc Hlc2] #Hlog_wit". rewrite /is_read_index.
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-  iNamed "Hi".
-  iDestruct (mono_list_auth_lb_valid with "commit Hlog_wit") as %[_ Hle].
-  iDestruct (reads_agree with "[$] [$]") as (i Ψ) "(%Hr_lookup & #HΦ)".
-  iDestruct ("Hread_wits" $! si Ψ with "[%]") as "Hwit".
-  { by eapply list_elem_of_lookup_2. }
-  iSpecialize ("Hwit" $! (W64 (length log_wit)) with "[%]").
-  { apply prefix_length in Hle. word. }
-  replace (sint.nat (W64 (length log_wit))) with (length log_wit) by word.
-  rewrite -prefix_to_take //.
-  iMod (lc_fupd_elim_later with "[$] HΦ") as "#HΦ'".
-  iMod ("Hclose" with "[-]").
-  { iFrame "∗#%". }
-  iModIntro. instantiate (1:=log_wit).
-  iRewrite "HΦ'". done.
 Qed.
 
 Definition is_heartbeat_ctx_stale γ term ctx stale_ids : iProp Σ :=
