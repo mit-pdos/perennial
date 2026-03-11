@@ -80,9 +80,7 @@ Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
 Definition is_Worker γ (w : loc) : iProp Σ :=
   ∃ wv γsteal γqueue,
   "#w" ∷ w ↦□ wv ∗
-  "#Hqueue_is" ∷ is_chan wv.(workq.Worker.queue') γqueue go_string ∗
   "#Hqueue" ∷ is_chan_bag γqueue wv.(workq.Worker.queue') (own_task γ) ∗
-  "#Hsteal_is" ∷ is_chan wv.(workq.Worker.steal') γsteal chan.t ∗
   "#Hsteal" ∷ is_chan_bag γsteal wv.(workq.Worker.steal')
     (λ (reply : chan.t),
        ∃ γreply, is_chan_bag γreply reply
@@ -241,6 +239,7 @@ Proof.
     iSplit.
     { (* get a request *)
       repeat iExists _. iSplitR; first done. iFrame "#".
+      iDestruct (is_bag_is_chan with "[]") as "$"; first iFrame "#".
       iApply blocking_rcv_implies_nonblocking.
       iApply (bag_recv_au with "[$]").
       { iFrame "#". }
@@ -253,6 +252,7 @@ Proof.
     iSplit.
     { (* help a worker steal from this one. *)
       repeat iExists _. iSplitR; first done. iFrame "#".
+      iDestruct (is_bag_is_chan with "[]") as "$"; first iFrame "#".
       iApply blocking_rcv_implies_nonblocking.
       iApply (bag_recv_au with "[$]").
       { iFrame "#". }
@@ -263,6 +263,7 @@ Proof.
       - (* got a piece of work. *)
         rewrite big_andL_singleton.
         repeat iExists _. iSplitR; first done. iFrame "#".
+        iDestruct (is_bag_is_chan with "[]") as "$"; first iFrame "#".
         iApply blocking_rcv_implies_nonblocking.
         iApply (bag_recv_au with "[$]").
         { iFrame "#". }
@@ -309,6 +310,7 @@ Proof.
     { (* request to steal was sent *)
       iNamedSuffix "Hcoord" "coord".
       repeat iExists _. iSplitR; first done. iFrame "#".
+      iDestruct (is_bag_is_chan with "[]") as "$"; first iFrame "#".
       iApply (bag_send_au with "[$]").
       { iFrame "#". }
       { iFrame "#". }
@@ -325,6 +327,7 @@ Proof.
     rewrite big_andL_cons. iSplit.
     { (* received local work while trying to steal. *)
       repeat iExists _. iSplitR; first done. iFrame "#".
+      iDestruct (is_bag_is_chan with "[]") as "$"; first iFrame "#".
       iApply (bag_recv_au with "[$]").
       { iFrame "#". }
       iNext. wp_auto. iIntros "%v Hv". simpl subst.
@@ -335,5 +338,59 @@ Proof.
     rewrite big_andL_nil. done.
   }
 Admitted.
+
+Lemma wp_wordCount docs_sl docs :
+  {{{ is_pkg_init workq ∗ "Hdocs" ∷ docs_sl ↦* docs }}}
+    @! workq.wordCount #docs_sl
+  {{{ RET #(W64 (sum_list (word_count <$> docs))); True }}}.
+Proof.
+  wp_start as "@". wp_auto.
+  iDestruct (own_slice_len with "Hdocs") as %[Hdocs_len ?].
+  wp_if_destruct.
+  { wp_end. destruct docs; simpl in *; (done || word). }
+
+  set (numWorkers:=W64 2).
+  wp_apply wp_slice_make2 as "%workers_sl [workers_sl _]".
+  { subst numWorkers. word. }
+  iDestruct (own_slice_len with "workers_sl") as %Hworkers_len.
+  rewrite length_replicate in Hworkers_len.
+  rename i_ptr into j_ptr. iRename "i" into "j".
+  wp_auto.
+
+  iAssert (
+      ∃ (i j : w64) workers,
+        "i" ∷ i_ptr ↦ i ∗
+        "j" ∷ j_ptr ↦ j ∗
+        "workers_sl" ∷
+          workers_sl ↦* (workers ++ replicate (sint.nat numWorkers - sint.nat i) (zero_val loc)) ∗
+        "%Hi" ∷ ⌜ 0 ≤ sint.Z i ≤ sint.Z numWorkers ⌝
+    )%I with "[i j workers_sl]" as "HH".
+  { iFrame. rewrite Nat.sub_0_r. iExists [].
+    iFrame. done. }
+  wp_for "HH".
+  wp_if_destruct.
+  { (* inside loop *)
+    rewrite -> decide_True.
+    2: word.
+    iDestruct (own_slice_len with "workers_sl") as %Hworkers_len'.
+    rewrite length_app length_replicate in Hworkers_len'.
+    wp_apply (wp_load_slice_index with "[workers_sl]").
+    { word. }
+    { iFrame. rewrite lookup_app_r; last word.
+      rewrite lookup_replicate_2 //. subst numWorkers.
+      word. }
+    iIntros "workers_sl". wp_auto.
+    wp_apply chan.wp_make2 as "%queue %γqueue queue"; first done.
+    wp_apply chan.wp_make1 as "%steal %γsteal steal".
+    wp_alloc wr as "wr". wp_auto.
+    rewrite -> (decide_True (P:=(_ ≤ _ < _)%Z)).
+    2:{ subst numWorkers. word. }
+    wp_auto.
+    wp_apply (wp_store_slice_index with "[workers_sl]").
+    { iFrame. len. }
+    iIntros "workers_sl". wp_auto.
+    wp_for_post.
+    iFrame. iExists (workers ++ [wr]).
+TODO:
 
 End wps.
