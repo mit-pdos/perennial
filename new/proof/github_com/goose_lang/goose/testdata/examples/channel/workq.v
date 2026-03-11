@@ -1,159 +1,36 @@
 From New.proof Require Import proof_prelude.
 From New.proof Require Import sync sync.atomic strings fmt
   chan_proof.closeable.
+From New.generatedproof.github_com.goose_lang.goose.testdata.examples.channel
+  Require Import workq.
 
-From New.generatedproof Require Import x.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import idioms.
 Import bag.
 From New.proof Require Import chan_proof.closeable.
 
-(*
-package main
-
-import (
-	"fmt"
-	"strings"
-	"sync"
-	"sync/atomic"
-)
-
-type Worker struct {
-	id    int
-	queue chan string
-	steal chan chan *string // reply is a pointer: nil means nothing to steal
-}
-
-func (w *Worker) run(
-	neighbor *Worker,
-	total *atomic.Int64,
-	remaining *atomic.Int64,
-	done chan struct{},
-	wg *sync.WaitGroup,
-) {
-	defer wg.Done()
-	for {
-		select {
-		case <-done:
-			return
-
-		case doc := <-w.queue:
-			w.process(doc, total, remaining, done)
-
-		case reply := <-w.steal:
-			// A neighbor wants to steal a document from us.
-			// Respond immediately: send a document if available, nil otherwise.
-			select {
-			case doc := <-w.queue:
-				reply <- &doc
-			default:
-				reply <- nil
-			}
-
-		default:
-			// Idle: attempt to steal from neighbor.
-			// reply is buffered so the victim can always respond, even if
-			// we find local work and stop listening before they reply.
-			reply := make(chan *string, 1)
-			select {
-			case <-done:
-				return
-			case neighbor.steal <- reply:
-				// Steal request accepted; wait for their response.
-				if doc := <-reply; doc != nil {
-					w.process( *doc, total, remaining, done)
-				}
-			case doc := <-w.queue:
-				// New work arrived locally while we were trying to steal.
-				w.process(doc, total, remaining, done)
-			}
-		}
-	}
-}
-
-func (w *Worker) process(doc string, total *atomic.Int64, remaining *atomic.Int64, done chan struct{}) {
-	total.Add(int64(len(strings.Fields(doc))))
-	if remaining.Add(-1) == 0 {
-		close(done)
-	}
-}
-
-func wordCount(docs []string) int64 {
-	if len(docs) == 0 {
-		return 0
-	}
-
-	const numWorkers = 2
-	workers := make([]*Worker, numWorkers)
-	for i := range workers {
-		workers[i] = &Worker{
-			id:    i,
-			queue: make(chan string, len(docs)),
-			steal: make(chan chan *string),
-		}
-	}
-
-	// All documents start on worker 0's queue — maximally unbalanced.
-	for _, doc := range docs {
-		workers[0].queue <- doc
-	}
-
-	var total atomic.Int64
-	var remaining atomic.Int64
-	remaining.Store(int64(len(docs)))
-	done := make(chan struct{})
-
-	var wg sync.WaitGroup
-	for i, w := range workers {
-		wg.Add(1)
-		neighbor := workers[(i+1)%numWorkers]
-		go w.run(neighbor, &total, &remaining, done, &wg)
-	}
-
-	wg.Wait()
-	return total.Load()
-}
-
-func main() {
-	docs := []string{
-		"the cat sat on the mat",
-		"a quick brown fox jumps over the lazy dog",
-		"to be or not to be that is the question",
-		"all that glitters is not gold",
-		"ask not what your country can do for you",
-		"one small step for man one giant leap for mankind",
-		"we hold these truths to be self evident",
-		"in the beginning was the word and the word was good",
-	}
-
-	got := wordCount(docs)
-
-	want := int64(0)
-	for _, doc := range docs {
-		want += int64(len(strings.Fields(doc)))
-	}
-	fmt.Printf("word count: %d (expected %d)\n", got, want)
-}
-*)
-
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics} {package_sem : main.Assumptions}.
+Context {sem : go.Semantics} {package_sem : workq.Assumptions}.
 Collection W := sem + package_sem.
 Set Default Proof Using "W".
 
-#[global] Instance : IsPkgInit (iProp Σ) main := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf (iProp Σ) main := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) workq := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) workq := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init_prop main get_is_pkg_init →
+  get_is_pkg_init_prop workq get_is_pkg_init →
   {{{ own_initializing get_is_pkg_init }}}
-    main.initialize' #()
-  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init main }}}.
+    workq.initialize' #()
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init workq }}}.
 Proof.
   intros Hinit. wp_start as "Hown".
   wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?). reflexivity. }
   iIntros "Hown". wp_auto.
+  wp_apply (atomic.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  wp_apply (sync.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
 Admitted.
 
 Record x_names :=
@@ -203,10 +80,10 @@ Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
 Definition is_Worker γ (w : loc) : iProp Σ :=
   ∃ wv γsteal γqueue,
   "#w" ∷ w ↦□ wv ∗
-  "#Hqueue_is" ∷ is_chan wv.(main.Worker.queue') γqueue go_string ∗
-  "#Hqueue" ∷ is_chan_bag γqueue wv.(main.Worker.queue') (own_task γ) ∗
-  "#Hsteal_is" ∷ is_chan wv.(main.Worker.steal') γsteal chan.t ∗
-  "#Hsteal" ∷ is_chan_bag γsteal wv.(main.Worker.steal')
+  "#Hqueue_is" ∷ is_chan wv.(workq.Worker.queue') γqueue go_string ∗
+  "#Hqueue" ∷ is_chan_bag γqueue wv.(workq.Worker.queue') (own_task γ) ∗
+  "#Hsteal_is" ∷ is_chan wv.(workq.Worker.steal') γsteal chan.t ∗
+  "#Hsteal" ∷ is_chan_bag γsteal wv.(workq.Worker.steal')
     (λ (reply : chan.t),
        ∃ γreply, is_chan_bag γreply reply
                    (λ (maybe_req : loc), if decide (maybe_req = null) then True
@@ -222,12 +99,12 @@ Axiom wp_strings_Fields :
 
 Lemma wp_Worker__process γ w doc total remaining done :
   {{{
-        is_pkg_init main ∗
+        is_pkg_init workq ∗
         "#Hw" ∷ is_Worker γ w ∗
         "#Hcoord" ∷ is_coordinator γ total remaining done ∗
         "Hdoc" ∷ own_task γ doc
   }}}
-    w @! (go.PointerType main.Worker) @! "process" #doc #total #remaining #done
+    w @! (go.PointerType workq.Worker) @! "process" #doc #total #remaining #done
   {{{
         RET #(); True
   }}}.
@@ -316,13 +193,13 @@ Abort.
 
 Lemma wp_Worker__run γ w neighbor total remaining done (wg : loc) :
   {{{
-        is_pkg_init main ∗
+        is_pkg_init workq ∗
         "#Hw" ∷ is_Worker γ w ∗
         "#Hneighbor" ∷ is_Worker γ neighbor ∗
         "#Hcoord" ∷ is_coordinator γ total remaining done ∗
         "Hwg" ∷ join.own_Done wg (is_tasks_done γ)
   }}}
-    w @! (go.PointerType main.Worker) @! "run" #neighbor #total #remaining #done #wg
+    w @! (go.PointerType workq.Worker) @! "run" #neighbor #total #remaining #done #wg
   {{{
         RET #(); True
   }}}.
