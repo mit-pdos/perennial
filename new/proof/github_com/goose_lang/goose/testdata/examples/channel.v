@@ -80,7 +80,8 @@ Proof.
   iMod (start_bag
     (λ v, ⌜v = Result.mk (query ++ "_primary.html"%go) true ∨
            v = Result.mk (query ++ "_secondary.html"%go) false⌝)%I
-    _ c γc I with "Hc_is_chan Hc_own") as "#Hch".
+    _ c γc with "Hc_is_chan Hc_own") as "#Hch".
+  { done. }
   iPersist "query".
   iPersist "c".
 
@@ -102,8 +103,8 @@ Proof.
   iSplit.
   { (* Branch 1: primary responded before hedge threshold. *)
     repeat iExists _; iSplitL ""; first done. iFrame "#".
-    iApply (bag_recv_au (V := Result.t) γc c with "[$Hch] [$]").
-    iNext. iIntros (v) "%Hres". wp_auto. 
+    iApply (bag_recv_au with "[$] [$Hch]").
+    iNext. iIntros (v) "%Hres". wp_auto.
     destruct Hres as [-> | ->].
     - iApply "HΦ". iLeft. iPureIntro;left;done.
     - iApply "HΦ". iLeft. iPureIntro;right;done.
@@ -113,7 +114,7 @@ Proof.
     iExists time.Time.t, hedge_ch, γhedge.
     repeat iExists _. iSplitL ""; first done. iFrame "#".
     iSplitL "". { iApply is_bag_is_chan. done. }
-    iApply (bag_recv_au (V := time.Time.t) γhedge hedge_ch with "[$Hhedge] [$]").
+    iApply (bag_recv_au with "[$] [$Hhedge]").
     iNext. iIntros (v) "_". wp_auto_lc 2.
 
     (* Fork secondary now that the hedge threshold has fired. *)
@@ -122,7 +123,7 @@ Proof.
       wp_apply (wp_GetSecondary query).
       wp_apply (wp_bag_send with "[$Hch]").
       { iPureIntro. right. done. }
-      done. 
+      done.
     }
 
     (* Second select: result on c | done closes. *)
@@ -130,7 +131,7 @@ Proof.
     iSplit.
     { (* Branch 2a: primary or secondary result arrives. *)
       repeat iExists _; iSplitL ""; first done. iFrame "#".
-      iApply (bag_recv_au (V := Result.t) γc c with "[$Hch] [$]").
+      iApply (bag_recv_au with "[$] [$Hch]").
       iNext. iIntros (v0) "%Hres'". wp_auto_lc 4.
       destruct Hres' as [-> | ->].
       - iApply "HΦ". iLeft. iPureIntro;left;done.
@@ -142,9 +143,9 @@ Proof.
       iSplitL "". { iApply (done_is_chan (V := unit) (t := go.StructType []) with "Hdone"). }
       iApply (done_receive_au (V := unit) (t := go.StructType []) γdone done_ch
               with "[$Hdone] [$HNotified] [HΦ errStr] [$]").
-      iNext. iIntros "Herr". wp_auto. 
-      iApply "HΦ". iRight. iFrame. iPureIntro. done. 
-    } 
+      iNext. iIntros "Herr". wp_auto.
+      iApply "HΦ". iRight. iFrame. iPureIntro. done.
+    }
   }
   { (* Branch 3: done fired in first select. *)
     iSplitR ""; last done.
@@ -152,8 +153,8 @@ Proof.
     iSplitL "". { iApply (done_is_chan (V := unit) (t := go.StructType []) with "Hdone"). }
     iApply (done_receive_au (V := unit) (t := go.StructType []) γdone done_ch
             with "[$Hdone] [$HNotified] [HΦ errStr] [$]").
-    iNext. iIntros "Herr". wp_auto. 
-    iApply "HΦ". iRight. iFrame. iPureIntro. done. 
+    iNext. iIntros "Herr". wp_auto.
+    iApply "HΦ". iRight. iFrame. iPureIntro. done.
   }
 Qed.
 
@@ -217,8 +218,8 @@ Proof.
   iApply ("Hk" with "Hoc'").
 Qed.
 
-(* 
-  From a send on full buffer (which blocks indefinitely), any Φ can be derived 
+(*
+  From a send on full buffer (which blocks indefinitely), any Φ can be derived
 *)
 Lemma SendAU_full_cap1_vacuous
   (ch : loc) (γ : chan_names) (v0 v : w64) (Φ : iProp Σ) :
@@ -268,13 +269,13 @@ wp_auto.
   iSplit.
   - simpl. iSplit; last done.
     iExists w64, ch,γ, (W64 0). repeat iExists _.
-    
+
     iSplit; [iPureIntro; split;first done;reflexivity|].
     iSplit; [iFrame "#"; done|].
-    (* AU for send case: forced not-ready by full-buffer invariant. 
+    (* AU for send case: forced not-ready by full-buffer invariant.
       => We can get contradiction
     *)
-    iApply (select_nb_full1_send_au γ ch with "[$Hfull]"). 
+    iApply (select_nb_full1_send_au γ ch with "[$Hfull]").
     all:try done.
   - (* default branch *)
     wp_auto. iApply "HΦ". done.
@@ -313,7 +314,7 @@ Lemma wp_select_nb_buffer_space_panic_fails :
     simpl.
     iIntros "Hoc".
     iMod "Hmask".
-    iModIntro. wp_auto.  
+    iModIntro. wp_auto.
     (* Branch fails here *)
     admit.
   - wp_auto. iApply "HΦ". done.
@@ -334,15 +335,15 @@ Lemma wp_select_nb_buffer_space_deadlock_vacuous :
   (* First send: fill the buffer. We verify it by giving a SendAU that
      updates Buffered [] -> Buffered [0], then continues. *)
   iIntros "Hlc". simpl.
- 
-  iApply ((SendAU_from_empty_buffer_to (ch) (γ) 
+
+  iApply ((SendAU_from_empty_buffer_to (ch) (γ)
          ) with "Hown").
-      
+
          iIntros "Hoc". wp_auto.
   wp_apply chan.wp_select_blocking.
   simpl.
   iSplitL "Hoc".
-  - iExists w64,ch, γ, (W64 0), _, _, _. 
+  - iExists w64,ch, γ, (W64 0), _, _, _.
     iSplit.
     { iPureIntro. split;first done;done. }
     iSplitL "".
@@ -351,7 +352,7 @@ Lemma wp_select_nb_buffer_space_deadlock_vacuous :
   iApply (SendAU_full_cap1_vacuous (ch) (γ)
               (W64 0) (W64 0)).
               { done. }
-              
+
               done.
               - done.
               Unshelve.
@@ -384,7 +385,8 @@ Proof.
   iIntros (ch γ) "(#His_chan & Hcap & Hownchan)".
   wp_auto.
   iMod (start_bag (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)%I
-         _ ch γ I with "His_chan Hownchan") as "#Hch".
+         _ ch γ with "His_chan Hownchan") as "#Hch".
+  { done. }
   iPersist "ch".
   wp_apply (wp_fork).
   {
@@ -435,7 +437,7 @@ Proof.
   iSplit.
     {
       repeat iExists _; iSplitR; first done. iFrame "#".
-      iApply (bag_recv_au (V:=go_string)  γfuture ch with "[$Hfut] [$]").
+      iApply (bag_recv_au with "[$] [$Hfut]").
       iNext. iIntros (v). iIntros "%Hw".
       wp_auto. subst v. iApply "HΦ". iPureIntro. right. done.
     }
@@ -471,7 +473,7 @@ Proof.
     wp_apply (chan.wp_close with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
     { iApply (done_is_chan (t:=(go.StructType [])) with "Hdone"). }
     iApply (done_close_au (t:=(go.StructType [])) with "[$] [$] [$HNotify $errMsg]").
-    iNext. wp_auto. done. 
+    iNext. wp_auto. done.
   }
 
   wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified] [HΦ]").
@@ -577,7 +579,7 @@ Proof.
       iFrame.
       replace ( w64_word_instance.(word.add) (W64 (S n0)) (W64 1)) with (W64 (S (S n0))) by word.
       {
-        iFrame. iPureIntro. 
+        iFrame. iPureIntro.
         split.
         { rewrite length_app.  rewrite singleton_length.  rewrite H. lia. }
         split.
@@ -690,9 +692,9 @@ Proof using dspG0 W.
     [by eauto|by eauto|..].
   iPersist "c signal".
   wp_apply (wp_fork with "[Hcsignal]").
-  { wp_auto. wp_recv (l x) as "Hl". wp_auto. 
+  { wp_auto. wp_recv (l x) as "Hl". wp_auto.
     rewrite -> decide_True; last done. wp_auto.
-    wp_send with "[$Hl]". by wp_auto. 
+    wp_send with "[$Hl]". by wp_auto.
   }
   wp_send with "[$val]". wp_auto. wp_recv as "Hl".
   wp_auto. by iApply "HΦ".
@@ -847,7 +849,7 @@ Qed.
   wp_apply (wp_future_await with "[$Hfut $HAwait]").
   iIntros (v P pre post) "(%Hsplit & HP & _HAwait)".
   destruct pre as [|? pre']; simpl in Hsplit.
-  - injection Hsplit as <-. 
+  - injection Hsplit as <-.
     destruct post as [|? post']; last done.
     iApply "HΦ". iFrame.
   -  iApply "HΦ". exfalso.
@@ -897,7 +899,8 @@ Lemma wp_HigherOrderExample :
   wp_apply chan.wp_make1.
   iIntros (req_ch γ) "(His & _Hcap & Hown)".
   simpl.
-  iMod (start_bag _ _ _ _ I with "His Hown") as "#Hch".
+  iMod (start_bag with "His Hown") as "#Hch".
+  { done. }
   iAssert (is_request_chan γ req_ch) with "[$Hch]" as "#Hreqs".
   wp_auto.
   wp_apply (wp_fork).
@@ -1410,16 +1413,18 @@ Lemma wp_BroadcastExample :
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
-  wp_apply (chan.wp_make1). 
+  wp_apply (chan.wp_make1).
   iIntros (done_ch γdone) "(#Hdone_is_chan & _ & Hdone_own)". wp_auto. simpl.
   wp_apply (chan.wp_make1).
   iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
   wp_apply (chan.wp_make1).
   iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
-  iMod (start_bag (λ v, ⌜v = W64 6⌝)%I _ result1_ch γr1 I with "Hr1_is_chan Hr1_own")
+  iMod (start_bag (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own")
     as "#Hbag1".
-  iMod (start_bag (λ v, ⌜v = W64 10⌝)%I _ result2_ch γr2 I with "Hr2_is_chan Hr2_own")
+  { done. }
+  iMod (start_bag (λ v, ⌜v = W64 10⌝)%I with "Hr2_is_chan Hr2_own")
     as "#Hbag2".
+  { done. }
   iMod (start_done_with_broadcast_notified (V:=unit) (t:=go.StructType []) done_ch γdone (sharedValue_ptr ↦□ W64 2)%I with "Hdone_is_chan Hdone_own")
     as (γbc) "(#Hbc & HBcastNotif & #HBc)".
   iPersist "done result1 result2".
@@ -1527,7 +1532,7 @@ Proof.
     assert (q ++ ".html"%go ≠ q ++ ".png"%go) by set_solver.
     assert ((q ++ ".html"%go = q ++ ".html"%go)) by done.
     assert (q ++ ".html"%go = q ++ ".png"%go).
-    { 
+    {
       rewrite Heqv in H1. done.
     }
     congruence.

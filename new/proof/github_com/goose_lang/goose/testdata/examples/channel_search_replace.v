@@ -138,7 +138,8 @@ Proof.
   iIntros (ch γch_names) "(#His_chan & Hcap & Hoc)". simpl. wp_auto.
   iMod (init_WaitGroup with "wg") as (?) "H".
   iMod (join.init with "H") as "Hwg".
-  iMod (start_bag (chanP wg_ptr x y) _ _ _ I with "[$His_chan] [$Hoc]") as "#Hchan".
+  iMod (start_bag (chanP wg_ptr x y) with "[$His_chan] [$Hoc]") as "#Hchan".
+  { done. }
   iAssert (∃ (i : w64), "i" ∷ i_ptr ↦ i)%I with "[$i]" as "HH".
   wp_for. iNamed "HH". wp_auto.
   wp_if_destruct.

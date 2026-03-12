@@ -338,7 +338,7 @@ Proof.
   - iSplit; last done.
     repeat iExists _; iSplitR; first done. iFrame "#".
     iPoseProof "Hafter" as "[$ _]".
-    iApply (bag.bag_recv_au (V:=time.Time.t) with "[$Hafter] [$]").
+    iApply (bag.bag_recv_au with "[$] [$Hafter]").
     iIntros (t) "_ !>". wp_auto_lc 1.
     wp_apply wp_LockedStack__Push.
     { iFrame "#". }
@@ -439,7 +439,7 @@ Proof.
     repeat iExists _; iSplitR; first done. iFrame "#".
     (* FIXME: need to break is_chan_bag to get is_chan *)
     iPoseProof "Hafter" as "[$ _]".
-    iApply (bag.bag_recv_au (V:=time.Time.t) with "[$Hafter] [$]").
+    iApply (bag.bag_recv_au with "[$] [$Hafter]").
     iIntros (t) "_ !>". wp_auto_lc 1.
     wp_apply wp_LockedStack__Pop.
     { iFrame "#". }

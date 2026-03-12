@@ -103,8 +103,8 @@ Proof.
   wp_apply chan.wp_make2; first word.
   iIntros (ch γ) "(His & Hcap & Hown)".
   simpl.
-  iMod (start_bag (λ t, True)%I chanstate.Idle _ _ I
-          with "[$His] [$Hown]") as "#Hch".
+  iMod (start_bag (λ t, True)%I with "[$His] [$Hown]") as "#Hch".
+  { done. }
   wp_auto.
   wp_apply wp_fork.
   {
