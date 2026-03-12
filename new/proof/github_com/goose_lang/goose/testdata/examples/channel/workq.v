@@ -136,7 +136,10 @@ Proof.
   iIntros "Hown". wp_auto.
   wp_apply (atomic.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-Admitted.
+  wp_apply (strings.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
+Qed.
 
 Record workq_names :=
   {
