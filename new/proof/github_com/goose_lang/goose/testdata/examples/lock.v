@@ -2,7 +2,7 @@ From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof Require Import strings.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
-  idiom.base lock.
+  idiom.base lock handoff.
 From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Import done.
 From New.proof Require Import time.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
@@ -104,11 +104,12 @@ Proof.
   - iDestruct "ch" as "#ch".
     simpl. iFrame "#". iExists _, _ .
     iSplitR; first done.
-    iApply ((lock_channel_trylock_au(t:=go.StructType [])) with "[$Hlock_chan][Hlc1 Hlc2]").
+    iApply ((lock_channel_trylock_au(t:=go.StructType [])) with "[$Hlock_chan][Hlc1]").
     {
-     iCombine "Hlc1" "Hlc2" as "Hlc". done.
+      done.
     }
-    iNext. iIntros "Hhl". wp_auto. iApply "HΦ". iFrame.
+    iIntros "Hl". wp_auto.
+    iApply "HΦ". iFrame.
   - wp_auto.
     iApply "HΦ". done.
 Qed.
@@ -175,34 +176,35 @@ Lemma wp_Lock__LockWithTimeout γ (l : loc) (R : iProp Σ) (d : time.Duration.t)
       if b then has_lock γ ∗ R else True }}}.
 Proof.
   wp_start as "#HisLock".
+  iNamed "HisLock".
   wp_auto.
-   change (go.Named "time.Time"%go []) with time.Time.
   wp_if_destruct.
-  { 
-
-    iApply "HΦ". done. }
-  wp_apply chan.wp_make1.
-  iIntros (done_ch γdone_ch) "(#Hdone_chan & _ & Hoc)".
-  iMod (start_done (t:=(go.StructType [])) done_ch γdone_ch with "[$Hdone_chan] [$Hoc]")
-    as (γdone) "(#Hdone & HNotify)".
-  iMod (done_alloc_broadcast_notified (V:=unit) (t:=(go.StructType []))
-         _ _ _ True%I with "[$Hdone] [$HNotify]") as "[HNotify #Hbnot]".
-  wp_auto. iPersist "done".
-  wp_apply (wp_fork with "[HNotify d]").
-  { wp_auto.
-    wp_apply wp_Sleep.
-    wp_apply (chan.wp_close (V:=unit) (t:=(go.StructType [])) with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
-    { iApply (done_is_chan (t:=(go.StructType [])) with "Hdone").  }
-    iApply (done_close_au (V:=unit)  (t:=(go.StructType [])) with "[$Hdone] [$] [$HNotify]").
-    { iSplitL ""; iFrame. }
-    iNext. wp_auto. done. Unshelve. { apply go.sendrecv. } apply sem. done. }
-  wp_apply (wp_Lock__LockIfNotCancelled γ l done_ch R True with
-            "[$HisLock $Hdone $Hbnot] [HΦ]").
-  iIntros (b).
-  iIntros "Hb".
-  wp_auto.
-  iApply "HΦ".
-  destruct b; iFrame. 
+  { iApply "HΦ". done. }
+  wp_bind.
+  wp_apply (wp_After).
+  iIntros (after_ch γafter_ch) "#Hafter_chan".
+  wp_auto_lc 2. 
+  wp_apply chan.wp_select_blocking. simpl.
+   iSplit.
+  - simpl. iExists unit, ch, γ.(lchan_name), tt, _, _, _.
+    iSplitR; first done. iFrame "#".
+    iSplitL "". {
+    iApply (is_lock_channel_is_chan (V:=unit) (t:=(go.StructType []))).
+    iFrame "#".
+    }
+    iFrame "#". 
+    iApply (lock_channel_lock_au (t:=go.StructType [])  with "[$Hlock_chan][$]").
+    iNext. iIntros "[Hheld HR]".
+    wp_auto. iApply "HΦ". iFrame.
+  - iSplitL; last done.
+    simpl. iExists time.Time.t, after_ch.
+    iFrame "#". iFrame. 
+     repeat iExists _.
+    iSplitR; first done. 
+    iDestruct (handoff_is_chan with ("Hafter_chan")) as "H".
+    iFrame "#".
+    iApply (handoff_rcv_au  γafter_ch after_ch with "[$Hafter_chan][$]").
+    iNext. iIntros (t). iIntros "Ht". wp_auto. iApply "HΦ". done.  
 Qed.
 
 Lemma wp_Lock__LockWithDeadline γ (l : loc) (R : iProp Σ) (deadline : time.Time.t) :
