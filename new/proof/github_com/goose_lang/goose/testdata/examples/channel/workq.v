@@ -207,7 +207,6 @@ Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
          "Hremaining" ∷ own_Int64 remaining (DfracOwn 1) remainingv ∗
          "H●" ∷ own_task_auth γ remaining_docs ∗
          "%Hremaining_size" ∷ ⌜ sint.nat remainingv = size remaining_docs ⌝ ∗
-         "%Hsubset" ∷ ⌜ map_Forall (λ (i : nat) _, i < length γ.(docs)) remaining_docs ⌝ ∗
          "%Hdocs_agree" ∷ ⌜ map_Forall (λ (i : nat) (v : option go_string), match v with Some doc => γ.(docs) !! i = Some doc | None => True end) remaining_docs ⌝ ∗
          "%Hoverflow" ∷ ⌜ (Z.of_nat (sum_list (word_count <$> γ.(docs))) < 2^63)%Z ⌝
         ).
@@ -294,8 +293,6 @@ Proof.
         [| eapply lookup_lt_Some; eauto | done].
       rewrite -Htotalinv in Hle'. word.
     - rewrite map_size_insert_Some //.
-    - apply map_Forall_insert_2; try done.
-      by eapply map_Forall_lookup_1 in Hsubsetinv.
     - apply map_Forall_insert_2; [done|].
       eapply map_Forall_impl; [apply Hdocs_agreeinv|].
       intros k v Hv. destruct v; done.
@@ -327,7 +324,6 @@ Proof.
       - done.
       - rewrite map_size_delete_Some //.
         word.
-      - apply map_Forall_delete. done.
       - apply map_Forall_delete. done.
     }
     iModIntro. wp_auto. wp_if_destruct.
@@ -379,7 +375,6 @@ Proof.
       - done.
       - rewrite map_size_delete_Some //.
         word.
-      - apply map_Forall_delete. done.
       - apply map_Forall_delete. done.
     }
     iModIntro. wp_auto. wp_if_destruct.
@@ -688,11 +683,6 @@ Proof.
     iPureIntro.
     split_and!.
     - rewrite map_seq_size length_fmap. done.
-    - intros j x Hj. rewrite lookup_map_seq_0 in Hj.
-      rewrite list_lookup_fmap in Hj.
-      destruct (docs !! j) eqn:E; simpl in Hj; [|done].
-      injection Hj as Hj. subst.
-      assert (j < length docs)%nat by (eapply lookup_lt_Some; eauto). simpl. lia.
     - intros j x Hj. rewrite lookup_map_seq_0 in Hj.
       rewrite list_lookup_fmap in Hj.
       destruct (docs !! j) eqn:E; simpl in Hj; [|done].
