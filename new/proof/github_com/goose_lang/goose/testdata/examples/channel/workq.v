@@ -1,4 +1,5 @@
 From New.proof Require Import proof_prelude.
+
 From New.proof Require Import sync.atomic strings fmt
   chan_proof.closeable.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples.channel
@@ -139,33 +140,6 @@ Proof.
   - rewrite lookup_delete_ne; [done | lia].
 Qed.
 
-Local Lemma sint_nat_add (a b : w64) (bound : nat) :
-  (0 ≤ sint.Z a)%Z → (0 ≤ sint.Z b)%Z →
-  (sint.nat a + sint.nat b ≤ bound)%nat →
-  (Z.of_nat bound < 2^63)%Z →
-  (sint.nat a + sint.nat b)%nat = sint.nat (w64_word_instance.(word.add) a b).
-Proof.
-  intros Haz Hbz Hle Hbound. unfold sint.nat in *.
-  change (match sint.Z ?x with Z.pos p => Pos.to_nat p | _ => 0%nat end)
-    with (Z.to_nat (sint.Z x)) in *.
-  assert (sint.Z a + sint.Z b < 2^63)%Z as Hlt.
-  { apply Nat2Z.inj_le in Hle.
-    rewrite Nat2Z.inj_add !Z2Nat.id in Hle; lia. }
-  rewrite word.signed_add; try word.
-Qed.
-
-Local Lemma sint_nat_to_W64 (x : w64) (n : nat) :
-  (0 ≤ sint.Z x)%Z →
-  sint.nat x = n →
-  (Z.of_nat n < 2^63)%Z →
-  x = W64 n.
-Proof.
-  intros Hpos Heq Hlt. unfold sint.nat in Heq.
-  assert (sint.Z x = Z.of_nat n) as Hz.
-  { rewrite -Heq. rewrite Z2Nat.id; [done | exact Hpos]. }
-  word.
-Qed.
-
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : workq.Assumptions}.
@@ -303,11 +277,7 @@ Proof.
           [| eapply lookup_lt_Some; eauto | done].
         rewrite -Htotalinv -H in Hle.
         rewrite Hlen.
-        apply (sint_nat_add _ _ (sum_list (word_count <$> γ.(docs)))).
-        { exact Htotal_nonneginv. }
-        { word. }
-        { rewrite -Hlen. exact Hle. }
-        { exact Hoverflowinv. } }
+        word. }
       assert (γ.(docs) !! i = Some doc) as Hdoc_i.
       { eapply map_Forall_lookup_1 in Hdocs_agreeinv; [|exact Hlookup]. simpl in Hdocs_agreeinv. done. }
       rewrite Htotalinv. rewrite H.
@@ -394,7 +364,7 @@ Proof.
                   congruence. }
               rewrite -Hdom in Hin. rewrite elem_of_singleton in Hin. done. }
             rewrite Hnone in Habs. done. }
-      apply sint_nat_to_W64; [word | exact Htotaldone | exact Hoverflowinv]. }
+      word. }
     iIntros "#Hcl".
     wp_auto. wp_end.
   - (* not going to close done *)
@@ -778,6 +748,6 @@ Proof.
   iFrame "#". iNext. iIntros "?". iMod "Hmask" as "_".
   iModIntro. wp_auto.
   wp_end.
-Admitted.
+Qed.
 
 End wps.
