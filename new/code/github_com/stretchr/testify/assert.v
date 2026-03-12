@@ -261,6 +261,8 @@ Definition IsNonDecreasingf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_
 
 Definition IsNonIncreasingf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.IsNonIncreasingf"%go.
 
+Definition IsNotTypef {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.IsNotTypef"%go.
+
 Definition IsTypef {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.IsTypef"%go.
 
 Definition JSONEqf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.JSONEqf"%go.
@@ -373,7 +375,11 @@ Definition Implements {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string
 
 Definition NotImplements {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.NotImplements"%go.
 
+Definition isType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.isType"%go.
+
 Definition IsType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.IsType"%go.
+
+Definition IsNotType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.IsNotType"%go.
 
 Definition Equal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.Equal"%go.
 
@@ -402,6 +408,8 @@ Definition isNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "
 Definition Nil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.Nil"%go.
 
 Definition isEmpty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.isEmpty"%go.
+
+Definition isEmptyValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.isEmptyValue"%go.
 
 Definition Empty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.Empty"%go.
 
@@ -518,6 +526,8 @@ Definition NotErrorIs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string
 Definition ErrorAs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.ErrorAs"%go.
 
 Definition NotErrorAs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.NotErrorAs"%go.
+
+Definition unwrapAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.unwrapAll"%go.
 
 Definition buildErrorChainString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/stretchr/testify/assert.buildErrorChainString"%go.
 

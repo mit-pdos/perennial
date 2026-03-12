@@ -1,7 +1,7 @@
 Require Export New.code.go_etcd_io.raft.v3.
 Require Export New.generatedproof.go_etcd_io.raft.v3.
 Require Export New.proof.proof_prelude.
-Require Export New.proof.context New.proof.sync New.proof.fmt.
+From New.proof Require Export context sync fmt slices cmp encoding.binary.
 
 Section init.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -14,9 +14,6 @@ Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) strconv := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) strconv := build_get_is_pkg_init_wf.
-
-#[global] Instance : IsPkgInit (iProp Σ) slices := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf (iProp Σ) slices := build_get_is_pkg_init_wf.
 
 #[global] Instance : IsPkgInit (iProp Σ) strings := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) strings := build_get_is_pkg_init_wf.

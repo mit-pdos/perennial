@@ -11,11 +11,12 @@ Require Export New.code.bytes.
 Require Export New.code.crypto.rand.
 Require Export New.code.math.
 Require Export New.code.math.big.
+Require Export New.code.slices.
 Require Export New.code.strings.
 Require Export New.code.go_etcd_io.raft.v3.confchange.
 Require Export New.code.go_etcd_io.raft.v3.quorum.
-Require Export New.code.go_etcd_io.raft.v3.quorum.slices.
 Require Export New.code.go_etcd_io.raft.v3.tracker.
+Require Export New.code.encoding.binary.
 From New.golang Require Import defn.
 Module pkg_id.
 Definition raft : go_string := "go.etcd.io/raft/v3".
@@ -108,9 +109,9 @@ Definition ReadState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type :=
 
 #[global] Opaque ReadState.
 
-Definition readIndexStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.readIndexStatus"%go [].
+Definition readIndexRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.readIndexRequest"%go [].
 
-#[global] Opaque readIndexStatus.
+#[global] Opaque readIndexRequest.
 
 Definition readOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.readOnly"%go [].
 
@@ -163,8 +164,6 @@ Definition entryEncodingSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 Definition entryPayloadSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.entryPayloadSize"%go [].
 
 #[global] Opaque entryPayloadSize.
-
-Definition lenMultiple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #2.
 
 Definition calldepth {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #2.
 
@@ -1584,10 +1583,16 @@ Definition unstable__stableToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  ((MethodResolve (go.PointerType unstable) "shrinkEntriesArray"%go (![go.PointerType unstable] "u")) #());;;
     return: #()).
 
-(* go: log_unstable.go:168:20 *)
+(* shrinkEntriesArray discards the underlying array used by the entries slice
+   if most of it isn't being used. This avoids holding references to a bunch of
+   potentially large entries that aren't needed anymore. Simply clearing the
+   entries wouldn't be safe because clients might still be using them.
+
+   go: log_unstable.go:166:20 *)
 Definition unstable__shrinkEntriesArrayⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" <>,
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
+    let lenMultiple := #2 in
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then
@@ -1610,7 +1615,7 @@ Definition unstable__shrinkEntriesArrayⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
       else do:  #()));;;
     return: #()).
 
-(* go: log_unstable.go:182:20 *)
+(* go: log_unstable.go:181:20 *)
 Definition unstable__stableSnapToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" "i",
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
@@ -1624,7 +1629,7 @@ Definition unstable__stableSnapToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     else do:  #());;;
     return: #()).
 
-(* go: log_unstable.go:189:20 *)
+(* go: log_unstable.go:188:20 *)
 Definition unstable__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" "s",
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
@@ -1641,7 +1646,7 @@ Definition unstable__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     do:  ((StructFieldRef unstable "snapshotInProgress"%go (![go.PointerType unstable] "u")) <-[go.bool] "$r0");;;
     return: #()).
 
-(* go: log_unstable.go:197:20 *)
+(* go: log_unstable.go:196:20 *)
 Definition unstable__truncateAndAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" "ents",
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
@@ -1699,7 +1704,7 @@ Definition unstable__truncateAndAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
    the way to the application code through Ready struct. Protect other slices
    similarly, and document how the client can use them.
 
-   go: log_unstable.go:229:20 *)
+   go: log_unstable.go:228:20 *)
 Definition unstable__sliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" "lo" "hi",
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
@@ -1713,7 +1718,7 @@ Definition unstable__sliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 
 (* u.offset <= lo <= hi <= u.offset+len(u.entries)
 
-   go: log_unstable.go:238:20 *)
+   go: log_unstable.go:237:20 *)
 Definition unstable__mustCheckOutOfBoundsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" "lo" "hi",
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
@@ -3228,20 +3233,11 @@ Definition raft__bcastAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition raft__bcastHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "lastCtx" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType readOnly) "lastPendingRequestCtx"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) #()) in
-    do:  ("lastCtx" <-[go.string] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.string] "lastCtx") in
-    (FuncResolve go.len [go.string] #()) "$a0") =⟨go.int⟩ #(W64 0))
-    then
-      do:  (let: "$a0" := (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil) in
-      (MethodResolve (go.PointerType raft) "bcastHeartbeatWithCtx"%go (![go.PointerType raft] "r")) "$a0")
-    else
-      do:  (let: "$a0" := (Convert go.string (go.SliceType go.byte) (![go.string] "lastCtx")) in
-      (MethodResolve (go.PointerType raft) "bcastHeartbeatWithCtx"%go (![go.PointerType raft] "r")) "$a0"));;;
+    do:  (let: "$a0" := ((MethodResolve (go.PointerType readOnly) "heartbeatCtx"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) #()) in
+    (MethodResolve (go.PointerType raft) "bcastHeartbeatWithCtx"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
-(* go: raft.go:731:16 *)
+(* go: raft.go:726:16 *)
 Definition raft__bcastHeartbeatWithCtxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "ctx",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3259,7 +3255,7 @@ Definition raft__bcastHeartbeatWithCtxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     (MethodResolve (go.PointerType tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
     return: #()).
 
-(* go: raft.go:740:16 *)
+(* go: raft.go:735:16 *)
 Definition raft__appliedToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "index" "size",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3310,7 +3306,7 @@ Definition raft__appliedToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     else do:  #());;;
     return: #()).
 
-(* go: raft.go:769:16 *)
+(* go: raft.go:764:16 *)
 Definition raft__appliedSnapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "snap",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3329,7 +3325,7 @@ Definition raft__appliedSnapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
    index changed (in which case the caller should call r.bcastAppend). This can
    only be called in StateLeader.
 
-   go: raft.go:778:16 *)
+   go: raft.go:773:16 *)
 Definition raft__maybeCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     with_defer: (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3345,7 +3341,7 @@ Definition raft__maybeCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
      CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
      (MethodResolve (go.PointerType raftLog) "maybeCommit"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0")).
 
-(* go: raft.go:784:16 *)
+(* go: raft.go:779:16 *)
 Definition raft__resetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "term",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3394,7 +3390,7 @@ Definition raft__resetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  ((StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")) <-[go.PointerType readOnly] "$r0");;;
     return: #()).
 
-(* go: raft.go:815:16 *)
+(* go: raft.go:810:16 *)
 Definition raft__appendEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "es",
     exception_do (let: "accepted" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
@@ -3435,7 +3431,7 @@ Definition raft__appendEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 
 (* tickElection is run by followers and candidates after r.electionTimeout.
 
-   go: raft.go:850:16 *)
+   go: raft.go:845:16 *)
 Definition raft__tickElectionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3462,7 +3458,7 @@ Definition raft__tickElectionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 
 (* tickHeartbeat is run by leaders to send a MsgBeat after r.heartbeatTimeout.
 
-   go: raft.go:862:16 *)
+   go: raft.go:857:16 *)
 Definition raft__tickHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3515,7 +3511,7 @@ Definition raft__tickHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     else do:  #());;;
     return: #()).
 
-(* go: raft.go:891:16 *)
+(* go: raft.go:886:16 *)
 Definition raft__becomeFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "term" "lead",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3540,7 +3536,7 @@ Definition raft__becomeFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     (FuncResolve traceBecomeFollower [] #()) "$a0");;;
     return: #()).
 
-(* go: raft.go:902:16 *)
+(* go: raft.go:897:16 *)
 Definition raft__becomeCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3568,7 +3564,7 @@ Definition raft__becomeCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     (FuncResolve traceBecomeCandidate [] #()) "$a0");;;
     return: #()).
 
-(* go: raft.go:917:16 *)
+(* go: raft.go:912:16 *)
 Definition raft__becomePreCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3593,7 +3589,7 @@ Definition raft__becomePreCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
     return: #()).
 
-(* go: raft.go:933:16 *)
+(* go: raft.go:928:16 *)
 Definition raft__becomeLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3641,7 +3637,7 @@ Definition raft__becomeLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
     return: #()).
 
-(* go: raft.go:973:16 *)
+(* go: raft.go:968:16 *)
 Definition raft__hupⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "t",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3680,7 +3676,7 @@ Definition raft__hupⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     (MethodResolve (go.PointerType raft) "campaign"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
-(* go: raft.go:995:16 *)
+(* go: raft.go:990:16 *)
 Definition raft__hasUnappliedConfChangesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3733,7 +3729,7 @@ Definition raft__hasUnappliedConfChangesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
 (* campaign transitions the raft instance to candidate state. This must only be
    called after verifying that this is a legitimate transition.
 
-   go: raft.go:1025:16 *)
+   go: raft.go:1020:16 *)
 Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "t",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -3791,7 +3787,7 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
       do:  ("ids" <-[go.SliceType go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "ids") in
-    (FuncResolve slices.SortUint64 [] #()) "$a0");;;
+    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
     let: "$range" := (![go.SliceType go.uint64] "ids") in
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     slice.for_range go.uint64 "$range" (λ: "$key" "$value",
@@ -3835,7 +3831,7 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")));;;
     return: #()).
 
-(* go: raft.go:1075:16 *)
+(* go: raft.go:1070:16 *)
 Definition raft__pollⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "id" "t" "v",
     exception_do (let: "result" := (GoAlloc quorum.VoteResult (GoZeroVal quorum.VoteResult #())) in
@@ -3868,7 +3864,7 @@ Definition raft__pollⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: (("$ret0", "$ret1"), "$ret2") := (((MethodResolve (go.PointerType tracker.ProgressTracker) "TallyVotes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #())) in
     return: ("$ret0", "$ret1", "$ret2")).
 
-(* go: raft.go:1085:16 *)
+(* go: raft.go:1080:16 *)
 Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -4115,7 +4111,7 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
             else do:  #())))));;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
-(* go: raft.go:1267:6 *)
+(* go: raft.go:1262:6 *)
 Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "m" := (GoAlloc raftpb.Message "m") in
@@ -4430,24 +4426,21 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
         (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") =⟨go.int⟩ #(W64 0)))
         then return: (Convert go.untyped_nil go.error UntypedNil)
         else do:  #());;;
-        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+        do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
         let: "$a1" := (![go.SliceType go.byte] (StructFieldRef raftpb.Message "Context"%go "m")) in
-        (MethodResolve (go.PointerType readOnly) "recvAck"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0" "$a1") in
-        (MethodResolve (go.PointerType quorum.JointConfig) "VoteResult"%go (StructFieldRef tracker.Config "Voters"%go (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) "$a0") ≠⟨quorum.VoteResult⟩ quorum.VoteWon)
-        then return: (Convert go.untyped_nil go.error UntypedNil)
-        else do:  #());;;
-        let: "rss" := (GoAlloc (go.SliceType (go.PointerType readIndexStatus)) (GoZeroVal (go.SliceType (go.PointerType readIndexStatus)) #())) in
-        let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
-        (MethodResolve (go.PointerType readOnly) "advance"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0") in
-        do:  ("rss" <-[go.SliceType (go.PointerType readIndexStatus)] "$r0");;;
-        let: "$range" := (![go.SliceType (go.PointerType readIndexStatus)] "rss") in
-        (let: "rs" := (GoAlloc (go.PointerType readIndexStatus) (GoZeroVal (go.PointerType readIndexStatus) #())) in
-        slice.for_range (go.PointerType readIndexStatus) "$range" (λ: "$key" "$value",
-          do:  ("rs" <-[go.PointerType readIndexStatus] "$value");;;
+        (MethodResolve (go.PointerType readOnly) "recvAck"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
+        let: "rss" := (GoAlloc (go.SliceType (go.PointerType readIndexRequest)) (GoZeroVal (go.SliceType (go.PointerType readIndexRequest)) #())) in
+        let: "$r0" := (let: "$a0" := (![quorum.JointConfig] (StructFieldRef tracker.Config "Voters"%go (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
+        (MethodResolve (go.PointerType readOnly) "maybeAdvance"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0") in
+        do:  ("rss" <-[go.SliceType (go.PointerType readIndexRequest)] "$r0");;;
+        let: "$range" := (![go.SliceType (go.PointerType readIndexRequest)] "rss") in
+        (let: "rs" := (GoAlloc (go.PointerType readIndexRequest) (GoZeroVal (go.PointerType readIndexRequest) #())) in
+        slice.for_range (go.PointerType readIndexRequest) "$range" (λ: "$key" "$value",
+          do:  ("rs" <-[go.PointerType readIndexRequest] "$value");;;
           do:  "$key";;;
           (let: "resp" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-          let: "$r0" := (let: "$a0" := (![raftpb.Message] (StructFieldRef readIndexStatus "req"%go (![go.PointerType readIndexStatus] "rs"))) in
-          let: "$a1" := (![go.uint64] (StructFieldRef readIndexStatus "index"%go (![go.PointerType readIndexStatus] "rs"))) in
+          let: "$r0" := (let: "$a0" := (![raftpb.Message] (StructFieldRef readIndexRequest "req"%go (![go.PointerType readIndexRequest] "rs"))) in
+          let: "$a1" := (![go.uint64] (StructFieldRef readIndexRequest "index"%go (![go.PointerType readIndexRequest] "rs"))) in
           (MethodResolve (go.PointerType raft) "responseToReadIndexReq"%go (![go.PointerType raft] "r")) "$a0" "$a1") in
           do:  ("resp" <-[raftpb.Message] "$r0");;;
           (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "To"%go "resp")) ≠⟨go.uint64⟩ None')
@@ -4569,7 +4562,7 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 (* stepCandidate is shared by StateCandidate and StatePreCandidate; the difference is
    whether they respond to MsgVoteResp or MsgPreVoteResp.
 
-   go: raft.go:1668:6 *)
+   go: raft.go:1660:6 *)
 Definition stepCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "m" := (GoAlloc raftpb.Message "m") in
@@ -4668,7 +4661,7 @@ Definition stepCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
               else do:  #()))))));;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
-(* go: raft.go:1713:6 *)
+(* go: raft.go:1705:6 *)
 Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "m" := (GoAlloc raftpb.Message "m") in
@@ -4817,7 +4810,7 @@ Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 
 (* logSliceFromMsgApp extracts the appended logSlice from a MsgApp message.
 
-   go: raft.go:1777:6 *)
+   go: raft.go:1769:6 *)
 Definition logSliceFromMsgAppⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
     exception_do (let: "m" := (GoAlloc (go.PointerType raftpb.Message) "m") in
@@ -4828,7 +4821,7 @@ Definition logSliceFromMsgAppⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
      let: "$v2" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go (![go.PointerType raftpb.Message] "m"))) in
      CompositeLiteral logSlice (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "prev"%go)) (ElementExpression entryID "$v1"); KeyedElement (Some (KeyField "entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v2")]))).
 
-(* go: raft.go:1786:16 *)
+(* go: raft.go:1778:16 *)
 Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -4900,7 +4893,7 @@ Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
-(* go: raft.go:1830:16 *)
+(* go: raft.go:1822:16 *)
 Definition raft__handleHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -4914,7 +4907,7 @@ Definition raft__handleHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
-(* go: raft.go:1835:16 *)
+(* go: raft.go:1827:16 *)
 Definition raft__handleSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -4965,7 +4958,7 @@ Definition raft__handleSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
    configuration of state machine. If this method returns false, the snapshot was
    ignored, either because it was obsolete or because of an error.
 
-   go: raft.go:1857:16 *)
+   go: raft.go:1849:16 *)
 Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "s",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5097,7 +5090,7 @@ Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 (* promotable indicates whether state machine can be promoted to leader,
    which is true when its own id is in progress list.
 
-   go: raft.go:1942:16 *)
+   go: raft.go:1934:16 *)
 Definition raft__promotableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5106,7 +5099,7 @@ Definition raft__promotableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     do:  ("pr" <-[go.PointerType tracker.Progress] "$r0");;;
     return: ((((![go.PointerType tracker.Progress] "pr") ≠⟨go.PointerType tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil)) && (⟨go.bool⟩! (![go.bool] (StructFieldRef tracker.Progress "IsLearner"%go (![go.PointerType tracker.Progress] "pr"))))) && (⟨go.bool⟩! ((MethodResolve (go.PointerType raftLog) "hasNextOrInProgressSnapshot"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))).
 
-(* go: raft.go:1947:16 *)
+(* go: raft.go:1939:16 *)
 Definition raft__applyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "cc",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5165,7 +5158,7 @@ Definition raft__applyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 
    The inputs usually result from restoring a ConfState or applying a ConfChange.
 
-   go: raft.go:1975:16 *)
+   go: raft.go:1967:16 *)
 Definition raft__switchToConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "cfg" "trk",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5236,7 +5229,7 @@ Definition raft__switchToConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     else do:  #()));;;
     return: (![raftpb.ConfState] "cs")).
 
-(* go: raft.go:2033:16 *)
+(* go: raft.go:2025:16 *)
 Definition raft__loadStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "state",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5263,13 +5256,13 @@ Definition raft__loadStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
    than or equal to the randomized election timeout in
    [electiontimeout, 2 * electiontimeout - 1].
 
-   go: raft.go:2045:16 *)
+   go: raft.go:2037:16 *)
 Definition raft__pastElectionTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
     return: ((![go.int] (StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r"))) ≥⟨go.int⟩ (![go.int] (StructFieldRef raft "randomizedElectionTimeout"%go (![go.PointerType raft] "r"))))).
 
-(* go: raft.go:2049:16 *)
+(* go: raft.go:2041:16 *)
 Definition raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5278,7 +5271,7 @@ Definition raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {g
     do:  ((StructFieldRef raft "randomizedElectionTimeout"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
     return: #()).
 
-(* go: raft.go:2053:16 *)
+(* go: raft.go:2045:16 *)
 Definition raft__sendTimeoutNowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "to",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5289,7 +5282,7 @@ Definition raft__sendTimeoutNowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
-(* go: raft.go:2057:16 *)
+(* go: raft.go:2049:16 *)
 Definition raft__abortLeaderTransferⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5299,7 +5292,7 @@ Definition raft__abortLeaderTransferⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
 
 (* committedEntryInCurrentTerm return true if the peer has committed an entry in its term.
 
-   go: raft.go:2062:16 *)
+   go: raft.go:2054:16 *)
 Definition raft__committedEntryInCurrentTermⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5312,7 +5305,7 @@ Definition raft__committedEntryInCurrentTermⁱᵐᵖˡ {ext : ffi_syntax} {go_g
 (* responseToReadIndexReq constructs a response for `req`. If `req` comes from the peer
    itself, a blank value will be returned.
 
-   go: raft.go:2070:16 *)
+   go: raft.go:2062:16 *)
 Definition raft__responseToReadIndexReqⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "req" "readIndex",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5344,7 +5337,7 @@ Definition raft__responseToReadIndexReqⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
    Empty payloads are never refused. This is used both for appending an empty
    entry at a new leader's term, as well as leaving a joint configuration.
 
-   go: raft.go:2094:16 *)
+   go: raft.go:2086:16 *)
 Definition raft__increaseUncommittedSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "ents",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5362,7 +5355,7 @@ Definition raft__increaseUncommittedSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
 (* reduceUncommittedSize accounts for the newly committed entries by decreasing
    the uncommitted entry size limit.
 
-   go: raft.go:2112:16 *)
+   go: raft.go:2104:16 *)
 Definition raft__reduceUncommittedSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "s",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5374,7 +5367,7 @@ Definition raft__reduceUncommittedSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     else do:  ((StructFieldRef raft "uncommittedSize"%go (![go.PointerType raft] "r")) <-[entryPayloadSize] ((![entryPayloadSize] (StructFieldRef raft "uncommittedSize"%go (![go.PointerType raft] "r"))) -⟨entryPayloadSize⟩ (![entryPayloadSize] "s"))));;;
     return: #()).
 
-(* go: raft.go:2123:6 *)
+(* go: raft.go:2115:6 *)
 Definition releasePendingReadIndexMessagesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
@@ -5404,7 +5397,7 @@ Definition releasePendingReadIndexMessagesⁱᵐᵖˡ {ext : ffi_syntax} {go_gct
       (FuncResolve sendMsgReadIndexResponse [] #()) "$a0" "$a1")));;;
     return: #()).
 
-(* go: raft.go:2142:6 *)
+(* go: raft.go:2134:6 *)
 Definition sendMsgReadIndexResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "m" := (GoAlloc raftpb.Message "m") in
@@ -5416,10 +5409,9 @@ Definition sendMsgReadIndexResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       let: "$a1" := (![raftpb.Message] "m") in
       (MethodResolve (go.PointerType readOnly) "addRequest"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
       do:  (let: "$a0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-      let: "$a1" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), #(W64 0))))) in
+      let: "$a1" := ((MethodResolve (go.PointerType readOnly) "heartbeatCtx"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) #()) in
       (MethodResolve (go.PointerType readOnly) "recvAck"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-      do:  (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), #(W64 0))))) in
-      (MethodResolve (go.PointerType raft) "bcastHeartbeatWithCtx"%go (![go.PointerType raft] "r")) "$a0")
+      do:  ((MethodResolve (go.PointerType raft) "bcastHeartbeat"%go (![go.PointerType raft] "r")) #())
     else
       (if: "$sw" =⟨ReadOnlyOption⟩ ReadOnlyLeaseBased
       then
@@ -6189,147 +6181,117 @@ Definition RawNode__ReadIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  "$r0";;;
     return: #()).
 
-(* go: read_only.go:45:6 *)
+(* go: read_only.go:49:6 *)
 Definition newReadOnlyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "option",
     exception_do (let: "option" := (GoAlloc ReadOnlyOption "option") in
     return: (GoAlloc readOnly (let: "$v0" := (![ReadOnlyOption] "option") in
-     let: "$v1" := ((FuncResolve go.make1 [go.MapType go.string (go.PointerType readIndexStatus)] #()) #()) in
-     CompositeLiteral readOnly (LiteralValue [KeyedElement (Some (KeyField "option"%go)) (ElementExpression ReadOnlyOption "$v0"); KeyedElement (Some (KeyField "pendingReadIndex"%go)) (ElementExpression (go.MapType go.string (go.PointerType readIndexStatus)) "$v1")])))).
+     let: "$v1" := ((FuncResolve go.make1 [go.MapType go.uint64 go.uint64] #()) #()) in
+     CompositeLiteral readOnly (LiteralValue [KeyedElement (Some (KeyField "option"%go)) (ElementExpression ReadOnlyOption "$v0"); KeyedElement (Some (KeyField "acks"%go)) (ElementExpression (go.MapType go.uint64 go.uint64) "$v1")])))).
 
-(* addRequest adds a read only request into readonly struct.
-   `index` is the commit index of the raft state machine when it received
+(* addRequest adds a read only request into the `readOnly`.
+   `commitIndex` is the commit index of the raft state machine when it received
    the read only request.
-   `m` is the original read only request message from the local or remote node.
+   `req` is the original read only request message from the local or remote node.
 
-   go: read_only.go:56:21 *)
+   go: read_only.go:60:21 *)
 Definition readOnly__addRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "ro" "index" "m",
+  λ: "ro" "commitIndex" "req",
     exception_do (let: "ro" := (GoAlloc (go.PointerType readOnly) "ro") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    let: "index" := (GoAlloc go.uint64 "index") in
-    let: "s" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), #(W64 0)))))) in
-    do:  ("s" <-[go.string] "$r0");;;
-    (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: ("$ret0", "$ret1") := (map.lookup2 go.string (go.PointerType readIndexStatus) (![go.MapType go.string (go.PointerType readIndexStatus)] (StructFieldRef readOnly "pendingReadIndex"%go (![go.PointerType readOnly] "ro"))) (![go.string] "s")) in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  "$r0";;;
-    do:  ("ok" <-[go.bool] "$r1");;;
-    (if: ![go.bool] "ok"
-    then return: (#())
-    else do:  #()));;;
-    let: "$r0" := (GoAlloc readIndexStatus (let: "$v0" := (![go.uint64] "index") in
-    let: "$v1" := (![raftpb.Message] "m") in
-    let: "$v2" := ((FuncResolve go.make1 [go.MapType go.uint64 go.bool] #()) #()) in
-    CompositeLiteral readIndexStatus (LiteralValue [KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "req"%go)) (ElementExpression raftpb.Message "$v1"); KeyedElement (Some (KeyField "acks"%go)) (ElementExpression (go.MapType go.uint64 go.bool) "$v2")]))) in
-    do:  (map.insert go.string (![go.MapType go.string (go.PointerType readIndexStatus)] (StructFieldRef readOnly "pendingReadIndex"%go (![go.PointerType readOnly] "ro"))) (![go.string] "s") "$r0");;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType go.string] (StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro"))) in
-    let: "$a1" := ((let: "$sl0" := (![go.string] "s") in
-    CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$sl0")]))) in
-    (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
-    do:  ((StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro")) <-[go.SliceType go.string] "$r0");;;
+    let: "req" := (GoAlloc raftpb.Message "req") in
+    let: "commitIndex" := (GoAlloc go.uint64 "commitIndex") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType readIndexRequest)] (StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro"))) in
+    let: "$a1" := ((let: "$sl0" := (GoAlloc readIndexRequest (let: "$v0" := (![raftpb.Message] "req") in
+    let: "$v1" := (![go.uint64] "commitIndex") in
+    CompositeLiteral readIndexRequest (LiteralValue [KeyedElement (Some (KeyField "req"%go)) (ElementExpression raftpb.Message "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")]))) in
+    CompositeLiteral (go.SliceType (go.PointerType readIndexRequest)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType readIndexRequest) "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType (go.PointerType readIndexRequest)] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro")) <-[go.SliceType (go.PointerType readIndexRequest)] "$r0");;;
     return: #()).
 
-(* recvAck notifies the readonly struct that the raft state machine received
-   an acknowledgment of the heartbeat that attached with the read only request
-   context.
+(* recvAck notifies the `readOnly` of an acknowledgment of a heartbeat response.
 
-   go: read_only.go:68:21 *)
+   go: read_only.go:65:21 *)
 Definition readOnly__recvAckⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "ro" "id" "context",
+  λ: "ro" "from" "ctx",
     exception_do (let: "ro" := (GoAlloc (go.PointerType readOnly) "ro") in
-    let: "context" := (GoAlloc (go.SliceType go.byte) "context") in
-    let: "id" := (GoAlloc go.uint64 "id") in
-    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "rs" := (GoAlloc (go.PointerType readIndexStatus) (GoZeroVal (go.PointerType readIndexStatus) #())) in
-    let: ("$ret0", "$ret1") := (map.lookup2 go.string (go.PointerType readIndexStatus) (![go.MapType go.string (go.PointerType readIndexStatus)] (StructFieldRef readOnly "pendingReadIndex"%go (![go.PointerType readOnly] "ro"))) (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] "context"))) in
+    let: "ctx" := (GoAlloc (go.SliceType go.byte) "ctx") in
+    let: "from" := (GoAlloc go.uint64 "from") in
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] "ctx") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") ≠⟨go.int⟩ #(W64 0))
+    then
+      let: "$r0" := (let: "$a0" := (map.lookup1 go.uint64 go.uint64 (![go.MapType go.uint64 go.uint64] (StructFieldRef readOnly "acks"%go (![go.PointerType readOnly] "ro"))) (![go.uint64] "from")) in
+      let: "$a1" := (let: "$a0" := (![go.SliceType go.byte] "ctx") in
+      (MethodResolve (go.PointerType binary.littleEndian) "Uint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0") in
+      (FuncResolve go.max [go.uint64; go.uint64] #()) "$a0" "$a1") in
+      do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] (StructFieldRef readOnly "acks"%go (![go.PointerType readOnly] "ro"))) (![go.uint64] "from") "$r0")
+    else do:  #());;;
+    return: #()).
+
+(* AckedIndex allows for using `CommittedIndex` in `maybeAdvance`.
+
+   go: read_only.go:72:21 *)
+Definition readOnly__AckedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "ro" "voterID",
+    exception_do (let: "ro" := (GoAlloc (go.PointerType readOnly) "ro") in
+    let: "voterID" := (GoAlloc go.uint64 "voterID") in
+    let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "idx" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 go.uint64 (![go.MapType go.uint64 go.uint64] (StructFieldRef readOnly "acks"%go (![go.PointerType readOnly] "ro"))) (![go.uint64] "voterID")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("rs" <-[go.PointerType readIndexStatus] "$r0");;;
-    do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (⟨go.bool⟩! (![go.bool] "ok"))
-    then return: (Convert go.untyped_nil (go.MapType go.uint64 go.bool) UntypedNil)
-    else do:  #());;;
-    let: "$r0" := #true in
-    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.bool] (StructFieldRef readIndexStatus "acks"%go (![go.PointerType readIndexStatus] "rs"))) (![go.uint64] "id") "$r0");;;
-    return: (![go.MapType go.uint64 go.bool] (StructFieldRef readIndexStatus "acks"%go (![go.PointerType readIndexStatus] "rs")))).
+    do:  ("idx" <-[go.uint64] "$r0");;;
+    do:  ("found" <-[go.bool] "$r1");;;
+    return: (![go.uint64] "idx", ![go.bool] "found")).
 
-(* advance advances the read only request queue kept by the readonly struct.
-   It dequeues the requests until it finds the read only request that has
-   the same context as the given `m`.
+(* maybeAdvance uses the existing acknowledgements and current raft
+   configuration to confirm and return as many unconfirmed reads as possible.
 
-   go: read_only.go:81:21 *)
-Definition readOnly__advanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "ro" "m",
+   go: read_only.go:79:21 *)
+Definition readOnly__maybeAdvanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "ro" "c",
     exception_do (let: "ro" := (GoAlloc (go.PointerType readOnly) "ro") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "ctx" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef raftpb.Message "Context"%go "m"))) in
-    do:  ("ctx" <-[go.string] "$r0");;;
-    let: "rss" := (GoAlloc (go.SliceType (go.PointerType readIndexStatus)) (GoZeroVal (go.SliceType (go.PointerType readIndexStatus)) #())) in
-    let: "$range" := (![go.SliceType go.string] (StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro"))) in
-    (let: "okctx" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    slice.for_range go.string "$range" (λ: "$key" "$value",
-      do:  ("okctx" <-[go.string] "$value");;;
-      do:  "$key";;;
-      do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)));;;
-      let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-      let: "rs" := (GoAlloc (go.PointerType readIndexStatus) (GoZeroVal (go.PointerType readIndexStatus) #())) in
-      let: ("$ret0", "$ret1") := (map.lookup2 go.string (go.PointerType readIndexStatus) (![go.MapType go.string (go.PointerType readIndexStatus)] (StructFieldRef readOnly "pendingReadIndex"%go (![go.PointerType readOnly] "ro"))) (![go.string] "okctx")) in
-      let: "$r0" := "$ret0" in
-      let: "$r1" := "$ret1" in
-      do:  ("rs" <-[go.PointerType readIndexStatus] "$r0");;;
-      do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (⟨go.bool⟩! (![go.bool] "ok"))
-      then
-        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"cannot find corresponding read state from pending map"%go) in
-        (FuncResolve go.panic [] #()) "$a0")
-      else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType readIndexStatus)] "rss") in
-      let: "$a1" := ((let: "$sl0" := (![go.PointerType readIndexStatus] "rs") in
-      CompositeLiteral (go.SliceType (go.PointerType readIndexStatus)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType readIndexStatus) "$sl0")]))) in
-      (FuncResolve go.append [go.SliceType (go.PointerType readIndexStatus)] #()) "$a0" "$a1") in
-      do:  ("rss" <-[go.SliceType (go.PointerType readIndexStatus)] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((![go.string] "okctx") =⟨go.string⟩ (![go.string] "ctx"))
-      then
-        let: "$r0" := #true in
-        do:  ("found" <-[go.bool] "$r0");;;
-        break: #()
-      else do:  #())));;;
-    (if: ![go.bool] "found"
-    then
-      let: "$r0" := (let: "$s" := (![go.SliceType go.string] (StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro"))) in
-      Slice (go.SliceType go.string) ("$s", ![go.int] "i", FuncResolve go.len [go.SliceType go.string] #() (![go.SliceType go.string] (StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro"))))) in
-      do:  ((StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro")) <-[go.SliceType go.string] "$r0");;;
-      let: "$range" := (![go.SliceType (go.PointerType readIndexStatus)] "rss") in
-      (let: "rs" := (GoAlloc (go.PointerType readIndexStatus) (GoZeroVal (go.PointerType readIndexStatus) #())) in
-      slice.for_range (go.PointerType readIndexStatus) "$range" (λ: "$key" "$value",
-        do:  ("rs" <-[go.PointerType readIndexStatus] "$value");;;
-        do:  "$key";;;
-        do:  (let: "$a0" := (![go.MapType go.string (go.PointerType readIndexStatus)] (StructFieldRef readOnly "pendingReadIndex"%go (![go.PointerType readOnly] "ro"))) in
-        let: "$a1" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go (StructFieldRef readIndexStatus "req"%go (![go.PointerType readIndexStatus] "rs"))), #(W64 0)))))) in
-        (FuncResolve go.delete [go.MapType go.string (go.PointerType readIndexStatus)] #()) "$a0" "$a1")));;;
-      return: (![go.SliceType (go.PointerType readIndexStatus)] "rss")
+    let: "c" := (GoAlloc quorum.JointConfig "c") in
+    let: "newConfirmedReads" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (let: "$a0" := (Convert (go.PointerType readOnly) quorum.AckedIndexer (![go.PointerType readOnly] "ro")) in
+    (MethodResolve (go.PointerType quorum.JointConfig) "CommittedIndex"%go "c") "$a0") in
+    do:  ("newConfirmedReads" <-[go.uint64] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "newConfirmedReads") ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef readOnly "confirmedReads"%go (![go.PointerType readOnly] "ro"))))
+    then return: (Convert go.untyped_nil (go.SliceType (go.PointerType readIndexRequest)) UntypedNil)
     else do:  #());;;
-    return: (Convert go.untyped_nil (go.SliceType (go.PointerType readIndexStatus)) UntypedNil)).
+    let: "readStates" := (GoAlloc (go.SliceType (go.PointerType readIndexRequest)) (GoZeroVal (go.SliceType (go.PointerType readIndexRequest)) #())) in
+    let: "$r0" := (let: "$s" := (![go.SliceType (go.PointerType readIndexRequest)] (StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro"))) in
+    Slice (go.SliceType (go.PointerType readIndexRequest)) ("$s", #(W64 0), (![go.uint64] "newConfirmedReads") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef readOnly "confirmedReads"%go (![go.PointerType readOnly] "ro"))))) in
+    do:  ("readStates" <-[go.SliceType (go.PointerType readIndexRequest)] "$r0");;;
+    let: "$r0" := (let: "$s" := (![go.SliceType (go.PointerType readIndexRequest)] (StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro"))) in
+    Slice (go.SliceType (go.PointerType readIndexRequest)) ("$s", (![go.uint64] "newConfirmedReads") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef readOnly "confirmedReads"%go (![go.PointerType readOnly] "ro"))), FuncResolve go.len [go.SliceType (go.PointerType readIndexRequest)] #() (![go.SliceType (go.PointerType readIndexRequest)] (StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro"))))) in
+    do:  ((StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro")) <-[go.SliceType (go.PointerType readIndexRequest)] "$r0");;;
+    let: "$r0" := (![go.uint64] "newConfirmedReads") in
+    do:  ((StructFieldRef readOnly "confirmedReads"%go (![go.PointerType readOnly] "ro")) <-[go.uint64] "$r0");;;
+    return: (![go.SliceType (go.PointerType readIndexRequest)] "readStates")).
 
-(* lastPendingRequestCtx returns the context of the last pending read only
-   request in readonly struct.
+(* heartbeatCtx returns the `Context` that should be sent in order to confirm
+   all currently unconfirmed reads.
 
-   go: read_only.go:116:21 *)
-Definition readOnly__lastPendingRequestCtxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+   go: read_only.go:93:21 *)
+Definition readOnly__heartbeatCtxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ro" <>,
     exception_do (let: "ro" := (GoAlloc (go.PointerType readOnly) "ro") in
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.string] (StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro"))) in
-    (FuncResolve go.len [go.SliceType go.string] #()) "$a0") =⟨go.int⟩ #(W64 0))
-    then return: (#""%go)
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType readIndexRequest)] (StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro"))) in
+    (FuncResolve go.len [go.SliceType (go.PointerType readIndexRequest)] #()) "$a0") =⟨go.int⟩ #(W64 0))
+    then return: (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil)
     else do:  #());;;
-    return: (![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] (StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro")), (let: "$a0" := (![go.SliceType go.string] (StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro"))) in
-      (FuncResolve go.len [go.SliceType go.string] #()) "$a0") -⟨go.int⟩ #(W64 1))))).
+    let: "unconfirmedReadPosition" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := ((![go.uint64] (StructFieldRef readOnly "confirmedReads"%go (![go.PointerType readOnly] "ro"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.PointerType readIndexRequest)] (StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro"))) in
+    (FuncResolve go.len [go.SliceType (go.PointerType readIndexRequest)] #()) "$a0"))) in
+    do:  ("unconfirmedReadPosition" <-[go.uint64] "$r0");;;
+    let: "encLastIndex" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 8)) in
+    do:  ("encLastIndex" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "encLastIndex") in
+    let: "$a1" := (![go.uint64] "unconfirmedReadPosition") in
+    (MethodResolve (go.PointerType binary.littleEndian) "PutUint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0" "$a1");;;
+    return: (![go.SliceType go.byte] "encLastIndex")).
 
 (* go: state_trace_nop.go:30:6 *)
 Definition traceInitStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -6486,9 +6448,9 @@ Definition Status__MarshalJSONⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
         (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
         do:  ("subj" <-[go.string] "$r0");;;
         do:  ("j" <-[go.string] ((![go.string] "j") +⟨go.string⟩ (![go.string] "subj")))));;;
-      let: "$r0" := ((Convert (go.SliceType go.byte) go.string (let: "$s" := (Convert go.string (go.SliceType go.byte) (![go.string] "j")) in
-      Slice (go.SliceType go.byte) ("$s", #(W64 0), (let: "$a0" := (![go.string] "j") in
-       (FuncResolve go.len [go.string] #()) "$a0") -⟨go.int⟩ #(W64 1)))) +⟨go.string⟩ #"},"%go) in
+      let: "$r0" := ((let: "$s" := (![go.string] "j") in
+      Slice go.string ("$s", #(W64 0), (let: "$a0" := (![go.string] "j") in
+       (FuncResolve go.len [go.string] #()) "$a0") -⟨go.int⟩ #(W64 1))) +⟨go.string⟩ #"},"%go) in
       do:  ("j" <-[go.string] "$r0"));;;
     do:  ("j" <-[go.string] ((![go.string] "j") +⟨go.string⟩ (let: "$a0" := #"""leadtransferee"":""%x""}"%go in
     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef BasicStatus "LeadTransferee"%go (StructFieldRef Status "BasicStatus"%go "s")))) in
@@ -6706,7 +6668,7 @@ Definition MemoryStorage__ApplySnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
     let: "snapIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snap"))) in
     do:  ("snapIndex" <-[go.uint64] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.uint64] "msIndex") ≥⟨go.uint64⟩ (![go.uint64] "snapIndex"))
+    (if: Convert go.untyped_bool go.bool (((![go.uint64] "msIndex") ≠⟨go.uint64⟩ #(W64 0)) && ((![go.uint64] "msIndex") ≥⟨go.uint64⟩ (![go.uint64] "snapIndex")))
     then return: (![go.error] (GlobalVarAddr ErrSnapOutOfDate #()))
     else do:  #());;;
     let: "$r0" := (![raftpb.Snapshot] "snap") in
@@ -6722,7 +6684,7 @@ Definition MemoryStorage__ApplySnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
    If any configuration changes have been made since the last compaction,
    the result of the last ApplyConfChange must be passed in.
 
-   go: storage.go:227:26 *)
+   go: storage.go:230:26 *)
 Definition MemoryStorage__CreateSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ms" "i" "cs" "data",
     with_defer: (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
@@ -6767,7 +6729,7 @@ Definition MemoryStorage__CreateSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
    It is the application's responsibility to not attempt to compact an index
    greater than raftLog.applied.
 
-   go: storage.go:251:26 *)
+   go: storage.go:254:26 *)
 Definition MemoryStorage__Compactⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ms" "compactIndex",
     with_defer: (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
@@ -6817,7 +6779,7 @@ Definition MemoryStorage__Compactⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
    TODO (xiangli): ensure the entries are continuous and
    entries[0].Index > ms.entries[0].Index
 
-   go: storage.go:277:26 *)
+   go: storage.go:280:26 *)
 Definition MemoryStorage__Appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ms" "entries",
     with_defer: (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
@@ -7577,7 +7539,7 @@ Definition extendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
 
 #[global] Instance info' : PkgInfo pkg_id.raft :=
 {|
-  pkg_imported_pkgs := [code.errors.pkg_id.errors; code.go_etcd_io.raft.v3.raftpb.pkg_id.raftpb; code.fmt.pkg_id.fmt; code.io.pkg_id.io; code.log.pkg_id.log; code.os.pkg_id.os; code.sync.pkg_id.sync; code.context.pkg_id.context; code.bytes.pkg_id.bytes; code.crypto.rand.pkg_id.rand; code.math.pkg_id.math; code.math.big.pkg_id.big; code.strings.pkg_id.strings; code.go_etcd_io.raft.v3.confchange.pkg_id.confchange; code.go_etcd_io.raft.v3.quorum.pkg_id.quorum; code.go_etcd_io.raft.v3.quorum.slices.pkg_id.slices; code.go_etcd_io.raft.v3.tracker.pkg_id.tracker]
+  pkg_imported_pkgs := [code.errors.pkg_id.errors; code.go_etcd_io.raft.v3.raftpb.pkg_id.raftpb; code.fmt.pkg_id.fmt; code.io.pkg_id.io; code.log.pkg_id.log; code.os.pkg_id.os; code.sync.pkg_id.sync; code.context.pkg_id.context; code.bytes.pkg_id.bytes; code.crypto.rand.pkg_id.rand; code.math.pkg_id.math; code.math.big.pkg_id.big; code.slices.pkg_id.slices; code.strings.pkg_id.strings; code.go_etcd_io.raft.v3.confchange.pkg_id.confchange; code.go_etcd_io.raft.v3.quorum.pkg_id.quorum; code.go_etcd_io.raft.v3.tracker.pkg_id.tracker; code.encoding.binary.pkg_id.binary]
 |}.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -7601,11 +7563,12 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (go.GlobalAlloc raftLoggerMu sync.Mutex #());;;
       do:  (go.GlobalAlloc discardLogger (go.PointerType DefaultLogger) #());;;
       do:  (go.GlobalAlloc defaultLogger (go.PointerType DefaultLogger) #());;;
+      do:  (binary.initialize' #());;;
       do:  (tracker.initialize' #());;;
-      do:  (slices.initialize' #());;;
       do:  (quorum.initialize' #());;;
       do:  (confchange.initialize' #());;;
       do:  (strings.initialize' #());;;
+      do:  (slices.initialize' #());;;
       do:  (big.initialize' #());;;
       do:  (math.initialize' #());;;
       do:  (rand.initialize' #());;;
@@ -8847,43 +8810,39 @@ Class ReadState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
   #[global] ReadState_set_RequestCtx (x : ReadState.t) y :: ⟦StructFieldSet (ReadStateⁱᵐᵖˡ) "RequestCtx", (#x, #y)⟧ ⤳[under] #(x <|ReadState.RequestCtx' := y|>);
 }.
 
-Module readIndexStatus.
+Module readIndexRequest.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   req' : raftpb.Message.t;
   index' : w64;
-  acks' : map.t;
 }.
 
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
-End readIndexStatus.
+End readIndexRequest.
 
-Definition readIndexStatus'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+Definition readIndexRequest'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "req"%go raftpb.Message);
-  (go.FieldDecl "index"%go go.uint64);
-  (go.FieldDecl "acks"%go (go.MapType go.uint64 go.bool))
+  (go.FieldDecl "index"%go go.uint64)
 ].
-Program Definition readIndexStatus'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (readIndexStatus'fds_unsealed).
-Global Instance equals_unfold_readIndexStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : readIndexStatus'fds =→ readIndexStatus'fds_unsealed.
-Proof. rewrite /readIndexStatus'fds seal_eq //. Qed.
+Program Definition readIndexRequest'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (readIndexRequest'fds_unsealed).
+Global Instance equals_unfold_readIndexRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : readIndexRequest'fds =→ readIndexRequest'fds_unsealed.
+Proof. rewrite /readIndexRequest'fds seal_eq //. Qed.
 
-Definition readIndexStatusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (readIndexStatus'fds).
+Definition readIndexRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (readIndexRequest'fds).
 
-Class readIndexStatus_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class readIndexRequest_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] readIndexStatus_type_repr  :: go.TypeReprUnderlying readIndexStatusⁱᵐᵖˡ readIndexStatus.t;
-  #[global] readIndexStatus_underlying :: (readIndexStatus) <u (readIndexStatusⁱᵐᵖˡ);
-  #[global] readIndexStatus_get_req (x : readIndexStatus.t) :: ⟦StructFieldGet (readIndexStatusⁱᵐᵖˡ) "req", #x⟧ ⤳[under] #x.(readIndexStatus.req');
-  #[global] readIndexStatus_set_req (x : readIndexStatus.t) y :: ⟦StructFieldSet (readIndexStatusⁱᵐᵖˡ) "req", (#x, #y)⟧ ⤳[under] #(x <|readIndexStatus.req' := y|>);
-  #[global] readIndexStatus_get_index (x : readIndexStatus.t) :: ⟦StructFieldGet (readIndexStatusⁱᵐᵖˡ) "index", #x⟧ ⤳[under] #x.(readIndexStatus.index');
-  #[global] readIndexStatus_set_index (x : readIndexStatus.t) y :: ⟦StructFieldSet (readIndexStatusⁱᵐᵖˡ) "index", (#x, #y)⟧ ⤳[under] #(x <|readIndexStatus.index' := y|>);
-  #[global] readIndexStatus_get_acks (x : readIndexStatus.t) :: ⟦StructFieldGet (readIndexStatusⁱᵐᵖˡ) "acks", #x⟧ ⤳[under] #x.(readIndexStatus.acks');
-  #[global] readIndexStatus_set_acks (x : readIndexStatus.t) y :: ⟦StructFieldSet (readIndexStatusⁱᵐᵖˡ) "acks", (#x, #y)⟧ ⤳[under] #(x <|readIndexStatus.acks' := y|>);
+  #[global] readIndexRequest_type_repr  :: go.TypeReprUnderlying readIndexRequestⁱᵐᵖˡ readIndexRequest.t;
+  #[global] readIndexRequest_underlying :: (readIndexRequest) <u (readIndexRequestⁱᵐᵖˡ);
+  #[global] readIndexRequest_get_req (x : readIndexRequest.t) :: ⟦StructFieldGet (readIndexRequestⁱᵐᵖˡ) "req", #x⟧ ⤳[under] #x.(readIndexRequest.req');
+  #[global] readIndexRequest_set_req (x : readIndexRequest.t) y :: ⟦StructFieldSet (readIndexRequestⁱᵐᵖˡ) "req", (#x, #y)⟧ ⤳[under] #(x <|readIndexRequest.req' := y|>);
+  #[global] readIndexRequest_get_index (x : readIndexRequest.t) :: ⟦StructFieldGet (readIndexRequestⁱᵐᵖˡ) "index", #x⟧ ⤳[under] #x.(readIndexRequest.index');
+  #[global] readIndexRequest_set_index (x : readIndexRequest.t) y :: ⟦StructFieldSet (readIndexRequestⁱᵐᵖˡ) "index", (#x, #y)⟧ ⤳[under] #(x <|readIndexRequest.index' := y|>);
 }.
 
 Module readOnly.
@@ -8892,11 +8851,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   option' : raft.ReadOnlyOption.t;
-  pendingReadIndex' : map.t;
-  readIndexQueue' : slice.t;
+  acks' : map.t;
+  unconfirmedReads' : slice.t;
+  confirmedReads' : w64;
 }.
 
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
@@ -8904,8 +8864,9 @@ End readOnly.
 
 Definition readOnly'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "option"%go ReadOnlyOption);
-  (go.FieldDecl "pendingReadIndex"%go (go.MapType go.string (go.PointerType readIndexStatus)));
-  (go.FieldDecl "readIndexQueue"%go (go.SliceType go.string))
+  (go.FieldDecl "acks"%go (go.MapType go.uint64 go.uint64));
+  (go.FieldDecl "unconfirmedReads"%go (go.SliceType (go.PointerType readIndexRequest)));
+  (go.FieldDecl "confirmedReads"%go go.uint64)
 ].
 Program Definition readOnly'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (readOnly'fds_unsealed).
 Global Instance equals_unfold_readOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : readOnly'fds =→ readOnly'fds_unsealed.
@@ -8919,13 +8880,16 @@ Class readOnly_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
   #[global] readOnly_underlying :: (readOnly) <u (readOnlyⁱᵐᵖˡ);
   #[global] readOnly_get_option (x : readOnly.t) :: ⟦StructFieldGet (readOnlyⁱᵐᵖˡ) "option", #x⟧ ⤳[under] #x.(readOnly.option');
   #[global] readOnly_set_option (x : readOnly.t) y :: ⟦StructFieldSet (readOnlyⁱᵐᵖˡ) "option", (#x, #y)⟧ ⤳[under] #(x <|readOnly.option' := y|>);
-  #[global] readOnly_get_pendingReadIndex (x : readOnly.t) :: ⟦StructFieldGet (readOnlyⁱᵐᵖˡ) "pendingReadIndex", #x⟧ ⤳[under] #x.(readOnly.pendingReadIndex');
-  #[global] readOnly_set_pendingReadIndex (x : readOnly.t) y :: ⟦StructFieldSet (readOnlyⁱᵐᵖˡ) "pendingReadIndex", (#x, #y)⟧ ⤳[under] #(x <|readOnly.pendingReadIndex' := y|>);
-  #[global] readOnly_get_readIndexQueue (x : readOnly.t) :: ⟦StructFieldGet (readOnlyⁱᵐᵖˡ) "readIndexQueue", #x⟧ ⤳[under] #x.(readOnly.readIndexQueue');
-  #[global] readOnly_set_readIndexQueue (x : readOnly.t) y :: ⟦StructFieldSet (readOnlyⁱᵐᵖˡ) "readIndexQueue", (#x, #y)⟧ ⤳[under] #(x <|readOnly.readIndexQueue' := y|>);
+  #[global] readOnly_get_acks (x : readOnly.t) :: ⟦StructFieldGet (readOnlyⁱᵐᵖˡ) "acks", #x⟧ ⤳[under] #x.(readOnly.acks');
+  #[global] readOnly_set_acks (x : readOnly.t) y :: ⟦StructFieldSet (readOnlyⁱᵐᵖˡ) "acks", (#x, #y)⟧ ⤳[under] #(x <|readOnly.acks' := y|>);
+  #[global] readOnly_get_unconfirmedReads (x : readOnly.t) :: ⟦StructFieldGet (readOnlyⁱᵐᵖˡ) "unconfirmedReads", #x⟧ ⤳[under] #x.(readOnly.unconfirmedReads');
+  #[global] readOnly_set_unconfirmedReads (x : readOnly.t) y :: ⟦StructFieldSet (readOnlyⁱᵐᵖˡ) "unconfirmedReads", (#x, #y)⟧ ⤳[under] #(x <|readOnly.unconfirmedReads' := y|>);
+  #[global] readOnly_get_confirmedReads (x : readOnly.t) :: ⟦StructFieldGet (readOnlyⁱᵐᵖˡ) "confirmedReads", #x⟧ ⤳[under] #x.(readOnly.confirmedReads');
+  #[global] readOnly_set_confirmedReads (x : readOnly.t) y :: ⟦StructFieldSet (readOnlyⁱᵐᵖˡ) "confirmedReads", (#x, #y)⟧ ⤳[under] #(x <|readOnly.confirmedReads' := y|>);
+  #[global] readOnly'ptr_AckedIndex_unfold :: MethodUnfold (go.PointerType (readOnly)) "AckedIndex" (readOnly__AckedIndexⁱᵐᵖˡ);
   #[global] readOnly'ptr_addRequest_unfold :: MethodUnfold (go.PointerType (readOnly)) "addRequest" (readOnly__addRequestⁱᵐᵖˡ);
-  #[global] readOnly'ptr_advance_unfold :: MethodUnfold (go.PointerType (readOnly)) "advance" (readOnly__advanceⁱᵐᵖˡ);
-  #[global] readOnly'ptr_lastPendingRequestCtx_unfold :: MethodUnfold (go.PointerType (readOnly)) "lastPendingRequestCtx" (readOnly__lastPendingRequestCtxⁱᵐᵖˡ);
+  #[global] readOnly'ptr_heartbeatCtx_unfold :: MethodUnfold (go.PointerType (readOnly)) "heartbeatCtx" (readOnly__heartbeatCtxⁱᵐᵖˡ);
+  #[global] readOnly'ptr_maybeAdvance_unfold :: MethodUnfold (go.PointerType (readOnly)) "maybeAdvance" (readOnly__maybeAdvanceⁱᵐᵖˡ);
   #[global] readOnly'ptr_recvAck_unfold :: MethodUnfold (go.PointerType (readOnly)) "recvAck" (readOnly__recvAckⁱᵐᵖˡ);
 }.
 
@@ -9308,7 +9272,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] RawNode_instance :: RawNode_Assumptions;
   #[global] ProgressType_instance :: ProgressType_Assumptions;
   #[global] ReadState_instance :: ReadState_Assumptions;
-  #[global] readIndexStatus_instance :: readIndexStatus_Assumptions;
+  #[global] readIndexRequest_instance :: readIndexRequest_Assumptions;
   #[global] readOnly_instance :: readOnly_Assumptions;
   #[global] TraceLogger_instance :: TraceLogger_Assumptions;
   #[global] TracingEvent_instance :: TracingEvent_Assumptions;
@@ -9403,10 +9367,11 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] import_rand_Assumption :: rand.Assumptions;
   #[global] import_math_Assumption :: math.Assumptions;
   #[global] import_big_Assumption :: big.Assumptions;
+  #[global] import_slices_Assumption :: slices.Assumptions;
   #[global] import_strings_Assumption :: strings.Assumptions;
   #[global] import_confchange_Assumption :: confchange.Assumptions;
   #[global] import_quorum_Assumption :: quorum.Assumptions;
-  #[global] import_slices_Assumption :: slices.Assumptions;
   #[global] import_tracker_Assumption :: tracker.Assumptions;
+  #[global] import_binary_Assumption :: binary.Assumptions;
 }.
 End raft.

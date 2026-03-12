@@ -15,7 +15,9 @@ jobs:
         id: opam-update
         run: |
           update_out=$(go run github.com/mit-pdos/perennial-cli@latest opam update --print-url -f perennial.opam)
-          echo "update_out=$update_out" >> "$GITHUB_OUTPUT"
+          echo "update_out<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$update_out" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
