@@ -34,7 +34,7 @@ pin-depends: [
   ["coq-record-update.dev"     "git+https://github.com/tchajed/coq-record-update#7b2645210331c3ec4ed75fa5ad0840a723f25151"]
   ["rocq-stdpp.dev"            "git+https://gitlab.mpi-sws.org/iris/stdpp#c844713f8faa5dce80f131eace5418e092880971"]
   ["rocq-iris.dev"             "git+https://gitlab.mpi-sws.org/iris/iris#b909adcc698a6c38f4c3b2645936bdd0d870d412"]
-  ["iris-named-props.dev"      "git+https://github.com/tchajed/iris-named-props#c388714a93b1c043ed42a3f446280abd5113d26f"]
+  ["iris-named-props.dev"      "git+https://github.com/tchajed/iris-named-props#ca663d2709888a789a03edc861b7bde86ddd56e5"]
 ]
 
 build: [make "new-goose" "-j%{jobs}%"]
