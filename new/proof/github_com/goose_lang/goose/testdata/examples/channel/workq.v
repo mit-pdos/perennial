@@ -178,7 +178,8 @@ Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
          "Hremaining" ∷ own_Int64 remaining (DfracOwn 1) remainingv ∗
          "H●" ∷ own_task_auth γ remaining_docs ∗
          "%Hremaining_size" ∷ ⌜ sint.nat remainingv = size remaining_docs ⌝ ∗
-         "%Hsubset" ∷ ⌜ map_Forall (λ (i : nat) _, i < length γ.(docs)) remaining_docs ⌝
+         "%Hsubset" ∷ ⌜ map_Forall (λ (i : nat) _, i < length γ.(docs)) remaining_docs ⌝ ∗
+         "%Hdocs_agree" ∷ ⌜ map_Forall (λ (i : nat) (v : option go_string), match v with Some doc => γ.(docs) !! i = Some doc | None => True end) remaining_docs ⌝
         ).
 
 Definition is_Worker γ (w : loc) : iProp Σ :=
@@ -239,11 +240,20 @@ Proof.
       replace (sint.nat _) with
         (sint.nat totalv + length ss)%nat.
       2:{ admit. (* TODO: overflow - need bound on totalv + sl.len *) }
-      admit. (* TODO: needs invariant strengthening: remaining_docs !! i = Some (Some doc) → γ.(docs) !! i = Some doc *)
+      assert (γ.(docs) !! i = Some doc) as Hdoc_i.
+      { eapply map_Forall_lookup_1 in Hdocs_agreeinv; [|exact Hlookup]. simpl in Hdocs_agreeinv. done. }
+      rewrite Htotalinv. rewrite H.
+      rewrite (imap_sum_insert_none word_count _ _ _ _ Hlookup).
+      { lia. }
+      { eapply lookup_lt_Some. eauto. }
+      { done. }
       (* TODO: pure fact *)
     - rewrite map_size_insert_Some //.
     - apply map_Forall_insert_2; try done.
       by eapply map_Forall_lookup_1 in Hsubsetinv.
+    - apply map_Forall_insert_2; [done|].
+      eapply map_Forall_impl; [apply Hdocs_agreeinv|].
+      intros k v Hv. destruct v; done.
   }
   iModIntro.
   wp_auto.
@@ -271,6 +281,7 @@ Proof.
       - done.
       - rewrite map_size_delete_Some //.
         word.
+      - apply map_Forall_delete. done.
       - apply map_Forall_delete. done.
     }
     iModIntro. wp_auto. wp_if_destruct.
@@ -321,6 +332,7 @@ Proof.
       - rewrite (imap_sum_delete_none word_count _ _ _ H0). done.
       - rewrite map_size_delete_Some //.
         word.
+      - apply map_Forall_delete. done.
       - apply map_Forall_delete. done.
     }
     iModIntro. wp_auto. wp_if_destruct.
@@ -625,13 +637,17 @@ Proof.
       apply lookup_lt_is_Some_2 in Hj. destruct Hj as [d Hd].
       rewrite Hd /=. eauto. }
     iPureIntro.
-    split.
+    split_and!.
     - rewrite map_seq_size length_fmap. done.
     - intros j x Hj. rewrite lookup_map_seq_0 in Hj.
       rewrite list_lookup_fmap in Hj.
       destruct (docs !! j) eqn:E; simpl in Hj; [|done].
       injection Hj as Hj. subst.
       assert (j < length docs)%nat by (eapply lookup_lt_Some; eauto). simpl. lia.
+    - intros j x Hj. rewrite lookup_map_seq_0 in Hj.
+      rewrite list_lookup_fmap in Hj.
+      destruct (docs !! j) eqn:E; simpl in Hj; [|done].
+      injection Hj as Hj. subst. done.
   }
 
   rename i_ptr into j_ptr. iRename "i" into "j".
