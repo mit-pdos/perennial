@@ -66,6 +66,30 @@ Proof.
   exfalso. eapply (Hno_some j); [eapply lookup_lt_Some; eauto | eauto].
 Qed.
 
+Local Lemma sum_list_le (l1 l2 : list nat) :
+  length l1 = length l2 →
+  (∀ i x y, l1 !! i = Some x → l2 !! i = Some y → x ≤ y)%nat →
+  (sum_list l1 ≤ sum_list l2)%nat.
+Proof.
+  revert l2. induction l1 as [|a l1 IH]; intros [|b l2] Hlen Hle; simpl in *; try lia.
+  assert (a ≤ b)%nat by (eapply (Hle 0%nat); done).
+  assert (sum_list l1 ≤ sum_list l2)%nat.
+  { apply IH; [lia | intros i x y Hx Hy; eapply (Hle (S i)%nat); done]. }
+  lia.
+Qed.
+
+Local Lemma imap_sum_le {A : Type} (f : A → nat) (docs : list A) (remaining_docs : gmap nat (option A)) :
+  (sum_list (imap (λ i doc, match remaining_docs !! i with | Some (Some _) => O | _ => f doc end) docs) ≤
+   sum_list (f <$> docs))%nat.
+Proof.
+  apply sum_list_le.
+  - rewrite length_imap length_fmap. done.
+  - intros i x y. rewrite list_lookup_imap list_lookup_fmap.
+    destruct (docs !! i); simpl; [|done].
+    intros [= <-] [= <-].
+    destruct (remaining_docs !! i) as [[?|]|]; simpl; lia.
+Qed.
+
 (* Inserting None at position i changes only that position's contribution *)
 Local Lemma imap_sum_insert_none {A : Type} (f : A → nat) (docs : list A) (remaining_docs : gmap nat (option A)) (i : nat) doc :
   remaining_docs !! i = Some (Some doc) →
@@ -113,6 +137,33 @@ Proof.
   f_equal. destruct (decide (i = j)) as [->|Hne].
   - rewrite lookup_delete Hlookup /= decide_True //.
   - rewrite lookup_delete_ne; [done | lia].
+Qed.
+
+Local Lemma sint_nat_add (a b : w64) (bound : nat) :
+  (0 ≤ sint.Z a)%Z → (0 ≤ sint.Z b)%Z →
+  (sint.nat a + sint.nat b ≤ bound)%nat →
+  (Z.of_nat bound < 2^63)%Z →
+  (sint.nat a + sint.nat b)%nat = sint.nat (w64_word_instance.(word.add) a b).
+Proof.
+  intros Haz Hbz Hle Hbound. unfold sint.nat in *.
+  change (match sint.Z ?x with Z.pos p => Pos.to_nat p | _ => 0%nat end)
+    with (Z.to_nat (sint.Z x)) in *.
+  assert (sint.Z a + sint.Z b < 2^63)%Z as Hlt.
+  { apply Nat2Z.inj_le in Hle.
+    rewrite Nat2Z.inj_add !Z2Nat.id in Hle; lia. }
+  rewrite word.signed_add; try word.
+Qed.
+
+Local Lemma sint_nat_to_W64 (x : w64) (n : nat) :
+  (0 ≤ sint.Z x)%Z →
+  sint.nat x = n →
+  (Z.of_nat n < 2^63)%Z →
+  x = W64 n.
+Proof.
+  intros Hpos Heq Hlt. unfold sint.nat in Heq.
+  assert (sint.Z x = Z.of_nat n) as Hz.
+  { rewrite -Heq. rewrite Z2Nat.id; [done | exact Hpos]. }
+  word.
 Qed.
 
 Section wps.
@@ -175,14 +226,16 @@ Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
                    sum_list (imap (λ i doc, match (remaining_docs !! i) with
                                             | Some (Some _) => O
                                             | _ => word_count doc
-                                            end) γ.(docs)) ⌝
+                                            end) γ.(docs)) ⌝ ∗
+                   "%Htotal_nonneg" ∷ ⌜ (0 ≤ sint.Z totalv)%Z ⌝
           ) ∗
 
          "Hremaining" ∷ own_Int64 remaining (DfracOwn 1) remainingv ∗
          "H●" ∷ own_task_auth γ remaining_docs ∗
          "%Hremaining_size" ∷ ⌜ sint.nat remainingv = size remaining_docs ⌝ ∗
          "%Hsubset" ∷ ⌜ map_Forall (λ (i : nat) _, i < length γ.(docs)) remaining_docs ⌝ ∗
-         "%Hdocs_agree" ∷ ⌜ map_Forall (λ (i : nat) (v : option go_string), match v with Some doc => γ.(docs) !! i = Some doc | None => True end) remaining_docs ⌝
+         "%Hdocs_agree" ∷ ⌜ map_Forall (λ (i : nat) (v : option go_string), match v with Some doc => γ.(docs) !! i = Some doc | None => True end) remaining_docs ⌝ ∗
+         "%Hoverflow" ∷ ⌜ (Z.of_nat (sum_list (word_count <$> γ.(docs))) < 2^63)%Z ⌝
         ).
 
 Definition is_Worker γ (w : loc) : iProp Σ :=
@@ -242,7 +295,19 @@ Proof.
     - destruct Hlen as [Hlen ?].
       replace (sint.nat _) with
         (sint.nat totalv + length ss)%nat.
-      2:{ admit. (* TODO: overflow - need bound on totalv + sl.len *) }
+      2:{
+        assert (γ.(docs) !! i = Some doc) as Hdoc_i'.
+        { eapply map_Forall_lookup_1 in Hdocs_agreeinv; [|exact Hlookup]. simpl in Hdocs_agreeinv. done. }
+        pose proof (imap_sum_le word_count γ.(docs) (<[i:=None]> remaining_docs)) as Hle.
+        rewrite (imap_sum_insert_none word_count _ _ _ _ Hlookup) in Hle;
+          [| eapply lookup_lt_Some; eauto | done].
+        rewrite -Htotalinv -H in Hle.
+        rewrite Hlen.
+        apply (sint_nat_add _ _ (sum_list (word_count <$> γ.(docs)))).
+        { exact Htotal_nonneginv. }
+        { word. }
+        { rewrite -Hlen. exact Hle. }
+        { exact Hoverflowinv. } }
       assert (γ.(docs) !! i = Some doc) as Hdoc_i.
       { eapply map_Forall_lookup_1 in Hdocs_agreeinv; [|exact Hlookup]. simpl in Hdocs_agreeinv. done. }
       rewrite Htotalinv. rewrite H.
@@ -251,12 +316,20 @@ Proof.
       { eapply lookup_lt_Some. eauto. }
       { done. }
       (* TODO: pure fact *)
+    - (* 0 ≤ sint.Z (word.add totalv sl.len) *)
+      assert (γ.(docs) !! i = Some doc) as Hdoc_i'.
+      { eapply map_Forall_lookup_1 in Hdocs_agreeinv; [|exact Hlookup]. simpl in Hdocs_agreeinv. done. }
+      pose proof (imap_sum_le word_count γ.(docs) (<[i:=None]> remaining_docs)) as Hle'.
+      rewrite (imap_sum_insert_none word_count _ _ _ _ Hlookup) in Hle';
+        [| eapply lookup_lt_Some; eauto | done].
+      rewrite -Htotalinv in Hle'. word.
     - rewrite map_size_insert_Some //.
     - apply map_Forall_insert_2; try done.
       by eapply map_Forall_lookup_1 in Hsubsetinv.
     - apply map_Forall_insert_2; [done|].
       eapply map_Forall_impl; [apply Hdocs_agreeinv|].
       intros k v Hv. destruct v; done.
+    - done.
   }
   iModIntro.
   wp_auto.
@@ -321,7 +394,7 @@ Proof.
                   congruence. }
               rewrite -Hdom in Hin. rewrite elem_of_singleton in Hin. done. }
             rewrite Hnone in Habs. done. }
-      admit. (* TODO: overflow - totalv0 = W64 (...) from sint.nat equation *) }
+      apply sint_nat_to_W64; [word | exact Htotaldone | exact Hoverflowinv]. }
     iIntros "#Hcl".
     wp_auto. wp_end.
   - (* not going to close done *)
@@ -333,6 +406,7 @@ Proof.
       rewrite decide_False //.
       iFrame. iPureIntro. split_and!.
       - rewrite (imap_sum_delete_none word_count _ _ _ H0). done.
+      - done.
       - rewrite map_size_delete_Some //.
         word.
       - apply map_Forall_delete. done.
@@ -341,7 +415,7 @@ Proof.
     iModIntro. wp_auto. wp_if_destruct.
     { exfalso. done. }
     wp_end.
-Admitted.
+Qed.
 
 Lemma wp_Worker__run γ w neighbor total remaining done :
   {{{
@@ -476,7 +550,8 @@ Proof.
 Admitted.
 
 Lemma wp_wordCount docs_sl docs :
-  {{{ is_pkg_init workq ∗ "Hdocs" ∷ docs_sl ↦* docs }}}
+  {{{ is_pkg_init workq ∗ "Hdocs" ∷ docs_sl ↦* docs ∗
+      "%Hoverflow" ∷ ⌜ (Z.of_nat (sum_list (word_count <$> docs)) < 2^63)%Z ⌝ }}}
     @! workq.wordCount #docs_sl
   {{{ RET #(W64 (sum_list (word_count <$> docs))); True }}}.
 Proof.
@@ -634,11 +709,12 @@ Proof.
     iMod (inv_alloc with "[-]") as "$"; last done.
     iFrame. iSplitL "Hopen total".
     { destruct decide; iFrame; try done.
-      iPureIntro.
-      rewrite (imap_sum_all_some word_count); first done.
-      intros j Hj. rewrite lookup_map_seq_0 list_lookup_fmap.
-      apply lookup_lt_is_Some_2 in Hj. destruct Hj as [d Hd].
-      rewrite Hd /=. eauto. }
+      iPureIntro. split.
+      { rewrite (imap_sum_all_some word_count); first done.
+        intros j Hj. rewrite lookup_map_seq_0 list_lookup_fmap.
+        apply lookup_lt_is_Some_2 in Hj. destruct Hj as [d Hd].
+        rewrite Hd /=. eauto. }
+      { word. } }
     iPureIntro.
     split_and!.
     - rewrite map_seq_size length_fmap. done.
@@ -651,6 +727,7 @@ Proof.
       rewrite list_lookup_fmap in Hj.
       destruct (docs !! j) eqn:E; simpl in Hj; [|done].
       injection Hj as Hj. subst. done.
+    - done.
   }
 
   rename i_ptr into j_ptr. iRename "i" into "j".
