@@ -105,8 +105,7 @@ Definition is_stale_term γ term : iProp Σ :=
   ∃ quorum,
     "%Hquorum" ∷ ⌜ is_quorum quorum ⌝ ∗
     "#Hterm_lbs" ∷
-      □(∀ node_id (Hin_quorum : node_id ∈ quorum),
-         ∃ term', is_term_lb γ node_id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝).
+      □(∀ id, ⌜ id ∈ quorum ⌝ → ∃ term', is_term_lb γ id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝).
 
 Axiom committed_in_term_agree : ∀ γ term log1 log2,
   own_committed_in_term γ term log1 -∗
@@ -224,8 +223,8 @@ Definition is_raft_commit_inv γ : iProp Σ := (*  *)
    Needs £ 2: one credit to open the invariant (strip ▷), one to strip the ▷
    from saved_pred_agree. *)
 Definition is_read_index γ index Φ : iProp Σ :=
-  ∀ log (Hin : sint.nat index ≤ length log) (Hno_overflow : length log < 2^63),
-  £ 2 -∗ is_commit γ log ={⊤}=∗ Φ log.
+  □ (∀ log (Hin : sint.nat index ≤ length log) (Hno_overflow : length log < 2^63),
+       £ 2 -∗ is_commit γ log ={⊤}=∗ Φ log).
 
 Lemma is_in_reads_to_valid γ i j Φ :
   "#Hinv" ∷ is_raft_commit_inv γ ∗
@@ -234,7 +233,7 @@ Lemma is_in_reads_to_valid γ i j Φ :
   is_read_index γ i Φ.
 Proof.
   iNamed 1. rewrite /is_read_index.
-  iIntros "%log_wit %Hlog_wit %Hoverflow [Hlc Hlc2] #Hlog_wit". rewrite /is_read_index.
+  iIntros "!# %log_wit %Hlog_wit %Hoverflow [Hlc Hlc2] #Hlog_wit". rewrite /is_read_index.
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi".
@@ -262,7 +261,10 @@ Lemma try_read γ term log Φ :
   "Hcom" ∷ own_committed_in_term γ term log ∗
   "#Hau" ∷ □(|={⊤∖↑N,∅}=> ∃ log, own_commit γ log ∗ (own_commit γ log ={∅,⊤∖↑N}=∗ □ Φ log))
   ={⊤}=∗
-  own_committed_in_term γ term log ∗ (is_read_index γ (W64 (length log)) Φ ∨ is_stale_term γ term).
+  ∃ (stale_ids : gset w64),
+    □(∀ id, ⌜ id ∈ stale_ids ⌝ → ∃ term', is_term_lb γ id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝) ∗
+    own_committed_in_term γ term log ∗
+    (is_read_index γ (W64 (length log)) Φ ∨ ⌜ is_quorum stale_ids ⌝).
 Proof.
   iNamed 1.
   iInv "Hinv" as "Hi". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
@@ -304,6 +306,9 @@ Proof.
         apply prefix_length in Hle. word.
     }
     iModIntro. iModIntro. iFrame.
+    iExists ∅.
+    iSplitR.
+    { iIntros "!#". iIntros. done. }
     iLeft.
     iDestruct (is_in_reads_to_valid with "[]") as "$".
     iFrame "#". iPureIntro. apply prefix_length in Hle. word.
@@ -312,7 +317,8 @@ Proof.
     { done. }
     iSplitR "Hcom".
     { iExists inv_term, inv_log, inv_readsΦ. iFrame "∗#". done. }
-    iModIntro. iFrame "Hcom". iRight. iExact "Hstale".
+    iModIntro. iFrame "Hcom". iNamed "Hstale".
+    iFrame "#". iRight. done.
 Qed.
 
 Definition is_heartbeat_ctx_stale γ term ctx stale_ids : iProp Σ :=
@@ -406,6 +412,12 @@ Definition is_readIndexRequest γ (r : loc) read_req_ctx index : iProp Σ :=
     "%Hindex" ∷ ⌜ read_req.(raft.readIndexRequest.index') = index ⌝ ∗
     "#His_read" ∷ (∃ Φ, is_read_req_ctx γ read_req_ctx Φ).
 
+Definition own_heartbeat_auth γ (term : w64) (highest_index : w64) : iProp Σ :=
+  ∃ per_term_gn (used : gmap go_string gname),
+    term ↪[γ.(heartbeat_gn)]□ per_term_gn ∗
+    ghost_map_auth per_term_gn 1 used ∗
+    ⌜ ∀ k, k ∈ dom used → 0 ≤ sint.Z (le_to_u64 k) ≤ sint.Z highest_index ⌝.
+
 Definition own_readOnly γ (r : loc) (term : w64) : iProp Σ :=
   ∃ (ro : raft.readOnly.t) (acks : gmap w64 w64) (unconfirmedReads : list loc),
     "r" ∷ r ↦ ro ∗
@@ -417,14 +429,43 @@ Definition own_readOnly γ (r : loc) (term : w64) : iProp Σ :=
         ∀ i r, ⌜ unconfirmedReads !! i = Some r ⌝ →
                (∃ read_req_ctx stale_ids index,
                    let hb_ctx :=
-                     (u64_le (word.add ro.(raft.readOnly.confirmedReads') (W64 $ Z.of_nat i))) in
+                     (u64_le (word.add ro.(raft.readOnly.confirmedReads') (W64 $ Z.of_nat (S i)))) in
                    "#readIndexRequest" ∷ is_readIndexRequest γ r read_req_ctx index ∗
                    "#Hhb" ∷ is_heartbeat_ctx_stale γ term hb_ctx stale_ids ∗
                    "#Hstale_or_safe" ∷
                      (⌜ is_quorum stale_ids ⌝ ∨ (∃ Φ, is_read_req_ctx γ read_req_ctx Φ ∗
                                                       is_read_index γ index Φ))
                )
-      ).
+      ) ∗
+    "Hhb●" ∷ own_heartbeat_auth γ term
+      (word.add ro.(raft.readOnly.confirmedReads') (W64 $ length unconfirmedReads)).
+
+Lemma own_heartbeat_auth_new stale_ids γ term highest_index :
+  0 ≤ sint.Z highest_index < (2^63-1) →
+  own_heartbeat_auth γ term highest_index ==∗
+  own_heartbeat_auth γ term (word.add highest_index (W64 1)) ∗
+  is_heartbeat_ctx γ term (u64_le (word.add highest_index (W64 1))) stale_ids.
+Proof.
+  intros. iIntros "(% & % & #? & Hauth & %Hused)".
+  iMod (dghost_var_alloc stale_ids) as (per_hb_ctx_gn) "H".
+  iPersist "H".
+  iMod (ghost_map_insert_persist (u64_le (word.add highest_index (W64 1))) per_hb_ctx_gn with
+       "[$]") as "[? ?]".
+  {
+    specialize (Hused (u64_le (word.add highest_index (W64 1)))).
+    destruct lookup eqn:Hlookup; try done.
+    apply elem_of_dom_2 in Hlookup.
+    specialize (Hused ltac:(done)).
+    rewrite u64_le_to_word in Hused.
+    word.
+  }
+  iFrame "∗#%". iPureIntro.
+  intros k. rewrite dom_insert. rewrite elem_of_union.
+  intros [Helem|].
+  2:{ specialize (Hused k ltac:(done)). word. }
+  rewrite elem_of_singleton in Helem. subst.
+  rewrite u64_le_to_word. word.
+Qed.
 
 Lemma wp_readOnly_addRequest γ r term (commitIndex : w64) req read_req_ctx log dq Ψ :
   {{{ is_pkg_init raft ∗
@@ -453,19 +494,41 @@ Proof.
   iApply "HΦ". iFrame "r". iFrame. simpl.
   iSplitR; first done.
   iFrame "#".
-
-  iMod (try_read with "[-]") as "[Hcom Hmaybe_read]".
+  iSelect (£ 1)%I (fun H => iRename H into "Hlc").
+  iMod (try_read with "[Hcom Hlc]") as (?) "(#Hstale & Hcom & #Hmaybe_read)".
   { iNamed "Hread_ctx". iFrame "∗#". word. }
-  (* TODO: add ownership of unused heartbeat_ctxes to invariant, use it to
-     `start_heartbeat` *)
-  (* TODO: state try_read in a better way, so there's always a stale quorum. *)
-  iDestruct "Hmaybe_read" as "[Hgood|Hstale]".
+  iMod (own_heartbeat_auth_new stale_ids with "Hhb●") as "[Hhb● #Hhb]".
+  { admit. } (* TODO: overflow of incrementing value. *)
+  rewrite length_app.
+  iPersist "req".
+  iPersist "Hctx".
+  iSplitR "Hhb●".
   {
+    iFrame.
     iIntros "!# !# * %Hlookup".
     rewrite lookup_app in Hlookup.
     destruct (unconfirmedReads !! i) eqn:Hlookup_old.
     { simplify_eq. iApply "HunconfirmedReads". done. }
-Admitted.
+    rewrite list_lookup_singleton_Some in Hlookup.
+    destruct Hlookup as [Hi ?]. subst.
+    iFrame "req Hctx". iFrame "#". simpl.
+    iExists _; iSplitR; first done.
+    iSplit.
+    - iExactEq "Hhb". f_equal. f_equal.
+      apply lookup_ge_None_1 in Hlookup_old.
+      word.
+    - iDestruct "Hmaybe_read" as "[Hread|%]".
+      2:{ by iLeft. }
+      iRight.
+      rewrite /is_read_index.
+      replace (sint.nat (W64 (length log))) with (sint.nat commitIndex) by word.
+      iFrame "#".
+  }
+  {
+    rewrite /=. iModIntro. rewrite /named.
+    iExactEq "Hhb●". f_equal. word.
+  }
+Admitted. (* NOTE: admit for overflow of incrementing value. *)
 
 (* Lemma wp_readOnly_recvAck from ctx : *)
 
