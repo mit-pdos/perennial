@@ -8,6 +8,113 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Import idioms.
 Import bag.
 From New.proof Require Import chan_proof.closeable.
 
+Local Lemma map_seq_size {A : Type} (start : nat) (xs : list A) :
+  size (map_seq start xs : gmap nat A) = length xs.
+Proof.
+  revert start. induction xs as [|x xs IH]; intros start.
+  - done.
+  - rewrite map_seq_cons.
+    rewrite map_size_insert_None.
+    2:{ apply map_seq_cons_disjoint. }
+    rewrite IH. done.
+Qed.
+
+Local Lemma mods_2_bound (i : w64) :
+  0 ≤ sint.Z i →
+  sint.Z i < 2 →
+  0 ≤ sint.Z (w64_word_instance.(word.mods) (w64_word_instance.(word.add) i (W64 1)) (W64 2)) ∧
+  sint.Z (w64_word_instance.(word.mods) (w64_word_instance.(word.add) i (W64 1)) (W64 2)) < 2.
+Proof.
+  intros.
+  rewrite word.signed_mods_nowrap; try word.
+  pose proof (Z.rem_bound_pos (sint.Z (word.add i (W64 1))) 2 ltac:(word) ltac:(word)).
+  word.
+Qed.
+
+(* When all entries in remaining_docs are Some (Some _), the imap sum is 0 *)
+Local Lemma imap_sum_all_some {A : Type} (f : A → nat) (docs : list A) (remaining_docs : gmap nat (option A)) :
+  (∀ (i : nat), (i < length docs)%nat → ∃ d, remaining_docs !! i = Some (Some d)) →
+  sum_list (imap (λ i doc, match remaining_docs !! i with | Some (Some _) => O | _ => f doc end) docs) = 0%nat.
+Proof.
+  intros Hlookup.
+  transitivity (sum_list (replicate (length docs) 0%nat)).
+  2:{ rewrite sum_list_replicate. lia. }
+  f_equal. apply list_eq. intros j.
+  rewrite list_lookup_imap.
+  destruct (docs !! j) eqn:Hdoc.
+  - simpl.
+    assert ((j < length docs)%nat) as Hlt.
+    { apply lookup_lt_is_Some_1. eauto. }
+    destruct (Hlookup j Hlt) as [d ->].
+    symmetry. apply lookup_replicate_2. lia.
+  - symmetry.
+    apply lookup_ge_None_1 in Hdoc.
+    apply lookup_ge_None_2.
+    rewrite length_replicate. lia.
+Qed.
+
+Local Lemma imap_sum_no_some_some {A : Type} (f : A → nat) (docs : list A) (remaining_docs : gmap nat (option A)) :
+  (∀ (i : nat), (i < length docs)%nat → ∀ d, remaining_docs !! i ≠ Some (Some d)) →
+  sum_list (imap (λ i doc, match remaining_docs !! i with | Some (Some _) => O | _ => f doc end) docs) =
+  sum_list (f <$> docs).
+Proof.
+  intros Hno_some.
+  f_equal. apply list_eq. intros j.
+  rewrite list_lookup_imap list_lookup_fmap.
+  destruct (docs !! j) eqn:Hdoc; simpl; last done.
+  f_equal. destruct (remaining_docs !! j) as [[d|]|] eqn:Hlook; try done.
+  exfalso. eapply (Hno_some j); [eapply lookup_lt_Some; eauto | eauto].
+Qed.
+
+(* Inserting None at position i changes only that position's contribution *)
+Local Lemma imap_sum_insert_none {A : Type} (f : A → nat) (docs : list A) (remaining_docs : gmap nat (option A)) (i : nat) doc :
+  remaining_docs !! i = Some (Some doc) →
+  (i < length docs)%nat →
+  docs !! i = Some doc →
+  sum_list (imap (λ i0 doc0, match (<[i:=None]> remaining_docs) !! i0 with | Some (Some _) => O | _ => f doc0 end) docs) =
+  (sum_list (imap (λ i0 doc0, match remaining_docs !! i0 with | Some (Some _) => O | _ => f doc0 end) docs) + f doc)%nat.
+Proof.
+  intros Hlookup Hlt Hdoc.
+  (* The two lists differ only at position i: old has 0, new has f doc *)
+  (* new list = alter (λ _, f doc) i old_list *)
+  set (nl := imap _ docs).
+  set (ol := imap _ docs).
+  assert (nl !! i = Some (f doc)) as Hnew.
+  { subst nl. rewrite list_lookup_imap Hdoc /= lookup_insert.
+    rewrite decide_True //. }
+  assert (ol !! i = Some 0%nat) as Hold.
+  { subst ol. rewrite list_lookup_imap Hdoc /= Hlookup //. }
+  assert (∀ j : nat, j ≠ i → nl !! j = ol !! j) as Hother.
+  { intros j Hne. subst nl ol. rewrite !list_lookup_imap.
+    destruct (docs !! j); simpl; last done.
+    f_equal. rewrite lookup_insert_ne; [done | lia]. }
+  (* Use take_drop_middle to split *)
+  rewrite -(take_drop_middle nl i (f doc) Hnew).
+  rewrite -(take_drop_middle ol i 0%nat Hold).
+  assert (take i nl = take i ol) as ->.
+  { apply list_eq. intros j. rewrite !lookup_take.
+    destruct (decide ((j < i)%nat)); [|done].
+    apply Hother. lia. }
+  assert (drop (S i) nl = drop (S i) ol) as ->.
+  { apply list_eq. intros j. rewrite !lookup_drop. apply Hother. lia. }
+  clear -f. induction (take i ol); simpl; [|rewrite IHl]; lia.
+Qed.
+
+(* Deleting a None entry doesn't change the imap sum *)
+Local Lemma imap_sum_delete_none {A : Type} (f : A → nat) (docs : list A) (remaining_docs : gmap nat (option A)) (i : nat) :
+  remaining_docs !! i = Some None →
+  sum_list (imap (λ i0 doc0, match (delete i remaining_docs) !! i0 with | Some (Some _) => O | _ => f doc0 end) docs) =
+  sum_list (imap (λ i0 doc0, match remaining_docs !! i0 with | Some (Some _) => O | _ => f doc0 end) docs).
+Proof.
+  intros Hlookup.
+  f_equal. apply list_eq. intros j.
+  rewrite !list_lookup_imap.
+  destruct (docs !! j) eqn:Hdoc; simpl; last done.
+  f_equal. destruct (decide (i = j)) as [->|Hne].
+  - rewrite lookup_delete Hlookup /= decide_True //.
+  - rewrite lookup_delete_ne; [done | lia].
+Qed.
+
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : workq.Assumptions}.
@@ -131,8 +238,8 @@ Proof.
     - destruct Hlen as [Hlen ?].
       replace (sint.nat _) with
         (sint.nat totalv + length ss)%nat.
-      2:{ admit. (* TODO: overflow *) }
-      admit.
+      2:{ admit. (* TODO: overflow - need bound on totalv + sl.len *) }
+      admit. (* TODO: needs invariant strengthening: remaining_docs !! i = Some (Some doc) → γ.(docs) !! i = Some doc *)
       (* TODO: pure fact *)
     - rewrite map_size_insert_Some //.
     - apply map_Forall_insert_2; try done.
@@ -174,9 +281,33 @@ Proof.
       rewrite /is_tasks_done.
       iExactEq "Htotaldone".
       f_equal.
-      admit. (* TODO: pure reasoning. remaining_docs0 was a singleton with value
-                (Some None), so everything was already counted *)
-    }
+      (* remaining_docs0 is a singleton {[i := None]}, so no entry is Some (Some _) *)
+      rewrite (imap_sum_no_some_some word_count) in Htotaldone.
+      2:{ intros j Hj d Habs.
+          (* remaining_docs0 has size 1 (from e : remainingv0 + (-1) = 0) *)
+          assert (size remaining_docs0 = 1)%nat as Hsize1.
+          { assert (sint.nat remainingv0 = 1)%nat by word. lia. }
+          (* Since size=1 and remaining_docs0 !! i = Some None, it must be {[i := None]} *)
+          destruct (decide (j = i)) as [->|Hne].
+          - rewrite H0 in Habs. done.
+          - (* j ≠ i, but map has size 1 with key i, so j not in map *)
+            assert (remaining_docs0 !! j = None) as Hnone.
+            { apply not_elem_of_dom. intros Hin.
+              assert ({[i]} = dom remaining_docs0) as Hdom.
+              { apply set_eq. intros k. split.
+                - intros Hk. rewrite elem_of_singleton in Hk. subst.
+                  apply elem_of_dom. eauto.
+                - intros Hk. apply elem_of_singleton.
+                  assert (size (dom remaining_docs0) = 1)%nat as Hdomsize.
+                  { rewrite size_dom. done. }
+                  apply size_1_elem_of in Hdomsize. destruct Hdomsize as [x Hx].
+                  assert (i ∈ dom remaining_docs0) by (apply elem_of_dom; eauto).
+                  rewrite Hx in H2. rewrite elem_of_singleton in H2.
+                  rewrite Hx in Hk. rewrite elem_of_singleton in Hk.
+                  congruence. }
+              rewrite -Hdom in Hin. rewrite elem_of_singleton in Hin. done. }
+            rewrite Hnone in Habs. done. }
+      admit. (* TODO: overflow - totalv0 = W64 (...) from sint.nat equation *) }
     iIntros "#Hcl".
     wp_auto. wp_end.
   - (* not going to close done *)
@@ -187,7 +318,7 @@ Proof.
     { iNamed "H". iFrame "∗#%".
       rewrite decide_False //.
       iFrame. iPureIntro. split_and!.
-      - admit. (* TODO: pure, deleting an entry that used to be "Some None" makes no difference  *)
+      - rewrite (imap_sum_delete_none word_count _ _ _ H0). done.
       - rewrite map_size_delete_Some //.
         word.
       - apply map_Forall_delete. done.
@@ -489,9 +620,18 @@ Proof.
     iFrame. iSplitL "Hopen total".
     { destruct decide; iFrame; try done.
       iPureIntro.
-      admit. (* TODO: pure reasoning *) }
+      rewrite (imap_sum_all_some word_count); first done.
+      intros j Hj. rewrite lookup_map_seq_0 list_lookup_fmap.
+      apply lookup_lt_is_Some_2 in Hj. destruct Hj as [d Hd].
+      rewrite Hd /=. eauto. }
     iPureIntro.
-    admit. (* TODO: pure reasoning about map_seq. *)
+    split.
+    - rewrite map_seq_size length_fmap. done.
+    - intros j x Hj. rewrite lookup_map_seq_0 in Hj.
+      rewrite list_lookup_fmap in Hj.
+      destruct (docs !! j) eqn:E; simpl in Hj; [|done].
+      injection Hj as Hj. subst.
+      assert (j < length docs)%nat by (eapply lookup_lt_Some; eauto). simpl. lia.
   }
 
   rename i_ptr into j_ptr. iRename "i" into "j".
@@ -517,13 +657,13 @@ Proof.
     { done. }
 
     rewrite -> decide_True.
-    2:{ subst numWorkers. admit. (* TODO: pure reasoning about modulo *) }
+    2:{ subst numWorkers. pose proof (mods_2_bound i ltac:(word) ltac:(word)). word. }
     list_elem workers
     (sint.Z (w64_word_instance.(word.mods) (w64_word_instance.(word.add) i (W64 1)) (W64 2))) as
     neighbor.
-    { admit. (* TODO; pure reasoning about modulo *)}
+    { subst numWorkers. pose proof (mods_2_bound i ltac:(word) ltac:(word)). word. }
     wp_apply (wp_load_slice_index with "[$workers_sl]") as "workers_sl".
-    { admit. (* TODO: pure reasoning about modulo *) }
+    { subst numWorkers. pose proof (mods_2_bound i ltac:(word) ltac:(word)). word. }
     { done. }
     iDestruct ("Hworkers" $! w with "[%]") as "#Hw".
     { by apply list_elem_of_lookup_2 in Hw_lookup. }
