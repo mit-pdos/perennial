@@ -17,7 +17,7 @@ Definition wordCount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string 
 
 Definition workqMain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel/workq.workqMain"%go.
 
-(* go: w.go:14:18 *)
+(* go: w.go:13:18 *)
 Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "w" "neighbor" "total" "remaining" "done",
     exception_do (let: "w" := (GoAlloc (go.PointerType Worker) "w") in
@@ -90,7 +90,7 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       chan.send (go.PointerType go.string) "$chan" "$v")))])))]));;;
     return: #()).
 
-(* go: w.go:59:18 *)
+(* go: w.go:58:18 *)
 Definition Worker__processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "w" "doc" "total" "remaining" "done",
     exception_do (let: "w" := (GoAlloc (go.PointerType Worker) "w") in
@@ -116,7 +116,7 @@ Definition Worker__processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     else do:  #());;;
     return: #()).
 
-(* go: w.go:66:6 *)
+(* go: w.go:65:6 *)
 Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "docs",
     exception_do (let: "docs" := (GoAlloc (go.SliceType go.string) "docs") in
@@ -132,11 +132,10 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range (go.PointerType Worker) "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
-      let: "$r0" := (GoAlloc Worker (let: "$v0" := (![go.int] "i") in
-      let: "$v1" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) (let: "$a0" := (![go.SliceType go.string] "docs") in
+      let: "$r0" := (GoAlloc Worker (let: "$v0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) (let: "$a0" := (![go.SliceType go.string] "docs") in
       (FuncResolve go.len [go.SliceType go.string] #()) "$a0")) in
-      let: "$v2" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.ChannelType go.sendrecv (go.PointerType go.string))] #()) #()) in
-      CompositeLiteral Worker (LiteralValue [KeyedElement (Some (KeyField "id"%go)) (ElementExpression go.int "$v0"); KeyedElement (Some (KeyField "queue"%go)) (ElementExpression (go.ChannelType go.sendrecv go.string) "$v1"); KeyedElement (Some (KeyField "steal"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.ChannelType go.sendrecv (go.PointerType go.string))) "$v2")]))) in
+      let: "$v1" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.ChannelType go.sendrecv (go.PointerType go.string))] #()) #()) in
+      CompositeLiteral Worker (LiteralValue [KeyedElement (Some (KeyField "queue"%go)) (ElementExpression (go.ChannelType go.sendrecv go.string) "$v0"); KeyedElement (Some (KeyField "steal"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.ChannelType go.sendrecv (go.PointerType go.string))) "$v1")]))) in
       do:  ((IndexRef (go.SliceType (go.PointerType Worker)) (![go.SliceType (go.PointerType Worker)] "workers", ![go.int] "i")) <-[go.PointerType Worker] "$r0")));;;
     let: "$range" := (![go.SliceType go.string] "docs") in
     (let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
@@ -186,7 +185,7 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     ])] "done")));;;
     return: ((MethodResolve (go.PointerType atomic.Int64) "Load"%go "total") #())).
 
-(* go: w.go:100:6 *)
+(* go: w.go:98:6 *)
 Definition workqMainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "docs" := (GoAlloc (go.SliceType go.string) (GoZeroVal (go.SliceType go.string) #())) in
@@ -239,19 +238,17 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  id' : w64;
   queue' : chan.t;
   steal' : chan.t;
 }.
 
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
 End def.
 End Worker.
 
 Definition Worker'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "id"%go go.int);
   (go.FieldDecl "queue"%go (go.ChannelType go.sendrecv go.string));
   (go.FieldDecl "steal"%go (go.ChannelType go.sendrecv (go.ChannelType go.sendrecv (go.PointerType go.string))))
 ].
@@ -265,8 +262,6 @@ Class Worker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] Worker_type_repr  :: go.TypeReprUnderlying Workerⁱᵐᵖˡ Worker.t;
   #[global] Worker_underlying :: (Worker) <u (Workerⁱᵐᵖˡ);
-  #[global] Worker_get_id (x : Worker.t) :: ⟦StructFieldGet (Workerⁱᵐᵖˡ) "id", #x⟧ ⤳[under] #x.(Worker.id');
-  #[global] Worker_set_id (x : Worker.t) y :: ⟦StructFieldSet (Workerⁱᵐᵖˡ) "id", (#x, #y)⟧ ⤳[under] #(x <|Worker.id' := y|>);
   #[global] Worker_get_queue (x : Worker.t) :: ⟦StructFieldGet (Workerⁱᵐᵖˡ) "queue", #x⟧ ⤳[under] #x.(Worker.queue');
   #[global] Worker_set_queue (x : Worker.t) y :: ⟦StructFieldSet (Workerⁱᵐᵖˡ) "queue", (#x, #y)⟧ ⤳[under] #(x <|Worker.queue' := y|>);
   #[global] Worker_get_steal (x : Worker.t) :: ⟦StructFieldGet (Workerⁱᵐᵖˡ) "steal", #x⟧ ⤳[under] #x.(Worker.steal');

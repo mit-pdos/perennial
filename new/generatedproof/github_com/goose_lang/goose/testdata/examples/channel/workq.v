@@ -22,7 +22,6 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l v dq :=
       (
-      "id" ∷ l.[(workq.Worker.t), "id"] ↦{dq} v.(workq.Worker.id') ∗
       "queue" ∷ l.[(workq.Worker.t), "queue"] ↦{dq} v.(workq.Worker.queue') ∗
       "steal" ∷ l.[(workq.Worker.t), "steal"] ↦{dq} v.(workq.Worker.steal') ∗
       "_" ∷ True
@@ -34,19 +33,6 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTypedUnderlying (workq.Worker.t) (workq.Workerⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Worker_access_load_id l (v : (workq.Worker.t)) dq :
-  AccessStrict
-    (l.[(workq.Worker.t), "id"] ↦{dq} (v.(workq.Worker.id')))
-    (l.[(workq.Worker.t), "id"] ↦{dq} (v.(workq.Worker.id')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance Worker_access_store_id l (v : (workq.Worker.t)) id' :
-  AccessStrict
-    (l.[(workq.Worker.t), "id"] ↦ (v.(workq.Worker.id')))
-    (l.[(workq.Worker.t), "id"] ↦ id')
-    (l ↦ v) (l ↦ (v <|(workq.Worker.id') := id'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
 #[global] Instance Worker_access_load_queue l (v : (workq.Worker.t)) dq :
   AccessStrict
     (l.[(workq.Worker.t), "queue"] ↦{dq} (v.(workq.Worker.queue')))
