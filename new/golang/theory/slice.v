@@ -555,17 +555,33 @@ Qed.
 
 Lemma own_slice_cap_split high s :
   own_slice_cap V s (DfracOwn 1) ∗
-  ⌜ 0 ≤ sint.Z high ≤ sint.Z s.(slice.cap)⌝ ⊢
+  ⌜ sint.Z s.(slice.len) ≤ sint.Z high ≤ sint.Z s.(slice.cap)⌝ ⊢
   ∃ (vs' : list V), (slice.slice s V s.(slice.len) high) ↦* vs' ∗
          own_slice_cap V (slice.slice s V s.(slice.len) high) (DfracOwn 1).
 Proof.
-Admitted.
+  iIntros "[Hcap %]".
+  rewrite own_slice_unseal /own_slice_def own_slice_cap_unseal /own_slice_cap_def.
+  iDestruct "Hcap" as "[%Hwf [%a Ha]]".
+  destruct a as [vs_cap]. iDestruct (array_len with "Ha") as %Hlen.
+  simpl in *.
+  replace (sint.Z (word.sub s.(slice.cap) s.(slice.len)))
+    with (sint.Z s.(slice.cap) - sint.Z s.(slice.len)) in * by word.
+  iDestruct (array_split (word.sub high s.(slice.len)) with "Ha") as "[H1 H2]".
+  { word. }
+  iExists (take (sint.nat (word.sub high s.(slice.len))) vs_cap).
+  iSplitL "H1".
+  - iFrame "H1". iPureIntro. len.
+  - iSplit; first (iPureIntro; word).
+    iExists _. rewrite /slice_index_ref /= -!go.array_index_ref_add.
+    iExactEq "H2". f_equal; word.
+Qed.
 
 (* An unusual use case for slicing where in s[low:high] we have len(s) ≤ high. This
    moves elements from the hidden capacity of s into its actual contents. *)
 Lemma own_slice_slice_into_capacity (low high : w64) s (vs : list V) :
   s ↦* vs ∗ own_slice_cap V s (DfracOwn 1) ∗
-  ⌜ 0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)⌝ ⊢
+  ⌜ 0 ≤ sint.Z low ≤ sint.Z high ∧
+    sint.Z s.(slice.len) ≤ sint.Z high ≤ sint.Z s.(slice.cap)⌝ ⊢
   ∃ (vs_cap : list V),
     (slice.slice s V (W64 0) low) ↦* (take (sint.nat low) (vs ++ vs_cap)) ∗
     (slice.slice s V low high) ↦* (drop (sint.nat low) (vs ++ vs_cap)) ∗
