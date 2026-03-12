@@ -60,6 +60,35 @@ Definition is_lock_channel (γ : lock_channel_names) (ch : loc)
 Definition has_lock_channel (γ : lock_channel_names) : iProp Σ :=
   dghost_var γ.(locked_name) (DfracOwn (1/2)) true.
 
+Lemma has_lock_channel_exclusive γ ch R :
+  is_lock_channel γ ch R -∗
+  £1 -∗
+  has_lock_channel γ -∗
+  has_lock_channel γ ={⊤}=∗
+  False.
+Proof.
+  iIntros "#Hlock Hlc Hh1 Hh2".
+  iNamed "Hlock".
+  iInv "Hinv" as "Hopen" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] [$Hopen]") as "Hopen".
+  iDestruct "Hopen" as (s locked)
+    "(Hch & %Hcap & Hghost & Hstate)".
+  destruct s. all: try done.
+  - destruct buff as [|v vs].
+    + iDestruct "Hstate" as "(%Hlocked & Hghost2 & HR)".
+      subst locked.
+      unfold has_lock_channel.
+      iDestruct (dghost_var_agree with "Hh1 Hghost") as %Hcontra.
+      discriminate.
+    + destruct vs as [|? ?]; last done.
+      iDestruct "Hstate" as %Hlocked.
+      subst locked.
+      unfold has_lock_channel in *.
+      iCombine "Hghost" "Hh1" as "Hh1".
+      iDestruct (dghost_var_valid_2 with  "[$Hh1] [$Hh2]") as "[%Hbad _]".
+      done.
+Qed.
+
 Lemma start_lock_channel ch (R : iProp Σ) γ :
   chan_cap γ = W64 1 ->
   is_chan ch γ V -∗

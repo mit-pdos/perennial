@@ -29,6 +29,14 @@ Definition is_Lock (γ : lock_channel_names) (l : loc) (R : iProp Σ) : iProp Σ
 Definition has_lock (γ : lock_channel_names) : iProp Σ :=
   has_lock_channel γ.
 
+Lemma has_lock_exclusive γ ch R :
+  is_Lock γ ch R -∗  £1 -∗ has_lock γ -∗ has_lock γ ={⊤}=∗ False.
+Proof.
+  iIntros "H1 H2 H3 H4".
+  iNamed "H1". unfold has_lock.
+  iDestruct (has_lock_channel_exclusive (V:=unit) (t:=(go.StructType [])) with "[$Hlock_chan] [$H2] [$H3] [$H4]") as "H".
+  done.
+Qed.
 
 Lemma wp_NewLock (R : iProp Σ) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ ▷ R }}}
