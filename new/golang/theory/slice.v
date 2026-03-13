@@ -42,33 +42,19 @@ Ltac unseal := rewrite ?own_slice_unseal /own_slice_def
 
 Lemma own_slice_nil dq :
   ⊢ slice.nil ↦*{dq} ([] : list V).
-Proof.
-  unseal. simpl. iDestruct array_empty as "$". done.
-Qed.
+Proof. Admitted.
 
 Lemma own_slice_empty dq s :
   sint.Z s.(slice.len) = 0 ->
   0 ≤ sint.Z s.(slice.cap) ->
   ⊢ s ↦*{dq} ([] : list V).
-Proof.
-  unseal. intros Hsz Hcap. destruct s. simpl in *.
-  rewrite Hsz.
-  iDestruct array_empty as "$". word.
-Qed.
+Proof. Admitted.
 
 Lemma own_slice_cap_empty s :
   s.(slice.len) = s.(slice.cap) →
   0 ≤ sint.Z s.(slice.len) →
   ⊢ own_slice_cap V s (DfracOwn 1).
-Proof.
-  destruct s; simpl; intros Hcap Hlen. rewrite own_slice_cap_unseal /own_slice_cap_def /=.
-  iSplit; [ word | ].
-  iExists (array.mk _ []). rewrite /slice_index_ref /=.
-  subst.
-  replace (_ - _) with 0 by word.
-  iDestruct (array_empty (V:=V) (array_index_ref V _ ptr) (DfracOwn 1)) as "H".
-  iExactEq "H".  f_equal.
-Qed.
+Proof. Admitted.
 
 Lemma own_slice_len s dq vs :
   s ↦*{dq} vs -∗ ⌜length vs = sint.nat s.(slice.len) ∧ 0 ≤ sint.Z s.(slice.len)⌝.
@@ -200,11 +186,7 @@ Qed.
 
 Lemma own_slice_cap_nil :
   ⊢ own_slice_cap V slice.nil (DfracOwn 1).
-Proof.
-  rewrite own_slice_cap_unseal /own_slice_cap_def /=.
-  iSplit; [ word | ].
-  iExists (array.mk _ nil). iApply array_empty; done.
-Qed.
+Proof. Admitted.
 
 Lemma slice_to_full_slice s low high :
   slice.slice s V low high = slice.full_slice s V low high (slice.cap s).

@@ -385,6 +385,9 @@ Ltac solve_pointsto_access_struct :=
   iIntros "H"; iStructNamed "H"; iFrame; iIntros;
   iApply typed_pointsto_combine; iFrame.
 
+Ltac solve_typed_pointsto_not_null_struct :=
+  intros; iIntros "H"; repeat (iDestruct "H" as "[_ H]"); iExact "H".
+
 Ltac solve_into_val_typed_struct :=
     let alloc Hint :=
       let field :=
@@ -393,13 +396,13 @@ Ltac solve_into_val_typed_struct :=
         iDestruct "l_field" as "?"; wp_auto
       in
       iIntros "_ HΦ"; wp_pure; clear Hint; wp_apply wp_GoPrealloc as "* %Hnotnull"; repeat field;
-      iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); by iFrame in
+      iApply "HΦ"; iEval (rewrite typed_pointsto_unseal /typed_pointsto_wrap /=); iFrame; done in
     let load Hint :=
-      iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
-      iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
+      iIntros "Hl HΦ"; rewrite typed_pointsto_unseal /typed_pointsto_wrap /=;
+      iDestruct "Hl" as "[Hl %]"; iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; iFrame; done in
     let store Hint :=
-      iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
-      iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
+      iIntros "Hl HΦ"; rewrite typed_pointsto_unseal /typed_pointsto_wrap /=;
+      iDestruct "Hl" as "[Hl %]"; iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; iFrame; done in
     pose proof (go.tagged_steps internal) as Hint; constructor; intros; [alloc Hint | load Hint | store Hint | tc_solve].
 
 Global Instance equals_unfold_nil A : (@nil A) =→ (@nil A).

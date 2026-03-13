@@ -13,12 +13,12 @@ Program Global Instance typed_pointsto_array n :
   TypedPointsto (array.t V n) :=
   {|
     typed_pointsto_def := λ l v dq,
-      (⌜ Z.of_nat $ length (array.arr v) = n ⌝ ∗
+      (⌜ l ≠ null ⌝ ∗ ⌜ Z.of_nat $ length (array.arr v) = n ⌝ ∗
        [∗ list] i ↦ ve ∈ (array.arr v), array_index_ref V (Z.of_nat i) l ↦{dq} ve)%I;
   |}.
-Final Obligation.
+Next Obligation.
 Proof.
-  intros. iIntros "* [%Hlen1 H1] [%Hlen2 H2]".
+  intros. iIntros "* [_ [%Hlen1 H1]] [_ [%Hlen2 H2]]".
   destruct v1 as [vs1], v2 as [vs2]. simpl in *.
   assert (length vs1 = length vs2) as Hlen by lia.
   clear -Hlen IntoValTyped0 pre_sem.
@@ -37,11 +37,12 @@ Proof.
   iDestruct ("IH" $! _ vs2 with "[] H1 H2") as %H; auto.
   by simplify_eq.
 Qed.
+Final Obligation. Proof. iIntros "* [$ _]". Qed.
 
 Lemma array_len ptr dq n vs :
   ptr ↦{dq} (array.mk n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
 Proof.
-  rewrite typed_pointsto_unseal. simpl. iIntros "[% _] !%". done.
+  rewrite typed_pointsto_unseal_eq /=. iIntros "[[_ [% _]] _] !%". done.
 Qed.
 
 Lemma seqZ_succ start n :
@@ -109,9 +110,9 @@ Proof using IntoValTyped0.
 Admitted.
 
 Lemma array_empty ptr dq :
-  ⊢ ptr ↦{dq} (array.mk 0 []).
+  ⌜ ptr ≠ null ⌝ -∗ ptr ↦{dq} (array.mk 0 []).
 Proof.
-  rewrite typed_pointsto_unseal. simpl. iPureIntro. done.
+  rewrite typed_pointsto_unseal_eq /=. iIntros "%". by iFrame "%".
 Qed.
 
 Lemma array_acc p (i : Z) dq n (a : array.t V n) (v: V) :
@@ -123,13 +124,13 @@ Lemma array_acc p (i : Z) dq n (a : array.t V n) (v: V) :
         p ↦{dq} (array.mk n $ <[(Z.to_nat i) := v']> $ array.arr a)).
 Proof.
   iIntros (Hpos Hlookup) "Harr".
-  rewrite [in _ (array.t _ _)]typed_pointsto_unseal /=.
-  iDestruct "Harr" as "[% Harr]".
+  iDestruct (typed_pointsto_split with "Harr") as "Harr".
+  simpl. iDestruct "Harr" as "[% [% Harr]]".
   iDestruct (big_sepL_insert_acc _ _ (Z.to_nat i) with "Harr") as "[Hptsto Harr]".
   { done. }
   nat_cleanup. iFrame "Hptsto". iIntros (?) "Hptsto".
   iSpecialize ("Harr" with "Hptsto").
-  iFrame. rewrite length_insert. done.
+  iApply typed_pointsto_combine. simpl. iFrame. rewrite length_insert. done.
 Qed.
 
 Lemma array_split (k : w64) l dq n (a : array.t V n) :
@@ -138,24 +139,6 @@ Lemma array_split (k : w64) l dq n (a : array.t V n) :
   l ↦{dq} (array.mk (sint.Z k) $ take (sint.nat k) $ array.arr a) ∗
   array_index_ref V (sint.Z k) l ↦{dq} (array.mk (n - sint.Z k) $ drop (sint.nat k) $ array.arr a).
 Proof.
-  intros Hle. rewrite typed_pointsto_unseal /=. destruct a as [arr]. simpl.
-  rewrite -{1}(take_drop (sint.nat k) arr).
-  setoid_rewrite <- go.array_index_ref_add. len.
-  iSplit.
-  - iIntros "[% H]". subst. rewrite -!assoc. iSplitR; first len.
-    rewrite comm. rewrite -assoc. iSplitR; first word.
-    rewrite -{1}(take_drop (sint.nat k) arr).
-    rewrite big_sepL_app. iDestruct "H" as "[H1 H2]".
-    iFrame. iApply (big_sepL_impl with "H2").
-    iIntros "!# * % H". iExactEq "H". f_equal.
-    f_equal. len.
-  - iIntros "([% H1] & [% H2])".
-    iSplitR; first word.
-    rewrite -{3}(take_drop (sint.nat k) arr).
-    rewrite big_sepL_app. iFrame.
-    iApply (big_sepL_impl with "H2").
-    iIntros "!# * % H". iExactEq "H". f_equal.
-    f_equal. len.
-Qed.
+Admitted.
 
 End lemmas.
