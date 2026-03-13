@@ -803,40 +803,48 @@ Definition chanSelectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     SelectStmt (SelectStmtClauses (Some (do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"no communication
     "%go) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-    (FuncResolve fmt.Print [] #()) "$a0"))) [(CommClause (RecvCase go.int "$ch0") (do:  #())); (CommClause (RecvCase go.int "$ch1") (let: "$r0" := (Fst "$recvVal") in
-    do:  ("i1" <-[go.int] "$r0");;;
-    do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"received "%go) in
-    let: "$sl1" := (Convert go.int go.any (![go.int] "i1")) in
-    let: "$sl2" := (Convert go.string go.any #" from c1
-    "%go) in
-    CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
-    (FuncResolve fmt.Print [] #()) "$a0"))); (CommClause (SendCase go.int "$ch2" "$v2") (do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"sent "%go) in
+    (FuncResolve fmt.Print [] #()) "$a0"))) [(CommClause (RecvCase go.int "$ch0") (λ: "$recvVal",
+      do:  #()
+      )); (CommClause (RecvCase go.int "$ch1") (λ: "$recvVal",
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ("i1" <-[go.int] "$r0");;;
+      do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"received "%go) in
+      let: "$sl1" := (Convert go.int go.any (![go.int] "i1")) in
+      let: "$sl2" := (Convert go.string go.any #" from c1
+      "%go) in
+      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
+      (FuncResolve fmt.Print [] #()) "$a0")
+      )); (CommClause (SendCase go.int "$ch2" "$v2") (do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"sent "%go) in
     let: "$sl1" := (Convert go.int go.any (![go.int] "i2")) in
     let: "$sl2" := (Convert go.string go.any #" to c2
     "%go) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
-    (FuncResolve fmt.Print [] #()) "$a0"))); (CommClause (RecvCase go.int "$ch3") (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "i3" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: ("$ret0", "$ret1") := "$recvVal" in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  ("i3" <-[go.int] "$r0");;;
-    do:  ("ok" <-[go.bool] "$r1");;;
-    (if: ![go.bool] "ok"
-    then
-      do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"received "%go) in
-      let: "$sl1" := (Convert go.int go.any (![go.int] "i3")) in
-      let: "$sl2" := (Convert go.string go.any #" from c3
-      "%go) in
-      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
-      (FuncResolve fmt.Print [] #()) "$a0")
-    else
-      do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"c3 is closed
-      "%go) in
-      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Print [] #()) "$a0")))); (CommClause (RecvCase go.int "$ch4") (let: "$r0" := (Fst "$recvVal") in
-    do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "a", (FuncResolve f [] #()) #())) <-[go.int] "$r0");;;
-    do:  #()))]);;;
+    (FuncResolve fmt.Print [] #()) "$a0"))); (CommClause (RecvCase go.int "$ch3") (λ: "$recvVal",
+      let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: "i3" := (GoAlloc go.int (GoZeroVal go.int #())) in
+      let: ("$ret0", "$ret1") := "$recvVal" in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("i3" <-[go.int] "$r0");;;
+      do:  ("ok" <-[go.bool] "$r1");;;
+      (if: ![go.bool] "ok"
+      then
+        do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"received "%go) in
+        let: "$sl1" := (Convert go.int go.any (![go.int] "i3")) in
+        let: "$sl2" := (Convert go.string go.any #" from c3
+        "%go) in
+        CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
+        (FuncResolve fmt.Print [] #()) "$a0")
+      else
+        do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"c3 is closed
+        "%go) in
+        CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
+        (FuncResolve fmt.Print [] #()) "$a0"))
+      )); (CommClause (RecvCase go.int "$ch4") (λ: "$recvVal",
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "a", (FuncResolve f [] #()) #())) <-[go.int] "$r0");;;
+      do:  #()
+      ))]);;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "$v0" := #(W64 0) in
       let: "$ch0" := (![go.ChannelType go.sendrecv go.int] "c") in

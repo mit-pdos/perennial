@@ -1,7 +1,7 @@
 From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import idiom.base chan_au_base handoff.
+  Require Import idiom.base chan_au_base bag.
 From New.proof Require Import sync strings time tok_set.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 
@@ -34,15 +34,15 @@ Definition chanP wg (x y: w64) (s: slice.t) : iProp Σ :=
 
 Definition waitgroupN := nroot .@ "waitgroup".
 
-Lemma wp_worker (γs: handoff_names) (ch: loc) (wg: loc) (x y: w64) :
+Lemma wp_worker (γs: chan_names) (ch: loc) (wg: loc) (x y: w64) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-      "#Hchan" ∷ is_chan_handoff γs ch (chanP wg x y) }}}
+      "#Hchan" ∷ is_chan_bag γs ch (chanP wg x y) }}}
     @! chan_spec_raw_examples.worker #ch #wg #x #y
   {{{ RET #(); True }}}.
 Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
-  wp_apply (wp_handoff_receive with "[$Hchan]").
+  wp_apply (wp_bag_receive with "[$Hchan]").
   iIntros (s) "Hrcv".
   wp_auto. iPersist "y x".
   iAssert (∃ s,
@@ -68,7 +68,7 @@ Proof.
     { rewrite take_ge; last word. rewrite drop_ge; last word.
       rewrite app_nil_r. iFrame. }
     wp_for_post.
-    wp_apply (wp_handoff_receive with "[$Hchan]").
+    wp_apply (wp_bag_receive with "[$Hchan]").
     iIntros (s') "Hrcv".
     wp_auto. iFrame.
   - rewrite -> decide_True; last done. wp_auto.
@@ -138,13 +138,14 @@ Proof.
   iIntros (ch γch_names) "(#His_chan & Hcap & Hoc)". simpl. wp_auto.
   iMod (init_WaitGroup with "wg") as (?) "H".
   iMod (join.init with "H") as "Hwg".
-  iMod (start_handoff_buffered _ _ (chanP wg_ptr x y) with "[$His_chan] [$Hoc]") as (γch) "#Hchan".
+  iMod (start_bag (chanP wg_ptr x y) with "[$His_chan] [$Hoc]") as "#Hchan".
+  { done. }
   iAssert (∃ (i : w64), "i" ∷ i_ptr ↦ i)%I with "[$i]" as "HH".
   wp_for. iNamed "HH". wp_auto.
   wp_if_destruct.
   2:{
     wp_apply wp_fork.
-      { wp_apply wp_worker; last done. iDestruct "Hchan" as "[%H Hsimp]". iFrame "#". }
+      { wp_apply wp_worker; last done. iFrame "#". }
       wp_for_post. iFrame.
   }
 
@@ -191,10 +192,8 @@ Proof.
   iDestruct (own_slice_split (W64 nextOffset) with "Hs") as "[Hsection Hs]".
   { subst nextOffset. word. }
   rewrite drop_drop.
-  wp_apply (wp_handoff_send with "[Hdone Hsection]").
-  { iFrame "#". iDestruct "Hchan" as "[%H' Hsimp]". iSplitL "Hsimp". { iFrame "#". }
-    iFrame.
-    }
+  wp_apply (wp_bag_send with "[$Hchan Hdone Hsection]").
+  { iExists _. iFrame. }
   wp_for_post.
   iFrame. iExists _.
   iSplitL "Hs".
