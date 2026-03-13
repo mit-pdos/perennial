@@ -102,7 +102,7 @@ Proof using W.
   replace (sint.nat (W64 7)) with (7%nat) by word.
   repeat (destruct bs; try done).
   f_equal.
-  (* TODO now: finish byte-level reasoning for Uint64 decode. Here's the goal:
+  (* TODO: finish byte-level reasoning for Uint64 decode. Here's the goal:
 1 goal (ID 122066)
 
   ext : ffi_syntax

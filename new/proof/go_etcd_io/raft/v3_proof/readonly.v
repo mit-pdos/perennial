@@ -558,18 +558,26 @@ Proof.
   2:{ erewrite app_nil_r. iFrame. }
   { rewrite u64_le_length. done. }
   rewrite u64_le_to_word.
-
-  (* FIXME: lemma for this *)
-  wp_auto.
-  wp_apply (wp_map_insert with "Hacks") as "Hacks".
-  wp_auto.
-  iApply "HΦ".
-  iExists _, _, _. iFrame "∗#%".
+  replace ([go.uint64; go.uint64]) with (replicate 2%nat go.uint64) by done.
+  (* (* FIXME: lemma for this *) *)
+  (* wp_auto. *)
+  (* wp_apply (wp_map_insert with "Hacks") as "Hacks". *)
+  (* wp_auto. *)
+  (* iApply "HΦ". *)
+  (* iExists _, _, _. iFrame "∗#%". *)
 Admitted.
 
-(* Lemma wp_readOnly_AckedIndex VoterId : *)
+Lemma wp_readOnly_AckedIndex VoterId :
+(* TODO now:
+   write a spec in which this returns a witness that `VoterId` accepted the
+   heartbeat up to `returnedIndex` (if found == true) *)
 
-(* Lemma wp_readOnly_maybeAdvance VoterId : *)
+Lemma wp_readOnly_maybeAdvance VoterId :
+(* TODO now:
+   write a spec requiring the input to be the simple (not-actually-joint) `cfg`,
+   and which guarantees the returned slice are all good read index requests for
+   their respective Φs.
+   *)
 
 Definition MsgReadIndex := W32 15.
 Lemma wp_raft__sendMsgReadIndexresponse γ r rf m :
