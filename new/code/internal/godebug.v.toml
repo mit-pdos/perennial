@@ -1,0 +1,12 @@
+translate = [
+  "!*",
+  "Setting",
+  "setting",
+  "value",
+  "New",
+]
+
+imports = [
+  "internal/bisect",
+  "internal/godebugs",
+]

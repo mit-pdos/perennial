@@ -13,10 +13,12 @@ translate = [
   "Rand.Int31n",
 
   "Intn",
+
+  "ke", "we", "fe", "ke", "wn", "fn", "randautoseed", "randseednop", "rngCooked"
 ]
 
 trusted = [
   "runtime_rand",
 ]
 
-imports = ["sync"]
+imports = ["sync", "internal/godebug", "sync/atomic"]

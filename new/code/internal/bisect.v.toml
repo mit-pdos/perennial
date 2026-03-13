@@ -1,0 +1,11 @@
+translate = [
+  "!*",
+  "Matcher",
+  "cond",
+  "dedup",
+]
+
+imports = [
+  "sync",
+  "sync/atomic",
+]

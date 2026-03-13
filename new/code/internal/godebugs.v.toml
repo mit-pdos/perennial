@@ -1,0 +1,10 @@
+translate = [
+  "!*",
+  "Info",
+  "All",
+  "Removed",
+]
+
+imports = [
+  "!*",
+]
