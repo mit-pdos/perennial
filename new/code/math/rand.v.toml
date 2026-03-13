@@ -1,2 +1,22 @@
-translate = ["!*"]
-imports = ["!*"]
+translate = [
+  "rngMax",
+  "rngMask",
+
+  "runtimeSource",
+  "runtimeSource.Int63",
+
+  "Rand",
+  "Rand.Int63",
+  "Rand.Int31",
+  "Rand.Intn",
+  "Rand.Int63n",
+  "Rand.Int31n",
+
+  "Intn",
+]
+
+trusted = [
+  "runtime_rand",
+]
+
+imports = ["sync"]
