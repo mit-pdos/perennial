@@ -1704,39 +1704,19 @@ Definition Lock__LockWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     (if: Convert go.untyped_bool go.bool ((![time.Duration] "d") ≤⟨time.Duration⟩ #(W64 0))
     then return: (#false)
     else do:  #());;;
-    let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+    let: "$v0" := (CompositeLiteral (go.StructType [
 
-    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+    ]) (LiteralValue [])) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ])) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+    ])] (StructFieldRef Lock "ch"%go (![go.PointerType Lock] "l"))) in
+    let: "$ch1" := (let: "$a0" := (![time.Duration] "d") in
+    (FuncResolve time.After [] #()) "$a0") in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.StructType [
 
-     ])] #()) #()) in
-    do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
+    ]) "$ch0" "$v0") (return: (#true))); (CommClause (RecvCase time.Time "$ch1") (return: (#false)))])).
 
-    ])] "$r0");;;
-    let: "$go" := (λ: <>,
-      exception_do (do:  (let: "$a0" := (![time.Duration] "d") in
-      (FuncResolve time.Sleep [] #()) "$a0");;;
-      do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
-
-      ])] "done") in
-      (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
-
-       ])] #()) "$a0");;;
-      return: #())
-      ) in
-    do:  (Fork ("$go" #()));;;
-    return: (let: "$a0" := (Convert (go.ChannelType go.sendrecv (go.StructType [
-
-     ])) (go.ChannelType go.recvonly (go.StructType [
-
-     ])) (![go.ChannelType go.sendrecv (go.StructType [
-
-     ])] "done")) in
-     (MethodResolve (go.PointerType Lock) "LockIfNotCancelled"%go (![go.PointerType Lock] "l")) "$a0")).
-
-(* go: lock.go:69:16 *)
+(* go: lock.go:70:16 *)
 Definition Lock__LockWithDeadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "deadline",
     exception_do (let: "l" := (GoAlloc (go.PointerType Lock) "l") in
