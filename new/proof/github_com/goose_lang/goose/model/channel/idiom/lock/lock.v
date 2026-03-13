@@ -94,7 +94,7 @@ Proof.
   iDestruct 1 as "[$ _]".
 Qed.
 
-Lemma lock_channel_lock_au γ ch (v : V) (R : iProp Σ) :
+Lemma lock_channel_send_au γ ch (v : V) (R : iProp Σ) :
   ∀ (Φ: iProp Σ),
   is_lock_channel γ ch R -∗
   £1 -∗
@@ -136,7 +136,7 @@ Proof.
   }
   Qed.
 
-Lemma lock_channel_trylock_au γ ch (v : V) (R : iProp Σ)  :
+Lemma lock_channel_nonblocking_send_au γ ch (v : V) (R : iProp Σ)  :
 ∀ Φ,
   is_lock_channel  γ ch R -∗
   £1 -∗
@@ -185,14 +185,14 @@ Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iNamed "HR".
 
-  iApply (lock_channel_lock_au with "[$Hinv] [$Hlc1] [Hcont]").
+  iApply (lock_channel_send_au with "[$Hinv] [$Hlc1] [Hcont]").
   {
     iFrame "#".
   }
   iNext. iFrame.
 Qed.
 
-Lemma lock_channel_unlock_au γ ch (R : iProp Σ) :
+Lemma lock_channel_recv_au γ ch (R : iProp Σ) :
   ∀ Φ,
   is_lock_channel γ ch R -∗
   R -∗
@@ -241,7 +241,7 @@ Proof.
 
   iApply (chan.wp_receive ch γ.(lchan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2)".
-  iApply ((lock_channel_unlock_au γ ch R) with "[$Hchan $Hinv] [$HR] [$Hlc1]").
+  iApply ((lock_channel_recv_au γ ch R) with "[$Hchan $Hinv] [$HR] [$Hlc1]").
   iNext. iFrame.
 Qed.
 
