@@ -21,9 +21,6 @@ Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 Collection W := sem + package_sem.
 Set Default Proof Using "W".
 
-Instance func_countable : Countable func.t.
-Proof. Admitted.
-
 Instance stream_eq_dec : EqDecision chan_spec_raw_examples.streamold.t.
 Proof. solve_decision. Qed.
 Instance stream_countable : Countable chan_spec_raw_examples.streamold.t.
