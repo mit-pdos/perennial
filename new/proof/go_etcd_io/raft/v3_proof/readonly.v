@@ -428,6 +428,9 @@ Definition own_readOnly γ (r : loc) (term : w64) : iProp Σ :=
   ∃ (ro : raft.readOnly.t) (acks : gmap w64 w64) (unconfirmedReads : list loc),
     "r" ∷ r ↦ ro ∗
     "Hacks" ∷ ro.(raft.readOnly.acks') ↦$ acks ∗
+    "#Hacks_wits" ∷ □(∀ voterId ackedIdx,
+                          ⌜ acks !! voterId = Some ackedIdx ⌝ →
+                          is_heartbeat_ack γ voterId term (u64_le ackedIdx)) ∗
     "%Hoption" ∷ ⌜ ro.(raft.readOnly.option') = W64 0 ⌝ ∗ (* equals ReadOnlySafe *)
     "unconfirmedReads" ∷ ro.(raft.readOnly.unconfirmedReads') ↦* unconfirmedReads ∗
     "unconfirmedReads_cap" ∷ own_slice_cap loc ro.(raft.readOnly.unconfirmedReads') (DfracOwn 1) ∗
@@ -567,17 +570,38 @@ Proof.
   (* iExists _, _, _. iFrame "∗#%". *)
 Admitted.
 
-Lemma wp_readOnly_AckedIndex VoterId :
-(* TODO now:
-   write a spec in which this returns a witness that `VoterId` accepted the
-   heartbeat up to `returnedIndex` (if found == true) *)
+Lemma wp_readOnly_AckedIndex γ r term (voterId : w64) :
+  {{{ is_pkg_init raft ∗
+      "Hown" ∷ own_readOnly γ r term
+  }}}
+    r @! (go.PointerType raft.readOnly) @! "AckedIndex" #voterId
+  {{{ (returnedIndex : w64) (found : bool), RET (#returnedIndex, #found);
+      own_readOnly γ r term ∗
+      if found then is_heartbeat_ack γ voterId term (u64_le returnedIndex) else True
+  }}}.
+Proof. Admitted.
 
-Lemma wp_readOnly_maybeAdvance VoterId :
-(* TODO now:
-   write a spec requiring the input to be the simple (not-actually-joint) `cfg`,
-   and which guarantees the returned slice are all good read index requests for
-   their respective Φs.
-   *)
+Lemma wp_readOnly_maybeAdvance γ r term (c : quorum.JointConfig.t) m0 voters :
+  {{{ is_pkg_init raft ∗
+      "Hown" ∷ own_readOnly γ r term ∗
+      (* The config c is simple (not joint): first component is voters, second is empty. *)
+      "%Hc" ∷ ⌜ array.arr c = [m0; map.nil] ⌝ ∗
+      "Hm0" ∷ m0 ↦$ voters ∗
+      "%Hvoters_cfg" ∷ ⌜ dom voters = cfg ⌝
+  }}}
+    r @! (go.PointerType raft.readOnly) @! "maybeAdvance" #c
+  {{{ (rs : slice.t) (reads : list loc), RET #rs;
+      own_readOnly γ r term ∗
+      m0 ↦$ voters ∗
+      rs ↦* reads ∗
+      (* Every returned read request has a valid read index witness. *)
+      □(∀ i rp, ⌜ reads !! i = Some rp ⌝ →
+                ∃ read_req_ctx index Φ,
+                  is_readIndexRequest γ rp read_req_ctx index ∗
+                  is_read_req_ctx γ read_req_ctx Φ ∗
+                  is_read_index γ index Φ)
+  }}}.
+Proof. Admitted.
 
 Definition MsgReadIndex := W32 15.
 Lemma wp_raft__sendMsgReadIndexresponse γ r rf m :
