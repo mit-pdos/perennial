@@ -72,6 +72,80 @@ Proof.
   rewrite wrap_small; lia.
 Qed.
 
+Lemma wp_littleEndian_Uint64 (le : binary.littleEndian.t) b (bs : list w8) rem dq :
+  length bs = 8%nat →
+  {{{ b ↦*{dq} (bs ++ rem) }}}
+    le @! binary.littleEndian @! "Uint64" #b
+  {{{ RET #(le_to_u64 bs); b ↦*{dq} (bs ++ rem) }}}.
+Proof using W.
+  rewrite le_to_u64_unseal /le_to_u64_def.
+  iIntros (Hlen_bs).
+  wp_start as "Hb".
+  iDestruct (own_slice_len with "Hb") as %[Hlen_b ?].
+  rewrite app_length Hlen_bs in Hlen_b.
+  wp_auto.
+  list_elem bs 7 as b7.
+  do 9 (destruct bs as [|? bs]; try done).
+
+  repeat (rewrite -> decide_True; last word;
+          wp_apply (wp_load_slice_index with "[$Hb]") as "Hb"; [len| | ];
+          [iPureIntro; rewrite lookup_app_l //; word | ]).
+
+  wp_end.
+  replace (sint.nat (W64 0)) with (0%nat) by word.
+  replace (sint.nat (W64 1)) with (1%nat) by word.
+  replace (sint.nat (W64 2)) with (2%nat) by word.
+  replace (sint.nat (W64 3)) with (3%nat) by word.
+  replace (sint.nat (W64 4)) with (4%nat) by word.
+  replace (sint.nat (W64 5)) with (5%nat) by word.
+  replace (sint.nat (W64 6)) with (6%nat) by word.
+  replace (sint.nat (W64 7)) with (7%nat) by word.
+  repeat (destruct bs; try done).
+  f_equal.
+  (* TODO now: finish byte-level reasoning for Uint64 decode. Here's the goal:
+1 goal (ID 122066)
+
+  ext : ffi_syntax
+  ffi : ffi_model
+  ffi_interp0 : ffi_interp ffi
+  Σ : gFunctors
+  hG : heapGS Σ
+  ffi_semantics0 : ffi_semantics ext ffi
+  sem : go.Semantics
+  package_sem : binary.Assumptions
+  le : binary.littleEndian.t
+  b : slice.t
+  w, w0, w1, w2, w3, w4, w5, w6 : w8
+  rem : list w8
+  dq : dfrac
+  Hlen_bs : length [w; w0; w1; w2; w3; w4; w5; w6] = 8%nat
+  Φ : val → iPropI Σ
+  H : 0 ≤ sint.Z b.(slice.len)
+  Hlen_b : (8 + length rem)%nat = sint.nat b.(slice.len)
+  b_ptr : loc
+  b7 : w8
+  Hb7_lookup : [w; w0; w1; w2; w3; w4; w5; w6] !! Z.to_nat 7 = Some b7
+  ============================
+  w64_word_instance.(word.of_Z)
+    (LittleEndian.combine (length [w; w0; w1; w2; w3; w4; w5; w6])
+       (HList.tuple.of_list [w; w0; w1; w2; w3; w4; w5; w6])) =
+  w64_word_instance.(word.or)
+    (w64_word_instance.(word.or)
+       (w64_word_instance.(word.or)
+          (w64_word_instance.(word.or)
+             (w64_word_instance.(word.or)
+                (w64_word_instance.(word.or)
+                   (w64_word_instance.(word.or) (W64 (uint.Z w))
+                      (w64_word_instance.(word.slu) (W64 (uint.Z w0)) (W64 8)))
+                   (w64_word_instance.(word.slu) (W64 (uint.Z w1)) (W64 16)))
+                (w64_word_instance.(word.slu) (W64 (uint.Z w2)) (W64 24)))
+             (w64_word_instance.(word.slu) (W64 (uint.Z w3)) (W64 32)))
+          (w64_word_instance.(word.slu) (W64 (uint.Z w4)) (W64 40)))
+       (w64_word_instance.(word.slu) (W64 (uint.Z w5)) (W64 48)))
+    (w64_word_instance.(word.slu) (W64 (uint.Z b7)) (W64 56))
+ *)
+Admitted.
+
 Lemma wp_littleEndian_PutUint64 (le : binary.littleEndian.t) b space rem v :
   length space = 8%nat →
   {{{ b ↦* (space ++ rem) }}}

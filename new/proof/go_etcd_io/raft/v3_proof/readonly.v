@@ -333,6 +333,12 @@ Definition is_HeartbeatRequest γ (term : w64) (ctx : list w8) : iProp Σ :=
 Definition is_HeartbeatResp γ (from : w64) (term : w64) (ctx : list w8) : iProp Σ :=
   ∃ srvs, is_heartbeat_ctx γ term ctx srvs ∗ ⌜ from ∉ srvs ⌝.
 
+(** [is_heartbeat_ack] witnesses that [from] acknowledged heartbeat context
+    [ctx] in [term], confirming [from] was not stale at that point.
+    Similar to [is_HeartbeatResp] but used as a precondition for [recvAck]. *)
+Definition is_heartbeat_ack γ (from : w64) (term : w64) (ctx : go_string) : iProp Σ :=
+  ∃ srvs, is_heartbeat_ctx γ term ctx srvs ∗ ⌜ from ∉ srvs ⌝.
+
 Lemma start_heartbeat stale_ids γ term ctx :
   □(∀ id, ⌜ id ∈ stale_ids ⌝ → ∃ term', is_term_lb γ id term' ∗ ⌜ sint.nat term < sint.nat term' ⌝) -∗
   own_unused_heartbeat_ctx γ term ctx ==∗
@@ -530,7 +536,36 @@ Proof.
   }
 Admitted. (* NOTE: admit for overflow of incrementing value. *)
 
-(* Lemma wp_readOnly_recvAck from ctx : *)
+Lemma wp_readOnly_recvAck γ r term (from : w64) (ctx_sl : slice.t) (v : w64) :
+  {{{ is_pkg_init raft ∗
+      "Hown" ∷ own_readOnly γ r term ∗
+      "Hctx" ∷ ctx_sl ↦* (u64_le v) ∗
+      "#Hack" ∷ is_heartbeat_ack γ from term (u64_le v)
+  }}}
+    r @! (go.PointerType raft.readOnly) @! "recvAck" #from #ctx_sl
+  {{{ RET #(); own_readOnly γ r term }}}.
+Proof.
+  wp_start as "@". iNamed "Hown".
+  wp_auto.
+  wp_if_destruct.
+  { admit. }
+  wp_apply (wp_map_lookup1 with "Hacks") as "Hacks".
+  wp_method_call. wp_auto.
+  iAssert (global_addr binary.LittleEndian ↦□ binary.littleEndian.mk)%I with "[]" as "#H".
+  { admit. }
+  wp_auto.
+  wp_apply (wp_littleEndian_Uint64 with "[Hctx]") as "Hctx".
+  2:{ erewrite app_nil_r. iFrame. }
+  { rewrite u64_le_length. done. }
+  rewrite u64_le_to_word.
+
+  (* FIXME: lemma for this *)
+  wp_auto.
+  wp_apply (wp_map_insert with "Hacks") as "Hacks".
+  wp_auto.
+  iApply "HΦ".
+  iExists _, _, _. iFrame "∗#%".
+Admitted.
 
 (* Lemma wp_readOnly_AckedIndex VoterId : *)
 
