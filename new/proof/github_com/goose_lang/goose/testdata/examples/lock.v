@@ -2,7 +2,7 @@ From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof Require Import strings.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
-  idiom.base lock handoff.
+  idiom.base lock bag.
 From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Import done.
 From New.proof Require Import time.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
@@ -201,9 +201,9 @@ Proof.
     iFrame "#". iFrame. 
      repeat iExists _.
     iSplitR; first done. 
-    iDestruct (handoff_is_chan with ("Hafter_chan")) as "H".
+    iDestruct (bag_is_chan with ("Hafter_chan")) as "H".
     iFrame "#".
-    iApply (handoff_rcv_au  γafter_ch after_ch with "[$Hafter_chan][$]").
+    iApply (bag_rcv_au  γafter_ch after_ch with "[$Hafter_chan][$]").
     iNext. iIntros (t). iIntros "Ht". wp_auto. iApply "HΦ". done.  
 Qed.
 
