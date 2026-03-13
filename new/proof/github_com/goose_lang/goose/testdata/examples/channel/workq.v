@@ -445,9 +445,6 @@ Proof.
         iApply (bag_recv_au with "[$]").
         { iFrame "#". }
         iNext. iIntros "%v Hv".
-        (* FIXME: translation bug with nested selects with receive. *)
-        replace (Fst (#reply_ch, #true)%V)%E with (Fst "$recvVal") by admit.
-        simpl subst.
         wp_auto_lc 2.
         iDestruct "Hreply_ch" as "(% & #Hreply_ch)".
         wp_apply (wp_bag_send with "[Hv doc]").
@@ -512,7 +509,7 @@ Proof.
     }
     rewrite big_andL_nil. done.
   }
-Admitted.
+Qed.
 
 Lemma wp_wordCount docs_sl docs :
   {{{ is_pkg_init workq ∗ "Hdocs" ∷ docs_sl ↦* docs ∗

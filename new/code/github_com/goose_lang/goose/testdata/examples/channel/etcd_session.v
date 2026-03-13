@@ -56,12 +56,14 @@ Definition monitorSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       ])] (GlobalVarAddr sessionc #())) in
       SelectStmt (SelectStmtClauses (Some (do:  #())) [(CommClause (RecvCase (go.StructType [
 
-      ]) "$ch0") (let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+      ]) "$ch0") (λ: "$recvVal",
+        let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
-       ])] #()) #()) in
-      do:  ((GlobalVarAddr sessionc #()) <-[go.ChannelType go.sendrecv (go.StructType [
+         ])] #()) #()) in
+        do:  ((GlobalVarAddr sessionc #()) <-[go.ChannelType go.sendrecv (go.StructType [
 
-      ])] "$r0")))]);;;
+        ])] "$r0")
+        ))]);;;
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (GlobalVarAddr mu #())) #());;;
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "$r0" := ((FuncResolve newSession [] #()) #()) in
@@ -102,8 +104,12 @@ Definition waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$ch1" := (![go.ChannelType go.recvonly A] "cancel") in
     SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-    ]) "$ch0") (return: (Convert go.untyped_nil go.error UntypedNil))); (CommClause (RecvCase A "$ch1") (return: (let: "$a0" := #"cancelled"%go in
-     (FuncResolve errors.New [] #()) "$a0")))])).
+    ]) "$ch0") (λ: "$recvVal",
+      return: (Convert go.untyped_nil go.error UntypedNil)
+      )); (CommClause (RecvCase A "$ch1") (λ: "$recvVal",
+      return: (let: "$a0" := #"cancelled"%go in
+       (FuncResolve errors.New [] #()) "$a0")
+      ))])).
 
 (* go: e.go:60:6 *)
 Definition sessionMainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

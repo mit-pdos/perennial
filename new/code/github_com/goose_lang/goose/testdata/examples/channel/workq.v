@@ -44,7 +44,9 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       let: "$ch2" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] "w"))) in
       SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-      ]) "$ch0") (return: (#()))); (CommClause (SendCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch1" "$v1") ((let: "doc" := (GoAlloc (go.PointerType go.string) (GoZeroVal (go.PointerType go.string) #())) in
+      ]) "$ch0") (λ: "$recvVal",
+        return: (#())
+        )); (CommClause (SendCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch1" "$v1") ((let: "doc" := (GoAlloc (go.PointerType go.string) (GoZeroVal (go.PointerType go.string) #())) in
       let: "$r0" := (Fst (chan.receive (go.PointerType go.string) (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply"))) in
       do:  ("doc" <-[go.PointerType go.string] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.PointerType go.string] "doc") ≠⟨go.PointerType go.string⟩ (Convert go.untyped_nil (go.PointerType go.string) UntypedNil))
@@ -56,38 +58,48 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
         ])] "done") in
         (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1" "$a2" "$a3")
-      else do:  #())))); (CommClause (RecvCase go.string "$ch2") (let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (Fst "$recvVal") in
-      do:  ("doc" <-[go.string] "$r0");;;
-      do:  (let: "$a0" := (![go.string] "doc") in
-      let: "$a1" := (![go.PointerType atomic.Int64] "total") in
-      let: "$a2" := (![go.PointerType atomic.Int64] "remaining") in
-      let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
+      else do:  #())))); (CommClause (RecvCase go.string "$ch2") (λ: "$recvVal",
+        let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
+        let: "$r0" := (Fst "$recvVal") in
+        do:  ("doc" <-[go.string] "$r0");;;
+        do:  (let: "$a0" := (![go.string] "doc") in
+        let: "$a1" := (![go.PointerType atomic.Int64] "total") in
+        let: "$a2" := (![go.PointerType atomic.Int64] "remaining") in
+        let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
 
-      ])] "done") in
-      (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1" "$a2" "$a3")))]))) [(CommClause (RecvCase (go.StructType [
+        ])] "done") in
+        (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1" "$a2" "$a3")
+        ))]))) [(CommClause (RecvCase (go.StructType [
 
-      ]) "$ch0") (return: (#()))); (CommClause (RecvCase go.string "$ch1") (let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (Fst "$recvVal") in
-      do:  ("doc" <-[go.string] "$r0");;;
-      do:  (let: "$a0" := (![go.string] "doc") in
-      let: "$a1" := (![go.PointerType atomic.Int64] "total") in
-      let: "$a2" := (![go.PointerType atomic.Int64] "remaining") in
-      let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
+      ]) "$ch0") (λ: "$recvVal",
+        return: (#())
+        )); (CommClause (RecvCase go.string "$ch1") (λ: "$recvVal",
+        let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
+        let: "$r0" := (Fst "$recvVal") in
+        do:  ("doc" <-[go.string] "$r0");;;
+        do:  (let: "$a0" := (![go.string] "doc") in
+        let: "$a1" := (![go.PointerType atomic.Int64] "total") in
+        let: "$a2" := (![go.PointerType atomic.Int64] "remaining") in
+        let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
 
-      ])] "done") in
-      (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1" "$a2" "$a3"))); (CommClause (RecvCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch2") (let: "reply" := (GoAlloc (go.ChannelType go.sendrecv (go.PointerType go.string)) (GoZeroVal (go.ChannelType go.sendrecv (go.PointerType go.string)) #())) in
-      let: "$r0" := (Fst "$recvVal") in
-      do:  ("reply" <-[go.ChannelType go.sendrecv (go.PointerType go.string)] "$r0");;;
-      let: "$ch0" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] "w"))) in
-      SelectStmt (SelectStmtClauses (Some (do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply") in
-      let: "$v" := (Convert go.untyped_nil (go.PointerType go.string) UntypedNil) in
-      chan.send (go.PointerType go.string) "$chan" "$v"))) [(CommClause (RecvCase go.string "$ch0") (let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (Fst "$recvVal") in
-      do:  ("doc" <-[go.string] "$r0");;;
-      do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply") in
-      let: "$v" := "doc" in
-      chan.send (go.PointerType go.string) "$chan" "$v")))])))]));;;
+        ])] "done") in
+        (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1" "$a2" "$a3")
+        )); (CommClause (RecvCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch2") (λ: "$recvVal",
+        let: "reply" := (GoAlloc (go.ChannelType go.sendrecv (go.PointerType go.string)) (GoZeroVal (go.ChannelType go.sendrecv (go.PointerType go.string)) #())) in
+        let: "$r0" := (Fst "$recvVal") in
+        do:  ("reply" <-[go.ChannelType go.sendrecv (go.PointerType go.string)] "$r0");;;
+        let: "$ch0" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] "w"))) in
+        SelectStmt (SelectStmtClauses (Some (do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply") in
+        let: "$v" := (Convert go.untyped_nil (go.PointerType go.string) UntypedNil) in
+        chan.send (go.PointerType go.string) "$chan" "$v"))) [(CommClause (RecvCase go.string "$ch0") (λ: "$recvVal",
+          let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
+          let: "$r0" := (Fst "$recvVal") in
+          do:  ("doc" <-[go.string] "$r0");;;
+          do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply") in
+          let: "$v" := "doc" in
+          chan.send (go.PointerType go.string) "$chan" "$v")
+          ))])
+        ))]));;;
     return: #()).
 
 (* go: w.go:58:18 *)

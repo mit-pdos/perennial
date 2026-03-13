@@ -142,7 +142,7 @@ Local Lemma wp_try_comm_clause_blocking c Ψ :
        ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
      ⌜ recv_chan_expr = #recv_chan ⌝ ∗
      is_chan recv_chan γ V ∗
-     recv_au γ V (λ v ok, WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Ψ }})
+     recv_au γ V (λ v ok, WP recv_handler (#v, #ok)%V {{ Ψ }})
    end
   ) ∧ (Φ (#(), #false)%V) -∗
   (∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
@@ -231,7 +231,7 @@ Local Lemma wp_try_select_blocking (clauses : list comm_clause) :
          ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
         ⌜ recv_chan_expr = #recv_chan ⌝ ∗
         is_chan recv_chan γ V ∗
-        recv_au γ V (λ v ok, WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Ψ }})
+        recv_au γ V (λ v ok, WP recv_handler (#v, #ok)%V {{ Ψ }})
       end
   )) ∧ (Φ (#(), #false)%V) -∗
   □(∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
@@ -281,7 +281,7 @@ Lemma wp_select_blocking (clauses : list comm_clause) :
          ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
         ⌜ recv_chan_expr = #recv_chan ⌝ ∗
         is_chan recv_chan γ V ∗
-        recv_au γ V (λ v ok, WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Φ }})
+        recv_au γ V (λ v ok, WP recv_handler (#v, #ok)%V {{ Φ }})
       end
      )) -∗
   WP SelectStmt (SelectStmtClausesV None clauses) {{ Φ }}.
@@ -309,7 +309,7 @@ Local Lemma wp_try_comm_clause_nonblocking c Ψ :
        ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
      ⌜ recv_chan_expr = #recv_chan ⌝ ∗
      is_chan recv_chan γ V ∗
-     nonblocking_recv_au γ V (λ v ok, WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Ψ }}) True
+     nonblocking_recv_au γ V (λ v ok, WP recv_handler (#v, #ok)%V {{ Ψ }}) True
    end
   ) ∧ (Φ (#(), #false)%V) -∗
   (∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
@@ -385,7 +385,7 @@ Local Lemma wp_try_select_nonblocking (clauses : list comm_clause) :
           ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
         ⌜ recv_chan_expr = #recv_chan ⌝ ∗
         is_chan recv_chan γ V ∗
-        nonblocking_recv_au γ V (λ v ok, WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Ψ }}) True
+        nonblocking_recv_au γ V (λ v ok, WP recv_handler (#v, #ok)%V {{ Ψ }}) True
       end
   )) ∧ Φ (#(), #false)%V -∗
   □(∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
@@ -435,7 +435,7 @@ Lemma wp_select_nonblocking (clauses : list comm_clause) def :
           ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
         ⌜ recv_chan_expr = #recv_chan ⌝ ∗
         is_chan recv_chan γ V ∗
-        nonblocking_recv_au γ V (λ v ok, WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Φ }}) True
+        nonblocking_recv_au γ V (λ v ok, WP recv_handler (#v, #ok)%V {{ Φ }}) True
       end
   )) ∧ WP def {{ Φ }} -∗
   WP SelectStmt (SelectStmtClausesV (Some def) clauses) {{ Φ }}.
@@ -467,7 +467,7 @@ Local Lemma wp_try_select_case_nonblocking_alt c Ψ Ψnotready :
      is_chan recv_chan γ V ∗
      nonblocking_recv_au_alt γ V
        (λ v ok,
-          P -∗ WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Ψ }}) Ψnotready
+          P -∗ WP recv_handler (#v, #ok)%V {{ Ψ }}) Ψnotready
    end
   ) -∗
   ((∀ retv, Ψ retv -∗ Φ (retv, #true)%V) ∧ (P -∗ Ψnotready -∗ Φ (#(), #false)%V)) -∗
@@ -543,7 +543,7 @@ Local Lemma wp_try_select_nonblocking_alt Φnrs (clauses : list comm_clause) :
               ⌜ recv_chan_expr = #recv_chan ⌝ ∗
               is_chan recv_chan γ V ∗
               nonblocking_recv_au_alt γ V
-                (λ v ok, P -∗ WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Ψ }}) Φnr)
+                (λ v ok, P -∗ WP recv_handler (#v, #ok)%V {{ Ψ }}) Φnr)
      end) -∗
   P -∗
   (P -∗ [∗] Φnrs -∗ (Φ (#(), #false)%V)) -∗
@@ -591,7 +591,7 @@ Lemma wp_select_nonblocking_alt Φnrs P (clauses : list comm_clause) (def : expr
               ⌜ recv_chan_expr = #recv_chan ⌝ ∗
               is_chan recv_chan γ V ∗
               nonblocking_recv_au_alt γ V
-                (λ v ok, P -∗ WP (subst "$recvVal" (#v, #ok) recv_handler) {{ Φ }}) Φnr)
+                (λ v ok, P -∗ WP recv_handler (#v, #ok)%V {{ Φ }}) Φnr)
      end) -∗
   P -∗
   (P -∗ [∗] Φnrs -∗ WP def {{ Φ }}) -∗
