@@ -1,4 +1,4 @@
-imports = ["!*"]
+imports = ["!*", "errors"]
 trusted = [
   # TODO: these are for verifying (rather than modeling) `After`, but the proof
   # would be blocked by the lack of support for type assertions (needed in time.sendTime)
@@ -26,4 +26,21 @@ translate = [
   "nsecMask",
   "hasMonotonic",
   "internalToUnix",
+  # globals
+  "std0x",
+  "longDayNames",
+  "shortDayNames",
+  "shortMonthNames",
+  "longMonthNames",
+  "errAtoi",
+  "errBad",
+  "errLeadingInt",
+  "unitMap",
+  "startNano",
+  "utcLoc",
+  "UTC",
+  "Local",
+  "errLocation",
+  "errBadData",
+  "platformZoneSources",
 ]

@@ -1,5 +1,5 @@
-translate = ["Ldate", "Ltime", "LstdFlags"]
+translate = ["Ldate", "Ltime", "LstdFlags", "std", "bufferPool"]
 
 trusted = ["Printf", "Println"]
 
-imports = ["!*"]
+imports = ["!*", "os", "sync", "io"]

@@ -375,211 +375,107 @@ Axiom useFMA'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition _gamP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._gamP"%go.
 
-Axiom _gamP'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition _gamQ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._gamQ"%go.
-
-Axiom _gamQ'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition _gamS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._gamS"%go.
 
-Axiom _gamS'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition p0R8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0R8"%go.
-
-Axiom p0R8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition p0S8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0S8"%go.
 
-Axiom p0S8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition p0R5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0R5"%go.
-
-Axiom p0R5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition p0S5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0S5"%go.
 
-Axiom p0S5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition p0R3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0R3"%go.
-
-Axiom p0R3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition p0S3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0S3"%go.
 
-Axiom p0S3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition p0R2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0R2"%go.
-
-Axiom p0R2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition p0S2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0S2"%go.
 
-Axiom p0S2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition q0R8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0R8"%go.
-
-Axiom q0R8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition q0S8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0S8"%go.
 
-Axiom q0S8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition q0R5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0R5"%go.
-
-Axiom q0R5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition q0S5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0S5"%go.
 
-Axiom q0S5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition q0R3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0R3"%go.
-
-Axiom q0R3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition q0S3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0S3"%go.
 
-Axiom q0S3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition q0R2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0R2"%go.
-
-Axiom q0R2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition q0S2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0S2"%go.
 
-Axiom q0S2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition p1R8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1R8"%go.
-
-Axiom p1R8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition p1S8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1S8"%go.
 
-Axiom p1S8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition p1R5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1R5"%go.
-
-Axiom p1R5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition p1S5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1S5"%go.
 
-Axiom p1S5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition p1R3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1R3"%go.
-
-Axiom p1R3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition p1S3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1S3"%go.
 
-Axiom p1S3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition p1R2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1R2"%go.
-
-Axiom p1R2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition p1S2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1S2"%go.
 
-Axiom p1S2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition q1R8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1R8"%go.
-
-Axiom q1R8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition q1S8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1S8"%go.
 
-Axiom q1S8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition q1R5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1R5"%go.
-
-Axiom q1R5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition q1S5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1S5"%go.
 
-Axiom q1S5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition q1R3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1R3"%go.
-
-Axiom q1R3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition q1S3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1S3"%go.
 
-Axiom q1S3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition q1R2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1R2"%go.
-
-Axiom q1R2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition q1S2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1S2"%go.
 
-Axiom q1S2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition _lgamA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamA"%go.
-
-Axiom _lgamA'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition _lgamR {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamR"%go.
 
-Axiom _lgamR'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition _lgamS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamS"%go.
-
-Axiom _lgamS'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition _lgamT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamT"%go.
 
-Axiom _lgamT'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition _lgamU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamU"%go.
-
-Axiom _lgamU'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition _lgamV {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamV"%go.
 
-Axiom _lgamV'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition _lgamW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamW"%go.
-
-Axiom _lgamW'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition pow10tab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pow10tab"%go.
 
-Axiom pow10tab'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition pow10postab32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pow10postab32"%go.
-
-Axiom pow10postab32'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition pow10negtab32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pow10negtab32"%go.
 
-Axiom pow10negtab32'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition _sin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._sin"%go.
-
-Axiom _sin'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition _cos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._cos"%go.
 
-Axiom _cos'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition _tanP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._tanP"%go.
-
-Axiom _tanP'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition _tanQ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._tanQ"%go.
 
-Axiom _tanQ'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition tanhP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.tanhP"%go.
-
-Axiom tanhP'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition tanhQ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.tanhQ"%go.
 
-Axiom tanhQ'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition mPi4 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.mPi4"%go.
-
-Axiom mPi4'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Abs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Abs"%go.
 
@@ -905,59 +801,526 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.math (λ: <>,
-      exception_do (do:  (useFMA'init #());;;
-      do:  (_gamP'init #());;;
-      do:  (_gamQ'init #());;;
-      do:  (_gamS'init #());;;
-      do:  (p0R8'init #());;;
-      do:  (p0S8'init #());;;
-      do:  (p0R5'init #());;;
-      do:  (p0S5'init #());;;
-      do:  (p0R3'init #());;;
-      do:  (p0S3'init #());;;
-      do:  (p0R2'init #());;;
-      do:  (p0S2'init #());;;
-      do:  (q0R8'init #());;;
-      do:  (q0S8'init #());;;
-      do:  (q0R5'init #());;;
-      do:  (q0S5'init #());;;
-      do:  (q0R3'init #());;;
-      do:  (q0S3'init #());;;
-      do:  (q0R2'init #());;;
-      do:  (q0S2'init #());;;
-      do:  (p1R8'init #());;;
-      do:  (p1S8'init #());;;
-      do:  (p1R5'init #());;;
-      do:  (p1S5'init #());;;
-      do:  (p1R3'init #());;;
-      do:  (p1S3'init #());;;
-      do:  (p1R2'init #());;;
-      do:  (p1S2'init #());;;
-      do:  (q1R8'init #());;;
-      do:  (q1S8'init #());;;
-      do:  (q1R5'init #());;;
-      do:  (q1S5'init #());;;
-      do:  (q1R3'init #());;;
-      do:  (q1S3'init #());;;
-      do:  (q1R2'init #());;;
-      do:  (q1S2'init #());;;
-      do:  (_lgamA'init #());;;
-      do:  (_lgamR'init #());;;
-      do:  (_lgamS'init #());;;
-      do:  (_lgamT'init #());;;
-      do:  (_lgamU'init #());;;
-      do:  (_lgamV'init #());;;
-      do:  (_lgamW'init #());;;
-      do:  (pow10tab'init #());;;
-      do:  (pow10postab32'init #());;;
-      do:  (pow10negtab32'init #());;;
-      do:  (_sin'init #());;;
-      do:  (_cos'init #());;;
-      do:  (_tanP'init #());;;
-      do:  (_tanQ'init #());;;
-      do:  (tanhP'init #());;;
-      do:  (tanhQ'init #());;;
-      do:  (mPi4'init #()))
+      exception_do (do:  (go.GlobalAlloc mPi4 (go.ArrayType 20 go.uint64) #());;;
+      do:  (go.GlobalAlloc tanhQ (go.ArrayType 3 go.float64) #());;;
+      do:  (go.GlobalAlloc tanhP (go.ArrayType 3 go.float64) #());;;
+      do:  (go.GlobalAlloc _tanQ (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc _tanP (go.ArrayType 3 go.float64) #());;;
+      do:  (go.GlobalAlloc _cos (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc _sin (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc pow10negtab32 (go.ArrayType 11 go.float64) #());;;
+      do:  (go.GlobalAlloc pow10postab32 (go.ArrayType 10 go.float64) #());;;
+      do:  (go.GlobalAlloc pow10tab (go.ArrayType 32 go.float64) #());;;
+      do:  (go.GlobalAlloc _lgamW (go.ArrayType 7 go.float64) #());;;
+      do:  (go.GlobalAlloc _lgamV (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc _lgamU (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc _lgamT (go.ArrayType 15 go.float64) #());;;
+      do:  (go.GlobalAlloc _lgamS (go.ArrayType 7 go.float64) #());;;
+      do:  (go.GlobalAlloc _lgamR (go.ArrayType 7 go.float64) #());;;
+      do:  (go.GlobalAlloc _lgamA (go.ArrayType 12 go.float64) #());;;
+      do:  (go.GlobalAlloc q1S2 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q1R2 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q1S3 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q1R3 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q1S5 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q1R5 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q1S8 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q1R8 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc p1S2 (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc p1R2 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc p1S3 (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc p1R3 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc p1S5 (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc p1R5 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc p1S8 (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc p1R8 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q0S2 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q0R2 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q0S3 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q0R3 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q0S5 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q0R5 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q0S8 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc q0R8 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc p0S2 (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc p0R2 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc p0S3 (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc p0R3 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc p0S5 (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc p0R5 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc p0S8 (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc p0R8 (go.ArrayType 6 go.float64) #());;;
+      do:  (go.GlobalAlloc _gamS (go.ArrayType 5 go.float64) #());;;
+      do:  (go.GlobalAlloc _gamQ (go.ArrayType 8 go.float64) #());;;
+      do:  (go.GlobalAlloc _gamP (go.ArrayType 7 go.float64) #());;;
+      do:  (useFMA'init #());;;
+      let: "$r0" := (let: "$v0" := #(W64 4550039391721496915) in
+      let: "$v1" := #(W64 4563136961816477611) in
+      let: "$v2" := #(W64 4577161138195338416) in
+      let: "$v3" := #(W64 4587026004551410643) in
+      let: "$v4" := #(W64 4596642130376424753) in
+      let: "$v5" := #(W64 4602574602757202706) in
+      let: "$v6" := #(W64 4607182418800017408) in
+      CompositeLiteral (go.ArrayType 7 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6")])) in
+      do:  ((GlobalVarAddr _gamP #()) <-[go.ArrayType 7 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4537456315613631407))) in
+      let: "$v1" := #(W64 4558116206293624179) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4571787923612021834))) in
+      let: "$v3" := #(W64 4577963916727660823) in
+      let: "$v4" := #(W64 4585323551631859303) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4597620080480782274))) in
+      let: "$v6" := #(W64 4589811530036231249) in
+      let: "$v7" := #(W64 4607182418800017408) in
+      CompositeLiteral (go.ArrayType 8 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6"); KeyedElement None (ElementExpression go.float64 "$v7")])) in
+      do:  ((GlobalVarAddr _gamQ #()) <-[go.ArrayType 8 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4560400889183826579) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4552600922804854140))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4568329139749408727))) in
+      let: "$v3" := #(W64 4570152821849638397) in
+      let: "$v4" := #(W64 4590669220166326662) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr _gamS #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 0) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4589730970243956018))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4620739194037184377))) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4643229918171883619))) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4657683463754599164))) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4662497797445805117))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr p0R8 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4637900793828697937) in
+      let: "$v1" := #(W64 4660648908942829880) in
+      let: "$v2" := #(W64 4675812540598890591) in
+      let: "$v3" := #(W64 4682759616392571325) in
+      let: "$v4" := #(W64 4676778718732765660) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr p0S8 #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4443109657072145868))) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4589730969817906118))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4616369323664763839))) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4634462605178378115))) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4644534698838772835))) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4644802136811736023))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr p0R5 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4633747173989205470) in
+      let: "$v1" := #(W64 4652338271982856292) in
+      let: "$v2" := #(W64 4663295962775428448) in
+      let: "$v3" := #(W64 4666517258757405240) in
+      let: "$v4" := #(W64 4657509392920078436) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr p0S5 #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4478232809368038022))) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4589730931450896971))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4612607077094031476))) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4626876090679905812))) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4633370733887232581))) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4629545027848296463))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr p0R3 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4630243105449672147) in
+      let: "$v1" := #(W64 4645067437439089678) in
+      let: "$v2" := #(W64 4652964358233547222) in
+      let: "$v3" := #(W64 4652675797830835070) in
+      let: "$v4" := #(W64 4640311352621502593) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr p0S3 #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4501298447934489197))) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4589730292870028866))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4609212364395685955))) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4620283047998105587))) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4622490810831889155))) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4614463941795374863))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr p0R2 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4626947676037667161) in
+      let: "$v1" := #(W64 4638996367093041039) in
+      let: "$v2" := #(W64 4643465779653248923) in
+      let: "$v3" := #(W64 4639618025689381631) in
+      let: "$v4" := #(W64 4624441123253327881) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr p0S2 #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 0) in
+      let: "$v1" := #(W64 4589942076476489260) in
+      let: "$v2" := #(W64 4622814529337898198) in
+      let: "$v3" := #(W64 4648116562747725861) in
+      let: "$v4" := #(W64 4666096009499702381) in
+      let: "$v5" := #(W64 4675320065150686566) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q0R8 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4639966373233768892) in
+      let: "$v1" := #(W64 4665626239135581539) in
+      let: "$v2" := #(W64 4684137591238528063) in
+      let: "$v3" := #(W64 4695147586068491075) in
+      let: "$v4" := #(W64 4695467065687804733) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4689651757340766405))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q0S8 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4446246417212411097) in
+      let: "$v1" := #(W64 4589942075695476812) in
+      let: "$v2" := #(W64 4618256359431159251) in
+      let: "$v3" := #(W64 4638957832572995817) in
+      let: "$v4" := #(W64 4652232681307292801) in
+      let: "$v5" := #(W64 4656466830624744358) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q0R5 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4635525303045592387) in
+      let: "$v1" := #(W64 4656787576741544142) in
+      let: "$v2" := #(W64 4670909917246856813) in
+      let: "$v3" := #(W64 4678032627064644466) in
+      let: "$v4" := #(W64 4675177420980638880) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4662609176820434441))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q0S5 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4481869993748646786) in
+      let: "$v1" := #(W64 4589941999411202114) in
+      let: "$v2" := #(W64 4614712958387526901) in
+      let: "$v3" := #(W64 4631195308593622749) in
+      let: "$v4" := #(W64 4640213792005750047) in
+      let: "$v5" := #(W64 4640070445855023584) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q0R3 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4632059018626679718) in
+      let: "$v1" := #(W64 4649453708224253619) in
+      let: "$v2" := #(W64 4660363923165150307) in
+      let: "$v3" := #(W64 4663825327293164072) in
+      let: "$v4" := #(W64 4657751891375010240) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4639455194442953743))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q0S3 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4504779658175671259) in
+      let: "$v1" := #(W64 4589940724610907700) in
+      let: "$v2" := #(W64 4611677874752550812) in
+      let: "$v3" := #(W64 4624349917051711461) in
+      let: "$v4" := #(W64 4629606469526608970) in
+      let: "$v5" := #(W64 4625267948167187380) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q0R2 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4629240369966512877) in
+      let: "$v1" := #(W64 4643446038404877120) in
+      let: "$v2" := #(W64 4650642012334440226) in
+      let: "$v3" := #(W64 4650977601645232660) in
+      let: "$v4" := #(W64 4641686549908427621) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4617665622098258225))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q0S2 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 0) in
+      let: "$v1" := #(W64 4593108669964483790) in
+      let: "$v2" := #(W64 4623642783075237838) in
+      let: "$v3" := #(W64 4645956509072532880) in
+      let: "$v4" := #(W64 4660739070293783244) in
+      let: "$v5" := #(W64 4665424076983468765) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr p1R8 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4637737046166039724) in
+      let: "$v1" := #(W64 4660246896882558799) in
+      let: "$v2" := #(W64 4675312035863837567) in
+      let: "$v3" := #(W64 4681443626114291643) in
+      let: "$v4" := #(W64 4674196627785386797) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr p1S8 #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4444215450408176253) in
+      let: "$v1" := #(W64 4593108669473816643) in
+      let: "$v2" := #(W64 4619345235458332131) in
+      let: "$v3" := #(W64 4637321927758054125) in
+      let: "$v4" := #(W64 4647764391453972041) in
+      let: "$v5" := #(W64 4647861843912428727) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr p1R5 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4633539819881849661) in
+      let: "$v1" := #(W64 4651931674920511233) in
+      let: "$v2" := #(W64 4662607993962411771) in
+      let: "$v3" := #(W64 4665347342921480981) in
+      let: "$v4" := #(W64 4654329683615112785) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr p1S5 #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4479388525873962717) in
+      let: "$v1" := #(W64 4593108624248787323) in
+      let: "$v2" := #(W64 4616038696802495882) in
+      let: "$v3" := #(W64 4630139433958953257) in
+      let: "$v4" := #(W64 4636107843717306423) in
+      let: "$v5" := #(W64 4632030898649841381) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr p1R3 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4630093258825139868) in
+      let: "$v1" := #(W64 4644632004018677599) in
+      let: "$v2" := #(W64 4652319004553631011) in
+      let: "$v3" := #(W64 4651046875287138793) in
+      let: "$v4" := #(W64 4637003843403443539) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr p1S3 #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4502730828338775284) in
+      let: "$v1" := #(W64 4593107857116106115) in
+      let: "$v2" := #(W64 4612515840360689344) in
+      let: "$v3" := #(W64 4623081595299015012) in
+      let: "$v4" := #(W64 4625673627793067746) in
+      let: "$v5" := #(W64 4617398297642189310) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr p1R2 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4626727052061830364) in
+      let: "$v1" := #(W64 4638516932880444629) in
+      let: "$v2" := #(W64 4642376518279027673) in
+      let: "$v3" := #(W64 4637981366650700969) in
+      let: "$v4" := #(W64 4620898491152880018) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr p1S2 #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 0) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4592053138801819123))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4625273309106764279))) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4649892743230043510))) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4667740114438878229))) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4676890152039128170))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q1R8 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4639882611305205221) in
+      let: "$v1" := #(W64 4665326117599085593) in
+      let: "$v2" := #(W64 4683839934366703256) in
+      let: "$v3" := #(W64 4694429024867752985) in
+      let: "$v4" := #(W64 4693973273079819612) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4688802916682017304))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q1S8 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4447016848191496344))) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4592053137918492655))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4620724995239423307))) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4640666316375046576))) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4653754185474470735))) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4657963241073125277))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q1R5 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4635419745701204402) in
+      let: "$v1" := #(W64 4656474838921902137) in
+      let: "$v2" := #(W64 4670530914603028009) in
+      let: "$v3" := #(W64 4677084341551681943) in
+      let: "$v4" := #(W64 4673411522359998027) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4661910811885674500))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q1S5 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4482717332423034959))) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4592053049977924948))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4616876547389970943))) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4633338089993737946))) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4642234657412797791))) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4641916787290282998))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q1R3 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4631905091510822884) in
+      let: "$v1" := #(W64 4649138596034506302) in
+      let: "$v2" := #(W64 4659651449835125914) in
+      let: "$v3" := #(W64 4662821807351223462) in
+      let: "$v4" := #(W64 4656084822175047499) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4638960985590870303))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q1S3 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4505835098872358610))) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4592051552101380112))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4613379835043729114))) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4626228033612189823))) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4631153575602440874))) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4626708878695820882))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q1R2 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4629006120318297343) in
+      let: "$v1" := #(W64 4643105013550423226) in
+      let: "$v2" := #(W64 4649874281219072247) in
+      let: "$v3" := #(W64 4649714987232968745) in
+      let: "$v4" := #(W64 4639690984324520148) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4617269917876217963))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr q1S2 #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4590228395698008264) in
+      let: "$v1" := #(W64 4599480669564178349) in
+      let: "$v2" := #(W64 4589517665429971623) in
+      let: "$v3" := #(W64 4581589235564434555) in
+      let: "$v4" := #(W64 4575164982564483048) in
+      let: "$v5" := #(W64 4568811493649781355) in
+      let: "$v6" := #(W64 4563143216008740701) in
+      let: "$v7" := #(W64 4557843786729364480) in
+      let: "$v8" := #(W64 4552280422768239949) in
+      let: "$v9" := #(W64 4547598271341525767) in
+      let: "$v10" := #(W64 4538063219164248658) in
+      let: "$v11" := #(W64 4541745596584974391) in
+      CompositeLiteral (go.ArrayType 12 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6"); KeyedElement None (ElementExpression go.float64 "$v7"); KeyedElement None (ElementExpression go.float64 "$v8"); KeyedElement None (ElementExpression go.float64 "$v9"); KeyedElement None (ElementExpression go.float64 "$v10"); KeyedElement None (ElementExpression go.float64 "$v11")])) in
+      do:  ((GlobalVarAddr _lgamA #()) <-[go.ArrayType 12 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4607182418800017408) in
+      let: "$v1" := #(W64 4608947853879192436) in
+      let: "$v2" := #(W64 4604677836871294172) in
+      let: "$v3" := #(W64 4595362590636105511) in
+      let: "$v4" := #(W64 4581031541704938613) in
+      let: "$v5" := #(W64 4560314476338981211) in
+      let: "$v6" := #(W64 4530263847980990784) in
+      CompositeLiteral (go.ArrayType 7 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6")])) in
+      do:  ((GlobalVarAddr _lgamR #()) <-[go.ArrayType 7 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4590228395698008264))) in
+      let: "$v1" := #(W64 4596913578117826680) in
+      let: "$v2" := #(W64 4599540328982355801) in
+      let: "$v3" := #(W64 4594440851763360503) in
+      let: "$v4" := #(W64 4583336332999498081) in
+      let: "$v5" := #(W64 4566129637262422585) in
+      let: "$v6" := #(W64 4539839448431978821) in
+      CompositeLiteral (go.ArrayType 7 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6")])) in
+      do:  ((GlobalVarAddr _lgamS #()) <-[go.ArrayType 7 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4602387636645935266) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4594485428404798729))) in
+      let: "$v2" := #(W64 4589321138371641755) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4584886147799693075))) in
+      let: "$v4" := #(W64 4580836915846773228) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4577099367182363754))) in
+      let: "$v6" := #(W64 4573683464413438788) in
+      let: "$v7" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4570642347597567191))) in
+      let: "$v8" := #(W64 4567356815629994261) in
+      let: "$v9" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4564115161432791793))) in
+      let: "$v10" := #(W64 4561265769268226281) in
+      let: "$v11" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4558106888150180076))) in
+      let: "$v12" := #(W64 4554458007677615095) in
+      let: "$v13" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4554404919746202680))) in
+      let: "$v14" := #(W64 4554825044790006772) in
+      CompositeLiteral (go.ArrayType 15 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6"); KeyedElement None (ElementExpression go.float64 "$v7"); KeyedElement None (ElementExpression go.float64 "$v8"); KeyedElement None (ElementExpression go.float64 "$v9"); KeyedElement None (ElementExpression go.float64 "$v10"); KeyedElement None (ElementExpression go.float64 "$v11"); KeyedElement None (ElementExpression go.float64 "$v12"); KeyedElement None (ElementExpression go.float64 "$v13"); KeyedElement None (ElementExpression go.float64 "$v14")])) in
+      do:  ((GlobalVarAddr _lgamT #()) <-[go.ArrayType 15 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4590228395698008264))) in
+      let: "$v1" := #(W64 4603875219004743167) in
+      let: "$v2" := #(W64 4609231207607680367) in
+      let: "$v3" := #(W64 4606981716134495312) in
+      let: "$v4" := #(W64 4597417307973683492) in
+      let: "$v5" := #(W64 4578867296057666313) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr _lgamU #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4607182418800017408) in
+      let: "$v1" := #(W64 4612712789461262748) in
+      let: "$v2" := #(W64 4611975351653570805) in
+      let: "$v3" := #(W64 4605104324179153071) in
+      let: "$v4" := #(W64 4592174453748890760) in
+      let: "$v5" := #(W64 4569564532599476065) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr _lgamV #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4601218545606032745) in
+      let: "$v1" := #(W64 4590669220166325563) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4568551541995220572))) in
+      let: "$v3" := #(W64 4560459357641193654) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4558628859545642817))) in
+      let: "$v5" := #(W64 4560853097493747153) in
+      let: "$v6" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4565164156937716708))) in
+      CompositeLiteral (go.ArrayType 7 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6")])) in
+      do:  ((GlobalVarAddr _lgamW #()) <-[go.ArrayType 7 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4607182418800017408) in
+      let: "$v1" := #(W64 4621819117588971520) in
+      let: "$v2" := #(W64 4636737291354636288) in
+      let: "$v3" := #(W64 4652007308841189376) in
+      let: "$v4" := #(W64 4666723172467343360) in
+      let: "$v5" := #(W64 4681608360884174848) in
+      let: "$v6" := #(W64 4696837146684686336) in
+      let: "$v7" := #(W64 4711630319722168320) in
+      let: "$v8" := #(W64 4726483295884279808) in
+      let: "$v9" := #(W64 4741671816366391296) in
+      let: "$v10" := #(W64 4756540486875873280) in
+      let: "$v11" := #(W64 4771362005757984768) in
+      let: "$v12" := #(W64 4786511204640096256) in
+      let: "$v13" := #(W64 4801453603149578240) in
+      let: "$v14" := #(W64 4816244402031689728) in
+      let: "$v15" := #(W64 4831355200913801216) in
+      let: "$v16" := #(W64 4846369599423283200) in
+      let: "$v17" := #(W64 4861130398305394688) in
+      let: "$v18" := #(W64 4876203697187506176) in
+      let: "$v19" := #(W64 4891288408196988160) in
+      let: "$v20" := #(W64 4906019910204099648) in
+      let: "$v21" := #(W64 4921056587992461136) in
+      let: "$v22" := #(W64 4936209963552724370) in
+      let: "$v23" := #(W64 4950912855330343670) in
+      let: "$v24" := #(W64 4965913770331839924) in
+      let: "$v25" := #(W64 4981134201117475473) in
+      let: "$v26" := #(W64 4995809153217856309) in
+      let: "$v27" := #(W64 5010775143622804482) in
+      let: "$v28" := #(W64 5026061058026967681) in
+      let: "$v29" := #(W64 5040708725286295329) in
+      let: "$v30" := #(W64 5055640609639927018) in
+      let: "$v31" := #(W64 5070927765361438756) in
+      CompositeLiteral (go.ArrayType 32 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6"); KeyedElement None (ElementExpression go.float64 "$v7"); KeyedElement None (ElementExpression go.float64 "$v8"); KeyedElement None (ElementExpression go.float64 "$v9"); KeyedElement None (ElementExpression go.float64 "$v10"); KeyedElement None (ElementExpression go.float64 "$v11"); KeyedElement None (ElementExpression go.float64 "$v12"); KeyedElement None (ElementExpression go.float64 "$v13"); KeyedElement None (ElementExpression go.float64 "$v14"); KeyedElement None (ElementExpression go.float64 "$v15"); KeyedElement None (ElementExpression go.float64 "$v16"); KeyedElement None (ElementExpression go.float64 "$v17"); KeyedElement None (ElementExpression go.float64 "$v18"); KeyedElement None (ElementExpression go.float64 "$v19"); KeyedElement None (ElementExpression go.float64 "$v20"); KeyedElement None (ElementExpression go.float64 "$v21"); KeyedElement None (ElementExpression go.float64 "$v22"); KeyedElement None (ElementExpression go.float64 "$v23"); KeyedElement None (ElementExpression go.float64 "$v24"); KeyedElement None (ElementExpression go.float64 "$v25"); KeyedElement None (ElementExpression go.float64 "$v26"); KeyedElement None (ElementExpression go.float64 "$v27"); KeyedElement None (ElementExpression go.float64 "$v28"); KeyedElement None (ElementExpression go.float64 "$v29"); KeyedElement None (ElementExpression go.float64 "$v30"); KeyedElement None (ElementExpression go.float64 "$v31")])) in
+      do:  ((GlobalVarAddr pow10tab #()) <-[go.ArrayType 32 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4607182418800017408) in
+      let: "$v1" := #(W64 5085611494797045271) in
+      let: "$v2" := #(W64 5564284217833028085) in
+      let: "$v3" := #(W64 6043257259031049059) in
+      let: "$v4" := #(W64 6521906365687930162) in
+      let: "$v5" := #(W64 7000496887210966211) in
+      let: "$v6" := #(W64 7479368607221621995) in
+      let: "$v7" := #(W64 7958223736346011545) in
+      let: "$v8" := #(W64 8436737289693151036) in
+      let: "$v9" := #(W64 8915514139102383430) in
+      CompositeLiteral (go.ArrayType 10 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6"); KeyedElement None (ElementExpression go.float64 "$v7"); KeyedElement None (ElementExpression go.float64 "$v8"); KeyedElement None (ElementExpression go.float64 "$v9")])) in
+      do:  ((GlobalVarAddr pow10postab32 #()) <-[go.ArrayType 10 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4607182418800017408) in
+      let: "$v1" := #(W64 4128101167230658355) in
+      let: "$v2" := #(W64 3649340653511681853) in
+      let: "$v3" := #(W64 3170840353250979498) in
+      let: "$v4" := #(W64 2691949749288605597) in
+      let: "$v5" := #(W64 2213095475689254516) in
+      let: "$v6" := #(W64 1734519108376626298) in
+      let: "$v7" := #(W64 1255832114822727210) in
+      let: "$v8" := #(W64 776877706278891331) in
+      let: "$v9" := #(W64 298220099847875929) in
+      let: "$v10" := #(W64 2024) in
+      CompositeLiteral (go.ArrayType 11 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5"); KeyedElement None (ElementExpression go.float64 "$v6"); KeyedElement None (ElementExpression go.float64 "$v7"); KeyedElement None (ElementExpression go.float64 "$v8"); KeyedElement None (ElementExpression go.float64 "$v9"); KeyedElement None (ElementExpression go.float64 "$v10")])) in
+      do:  ((GlobalVarAddr pow10negtab32 #()) <-[go.ArrayType 11 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4460209587652500685) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4493156352803807069))) in
+      let: "$v2" := #(W64 4523617212962785441) in
+      let: "$v3" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4551452160549707523))) in
+      let: "$v4" := #(W64 4575957461383575504) in
+      let: "$v5" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4595172819793696072))) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr _sin #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4443076226533694107))) in
+      let: "$v1" := #(W64 4477121864728985349) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4508805056844024774))) in
+      let: "$v3" := #(W64 4537941361668146421) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4564047942368972689))) in
+      let: "$v5" := #(W64 4586165620538955083) in
+      CompositeLiteral (go.ArrayType 6 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4"); KeyedElement None (ElementExpression go.float64 "$v5")])) in
+      do:  ((GlobalVarAddr _cos #()) <-[go.ArrayType 6 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4668423948685229880))) in
+      let: "$v1" := #(W64 4697705128000265693) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4715585378259145078))) in
+      CompositeLiteral (go.ArrayType 3 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2")])) in
+      do:  ((GlobalVarAddr _tanP #()) <-[go.ArrayType 3 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4607182418800017408) in
+      let: "$v1" := #(W64 4668746986536789362) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4698424001140800662))) in
+      let: "$v3" := #(W64 4717478346167605487) in
+      let: "$v4" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4722499061901318705))) in
+      CompositeLiteral (go.ArrayType 5 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2"); KeyedElement None (ElementExpression go.float64 "$v3"); KeyedElement None (ElementExpression go.float64 "$v4")])) in
+      do:  ((GlobalVarAddr _tanQ #()) <-[go.ArrayType 5 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4606861755115466571))) in
+      let: "$v1" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4636687169323690029))) in
+      let: "$v2" := (Convert go.untyped_float go.float64 (⟨go.untyped_float⟩- #(W64 4654816286983325027))) in
+      CompositeLiteral (go.ArrayType 3 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2")])) in
+      do:  ((GlobalVarAddr tanhP #()) <-[go.ArrayType 3 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 4637638833080900486) in
+      let: "$v1" := #(W64 4657134306032170490) in
+      let: "$v2" := #(W64 4662048118353822732) in
+      CompositeLiteral (go.ArrayType 3 go.float64) (LiteralValue [KeyedElement None (ElementExpression go.float64 "$v0"); KeyedElement None (ElementExpression go.float64 "$v1"); KeyedElement None (ElementExpression go.float64 "$v2")])) in
+      do:  ((GlobalVarAddr tanhQ #()) <-[go.ArrayType 3 go.float64] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W64 1) in
+      let: "$v1" := #(W64 5040379952546458195) in
+      let: "$v2" := #(W64 17892431488136887169) in
+      let: "$v3" := #(W64 13169980181085364355) in
+      let: "$v4" := #(W64 18204331823439776451) in
+      let: "$v5" := #(W64 7946843935494350272) in
+      let: "$v6" := #(W64 905889640498799673) in
+      let: "$v7" := #(W64 18175356263134875261) in
+      let: "$v8" := #(W64 15061281708168349961) in
+      let: "$v9" := #(W64 15220161563773041794) in
+      let: "$v10" := #(W64 8296664548579374057) in
+      let: "$v11" := #(W64 4109744767560208502) in
+      let: "$v12" := #(W64 4607516669194743839) in
+      let: "$v13" := #(W64 16023283104648321598) in
+      let: "$v14" := #(W64 15739233654134936430) in
+      let: "$v15" := #(W64 11424645774684705882) in
+      let: "$v16" := #(W64 16883842788696515318) in
+      let: "$v17" := #(W64 8795094592981902804) in
+      let: "$v18" := #(W64 15561835991111744016) in
+      let: "$v19" := #(W64 12395701187267450711) in
+      CompositeLiteral (go.ArrayType 20 go.uint64) (LiteralValue [KeyedElement None (ElementExpression go.uint64 "$v0"); KeyedElement None (ElementExpression go.uint64 "$v1"); KeyedElement None (ElementExpression go.uint64 "$v2"); KeyedElement None (ElementExpression go.uint64 "$v3"); KeyedElement None (ElementExpression go.uint64 "$v4"); KeyedElement None (ElementExpression go.uint64 "$v5"); KeyedElement None (ElementExpression go.uint64 "$v6"); KeyedElement None (ElementExpression go.uint64 "$v7"); KeyedElement None (ElementExpression go.uint64 "$v8"); KeyedElement None (ElementExpression go.uint64 "$v9"); KeyedElement None (ElementExpression go.uint64 "$v10"); KeyedElement None (ElementExpression go.uint64 "$v11"); KeyedElement None (ElementExpression go.uint64 "$v12"); KeyedElement None (ElementExpression go.uint64 "$v13"); KeyedElement None (ElementExpression go.uint64 "$v14"); KeyedElement None (ElementExpression go.uint64 "$v15"); KeyedElement None (ElementExpression go.uint64 "$v16"); KeyedElement None (ElementExpression go.uint64 "$v17"); KeyedElement None (ElementExpression go.uint64 "$v18"); KeyedElement None (ElementExpression go.uint64 "$v19")])) in
+      do:  ((GlobalVarAddr mPi4 #()) <-[go.ArrayType 20 go.uint64] "$r0"))
       ).
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

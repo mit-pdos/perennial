@@ -1,4 +1,4 @@
-From New.proof Require Import proof_prelude.
+From New.proof Require Import proof_prelude errors.
 From New.generatedproof Require Export time.
 From New.proof.github_com.goose_lang.goose.model.channel
   Require Import logatom.chan_au_base idiom.bag.bag.
@@ -10,6 +10,13 @@ Context {sem : go.Semantics} {package_sem : time.Assumptions}.
 #[global] Instance : IsPkgInit (iProp Σ) time := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) time := build_get_is_pkg_init_wf.
 
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
+
+Local Lemma wp_asynctimerchan_init :
+  {{{ True }}} time.asynctimerchan'init #() {{{ RET #(); True }}}.
+Proof. Admitted.
+
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop time get_is_pkg_init →
   {{{ own_initializing get_is_pkg_init }}}
@@ -17,13 +24,13 @@ Lemma wp_initialize' get_is_pkg_init :
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init time }}}.
 Proof.
   intros Hinit. wp_start as "Hown".
-  wp_apply (wp_package_init with "[$Hown] HΦ").
+  wp_apply (wp_package_init with "[$Hown] HΦ") as "Hown".
   { destruct Hinit as (-> & ?); done. }
-  iIntros "Hown". wp_auto.
+  do 16 (wp_apply wp_GlobalAlloc as "?").
+  wp_apply (errors.wp_initialize' with "Hown") as "[Hown #?]" --no-auto; first naive_solver.
+  (* remaining: array/slice/map/struct CompositeLiterals, errors.New calls, asynctimerchan init *)
+  all: admit.
 Admitted.
-
-Collection W := sem + package_sem.
-Set Default Proof Using "W".
 
 #[local]
 Lemma wp_Time__sec (t : loc) (tv : time.Time.t) :

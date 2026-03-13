@@ -235,8 +235,6 @@ Definition Discard {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :=
 
 Definition blackHolePool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.blackHolePool"%go.
 
-Axiom blackHolePool'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition ErrClosedPipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrClosedPipe"%go.
 
 Definition WriteString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.WriteString"%go.
@@ -280,6 +278,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.io (λ: <>,
       exception_do (do:  (go.GlobalAlloc ErrClosedPipe go.error #());;;
+      do:  (go.GlobalAlloc blackHolePool sync.Pool #());;;
       do:  (go.GlobalAlloc Discard Writer #());;;
       do:  (go.GlobalAlloc errOffset go.error #());;;
       do:  (go.GlobalAlloc errWhence go.error #());;;
@@ -318,7 +317,14 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       let: "$r0" := (Convert discard Writer (CompositeLiteral discard (LiteralValue []))) in
       do:  ((GlobalVarAddr Discard #()) <-[Writer] "$r0");;;
       let: "$r0" := (Convert discard ReaderFrom (CompositeLiteral discard (LiteralValue []))) in
-      do:  (blackHolePool'init #());;;
+      let: "$r0" := (let: "$v0" := (λ: <>,
+        exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 8192)) in
+        do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+        return: (Convert (go.PointerType (go.SliceType go.byte)) go.any "b"))
+        ) in
+      CompositeLiteral sync.Pool (LiteralValue [KeyedElement (Some (KeyField "New"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [go.any])) "$v0")])) in
+      do:  ((GlobalVarAddr blackHolePool #()) <-[sync.Pool] "$r0");;;
       let: "$r0" := (Convert (go.PointerType multiReader) WriterTo (Convert go.untyped_nil (go.PointerType multiReader) UntypedNil)) in
       let: "$r0" := (Convert (go.PointerType multiWriter) StringWriter (Convert go.untyped_nil (go.PointerType multiWriter) UntypedNil)) in
       let: "$r0" := (let: "$a0" := #"io: read/write on closed pipe"%go in

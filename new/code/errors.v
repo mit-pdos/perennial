@@ -19,8 +19,6 @@ Axiom joinErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext},
 
 Definition ErrUnsupported {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.ErrUnsupported"%go.
 
-Axiom ErrUnsupported'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition errorType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.errorType"%go.
 
 Axiom errorType'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -196,7 +194,10 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.errors (λ: <>,
-      exception_do (do:  (ErrUnsupported'init #());;;
+      exception_do (do:  (go.GlobalAlloc ErrUnsupported go.error #());;;
+      let: "$r0" := (let: "$a0" := #"unsupported operation"%go in
+      (FuncResolve New [] #()) "$a0") in
+      do:  ((GlobalVarAddr ErrUnsupported #()) <-[go.error] "$r0");;;
       do:  (errorType'init #()))
       ).
 

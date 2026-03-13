@@ -1,7 +1,7 @@
 From New.proof Require Import proof_prelude.
-From New.proof Require Import math time.
+From New.proof Require Import math.
 From New.generatedproof.github_com.goose_lang Require Import std.
-From New.proof Require Import github_com.goose_lang.primitive std.std_core sync.
+From New.proof Require Import github_com.goose_lang.primitive std.std_core sync time.
 From iris_named_props Require Import custom_syntax.
 
 Section wps.

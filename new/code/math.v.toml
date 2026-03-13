@@ -1,3 +1,16 @@
-translate = ["MaxUint64", "MaxInt64", "MaxInt", "MinInt"]
+translate = [
+  "MaxUint64", "MaxInt64", "MaxInt", "MinInt",
+  # globals
+  "_gamP", "_gamQ", "_gamS",
+  "p0R8", "p0S8", "p0R5", "p0S5", "p0R3", "p0S3", "p0R2", "p0S2",
+  "q0R8", "q0S8", "q0R5", "q0S5", "q0R3", "q0S3", "q0R2", "q0S2",
+  "p1R8", "p1S8", "p1R5", "p1S5", "p1R3", "p1S3", "p1R2", "p1S2",
+  "q1R8", "q1S8", "q1R5", "q1S5", "q1R3", "q1S3", "q1R2", "q1S2",
+  "_lgamA", "_lgamR", "_lgamS", "_lgamT", "_lgamU", "_lgamV", "_lgamW",
+  "pow10tab", "pow10postab32", "pow10negtab32",
+  "_sin", "_cos", "_tanP", "_tanQ",
+  "tanhP", "tanhQ",
+  "mPi4",
+]
 
 imports = ["!*"]

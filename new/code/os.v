@@ -347,10 +347,6 @@ Definition errPathEscapes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_st
 
 Axiom errPathEscapes'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition lstat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.lstat"%go.
-
-Axiom lstat'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition checkWrapErr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.checkWrapErr"%go.
 
 Axiom checkWrapErr'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -362,6 +358,8 @@ Definition checkPidfdOnce {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_st
 Axiom checkPidfdOnce'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Args {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Args"%go.
+
+Definition stathook {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.stathook"%go.
 
 Definition errPatternHasSeparator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.errPatternHasSeparator"%go.
 
@@ -761,7 +759,6 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (Stderr'init #());;;
       do:  (errWriteAtInAppendMode'init #());;;
       do:  (errPathEscapes'init #());;;
-      do:  (lstat'init #());;;
       do:  (checkWrapErr'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;

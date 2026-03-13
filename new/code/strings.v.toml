@@ -1,2 +1,2 @@
-translate = ["Builder"]
+translate = ["Builder", "asciiSpace"]
 imports = ["!*"]
