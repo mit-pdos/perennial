@@ -273,7 +273,7 @@ def main():
             "./append_log",
             "./semantics",
             "./unittest/...",
-            "./channel",
+            "./channel/...",
         )
 
     if args.models:

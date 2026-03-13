@@ -1172,6 +1172,16 @@ Proof.
   intros ?. apply dec_element_enc_element.
 Qed.
 
+Global Instance func_eq_dec : EqDecision func.t.
+Proof. solve_decision. Qed.
+Global Instance func_countable : Countable func.t.
+Proof.
+  refine (inj_countable'
+           (fun x => (func.f x, func.x x, func.e x))
+           (fun '(a, b, c) => func.mk a b c) _).
+  by intros [].
+Defined.
+
 End instances.
 
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)

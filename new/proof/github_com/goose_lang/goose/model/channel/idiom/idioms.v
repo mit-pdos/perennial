@@ -1,6 +1,6 @@
 From New.proof.github_com.goose_lang.goose.model.channel.idiom Require
   done.done
-  handoff.handoff
+  bag.bag
   dsp.dsp
   future.future
   handshake.handshake
