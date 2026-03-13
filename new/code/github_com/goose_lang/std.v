@@ -308,11 +308,15 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] "done") in
-    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase time.Time "$ch0") (do:  ((MethodResolve sync.Locker "Lock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
-    return: (#()))); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase time.Time "$ch0") (λ: "$recvVal",
+      do:  ((MethodResolve sync.Locker "Lock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
+      return: (#())
+      )); (CommClause (RecvCase (go.StructType [
 
-    ]) "$ch1") (do:  ((MethodResolve sync.Locker "Lock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
-    return: (#())))]);;;
+    ]) "$ch1") (λ: "$recvVal",
+      do:  ((MethodResolve sync.Locker "Lock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
+      return: (#())
+      ))]);;;
     return: #()).
 
 #[global] Instance info' : PkgInfo pkg_id.std :=

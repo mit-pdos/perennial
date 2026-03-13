@@ -193,37 +193,31 @@ Proof.
       * destruct buff.
         -- iFrame.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_bind (body _). iApply (wp_wand with "Hcont").
-           iIntros (?) "HΨ". wp_auto. by iApply "Hwand".
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (body _).
+           iApply (wp_wand with "Hcont"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
         iMod "Hcont". iModIntro. iNext. iNamed "Hcont". iFrame.
         destruct s; try iFrame.
         -- iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-           iMod "Hcontinner". iModIntro. wp_auto.
-           wp_bind (body _). iApply (wp_wand with "Hcontinner").
-           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
+           iMod "Hcontinner". iModIntro. wp_auto. wp_bind (body _).
+           iApply (wp_wand with "Hcontinner"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
         -- destruct drain; try iFrame.
            iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-           iMod "Hcontinner". iModIntro. wp_auto.
-           wp_bind (body _). iApply (wp_wand with "Hcontinner").
-           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
+           iMod "Hcontinner". iModIntro. wp_auto. wp_bind (body _).
+           iApply (wp_wand with "Hcontinner"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]").
-        iMod "Hcont". iModIntro. wp_auto.
-        wp_bind (body _). iApply (wp_wand with "Hcont").
-        iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
+        iMod "Hcont". iModIntro. wp_auto. wp_bind (body _).
+        iApply (wp_wand with "Hcont"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iFrame.
       * iFrame.
       * iFrame.
       * destruct drain.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_bind (body _). iApply (wp_wand with "Hcont").
-           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (body _).
+           iApply (wp_wand with "Hcont"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_bind (body _). iApply (wp_wand with "Hcont").
-           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (body _).
+           iApply (wp_wand with "Hcont"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
     + wp_auto. iRight in "HΦ". iFrame.
 Qed.
 
@@ -364,25 +358,22 @@ Proof.
       * destruct buff.
         -- iFrame.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_bind (body _). iApply (wp_wand with "Hcont").
-           iIntros (?) "HΨ". wp_auto. by iApply "Hwand".
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (body _).
+           iApply (wp_wand with "Hcont"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * done.
-      * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
-        wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont"). iIntros "% HΨ". wp_auto.
-        by iApply "Hwand".
+      * iIntros "H". iSpecialize ("Hcont" with "[$]").
+        iMod "Hcont". iModIntro. wp_auto. wp_bind (body _).
+        iApply (wp_wand with "Hcont"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * done.
       * done.
       * done.
       * destruct drain.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_bind (body _). iApply (wp_wand with "Hcont").
-           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (body _).
+           iApply (wp_wand with "Hcont"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_bind (body _). iApply (wp_wand with "Hcont").
-           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (body _).
+           iApply (wp_wand with "Hcont"). iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
     + wp_auto. iRight in "HΦ". iFrame.
 Qed.
 

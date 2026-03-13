@@ -279,8 +279,10 @@ Definition Election__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       SelectStmt (SelectStmtClauses (Some (let: "$r0" := (Convert go.untyped_nil (go.PointerType Session) UntypedNil) in
       do:  ((StructFieldRef Election "leaderSession"%go (![go.PointerType Election] "e")) <-[go.PointerType Session] "$r0"))) [(CommClause (RecvCase (go.StructType [
 
-      ]) "$ch0") (do:  (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
-      (MethodResolve (go.PointerType Election) "Resign"%go (![go.PointerType Election] "e")) "$a0")))]);;;
+      ]) "$ch0") (λ: "$recvVal",
+        do:  (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
+        (MethodResolve (go.PointerType Election) "Resign"%go (![go.PointerType Election] "e")) "$a0")
+        ))]);;;
       return: (![go.error] "err")
     else do:  #());;;
     let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
@@ -536,7 +538,9 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
       SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
-      ]) "$ch1") (return: (#())))]);;;
+      ]) "$ch1") (λ: "$recvVal",
+        return: (#())
+        ))]);;;
       let: "cancel" := (GoAlloc context.CancelFunc (GoZeroVal context.CancelFunc #())) in
       let: "cctx" := (GoAlloc context.Context (GoZeroVal context.Context #())) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
@@ -590,8 +594,10 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
           let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "cctx")) #()) in
           SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
-          ]) "$ch1") (do:  ((![context.CancelFunc] "cancel") #());;;
-          return: (#())))]))));;;
+          ]) "$ch1") (λ: "$recvVal",
+            do:  ((![context.CancelFunc] "cancel") #());;;
+            return: (#())
+            ))]))));;;
       do:  ((![context.CancelFunc] "cancel") #()));;;
     return: #()).
 
