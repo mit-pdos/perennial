@@ -26,9 +26,6 @@ Definition is_Lock (γ : lock_channel_names) (l : loc) (R : iProp Σ) : iProp Σ
 
 #[global] Instance is_Lock_persistent γ l R : Persistent (is_Lock γ l R) := _.
 
-Definition has_lock (γ : lock_channel_names) : iProp Σ :=
-  has_lock_channel γ.
-
 
 Lemma wp_NewLock (R : iProp Σ) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ ▷ R }}}
@@ -56,7 +53,7 @@ Qed.
 Lemma wp_Lock__Lock γ (l : loc) (R : iProp Σ) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_Lock γ l R }}}
    l @! (go.PointerType chan_spec_raw_examples.Lock) @! "Lock" #()
-  {{{ RET #(); has_lock γ ∗ R }}}.
+  {{{ RET #(); R }}}.
 Proof.
   wp_start.
   iNamed "Hpre". 
@@ -64,32 +61,32 @@ Proof.
   iDestruct (is_lock_channel_is_chan (t:=(go.StructType [])) with "Hlock_chan") as "#Hchan".
   
   wp_apply ((wp_lock_channel_lock (t:=(go.StructType [])) γ ch ) with "Hlock_chan").
-  iIntros "[Hlc HR]".
+  iIntros "Hlc".
   wp_auto.
   iApply "HΦ". iFrame.
 Qed.
 
 Lemma wp_Lock__Unlock γ (l : loc) (R : iProp Σ) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-      is_Lock γ l R ∗ has_lock γ ∗ R }}}
+      is_Lock γ l R ∗ R }}}
    l @! (go.PointerType chan_spec_raw_examples.Lock) @! "Unlock" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start.
   iNamed "Hpre". 
-  iDestruct "Hpre" as "(#Hheld & Hhaslock & HR)".
+  iDestruct "Hpre" as "(#Hheld & HR)".
   wp_auto.
   iNamed "Hheld".
   iDestruct (is_lock_channel_is_chan (t:=(go.StructType [])) with "Hlock_chan") as "#Hchan".
   wp_auto.
-  wp_apply ((wp_lock_channel_unlock (t:=(go.StructType [])) γ ch ) with "[$Hhaslock $Hlock_chan $HR ]").
+  wp_apply ((wp_lock_channel_unlock (t:=(go.StructType [])) γ ch ) with "[$Hlock_chan $HR ]").
   iIntros (v) "H". wp_auto. iApply "HΦ". done.
 Qed.
 
 Lemma wp_Lock__TryLock γ (l : loc) (R : iProp Σ) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_Lock γ l R }}}
    l @! (go.PointerType chan_spec_raw_examples.Lock) @! "TryLock" #()
-  {{{ (b : bool), RET #b; if b then has_lock γ ∗ R else True }}}.
+  {{{ (b : bool), RET #b; if b then R else True }}}.
 Proof.
   wp_start.
   iNamed "Hpre".
@@ -123,7 +120,7 @@ Lemma wp_Lock__LockIfNotCancelled
       BroadcastNotified γdone Q }}}
    l @! (go.PointerType chan_spec_raw_examples.Lock) @! "LockIfNotCancelled" #done_ch 
   {{{ (b : bool), RET #b;
-      if b then has_lock γlock ∗ R else Q }}}.
+      if b then R else Q }}}.
 Proof.
   wp_start as "(#HisLock & #Hdone & #Hbnot)".
   iNamed "HisLock".
@@ -147,7 +144,7 @@ Proof.
   - simpl. iExists unit, ch, γlock.(lchan_name), tt, _, _, _.
     iSplitR; first done. iFrame "#".
     iApply (lock_channel_lock_au (t:=go.StructType [])  with "[$Hlock_chan][$Hlc1]").
-    iNext. iIntros "[Hheld HR]".
+    iNext. iIntros "HR".
     wp_auto. iApply "HΦ". iFrame.
   - iSplitL; last done.
     simpl. iExists unit, done_ch, γdone.(chan_name),  _, _,_.
@@ -173,7 +170,7 @@ Lemma wp_Lock__LockWithTimeout γ (l : loc) (R : iProp Σ) (d : time.Duration.t)
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_Lock γ l R }}}
    l @! (go.PointerType chan_spec_raw_examples.Lock) @! "LockWithTimeout" #d 
   {{{ (b : bool), RET #b;
-      if b then has_lock γ ∗ R else True }}}.
+      if b then R else True }}}.
 Proof.
   wp_start as "#HisLock".
   iNamed "HisLock".
@@ -194,7 +191,7 @@ Proof.
     }
     iFrame "#". 
     iApply (lock_channel_lock_au (t:=go.StructType [])  with "[$Hlock_chan][$]").
-    iNext. iIntros "[Hheld HR]".
+    iNext. iIntros "HR".
     wp_auto. iApply "HΦ". iFrame.
   - iSplitL; last done.
     simpl. iExists time.Time.t, after_ch.
@@ -211,7 +208,7 @@ Lemma wp_Lock__LockWithDeadline γ (l : loc) (R : iProp Σ) (deadline : time.Tim
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_Lock γ l R }}}
    l @! (go.PointerType chan_spec_raw_examples.Lock) @! "LockWithDeadline" #deadline 
   {{{ (b : bool), RET #b;
-      if b then has_lock γ ∗ R else True }}}.
+      if b then R else True }}}.
 Proof.
   wp_start as "#HisLock".
   wp_auto.
