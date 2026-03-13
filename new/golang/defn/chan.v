@@ -38,8 +38,8 @@ Definition for_range elem_type : val :=
    - if there's a default then select it; else, go back to the beginning.
  *)
 Definition try_comm_clause (c : comm_clause) : val :=
+  let (case', body) := c in
   λ: "blocking",
-    let (case', body) := c in
     match case' with
     | SendCase elem_type ch e =>
         let: "success" :=
@@ -49,7 +49,7 @@ Definition try_comm_clause (c : comm_clause) : val :=
     | RecvCase elem_type ch =>
         let: (("success", "v"), "ok") :=
           MethodResolve (go.PointerType $ channel.Channel elem_type) "TryReceive" ch "blocking" in
-        if: "success" then (body ("v", "ok"), #true)
+        if: "success" then ((λ: <>, body)%V #() ("v", "ok"), #true)
         else (#(), #false)
     end.
 

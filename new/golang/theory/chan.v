@@ -148,9 +148,10 @@ Local Lemma wp_try_comm_clause_blocking c Ψ :
   (∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
   WP chan.try_comm_clause c #true {{ Φ }}.
 Proof.
-  iIntros (Φ) "HΦ Hwand".
-  wp_call. destruct c as [[|]]; simpl.
-  - repeat setoid_rewrite bi.and_exist_r.
+  destruct c as [[|]]; simpl.
+  - iIntros (Φ) "HΦ Hwand".
+    wp_call.
+    repeat setoid_rewrite bi.and_exist_r.
     iDestruct "HΦ" as (V send_chan γ v' ? ? ?) "HΦ".
     iNamed "HΦ".
     iAssert (⌜ e = #v' ∧ ch = #send_chan ⌝ ∗ is_chan send_chan γ V)%I with "[-]" as "[[-> ->] #?]".
@@ -177,7 +178,9 @@ Proof.
       * iFrame.
       * iFrame.
     + wp_auto. iRight in "HΦ". done.
-  - repeat setoid_rewrite bi.and_exist_r.
+  - iIntros (Φ) "HΦ Hwand".
+    wp_call.
+    repeat setoid_rewrite bi.and_exist_r.
     iDestruct "HΦ" as (V recv_chan γ ? ? ?) "HΦ".
     iAssert (⌜ ch = #recv_chan ⌝ ∗ is_chan recv_chan γ V)%I with "[-]" as "#[-> ?]".
     { iLeft in "HΦ". iDestruct "HΦ" as "(% & ? & _)". iFrame "∗%". }
@@ -190,31 +193,37 @@ Proof.
       * destruct buff.
         -- iFrame.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-           iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
+           iMod "Hcont". iModIntro. wp_auto.
+           wp_bind (body _). iApply (wp_wand with "Hcont").
+           iIntros (?) "HΨ". wp_auto. by iApply "Hwand".
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
         iMod "Hcont". iModIntro. iNext. iNamed "Hcont". iFrame.
         destruct s; try iFrame.
         -- iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-           iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
-           iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
+           iMod "Hcontinner". iModIntro. wp_auto.
+           wp_bind (body _). iApply (wp_wand with "Hcontinner").
+           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
         -- destruct drain; try iFrame.
            iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-           iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
-           iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
+           iMod "Hcontinner". iModIntro. wp_auto.
+           wp_bind (body _). iApply (wp_wand with "Hcontinner").
+           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
       * iIntros "H". iSpecialize ("Hcont" with "[$]").
-        iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-        iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
+        iMod "Hcont". iModIntro. wp_auto.
+        wp_bind (body _). iApply (wp_wand with "Hcont").
+        iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
       * iFrame.
       * iFrame.
       * iFrame.
       * destruct drain.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-           iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
+           iMod "Hcont". iModIntro. wp_auto.
+           wp_bind (body _). iApply (wp_wand with "Hcont").
+           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-           iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
+           iMod "Hcont". iModIntro. wp_auto.
+           wp_bind (body _). iApply (wp_wand with "Hcont").
+           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
     + wp_auto. iRight in "HΦ". iFrame.
 Qed.
 
@@ -315,9 +324,10 @@ Local Lemma wp_try_comm_clause_nonblocking c Ψ :
   (∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
   WP chan.try_comm_clause c #false {{ Φ }}.
 Proof.
-  iIntros (Φ) "HΦ Hwand".
-  wp_call. destruct c as [[|]].
-  - repeat setoid_rewrite bi.and_exist_r.
+  destruct c as [[|]]; simpl.
+  - iIntros (Φ) "HΦ Hwand".
+    wp_call.
+    repeat setoid_rewrite bi.and_exist_r.
     iDestruct "HΦ" as (V send_chan γ v' ? ? ?) "HΦ".
     iAssert (⌜ e = #v' ∧ ch = #send_chan ⌝ ∗ is_chan send_chan γ V)%I with "[-]" as "[[-> ->] #?]".
     { iLeft in "HΦ". iDestruct "HΦ" as "(% & ? & _)". iFrame "∗%". }
@@ -339,7 +349,9 @@ Proof.
       * done.
       * done.
     + wp_auto. iRight in "HΦ". done.
-  - repeat setoid_rewrite bi.and_exist_r.
+  - iIntros (Φ) "HΦ Hwand".
+    wp_call.
+    repeat setoid_rewrite bi.and_exist_r.
     iDestruct "HΦ" as (V recv_chan γ ? ? ?) "HΦ".
     iAssert (⌜ ch = #recv_chan ⌝ ∗ is_chan recv_chan γ V)%I with "[-]" as "#[-> ?]".
     { iLeft in "HΦ". iDestruct "HΦ" as "(% & ? & _)". iFrame "∗%". }
@@ -353,22 +365,24 @@ Proof.
         -- iFrame.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
            iMod "Hcont". iModIntro. wp_auto.
-           wp_apply (wp_wand with "Hcont").
-           iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
+           wp_bind (body _). iApply (wp_wand with "Hcont").
+           iIntros (?) "HΨ". wp_auto. by iApply "Hwand".
       * done.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
-        wp_auto. wp_apply (wp_wand with "Hcont"). iIntros "% HΨ". wp_auto.
-        iApply "Hwand". done.
+        wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont"). iIntros "% HΨ". wp_auto.
+        by iApply "Hwand".
       * done.
       * done.
       * done.
       * destruct drain.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-           iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
+           iMod "Hcont". iModIntro. wp_auto.
+           wp_bind (body _). iApply (wp_wand with "Hcont").
+           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-           iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
+           iMod "Hcont". iModIntro. wp_auto.
+           wp_bind (body _). iApply (wp_wand with "Hcont").
+           iIntros (ret) "HΦ". wp_auto. by iApply "Hwand".
     + wp_auto. iRight in "HΦ". iFrame.
 Qed.
 
@@ -473,9 +487,10 @@ Local Lemma wp_try_select_case_nonblocking_alt c Ψ Ψnotready :
   ((∀ retv, Ψ retv -∗ Φ (retv, #true)%V) ∧ (P -∗ Ψnotready -∗ Φ (#(), #false)%V)) -∗
   WP chan.try_comm_clause c #false {{ Φ }}.
 Proof.
-  iIntros (P Φ) "HP HΦ Hwand".
-  wp_call. destruct c as [[|]].
-  - iNamed "HΦ". iDestruct "HΦ" as "([-> ->] & #? & Hau)". simpl. wp_auto.
+  destruct c as [[|]]; simpl.
+  - iIntros (P Φ) "HP HΦ Hwand".
+    wp_call.
+    iNamed "HΦ". iDestruct "HΦ" as "([-> ->] & #? & Hau)". simpl. wp_auto.
     wp_apply (wp_TrySend with "[$]").
     iRight.
     iMod "Hau". iModIntro. iNext. iNamed "Hau".
@@ -498,7 +513,9 @@ Proof.
     + iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro. wp_auto.
       iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
     + done.
-  - iNamed "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". simpl. wp_auto.
+  - iIntros (P Φ) "HP HΦ Hwand".
+    wp_call.
+    iNamed "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". simpl. wp_auto.
     wp_apply (wp_TryReceive with "[$]").
     iRight.
     iMod "Hau". iModIntro. iNext.
@@ -507,12 +524,12 @@ Proof.
       * iIntros "H". iMod ("Hcont" with "[$]"). iModIntro.
         wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
       * iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro.
-        wp_auto. wp_apply (wp_wand with "Hcont").
+        wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont").
         iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
     + iIntros "H". iMod ("Hcont" with "[$]"). iModIntro.
       wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
     + iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro.
-      wp_auto. wp_apply (wp_wand with "Hcont").
+      wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont").
       iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
     + iIntros "H". iMod ("Hcont" with "[$]"). iModIntro.
       wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
@@ -522,10 +539,10 @@ Proof.
       wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
     + destruct drain.
       * iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro.
-        wp_auto. wp_apply (wp_wand with "Hcont").
+        wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont").
         iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
       * iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro.
-        wp_auto. wp_apply (wp_wand with "Hcont").
+        wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont").
         iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
 Qed.
 
