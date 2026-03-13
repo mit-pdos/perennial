@@ -1714,7 +1714,7 @@ Definition Lock__LockWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     (FuncResolve time.After [] #()) "$a0") in
     SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.StructType [
 
-    ]) "$ch0" "$v0") (return: (#true))); (CommClause (RecvCase time.Time "$ch1") (return: (#false)))])).
+    ]) "$ch0" "$v0") (return: (#true))); (CommClause (RecvCase time.Time "$ch1") (λ: "$recvVal", return: (#false)))])).
 
 (* go: lock.go:70:16 *)
 Definition Lock__LockWithDeadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

@@ -192,10 +192,8 @@ Proof.
   iDestruct (own_slice_split (W64 nextOffset) with "Hs") as "[Hsection Hs]".
   { subst nextOffset. word. }
   rewrite drop_drop.
-  wp_apply (wp_bag_send with "[Hdone Hsection]").
-  { iFrame "#". iDestruct "Hchan" as "[%H' Hsimp]". iSplitL "Hsimp". { iFrame "#". }
-    iFrame.
-    }
+  wp_apply (wp_bag_send with "[$Hchan Hdone Hsection]").
+  { iExists _. iFrame. }
   wp_for_post.
   iFrame. iExists _.
   iSplitL "Hs".

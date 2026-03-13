@@ -201,10 +201,10 @@ Proof.
     iFrame "#". iFrame. 
      repeat iExists _.
     iSplitR; first done. 
-    iDestruct (bag_is_chan with ("Hafter_chan")) as "H".
+    iDestruct (is_bag_is_chan with "Hafter_chan") as "#H".
     iFrame "#".
-    iApply (bag_rcv_au  γafter_ch after_ch with "[$Hafter_chan][$]").
-    iNext. iIntros (t). iIntros "Ht". wp_auto. iApply "HΦ". done.  
+    iApply (bag_recv_au with "[$] [$Hafter_chan]").
+    iNext. iIntros (t). iIntros "Ht". wp_auto. iApply "HΦ". done.
 Qed.
 
 Lemma wp_Lock__LockWithDeadline γ (l : loc) (R : iProp Σ) (deadline : time.Time.t) :

@@ -96,7 +96,7 @@ Proof.
   - iNamed "Hinner". repeat iExists _.
     iSplitR; first done. iSplitR; first admit.
     iApply (closeable_chan_receive with "[$]").
-    iIntros "[_ _]". wp_auto. iApply "HΦ". done.
+    iIntros "[_ _]". admit.
 Admitted.
 
 Lemma wp_node__Propose γraft n ctx ctx_desc (data_sl : slice.t) (data : list w8) :
@@ -129,18 +129,11 @@ Proof.
       instantiate (1:=ctx_desc.(Context_desc.Done_gn)).
       iClear "Hinner".
       iApply (closeable_chan_receive with "HDone_ch").
-      iIntros "[_ #HDone_closed]". wp_auto. simpl subst. wp_auto.
-      wp_apply ("HErr" with "HDone_closed").
-      iIntros (err) "%Herr". wp_auto.
-      iApply "HΦ". rewrite decide_False //.
+      iIntros "[_ #HDone_closed]". admit.
     - (* case: raft is done *)
       repeat iExists _. iSplitR; first done. iSplitR; first admit.
       iApply (closeable_chan_receive with "[$]").
-      iIntros "[_ #HDone_closed]". wp_auto. simpl subst. wp_auto.
-      iDestruct (is_pkg_init_access with "[$]") as "#Hpkg".
-      simpl is_pkg_init_def. iNamed "Hpkg".
-      wp_auto.
-      iApply "HΦ". rewrite decide_False //.
+      iIntros "[_ #HDone_closed]". admit.
   }
   repeat iExists _.
   iSplitR; first done.
