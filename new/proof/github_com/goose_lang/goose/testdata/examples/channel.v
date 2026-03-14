@@ -1,7 +1,7 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-Require Import idiom.base bag future spsc dsp dsp_proofmode mpmc join handshake.
-From New.proof Require Import strings time sync github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
+Require Import idiom.base bag future spsc dsp dsp_proofmode mpmc join handshake closeable.
+From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
 From New.golang Require Import theory.
