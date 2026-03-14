@@ -85,11 +85,14 @@ Lemma wp_monitorSession ch γch :
 Proof.
   wp_start as "@".
   iAssert (
-      ∃ ch γch,
-  "sessionc" ∷ global_addr etcd_session.sessionc ↦{#1 / 2} ch ∗
-  "Hsessionc" ∷ (own_closeable_chan ch γch True closeable.Open ∨ own_closeable_chan ch γch True closeable.Closed)
+      ∃ ch γch cst,
+        "sessionc" ∷ global_addr etcd_session.sessionc ↦{#1 / 2} ch ∗
+        "Hsessionc" ∷ (own_closeable_chan ch γch True cst) ∗
+        "#Hsessionc_is" ∷ is_chan ch γch unit ∗
+        "%Hcst" ∷ ⌜ cst ≠ closeable.Unknown ⌝
     )%I with "[sessionc Hsessionc]" as "HH".
-  { iFrame. }
+  { iFrame "∗#". done. }
+  iClear "Hsessionc_is".
   wp_for "HH".
   wp_apply wp_waitForSessionExpiration.
   iDestruct (is_pkg_init_access with "[$]") as "#Hinv".
@@ -106,24 +109,49 @@ Proof.
                  ⌜ v = execute_val ⌝ ∗
                  ∃ ch γch,
                    "sessionc" ∷ global_addr etcd_session.sessionc ↦ ch ∗
-                   "Hsessionc" ∷ own_closeable_chan ch γch True closeable.Open
+                   "Hsessionc" ∷ own_closeable_chan ch γch True closeable.Open ∗
+                   "#Hsessionc_is" ∷ is_chan ch γch unit
               )%I with "[sessionc Hsessionc]").
   {
-    wp_apply chan.wp_select_nonblocking.
-    iSplit.
-    - rewrite big_andL_cons. iSplit.
-      + repeat iExists _; iSplitR; first done.
-        iFrame "#".
-        iApply blocking_rcv_implies_nonblocking.
-        iApply (closeable_chan_receive with "[$]").
-        iIntros "[_ #Hclosed]". wp_auto. iApply wp_fupd.
-        wp_apply chan.wp_make1 as "* (#? & % & ?)".
-        iMod (alloc_closeable_chan with "[$] [$]") as "Hown".
-        iDestruct (own_closeable_chan_Unknown with "[$]") as "#?".
-        iSplitR; first done. iFrame "∗#%". done.
-      + rewrite big_andL_nil //.
-    - wp_auto. iSplitR; first done. iFrame "∗#%". admit.
-    }
-Admitted.
+    - wp_apply (chan.wp_select_nonblocking_alt [⌜ cst = closeable.Open ⌝%I] with "[] [-]").
+      2:{ iNamedAccu. }
+      { rewrite big_sepL2_cons. iSplit.
+        + iNamed 1. repeat iExists _; iSplitR; first done.
+          iFrame "Hsessionc_is".
+          iApply (own_closeable_chan_nonblocking_receive with "[$]").
+          iSplit.
+          { destruct cst; try done.
+            iIntros "#Hclosed". wp_auto. iApply wp_fupd.
+            wp_apply chan.wp_make1 as "* (#? & % & ?)".
+            iMod (alloc_closeable_chan with "[$] [$]") as "Hown".
+            iDestruct (own_closeable_chan_Unknown with "[$]") as "#?".
+            iSplitR; first done. iFrame "∗#%". done. }
+          destruct cst; try done. iIntros. iFrame. done.
+        + rewrite big_sepL2_nil //. }
+      { simpl. iIntros "@ [%H _]". wp_auto. subst.
+        iSplitR; first done.
+        iFrame "∗#%". }
+  }
+  iClear "Hsessionc_is".
+  iIntros "% [% @]". subst. wp_auto.
+  iDestruct "sessionc" as "[sessionc sessionc_inv]".
+  iCombineNamed "*_inv" as "Hinv".
+  iDestruct (own_closeable_chan_Unknown with "[$]") as "#?".
+  wp_apply (wp_Mutex__Unlock with "[$Hlocked Hinv]").
+  { iFrame "#". iNamed "Hinv". iFrame "∗#". }
+  wp_apply wp_newSession as "% _". destruct err.
+  - wp_auto. wp_for_post. iFrame "∗#%". done.
+  - wp_auto. wp_apply (wp_Mutex__Lock with "[]"); first iFrame "#".
+    iIntros "[Hlocked H]". iNamedSuffix "H" "_inv2". wp_auto.
+    iCombine "sessionc sessionc_inv2" gives %Heq. subst.
+    wp_apply (wp_closeable_chan_close with "[$Hsessionc]").
+    { done. }
+    iIntros "#?". wp_auto.
+    iCombineNamed "*_inv2" as "Hinv".
+    wp_apply (wp_Mutex__Unlock with "[$Hlocked Hinv]").
+    { iFrame "#". iNamed "Hinv". iFrame "∗#". }
+    wp_for_post.
+    iFrame "∗#%". done.
+Qed.
 
 End wps.
