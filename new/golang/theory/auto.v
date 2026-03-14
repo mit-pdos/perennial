@@ -410,3 +410,27 @@ Global Instance into_val_typed_unit
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   : IntoValTypedUnderlying unit (go.StructType []).
 Proof. solve_into_val_typed_struct. Qed.
+
+Section min_max.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+
+Lemma wp_max2_uint64 (x y : w64) :
+  {{{ True }}}
+    #(functions go.max [go.uint64; go.uint64]) #x #y
+  {{{ RET #(if decide (uint.Z y < uint.Z x) then x else y); True }}}.
+Proof.
+  change ([ _ ;  _]) with (replicate 2 go.uint64).
+  wp_start. wp_if_destruct; wp_end; destruct decide; try done; word.
+Qed.
+
+Lemma wp_max2_int64 (x y : w64) :
+  {{{ True }}}
+    #(functions go.max [go.int64; go.int64]) #x #y
+  {{{ RET #(if decide (sint.Z y < sint.Z x) then x else y); True }}}.
+Proof.
+  change ([ _ ;  _]) with (replicate 2 go.int64).
+  wp_start. wp_if_destruct; wp_end; destruct decide; try done; word.
+Qed.
+
+End min_max.

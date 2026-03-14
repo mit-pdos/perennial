@@ -9,7 +9,6 @@ End error.
 
 Section helpers.
 Context {ext : ffi_syntax}.
-(* Implementations for max and min for integer types. *)
 
 Definition minⁱᵐᵖˡ t (n : nat) : val :=
   match n with
@@ -560,11 +559,8 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   make2_underlying t : functions make2 [t] = functions make2 [underlying t];
   make1_underlying t : functions make1 [t] = functions make1 [underlying t];
 
-  (* TODO: these should be FuncUnfold instances.
-     Write and prove specs that cover the cases for max() of two uint64s in theory/predeclared.v.
-   *)
-  min_ordered n t : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
-  max_ordered n t : #(functions max (replicate n t)) = maxⁱᵐᵖˡ t n;
+  #[global] min_unfold n t :: FuncUnfold min (replicate n t) (minⁱᵐᵖˡ t n);
+  #[global] max_unfold n t :: FuncUnfold max (replicate n t) (maxⁱᵐᵖˡ t n);
 
   #[global] unsafe_sem :: unsafe.Semantics;
 
