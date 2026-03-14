@@ -551,23 +551,30 @@ Proof.
   wp_start as "@". iNamed "Hown".
   wp_auto.
   wp_if_destruct.
-  { admit. }
+  { admit. } (* TODO handle empty byte slices *)
   wp_apply (wp_map_lookup1 with "Hacks") as "Hacks".
   wp_method_call. wp_auto.
   iAssert (global_addr binary.LittleEndian ↦□ binary.littleEndian.mk)%I with "[]" as "#H".
-  { admit. }
+  { admit. } (* TODO add spec for the global variable assuming only is_pkg_init for binary. *)
   wp_auto.
   wp_apply (wp_littleEndian_Uint64 with "[Hctx]") as "Hctx".
   2:{ erewrite app_nil_r. iFrame. }
   { rewrite u64_le_length. done. }
   rewrite u64_le_to_word.
-  replace ([go.uint64; go.uint64]) with (replicate 2%nat go.uint64) by done.
-  (* (* FIXME: lemma for this *) *)
-  (* wp_auto. *)
-  (* wp_apply (wp_map_insert with "Hacks") as "Hacks". *)
-  (* wp_auto. *)
-  (* iApply "HΦ". *)
-  (* iExists _, _, _. iFrame "∗#%". *)
+  wp_apply wp_max2_uint64.
+  wp_apply (wp_map_insert with "Hacks") as "Hacks".
+  iApply "HΦ".
+  iExists _, _, _. iFrame "∗#%".
+  iIntros "!# * %Hlookup".
+  rewrite lookup_insert in Hlookup.
+  destruct decide in Hlookup; subst.
+  - simplify_eq. destruct lookup eqn:Hlookup.
+    + simpl. destruct decide.
+      * iApply "Hacks_wits". done.
+      * iFrame "#".
+    + simpl. rewrite -> decide_False; last word.
+      iFrame "#".
+  - iApply "Hacks_wits". done.
 Admitted.
 
 Lemma wp_readOnly_AckedIndex γ r term (voterId : w64) :
