@@ -154,4 +154,42 @@ Proof.
     iFrame "∗#%". done.
 Qed.
 
+Lemma waitSession A A' `{!ZeroVal A'} `{!TypedPointsto A'} `{!IntoValTyped A' A}
+  cancel γcancel (Pcancel : A' → _) :
+  {{{ is_pkg_init etcd_session ∗
+      "#Hcancel" ∷ is_chan_bag γcancel cancel Pcancel }}}
+    #(functions etcd_session.waitSession [A]) #cancel
+  {{{ (err : error.t), RET #err;
+      match err with
+      | interface.nil => True
+      | _ => (∃ a, Pcancel a)
+      end
+  }}}.
+Proof.
+  wp_start as "@". wp_auto.
+  iDestruct (is_pkg_init_access with "[$]") as "#Hinv".
+  simpl. rewrite /is_inv. iNamed "Hinv".
+  wp_apply (wp_Mutex__Lock with "[]").
+  { iFrame "#". }
+  iIntros "[Hlocked Hown]". iNamedSuffix "Hown" "_inv".
+  wp_auto.
+  iCombineNamed "*_inv" as "Hinv".
+  wp_apply (wp_Mutex__Unlock with "[$Hlocked Hinv]") --no-auto.
+  { iFrame "Hmu". iNamed "Hinv". iFrame "∗#". }
+  wp_auto_lc 2.
+  wp_apply chan.wp_select_blocking.
+  rewrite big_andL_cons. iSplit.
+  { repeat iExists _; iSplitR; first done.
+    iFrame "#".
+    iApply (closeable_chan_receive with "[$]").
+    iIntros "[_ #?]". wp_auto. wp_end. }
+  rewrite big_andL_cons. iSplit.
+  { repeat iExists _; iSplitR; first done.
+    iDestruct (is_bag_is_chan with "[$]") as "#?".
+    iFrame "#". iApply (bag_recv_au with "[$] [$]").
+    iIntros "!> % ?". wp_auto. wp_apply errors.wp_New as "% _".
+    wp_end. }
+  rewrite big_andL_nil //.
+Qed.
+
 End wps.
