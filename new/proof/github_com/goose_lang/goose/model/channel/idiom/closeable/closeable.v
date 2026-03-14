@@ -125,7 +125,7 @@ Qed.
 Lemma closeable_close_au ch γch Q Φ :
   own_closeable_chan ch γch Q Open -∗
   □ Q -∗
-  ▷ Φ -∗
+  ▷ (own_closeable_chan ch γch Q Closed -∗ Φ) -∗
   close_au γch unit Φ.
 Proof.
   iNamed 1. iIntros "#HQ HΦ". iNamed "Hinv".
@@ -137,7 +137,7 @@ Proof.
     { apply cmra_update_exclusive. done. }
     iMod ("Hclose" with "[-HΦ]").
     { iFrame "∗#%". }
-    iModIntro. done.
+    iModIntro. iApply "HΦ". iFrame "∗#".
   - destruct drain; try done. iRight in "Hs".
     iCombine "Hown Hs" gives %Hbad%dfrac_agree_op_valid. exfalso. naive_solver.
 Qed.
@@ -147,18 +147,12 @@ Lemma wp_closeable_chan_close `[!ty ↓u go.ChannelType dir (go.StructType [])] 
   #(functions go.close [ty]) #ch
   {{{ RET #(); own_closeable_chan ch γch Q Closed }}}.
 Proof.
-  wp_start_folded as "[Hown #?]". iNamed "Hown". iNamed "Hinv".
-  wp_apply (chan.wp_close with "[$]"). iIntros "Hlcs".
-  iInv "Hinv" as "Hi" "Hclose". iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
-  iNext. iNamed "Hi". iFrame. destruct st; try done.
-  - iIntros "Hch". iMod "Hmask" as "_".
-    iCombine "Hown Hs" as "Hown". rewrite -dfrac_agree_op dfrac_op_own Qp.half_half.
-    iMod (own_update  _ _ (to_dfrac_agree DfracDiscarded true) with "Hown") as "#H".
-    { apply cmra_update_exclusive. done. }
-    iSpecialize ("HΦ" with "[$]"). iFrame.
-    iMod ("Hclose" with "[-]"); last done. iFrame "∗#%".
-  - destruct drain; try done. iRight in "Hs".
-    iCombine "Hown Hs" gives %Hbad%dfrac_agree_op_valid. exfalso. naive_solver.
+  wp_start_folded as "[Hown #HQ]".
+  iAssert (is_chan ch γch unit) as "#His".
+  { iNamed "Hown". iNamed "Hinv". iFrame "#". }
+  wp_apply (chan.wp_close with "His"). iIntros "Hlcs".
+  iApply (closeable_close_au with "Hown HQ [HΦ]").
+  iNext. iIntros "Hclosed". by iApply "HΦ".
 Qed.
 
 Lemma alloc_closeable_chan {E} Q γ ch :
