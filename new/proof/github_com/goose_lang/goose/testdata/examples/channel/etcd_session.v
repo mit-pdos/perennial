@@ -79,6 +79,12 @@ Lemma wp_monitorSession ch γch :
       "sessionc" ∷ (global_addr etcd_session.sessionc) ↦{#1/2} (ch : chan.t) ∗
       "Hsessionc" ∷ own_closeable_chan ch γch True closeable.Open ∗
       "#Hsessionc_is" ∷ is_chan ch γch unit
+(* TODO now: reduce the frequency with which [is_chan] has to be manually written. Do this by:
+   1) putting is_chan inside the `recv_au`, `send_au`, etc. so it isn't a
+   separate precond on the send/recv/select WPs.
+   2) in the case of the closeable spec, put is_chan inside `own_closeable_chan`
+   3) commit changes with a concise commit message.
+ *)
   }}}
     @! etcd_session.monitorSession #()
   {{{ RET #(); True }}}.
