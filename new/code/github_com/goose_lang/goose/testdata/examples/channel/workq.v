@@ -13,24 +13,22 @@ Definition Worker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go
 
 #[global] Opaque Worker.
 
+Definition shared {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel/workq.shared"%go [].
+
+#[global] Opaque shared.
+
 Definition wordCount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel/workq.wordCount"%go.
 
-Definition workqMain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel/workq.workqMain"%go.
-
-(* go: w.go:13:18 *)
+(* go: w.go:19:18 *)
 Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "w" "neighbor" "total" "remaining" "done",
+  λ: "w" "neighbor" "sh",
     exception_do (let: "w" := (GoAlloc (go.PointerType Worker) "w") in
-    let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-
-    ])) "done") in
-    let: "remaining" := (GoAlloc (go.PointerType atomic.Int64) "remaining") in
-    let: "total" := (GoAlloc (go.PointerType atomic.Int64) "total") in
+    let: "sh" := (GoAlloc shared "sh") in
     let: "neighbor" := (GoAlloc (go.PointerType Worker) "neighbor") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-      ])] "done") in
+      ])] (StructFieldRef shared "done"%go "sh")) in
       let: "$ch1" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] "w"))) in
       let: "$ch2" := (![go.ChannelType go.sendrecv (go.ChannelType go.sendrecv (go.PointerType go.string))] (StructFieldRef Worker "steal"%go (![go.PointerType Worker] "w"))) in
       SelectStmt (SelectStmtClauses (Some (let: "reply" := (GoAlloc (go.ChannelType go.sendrecv (go.PointerType go.string)) (GoZeroVal (go.ChannelType go.sendrecv (go.PointerType go.string)) #())) in
@@ -38,7 +36,7 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       do:  ("reply" <-[go.ChannelType go.sendrecv (go.PointerType go.string)] "$r0");;;
       let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-      ])] "done") in
+      ])] (StructFieldRef shared "done"%go "sh")) in
       let: "$v1" := (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply") in
       let: "$ch1" := (![go.ChannelType go.sendrecv (go.ChannelType go.sendrecv (go.PointerType go.string))] (StructFieldRef Worker "steal"%go (![go.PointerType Worker] "neighbor"))) in
       let: "$ch2" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] "w"))) in
@@ -52,23 +50,15 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       (if: Convert go.untyped_bool go.bool ((![go.PointerType go.string] "doc") ≠⟨go.PointerType go.string⟩ (Convert go.untyped_nil (go.PointerType go.string) UntypedNil))
       then
         do:  (let: "$a0" := (![go.string] (![go.PointerType go.string] "doc")) in
-        let: "$a1" := (![go.PointerType atomic.Int64] "total") in
-        let: "$a2" := (![go.PointerType atomic.Int64] "remaining") in
-        let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
-
-        ])] "done") in
-        (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1" "$a2" "$a3")
+        let: "$a1" := (![shared] "sh") in
+        (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1")
       else do:  #())))); (CommClause (RecvCase go.string "$ch2") (λ: "$recvVal",
         let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
         let: "$r0" := (Fst "$recvVal") in
         do:  ("doc" <-[go.string] "$r0");;;
         do:  (let: "$a0" := (![go.string] "doc") in
-        let: "$a1" := (![go.PointerType atomic.Int64] "total") in
-        let: "$a2" := (![go.PointerType atomic.Int64] "remaining") in
-        let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
-
-        ])] "done") in
-        (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1" "$a2" "$a3")
+        let: "$a1" := (![shared] "sh") in
+        (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1")
         ))]))) [(CommClause (RecvCase (go.StructType [
 
       ]) "$ch0") (λ: "$recvVal",
@@ -78,12 +68,8 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
         let: "$r0" := (Fst "$recvVal") in
         do:  ("doc" <-[go.string] "$r0");;;
         do:  (let: "$a0" := (![go.string] "doc") in
-        let: "$a1" := (![go.PointerType atomic.Int64] "total") in
-        let: "$a2" := (![go.PointerType atomic.Int64] "remaining") in
-        let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
-
-        ])] "done") in
-        (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1" "$a2" "$a3")
+        let: "$a1" := (![shared] "sh") in
+        (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1")
         )); (CommClause (RecvCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch2") (λ: "$recvVal",
         let: "reply" := (GoAlloc (go.ChannelType go.sendrecv (go.PointerType go.string)) (GoZeroVal (go.ChannelType go.sendrecv (go.PointerType go.string)) #())) in
         let: "$r0" := (Fst "$recvVal") in
@@ -102,33 +88,29 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
         ))]));;;
     return: #()).
 
-(* go: w.go:58:18 *)
+(* go: w.go:62:18 *)
 Definition Worker__processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "w" "doc" "total" "remaining" "done",
+  λ: "w" "doc" "sh",
     exception_do (let: "w" := (GoAlloc (go.PointerType Worker) "w") in
-    let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-
-    ])) "done") in
-    let: "remaining" := (GoAlloc (go.PointerType atomic.Int64) "remaining") in
-    let: "total" := (GoAlloc (go.PointerType atomic.Int64) "total") in
+    let: "sh" := (GoAlloc shared "sh") in
     let: "doc" := (GoAlloc go.string "doc") in
     do:  (let: "$a0" := (Convert go.int go.int64 (let: "$a0" := (let: "$a0" := (![go.string] "doc") in
     (FuncResolve strings.Fields [] #()) "$a0") in
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0")) in
-    (MethodResolve (go.PointerType atomic.Int64) "Add"%go (![go.PointerType atomic.Int64] "total")) "$a0");;;
+    (MethodResolve (go.PointerType atomic.Int64) "Add"%go (![go.PointerType atomic.Int64] (StructFieldRef shared "total"%go "sh"))) "$a0");;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (Convert go.untyped_int go.int64 (⟨go.untyped_int⟩- #1)) in
-    (MethodResolve (go.PointerType atomic.Int64) "Add"%go (![go.PointerType atomic.Int64] "remaining")) "$a0") =⟨go.int64⟩ #(W64 0))
+    (MethodResolve (go.PointerType atomic.Int64) "Add"%go (![go.PointerType atomic.Int64] (StructFieldRef shared "remaining"%go "sh"))) "$a0") =⟨go.int64⟩ #(W64 0))
     then
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-      ])] "done") in
+      ])] (StructFieldRef shared "done"%go "sh")) in
       (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
 
        ])] #()) "$a0")
     else do:  #());;;
     return: #()).
 
-(* go: w.go:65:6 *)
+(* go: w.go:69:6 *)
 Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "docs",
     exception_do (let: "docs" := (GoAlloc (go.SliceType go.string) "docs") in
@@ -157,22 +139,19 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] (IndexRef (go.SliceType (go.PointerType Worker)) (![go.SliceType (go.PointerType Worker)] "workers", #(W64 0)))))) in
       let: "$v" := (![go.string] "doc") in
       chan.send go.string "$chan" "$v")));;;
-    let: "total" := (GoAlloc atomic.Int64 (GoZeroVal atomic.Int64 #())) in
-    let: "remaining" := (GoAlloc atomic.Int64 (GoZeroVal atomic.Int64 #())) in
-    do:  (let: "$a0" := (Convert go.int go.int64 (let: "$a0" := (![go.SliceType go.string] "docs") in
-    (FuncResolve go.len [go.SliceType go.string] #()) "$a0")) in
-    (MethodResolve (go.PointerType atomic.Int64) "Store"%go "remaining") "$a0");;;
-    let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-
-    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
-
-    ])) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+    let: "sh" := (GoAlloc shared (GoZeroVal shared #())) in
+    let: "$r0" := (let: "$v0" := (GoAlloc atomic.Int64 (GoZeroVal atomic.Int64 #())) in
+    let: "$v1" := (GoAlloc atomic.Int64 (GoZeroVal atomic.Int64 #())) in
+    let: "$v2" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
      ])] #()) #()) in
-    do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
+    CompositeLiteral shared (LiteralValue [KeyedElement (Some (KeyField "remaining"%go)) (ElementExpression (go.PointerType atomic.Int64) "$v0"); KeyedElement (Some (KeyField "total"%go)) (ElementExpression (go.PointerType atomic.Int64) "$v1"); KeyedElement (Some (KeyField "done"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
-    ])] "$r0");;;
+     ])) "$v2")])) in
+    do:  ("sh" <-[shared] "$r0");;;
+    do:  (let: "$a0" := (Convert go.int go.int64 (let: "$a0" := (![go.SliceType go.string] "docs") in
+    (FuncResolve go.len [go.SliceType go.string] #()) "$a0")) in
+    (MethodResolve (go.PointerType atomic.Int64) "Store"%go (![go.PointerType atomic.Int64] (StructFieldRef shared "remaining"%go "sh"))) "$a0");;;
     let: "$range" := (![go.SliceType (go.PointerType Worker)] "workers") in
     (let: "w" := (GoAlloc (go.PointerType Worker) (GoZeroVal (go.PointerType Worker) #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -183,55 +162,15 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
       let: "$r0" := (![go.PointerType Worker] (IndexRef (go.SliceType (go.PointerType Worker)) (![go.SliceType (go.PointerType Worker)] "workers", ((![go.int] "i") +⟨go.int⟩ #(W64 1)) %⟨go.int⟩ (Convert go.untyped_int go.int numWorkers)))) in
       do:  ("neighbor" <-[go.PointerType Worker] "$r0");;;
       let: "$a0" := (![go.PointerType Worker] "neighbor") in
-      let: "$a1" := "total" in
-      let: "$a2" := "remaining" in
-      let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
-
-      ])] "done") in
+      let: "$a1" := (![shared] "sh") in
       let: "$go" := (MethodResolve (go.PointerType Worker) "run"%go (![go.PointerType Worker] "w")) in
-      do:  (Fork ("$go" "$a0" "$a1" "$a2" "$a3"))));;;
+      do:  (Fork ("$go" "$a0" "$a1"))));;;
     do:  (Fst (chan.receive (go.StructType [
 
     ]) (![go.ChannelType go.sendrecv (go.StructType [
 
-    ])] "done")));;;
-    return: ((MethodResolve (go.PointerType atomic.Int64) "Load"%go "total") #())).
-
-(* go: w.go:98:6 *)
-Definition workqMainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: <>,
-    exception_do (let: "docs" := (GoAlloc (go.SliceType go.string) (GoZeroVal (go.SliceType go.string) #())) in
-    let: "$r0" := (let: "$v0" := #"the cat sat on the mat"%go in
-    let: "$v1" := #"a quick brown fox jumps over the lazy dog"%go in
-    let: "$v2" := #"to be or not to be that is the question"%go in
-    let: "$v3" := #"all that glitters is not gold"%go in
-    let: "$v4" := #"ask not what your country can do for you"%go in
-    let: "$v5" := #"one small step for man one giant leap for mankind"%go in
-    let: "$v6" := #"we hold these truths to be self evident"%go in
-    let: "$v7" := #"in the beginning was the word and the word was good"%go in
-    CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.string "$v2"); KeyedElement None (ElementExpression go.string "$v3"); KeyedElement None (ElementExpression go.string "$v4"); KeyedElement None (ElementExpression go.string "$v5"); KeyedElement None (ElementExpression go.string "$v6"); KeyedElement None (ElementExpression go.string "$v7")])) in
-    do:  ("docs" <-[go.SliceType go.string] "$r0");;;
-    let: "got" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "docs") in
-    (FuncResolve wordCount [] #()) "$a0") in
-    do:  ("got" <-[go.int64] "$r0");;;
-    let: "want" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-    let: "$r0" := #(W64 0) in
-    do:  ("want" <-[go.int64] "$r0");;;
-    let: "$range" := (![go.SliceType go.string] "docs") in
-    (let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    slice.for_range go.string "$range" (λ: "$key" "$value",
-      do:  ("doc" <-[go.string] "$value");;;
-      do:  "$key";;;
-      do:  ("want" <-[go.int64] ((![go.int64] "want") +⟨go.int64⟩ (Convert go.int go.int64 (let: "$a0" := (let: "$a0" := (![go.string] "doc") in
-      (FuncResolve strings.Fields [] #()) "$a0") in
-      (FuncResolve go.len [go.SliceType go.string] #()) "$a0"))))));;;
-    (if: Convert go.untyped_bool go.bool ((![go.int64] "got") ≠⟨go.int64⟩ (![go.int64] "want"))
-    then
-      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"word count: wrong count"%go) in
-      (FuncResolve go.panic [] #()) "$a0")
-    else do:  #());;;
-    return: #()).
+    ])] (StructFieldRef shared "done"%go "sh"))));;;
+    return: ((MethodResolve (go.PointerType atomic.Int64) "Load"%go (![go.PointerType atomic.Int64] (StructFieldRef shared "total"%go "sh"))) #())).
 
 #[global] Instance info' : PkgInfo pkg_id.workq :=
 {|
@@ -282,11 +221,52 @@ Class Worker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] Worker'ptr_run_unfold :: MethodUnfold (go.PointerType (Worker)) "run" (Worker__runⁱᵐᵖˡ);
 }.
 
+Module shared.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  remaining' : loc;
+  total' : loc;
+  done' : chan.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+End shared.
+
+Definition shared'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "remaining"%go (go.PointerType atomic.Int64));
+  (go.FieldDecl "total"%go (go.PointerType atomic.Int64));
+  (go.FieldDecl "done"%go (go.ChannelType go.sendrecv (go.StructType [
+
+  ])))
+].
+Program Definition shared'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (shared'fds_unsealed).
+Global Instance equals_unfold_shared {ext : ffi_syntax} {go_gctx : GoGlobalContext} : shared'fds =→ shared'fds_unsealed.
+Proof. rewrite /shared'fds seal_eq //. Qed.
+
+Definition sharedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (shared'fds).
+
+Class shared_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] shared_type_repr  :: go.TypeReprUnderlying sharedⁱᵐᵖˡ shared.t;
+  #[global] shared_underlying :: (shared) <u (sharedⁱᵐᵖˡ);
+  #[global] shared_get_remaining (x : shared.t) :: ⟦StructFieldGet (sharedⁱᵐᵖˡ) "remaining", #x⟧ ⤳[under] #x.(shared.remaining');
+  #[global] shared_set_remaining (x : shared.t) y :: ⟦StructFieldSet (sharedⁱᵐᵖˡ) "remaining", (#x, #y)⟧ ⤳[under] #(x <|shared.remaining' := y|>);
+  #[global] shared_get_total (x : shared.t) :: ⟦StructFieldGet (sharedⁱᵐᵖˡ) "total", #x⟧ ⤳[under] #x.(shared.total');
+  #[global] shared_set_total (x : shared.t) y :: ⟦StructFieldSet (sharedⁱᵐᵖˡ) "total", (#x, #y)⟧ ⤳[under] #(x <|shared.total' := y|>);
+  #[global] shared_get_done (x : shared.t) :: ⟦StructFieldGet (sharedⁱᵐᵖˡ) "done", #x⟧ ⤳[under] #x.(shared.done');
+  #[global] shared_set_done (x : shared.t) y :: ⟦StructFieldSet (sharedⁱᵐᵖˡ) "done", (#x, #y)⟧ ⤳[under] #(x <|shared.done' := y|>);
+}.
+
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Worker_instance :: Worker_Assumptions;
+  #[global] shared_instance :: shared_Assumptions;
   #[global] wordCount_unfold :: FuncUnfold wordCount [] (wordCountⁱᵐᵖˡ);
-  #[global] workqMain_unfold :: FuncUnfold workqMain [] (workqMainⁱᵐᵖˡ);
   #[global] import_strings_Assumption :: strings.Assumptions;
   #[global] import_atomic_Assumption :: atomic.Assumptions;
 }.
