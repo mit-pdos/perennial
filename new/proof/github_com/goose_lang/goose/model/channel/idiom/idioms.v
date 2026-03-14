@@ -1,6 +1,6 @@
 From New.proof.github_com.goose_lang.goose.model.channel.idiom Require
-  done.done
   bag.bag
+  closeable.closeable
   dsp.dsp
   future.future
   handshake.handshake

@@ -1,7 +1,7 @@
 From New.proof Require Import proof_prelude.
 
 From New.proof Require Import sync.atomic strings fmt sync time
-  chan_proof.closeable.
+  github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples.channel
   Require Import etcd_session.
 

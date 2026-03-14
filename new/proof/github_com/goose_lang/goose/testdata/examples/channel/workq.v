@@ -1,13 +1,13 @@
 From New.proof Require Import proof_prelude.
 
 From New.proof Require Import sync.atomic strings fmt
-  chan_proof.closeable.
+  github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples.channel
   Require Import workq.
 
 From New.proof.github_com.goose_lang.goose.model.channel Require Import idioms.
 Import bag.
-From New.proof Require Import chan_proof.closeable.
+From New.proof Require Import github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
 
 Local Lemma map_seq_size {A : Type} (start : nat) (xs : list A) :
   size (map_seq start xs : gmap nat A) = length xs.

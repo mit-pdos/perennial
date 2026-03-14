@@ -122,6 +122,26 @@ Proof.
       iMod "Hmask" as "_". iMod ("Hclose" with "[-]"); last done. iFrame "∗#".
 Qed.
 
+Lemma closeable_close_au ch γch Q Φ :
+  own_closeable_chan ch γch Q Open -∗
+  □ Q -∗
+  ▷ Φ -∗
+  close_au γch unit Φ.
+Proof.
+  iNamed 1. iIntros "#HQ HΦ". iNamed "Hinv".
+  iInv "Hinv" as "Hi" "Hclose". iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
+  iNext. iNamed "Hi". iFrame. destruct st; try done.
+  - iIntros "Hch". iMod "Hmask" as "_".
+    iCombine "Hown Hs" as "Hown". rewrite -dfrac_agree_op dfrac_op_own Qp.half_half.
+    iMod (own_update  _ _ (to_dfrac_agree DfracDiscarded true) with "Hown") as "#H".
+    { apply cmra_update_exclusive. done. }
+    iMod ("Hclose" with "[-HΦ]").
+    { iFrame "∗#%". }
+    iModIntro. done.
+  - destruct drain; try done. iRight in "Hs".
+    iCombine "Hown Hs" gives %Hbad%dfrac_agree_op_valid. exfalso. naive_solver.
+Qed.
+
 Lemma wp_closeable_chan_close `[!ty ↓u go.ChannelType dir (go.StructType [])] ch γch Q :
   {{{ own_closeable_chan ch γch Q Open ∗ □ Q }}}
   #(functions go.close [ty]) #ch
@@ -163,5 +183,10 @@ Lemma own_closeable_chan_Unknown ch γ Q cl :
   own_closeable_chan ch γ Q cl -∗
   own_closeable_chan ch γ Q Unknown.
 Proof. iNamed 1. iFrame "#". Qed.
+
+Lemma own_closeable_chan_is_chan ch γ Q cl :
+  own_closeable_chan ch γ Q cl -∗
+  is_chan ch γ unit.
+Proof. iNamed 1. iNamed "Hinv". iFrame "#". Qed.
 
 End proof.

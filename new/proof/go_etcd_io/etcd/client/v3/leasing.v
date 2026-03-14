@@ -6,7 +6,7 @@ From New.proof Require Import context sync.
 
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
-Require Import New.proof.chan_proof.closeable.
+Require Import New.proof.github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
 
 Require Import Perennial.base.
 
