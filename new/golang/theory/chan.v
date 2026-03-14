@@ -458,28 +458,26 @@ Proof.
 Qed.
 
 Local Lemma wp_try_select_case_nonblocking_alt c Ψ Ψnotready :
-  ∀ P Φ,
-  P -∗
+  ∀ Φ,
   (match c with
    | CommClause (SendCase t send_chan_expr send_val) send_handler =>
        ∃ V send_chan γ (v : V) `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
      ⌜ send_val = #v ∧ send_chan_expr = #send_chan ⌝ ∗
      is_chan send_chan γ V ∗
-     nonblocking_send_au_alt γ v (P -∗ WP send_handler {{ Ψ }}) Ψnotready
+     nonblocking_send_au_alt γ v (WP send_handler {{ Ψ }}) Ψnotready
   | CommClause (RecvCase t recv_chan_expr) recv_handler =>
       ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
      ⌜ recv_chan_expr = #recv_chan ⌝ ∗
      is_chan recv_chan γ V ∗
      nonblocking_recv_au_alt γ V
-       (λ v ok,
-          P -∗ WP recv_handler (#v, #ok)%V {{ Ψ }}) Ψnotready
+       (λ v ok, WP recv_handler (#v, #ok)%V {{ Ψ }}) Ψnotready
    end
   ) -∗
-  ((∀ retv, Ψ retv -∗ Φ (retv, #true)%V) ∧ (P -∗ Ψnotready -∗ Φ (#(), #false)%V)) -∗
+  ((∀ retv, Ψ retv -∗ Φ (retv, #true)%V) ∧ (Ψnotready -∗ Φ (#(), #false)%V)) -∗
   WP chan.try_comm_clause c #false {{ Φ }}.
 Proof.
   destruct c as [[|]]; simpl.
-  - iIntros (P Φ) "HP HΦ Hwand".
+  - iIntros (Φ) "HΦ Hwand".
     wp_call.
     iNamed "HΦ". iDestruct "HΦ" as "([-> ->] & #? & Hau)". simpl. wp_auto.
     wp_apply (wp_TrySend with "[$]").
@@ -487,24 +485,24 @@ Proof.
     iMod "Hau". iModIntro. iNext. iNamed "Hau".
     iFrame. destruct s.
     + destruct decide.
-      * iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro. wp_auto.
+      * iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro. wp_auto.
         wp_apply (wp_wand with "Hcont"). iIntros (?) "HΨ".
         iLeft in "Hwand". wp_auto. iApply "Hwand". iFrame.
       * iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro. wp_auto.
-        iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
+        iRight in "Hwand". iApply ("Hwand" with "[$]").
     + iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro. wp_auto.
-      iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
+      iRight in "Hwand". iApply ("Hwand" with "[$]").
     + iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro. wp_auto.
-      iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
-    + iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro. wp_auto.
+      iRight in "Hwand". iApply ("Hwand" with "[$]").
+    + iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro. wp_auto.
       wp_apply (wp_wand with "Hcont"). iIntros (?) "HΨ".
       iLeft in "Hwand". wp_auto. iApply "Hwand". iFrame.
     + iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro. wp_auto.
-      iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
+      iRight in "Hwand". iApply ("Hwand" with "[$]").
     + iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro. wp_auto.
-      iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
+      iRight in "Hwand". iApply ("Hwand" with "[$]").
     + done.
-  - iIntros (P Φ) "HP HΦ Hwand".
+  - iIntros (Φ) "HΦ Hwand".
     wp_call.
     iNamed "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". simpl. wp_auto.
     wp_apply (wp_TryReceive with "[$]").
@@ -513,26 +511,26 @@ Proof.
     iNamed "Hau". iFrame. destruct s.
     + destruct buff.
       * iIntros "H". iMod ("Hcont" with "[$]"). iModIntro.
-        wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
-      * iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro.
+        wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$]").
+      * iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro.
         wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont").
         iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
     + iIntros "H". iMod ("Hcont" with "[$]"). iModIntro.
-      wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
-    + iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro.
+      wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$]").
+    + iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro.
       wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont").
       iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
     + iIntros "H". iMod ("Hcont" with "[$]"). iModIntro.
-      wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
+      wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$]").
     + iIntros "H". iMod ("Hcont" with "[$]"). iModIntro.
-      wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
+      wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$]").
     + iIntros "H". iMod ("Hcont" with "[$]"). iModIntro.
-      wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$] [$]").
+      wp_auto. iRight in "Hwand". iApply ("Hwand" with "[$]").
     + destruct drain.
-      * iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro.
+      * iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro.
         wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont").
         iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
-      * iIntros "H". iMod ("Hcont" with "[$] [$]") as "Hcont". iModIntro.
+      * iIntros "H". iMod ("Hcont" with "[$]") as "Hcont". iModIntro.
         wp_auto. wp_bind (body _). iApply (wp_wand with "Hcont").
         iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
 Qed.
@@ -540,18 +538,19 @@ Qed.
 Local Lemma wp_try_select_nonblocking_alt Φnrs (clauses : list comm_clause) :
   ∀ P Ψ Φ,
   ([∗ list] c; Φnr ∈ clauses; Φnrs,
+     P -∗
      match c with
      | CommClause (SendCase t send_chan_expr send_val) send_handler =>
          (∃ V send_chan γ (v : V) `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
              ⌜ send_val = #v ∧ send_chan_expr = #send_chan ⌝ ∗
              is_chan send_chan γ V ∗
-             nonblocking_send_au_alt γ v (P -∗ WP send_handler {{ Ψ }}) Φnr)
+             nonblocking_send_au_alt γ v (WP send_handler {{ Ψ }}) (P ∗ Φnr))
       | CommClause (RecvCase t recv_chan_expr) recv_handler =>
           (∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
               ⌜ recv_chan_expr = #recv_chan ⌝ ∗
               is_chan recv_chan γ V ∗
               nonblocking_recv_au_alt γ V
-                (λ v ok, P -∗ WP recv_handler (#v, #ok)%V {{ Ψ }}) Φnr)
+                (λ v ok, WP recv_handler (#v, #ok)%V {{ Ψ }}) (P ∗ Φnr))
      end) -∗
   P -∗
   (P -∗ [∗] Φnrs -∗ (Φ (#(), #false)%V)) -∗
@@ -565,11 +564,11 @@ Proof.
     iApply ("Hwandnr" with "[$]"). done. }
   simpl.
   iDestruct (big_sepL2_cons_inv_l with "HΦ") as (Φnr Φnrs' Heq) "[H HΦ]". subst.
-  wp_apply (wp_try_select_case_nonblocking_alt _ Ψ with "HP [H]").
-  { simpl. iFrame. }
+  wp_apply (wp_try_select_case_nonblocking_alt _ Ψ (P ∗ Φnr) with "[HP H]").
+  { iDestruct ("H" with "HP") as "H". simpl. iFrame. }
   iSplit.
   - iIntros "% HΨ". wp_auto. iApply "Hwand". iFrame.
-  - iIntros "HP Hnr". wp_auto.
+  - iIntros "[HP Hnr]". wp_auto.
     wp_apply ("IH" with "[HΦ] [$]"); try iFrame.
     simpl. iIntros "P Hnrs". iApply ("Hwandnr" with "[$] [$]").
 Qed.
@@ -588,18 +587,19 @@ Qed.
 Lemma wp_select_nonblocking_alt Φnrs P (clauses : list comm_clause) (def : expr) :
   ∀ Φ,
   ([∗ list] c; Φnr ∈ clauses; Φnrs,
+     P -∗
      match c with
      | CommClause (SendCase t send_chan_expr send_val) send_handler =>
          (∃ V send_chan γ (v : V) `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
              ⌜ send_val = #v ∧ send_chan_expr = #send_chan ⌝ ∗
              is_chan send_chan γ V ∗
-             nonblocking_send_au_alt γ v (P -∗ WP send_handler {{ Φ }}) Φnr)
+             nonblocking_send_au_alt γ v (WP send_handler {{ Φ }}) (P ∗ Φnr))
       | CommClause (RecvCase t recv_chan_expr) recv_handler =>
           (∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t),
               ⌜ recv_chan_expr = #recv_chan ⌝ ∗
               is_chan recv_chan γ V ∗
               nonblocking_recv_au_alt γ V
-                (λ v ok, P -∗ WP recv_handler (#v, #ok)%V {{ Φ }}) Φnr)
+                (λ v ok, WP recv_handler (#v, #ok)%V {{ Φ }}) (P ∗ Φnr))
      end) -∗
   P -∗
   (P -∗ [∗] Φnrs -∗ WP def {{ Φ }}) -∗

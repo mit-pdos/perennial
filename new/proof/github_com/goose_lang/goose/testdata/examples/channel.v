@@ -1375,10 +1375,10 @@ Proof.
   wp_auto.
   wp_apply (chan.wp_select_nonblocking_alt [False%I] with "[Hch] [-]");
     [|iNamedAccu|].
-  - simpl. iSplitL; last done. repeat iExists _; iSplitR; first done. iFrame "#".
+  - simpl. iSplitL; last done. iIntros "HP". repeat iExists _; iSplitR; first done. iFrame "#".
     iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
     iFrame. iIntros "!> Hch". iMod "Hmask" as "_". iModIntro.
-    iNamed 1. wp_auto. by iApply "HΦ".
+    iNamed "HP". wp_auto. by iApply "HΦ".
   - iNamed 1. simpl. iIntros ([[]]).
 Qed.
 
