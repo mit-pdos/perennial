@@ -182,12 +182,15 @@ Definition own_task_auth γ (remaining_docs : gmap nat (option go_string)) : iPr
 
 Axiom word_count : ∀ (doc : go_string), nat.
 
-Definition is_tasks_done γ total : iProp Σ :=
-  own_Int64 total DfracDiscarded (W64 (sum_list (word_count <$> γ.(docs)))).
+Definition is_tasks_done γ (sh : workq.shared.t) : iProp Σ :=
+  own_Int64 sh.(workq.shared.total') DfracDiscarded (W64 (sum_list (word_count <$> γ.(docs)))).
 
-Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
+Definition is_coordinator γ (sh : workq.shared.t) : iProp Σ :=
+  let total := sh.(workq.shared.total') in
+  let remaining := sh.(workq.shared.remaining') in
+  let done := sh.(workq.shared.done') in
   ∃ γdone,
-  "#Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ total) closeable.Unknown ∗
+  "#Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ sh) closeable.Unknown ∗
   "#Hdone_is" ∷ is_chan done γdone unit ∗
   "#Hi" ∷ inv nroot (
       ∃ remaining_docs (remainingv : w64),
@@ -195,7 +198,7 @@ Definition is_coordinator γ (total remaining : loc) done : iProp Σ :=
                else
                  ∃ totalv,
                    "Htotal" ∷ own_Int64 total (DfracOwn 1) totalv ∗
-                   "Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ total) closeable.Open ∗
+                   "Hdone" ∷ own_closeable_chan done γdone (is_tasks_done γ sh) closeable.Open ∗
                    "%Htotal" ∷ ⌜ sint.nat totalv =
                    sum_list (imap (λ i doc, match (remaining_docs !! i) with
                                             | Some (Some _) => O
@@ -229,14 +232,14 @@ Axiom wp_strings_Fields :
     @! strings.Fields #s
   {{{ sl (ss : list go_string), RET #sl; sl ↦* ss ∗ ⌜ length ss = word_count s ⌝ }}}.
 
-Lemma wp_Worker__process γ w doc total remaining done :
+Lemma wp_Worker__process γ w doc sh :
   {{{
         is_pkg_init workq ∗
         "#Hw" ∷ is_Worker γ w ∗
-        "#Hcoord" ∷ is_coordinator γ total remaining done ∗
+        "#Hcoord" ∷ is_coordinator γ sh ∗
         "Hdoc" ∷ own_task γ doc
   }}}
-    w @! (go.PointerType workq.Worker) @! "process" #doc #total #remaining #done
+    w @! (go.PointerType workq.Worker) @! "process" #doc #sh
   {{{
         RET #(); True
   }}}.
@@ -382,14 +385,14 @@ Proof.
     wp_end.
 Qed.
 
-Lemma wp_Worker__run γ w neighbor total remaining done :
+Lemma wp_Worker__run γ w neighbor sh :
   {{{
         is_pkg_init workq ∗
         "#Hw" ∷ is_Worker γ w ∗
         "#Hneighbor" ∷ is_Worker γ neighbor ∗
-        "#Hcoord" ∷ is_coordinator γ total remaining done
+        "#Hcoord" ∷ is_coordinator γ sh
   }}}
-    w @! (go.PointerType workq.Worker) @! "run" #neighbor #total #remaining #done
+    w @! (go.PointerType workq.Worker) @! "run" #neighbor #sh
   {{{
         RET #(); True
   }}}.
@@ -656,13 +659,16 @@ Proof.
     replace (sint.nat (word.add _ _)) with (S (sint.nat i)) by word.
     iFrame. word.
   }
+  wp_bind. wp_alloc remaining_ptr as "remaining". wp_auto.
+  wp_bind. wp_alloc total_ptr as "total". wp_auto.
+  wp_apply chan.wp_make1 as "%done %γdone (#Hdone_is & % & Hdone)".
   wp_apply wp_Int64__Store.
   iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
   iNext. iFrame. iIntros "remaining". iMod "Hmask" as "_". iModIntro.
   wp_auto.
-  wp_apply chan.wp_make1 as "%done %γdone (#Hdone_is & % & Hdone)".
 
-  iAssert (|={⊤}=> is_coordinator γ total_ptr remaining_ptr done)%I
+  set (sh := workq.shared.mk remaining_ptr total_ptr done).
+  iAssert (|={⊤}=> is_coordinator γ sh)%I
             with "[Hdone H● total remaining]" as ">#Hcoord".
   {
     iMod (alloc_closeable_chan with "[$] [$]") as "Hopen".

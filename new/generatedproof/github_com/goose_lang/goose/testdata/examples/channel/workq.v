@@ -63,4 +63,73 @@ Proof. solve_pointsto_access_struct. Qed.
 End def.
 End Worker.
 
+Module shared.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : workq.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance shared_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (workq.shared.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "remaining" ∷ l.[(workq.shared.t), "remaining"] ↦{dq} v.(workq.shared.remaining') ∗
+      "total" ∷ l.[(workq.shared.t), "total"] ↦{dq} v.(workq.shared.total') ∗
+      "done" ∷ l.[(workq.shared.t), "done"] ↦{dq} v.(workq.shared.done') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance shared_into_val_typed
+   :
+  IntoValTypedUnderlying (workq.shared.t) (workq.sharedⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance shared_access_load_remaining l (v : (workq.shared.t)) dq :
+  AccessStrict
+    (l.[(workq.shared.t), "remaining"] ↦{dq} (v.(workq.shared.remaining')))
+    (l.[(workq.shared.t), "remaining"] ↦{dq} (v.(workq.shared.remaining')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance shared_access_store_remaining l (v : (workq.shared.t)) remaining' :
+  AccessStrict
+    (l.[(workq.shared.t), "remaining"] ↦ (v.(workq.shared.remaining')))
+    (l.[(workq.shared.t), "remaining"] ↦ remaining')
+    (l ↦ v) (l ↦ (v <|(workq.shared.remaining') := remaining'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance shared_access_load_total l (v : (workq.shared.t)) dq :
+  AccessStrict
+    (l.[(workq.shared.t), "total"] ↦{dq} (v.(workq.shared.total')))
+    (l.[(workq.shared.t), "total"] ↦{dq} (v.(workq.shared.total')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance shared_access_store_total l (v : (workq.shared.t)) total' :
+  AccessStrict
+    (l.[(workq.shared.t), "total"] ↦ (v.(workq.shared.total')))
+    (l.[(workq.shared.t), "total"] ↦ total')
+    (l ↦ v) (l ↦ (v <|(workq.shared.total') := total'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance shared_access_load_done l (v : (workq.shared.t)) dq :
+  AccessStrict
+    (l.[(workq.shared.t), "done"] ↦{dq} (v.(workq.shared.done')))
+    (l.[(workq.shared.t), "done"] ↦{dq} (v.(workq.shared.done')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance shared_access_store_done l (v : (workq.shared.t)) done' :
+  AccessStrict
+    (l.[(workq.shared.t), "done"] ↦ (v.(workq.shared.done')))
+    (l.[(workq.shared.t), "done"] ↦ done')
+    (l ↦ v) (l ↦ (v <|(workq.shared.done') := done'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End shared.
+
 End workq.
