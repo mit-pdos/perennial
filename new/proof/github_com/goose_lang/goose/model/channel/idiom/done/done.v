@@ -549,14 +549,14 @@ Lemma done_receive_au γ ch Q  :
   is_done γ ch -∗
   Notified γ Q -∗
   ▷ (Q -∗ Φ (zero_val V) false) -∗
-  £1 ∗ £1 ∗ £1 ∗ £1 -∗
+  £1 ∗ £1 ∗ £1 -∗
   recv_au γ.(chan_name) V (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   intros Φ.
   iIntros "#Hdone".
   iIntros "HNotified".
   iIntros "HphiQ".
-  iIntros "(? & ? & ? & ?)".
+  iIntros "(? & ? & ?)".
    unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   unfold NotifyInternal.
 
@@ -694,8 +694,9 @@ Lemma wp_done_receive γ ch Q :
 Proof.
   iIntros (Φ) "(#Hdone & HNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
-   iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
-  iApply ((done_receive_au _ _ _   ) with "[] [$HNotified] [Hcont] ").
+  iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
+  iIntros "(?&?&?&?)".
+  iApply ((done_receive_au _ _ _   ) with "[] [$HNotified] [Hcont] [$]").
   { unfold is_done. iFrame "#". }
   { iNext. iIntros "HQ". iApply "Hcont". iFrame. }
 Qed.
@@ -705,14 +706,14 @@ Lemma done_receive_broadcast_au γ ch Q  `{!Persistent Q} :
   is_done γ ch -∗
   BroadcastNotified γ Q -∗
   ▷ (Q -∗ Φ (zero_val V) false) -∗
-  £1 ∗ £1 ∗ £1 ∗ £1 -∗
+  £1 ∗ £1 ∗ £1 -∗
   recv_au γ.(chan_name) V (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   intros Φ.
   iIntros "#Hdone".
   iIntros "HBroadcastNotified".
   iIntros "HphiQ".
-  iIntros "(? & ? & ? & ?)".
+  iIntros "(? & ? & ?)".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   
   iInv "Hinv" as "Hinv_open" "Hinv_close".
@@ -771,19 +772,19 @@ Proof.
         iDestruct (saved_prop_agree with "[$Hn2] [$H4]") as "#HQQi".
         iMod (lc_fupd_elim_later with "[$] HQQi") as "#Hp_eq2".
         iRewrite -"Hp_eq2" in "HQ".
-iDestruct "HQ" as "#HQ".
-iMod ("Hinv_close" with "[Hoc H2 Hmap Hmap_bc Hgm Hgm_bc H3 H4 HQ Hrecv]") as "Hc".
-{
-  iModIntro. iExists (chanstate.Closed []). iFrame. iExists  duplicableQs0. 
-  iSplitL ""; first done. iSplitL ""; first done. iFrame.
-        iRewrite "Hp_eq2" in "HQ".
-  iApply "H2". iExists prop_gname. iFrame "#". iFrame. 
-}
-iModIntro.
-iApply "HphiQ".
-done.
-       
-}
+        iDestruct "HQ" as "#HQ".
+        iMod ("Hinv_close" with "[Hoc H2 Hmap Hmap_bc Hgm Hgm_bc H3 H4 HQ Hrecv]") as "Hc".
+        {
+          iModIntro. iExists (chanstate.Closed []). iFrame. iExists  duplicableQs0.
+          iSplitL ""; first done. iSplitL ""; first done. iFrame.
+          iRewrite "Hp_eq2" in "HQ".
+          iApply "H2". iExists prop_gname. iFrame "#". iFrame.
+        }
+        iModIntro.
+        iApply "HphiQ".
+        done.
+
+      }
 
       done.
     }
@@ -816,8 +817,8 @@ done.
       subst prop_gname0.
       iDestruct (saved_prop_agree with "[$Hn2] [$H4]") as "#HQQi".
       iMod (lc_fupd_elim_later with "[$] HQQi") as "#Hp_eq2".
-        iRewrite -"Hp_eq2" in "HQ".
-iDestruct "HQ" as "#HQ".
+      iRewrite -"Hp_eq2" in "HQ".
+      iDestruct "HQ" as "#HQ".
       iMod ("Hinv_close" with "[Hoc H2 Hmap Hmap_bc Hgm Hgm_bc H3 H4 HQ Hrecv]") as "Hc".
       {
         iModIntro. iExists (chanstate.Closed []). iFrame.
@@ -842,7 +843,8 @@ Proof.
   iIntros (Φ) "(#Hdone & HBroadcastNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
   iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
-  iApply ((done_receive_broadcast_au _ _ _) with "[] [$HBroadcastNotified] [Hcont]").
+  iIntros "(?&?&?&?)".
+  iApply ((done_receive_broadcast_au _ _ _) with "[] [$HBroadcastNotified] [Hcont] [$]").
   { unfold is_done. iFrame "#". }
   { iNext. iIntros "HQ". iApply "Hcont". iFrame. }
 Qed.

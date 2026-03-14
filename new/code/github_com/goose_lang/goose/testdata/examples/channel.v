@@ -159,18 +159,13 @@ Definition SearchReplace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_str
 (* go: cv.go:10:6 *)
 Definition NewCondⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "L",
-    exception_do (let: "L" := (GoAlloc (go.PointerType Lock) "L") in
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType Lock] "L") =⟨go.PointerType Lock⟩ (Convert go.untyped_nil (go.PointerType Lock) UntypedNil))
-    then
-      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"chanlock: NewCond with nil Lock"%go) in
-      (FuncResolve go.panic [] #()) "$a0")
-    else do:  #());;;
-    return: (GoAlloc Cond (let: "$v0" := (![go.PointerType Lock] "L") in
-     CompositeLiteral Cond (LiteralValue [KeyedElement (Some (KeyField "L"%go)) (ElementExpression (go.PointerType Lock) "$v0")])))).
+    exception_do (let: "L" := (GoAlloc Lock "L") in
+    return: (GoAlloc Cond (let: "$v0" := (![Lock] "L") in
+     CompositeLiteral Cond (LiteralValue [KeyedElement (Some (KeyField "L"%go)) (ElementExpression Lock "$v0")])))).
 
 (* Wait blocks until signaled. Caller must hold c.L; will hold c.L on return.
 
-   go: cv.go:18:16 *)
+   go: cv.go:15:16 *)
 Definition Cond__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
@@ -202,18 +197,18 @@ Definition Cond__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     do:  ((StructFieldRef Cond "waiters"%go (![go.PointerType Cond] "c")) <-[go.SliceType (go.ChannelType go.sendrecv (go.StructType [
 
     ]))] "$r0");;;
-    do:  ((MethodResolve (go.PointerType Lock) "Unlock"%go (![go.PointerType Lock] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
+    do:  ((MethodResolve (go.PointerType Lock) "Unlock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
     do:  (Fst (chan.receive (go.StructType [
 
     ]) (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] "ch")));;;
-    do:  ((MethodResolve (go.PointerType Lock) "Lock"%go (![go.PointerType Lock] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
+    do:  ((MethodResolve (go.PointerType Lock) "Lock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
     return: #()).
 
 (* Signal wakes one waiter (FIFO). Caller must hold c.L.
 
-   go: cv.go:28:16 *)
+   go: cv.go:25:16 *)
 Definition Cond__Signalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
@@ -287,7 +282,7 @@ Definition Cond__Signalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 
 (* Broadcast wakes all waiters. Caller must hold c.L.
 
-   go: cv.go:39:16 *)
+   go: cv.go:36:16 *)
 Definition Cond__Broadcastⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
@@ -320,7 +315,7 @@ Definition Cond__Broadcastⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     ]))] "$r0");;;
     return: #()).
 
-(* go: cv.go:46:16 *)
+(* go: cv.go:43:16 *)
 Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" "d",
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
@@ -356,7 +351,7 @@ Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  ((StructFieldRef Cond "waiters"%go (![go.PointerType Cond] "c")) <-[go.SliceType (go.ChannelType go.sendrecv (go.StructType [
 
     ]))] "$r0");;;
-    do:  ((MethodResolve (go.PointerType Lock) "Unlock"%go (![go.PointerType Lock] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
+    do:  ((MethodResolve (go.PointerType Lock) "Unlock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
 
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -400,7 +395,7 @@ Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       let: "$r0" := #false in
       do:  ("signaled" <-[go.bool] "$r0")
       ))]);;;
-    do:  ((MethodResolve (go.PointerType Lock) "Lock"%go (![go.PointerType Lock] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
+    do:  ((MethodResolve (go.PointerType Lock) "Lock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
     (if: (⟨go.bool⟩! (![go.bool] "signaled"))
     then
       let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
@@ -473,7 +468,7 @@ Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     else do:  #());;;
     return: (![go.bool] "signaled")).
 
-(* go: cv.go:91:16 *)
+(* go: cv.go:88:16 *)
 Definition Cond__WaitUntilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" "deadline",
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
@@ -1611,20 +1606,20 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
    go: lock.go:15:6 *)
 Definition NewLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc Lock (let: "$v0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
+    exception_do (return: (let: "$v0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
 
       ])] #()) #(W64 1)) in
      CompositeLiteral Lock (LiteralValue [KeyedElement (Some (KeyField "ch"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
-      ])) "$v0")])))).
+      ])) "$v0")]))).
 
-(* go: lock.go:21:16 *)
+(* go: lock.go:21:15 *)
 Definition Lock__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (GoAlloc (go.PointerType Lock) "l") in
+    exception_do (let: "l" := (GoAlloc Lock "l") in
     do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ])] (StructFieldRef Lock "ch"%go (![go.PointerType Lock] "l"))) in
+    ])] (StructFieldRef Lock "ch"%go "l")) in
     let: "$v" := (CompositeLiteral (go.StructType [
 
     ]) (LiteralValue [])) in
@@ -1636,30 +1631,30 @@ Definition Lock__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 (* Unlock releases the lock by receiving from the channel.
    This will block if the lock is not currently held.
 
-   go: lock.go:27:16 *)
+   go: lock.go:27:15 *)
 Definition Lock__Unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (GoAlloc (go.PointerType Lock) "l") in
+    exception_do (let: "l" := (GoAlloc Lock "l") in
     do:  (Fst (chan.receive (go.StructType [
 
     ]) (![go.ChannelType go.sendrecv (go.StructType [
 
-    ])] (StructFieldRef Lock "ch"%go (![go.PointerType Lock] "l")))));;;
+    ])] (StructFieldRef Lock "ch"%go "l"))));;;
     return: #()).
 
 (* TryLock attempts to acquire the lock without blocking.
    Returns true on success, false if already held.
 
-   go: lock.go:33:16 *)
+   go: lock.go:33:15 *)
 Definition Lock__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (GoAlloc (go.PointerType Lock) "l") in
+    exception_do (let: "l" := (GoAlloc Lock "l") in
     let: "$v0" := (CompositeLiteral (go.StructType [
 
     ]) (LiteralValue [])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ])] (StructFieldRef Lock "ch"%go (![go.PointerType Lock] "l"))) in
+    ])] (StructFieldRef Lock "ch"%go "l")) in
     SelectStmt (SelectStmtClauses (Some (return: (#false))) [(CommClause (SendCase (go.StructType [
 
     ]) "$ch0" "$v0") (return: (#true)))])).
@@ -1669,10 +1664,10 @@ Definition Lock__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 
    Returns true if the lock was acquired, false if done fired first.
 
-   go: lock.go:46:16 *)
+   go: lock.go:46:15 *)
 Definition Lock__LockIfNotCancelledⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "done",
-    exception_do (let: "l" := (GoAlloc (go.PointerType Lock) "l") in
+    exception_do (let: "l" := (GoAlloc Lock "l") in
     let: "done" := (GoAlloc (go.ChannelType go.recvonly (go.StructType [
 
     ])) "done") in
@@ -1681,7 +1676,7 @@ Definition Lock__LockIfNotCancelledⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     ]) (LiteralValue [])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ])] (StructFieldRef Lock "ch"%go (![go.PointerType Lock] "l"))) in
+    ])] (StructFieldRef Lock "ch"%go "l")) in
     let: "$ch1" := (![go.ChannelType go.recvonly (go.StructType [
 
     ])] "done") in
@@ -1696,10 +1691,10 @@ Definition Lock__LockIfNotCancelledⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
 (* LockWithTimeout attempts to acquire the lock, timing out after d.
    Returns true if acquired, false if timed out.
 
-   go: lock.go:57:16 *)
+   go: lock.go:57:15 *)
 Definition Lock__LockWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "d",
-    exception_do (let: "l" := (GoAlloc (go.PointerType Lock) "l") in
+    exception_do (let: "l" := (GoAlloc Lock "l") in
     let: "d" := (GoAlloc time.Duration "d") in
     (if: Convert go.untyped_bool go.bool ((![time.Duration] "d") ≤⟨time.Duration⟩ #(W64 0))
     then return: (#false)
@@ -1709,7 +1704,7 @@ Definition Lock__LockWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     ]) (LiteralValue [])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ])] (StructFieldRef Lock "ch"%go (![go.PointerType Lock] "l"))) in
+    ])] (StructFieldRef Lock "ch"%go "l")) in
     let: "$ch1" := (let: "$a0" := (![time.Duration] "d") in
     (FuncResolve time.After [] #()) "$a0") in
     SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.StructType [
@@ -1717,15 +1712,6 @@ Definition Lock__LockWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     ]) "$ch0" "$v0") (return: (#true))); (CommClause (RecvCase time.Time "$ch1") (λ: "$recvVal",
       return: (#false)
       ))])).
-
-(* go: lock.go:70:16 *)
-Definition Lock__LockWithDeadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "l" "deadline",
-    exception_do (let: "l" := (GoAlloc (go.PointerType Lock) "l") in
-    let: "deadline" := (GoAlloc time.Time "deadline") in
-    return: (let: "$a0" := (let: "$a0" := (![time.Time] "deadline") in
-     (FuncResolve time.Until [] #()) "$a0") in
-     (MethodResolve (go.PointerType Lock) "LockWithTimeout"%go (![go.PointerType Lock] "l")) "$a0")).
 
 (* go: muxer.go:14:6 *)
 Definition mkStreamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2061,12 +2047,55 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (time.initialize' #()))
       ).
 
+Module Lock.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  ch' : chan.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+End Lock.
+
+Definition Lock'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "ch"%go (go.ChannelType go.sendrecv (go.StructType [
+
+  ])))
+].
+Program Definition Lock'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Lock'fds_unsealed).
+Global Instance equals_unfold_Lock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Lock'fds =→ Lock'fds_unsealed.
+Proof. rewrite /Lock'fds seal_eq //. Qed.
+
+Definition Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Lock'fds).
+
+Class Lock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Lock_type_repr  :: go.TypeReprUnderlying Lockⁱᵐᵖˡ Lock.t;
+  #[global] Lock_underlying :: (Lock) <u (Lockⁱᵐᵖˡ);
+  #[global] Lock_get_ch (x : Lock.t) :: ⟦StructFieldGet (Lockⁱᵐᵖˡ) "ch", #x⟧ ⤳[under] #x.(Lock.ch');
+  #[global] Lock_set_ch (x : Lock.t) y :: ⟦StructFieldSet (Lockⁱᵐᵖˡ) "ch", (#x, #y)⟧ ⤳[under] #(x <|Lock.ch' := y|>);
+  #[global] Lock_Lock_unfold :: MethodUnfold (Lock) "Lock" (Lock__Lockⁱᵐᵖˡ);
+  #[global] Lock_LockIfNotCancelled_unfold :: MethodUnfold (Lock) "LockIfNotCancelled" (Lock__LockIfNotCancelledⁱᵐᵖˡ);
+  #[global] Lock_LockWithTimeout_unfold :: MethodUnfold (Lock) "LockWithTimeout" (Lock__LockWithTimeoutⁱᵐᵖˡ);
+  #[global] Lock_TryLock_unfold :: MethodUnfold (Lock) "TryLock" (Lock__TryLockⁱᵐᵖˡ);
+  #[global] Lock_Unlock_unfold :: MethodUnfold (Lock) "Unlock" (Lock__Unlockⁱᵐᵖˡ);
+  #[global] Lock'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Lock)) "Lock" (λ: "$r", MethodResolve (Lock) "Lock" (![(Lock)] "$r"));
+  #[global] Lock'ptr_LockIfNotCancelled_unfold :: MethodUnfold (go.PointerType (Lock)) "LockIfNotCancelled" (λ: "$r", MethodResolve (Lock) "LockIfNotCancelled" (![(Lock)] "$r"));
+  #[global] Lock'ptr_LockWithTimeout_unfold :: MethodUnfold (go.PointerType (Lock)) "LockWithTimeout" (λ: "$r", MethodResolve (Lock) "LockWithTimeout" (![(Lock)] "$r"));
+  #[global] Lock'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Lock)) "TryLock" (λ: "$r", MethodResolve (Lock) "TryLock" (![(Lock)] "$r"));
+  #[global] Lock'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Lock)) "Unlock" (λ: "$r", MethodResolve (Lock) "Unlock" (![(Lock)] "$r"));
+}.
+
 Module Cond.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  L' : loc;
+  L' : chan_spec_raw_examples.Lock.t;
   waiters' : slice.t;
 }.
 
@@ -2077,7 +2106,7 @@ End def.
 End Cond.
 
 Definition Cond'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "L"%go (go.PointerType Lock));
+  (go.FieldDecl "L"%go Lock);
   (go.FieldDecl "waiters"%go (go.SliceType (go.ChannelType go.sendrecv (go.StructType [
 
   ]))))
@@ -2245,45 +2274,6 @@ Class request_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
   #[global] request_set_f (x : request.t) y :: ⟦StructFieldSet (requestⁱᵐᵖˡ) "f", (#x, #y)⟧ ⤳[under] #(x <|request.f' := y|>);
   #[global] request_get_result (x : request.t) :: ⟦StructFieldGet (requestⁱᵐᵖˡ) "result", #x⟧ ⤳[under] #x.(request.result');
   #[global] request_set_result (x : request.t) y :: ⟦StructFieldSet (requestⁱᵐᵖˡ) "result", (#x, #y)⟧ ⤳[under] #(x <|request.result' := y|>);
-}.
-
-Module Lock.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Record t :=
-mk {
-  ch' : chan.t;
-}.
-
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Arguments mk : clear implicits.
-#[global] Arguments t : clear implicits.
-End def.
-End Lock.
-
-Definition Lock'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "ch"%go (go.ChannelType go.sendrecv (go.StructType [
-
-  ])))
-].
-Program Definition Lock'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Lock'fds_unsealed).
-Global Instance equals_unfold_Lock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Lock'fds =→ Lock'fds_unsealed.
-Proof. rewrite /Lock'fds seal_eq //. Qed.
-
-Definition Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Lock'fds).
-
-Class Lock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Lock_type_repr  :: go.TypeReprUnderlying Lockⁱᵐᵖˡ Lock.t;
-  #[global] Lock_underlying :: (Lock) <u (Lockⁱᵐᵖˡ);
-  #[global] Lock_get_ch (x : Lock.t) :: ⟦StructFieldGet (Lockⁱᵐᵖˡ) "ch", #x⟧ ⤳[under] #x.(Lock.ch');
-  #[global] Lock_set_ch (x : Lock.t) y :: ⟦StructFieldSet (Lockⁱᵐᵖˡ) "ch", (#x, #y)⟧ ⤳[under] #(x <|Lock.ch' := y|>);
-  #[global] Lock'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Lock)) "Lock" (Lock__Lockⁱᵐᵖˡ);
-  #[global] Lock'ptr_LockIfNotCancelled_unfold :: MethodUnfold (go.PointerType (Lock)) "LockIfNotCancelled" (Lock__LockIfNotCancelledⁱᵐᵖˡ);
-  #[global] Lock'ptr_LockWithDeadline_unfold :: MethodUnfold (go.PointerType (Lock)) "LockWithDeadline" (Lock__LockWithDeadlineⁱᵐᵖˡ);
-  #[global] Lock'ptr_LockWithTimeout_unfold :: MethodUnfold (go.PointerType (Lock)) "LockWithTimeout" (Lock__LockWithTimeoutⁱᵐᵖˡ);
-  #[global] Lock'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Lock)) "TryLock" (Lock__TryLockⁱᵐᵖˡ);
-  #[global] Lock'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Lock)) "Unlock" (Lock__Unlockⁱᵐᵖˡ);
 }.
 
 Module stream.
