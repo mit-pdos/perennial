@@ -586,7 +586,15 @@ Lemma wp_readOnly_AckedIndex γ r term (voterId : w64) :
       own_readOnly γ r term ∗
       if found then is_heartbeat_ack γ voterId term (u64_le returnedIndex) else True
   }}}.
-Proof. Admitted.
+Proof.
+  wp_start as "@". iNamed "Hown". wp_auto.
+  wp_apply (wp_map_lookup2 with "Hacks") as "Hacks".
+  wp_end. iSplitL.
+  { iFrame "∗#%". }
+  destruct lookup eqn:Hlookup; simpl.
+  - iApply "Hacks_wits". done.
+  - done.
+Qed.
 
 Lemma wp_readOnly_maybeAdvance γ r term (c : quorum.JointConfig.t) m0 voters :
   {{{ is_pkg_init raft ∗
