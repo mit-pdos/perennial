@@ -596,7 +596,18 @@ Proof.
   - done.
 Qed.
 
-Lemma wp_readOnly_maybeAdvance γ r term (c : quorum.JointConfig.t) m0 voters :
+(* TODO: ghost lemma showing that a quorum of heartbeat responses for a single
+   hb_ctx means the stale set cannot be a quorum. *)
+
+(* TODO: write axiom for CommittedIndex; given any "AckedIndexer" (which has a
+   pure gmap w64 w64 associated with it), the returned `c` is s.t. there
+   exists a quorum with acks at least `c` in the gmap. *)
+
+(* TODO: maintain that the stale sets for already-sent HBs are smaller than the
+   new stale set created. I.e. a nested sequence of set inclusions for all the
+   unconfirmedReads. *)
+
+Lemma wp_readOnly_maybeAdvance γ r term (c : quorum.JointConfig.t) m0 (voters : gmap w64 ()) :
   {{{ is_pkg_init raft ∗
       "Hown" ∷ own_readOnly γ r term ∗
       (* The config c is simple (not joint): first component is voters, second is empty. *)
@@ -616,7 +627,9 @@ Lemma wp_readOnly_maybeAdvance γ r term (c : quorum.JointConfig.t) m0 voters :
                   is_read_req_ctx γ read_req_ctx Φ ∗
                   is_read_index γ index Φ)
   }}}.
-Proof. Admitted.
+Proof.
+  wp_start as "@". iNamed "Hown". wp_auto.
+Qed.
 
 Definition MsgReadIndex := W32 15.
 Lemma wp_raft__sendMsgReadIndexresponse γ r rf m :
