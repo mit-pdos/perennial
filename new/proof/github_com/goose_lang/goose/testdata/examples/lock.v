@@ -3,7 +3,7 @@ From New.golang.theory Require Import chan.
 From New.proof Require Import strings.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
   idiom.base lock bag.
-From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Import done.
+From New.proof Require Import github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
 From New.proof Require Import time.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 Import New.code.github_com.goose_lang.goose.testdata.examples.channel.chan_spec_raw_examples.
@@ -93,21 +93,20 @@ Proof.
 Qed.
 
 Lemma wp_Lock__LockIfNotCancelled
-    γlock (l: Lock.t) (done_ch : loc) (R Q : iProp Σ)
-    (γdone : done_names) `{!Persistent Q}:
+    γlock (l: Lock.t) (done_ch : chan.t) (R Q : iProp Σ)
+    (γdone : chan_names) `{!Persistent Q}:
   {{{ is_pkg_init chan_spec_raw_examples ∗
       is_Lock γlock l R ∗
-      is_done (V:=unit) γdone done_ch ∗
-      BroadcastNotified γdone Q }}}
+      own_closeable_chan done_ch γdone Q closeable.Unknown }}}
    l @! chan_spec_raw_examples.Lock @! "LockIfNotCancelled" #done_ch
   {{{ (b : bool), RET #b;
       if b then R else Q }}}.
 Proof.
-  wp_start as "(#HisLock & #Hdone & #Hbnot)".
+  wp_start as "(#HisLock & #Hdone_closeable)".
   iNamed "HisLock".
+  iDestruct (own_closeable_chan_is_chan with "Hdone_closeable") as "#Hdone_chan".
   wp_auto_lc 4.
   iRename select (£1) into "Hlc".
-  iDestruct (done_is_chan (V:=unit) (t:=go.StructType []) γdone done_ch with "Hdone") as "#Hdone_chan".
   wp_apply chan.wp_select_blocking.
   simpl.
   iSplit.
@@ -117,11 +116,11 @@ Proof.
     iNext. iIntros "HR".
     wp_auto. iApply "HΦ". iFrame.
   - iSplitL; last done.
-    simpl. iExists unit, done_ch, γdone.(chan_name),  _, _,_.
+    simpl. iExists unit, done_ch, γdone, _, _,_.
     iFrame "#". iFrame.
     iSplitR; first done.
-    iApply (done_receive_broadcast_au (V:=unit) (t:=go.StructType [])  with "[$Hdone] [$Hbnot] [HΦ] [$]").
-    { iNext. iIntros "HQ". wp_auto. iApply "HΦ". done.  }
+    iApply (closeable_chan_receive with "Hdone_closeable [HΦ]").
+    { iIntros "[#HQ _]". wp_auto. iApply "HΦ". done. }
 Qed.
 
 Lemma wp_Lock__LockWithTimeout γ (l : Lock.t) (R : iProp Σ) (d : time.Duration.t) :

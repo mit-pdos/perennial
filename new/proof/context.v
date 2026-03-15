@@ -2,7 +2,7 @@ From New Require Import code.context.
 From New Require Export generatedproof.context.
 From New Require Import proof.proof_prelude.
 From New.proof Require Import sync.atomic sync time errors.
-From New.proof Require Import chan_proof.closeable.
+From New.proof Require Import github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
 
 Require Import Perennial.Helpers.CountableTactics.
 
