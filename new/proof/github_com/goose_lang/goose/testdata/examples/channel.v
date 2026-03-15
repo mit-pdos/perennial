@@ -1,6 +1,6 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-Require Import idiom.base bag future spsc dsp dsp_proofmode mpmc join handshake closeable.
+  Require Import idiom.base bag future spsc dsp dsp_proofmode mpmc join handshake closeable.
 From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
@@ -8,7 +8,7 @@ From New.golang Require Import theory.
 From New.proof Require Import strings.
 From iris.algebra Require Import gmultiset.
 
-Import New.code.github_com.goose_lang.goose.testdata.examples.channel.chan_spec_raw_examples.
+From New.code Import github_com.goose_lang.goose.testdata.examples.channel.chan_spec_raw_examples.
 
 Set Default Proof Using "Type".
 
