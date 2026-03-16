@@ -1935,7 +1935,7 @@ Definition testNilDefaultⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition testNilValⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.PointerType go.int) (GoZeroVal (go.PointerType go.int) #())) in
-    let: "$r0" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "$r0" := (GoAlloc go.int #(W64 3)) in
     do:  ("x" <-[go.PointerType go.int] "$r0");;;
     return: ((![go.int] (![go.PointerType go.int] "x")) =⟨go.int⟩ #(W64 3))).
 

@@ -16,6 +16,6 @@ Lemma wp_testNilVal :
   test_fun_ok semantics.testNilVal.
 Proof.
   semantics_auto.
-Fail Qed.
+Qed.
 
 End wps.
