@@ -11,8 +11,6 @@ Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 Collection W := sem + package_sem.
 Set Default Proof Using "W".
 
-Section select_full_buffer.
-
 (* Invariant for the "full buffer" situation                                  *)
 Definition is_select_nb_full1 (γ : chan_names) (ch : loc) : iProp Σ :=
   "#Hch"  ∷ is_chan ch γ w64 ∗
@@ -211,10 +209,6 @@ Lemma wp_select_nb_buffer_space_deadlock_vacuous :
               { apply _. }
 Qed.
 
-End select_full_buffer.
-
-Section select_panic.
-
 (** Invariant: channel must be Idle, all other states are False *)
 Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
   "#Hch" ∷ is_chan ch γ unit ∗
@@ -316,5 +310,26 @@ Proof.
   }
 Qed.
 
-End select_panic.
+Lemma wp_select_no_double_close :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.select_no_double_close #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start. wp_auto.
+  wp_apply chan.wp_make1.
+  iIntros "* (#His_ch & %Hcap & Hch)". simpl.
+  wp_auto.
+  wp_apply (chan.wp_close with "[$]").
+  iIntros "_". iApply fupd_mask_intro; first solve_ndisj.
+  iIntros "Hmask". iFrame. iNext. iIntros "Hch". iMod "Hmask" as "_". iModIntro.
+  wp_auto.
+  wp_apply (chan.wp_select_nonblocking_alt [False%I] with "[Hch] [-]");
+    [|iNamedAccu|].
+  - simpl. iSplitL; last done. iIntros "HP". repeat iExists _; iSplitR; first done. iFrame "#".
+    iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
+    iFrame. iIntros "!> Hch". iMod "Hmask" as "_". iModIntro.
+    iNamed "HP". wp_auto. by iApply "HΦ".
+  - iNamed 1. simpl. iIntros ([[]]).
+Qed.
+
 End proof.

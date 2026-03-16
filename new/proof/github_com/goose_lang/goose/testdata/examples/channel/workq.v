@@ -1,12 +1,10 @@
 From New.proof Require Import proof_prelude.
 
-From New.proof Require Import sync.atomic strings fmt
-  github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
+From New.proof Require Import sync.atomic strings fmt.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples.channel
   Require Import workq.
 
-From New.proof.github_com.goose_lang.goose.model.channel Require Import idioms.
-Import bag.
+From New.proof Require Import github_com.goose_lang.goose.model.channel.idiom.bag.bag.
 From New.proof Require Import github_com.goose_lang.goose.model.channel.idiom.closeable.closeable.
 
 Local Lemma map_seq_size {A : Type} (start : nat) (xs : list A) :

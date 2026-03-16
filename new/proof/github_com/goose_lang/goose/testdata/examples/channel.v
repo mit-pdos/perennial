@@ -343,32 +343,6 @@ Qed.
 
 End join.
 
-Section notready_examples.
-
-Lemma wp_select_no_double_close :
-  {{{ is_pkg_init chan_spec_raw_examples }}}
-    @! chan_spec_raw_examples.select_no_double_close #()
-  {{{ RET #(); True }}}.
-Proof.
-  wp_start. wp_auto.
-  wp_apply chan.wp_make1.
-  iIntros "* (#His_ch & %Hcap & Hch)". simpl.
-  wp_auto.
-  wp_apply (chan.wp_close with "[$]").
-  iIntros "_". iApply fupd_mask_intro; first solve_ndisj.
-  iIntros "Hmask". iFrame. iNext. iIntros "Hch". iMod "Hmask" as "_". iModIntro.
-  wp_auto.
-  wp_apply (chan.wp_select_nonblocking_alt [False%I] with "[Hch] [-]");
-    [|iNamedAccu|].
-  - simpl. iSplitL; last done. iIntros "HP". repeat iExists _; iSplitR; first done. iFrame "#".
-    iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
-    iFrame. iIntros "!> Hch". iMod "Hmask" as "_". iModIntro.
-    iNamed "HP". wp_auto. by iApply "HΦ".
-  - iNamed 1. simpl. iIntros ([[]]).
-Qed.
-
-End notready_examples.
-
 Section exchange_pointer_proof.
 
 Lemma wp_exchangePointer :
