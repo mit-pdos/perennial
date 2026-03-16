@@ -335,6 +335,10 @@ Definition returnFour {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string
 
 Definition testReturnFour {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReturnFour"%go.
 
+Definition testNilDefault {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNilDefault"%go.
+
+Definition testNilVal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNilVal"%go.
+
 Definition testCompareSliceToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareSliceToNil"%go.
 
 Definition testComparePointerToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerToNil"%go.
@@ -1916,6 +1920,24 @@ Definition testReturnFourⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  ("z" <-[go.uint32] "$r2");;;
     do:  ("w" <-[go.uint64] "$r3");;;
     return: (((((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((![go.bool] "y") =⟨go.bool⟩ #true)) && ((![go.uint32] "z") =⟨go.uint32⟩ #(W32 1))) && ((![go.uint64] "w") =⟨go.uint64⟩ #(W64 7)))).
+
+(* go: new.go:3:6 *)
+Definition testNilDefaultⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "x" := (GoAlloc (go.PointerType go.int) (GoZeroVal (go.PointerType go.int) #())) in
+    let: "$r0" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    do:  ("x" <-[go.PointerType go.int] "$r0");;;
+    let: "$r0" := #(W64 1) in
+    do:  ((![go.PointerType go.int] "x") <-[go.int] "$r0");;;
+    return: (#true)).
+
+(* go: new.go:9:6 *)
+Definition testNilValⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "x" := (GoAlloc (go.PointerType go.int) (GoZeroVal (go.PointerType go.int) #())) in
+    let: "$r0" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    do:  ("x" <-[go.PointerType go.int] "$r0");;;
+    return: ((![go.int] (![go.PointerType go.int] "x")) =⟨go.int⟩ #(W64 3))).
 
 (* go: nil.go:3:6 *)
 Definition testCompareSliceToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -4463,6 +4485,8 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] testReturnThree_unfold :: FuncUnfold testReturnThree [] (testReturnThreeⁱᵐᵖˡ);
   #[global] returnFour_unfold :: FuncUnfold returnFour [] (returnFourⁱᵐᵖˡ);
   #[global] testReturnFour_unfold :: FuncUnfold testReturnFour [] (testReturnFourⁱᵐᵖˡ);
+  #[global] testNilDefault_unfold :: FuncUnfold testNilDefault [] (testNilDefaultⁱᵐᵖˡ);
+  #[global] testNilVal_unfold :: FuncUnfold testNilVal [] (testNilValⁱᵐᵖˡ);
   #[global] testCompareSliceToNil_unfold :: FuncUnfold testCompareSliceToNil [] (testCompareSliceToNilⁱᵐᵖˡ);
   #[global] testComparePointerToNil_unfold :: FuncUnfold testComparePointerToNil [] (testComparePointerToNilⁱᵐᵖˡ);
   #[global] testCompareNilToNil_unfold :: FuncUnfold testCompareNilToNil [] (testCompareNilToNilⁱᵐᵖˡ);
