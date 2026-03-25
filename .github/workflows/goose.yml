@@ -1,0 +1,27 @@
+name: Goose
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26.x"
+      - name: Check style
+        run: |
+          gofmt -w -s ./goose/
+          go generate ./goose/...
+          git diff --exit-code
+      - name: Go tests
+        run: |
+          go vet -composites=false ./goose/...
+          go test ./goose/...
+          go test ./goose/testdata/examples/...

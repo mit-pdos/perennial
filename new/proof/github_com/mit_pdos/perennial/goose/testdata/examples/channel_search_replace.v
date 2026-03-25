@@ -1,0 +1,242 @@
+From New.proof Require Export proof_prelude.
+From New.golang.theory Require Import chan.
+From New.golang.theory.chan.au_spec
+  Require Import chan_au_base.
+From New.golang.theory.chan.idioms Require Import base bag.
+From New.proof Require Import sync strings time tok_set.
+From New.generatedproof.github_com.mit_pdos.perennial.goose.testdata.examples.channel Require Import parallel_search_replace.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : parallel_search_replace.Assumptions}.
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
+
+#[global] Instance : IsPkgInit (iProp Σ) parallel_search_replace := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) parallel_search_replace := build_get_is_pkg_init_wf.
+
+Record SearchReplace_names :=
+  {
+    wg: WaitGroup_names;
+    wg_added : gname;
+  }.
+
+Implicit Types γ : SearchReplace_names.
+
+Definition search_replace (x y: w64) : list w64 → list w64 :=
+  fmap (λ a, if decide (a = x) then y else a).
+
+#[local] Hint Unfold search_replace : len.
+
+Definition chanP wg (x y: w64) (s: slice.t) : iProp Σ :=
+  ∃ (xs: list w64),
+    "Hxs" ∷ s ↦* xs ∗
+    "Hwg_done" ∷ join.own_Done wg (s ↦* (search_replace x y xs)).
+
+Definition waitgroupN := nroot .@ "waitgroup".
+
+Lemma wp_worker (γs: chan_names) (ch: loc) (wg: loc) (x y: w64) :
+  {{{ is_pkg_init parallel_search_replace ∗
+      "#Hchan" ∷ is_chan_bag γs ch (chanP wg x y) }}}
+    @! parallel_search_replace.worker #ch #wg #x #y
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start. iNamed "Hpre".
+  wp_auto.
+  wp_apply (wp_bag_receive with "[$Hchan]").
+  iIntros (s) "Hrcv".
+  wp_auto. iPersist "y x".
+  iAssert (∃ s,
+      "s" ∷ s_ptr ↦ s ∗
+      "Hrcv" ∷ chanP wg x y s
+    )%I with "[s Hrcv]" as "HH".
+  { iFrame. } clear s.
+  wp_for. iNamed "HH". iNamed "Hrcv".
+  iDestruct (own_slice_len with "[$]") as %Hlen.
+  iAssert (
+      ∃ (i : w64),
+        "i" ∷ i_ptr ↦ i ∗
+        "Hxs" ∷ s ↦* ((search_replace x y (take (sint.nat i) xs)) ++ (drop (sint.nat i) xs)) ∗
+        "%Hi_bound" ∷ ⌜ uint.nat i ≤ length xs ⌝
+    )%I with "[i Hxs]" as "HH".
+  { iFrame. rewrite take_0 drop_0 /=. iFrame. word. }
+  wp_for. iNamed "HH".
+  wp_auto.
+  case_bool_decide as Hi.
+  (* FIXME: wp_if_destruct doesn't keep the fact around? *)
+  - cleanup_bool_decide. wp_pures.
+    wp_auto. wp_apply (join.wp_WaitGroup__Done with "[$Hwg_done Hxs]").
+    { rewrite take_ge; last word. rewrite drop_ge; last word.
+      rewrite app_nil_r. iFrame. }
+    wp_for_post.
+    wp_apply (wp_bag_receive with "[$Hchan]").
+    iIntros (s') "Hrcv".
+    wp_auto. iFrame.
+  - rewrite -> decide_True; last done. wp_auto.
+    rewrite -> decide_True; last word.
+    assert (sint.nat i < length xs)%nat as Hlt by word.
+    apply list_lookup_lt in Hlt as [x' Hlookup].
+    erewrite drop_S; last done.
+    iDestruct (own_slice_elem_acc (sint.Z i) with "Hxs") as "[Helem Hxs]".
+    { word. }
+    { rewrite lookup_app_r; last len.
+      replace (_ - _)%nat with 0%nat by len. done. }
+    wp_auto.
+    wp_apply (wp_wand  _ _ _ (λ v, ⌜ v = execute_val ⌝ ∗
+                                   slice_index_ref w64 (sint.Z i) s ↦ (if decide (x' = x) then y else x') ∗
+                                   _
+                )%I
+               with "[Helem s i]").
+    { case_bool_decide; wp_auto.
+      - rewrite -> decide_True; last word. wp_auto. rewrite decide_True //.
+        iFrame. iSplitR; first done. iNamedAccu.
+      - rewrite decide_False //. iFrame. done. }
+    iIntros "% (-> & Helem & HH)". iNamed "HH". wp_for_post.
+    iFrame. iSpecialize ("Hxs" with "[$]"). iSplitL "Hxs".
+    { iApply to_named. iExactEq "Hxs". f_equal.
+      rewrite insert_app_r_alt; last len.
+      replace (sint.nat (word.add _ _))%nat with (sint.nat i + 1)%nat by word.
+      rewrite take_more; last len. unfold search_replace. rewrite fmap_app.
+      rewrite -app_assoc. f_equal.
+      ereplace (<[_ := ?[a]]>) with (<[ O := ?a ]>).
+      2:{ f_equal. len. }
+      simpl. erewrite (drop_S xs _ (sint.nat i)); last done. f_equal.
+      f_equal. len.
+    }
+    word.
+Qed.
+
+(* TODO: put this in slice.v *)
+Lemma own_slice_slice_empty index s (xs : list w64) :
+  0 ≤ sint.Z index ≤ sint.Z s.(slice.cap) →
+  s ↦* xs ⊢ □ slice.slice s w64 index index ↦* (@nil w64).
+Proof.
+  intros. rewrite own_slice_unseal.
+  iIntros "[[% %]|H]".
+  {
+    subst. simpl in *. iLeft. rewrite /slice.slice /=.
+    replace (index) with (W64 0) by word.
+    replace (word.sub _ _) with (W64 0) by done.
+    rewrite /slice_index_ref go.array_index_ref_0 //.
+  }
+  iRight.
+  iDestruct "H" as "[H %]".
+  iDestruct (typed_pointsto_not_null with "[$]") as "%".
+  iModIntro. simpl in *. iSplitL; last word.
+  replace (word.sub _ _) with (W64 0) by word.
+  iApply array_empty. intros Hn.
+  apply go.array_index_ref_null_inv in Hn. done.
+Qed.
+
+Lemma wp_SearchReplace (s: slice.t) (xs: list w64) (x y: w64) :
+  {{{ is_pkg_init parallel_search_replace ∗ s ↦* xs ∗
+      ⌜ length xs ≤ 2^63 - 1000 ⌝ ∗
+      ⌜ length xs ≤ (2^31 - 1)*1000 ⌝
+  }}}
+    @! parallel_search_replace.SearchReplace #s #x #y
+  {{{ RET #(); s ↦* (search_replace x y xs) }}}.
+Proof.
+  (* The first overflow:
+     implementation adds 1000 at a time, potentially surpassing the slice length
+     before clamping. If it goes negative, then the clamping doesn't work. This
+     inequality is technically implied by the second; keeping for
+     documentation (and e.g. workRange can change). *)
+  (* The second overflow:
+     if `len(xs)` is bigger than `(2^31-1)*workRange`, then Add() will be called
+     *more* than 2^31-1 times, potentially overflow the internal waitgroup
+      counter. *)
+  wp_start as "(Hs & %Hoverflow1 & %Hoverflow2)".
+  wp_auto.
+  iDestruct (own_slice_len with "Hs") as %Hlen.
+  iDestruct (own_slice_wf with "Hs") as %Hcap. (* FIXME: rename to own_slice_cap? *)
+  wp_if_destruct.
+  {
+    assert (length xs = 0%nat) by word.
+    destruct xs; simpl in *; [ | congruence ].
+    iApply "HΦ".
+    iFrame.
+  }
+  wp_apply chan.wp_make2.
+  { done. }
+  iIntros (ch γch_names) "(#His_chan & Hcap & Hoc)". simpl. wp_auto.
+  iMod (init_WaitGroup with "wg") as (?) "H".
+  iMod (join.init with "H") as "Hwg".
+  iMod (start_bag (chanP wg_ptr x y) with "[$His_chan] [$Hoc]") as "#Hchan".
+  { done. }
+  iAssert (∃ (i : w64), "i" ∷ i_ptr ↦ i)%I with "[$i]" as "HH".
+  wp_for. iNamed "HH". wp_auto.
+  wp_if_destruct.
+  2:{
+    wp_apply wp_fork.
+      { wp_apply wp_worker; last done. iFrame "#". }
+      wp_for_post. iFrame.
+  }
+
+  set (workRange:=1000).
+  iAssert (
+      ∃ (offset : w64) nadded,
+        "offset" ∷ offset_ptr ↦ offset ∗
+        "Hs" ∷ (slice.slice s w64 offset s.(slice.len)) ↦* drop (uint.nat offset) xs ∗
+        "Hwg" ∷ join.own_Adder wg_ptr nadded
+          ((slice.slice s w64 (W64 0) offset) ↦* take (uint.nat offset) (search_replace x y xs)) ∗
+        "%Hoffset" ∷ ⌜ 0 ≤ sint.Z offset ≤ length xs ⌝ ∗
+        "%Hnadded" ∷ ⌜ 0 ≤ workRange * sint.Z nadded ≤ sint.Z offset ∨ sint.nat offset = length xs⌝
+    )%I with "[offset Hs Hwg]" as "HH".
+  { iFrame. iExists _. rewrite drop_0 take_0.
+    rewrite -slice_slice_trivial.
+    iDestruct (own_slice_slice_empty (W64 0) with "Hs") as "#?".
+    { word. }
+    iFrame.
+    iDestruct (join.own_Adder_wand with "[] Hwg") as "$".
+    { iIntros "_". iFrame "#". }
+    word. }
+  iPersist "s".
+  wp_for. iNamed "HH". wp_auto. case_bool_decide.
+  { rewrite decide_False; last naive_solver.
+    rewrite decide_True //. wp_auto.
+    wp_apply (join.wp_WaitGroup__Wait with "[$Hwg]").
+    iClear "Hs". iIntros "[Hs Hwg]". subst.
+    rewrite take_ge; last len. wp_auto. iApply "HΦ".
+    rewrite -slice_slice_trivial. iFrame. }
+  rewrite decide_True //. wp_auto.
+  set (nextOffset:=((sint.Z offset + workRange) `min` Z.of_nat (length xs))).
+  wp_bind (if: _ then _ else _)%E.
+  wp_apply (wp_wand  _ _ _ (λ v, ⌜ v = execute_val ⌝ ∗
+                                 "nextOffset" ∷ nextOffset_ptr ↦ (W64 nextOffset))%I with "[nextOffset]").
+  { wp_if_destruct.
+    - iSplitR; first done. iApply to_named. iExactEq "nextOffset".
+      f_equal. unfold nextOffset. word.
+    - iSplitR; first done. iApply to_named. iExactEq "nextOffset".
+      f_equal. unfold nextOffset. word. }
+  iIntros "% [-> H]". iNamed "H". wp_auto.
+  rewrite -> decide_True.
+  2:{ unfold nextOffset. word. }
+  wp_auto. wp_apply (join.wp_WaitGroup__Add with "[$Hwg]").
+  { word. }
+  iIntros "[Hwg Hdone]".
+  wp_auto.
+  iDestruct (own_slice_split (W64 nextOffset) with "Hs") as "[Hsection Hs]".
+  { subst nextOffset. word. }
+  rewrite drop_drop.
+  wp_apply (wp_bag_send with "[$Hchan Hdone Hsection]").
+  { iExists _. iFrame. }
+  wp_for_post.
+  iFrame. iExists _.
+  iSplitL "Hs".
+  { iApply to_named. iExactEq "Hs". f_equal. f_equal. subst nextOffset. word. }
+  iDestruct (join.own_Adder_wand with "[] Hwg") as "$".
+  {
+    iIntros "[Hpre Hsuf]".
+    iDestruct (own_slice_combine offset with "Hpre Hsuf") as "Hs".
+    { subst nextOffset. len. }
+    iExactEq "Hs". f_equal.
+    unfold search_replace. rewrite -!fmap_take. rewrite -fmap_app. f_equal.
+    rewrite take_take_drop. f_equal.
+    subst nextOffset. len.
+  }
+  subst nextOffset. word.
+Qed.
+
+(* Print Assumptions wp_SearchReplace. *)
+
+End proof.

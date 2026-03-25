@@ -3,8 +3,6 @@
 from dataclasses import dataclass
 import subprocess as sp
 import shutil
-import argparse
-import re
 from typing import Optional
 
 
@@ -12,23 +10,17 @@ from typing import Optional
 class Proj:
     name: str
     repo: str
-    # default branch if None
     commit: Optional[str]
-    # separate branch for old goose
-    commit_old: Optional[str]
 
     def path(self) -> str:
         return f"/tmp/{self.name}"
 
     @classmethod
-    def make(cls, name, repo, commit=None, old=None):
-        return cls(name, repo, commit, old or commit)
+    def make(cls, name, repo, commit=None):
+        return cls(name, repo, commit)
 
 
 projs = {
-    "goose": Proj.make(
-        "goose", "https://github.com/goose-lang/goose/", commit="upamanyus-fixes"
-    ),
     "std": Proj.make(
         "std", "https://github.com/goose-lang/std", commit="upamanyus-fixes"
     ),
@@ -73,29 +65,7 @@ def checkout(proj: Proj):
         sp.run(["git", "checkout", proj.commit], **shared_args)
 
 
-def parse_github_tree_url(url):
-    m = re.match(r"(?P<repo>https://github.com/.*)/tree/(?P<commit>.*)", url)
-    if m is None:
-        raise ValueError(f"Invalid GitHub tree URL: {url}")
-    return m["repo"], m["commit"]
-
-
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--goose-url",
-        default="https://github.com/goose-lang/goose/tree/new",
-        help="location of goose",
-    )
-
-    args = parser.parse_args()
-    if args.goose_url == "":
-        args.goose_url = "https://github.com/goose-lang/goose/tree/new"
-    goose_repo, goose_commit = parse_github_tree_url(args.goose_url)
-
-    projs["goose"].repo = goose_repo
-    projs["goose"].commit = goose_commit
-
     for proj in projs.values():
         checkout(proj)
 
@@ -104,8 +74,6 @@ def main():
         [
             "new/etc/update-goose-new.py",
             "--compile",
-            "--goose",
-            projs["goose"].path(),
             "--std-lib",
             "--goose-examples",
             "--models",

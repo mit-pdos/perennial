@@ -1,5 +1,5 @@
 From New.golang.defn Require Export loop assume predeclared.
-From New.code.github_com.goose_lang.goose.model Require Import strings.
+From New.code.github_com.mit_pdos.perennial.goose.model Require Import strings.
 
 Module go.
 Section defs.

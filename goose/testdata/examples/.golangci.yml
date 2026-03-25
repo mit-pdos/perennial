@@ -1,0 +1,8 @@
+version: "2"
+linters:
+  exclusions:
+    rules:
+      - path-except: '(.+)_test.go'
+        linters:
+          - unused
+          - ineffassign

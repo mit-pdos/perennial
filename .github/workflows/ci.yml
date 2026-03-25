@@ -46,9 +46,6 @@ jobs:
 
   check-goose:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
@@ -59,21 +56,9 @@ jobs:
         with:
           # pin exact version for deterministic stdlib translation.
           go-version: "1.26.0"
-          # repo doesn't have go.sum file. nothing to cache.
-          cache: false
-      - name: install gh-paired-pr
-        run: |
-          go install github.com/tchajed/gh-paired-pr@latest
       - name: check that Goosed files are clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} -verbose
-            ./etc/ci-goose-check.py --goose-url "$( gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} )"
-          else
-            ./etc/ci-goose-check.py
-          fi
+          ./etc/ci-goose-check.py
 
   python:
     runs-on: ubuntu-latest

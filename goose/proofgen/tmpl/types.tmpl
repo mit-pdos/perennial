@@ -1,0 +1,83 @@
+{{ define "GallinaType" -}}
+({{.PkgName}}.{{.Name}}.t {{- range $param := .TypeParams }} {{$param}}'{{ end -}})
+{{- end -}}
+
+{{ define "GoType" -}}
+({{.PkgName}}.{{.Name}} {{- range $param := .TypeParams }} {{$param}}{{ end -}})
+{{- end -}}
+
+{{ define "GoTypeImpl" -}}
+({{.PkgName}}.{{.Name}}ⁱᵐᵖˡ {{- range $param := .TypeParams }} {{$param}}{{ end -}})
+{{- end -}}
+
+{{ define "TypedPointstoParams" -}}
+{{- range $param := . -}}`{!TypedPointsto (Σ:=Σ) {{$param}}'} {{ end -}}
+{{- end -}}
+
+{{ define "IntoValParams" -}}
+{{- range $p:= . -}}
+`{!ZeroVal {{$p}}'} `{!TypedPointsto (Σ:=Σ) {{$p}}'} `{!IntoValTyped {{$p}}' {{$p}}} {{ end -}}
+{{- end -}}
+
+{{- range $t := .Types -}}
+Module {{$t.Name}}.
+Section def.
+
+{{ if eq $.Ffi "" -}}
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+{{ else -}}
+Context `{!heapGS Σ}.
+{{ end -}}
+{{ if $.Bootstrap -}}
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+{{ else -}}
+Context {sem : go.Semantics}.
+{{ end -}}
+Context {package_sem' : {{$t.PkgName}}.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] {{- if not $t.Axiomatize  }}Program{{- end }} Instance {{$t.Name}}_typed_pointsto {{ template "TypedPointstoParams" $t.TypeParams }} :
+  TypedPointsto (Σ:=Σ) {{template "GallinaType" $t}}
+  {{- if $t.Axiomatize }}. Admitted.
+  {{- else }} :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      {{ range $f := $t.Fields -}}
+        "{{$f}}" ∷ l.[{{template "GallinaType" $t}}, "{{$f}}"] ↦{dq} v.({{$t.PkgName}}.{{$t.Name}}.{{$f}}') ∗
+      {{ end -}}
+        "_" ∷ True
+      )%I
+  |}.
+Final Obligation. {{ if $.TrustProofGen }}Admitted.{{ else }}solve_typed_pointsto_agree. Qed.{{ end }}
+{{- end }}
+
+#[global] Instance {{$t.Name}}_into_val_typed
+  {{ template "IntoValParams" $t.TypeParams }} :
+  IntoValTypedUnderlying {{template "GallinaType" $t}} {{ template "GoTypeImpl" $t}}.
+Proof.
+{{- if or $t.Axiomatize $.TrustProofGen }} Admitted.
+{{- else }} solve_into_val_typed_struct. Qed.
+{{- end }}
+
+{{- range $f := $t.Fields }}
+#[global] Instance {{$t.Name}}_access_load_{{$f}} {{ template "TypedPointstoParams" $t.TypeParams }}l (v : {{ template "GallinaType" $t}}) dq :
+  AccessStrict
+    (l.[{{template "GallinaType" $t}}, "{{$f}}"] ↦{dq} (v.({{$t.PkgName}}.{{$t.Name}}.{{$f}}')))
+    (l.[{{template "GallinaType" $t}}, "{{$f}}"] ↦{dq} (v.({{$t.PkgName}}.{{$t.Name}}.{{$f}}')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. {{ if $.TrustProofGen }}Admitted.{{ else }}solve_pointsto_access_struct. Qed.{{ end }}
+
+#[global] Instance {{$t.Name}}_access_store_{{$f}} {{ template "TypedPointstoParams" $t.TypeParams }}l (v : {{ template "GallinaType" $t}}) {{$f}}' :
+  AccessStrict
+    (l.[{{template "GallinaType" $t}}, "{{$f}}"] ↦ (v.({{$t.PkgName}}.{{$t.Name}}.{{$f}}')))
+    (l.[{{template "GallinaType" $t}}, "{{$f}}"] ↦ {{$f}}')
+    (l ↦ v) (l ↦ (v <|({{$t.PkgName}}.{{$t.Name}}.{{$f}}') := {{$f}}'|>))%I.
+Proof. {{ if $.TrustProofGen }}Admitted.{{ else }}solve_pointsto_access_struct. Qed.{{ end }}
+{{-  end }}
+
+End def.
+End {{$t.Name}}.
+
+{{ end -}}

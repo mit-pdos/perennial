@@ -14,3 +14,10 @@ updates:
       interval: "monthly"
       time: "04:00"
       timezone: "US/Eastern"
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      time: "04:00"
+      timezone: "US/Eastern"

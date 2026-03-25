@@ -1,0 +1,10 @@
+version: "2"
+linters:
+  exclusions:
+    rules:
+      - linters:
+          - gosimple
+        text: "unnecessary use of fmt.Sprintf"
+      - linters:
+          - gosimple
+        text: "no need to use fmt.Sprintf"

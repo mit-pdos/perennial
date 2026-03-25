@@ -1,5 +1,5 @@
 From New.golang.defn Require Export string.
-Require Import New.proof.github_com.goose_lang.goose.model.strings.
+Require Import New.proof.github_com.mit_pdos.perennial.goose.model.strings.
 From New.golang.theory Require Export exception loop proofmode slice.
 
 Section proof.

@@ -4,7 +4,7 @@ From New.proof Require Import fmt.
 From New.proof Require Import log.
 From New.proof Require Import sync.
 From New.proof.github_com.goose_lang Require Import std.
-From New.generatedproof.github_com.goose_lang.goose.testdata.examples
+From New.generatedproof.github_com.mit_pdos.perennial.goose.testdata.examples
   Require Import unittest.
 
 Section proof.

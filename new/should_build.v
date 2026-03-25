@@ -24,14 +24,14 @@ From New.proof.github_com.goose_lang Require Import primitive std.
 From New.proof.github_com.goose_lang.primitive Require Import disk.
 
 (* testdata. *)
-From New.proof.github_com.goose_lang.goose.testdata.examples Require
+From New.proof.github_com.mit_pdos.perennial.goose.testdata.examples Require
   channel_examples.
-From New.proof.github_com.goose_lang.goose.testdata.examples Require
+From New.proof.github_com.mit_pdos.perennial.goose.testdata.examples Require
   unittest semantics.
-From New.proof.github_com.goose_lang.goose.testdata.examples.unittest Require
+From New.proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest Require
   generics.
 
-From New.generatedproof.github_com.goose_lang.goose.testdata.examples.unittest Require
+From New.generatedproof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest Require
   externalglobals.
 
 (* misc. *)

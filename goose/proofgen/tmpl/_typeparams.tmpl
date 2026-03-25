@@ -1,0 +1,5 @@
+{{/* partial that takes a list of type parameters (a []string) and emits the
+     binders for their Gallina/go.type parameters */}}
+{{- range $T_param := . -}}
+`{!IntoVal {{$T_param}}'} `{!IntoValTyped {{$T_param}}' {{$T_param}}}{{" "}}
+{{- end -}}

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 import os
-from os import path
 import subprocess
 import sys
-
 from dataclasses import dataclass
+from os import path
 
 
 @dataclass
@@ -137,12 +136,6 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "--goose",
-        help="path to goose repo",
-        required=True,
-        metavar="GOOSE_PATH",
-    )
-    parser.add_argument(
         "-a",
         "--all",
         help="translate all code, assuming it is found in `<ALL>/<proj_name>`",
@@ -186,7 +179,7 @@ def main():
                 setattr(args, proj_arg, proj_path)
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
-    goose_dir = args.goose
+    goose_dir = path.join(perennial_dir, "goose")
 
     def proj_dir(name):
         return getattr(args, name.replace("-", "_"))
@@ -214,8 +207,8 @@ def main():
 
     def compile_goose():
         old_dir = os.getcwd()
-        os.chdir(goose_dir)
-        do_run(["go", "install", "./cmd/goose", "./cmd/proofgen"])
+        os.chdir(perennial_dir)
+        do_run(["go", "install", "./goose/cmd/goose", "./goose/cmd/proofgen"])
         os.chdir(old_dir)
         pm.wait_all()
 
