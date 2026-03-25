@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/fatih/color v1.18.0
 	github.com/goose-lang/primitive v0.2.1
-	github.com/pelletier/go-toml/v2 v2.2.4
+	github.com/pelletier/go-toml/v2 v2.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/tools v0.42.0
