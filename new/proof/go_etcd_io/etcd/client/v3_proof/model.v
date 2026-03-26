@@ -1,5 +1,6 @@
 From stdpp Require Import sorting.
 Require Import New.proof.proof_prelude.
+From New.proof Require Import strings.
 From New.golang Require Export theory.
 From RecordUpdate Require Import RecordSet.
 
@@ -359,42 +360,6 @@ Inductive Error :=
 
 Definition relation_pullback {A B} (f : A → B) (R : B → B → Prop) : (A → A → Prop) :=
   λ a1 a2, R (f a1) (f a2).
-
-(* This should be eventually be defined in lang.v *)
-Fixpoint go_string_ltb (x y : go_string) : bool :=
-  match x, y with
-  | [], [] => false
-  | [], _ => true
-  | _, [] => false
-  | (a :: x), (b :: y) => if (word.ltu a b) then
-                         true
-                       else if (word.eqb a b) then
-                              go_string_ltb x y
-                            else false
-  end.
-
-Example go_string_ltb_examples :
-  go_string_ltb "" "" = false ∧
-  go_string_ltb "" "a" = true ∧
-  go_string_ltb "a" "" = false ∧
-  go_string_ltb "ab" "a" = false ∧
-  go_string_ltb "ab" "b" = true
-  := ltac:(auto).
-
-Fixpoint go_string_lt (x y : go_string) : Prop :=
-  match x, y with
-  | [], [] => False
-  | [], _ => True
-  | _, [] => False
-  | (a :: x), (b :: y) => if decide (uint.Z a < uint.Z b) then
-                         True
-                       else if decide (uint.Z a = uint.Z b) then
-                              go_string_lt x y
-                            else false
-  end.
-
-Definition go_string_le (x y : go_string) : Prop :=
-  x = y ∨ go_string_lt x y.
 
 Definition Range (req : RangeRequest.t) : ecomp etcdE (Error + RangeResponse.t) :=
 interp handle_exceptionE (
