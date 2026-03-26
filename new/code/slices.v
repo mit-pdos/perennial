@@ -625,7 +625,7 @@ Definition partialInsertionSortCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
         (let: "j" := (GoAlloc go.int (GoZeroVal go.int #())) in
         let: "$r0" := ((![go.int] "i") -⟨go.int⟩ #(W64 1)) in
         do:  ("j" <-[go.int] "$r0");;;
-        (for: (λ: <>, (![go.int] "j") ≥⟨go.int⟩ #(W64 1)); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W64 1)))) := λ: <>,
+        (for: (λ: <>, (![go.int] "j") >⟨go.int⟩ (![go.int] "a")); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W64 1)))) := λ: <>,
           (if: Convert go.untyped_bool go.bool (⟨go.bool⟩! ((let: "$a0" := (![E] (IndexRef (go.SliceType E) (![go.SliceType E] "data", ![go.int] "j"))) in
           let: "$a1" := (![E] (IndexRef (go.SliceType E) (![go.SliceType E] "data", (![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
           (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
