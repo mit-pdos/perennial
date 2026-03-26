@@ -234,7 +234,6 @@ Lemma wp_pdqsortCmpFunc (data: slice.t) (a b limit: w64) (cmp_code: func.t)
   {{{ is_pkg_init slices ∗
       "Hxs" ∷ data ↦* xs ∗
       "%Hab_bound" ∷ ⌜ 0 ≤ sint.Z a ≤  sint.Z b ∧ sint.Z b <= length xs <= 2 ^ 62⌝ ∗
-      "%Header" ∷ ⌜ header R xs (sint.nat a) (sint.nat b) ⌝ ∗
       "#Hcmp" ∷ cmp_implements R cmp_code
   }}}
     #(functions slices.pdqsortCmpFunc [Et]) #data #a #b #limit #cmp_code
@@ -260,7 +259,6 @@ Proof using RelDecision0 + StrictWeakOrder0 + W.
     "Hxs" ∷ data ↦* xs' ∗
     "%ab_range" ∷ ⌜ sint.Z a <= sint.Z a_val ∧ sint.Z a_val ≤ sint.Z b_val ∧ sint.Z b_val <= sint.Z b ⌝ ∗
     "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
-    "%Header" ∷ ⌜ header R xs' (sint.nat a_val) (sint.nat b_val) ⌝ ∗
     "%HPartialsorted" ∷ ⌜ is_partially_sorted_seg xs' (sint.nat a) (sint.nat b) (sint.nat a_val) (sint.nat b_val) ⌝ ∗
     "%Houtside1" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝
   )%I with "[a b limit Hxs wasPartitioned wasBalanced]" as "HI".
@@ -307,7 +305,6 @@ Proof using RelDecision0 + StrictWeakOrder0 + W.
     "%ab_range" ∷ ⌜ sint.Z a <= sint.Z a_val ∧ sint.Z a_val ≤ sint.Z b_val ∧ sint.Z b_val <= sint.Z b ⌝ ∗
     "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
     "%HPartialsorted" ∷ ⌜ is_partially_sorted_seg xs' (sint.nat a) (sint.nat b) (sint.nat a_val) (sint.nat b_val) ⌝ ∗
-    "%Header" ∷ ⌜ header R xs' (sint.nat a_val) (sint.nat b_val) ⌝ ∗
     "%Houtside1" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝)%I) with "[a b Hxs limit wasPartitioned wasBalanced data cmp]").
   1: { (* Pattern-Break  *)
     wp_if_destruct. {
@@ -321,7 +318,6 @@ Proof using RelDecision0 + StrictWeakOrder0 + W.
     iFrame. iPureIntro. split; first lia. split; try split; try split.
     - eapply perm_trans; eauto.
     - eapply is_partially_sorted_seg__perserve; eauto. lia.
-    - eapply header__preserve; try eapply Header0; eauto. lia.
     - eapply outside_same_trans; try eapply Houtside1.
       eapply outside_same_loosen; eauto; lia.
   }
@@ -349,7 +345,6 @@ Proof using RelDecision0 + StrictWeakOrder0 + W.
     "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
     "%HPartialsorted" ∷ ⌜ is_partially_sorted_seg xs' (sint.nat a) (sint.nat b) (sint.nat a_val) (sint.nat b_val) ⌝ ∗
     "%Houtside1" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝ ∗
-    "%Header" ∷ ⌜ header R xs' (sint.nat a_val) (sint.nat b_val) ⌝ ∗
     "%rrange" ∷ ⌜ sint.Z a_val ≤ sint.Z r < sint.Z b_val ⌝
     )%I) with "[a b Hxs limit wasPartitioned wasBalanced data cmp hint pivot]").
   {
@@ -362,7 +357,6 @@ Proof using RelDecision0 + StrictWeakOrder0 + W.
       split. { eapply perm_trans; try eapply HPerm0; auto. }
       split. { eapply is_partially_sorted_seg__perserve; eauto. lia. }
       split. { eapply outside_same_trans; eauto. eapply outside_same_loosen; eauto; lia. }
-      split. { eapply header__preserve; try eapply Header1; eauto. lia. }
       word.
     - iSplit; first auto. iFrame. iPureIntro. split; auto.
   }
@@ -385,7 +379,6 @@ iApply ((wp_wand _ _ _ (fun v => ∃ xs'',
     "%ab_range" ∷ ⌜ sint.Z a <= sint.Z a_val ∧ sint.Z a_val ≤ sint.Z b_val ∧ sint.Z b_val <= sint.Z b ⌝ ∗
     "%HPerm1" ∷ ⌜ Permutation xs' xs'' ⌝ ∗
     "%Houtside1" ∷ ⌜ outside_same xs' xs'' (sint.nat a_val) (sint.nat b_val) ⌝ ∗
-    "%Header" ∷ ⌜ header R xs'' (sint.nat a_val) (sint.nat b_val) ⌝ ∗
     "%Hpost" ∷ ⌜ v = return_val #()%V /\ is_sorted_seg R xs'' (sint.nat a) (sint.nat b)  \/
       v = execute_val ⌝
     )%I) with "[a b Hxs limit wasPartitioned wasBalanced data cmp hint pivot]"). {
@@ -408,11 +401,9 @@ iApply ((wp_wand _ _ _ (fun v => ∃ xs'',
       iIntros (xs'0 bl) "Hpost". iDestruct "Hpost" as "(Hxs & Hpost)".
       iNamed "Hpost". wp_if_destruct. {
         iFrame. iPureIntro. split; first lia. split_and!; auto.
-        - eapply header__preserve; eauto; lia.
         - left. split; auto. eapply close_segment; eauto; lia.
       } {
         iFrame. iPureIntro. split; first lia. split_and!; auto.
-        eapply header__preserve; eauto; lia.
       }
     }
   iIntros (v) "Hpost". iNamed "Hpost". wp_auto. destruct Hpost. {
@@ -431,7 +422,7 @@ iApply ((wp_wand _ _ _ (fun v => ∃ xs'',
     eapply outside_same_trans; eauto. eapply outside_same_loosen; eauto; lia.
   }
   clear dependent xs'. rename xs'' into xs'.
-  subst v. rename Header1 into Header0. wp_auto.
+  subst v. wp_auto.
 
   wp_bind (if: _ then _ else _)%E.
 rename xs' into xs3.
@@ -451,7 +442,6 @@ iApply ((wp_wand _ _ _ (fun v => ∃ xs' (new_a: w64),
     "%ab_range" ∷ ⌜ sint.Z a <= sint.Z new_a ∧ sint.Z new_a ≤ sint.Z b_val ∧ sint.Z b_val <= sint.Z b ⌝ ∗
     "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
     "%Houtside1" ∷ ⌜ outside_same xs3 xs' (sint.nat a_val) (sint.nat b_val) ⌝ ∗
-    "%Header" ∷ ⌜ header R xs' (sint.nat a_val) (sint.nat b_val) ⌝ ∗
     "%Hpost" ∷ ⌜ v = continue_val /\ sint.Z new_a > sint.Z a_val /\ is_eq_partitioned R xs' (sint.nat a_val) (sint.nat b_val) (sint.nat new_a)  \/
       v = execute_val /\ xs' = xs3 /\  new_a = a_val ⌝
     )%I) with "[a b Hxs limit wasPartitioned wasBalanced data cmp pivot]").
@@ -481,19 +471,16 @@ iApply ((wp_wand _ _ _ (fun v => ∃ xs' (new_a: w64),
       apply Hcmp_r in n1. unfold one_le_seg.
       intros. rewrite H4 in Hxr. inv Hxr.
       eapply notR_trans; eauto.
-      unfold header in Header0.
       destruct (decide (sint.nat a_val = 0%nat)) as [Heq1|Hneq1].
       - word.
-      - eapply Header0; eauto.
-        replace (sint.nat (word.sub a_val (W64 1))) with (sint.nat a_val - 1)%nat in Hxa by word.
-        auto.
+      - replace (sint.nat (word.sub a_val (W64 1))) with (sint.nat a_val - 1)%nat in Hxa by word.
+        admit. (* TODO: used header *)
     }
     iIntros (xs4 new_a) "Hpost". iDestruct "Hpost" as "(Hxs & Hpost)".
     iNamed "Hpost". wp_auto. iFrame. iPureIntro.
     split; first lia.
     split. { eapply perm_trans; eauto. }
     split. { eapply outside_same_trans; eauto. apply outside_same_refl. }
-    split. { eapply header__preserve; eauto. lia. }
     left. split; auto. split; auto. lia.
   }
   iIntros (v) "Hpost". iNamed "Hpost". destruct Hpost. {
@@ -505,11 +492,6 @@ iApply ((wp_wand _ _ _ (fun v => ∃ xs' (new_a: w64),
       - eapply perm_trans; try eapply HPerm1. symmetry. auto.
       - lia. }
     destruct H5.
-    split. {
-      unfold header. destruct (decide (sint.nat new_a = 0%nat)); auto.
-      unfold one_le_seg. intros.
-      eapply H6; eauto. lia.
-    }
     split. {
       unfold is_partially_sorted_seg. intros. destruct H8.
       - destruct (decide (i < sint.nat a_val)%nat).
@@ -533,50 +515,30 @@ iApply ((wp_wand _ _ _ (fun v => ∃ xs' (new_a: w64),
   assert(outside_same xs xs2 (sint.nat a) (sint.nat b)). { eapply outside_same_trans; eauto. eapply outside_same_loosen; eauto; lia. }
   assert(is_partially_sorted_seg xs2 (sint.nat a) (sint.nat b) (sint.nat a_val) (sint.nat b_val)).
   { eapply is_partially_sorted_seg__perserve; eauto. lia. }
-  assert(header R xs2 (sint.nat a_val) (sint.nat b_val)).
-  { eapply header__preserve; try eapply Hperm2; eauto. lia. }
   assert(length xs = length xs2). { apply Permutation_length. eauto. }
 
   clear dependent xs'. wp_auto. iThaw "IH".
   wp_if_destruct.
   - wp_apply ("IH" with "[$Hxs]"). {
-      iSplit; auto; first word. iSplit; auto.
-      iPureIntro. unfold header. unfold header in H6.
-      destruct (decide (sint.nat a_val = 0%nat)); auto. unfold one_le_seg in *.
-      intros. eapply H6; eauto. lia. }
+      iSplit; auto; first word. }
     iIntros (xs3) "(Hxs & %Hperm3 & %Hsorted3 & %Houtside3)". wp_auto.
     wp_for_post. iFrame. iSplit; first word. iPureIntro.
     split. { eapply perm_trans; eauto. }
     replace (sint.nat (word.add r1 (W64 1))) with (sint.nat r1 + 1%nat)%nat by word.
-    split. { unfold header. destruct (decide ((sint.nat r1 + 1)%nat = 0%nat)); try auto.
-    replace (sint.nat r1 + 1 - 1)%nat with (sint.nat r1) by lia. unfold one_le_seg.
-    unfold outside_same in Houtside3. intros. rewrite <- Houtside3 in H2; try lia.
-    rewrite <- Houtside3 in H1; try lia. unfold is_partitioned in Hpart.
-    edestruct Hpart; eauto. apply H8. lia.
-     }
     split. 2: { eapply outside_same_trans; eauto. eapply outside_same_loosen; eauto; lia. }
 
     eapply restore_invariant1; eauto.
     assert(length xs2 = length xs3). { apply Permutation_length. eauto. } lia.
 
-  - wp_apply ("IH" with "[$Hxs]"). { iSplit; first word. iSplit; auto.
-    iPureIntro.
-    replace (sint.nat (word.add r1 (W64 1))) with (sint.nat r1 + 1%nat)%nat by word.
-    eapply partition__header; eauto. }
+  - wp_apply ("IH" with "[$Hxs]"). { iSplit; first word. auto. }
 
     iIntros (xs3) "(Hxs & %Hperm3 & %Hsorted3 & %Houtside3)".
     replace (sint.nat (word.add r1 (W64 1))) with (sint.nat r1 + 1%nat)%nat in * by word.
     wp_auto. wp_for_post. iFrame. iSplit; first word. iPureIntro.
     split. { eapply perm_trans; eauto. }
-    split. { unfold header.  unfold header in H6. unfold one_le_seg in *. intros.
-    destruct (decide ((sint.nat a_val)%nat = 0%nat)); try auto.
-    unfold outside_same in Houtside3. intros.
-    rewrite <- Houtside3 in H2; try lia.
-    eapply H6; eauto; first lia.
-    rewrite Houtside3; eauto. lia. }
     split. 2: { eapply outside_same_trans; try eapply H0; eauto. eapply outside_same_loosen; eauto; try lia. }
     eapply restore_invariant2; eauto.
     assert(length xs2 = length xs3). { apply Permutation_length. eauto. } lia.
-Qed.
+Admitted.
 
 End proof.

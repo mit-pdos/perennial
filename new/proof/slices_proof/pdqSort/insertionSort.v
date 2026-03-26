@@ -166,7 +166,6 @@ Lemma wp_partialInsertionSortCmpFunc (data: slice.t) (a b: w64) (cmp_code: func.
   {{{ is_pkg_init slices ∗
       "Hxs" ∷ data ↦* xs ∗
       "#Hcmp" ∷ cmp_implements R cmp_code ∗
-      "%Header" ∷ ⌜ header R xs (sint.nat a) (sint.nat b) ⌝ ∗
       "%Hab_bound" ∷ ⌜ 0 ≤ sint.Z a < sint.Z b ∧ sint.Z b ≤ length xs ∧ length xs <= 2 ^ 62⌝
   }}}
     #(functions slices.partialInsertionSortCmpFunc [Et]) #data #a #b #cmp_code
@@ -302,7 +301,7 @@ Proof using StrictWeakOrder0 + RelDecision0 + W.
                    "i" ∷ i_ptr ↦ i_val ∗
                    "j" ∷ j_ptr ↦ j_val ∗
                    "j0" ∷ j_ptr0 ↦ j_val0 ∗
-                   "%jrange" ∷ ⌜ sint.Z a ≤ sint.Z j_val ≤ sint.Z i_val ⌝ ∗
+                   "%jrange" ∷ ⌜ sint.Z a ≤ sint.Z j_val < sint.Z i_val ⌝ ∗
                    "Hxs2" ∷ data ↦* xs' ∗
                    "%Hperm2" ∷ ⌜ Permutation xs xs' ⌝ ∗
                    "%HsortedBr" ∷ ⌜ ∀ i j xi xj, (sint.nat a <= i < j)%nat ∧ j < sint.nat i_val -> j ≠ sint.nat j_val -> xs' !! i = Some xi -> xs' !! j = Some xj -> xj ≽ xi ⌝  ∗
@@ -352,43 +351,27 @@ Proof using StrictWeakOrder0 + RelDecision0 + W.
             wp_apply (wp_store_slice_index with "[$Hxs]") as "Hxs". { rewrite length_insert. iPureIntro. lia. }
 
             wp_for_post. iFrame. iPureIntro. apply Hcmp_r in l2.
-            assert(sint.Z a < sint.Z j_val). {
-              destruct (Z.eq_dec (sint.Z a) (sint.Z j_val)) as [Heq | Hneq].
-              {
-                symmetry in Heq. inv Heq.
-                assert(header R xs' (sint.nat a) (sint.nat b)). {
-                  eapply header__preserve; eauto. lia.
-                }
-                unfold header in H8. unfold one_le_seg in H8.
-                destruct (decide (sint.nat a = 0%nat)) as [Ha|Ha].
-                - lia.
-                - specialize H8 with x0 (sint.nat a) x1.
-                  rewrite H7 in Hx0. destruct H8; auto. lia.
-              } {
-                lia.
-              }
-            }
             split_and!; try lia.
             - eapply perm_trans; eauto. apply swap_perm; eauto.
-            - intros. rewrite H7 in H10 H11 H12 Hx0.
-              rewrite list_lookup_insert_ne in H12; auto.
+            - intros. rewrite H7 in H9 H10 H11 Hx0.
+              rewrite list_lookup_insert_ne in H11; auto.
               destruct (Nat.eq_dec j (sint.nat j_val)) as [Heqj|Hneqj].
-              + subst j. rewrite list_lookup_insert_eq in H12; try lia. inv H12.
+              + subst j. rewrite list_lookup_insert_eq in H11; try lia. inv H11.
                 destruct (Nat.eq_dec i (sint.nat j_val - 1)%nat) as [Heqi | Hneqi].
-                * subst i. rewrite list_lookup_insert_eq in H11; try (rewrite length_insert;lia).
-                  inv H11. apply R_antisym; auto.
-                * rewrite list_lookup_insert_ne in H11; try lia.
-                  rewrite list_lookup_insert_ne in H11; try lia.
+                * subst i. rewrite list_lookup_insert_eq in H10; try (rewrite length_insert;lia).
+                  inv H10. apply R_antisym; auto.
+                * rewrite list_lookup_insert_ne in H10; try lia.
+                  rewrite list_lookup_insert_ne in H10; try lia.
                   eapply (HsortedBr i (sint.nat j_val - 1)%nat); eauto. lia.
-              + rewrite list_lookup_insert_ne in H12; auto.
+              + rewrite list_lookup_insert_ne in H11; auto.
                 destruct (Nat.eq_dec i (sint.nat j_val - 1)%nat) as [Heqi1|Hneqi1].
-                * subst i. rewrite list_lookup_insert_eq in H11; try (rewrite length_insert;lia). inv H11.
+                * subst i. rewrite list_lookup_insert_eq in H10; try (rewrite length_insert;lia). inv H11.
                   eapply (HsortedBr (sint.nat j_val)%nat); eauto. lia.
-                * rewrite list_lookup_insert_ne in H11; auto.
+                * rewrite list_lookup_insert_ne in H10; auto.
                   destruct (Nat.eq_dec i (sint.nat j_val)) as [Heqi2|Hneqi2].
-                  -- subst i. rewrite list_lookup_insert_eq in H11; try lia.
-                     inv H11. eapply (HsortedBr (sint.nat j_val - 1)%nat); eauto. lia.
-                  -- rewrite list_lookup_insert_ne in H11; auto.
+                  -- subst i. rewrite list_lookup_insert_eq in H10; try lia.
+                     inv H10. eapply (HsortedBr (sint.nat j_val - 1)%nat); eauto. lia.
+                  -- rewrite list_lookup_insert_ne in H10; auto.
                      eapply (HsortedBr); eauto.
             - eapply outside_same_trans; eauto. eapply outside_same_swap; lia.
           } {
