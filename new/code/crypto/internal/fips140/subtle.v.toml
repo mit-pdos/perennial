@@ -1,0 +1,3 @@
+
+translate = ["XORBytes"]
+imports = ["crypto/internal/fips140/alias"]

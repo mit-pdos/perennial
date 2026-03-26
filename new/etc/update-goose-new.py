@@ -304,6 +304,8 @@ def main():
             "fmt",
             "log",
             "encoding/binary",
+            "crypto/internal/fips140/alias",
+            "crypto/internal/fips140/subtle",
         )
 
     for proj in projs:
