@@ -45,12 +45,45 @@ String Notation w8 byte_to_I I_to_byte (via IndW8 mapping [W8 => IW8]) : byte_ch
 Definition byte_string := (list w8).
 Inductive IndByteString := IByteString : (list w8) → IndByteString.
 
-#[local] Definition parse_string (s: list Byte.byte) : IndByteString :=
-  IByteString (byte_to_w8 <$> s).
+#[local] Definition escape_byte (b: Byte.byte) : list Byte.byte :=
+  match b with
+  | x0a => [x5c; x6e]  (* \n *)
+  | x09 => [x5c; x74]  (* \t *)
+  | x0d => [x5c; x72]  (* \r *)
+  | x5c => [x5c; x5c]  (* \\ *)
+  | x07 => [x5c; x61]  (* \a *)
+  | x08 => [x5c; x62]  (* \b *)
+  | x0c => [x5c; x66]  (* \f *)
+  | x0b => [x5c; x76]  (* \v *)
+  | b   => [b]
+  end.
+
 #[local] Definition print_string (b: IndByteString) : list Byte.byte :=
   match b with
-  | IByteString b => w8_to_byte <$> b
+  | IByteString b => mjoin (escape_byte ∘ w8_to_byte <$> b)
   end.
+
+#[local] Fixpoint parse_escapes (bs : list Byte.byte) : list Byte.byte :=
+  match bs with
+  | [] => []
+  | x5c (* \ *) :: rest =>
+    match rest with
+    | x6e (* n *) :: rest' => x0a :: parse_escapes rest'
+    | x74 (* t *) :: rest' => x09 :: parse_escapes rest'
+    | x72 (* r *) :: rest' => x0d :: parse_escapes rest'
+    | x5c (* \ *) :: rest' => x5c :: parse_escapes rest'
+    | x61 (* a *) :: rest' => x07 :: parse_escapes rest'
+    | x62 (* b *) :: rest' => x08 :: parse_escapes rest'
+    | x66 (* f *) :: rest' => x0c :: parse_escapes rest'
+    | x76 (* v *) :: rest' => x0b :: parse_escapes rest'
+    | _ => x5c :: parse_escapes rest
+    end
+  | b :: rest => b :: parse_escapes rest
+  end.
+
+(* TODO: This only works for single escapes currently, add support for multi-escapes *)
+#[local] Definition parse_string (s : list Byte.byte) : IndByteString :=
+  IByteString (byte_to_w8 <$> parse_escapes s).
 
 Declare Scope byte_string_scope.
 Bind Scope byte_string_scope with byte_string.
@@ -148,16 +181,27 @@ Proof. destruct b; auto. Qed.
   byte_to_w8 (w8_to_byte w) = w.
 Proof. byte_cases w; reflexivity. Qed.
 
-#[local] Lemma parse_print_inverse s :
-  print_string (parse_string s) = s.
+#[local] Lemma parse_escapes_escape_byte_app (b : Byte.byte) (l : list Byte.byte) :
+  parse_escapes (escape_byte b ++ l) = b :: parse_escapes l.
+Proof. destruct b; reflexivity. Qed.
+
+#[local] Lemma parse_escapes_mjoin_escape (bs : list Byte.byte) :
+  parse_escapes (mjoin (escape_byte <$> bs)) = bs.
 Proof.
-  rewrite /print_string /parse_string.
+  induction bs as [|b rest IH]; first done.
+  simpl. rewrite parse_escapes_escape_byte_app.
+  f_equal. done.
+Qed.
+
+#[local] Lemma print_parse_inverse (ind : IndByteString) :
+  parse_string (print_string ind) = ind.
+Proof.
+  destruct ind as [b0].
+  rewrite /parse_string /print_string. f_equal.
+  rewrite list.list_fmap_compose.
+  rewrite parse_escapes_mjoin_escape.
   rewrite -list.list_fmap_compose.
-  eapply list.list_eq_same_length; eauto.
-  - rewrite list.length_fmap //.
-  - intros i x y Hlt Hget1 Hget2.
-    rewrite list.list_lookup_fmap in Hget1.
-    rewrite Hget2 /= in Hget1.
-    rewrite byte_to_w8_to_byte in Hget1.
-    congruence.
+  rewrite (list.list_fmap_ext _ id).
+  - rewrite list.list_fmap_id. done.
+  - intros. apply w8_to_byte_to_w8.
 Qed.
