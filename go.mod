@@ -7,7 +7,7 @@ require (
 	github.com/goose-lang/primitive v0.2.1
 	github.com/pelletier/go-toml/v2 v2.3.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/tools v0.43.0
 )
 
