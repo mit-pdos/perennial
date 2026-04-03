@@ -178,7 +178,8 @@ Definition own_task γ (doc : go_string) : iProp Σ :=
 Definition own_task_auth γ (remaining_docs : gmap nat (option go_string)) : iProp Σ :=
   ghost_map_auth γ.(task_gn) 1 remaining_docs.
 
-Axiom word_count : ∀ (doc : go_string), nat.
+Definition word_count (doc : go_string) : nat :=
+  length (split_fields_go (length doc) doc).
 
 Definition is_tasks_done γ (sh : workq.shared.t) : iProp Σ :=
   own_Int64 sh.(workq.shared.total') DfracDiscarded (W64 (sum_list (word_count <$> γ.(docs)))).
@@ -222,12 +223,6 @@ Definition is_Worker γ (w : loc) : iProp Σ :=
                    )
     ).
 
-Axiom wp_strings_Fields :
-  ∀ `{!strings.Assumptions} (s : go_string),
-  {{{ is_pkg_init strings }}}
-    @! strings.Fields #s
-  {{{ sl (ss : list go_string), RET #sl; sl ↦* ss ∗ ⌜ length ss = word_count s ⌝ }}}.
-
 Lemma wp_Worker__process γ w doc sh :
   {{{
         is_pkg_init workq ∗
@@ -241,7 +236,8 @@ Lemma wp_Worker__process γ w doc sh :
   }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
-  wp_apply wp_strings_Fields as "* [Hsl %]".
+  wp_apply wp_strings_Fields as "* (Hsl & %Hspec & Hcap)".
+  destruct Hspec as [Hss _]. subst ss.
   iDestruct (own_slice_len with "Hsl") as %Hlen.
   iNamed "Hcoord".
 
@@ -269,7 +265,7 @@ Proof.
       { eapply map_Forall_lookup_1 in Hdocs_agreeinv; [|exact Hlookup]. simpl in Hdocs_agreeinv. done. }
       rewrite Htotalinv.
       rewrite (imap_sum_insert_none word_count _ _ _ _ Hlookup).
-      { word. }
+      { unfold word_count. rewrite Hlen. word. }
       { eapply lookup_lt_Some. eauto. }
       { done. }
     - rewrite map_size_insert_Some //.
@@ -321,7 +317,7 @@ Proof.
           { assert (sint.nat remainingv0 = 1)%nat by word. lia. }
           (* Since size=1 and remaining_docs0 !! i = Some None, it must be {[i := None]} *)
           destruct (decide (j = i)) as [->|Hne].
-          - rewrite H0 in Habs. done.
+          - congruence.
           - (* j ≠ i, but map has size 1 with key i, so j not in map *)
             assert (remaining_docs0 !! j = None) as Hnone.
             { apply not_elem_of_dom. intros Hin.
@@ -334,7 +330,7 @@ Proof.
                   { rewrite size_dom. done. }
                   apply size_1_elem_of in Hdomsize. destruct Hdomsize as [x Hx].
                   assert (i ∈ dom remaining_docs0) by (apply elem_of_dom; eauto).
-                  rewrite Hx in H2. rewrite elem_of_singleton in H2.
+                  rewrite Hx in H1. rewrite elem_of_singleton in H1.
                   rewrite Hx in Hk. rewrite elem_of_singleton in Hk.
                   congruence. }
               rewrite -Hdom in Hin. rewrite elem_of_singleton in Hin. done. }
@@ -350,7 +346,7 @@ Proof.
     { iNamed "H". iFrame "∗#%".
       rewrite decide_False //.
       iFrame. iPureIntro. split_and!.
-      - rewrite (imap_sum_delete_none word_count _ _ _ H0). done.
+      - rewrite (imap_sum_delete_none word_count _ _ _ H). done.
       - rewrite map_size_delete_Some //.
         word.
       - apply map_Forall_delete. done.
