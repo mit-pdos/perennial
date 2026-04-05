@@ -179,7 +179,7 @@ Definition own_task_auth γ (remaining_docs : gmap nat (option go_string)) : iPr
   ghost_map_auth γ.(task_gn) 1 remaining_docs.
 
 Definition word_count (doc : go_string) : nat :=
-  length (split_fields_go (length doc) doc).
+  length (split_fields doc).
 
 Definition is_tasks_done γ (sh : workq.shared.t) : iProp Σ :=
   own_Int64 sh.(workq.shared.total') DfracDiscarded (W64 (sum_list (word_count <$> γ.(docs)))).
@@ -236,8 +236,7 @@ Lemma wp_Worker__process γ w doc sh :
   }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
-  wp_apply wp_strings_Fields as "* (Hsl & %Hspec & Hcap)".
-  destruct Hspec as [Hss _]. subst ss.
+  wp_apply wp_Fields as "* (Hsl & Hcap)".
   iDestruct (own_slice_len with "Hsl") as %Hlen.
   iNamed "Hcoord".
 
