@@ -16,6 +16,22 @@
         "type": "github"
       }
     },
+    "flake-compat_2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1747046372,
+        "narHash": "sha256-CIVLLkVgvHYbgI2UpXvIIBJ12HWgX+fjA8Xf8PUmqCY=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "9100a0f413b0c601e0533d1d94ffd501ce2e7885",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -88,6 +104,24 @@
         "type": "github"
       }
     },
+    "flake-utils_5": {
+      "inputs": {
+        "systems": "systems_6"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "grackle": {
       "inputs": {
         "flake-utils": "flake-utils_2",
@@ -95,11 +129,11 @@
         "perennial": "perennial"
       },
       "locked": {
-        "lastModified": 1758214139,
-        "narHash": "sha256-jAhf3ZfjAdlvNvrBQRelLTEuoJrhYNYk6Nq/3HGK/+0=",
+        "lastModified": 1765506399,
+        "narHash": "sha256-jBKerr+yf4PXK5/0chEdgDgn1w0vhdi6N5atFv+fCtY=",
         "owner": "mjschwenne",
         "repo": "grackle",
-        "rev": "2d423b187cd78c3f8a2f8ca570e1d1f050e3c7f8",
+        "rev": "6b67777c734401566fe7195484a41f41b5166c62",
         "type": "github"
       },
       "original": {
@@ -124,39 +158,23 @@
         "type": "github"
       }
     },
+    "mirage-opam-overlays_2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1710922379,
+        "narHash": "sha256-j4QREQDUf8oHOX7qg6wAOupgsNQoYlufxoPrgagD+pY=",
+        "owner": "dune-universe",
+        "repo": "mirage-opam-overlays",
+        "rev": "797cb363df3ff763c43c8fbec5cd44de2878757e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dune-universe",
+        "repo": "mirage-opam-overlays",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
-      "locked": {
-        "lastModified": 1755175540,
-        "narHash": "sha256-V0j2S1r25QnbqBLzN2Rg/dKKil789bI3P3id7bDPVc4=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "a595dde4d0d31606e19dcec73db02279db59d201",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "a595dde4d0d31606e19dcec73db02279db59d201",
-        "type": "github"
-      }
-    },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1755175540,
-        "narHash": "sha256-V0j2S1r25QnbqBLzN2Rg/dKKil789bI3P3id7bDPVc4=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "a595dde4d0d31606e19dcec73db02279db59d201",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "a595dde4d0d31606e19dcec73db02279db59d201",
-        "type": "github"
-      }
-    },
-    "nixpkgs_3": {
       "locked": {
         "lastModified": 1764950072,
         "narHash": "sha256-BmPWzogsG2GsXZtlT+MTcAWeDK5hkbGRZTeZNW42fwA=",
@@ -172,7 +190,23 @@
         "type": "github"
       }
     },
-    "nixpkgs_4": {
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1764950072,
+        "narHash": "sha256-BmPWzogsG2GsXZtlT+MTcAWeDK5hkbGRZTeZNW42fwA=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f61125a668a320878494449750330ca58b78c557",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f61125a668a320878494449750330ca58b78c557",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
       "locked": {
         "lastModified": 1751792365,
         "narHash": "sha256-J1kI6oAj25IG4EdVlg2hQz8NZTBNYvIS0l4wpr9KcUo=",
@@ -188,12 +222,44 @@
         "type": "github"
       }
     },
+    "nixpkgs_4": {
+      "locked": {
+        "lastModified": 1775710090,
+        "narHash": "sha256-ar3rofg+awPB8QXDaFJhJ2jJhu+KqN/PRCXeyuXR76E=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_5": {
+      "locked": {
+        "lastModified": 1775710090,
+        "narHash": "sha256-ar3rofg+awPB8QXDaFJhJ2jJhu+KqN/PRCXeyuXR76E=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "opam-nix": {
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils_4",
         "mirage-opam-overlays": "mirage-opam-overlays",
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": "nixpkgs_3",
         "opam-overlays": "opam-overlays",
         "opam-repository": "opam-repository",
         "opam2json": "opam2json"
@@ -212,7 +278,49 @@
         "type": "github"
       }
     },
+    "opam-nix_2": {
+      "inputs": {
+        "flake-compat": "flake-compat_2",
+        "flake-utils": "flake-utils_5",
+        "mirage-opam-overlays": "mirage-opam-overlays_2",
+        "nixpkgs": "nixpkgs_5",
+        "opam-overlays": "opam-overlays_2",
+        "opam-repository": [
+          "opam-repository"
+        ],
+        "opam2json": "opam2json_2"
+      },
+      "locked": {
+        "lastModified": 1771067167,
+        "narHash": "sha256-XSw8dQIkdr+6eLvbUHo3cJPtTU7o5SMODz3qlnzmGpQ=",
+        "owner": "tweag",
+        "repo": "opam-nix",
+        "rev": "2e20bbbe8130d1880338291446fd4e710a4db9a1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tweag",
+        "repo": "opam-nix",
+        "type": "github"
+      }
+    },
     "opam-overlays": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1741116009,
+        "narHash": "sha256-Z0PIW82fHJFvAv/JYpAffnp2DaOjLhsPutqyIrORZd0=",
+        "owner": "dune-universe",
+        "repo": "opam-overlays",
+        "rev": "e031bb64e33bf93be963e9a38b28962e6e14381f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dune-universe",
+        "repo": "opam-overlays",
+        "type": "github"
+      }
+    },
+    "opam-overlays_2": {
       "flake": false,
       "locked": {
         "lastModified": 1741116009,
@@ -260,6 +368,22 @@
         "type": "github"
       }
     },
+    "opam-repository_3": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776091105,
+        "narHash": "sha256-o0e86X1ftKbqjxEUJmixj6vAAwncGLjnRTrGxWLx49c=",
+        "owner": "ocaml",
+        "repo": "opam-repository",
+        "rev": "ba4685aeec7b28fde6af30c7b83004704c68c86a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ocaml",
+        "repo": "opam-repository",
+        "type": "github"
+      }
+    },
     "opam-rocq-repo": {
       "flake": false,
       "locked": {
@@ -276,13 +400,53 @@
         "type": "github"
       }
     },
+    "opam-rocq-repo_2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776094459,
+        "narHash": "sha256-JjXG9D+fARB042YCMA4s//sJ3HiiWqg/TCMe5UaUgDw=",
+        "owner": "rocq-prover",
+        "repo": "opam",
+        "rev": "b0dec4253bdf856169eed9ea755bc03e3c0eb62a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rocq-prover",
+        "repo": "opam",
+        "type": "github"
+      }
+    },
     "opam2json": {
+      "inputs": {
+        "nixpkgs": [
+          "grackle",
+          "perennial",
+          "opam-nix",
+          "nixpkgs"
+        ],
+        "systems": "systems_5"
+      },
+      "locked": {
+        "lastModified": 1749457947,
+        "narHash": "sha256-+QVm+HOYikF3wUhqSIV8qJbE/feSG+p48fgxIosbHS0=",
+        "owner": "tweag",
+        "repo": "opam2json",
+        "rev": "0ecd66fc2bfb25d910522c990dd36412259eac1f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tweag",
+        "repo": "opam2json",
+        "type": "github"
+      }
+    },
+    "opam2json_2": {
       "inputs": {
         "nixpkgs": [
           "opam-nix",
           "nixpkgs"
         ],
-        "systems": "systems_5"
+        "systems": "systems_7"
       },
       "locked": {
         "lastModified": 1749457947,
@@ -304,31 +468,33 @@
         "grackle": [
           "grackle"
         ],
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "opam-nix": "opam-nix",
+        "opam-repository": "opam-repository_2",
+        "opam-rocq-repo": "opam-rocq-repo"
       },
       "locked": {
-        "lastModified": 1757538945,
-        "narHash": "sha256-UStDgbYGwwYXOF/GpuwAeevPbxTOu1Fo7cqxklgnpeA=",
-        "ref": "refs/heads/master",
-        "rev": "161a791f5639a75ef68d1e145d7dbd41944b35b7",
-        "revCount": 8794,
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/mit-pdos/perennial.git"
+        "lastModified": 1765424788,
+        "narHash": "sha256-Om2VIPZSFUGg2f5SDkKfoeDo9uMoFmeFg9pU36kUjcI=",
+        "owner": "mit-pdos",
+        "repo": "perennial",
+        "rev": "2dd5553d9d39eece8981e6ef9bf09c6a1e8f1efd",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "https://github.com/mit-pdos/perennial.git"
+        "owner": "mit-pdos",
+        "repo": "perennial",
+        "type": "github"
       }
     },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
         "grackle": "grackle",
-        "nixpkgs": "nixpkgs_3",
-        "opam-nix": "opam-nix",
-        "opam-repository": "opam-repository_2",
-        "opam-rocq-repo": "opam-rocq-repo"
+        "nixpkgs": "nixpkgs_4",
+        "opam-nix": "opam-nix_2",
+        "opam-repository": "opam-repository_3",
+        "opam-rocq-repo": "opam-rocq-repo_2"
       }
     },
     "systems": {
@@ -392,6 +558,36 @@
       }
     },
     "systems_5": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_6": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_7": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
