@@ -35,6 +35,7 @@ jobs:
         uses: tchajed/setup-rocq@v1
         with:
           rocq-version: "${{ matrix.rocq-version }}"
+          cache-key-opam-files: ""
       - name: Install build dependencies
         run: |
           opam install --deps-only ./perennial.opam
