@@ -50,11 +50,6 @@ func (ctx *Ctx) files(fs []*ast.File) (preDecls []glang.Decl, sortedDecls []glan
 	e.do(func() { ctx.finalizeImports() })
 	for _, f := range fs {
 		for _, d := range f.Decls {
-			// Imports were handled in the pre-scan above; the second pass only
-			// translates declarations that produce package contents.
-			if d, ok := d.(*ast.GenDecl); ok && d.Tok == token.IMPORT {
-				continue
-			}
 			e.do(func() { ctx.decl(d) })
 		}
 	}

@@ -2616,7 +2616,10 @@ func (ctx *Ctx) decl(d ast.Decl) {
 	case *ast.GenDecl:
 		switch d.Tok {
 		case token.IMPORT:
-			ctx.imports(d.Specs)
+			// Imports are pre-scanned in Ctx.files so package-wide aliases are
+			// finalized before declaration translation. Ignore them here to keep
+			// decl safe to call on every top-level declaration.
+			return
 		case token.CONST:
 			ctx.constDecl(d)
 		case token.VAR:
