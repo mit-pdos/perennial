@@ -346,7 +346,7 @@ Definition Txn__Commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  ("blks" <-[go.PointerType (go.SliceType disk.Block)] "$r0");;;
     let: "$range" := (![go.MapType go.uint64 disk.Block] (StructFieldRef Txn "blks"%go "txn")) in
     (let: "v" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
-    map.for_range go.uint64 disk.Block "$range" (λ: "$key" "value",
+    map.for_range go.uint64 disk.Block "$range" (λ: "$key" "$value",
       do:  ("v" <-[disk.Block] "$value");;;
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![go.SliceType disk.Block] (![go.PointerType (go.SliceType disk.Block)] "blks")) in
