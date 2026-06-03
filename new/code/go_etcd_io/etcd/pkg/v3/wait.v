@@ -275,7 +275,7 @@ Definition timeList__Triggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "t" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.ChannelType go.sendrecv (go.StructType [
 
-    ])) "$range" (λ: "$key" "value",
+    ])) "$range" (λ: "$key" "$value",
       do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
 
       ])] "$value");;;

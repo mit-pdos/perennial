@@ -3831,7 +3831,7 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "ids") in
       let: "$a1" := ((let: "$sl0" := (![go.uint64] "id") in
@@ -6487,7 +6487,7 @@ Definition Status__MarshalJSONⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       let: "$range" := (![go.MapType go.uint64 tracker.Progress] (StructFieldRef Status "Progress"%go "s")) in
       (let: "v" := (GoAlloc tracker.Progress (GoZeroVal tracker.Progress #())) in
       let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      map.for_range go.uint64 tracker.Progress "$range" (λ: "$key" "value",
+      map.for_range go.uint64 tracker.Progress "$range" (λ: "$key" "$value",
         do:  ("v" <-[tracker.Progress] "$value");;;
         do:  ("k" <-[go.uint64] "$key");;;
         let: "subj" := (GoAlloc go.string (GoZeroVal go.string #())) in
