@@ -798,7 +798,7 @@ Definition cancelCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     (let: "child" := (GoAlloc canceler (GoZeroVal canceler #())) in
     map.for_range canceler (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("child" <-[canceler] "$key");;;
       do:  (let: "$a0" := #false in
       let: "$a1" := (![go.error] "err") in

@@ -1538,7 +1538,7 @@ Definition readSet__firstⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  ("ret" <-[go.int64] "$r0");;;
     let: "$range" := (![readSet] "rs") in
     (let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-    map.for_range go.string (go.PointerType clientv3.GetResponse) "$range" (λ: "$key" "value",
+    map.for_range go.string (go.PointerType clientv3.GetResponse) "$range" (λ: "$key" "$value",
       do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$value");;;
       do:  "$key";;;
       (let: "rev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
@@ -1564,7 +1564,7 @@ Definition readSet__cmpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "$range" := (![readSet] "rs") in
     (let: "rk" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
     let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    map.for_range go.string (go.PointerType clientv3.GetResponse) "$range" (λ: "$key" "value",
+    map.for_range go.string (go.PointerType clientv3.GetResponse) "$range" (λ: "$key" "$value",
       do:  ("rk" <-[go.PointerType clientv3.GetResponse] "$value");;;
       do:  ("k" <-[go.string] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Cmp] "cmps") in
@@ -1611,7 +1611,7 @@ Definition writeSet__cmpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  ("cmps" <-[go.SliceType clientv3.Cmp] "$r0");;;
     let: "$range" := (![writeSet] "ws") in
     (let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    map.for_range go.string stmPut "$range" (λ: "$key" "value",
+    map.for_range go.string stmPut "$range" (λ: "$key" "$value",
       do:  ("key" <-[go.string] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Cmp] "cmps") in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := (![go.string] "key") in
@@ -1636,7 +1636,7 @@ Definition writeSet__putsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  ("puts" <-[go.SliceType clientv3.Op] "$r0");;;
     let: "$range" := (![writeSet] "ws") in
     (let: "v" := (GoAlloc stmPut (GoZeroVal stmPut #())) in
-    map.for_range go.string stmPut "$range" (λ: "$key" "value",
+    map.for_range go.string stmPut "$range" (λ: "$key" "$value",
       do:  ("v" <-[stmPut] "$value");;;
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "puts") in
@@ -1875,7 +1875,7 @@ Definition stmSerializable__getsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     do:  ("ops" <-[go.SliceType clientv3.Op] "$r0");;;
     let: "$range" := (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) in
     (let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    map.for_range go.string (go.PointerType clientv3.GetResponse) "$range" (λ: "$key" "value",
+    map.for_range go.string (go.PointerType clientv3.GetResponse) "$range" (λ: "$key" "$value",
       do:  ("k" <-[go.string] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "keys") in
       let: "$a1" := ((let: "$sl0" := (![go.string] "k") in

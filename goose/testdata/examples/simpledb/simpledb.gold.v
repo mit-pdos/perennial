@@ -702,7 +702,7 @@ Definition tablePutBufferⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "$range" := (![go.MapType go.uint64 (go.SliceType go.byte)] "buf") in
     (let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range go.uint64 (go.SliceType go.byte) "$range" (λ: "$key" "value",
+    map.for_range go.uint64 (go.SliceType go.byte) "$range" (λ: "$key" "$value",
       do:  ("v" <-[go.SliceType go.byte] "$value");;;
       do:  ("k" <-[go.uint64] "$key");;;
       do:  (let: "$a0" := (![tableWriter] "w") in

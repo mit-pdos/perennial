@@ -134,7 +134,7 @@ Definition leaseCache__LockRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$range" := (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) in
     (let: "li" := (GoAlloc (go.PointerType leaseKey) (GoZeroVal (go.PointerType leaseKey) #())) in
     let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "value",
+    map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "$value",
       do:  ("li" <-[go.PointerType leaseKey] "$value");;;
       do:  ("k" <-[go.string] "$key");;;
       (if: let: "$a0" := (![go.string] "k") in
@@ -260,7 +260,7 @@ Definition leaseCache__LockWriteOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       else
         let: "$range" := (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) in
         (let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-        map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "value",
+        map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "$value",
           do:  ("k" <-[go.string] "$key");;;
           (if: (⟨go.bool⟩! (let: "$a0" := (![go.string] "k") in
           let: "$a1" := (![go.string] "key") in
@@ -545,7 +545,7 @@ Definition leaseCache__EvictRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       )));;;
     let: "$range" := (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) in
     (let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "value",
+    map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "$value",
       do:  ("k" <-[go.string] "$key");;;
       (if: let: "$a0" := (![go.string] "k") in
       let: "$a1" := (![go.string] "key") in
@@ -719,7 +719,7 @@ Definition leaseCache__clearOldRevokesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
         let: "$range" := (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
         (let: "lr" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
         let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-        map.for_range go.string time.Time "$range" (λ: "$key" "value",
+        map.for_range go.string time.Time "$range" (λ: "$key" "$value",
           do:  ("lr" <-[time.Time] "$value");;;
           do:  ("k" <-[go.string] "$key");;;
           (if: Convert go.untyped_bool go.bool ((let: "$a0" := (let: "$a0" := revokeBackoff in
@@ -2390,7 +2390,7 @@ Definition txnLeasing__commitToCacheⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
         do:  ("end" <-[go.string] "$r0");;;
         let: "$range" := (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) in
         (let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-        map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "value",
+        map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "$value",
           do:  ("k" <-[go.string] "$key");;;
           (if: let: "$a0" := (![go.string] "k") in
           let: "$a1" := (![go.string] "key") in
