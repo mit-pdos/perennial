@@ -489,7 +489,7 @@ Definition findKeyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$range" := (![go.MapType go.uint64 unit] "m") in
     (let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range go.uint64 unit "$range" (λ: "$key" "value",
+    map.for_range go.uint64 unit "$range" (λ: "$key" "$value",
       do:  ("k" <-[go.uint64] "$key");;;
       (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then
@@ -1721,7 +1721,7 @@ Definition IterateMapKeysⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$range" := (![go.MapType go.uint64 go.uint64] "m") in
     (let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range go.uint64 go.uint64 "$range" (λ: "$key" "value",
+    map.for_range go.uint64 go.uint64 "$range" (λ: "$key" "$value",
       do:  ("k" <-[go.uint64] "$key");;;
       let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "k")) in
       do:  ("sum" <-[go.uint64] "$r0")));;;
@@ -1734,7 +1734,7 @@ Definition IterateMapValuesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$range" := (![go.MapType go.uint64 go.uint64] "m") in
     (let: "v" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range go.uint64 go.uint64 "$range" (λ: "$key" "value",
+    map.for_range go.uint64 go.uint64 "$range" (λ: "$key" "$value",
       do:  ("v" <-[go.uint64] "$value");;;
       do:  "$key";;;
       let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "v")) in

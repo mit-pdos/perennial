@@ -529,7 +529,7 @@ Definition ProgressMap__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  ("ids" <-[go.SliceType go.uint64] "$r0");;;
     let: "$range" := (![ProgressMap] "m") in
     (let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range go.uint64 (go.PointerType Progress) "$range" (λ: "$key" "value",
+    map.for_range go.uint64 (go.PointerType Progress) "$range" (λ: "$key" "$value",
       do:  ("k" <-[go.uint64] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "ids") in
       let: "$a1" := ((let: "$sl0" := (![go.uint64] "k") in
@@ -663,7 +663,7 @@ Definition Config__Cloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       (let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       map.for_range go.uint64 (go.StructType [
 
-      ]) "$range" (λ: "$key" "value",
+      ]) "$range" (λ: "$key" "$value",
         do:  ("k" <-[go.uint64] "$key");;;
         let: "$r0" := (CompositeLiteral (go.StructType [
 
@@ -821,7 +821,7 @@ Definition ProgressTracker__Visitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       do:  ("ids" <-[go.SliceType go.uint64] "$r0"));;;
     let: "$range" := (![ProgressMap] (StructFieldRef ProgressTracker "Progress"%go (![go.PointerType ProgressTracker] "p"))) in
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range go.uint64 (go.PointerType Progress) "$range" (λ: "$key" "value",
+    map.for_range go.uint64 (go.PointerType Progress) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       do:  ("n" <-[go.int] ((![go.int] "n") -⟨go.int⟩ #(W64 1)));;;
       let: "$r0" := (![go.uint64] "id") in
@@ -891,7 +891,7 @@ Definition ProgressTracker__VoterNodesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "nodes") in
       let: "$a1" := ((let: "$sl0" := (![go.uint64] "id") in
@@ -930,7 +930,7 @@ Definition ProgressTracker__LearnerNodesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "nodes") in
       let: "$a1" := ((let: "$sl0" := (![go.uint64] "id") in
@@ -986,7 +986,7 @@ Definition ProgressTracker__TallyVotesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     let: "$range" := (![ProgressMap] (StructFieldRef ProgressTracker "Progress"%go (![go.PointerType ProgressTracker] "p"))) in
     (let: "pr" := (GoAlloc (go.PointerType Progress) (GoZeroVal (go.PointerType Progress) #())) in
     let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range go.uint64 (go.PointerType Progress) "$range" (λ: "$key" "value",
+    map.for_range go.uint64 (go.PointerType Progress) "$range" (λ: "$key" "$value",
       do:  ("pr" <-[go.PointerType Progress] "$value");;;
       do:  ("id" <-[go.uint64] "$key");;;
       (if: ![go.bool] (StructFieldRef Progress "IsLearner"%go (![go.PointerType Progress] "pr"))

@@ -7,6 +7,14 @@ func IterateMapKeys(m map[uint64]uint64, sum *uint64) {
 	}
 }
 
+func CopyMap(src map[uint64]uint64) map[uint64]uint64 {
+	dst := make(map[uint64]uint64)
+	for k, v := range src {
+		dst[k] = v
+	}
+	return dst
+}
+
 func MapSize(m map[uint64]bool) uint64 {
 	return uint64(len(m))
 }

@@ -83,7 +83,7 @@ Definition JointConfig__IDsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "$r0" := (CompositeLiteral (go.StructType [
 
@@ -95,7 +95,7 @@ Definition JointConfig__IDsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "$r0" := (CompositeLiteral (go.StructType [
 
@@ -177,7 +177,7 @@ Definition MajorityConfig__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "sl") in
       let: "$a1" := ((let: "$sl0" := (![go.uint64] "id") in
@@ -229,7 +229,7 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "idx" := (GoAlloc Index' (GoZeroVal Index' #())) in
@@ -337,7 +337,7 @@ Definition MajorityConfig__Sliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "sl") in
       let: "$a1" := ((let: "$sl0" := (![go.uint64] "id") in
@@ -380,7 +380,7 @@ Definition MajorityConfig__CommittedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "idx" := (GoAlloc Index' (GoZeroVal Index' #())) in
@@ -423,7 +423,7 @@ Definition MajorityConfig__VoteResultⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range go.uint64 (go.StructType [
 
-    ]) "$range" (λ: "$key" "value",
+    ]) "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "v" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
