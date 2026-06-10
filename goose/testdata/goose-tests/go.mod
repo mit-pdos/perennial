@@ -9,7 +9,7 @@ require (
 )
 
 require (
-	github.com/goose-lang/std v0.6.1 // indirect
+	github.com/goose-lang/std v0.7.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 )
