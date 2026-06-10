@@ -93,6 +93,14 @@ type Ctx struct {
 
 	importNames        map[string]*types.PkgName
 	importNamesOrdered []*types.PkgName
+	// Full Go import path -> Coq module ref used in generated code. For
+	// colliding package names, imports ending in "a/v1" and "b/v1" become
+	// "a_v1" and "b_v1" rather than both using package name "v1".
+	importRefs map[string]string
+	// Full Go import path -> Assumptions class field name. For the same
+	// "a/v1" and "b/v1" imports, these become "import_a_v1_Assumption" and
+	// "import_b_v1_Assumption".
+	importAssumptions map[string]string
 
 	inits []glang.Expr
 
@@ -113,6 +121,8 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		pkgIdent:           "pkg_id" + "." + pkg.Name,
 		errorReporter:      newErrorReporter(pkg.Fset),
 		importNames:        make(map[string]*types.PkgName),
+		importRefs:         make(map[string]string),
+		importAssumptions:  make(map[string]string),
 		filter:             filter,
 	}
 }
@@ -390,7 +400,7 @@ func (ctx *Ctx) qualifiedName(obj types.Object) string {
 		// no module name needed
 		return name
 	}
-	return fmt.Sprintf("%s.%s", obj.Pkg().Name(), name)
+	return fmt.Sprintf("%s.%s", ctx.pkgRef(obj.Pkg()), name)
 }
 
 func (ctx *Ctx) selectorExprAddr(e *ast.SelectorExpr) glang.Expr {
@@ -398,7 +408,7 @@ func (ctx *Ctx) selectorExprAddr(e *ast.SelectorExpr) glang.Expr {
 	if selection == nil {
 		if v, ok := ctx.info.ObjectOf(e.Sel).(*types.Var); ok {
 			return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
-				ctx.gallinaIdent(v.Pkg().Name()+"."+v.Name()),
+				ctx.gallinaIdent(ctx.pkgRef(v.Pkg())+"."+v.Name()),
 				glang.Tt,
 			)
 		} else {
@@ -491,18 +501,16 @@ func (ctx *Ctx) selectorExpr(e *ast.SelectorExpr) glang.Expr {
 			args := glang.ListExpr(ctx.convertTypeArgsToGlang(nil, typeArgs))
 			return glang.NewCallExpr(
 				glang.VerbatimExpr("FuncResolve"),
-				ctx.gallinaIdent(f.Pkg().Name()+"."+f.Name()),
+				ctx.gallinaIdent(ctx.pkgRef(f.Pkg())+"."+f.Name()),
 				args,
 				glang.Tt,
 			)
 		} else {
+			obj := ctx.info.ObjectOf(e.Sel)
 			return ctx.handleImplicitConversion(e,
 				ctx.info.TypeOf(e.Sel),
 				ctx.info.TypeOf(e),
-				glang.PackageIdent{
-					Package: ctx.info.ObjectOf(e.Sel).Pkg().Name(),
-					Ident:   e.Sel.Name,
-				},
+				ctx.gallinaIdent(ctx.pkgRef(obj.Pkg())+"."+e.Sel.Name),
 			)
 		}
 	}
@@ -2446,6 +2454,79 @@ func stringLitValue(lit *ast.BasicLit) string {
 	return s
 }
 
+func coqImportQualid(pkgPath string) string {
+	return strings.ReplaceAll(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkgPath), "/", ".")
+}
+
+func importSuffixAlias(pkgPath string, suffixLen int) string {
+	parts := strings.Split(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkgPath), "/")
+	if suffixLen > len(parts) {
+		suffixLen = len(parts)
+	}
+	return glang.ToIdent(strings.Join(parts[len(parts)-suffixLen:], "_"))
+}
+
+// uniqueImportAliases assigns Coq module aliases for imports whose Go package
+// names collide. It tries increasingly long import-path suffixes until every
+// package gets a unique Coq identifier that also avoids refs already present in used.
+//
+// For example, imports ending in "a/v1" and "b/v1" both have package name "v1",
+// so the one-component suffix "v1" conflicts and the two-component suffixes
+// become "a_v1" and "b_v1". If imports ended in "x/a/v1" and "y/a/v1",
+// "a_v1" would still conflict, so the aliases would become "x_a_v1" and
+// "y_a_v1".
+func uniqueImportAliases(pkgs []*types.Package, used map[string]bool) map[string]string {
+	aliases := make(map[string]string)
+	if len(pkgs) == 0 {
+		return aliases
+	}
+
+	maxParts := 0
+	for _, pkg := range pkgs {
+		if n := len(strings.Split(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkg.Path()), "/")); n > maxParts {
+			maxParts = n
+		}
+	}
+
+	for suffixLen := 1; suffixLen <= maxParts; suffixLen++ {
+		counts := make(map[string]int)
+		candidates := make(map[string]string)
+		for _, pkg := range pkgs {
+			alias := importSuffixAlias(pkg.Path(), suffixLen)
+			candidates[pkg.Path()] = alias
+			counts[alias]++
+		}
+
+		ok := true
+		for _, alias := range candidates {
+			if counts[alias] != 1 || used[alias] {
+				ok = false
+				break
+			}
+		}
+		if ok {
+			for path, alias := range candidates {
+				aliases[path] = alias
+			}
+			return aliases
+		}
+	}
+
+	// If no common suffix length worked, fall back to the full-path alias for
+	// each package and append numeric suffixes only when that full-path alias is
+	// already taken.
+	for _, pkg := range pkgs {
+		base := importSuffixAlias(pkg.Path(), maxParts)
+		alias := base
+		for n := 0; used[alias]; n++ {
+			alias = fmt.Sprintf("%s_%d", base, n)
+		}
+		aliases[pkg.Path()] = alias
+		used[alias] = true
+	}
+	return aliases
+}
+
 func (ctx *Ctx) imports(d []ast.Spec) {
 	for _, s := range d {
 		s := s.(*ast.ImportSpec)
@@ -2463,6 +2544,71 @@ func (ctx *Ctx) imports(d []ast.Spec) {
 	}
 }
 
+func (ctx *Ctx) finalizeImports() {
+	// First group imports by their Go package name. Different import paths can
+	// still have the same package name, for example "a/v1" and "b/v1" can both
+	// declare package "v1".
+	importsByName := make(map[string][]*types.Package)
+	for _, impName := range ctx.importNamesOrdered {
+		pkg := impName.Imported()
+		importsByName[pkg.Name()] = append(importsByName[pkg.Name()], pkg)
+	}
+
+	// Imports with unique package names keep the old simple Coq reference, so
+	// existing generated code is unchanged when there is no collision.
+	usedRefs := make(map[string]bool)
+	for _, impName := range ctx.importNamesOrdered {
+		pkg := impName.Imported()
+		if len(importsByName[pkg.Name()]) == 1 {
+			ref := glang.ToIdent(pkg.Name())
+			ctx.importRefs[pkg.Path()] = ref
+			ctx.importAssumptions[pkg.Path()] = "import_" + ref + "_Assumption"
+			usedRefs[ref] = true
+		}
+	}
+
+	// Imports with colliding package names get path-suffix aliases, and we emit
+	// local Coq module aliases so the rest of code generation can use those refs.
+	seenName := make(map[string]bool)
+	for _, impName := range ctx.importNamesOrdered {
+		pkg := impName.Imported()
+		name := pkg.Name()
+		group := importsByName[name]
+		if len(group) == 1 || seenName[name] {
+			continue
+		}
+		seenName[name] = true
+
+		aliases := uniqueImportAliases(group, usedRefs)
+		for _, groupPkg := range group {
+			ref := aliases[groupPkg.Path()]
+			ctx.importRefs[groupPkg.Path()] = ref
+			ctx.importAssumptions[groupPkg.Path()] = "import_" + ref + "_Assumption"
+			usedRefs[ref] = true
+			ctx.out.importDecls = append(ctx.out.importDecls, glang.VerbatimDecl{
+				Content: fmt.Sprintf("Module %s := code.%s.%s.", ref, coqImportQualid(groupPkg.Path()), glang.ToIdent(groupPkg.Name())),
+			})
+		}
+	}
+}
+
+func (ctx *Ctx) pkgRef(pkg *types.Package) string {
+	if pkg == nil {
+		return ""
+	}
+	if ref, ok := ctx.importRefs[pkg.Path()]; ok {
+		return ref
+	}
+	return glang.ToIdent(pkg.Name())
+}
+
+func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {
+	if name, ok := ctx.importAssumptions[pkg.Path()]; ok {
+		return name
+	}
+	return "import_" + glang.ToIdent(pkg.Name()) + "_Assumption"
+}
+
 func (ctx *Ctx) decl(d ast.Decl) {
 	switch d := d.(type) {
 	case *ast.FuncDecl:
@@ -2470,7 +2616,10 @@ func (ctx *Ctx) decl(d ast.Decl) {
 	case *ast.GenDecl:
 		switch d.Tok {
 		case token.IMPORT:
-			ctx.imports(d.Specs)
+			// Imports are pre-scanned in Ctx.files so package-wide aliases are
+			// finalized before declaration translation. Ignore them here to keep
+			// decl safe to call on every top-level declaration.
+			return
 		case token.CONST:
 			ctx.constDecl(d)
 		case token.VAR:
@@ -2556,7 +2705,9 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 	}
 
 	for _, impName := range ctx.importNamesOrdered {
-		fmt.Fprintf(w, "  #[global] import_%[1]s_Assumption :: %[1]s.Assumptions;\n", impName.Imported().Name())
+		pkg := impName.Imported()
+		fmt.Fprintf(w, "  #[global] %s :: %s.Assumptions;\n",
+			ctx.importAssumptionName(pkg), ctx.pkgRef(pkg))
 	}
 
 	fmt.Fprint(w, "}.")
@@ -2579,7 +2730,7 @@ func (ctx *Ctx) finalExtraDecls() {
 	sep := ""
 	for _, impName := range ctx.importNamesOrdered {
 		pkg := impName.Imported()
-		infoContents += sep + fmt.Sprintf("code.%s.pkg_id.%s", strings.ReplaceAll(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkg.Path()), "/", "."), pkg.Name())
+		infoContents += sep + fmt.Sprintf("code.%s.pkg_id.%s", coqImportQualid(pkg.Path()), pkg.Name())
 		sep = "; "
 	}
 	infoContents += "]\n|}."
@@ -2686,9 +2837,10 @@ InitLoop:
 	}
 
 	for _, importName := range ctx.importNamesOrdered {
+		pkg := importName.Imported()
 		e = glang.NewDoSeq(
 			glang.NewCallExpr(
-				ctx.gallinaIdent(importName.Imported().Name()+"."+"initialize'"),
+				ctx.gallinaIdent(ctx.pkgRef(pkg)+"."+"initialize'"),
 				glang.Tt),
 			e)
 	}

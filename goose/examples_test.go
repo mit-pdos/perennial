@@ -67,6 +67,19 @@ func (t test) isDir() bool {
 	return info.IsDir()
 }
 
+func (t test) hasGoFiles() bool {
+	names, err := os.ReadDir(t.path)
+	if err != nil {
+		panic(err)
+	}
+	for _, name := range names {
+		if !name.IsDir() && strings.HasSuffix(name.Name(), ".go") {
+			return true
+		}
+	}
+	return false
+}
+
 // A positiveTest is a test organized as a directory with expected Coq output
 //
 // Each test is a single Go package in dir that has a Ast <dir>.gold.v
@@ -120,6 +133,9 @@ func TestExamples(testingT *testing.T) {
 	for _, t := range tests {
 		t := positiveTest{t}
 		if !t.isDir() {
+			continue
+		}
+		if !t.hasGoFiles() {
 			continue
 		}
 		testingT.Run(t.name, func(testingT *testing.T) {

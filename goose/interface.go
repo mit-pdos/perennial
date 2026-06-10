@@ -3,6 +3,7 @@ package goose
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 	"strings"
 	"sync"
 
@@ -35,6 +36,18 @@ func (e *errorCatcher) do(f func()) {
 // Decls converts an entire package (possibly multiple files) to a list of decls
 func (ctx *Ctx) files(fs []*ast.File) (preDecls []glang.Decl, sortedDecls []glang.Decl, errs []error) {
 	var e errorCatcher
+	// Collect imports from every file before translating declarations. Import
+	// aliases in the generated Coq file are package-wide, so we need the full
+	// import set before deciding how to disambiguate packages with the same Go
+	// package name.
+	for _, f := range fs {
+		for _, d := range f.Decls {
+			if d, ok := d.(*ast.GenDecl); ok && d.Tok == token.IMPORT {
+				e.do(func() { ctx.imports(d.Specs) })
+			}
+		}
+	}
+	e.do(func() { ctx.finalizeImports() })
 	for _, f := range fs {
 		for _, d := range f.Decls {
 			e.do(func() { ctx.decl(d) })

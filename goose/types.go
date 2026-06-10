@@ -703,7 +703,7 @@ func (ctx *Ctx) namedTypeToGallina(l locatable, t *types.Named) string {
 	var baseName string
 	pkg := t.Obj().Pkg()
 	if pkg != nil {
-		baseName = pkg.Name() + "." + glang.ToIdent(t.Obj().Name()) + ".t"
+		baseName = ctx.pkgRef(pkg) + "." + glang.ToIdent(t.Obj().Name()) + ".t"
 	} else {
 		baseName = glang.ToIdent(t.Obj().Name()) + ".t"
 	}
