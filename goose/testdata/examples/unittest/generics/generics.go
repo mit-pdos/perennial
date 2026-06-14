@@ -72,6 +72,11 @@ type MultiParam[A any, B any] struct {
 	X A
 }
 
+type TypeParamCollision[T any, C any] struct {
+	X T
+	Y C
+}
+
 func useMultiParam() {
 	mp := MultiParam[uint64, bool]{Y: true, X: 1}
 	mp.X = 2

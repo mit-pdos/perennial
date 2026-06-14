@@ -28,7 +28,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Box_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (generics.Box.t T') (generics.Boxⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Box_access_load_Value `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Box.t T')) dq :
@@ -72,7 +72,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Container_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (generics.Container.t T') (generics.Containerⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Container_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
@@ -194,7 +194,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance OnlyIndirect_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (generics.OnlyIndirect.t T') (generics.OnlyIndirectⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance OnlyIndirect_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) dq :
@@ -249,7 +249,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance MultiParam_into_val_typed
-  `{!ZeroVal A'} `{!TypedPointsto (Σ:=Σ) A'} `{!IntoValTyped A' A} `{!ZeroVal B'} `{!TypedPointsto (Σ:=Σ) B'} `{!IntoValTyped B' B}  :
+  (A : go.type) `{!ZeroVal A'} `{!TypedPointsto (Σ:=Σ) A'} `{!IntoValTyped A' A} (B : go.type) `{!ZeroVal B'} `{!TypedPointsto (Σ:=Σ) B'} `{!IntoValTyped B' B}  :
   IntoValTypedUnderlying (generics.MultiParam.t A' B') (generics.MultiParamⁱᵐᵖˡ A B).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance MultiParam_access_load_Y `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) dq :
@@ -282,6 +282,61 @@ Proof. solve_pointsto_access_struct. Qed.
 End def.
 End MultiParam.
 
+Module TypeParamCollision.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : generics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance TypeParamCollision_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'} `{!TypedPointsto (Σ:=Σ) C'}  :
+  TypedPointsto (Σ:=Σ) (generics.TypeParamCollision.t T' C') :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "X" ∷ l.[(generics.TypeParamCollision.t T' C'), "X"] ↦{dq} v.(generics.TypeParamCollision.X') ∗
+      "Y" ∷ l.[(generics.TypeParamCollision.t T' C'), "Y"] ↦{dq} v.(generics.TypeParamCollision.Y') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance TypeParamCollision_into_val_typed
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} (C : go.type) `{!ZeroVal C'} `{!TypedPointsto (Σ:=Σ) C'} `{!IntoValTyped C' C}  :
+  IntoValTypedUnderlying (generics.TypeParamCollision.t T' C') (generics.TypeParamCollisionⁱᵐᵖˡ T C).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance TypeParamCollision_access_load_X `{!TypedPointsto (Σ:=Σ) T'} `{!TypedPointsto (Σ:=Σ) C'} l (v : (generics.TypeParamCollision.t T' C')) dq :
+  AccessStrict
+    (l.[(generics.TypeParamCollision.t T' C'), "X"] ↦{dq} (v.(generics.TypeParamCollision.X')))
+    (l.[(generics.TypeParamCollision.t T' C'), "X"] ↦{dq} (v.(generics.TypeParamCollision.X')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance TypeParamCollision_access_store_X `{!TypedPointsto (Σ:=Σ) T'} `{!TypedPointsto (Σ:=Σ) C'} l (v : (generics.TypeParamCollision.t T' C')) X' :
+  AccessStrict
+    (l.[(generics.TypeParamCollision.t T' C'), "X"] ↦ (v.(generics.TypeParamCollision.X')))
+    (l.[(generics.TypeParamCollision.t T' C'), "X"] ↦ X')
+    (l ↦ v) (l ↦ (v <|(generics.TypeParamCollision.X') := X'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance TypeParamCollision_access_load_Y `{!TypedPointsto (Σ:=Σ) T'} `{!TypedPointsto (Σ:=Σ) C'} l (v : (generics.TypeParamCollision.t T' C')) dq :
+  AccessStrict
+    (l.[(generics.TypeParamCollision.t T' C'), "Y"] ↦{dq} (v.(generics.TypeParamCollision.Y')))
+    (l.[(generics.TypeParamCollision.t T' C'), "Y"] ↦{dq} (v.(generics.TypeParamCollision.Y')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance TypeParamCollision_access_store_Y `{!TypedPointsto (Σ:=Σ) T'} `{!TypedPointsto (Σ:=Σ) C'} l (v : (generics.TypeParamCollision.t T' C')) Y' :
+  AccessStrict
+    (l.[(generics.TypeParamCollision.t T' C'), "Y"] ↦ (v.(generics.TypeParamCollision.Y')))
+    (l.[(generics.TypeParamCollision.t T' C'), "Y"] ↦ Y')
+    (l ↦ v) (l ↦ (v <|(generics.TypeParamCollision.Y') := Y'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End TypeParamCollision.
+
 Module useNonStructGeneric.
 Section def.
 
@@ -303,7 +358,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance useNonStructGeneric_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (generics.useNonStructGeneric.t T') (generics.useNonStructGenericⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance useNonStructGeneric_access_load_x `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.useNonStructGeneric.t T')) dq :

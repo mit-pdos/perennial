@@ -12,6 +12,7 @@ github.com/goose-lang/std v0.5.0/go.mod h1:bnKHDHwU0lHf99eMI5PVM77UweRyu6qgM/h43
 github.com/kr/pty v1.1.1 h1:VkoXIwSboBpnk99O/KFauAEILuNHv5DVFKZMBN/gUgw=
 github.com/mit-pdos/gokv v0.0.0-20240710184135-76e2d6393889 h1:GjAmEiCKVc1yAEFb3ZyeaRfT6rzxZiJTSaI10p0sy7Q=
 github.com/mit-pdos/gokv v0.0.0-20240710184135-76e2d6393889/go.mod h1:LXcj7Z77EPHRIhK2Vv7+6PFi/3Okj36Qm5kQ7gq9NDk=
+github.com/mit-pdos/gokv v0.1.1/go.mod h1:ZLlOibv49aW6WzNYy/kyew+xwSOLk94LY8qYjheZHJ8=
 github.com/mit-pdos/vmvcc v0.0.0-20230715174658-6a95955d9979 h1:uCgx7zbcx6jUUHMwaBDEilJ1YHApLdhrJOh1NJ1fOvc=
 github.com/mit-pdos/vmvcc v0.0.0-20230715174658-6a95955d9979/go.mod h1:fzuSriWmRv/JeMdRV0W7dgKlRmWXuHoWhycaT2vQLbs=
 github.com/stretchr/objx v0.5.2 h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=

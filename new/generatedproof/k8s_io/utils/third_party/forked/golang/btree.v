@@ -31,7 +31,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance FreeList_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (btree.FreeList.t T') (btree.FreeListⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance FreeList_access_load_mu `{!TypedPointsto (Σ:=Σ) T'} l (v : (btree.FreeList.t T')) dq :
@@ -87,7 +87,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance node_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (btree.node.t T') (btree.nodeⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance node_access_load_items `{!TypedPointsto (Σ:=Σ) T'} l (v : (btree.node.t T')) dq :
@@ -155,7 +155,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance optionalItem_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (btree.optionalItem.t T') (btree.optionalItemⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance optionalItem_access_load_item `{!TypedPointsto (Σ:=Σ) T'} l (v : (btree.optionalItem.t T')) dq :
@@ -212,7 +212,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance BTree_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (btree.BTree.t T') (btree.BTreeⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance BTree_access_load_degree `{!TypedPointsto (Σ:=Σ) T'} l (v : (btree.BTree.t T')) dq :
@@ -293,7 +293,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance copyOnWriteContext_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (btree.copyOnWriteContext.t T') (btree.copyOnWriteContextⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance copyOnWriteContext_access_load_freelist `{!TypedPointsto (Σ:=Σ) T'} l (v : (btree.copyOnWriteContext.t T')) dq :

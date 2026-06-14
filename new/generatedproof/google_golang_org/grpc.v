@@ -2219,7 +2219,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (grpc.ServerStreamingClient.t Res'). Admitted.
 
 #[global] Instance ServerStreamingClient_into_val_typed
-  `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
+  (Res : go.type) `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
   IntoValTypedUnderlying (grpc.ServerStreamingClient.t Res') (grpc.ServerStreamingClientⁱᵐᵖˡ Res).
 Proof. Admitted.
 
@@ -2239,7 +2239,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (grpc.ServerStreamingServer.t Res'). Admitted.
 
 #[global] Instance ServerStreamingServer_into_val_typed
-  `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
+  (Res : go.type) `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
   IntoValTypedUnderlying (grpc.ServerStreamingServer.t Res') (grpc.ServerStreamingServerⁱᵐᵖˡ Res).
 Proof. Admitted.
 
@@ -2259,7 +2259,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (grpc.ClientStreamingClient.t Req' Res'). Admitted.
 
 #[global] Instance ClientStreamingClient_into_val_typed
-  `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
+  (Req : go.type) `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} (Res : go.type) `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
   IntoValTypedUnderlying (grpc.ClientStreamingClient.t Req' Res') (grpc.ClientStreamingClientⁱᵐᵖˡ Req Res).
 Proof. Admitted.
 
@@ -2279,7 +2279,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (grpc.ClientStreamingServer.t Req' Res'). Admitted.
 
 #[global] Instance ClientStreamingServer_into_val_typed
-  `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
+  (Req : go.type) `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} (Res : go.type) `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
   IntoValTypedUnderlying (grpc.ClientStreamingServer.t Req' Res') (grpc.ClientStreamingServerⁱᵐᵖˡ Req Res).
 Proof. Admitted.
 
@@ -2299,7 +2299,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (grpc.BidiStreamingClient.t Req' Res'). Admitted.
 
 #[global] Instance BidiStreamingClient_into_val_typed
-  `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
+  (Req : go.type) `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} (Res : go.type) `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
   IntoValTypedUnderlying (grpc.BidiStreamingClient.t Req' Res') (grpc.BidiStreamingClientⁱᵐᵖˡ Req Res).
 Proof. Admitted.
 
@@ -2319,7 +2319,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (grpc.BidiStreamingServer.t Req' Res'). Admitted.
 
 #[global] Instance BidiStreamingServer_into_val_typed
-  `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
+  (Req : go.type) `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} (Res : go.type) `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
   IntoValTypedUnderlying (grpc.BidiStreamingServer.t Req' Res') (grpc.BidiStreamingServerⁱᵐᵖˡ Req Res).
 Proof. Admitted.
 
@@ -2339,7 +2339,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (grpc.GenericClientStream.t Req' Res'). Admitted.
 
 #[global] Instance GenericClientStream_into_val_typed
-  `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
+  (Req : go.type) `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} (Res : go.type) `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
   IntoValTypedUnderlying (grpc.GenericClientStream.t Req' Res') (grpc.GenericClientStreamⁱᵐᵖˡ Req Res).
 Proof. Admitted.
 
@@ -2359,7 +2359,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (grpc.GenericServerStream.t Req' Res'). Admitted.
 
 #[global] Instance GenericServerStream_into_val_typed
-  `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
+  (Req : go.type) `{!ZeroVal Req'} `{!TypedPointsto (Σ:=Σ) Req'} `{!IntoValTyped Req' Req} (Res : go.type) `{!ZeroVal Res'} `{!TypedPointsto (Σ:=Σ) Res'} `{!IntoValTyped Res' Res}  :
   IntoValTypedUnderlying (grpc.GenericServerStream.t Req' Res') (grpc.GenericServerStreamⁱᵐᵖˡ Req Res).
 Proof. Admitted.
 
