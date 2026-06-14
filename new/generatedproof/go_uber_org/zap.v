@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (zap.objects.t T'). Admitted.
 
 #[global] Instance objects_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (zap.objects.t T') (zap.objectsⁱᵐᵖˡ T).
 Proof. Admitted.
 
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (zap.ObjectMarshalerPtr.t T'). Admitted.
 
 #[global] Instance ObjectMarshalerPtr_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (zap.ObjectMarshalerPtr.t T') (zap.ObjectMarshalerPtrⁱᵐᵖˡ T).
 Proof. Admitted.
 
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (zap.objectValues.t T' P'). Admitted.
 
 #[global] Instance objectValues_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!ZeroVal P'} `{!TypedPointsto (Σ:=Σ) P'} `{!IntoValTyped P' P}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} (P : go.type) `{!ZeroVal P'} `{!TypedPointsto (Σ:=Σ) P'} `{!IntoValTyped P' P}  :
   IntoValTypedUnderlying (zap.objectValues.t T' P') (zap.objectValuesⁱᵐᵖˡ T P).
 Proof. Admitted.
 
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (zap.stringers.t T'). Admitted.
 
 #[global] Instance stringers_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (zap.stringers.t T') (zap.stringersⁱᵐᵖˡ T).
 Proof. Admitted.
 
@@ -600,7 +600,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (zap.anyFieldC.t T'). Admitted.
 
 #[global] Instance anyFieldC_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (zap.anyFieldC.t T') (zap.anyFieldCⁱᵐᵖˡ T).
 Proof. Admitted.
 

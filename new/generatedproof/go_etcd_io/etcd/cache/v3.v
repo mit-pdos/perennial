@@ -465,7 +465,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (cache.ringBuffer.t T'). Admitted.
 
 #[global] Instance ringBuffer_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (cache.ringBuffer.t T') (cache.ringBufferⁱᵐᵖˡ T).
 Proof. Admitted.
 
@@ -485,7 +485,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (cache.entry.t T'). Admitted.
 
 #[global] Instance entry_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (cache.entry.t T') (cache.entryⁱᵐᵖˡ T).
 Proof. Admitted.
 
@@ -505,7 +505,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (cache.RevisionOf.t T'). Admitted.
 
 #[global] Instance RevisionOf_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (cache.RevisionOf.t T') (cache.RevisionOfⁱᵐᵖˡ T).
 Proof. Admitted.
 
@@ -525,7 +525,7 @@ Local Set Default Proof Using "All".
   TypedPointsto (Σ:=Σ) (cache.IterFunc.t T'). Admitted.
 
 #[global] Instance IterFunc_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  (T : go.type) `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (cache.IterFunc.t T') (cache.IterFuncⁱᵐᵖˡ T).
 Proof. Admitted.
 

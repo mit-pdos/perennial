@@ -28,6 +28,10 @@ Definition MultiParam {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.typ
 
 #[global] Opaque MultiParam.
 
+Definition TypeParamCollision {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) (C : go.type) : go.type := go.Named "github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.TypeParamCollision"%go [T; C].
+
+#[global] Opaque TypeParamCollision.
+
 Definition nonStructGeneric {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.nonStructGeneric"%go [T].
 
 #[global] Opaque nonStructGeneric.
@@ -145,7 +149,7 @@ Definition useContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     do:  ((StructFieldRef (Container go.uint64) "W"%go "container") <-[go.uint64] "$r0");;;
     return: #()).
 
-(* go: generics.go:75:6 *)
+(* go: generics.go:80:6 *)
 Definition useMultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "mp" := (GoAlloc (MultiParam go.uint64 go.bool) (GoZeroVal (MultiParam go.uint64 go.bool) #())) in
@@ -157,7 +161,7 @@ Definition useMultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  ((StructFieldRef (MultiParam go.uint64 go.bool) "X"%go "mp") <-[go.uint64] "$r0");;;
     return: #()).
 
-(* go: generics.go:80:6 *)
+(* go: generics.go:85:6 *)
 Definition swapMultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
   λ: "p",
     exception_do (let: "p" := (GoAlloc (go.PointerType (MultiParam A A)) "p") in
@@ -170,7 +174,7 @@ Definition swapMultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  ((StructFieldRef (MultiParam A A) "Y"%go (![go.PointerType (MultiParam A A)] "p")) <-[A] "$r0");;;
     return: #()).
 
-(* go: generics.go:86:6 *)
+(* go: generics.go:91:6 *)
 Definition multiParamFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A B : go.type) : val :=
   λ: "x" "b",
     exception_do (let: "b" := (GoAlloc B "b") in
@@ -178,7 +182,7 @@ Definition multiParamFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     return: (let: "$v0" := (![B] "b") in
      CompositeLiteral (go.SliceType B) (LiteralValue [KeyedElement None (ElementExpression B "$v0")]))).
 
-(* go: generics.go:90:6 *)
+(* go: generics.go:95:6 *)
 Definition useMultiParamFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (do:  (let: "$a0" := #(W64 1) in
@@ -187,7 +191,7 @@ Definition useMultiParamFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     return: (#());;;
     return: #()).
 
-(* go: generics.go:96:6 *)
+(* go: generics.go:101:6 *)
 Definition useAnyPointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -383,6 +387,41 @@ Class MultiParam_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
   #[global] MultiParam_set_X A B A' B' (x : MultiParam.t A' B') y :: ⟦StructFieldSet (MultiParamⁱᵐᵖˡ A B) "X", (#x, #y)⟧ ⤳[under] #(x <|MultiParam.X' := y|>);
 }.
 
+Module TypeParamCollision.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t {T C : Type} :=
+mk {
+  X' : T;
+  Y' : C;
+}.
+
+#[global] Instance zero_val `{!ZeroVal T} `{!ZeroVal C} : ZeroVal t := {| zero_val := mk T C (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+End TypeParamCollision.
+
+Definition TypeParamCollision'fds_unsealed (T : go.type) (C : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "X"%go T);
+  (go.FieldDecl "Y"%go C)
+].
+Program Definition TypeParamCollision'fds (T : go.type) (C : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (TypeParamCollision'fds_unsealed T C).
+Global Instance equals_unfold_TypeParamCollision T C {ext : ffi_syntax} {go_gctx : GoGlobalContext} : TypeParamCollision'fds T C =→ TypeParamCollision'fds_unsealed T C.
+Proof. rewrite /TypeParamCollision'fds seal_eq //. Qed.
+
+Definition TypeParamCollisionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) (C : go.type) : go.type := go.StructType (TypeParamCollision'fds T C).
+
+Class TypeParamCollision_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] TypeParamCollision_type_repr T T' `{!ZeroVal T'} `{!TypeRepr T T'}C C' `{!ZeroVal C'} `{!TypeRepr C C'} :: go.TypeReprUnderlying (TypeParamCollisionⁱᵐᵖˡ T C) (TypeParamCollision.t T' C');
+  #[global] TypeParamCollision_underlying T C :: (TypeParamCollision T C) <u (TypeParamCollisionⁱᵐᵖˡ T C);
+  #[global] TypeParamCollision_get_X T C T' C' (x : TypeParamCollision.t T' C') :: ⟦StructFieldGet (TypeParamCollisionⁱᵐᵖˡ T C) "X", #x⟧ ⤳[under] #x.(TypeParamCollision.X');
+  #[global] TypeParamCollision_set_X T C T' C' (x : TypeParamCollision.t T' C') y :: ⟦StructFieldSet (TypeParamCollisionⁱᵐᵖˡ T C) "X", (#x, #y)⟧ ⤳[under] #(x <|TypeParamCollision.X' := y|>);
+  #[global] TypeParamCollision_get_Y T C T' C' (x : TypeParamCollision.t T' C') :: ⟦StructFieldGet (TypeParamCollisionⁱᵐᵖˡ T C) "Y", #x⟧ ⤳[under] #x.(TypeParamCollision.Y');
+  #[global] TypeParamCollision_set_Y T C T' C' (x : TypeParamCollision.t T' C') y :: ⟦StructFieldSet (TypeParamCollisionⁱᵐᵖˡ T C) "Y", (#x, #y)⟧ ⤳[under] #(x <|TypeParamCollision.Y' := y|>);
+}.
+
 Module nonStructGeneric.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -436,6 +475,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] UseContainer_instance :: UseContainer_Assumptions;
   #[global] OnlyIndirect_instance :: OnlyIndirect_Assumptions;
   #[global] MultiParam_instance :: MultiParam_Assumptions;
+  #[global] TypeParamCollision_instance :: TypeParamCollision_Assumptions;
   #[global] nonStructGeneric_instance :: nonStructGeneric_Assumptions;
   #[global] useNonStructGeneric_instance :: useNonStructGeneric_Assumptions;
   #[global] UnderlyingSlice_unfold T :: FuncUnfold UnderlyingSlice [T] (UnderlyingSliceⁱᵐᵖˡ T);

@@ -16,7 +16,7 @@
 
 {{ define "IntoValParams" -}}
 {{- range $p:= . -}}
-`{!ZeroVal {{$p}}'} `{!TypedPointsto (Σ:=Σ) {{$p}}'} `{!IntoValTyped {{$p}}' {{$p}}} {{ end -}}
+({{$p}} : go.type) `{!ZeroVal {{$p}}'} `{!TypedPointsto (Σ:=Σ) {{$p}}'} `{!IntoValTyped {{$p}}' {{$p}}} {{ end -}}
 {{- end -}}
 
 {{- range $t := .Types -}}
