@@ -58,17 +58,25 @@ Theorem wp_ReadInt tail (s : slice.t) dq x :
   {{{ s', RET (#x, #s'); s' ↦*{dq} tail }}}.
 Proof.
   wp_start as "Hs". wp_auto.
-  (*
-  wp_apply (wp_UInt64Get_unchanged with "Hs").
-  { rewrite /list.untype fmap_app take_app_length' //. len. }
-  iIntros "Hs".
-  wp_apply (wp_SliceSkip_small with "Hs").
-  { len. }
-  iIntros (s') "Hs'". wp_auto. iApply "HΦ".
-  rewrite drop_app_length'; [done|len].
+  iDestruct (own_slice_len with "Hs") as %[Hsz Hpos].
+  iDestruct (own_slice_wf with "Hs") as %Hwf.
+  iDestruct (is_pkg_init_unfold_deps with "[$]") as "(#Hbin & _)".
+  wp_apply (wp_LittleEndian_Uint64 with "[$Hbin $Hs]").
+  { rewrite u64_le_length //. }
+  iIntros "Hs". wp_auto.
+  rewrite length_app u64_le_length in Hsz.
+  rewrite -> decide_True by word.
+  wp_auto. rewrite u64_le_to_word. iApply "HΦ".
+  assert (Hb: 0 ≤ sint.Z (W64 8) ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.len)) by word.
+  iEval (rewrite (own_slice_slice (W64 8) s.(slice.len) s dq (u64_le x ++ tail) Hb)) in "Hs".
+  iDestruct "Hs" as "(_ & Htail & _)".
+  iExactEq "Htail". f_equal.
+  rewrite /subslice.
+  replace (sint.nat (W64 8)) with 8%nat by word.
+  replace (sint.nat s.(slice.len)) with (8 + length tail)%nat by word.
+  rewrite take_ge; [|rewrite length_app u64_le_length; lia].
+  rewrite drop_app_length'; [done|rewrite u64_le_length //].
 Qed.
-*)
-Admitted.
 
 Theorem wp_ReadInt32 tail s dq (x: u32) :
   {{{ is_pkg_init marshal ∗ s ↦*{dq} (u32_le x ++ tail) }}}
@@ -76,17 +84,25 @@ Theorem wp_ReadInt32 tail s dq (x: u32) :
   {{{ s', RET (#x, #s'); s' ↦*{dq} tail }}}.
 Proof.
   wp_start as "Hs". wp_auto.
-(*
-  wp_apply (wp_UInt32Get_unchanged with "Hs").
-  { rewrite /list.untype fmap_app take_app_length' //. len. }
-  iIntros "Hs".
-  wp_apply (wp_SliceSkip_small with "Hs").
-  { len. }
-  iIntros (s') "Hs'". wp_auto. iApply "HΦ".
-  rewrite drop_app_length'; [done|len].
+  iDestruct (own_slice_len with "Hs") as %[Hsz Hpos].
+  iDestruct (own_slice_wf with "Hs") as %Hwf.
+  iDestruct (is_pkg_init_unfold_deps with "[$]") as "(#Hbin & _)".
+  wp_apply (wp_LittleEndian_Uint32 with "[$Hbin $Hs]").
+  { rewrite u32_le_length //. }
+  iIntros "Hs". wp_auto.
+  rewrite length_app u32_le_length in Hsz.
+  rewrite -> decide_True by word.
+  wp_auto. rewrite u32_le_to_word. iApply "HΦ".
+  assert (Hb: 0 ≤ sint.Z (W64 4) ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.len)) by word.
+  iEval (rewrite (own_slice_slice (W64 4) s.(slice.len) s dq (u32_le x ++ tail) Hb)) in "Hs".
+  iDestruct "Hs" as "(_ & Htail & _)".
+  iExactEq "Htail". f_equal.
+  rewrite /subslice.
+  replace (sint.nat (W64 4)) with 4%nat by word.
+  replace (sint.nat s.(slice.len)) with (4 + length tail)%nat by word.
+  rewrite take_ge; [|rewrite length_app u32_le_length; lia].
+  rewrite drop_app_length'; [done|rewrite u32_le_length //].
 Qed.
-*)
-Admitted.
 
 Theorem wp_ReadBytes s dq (len: u64) (head tail : list u8) :
   length head = uint.nat len →
@@ -95,25 +111,25 @@ Theorem wp_ReadBytes s dq (len: u64) (head tail : list u8) :
   {{{ b s', RET (#b, #s'); b ↦*{dq} head ∗ s' ↦*{dq} tail }}}.
 Proof.
   iIntros (Hlen). wp_start as "Hs". wp_auto.
-(*
-  iDestruct (own_slice_len with "Hs") as %Hsz.
-  autorewrite with len in Hsz.
+  iDestruct (own_slice_len with "Hs") as %[Hsz Hpos].
   iDestruct (own_slice_wf with "Hs") as %Hwf.
-  wp_apply (wp_SliceTake).
-  { word. }
-  wp_apply (wp_SliceSkip).
-  { word. }
-  wp_auto.
-  iModIntro.
+  rewrite length_app in Hsz.
+  rewrite -> decide_True by word. wp_auto.
+  rewrite -> decide_True by word. wp_auto.
   iApply "HΦ".
-  iDestruct (slice_small_split _ len with "Hs") as "[Hs1 Hs2]".
-  { len. }
-  iSplitL "Hs1".
-  - rewrite take_app_length' //.
-  - rewrite drop_app_length' //.
+  assert (Hb: 0 ≤ sint.Z len ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.len)) by word.
+  iEval (rewrite (own_slice_slice len s.(slice.len) s dq (head ++ tail) Hb)) in "Hs".
+  iDestruct "Hs" as "(H1 & H2 & _)".
+  iSplitL "H1".
+  - iExactEq "H1". f_equal.
+    replace (sint.nat len) with (length head) by word.
+    rewrite take_app_length' //.
+  - iExactEq "H2". f_equal. rewrite /subslice.
+    replace (sint.nat s.(slice.len)) with (length head + length tail)%nat by word.
+    rewrite take_ge; [|rewrite length_app; lia].
+    replace (sint.nat len) with (length head) by word.
+    rewrite drop_app_length' //.
 Qed.
-*)
-Admitted.
 
 Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
   length head = uint.nat len →
@@ -122,31 +138,34 @@ Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
   {{{ b s', RET (#b, #s'); b ↦*{DfracOwn 1} head ∗ s' ↦*{q} tail }}}.
 Proof.
   iIntros (Hlen). wp_start as "Hs". wp_auto.
-(*
-  wp_apply wp_NewSlice. iIntros (b) "Hb".
-  iDestruct (own_slice_len with "Hs") as %Hsz.
+  iDestruct (own_slice_len with "Hs") as %[Hsz Hpos].
   iDestruct (own_slice_wf with "Hs") as %Hwf.
   rewrite length_app in Hsz.
-  wp_apply wp_SliceTake.
+  wp_apply wp_slice_make2.
   { word. }
-  iDestruct (slice_small_split _ len with "Hs") as "[Hs Hsclose]".
-  { rewrite length_app. word. }
-  iDestruct (own_slice_acc with "Hb") as "[Hb Hbclose]".
-  wp_apply (wp_SliceCopy_full with "[$Hs $Hb]").
-  { iPureIntro. len. }
-  iIntros (l) "(%Hl_val & Hs & Hb)".
-  iDestruct (own_slice_combine with "Hs Hsclose") as "Hs".
-  { word. }
-  rewrite take_drop.
-  wp_apply (wp_SliceSkip_small with "Hs").
-  { len. }
-  iIntros (s') "Hs'".
-  wp_auto. iApply "HΦ". iModIntro. iSplitR "Hs'".
-  - iApply "Hbclose". rewrite take_app_length' //.
-  - rewrite drop_app_length' //.
+  iIntros (sl) "[Hsl Hcap]". wp_auto.
+  rewrite -> decide_True by word. wp_auto.
+  assert (Hb: 0 ≤ sint.Z len ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.len)) by word.
+  iEval (rewrite (own_slice_slice len s.(slice.len) s q (head ++ tail) Hb)) in "Hs".
+  iDestruct "Hs" as "(Hhead & Htail & _)".
+  wp_apply (wp_slice_copy with "[$Hsl $Hhead]").
+  iIntros (n) "(%Hn & Hsl & Hhead)". wp_auto.
+  rewrite -> decide_True by word. wp_auto.
+  iApply "HΦ".
+  iSplitL "Hsl".
+  - iExactEq "Hsl". f_equal.
+    replace (sint.nat len) with (length head) by word.
+    rewrite length_replicate.
+    rewrite take_app_length'; [|done].
+    rewrite take_ge; [|done].
+    rewrite drop_ge; [|rewrite length_replicate; done].
+    rewrite app_nil_r //.
+  - iExactEq "Htail". f_equal. rewrite /subslice.
+    replace (sint.nat s.(slice.len)) with (length head + length tail)%nat by word.
+    rewrite take_ge; [|rewrite length_app; lia].
+    replace (sint.nat len) with (length head) by word.
+    rewrite drop_app_length' //.
 Qed.
-*)
-Admitted.
 
 Theorem wp_ReadLenPrefixedBytes s q (len: u64) (head tail : list u8):
   length head = uint.nat len →
@@ -176,30 +195,30 @@ Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
       s' ↦*{q} tail }}}.
 Proof.
   wp_start as "Hs". wp_auto.
-(*
-  wp_apply (wp_SliceGet with "[$Hs]"); [ auto | ].
-  iIntros "Hs".
+  iDestruct (own_slice_len with "Hs") as %[Hsz Hpos].
+  iDestruct (own_slice_wf with "Hs") as %Hwf.
+  simpl in Hsz.
+  rewrite -> decide_True by word.
+  wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; [word | | ].
+  { iPureIntro. reflexivity. }
   wp_auto.
-  wp_apply (wp_SliceSkip_small with "Hs").
-  { len. }
-  iIntros (s') "Hs".
-  wp_auto. iModIntro.
+  rewrite -> decide_True by word.
+  wp_auto.
   iApply "HΦ".
   iSplit.
-  { iPureIntro. rewrite -bool_decide_not !bool_decide_decide.
-    assert (#bit ≠ #(U8 0) ↔ uint.Z bit ≠ 0).
-    { apply not_iff_compat.
-      split.
-    - inversion 1; subst; auto.
-    - intros H.
-      repeat (f_equal; try word).
-    }
-    destruct (decide _), (decide _); auto; tauto.
-  }
-  iApply "Hs".
+  - iPureIntro.
+    case_bool_decide as H1; case_bool_decide as H2; simpl; try reflexivity; exfalso.
+    + apply H2. subst bit. word.
+    + apply H1. word.
+  - assert (Hb: 0 ≤ sint.Z (W64 1) ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.len)) by word.
+    iEval (rewrite (own_slice_slice (W64 1) s.(slice.len) s q (bit :: tail) Hb)) in "Hs".
+    iDestruct "Hs" as "(_ & H & _)".
+    iExactEq "H". f_equal. rewrite /subslice.
+    replace (sint.nat s.(slice.len)) with (S (length tail)) by word.
+    rewrite take_ge; [|simpl; lia].
+    replace (sint.nat (W64 1)) with 1%nat by word.
+    reflexivity.
 Qed.
-*)
-Admitted.
 
 Lemma drop_succ :
   forall {A : Type} (l : list A) (x : A) (l' : list A) (n : nat),
@@ -268,31 +287,49 @@ Theorem wp_WriteInt s x (vs : list u8) :
   {{{ s', RET #s'; s' ↦*{DfracOwn 1} (vs ++ u64_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
-(*
-  wp_apply (wp_reserve with "Hs"). clear s. iIntros (s) "[% Hs]". wp_auto.
-  iDestruct (own_slice_wf with "Hs") as %Hwf.
-  iDestruct (own_slice_sz with "Hs") as %Hsz.
-  wp_apply wp_slice_len. wp_auto.
-  wp_apply (wp_SliceTake_full_cap with "Hs").
+  iDestruct (is_pkg_init_unfold_deps with "[$]") as "(#Hbin & #Hstd & _)".
+  wp_apply (wp_reserve with "[$Hs $Hcap]") as "%s2 (%Hroom & Hs & Hcap)".
+  iDestruct (own_slice_len with "Hs") as %[Hsz Hpos].
+  iDestruct (own_slice_cap_wf with "Hcap") as %Hcapwf.
+  rewrite -> decide_True by word.
+  wp_auto.
+  set (B := slice.slice s2 w8 (W64 0) (word.add s2.(slice.len) (W64 8))).
+  iDestruct (own_slice_slice_into_capacity (W64 0) (word.add s2.(slice.len) (W64 8)) s2 vs
+              with "[$Hs $Hcap]") as (vs_cap) "(_ & Hb3 & Hb3cap)".
   { word. }
-  iIntros (ex) "[%Hex Hsl]".
-  set (s' := slice_take _ _).
-  wp_apply wp_SliceSkip.
-  { rewrite /slice_take /=. word. }
-  iDestruct (slice.own_slice_split_acc s.(slice.len_f) with "Hsl") as "[Hsl Hclose]".
-  { len. }
-  wp_apply (wp_UInt64Put with "Hsl").
-  { len. }
-  iIntros "Hsl". iDestruct ("Hclose" with "Hsl") as "Hsl".
-  wp_auto. iApply "HΦ". iModIntro.
-  rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
-  rewrite /list.untype fmap_app. f_equal.
-  { rewrite take_app_length' //. len. }
-  rewrite drop_ge; [|len].
-  by list_simplifier.
+  rewrite drop_0. fold B.
+  iDestruct (own_slice_cap_wf with "Hb3cap") as %HBwf.
+  iDestruct (own_slice_len with "Hb3") as %[Hb3len _].
+  rewrite length_app in Hb3len.
+  assert (HBlen : sint.nat B.(slice.len) = (length vs + 8)%nat) by (subst B; simpl; word).
+  assert (Hvc : length vs_cap = 8%nat) by lia.
+  rewrite -> decide_True by (subst B; simpl; word).
+  wp_auto.
+  assert (Hbd : 0 ≤ sint.Z s2.(slice.len) ≤ sint.Z B.(slice.len) ≤ sint.Z B.(slice.len))
+    by (subst B; simpl; word).
+  iEval (rewrite (own_slice_slice s2.(slice.len) B.(slice.len) B _ (vs ++ vs_cap) Hbd)) in "Hb3".
+  iDestruct "Hb3" as "(H0 & Hput & _)".
+  assert (Htake : take (sint.nat s2.(slice.len)) (vs ++ vs_cap) = vs).
+  { replace (sint.nat s2.(slice.len)) with (length vs) by word.
+    rewrite take_app_length' //. }
+  assert (Hsub : subslice (sint.nat s2.(slice.len)) (sint.nat B.(slice.len)) (vs ++ vs_cap) = vs_cap).
+  { rewrite /subslice. rewrite take_ge; [|rewrite length_app; word].
+    replace (sint.nat s2.(slice.len)) with (length vs) by word.
+    rewrite drop_app_length' //. }
+  iEval (rewrite Hsub) in "Hput".
+  iEval (rewrite -{1}(app_nil_r vs_cap)) in "Hput".
+  iEval (rewrite Htake) in "H0".
+  wp_apply (wp_LittleEndian_PutUint64 with "[$Hbin $Hput]").
+  { exact Hvc. }
+  iIntros "Hput". wp_auto.
+  iApply "HΦ". iFrame "Hb3cap".
+  iApply own_slice_trivial_slice.
+  iDestruct (own_slice_combine s2.(slice.len) with "H0 Hput") as "H".
+  { split.
+    - rewrite Hsz. word.
+    - replace (sint.Z (W64 0)) with 0%Z by word. lia. }
+  iExactEq "H". rewrite app_nil_r //.
 Qed.
-*)
-Admitted.
 
 Theorem wp_WriteInt32 s x (vs : list u8) :
   {{{ is_pkg_init marshal ∗ s ↦*{DfracOwn 1} vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
@@ -300,31 +337,49 @@ Theorem wp_WriteInt32 s x (vs : list u8) :
   {{{ s', RET #s'; s' ↦*{DfracOwn 1} (vs ++ u32_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
-(*
-  wp_apply (wp_reserve with "Hs"). clear s. iIntros (s) "[% Hs]". wp_auto.
-  iDestruct (own_slice_wf with "Hs") as %Hwf.
-  iDestruct (own_slice_sz with "Hs") as %Hsz.
-  wp_apply wp_slice_len. wp_auto.
-  wp_apply (wp_SliceTake_full_cap with "Hs").
+  iDestruct (is_pkg_init_unfold_deps with "[$]") as "(#Hbin & #Hstd & _)".
+  wp_apply (wp_reserve with "[$Hs $Hcap]") as "%s2 (%Hroom & Hs & Hcap)".
+  iDestruct (own_slice_len with "Hs") as %[Hsz Hpos].
+  iDestruct (own_slice_cap_wf with "Hcap") as %Hcapwf.
+  rewrite -> decide_True by word.
+  wp_auto.
+  set (B := slice.slice s2 w8 (W64 0) (word.add s2.(slice.len) (W64 4))).
+  iDestruct (own_slice_slice_into_capacity (W64 0) (word.add s2.(slice.len) (W64 4)) s2 vs
+              with "[$Hs $Hcap]") as (vs_cap) "(_ & Hb3 & Hb3cap)".
   { word. }
-  iIntros (ex) "[%Hex Hsl]".
-  set (s' := slice_take _ _).
-  wp_apply wp_SliceSkip.
-  { rewrite /slice_take /=. word. }
-  iDestruct (slice.own_slice_split_acc s.(slice.len_f) with "Hsl") as "[Hsl Hclose]".
-  { len. }
-  wp_apply (wp_UInt32Put with "Hsl").
-  { len. }
-  iIntros "Hsl". iDestruct ("Hclose" with "Hsl") as "Hsl".
-  wp_auto. iApply "HΦ". iModIntro.
-  rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
-  rewrite /list.untype fmap_app. f_equal.
-  { rewrite take_app_length' //. len. }
-  rewrite drop_ge; [|len].
-  by list_simplifier.
+  rewrite drop_0. fold B.
+  iDestruct (own_slice_cap_wf with "Hb3cap") as %HBwf.
+  iDestruct (own_slice_len with "Hb3") as %[Hb3len _].
+  rewrite length_app in Hb3len.
+  assert (HBlen : sint.nat B.(slice.len) = (length vs + 4)%nat) by (subst B; simpl; word).
+  assert (Hvc : length vs_cap = 4%nat) by lia.
+  rewrite -> decide_True by (subst B; simpl; word).
+  wp_auto.
+  assert (Hbd : 0 ≤ sint.Z s2.(slice.len) ≤ sint.Z B.(slice.len) ≤ sint.Z B.(slice.len))
+    by (subst B; simpl; word).
+  iEval (rewrite (own_slice_slice s2.(slice.len) B.(slice.len) B _ (vs ++ vs_cap) Hbd)) in "Hb3".
+  iDestruct "Hb3" as "(H0 & Hput & _)".
+  assert (Htake : take (sint.nat s2.(slice.len)) (vs ++ vs_cap) = vs).
+  { replace (sint.nat s2.(slice.len)) with (length vs) by word.
+    rewrite take_app_length' //. }
+  assert (Hsub : subslice (sint.nat s2.(slice.len)) (sint.nat B.(slice.len)) (vs ++ vs_cap) = vs_cap).
+  { rewrite /subslice. rewrite take_ge; [|rewrite length_app; word].
+    replace (sint.nat s2.(slice.len)) with (length vs) by word.
+    rewrite drop_app_length' //. }
+  iEval (rewrite Hsub) in "Hput".
+  iEval (rewrite -{1}(app_nil_r vs_cap)) in "Hput".
+  iEval (rewrite Htake) in "H0".
+  wp_apply (wp_LittleEndian_PutUint32 with "[$Hbin $Hput]").
+  { exact Hvc. }
+  iIntros "Hput". wp_auto.
+  iApply "HΦ". iFrame "Hb3cap".
+  iApply own_slice_trivial_slice.
+  iDestruct (own_slice_combine s2.(slice.len) with "H0 Hput") as "H".
+  { split.
+    - rewrite Hsz. word.
+    - replace (sint.Z (W64 0)) with 0%Z by word. lia. }
+  iExactEq "H". rewrite app_nil_r //.
 Qed.
-*)
-Admitted.
 
 Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
   {{{ is_pkg_init marshal ∗ s ↦*{DfracOwn 1} vs ∗ data_sl ↦*{q} data ∗ own_slice_cap w8 s (DfracOwn 1) }}}
@@ -336,13 +391,10 @@ Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
   }}}.
 Proof.
   wp_start as "(Hs & Hcap & Hdata)". wp_auto.
-(*
-  wp_apply (wp_SliceAppendSlice with "[$Hs $Hdata]"); first done.
-  iIntros (s') "[Hs' Hdata]".
-  iApply ("HΦ" with "[$]").
+  wp_apply (wp_slice_append with "[$Hs $Hdata $Hcap]").
+  iIntros (s') "(Hs' & Hcap' & Hdata')". wp_auto.
+  iApply "HΦ". iFrame.
 Qed.
-*)
-Admitted.
 
 Theorem wp_WriteLenPrefixedBytes s (vs : list u8) data_sl q (data : list u8) :
   {{{
@@ -383,11 +435,14 @@ Theorem wp_WriteBool s (vs: list u8) (b: bool) :
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
   destruct b; wp_auto.
-(*
-  - wp_apply (wp_SliceAppend with "Hs"); auto.
-  - wp_apply (wp_SliceAppend with "Hs"); auto.
+  - wp_apply wp_slice_literal. iSplitR; first done. iIntros "% [Hsl _]". wp_auto.
+    wp_apply (wp_slice_append with "[$Hs $Hcap $Hsl]").
+    iIntros (s') "(Hs' & Hcap' & _)". wp_auto.
+    iApply "HΦ". iFrame.
+  - wp_apply wp_slice_literal. iSplitR; first done. iIntros "% [Hsl _]". wp_auto.
+    wp_apply (wp_slice_append with "[$Hs $Hcap $Hsl]").
+    iIntros (s') "(Hs' & Hcap' & _)". wp_auto.
+    iApply "HΦ". iFrame.
 Qed.
-*)
-Admitted.
 
 End wps.
