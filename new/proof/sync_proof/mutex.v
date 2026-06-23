@@ -47,8 +47,7 @@ Lemma wp_Mutex__TryLock m R :
   {{{ (locked : bool), RET #locked; if locked then own_Mutex m ∗ R else True }}}.
 Proof.
   wp_start as "#His".
-  wp_apply (wp_lock_trylock with "[$His]").
-  iIntros (locked) "H".
+  wp_apply (wp_lock_trylock with "[$His]") as (locked) "H" --no-auto.
   iApply "HΦ".
   done.
 Qed.

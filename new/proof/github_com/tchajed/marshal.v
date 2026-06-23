@@ -148,8 +148,7 @@ Proof.
   assert (Hb: 0 ≤ sint.Z len ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.len)) by word.
   iEval (rewrite (own_slice_slice len s.(slice.len) s q (head ++ tail) Hb)) in "Hs".
   iDestruct "Hs" as "(Hhead & Htail & _)".
-  wp_apply (wp_slice_copy with "[$Hsl $Hhead]").
-  iIntros (n) "(%Hn & Hsl & Hhead)". wp_auto.
+  wp_apply (wp_slice_copy with "[$Hsl $Hhead]") as (n) "(%Hn & Hsl & Hhead)".
   rewrite -> decide_True by word. wp_auto.
   iApply "HΦ".
   iSplitL "Hsl".
@@ -180,10 +179,8 @@ Theorem wp_ReadLenPrefixedBytes s q (len: u64) (head tail : list u8):
 Proof.
   iIntros (Hlen).
   wp_start as "Hs". wp_auto.
-  wp_apply (wp_ReadInt with "[$Hs]").
-  iIntros (?) "Hs". wp_auto.
-  wp_apply (wp_ReadBytes with "[$]"); first trivial.
-  iIntros (??) "[Hb Hs]". wp_auto.
+  wp_apply (wp_ReadInt with "[$Hs]") as (?) "Hs".
+  wp_apply (wp_ReadBytes with "[$]") as (? ?) "[Hb Hs]"; first trivial.
   iApply "HΦ". iFrame.
 Qed.
 
@@ -391,8 +388,7 @@ Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
   }}}.
 Proof.
   wp_start as "(Hs & Hcap & Hdata)". wp_auto.
-  wp_apply (wp_slice_append with "[$Hs $Hdata $Hcap]").
-  iIntros (s') "(Hs' & Hcap' & Hdata')". wp_auto.
+  wp_apply (wp_slice_append with "[$Hs $Hdata $Hcap]") as (s') "(Hs' & Hcap' & Hdata')".
   iApply "HΦ". iFrame.
 Qed.
 
@@ -412,10 +408,8 @@ Theorem wp_WriteLenPrefixedBytes s (vs : list u8) data_sl q (data : list u8) :
   }}}.
 Proof.
   wp_start as "(Hs & Hdata & Hscap)". wp_auto.
-  wp_apply (wp_WriteInt with "[$Hs $Hscap]").
-  iIntros (s') "[Hs' Hscap]". wp_auto.
-  wp_apply (wp_WriteBytes with "[$Hs' $Hdata $Hscap]").
-  iIntros (s'0) "(Hs & Hscap & Hdata)". wp_auto.
+  wp_apply (wp_WriteInt with "[$Hs $Hscap]") as (s') "[Hs' Hscap]".
+  wp_apply (wp_WriteBytes with "[$Hs' $Hdata $Hscap]") as (s'0) "(Hs & Hscap & Hdata)".
   iApply "HΦ".
   rewrite -app_assoc.
   iDestruct (own_slice_len with "Hdata") as "[%Hdlen %]".
@@ -436,12 +430,10 @@ Proof.
   wp_start as "[Hs Hcap]". wp_auto.
   destruct b; wp_auto.
   - wp_apply wp_slice_literal. iSplitR; first done. iIntros "% [Hsl _]". wp_auto.
-    wp_apply (wp_slice_append with "[$Hs $Hcap $Hsl]").
-    iIntros (s') "(Hs' & Hcap' & _)". wp_auto.
+    wp_apply (wp_slice_append with "[$Hs $Hcap $Hsl]") as (s') "(Hs' & Hcap' & _)".
     iApply "HΦ". iFrame.
   - wp_apply wp_slice_literal. iSplitR; first done. iIntros "% [Hsl _]". wp_auto.
-    wp_apply (wp_slice_append with "[$Hs $Hcap $Hsl]").
-    iIntros (s') "(Hs' & Hcap' & _)". wp_auto.
+    wp_apply (wp_slice_append with "[$Hs $Hcap $Hsl]") as (s') "(Hs' & Hcap' & _)".
     iApply "HΦ". iFrame.
 Qed.
 

@@ -109,8 +109,8 @@ Ltac2 Type wp_param := [
   | RunAuto(bool)
   (* generate later credits *)
   | GenLc(int)
-  (* intro pattern to run afterward *)
-  | AsClause(Ltac1.t)
+  (* deferred introduction to run afterward (Coq binders + intro pattern) *)
+  | AsClause(unit -> unit)
 ].
 
 Ltac2 Type exn ::= [ WpParamExn(wp_param) ].
@@ -128,13 +128,91 @@ Tactic Notation "--lc" int(n) :=
     let n := Option.get (Ltac1.to_int n') in
     Control.zero (WpParamExn (GenLc n))) in
   f n.
-(* NOTE: does not support other variants of [iIntros] from
-   [iris/iris/proofmode/ltac_tactics.v] to make intro patterns more canonical.
- *)
+(* The [as] clause runs [iIntros] after the [wp_apply]. The bare form [as
+   "ipat"] introduces just the spatial intro pattern; the forms [as (x1 ... xn)
+   "ipat"] additionally introduce up to 8 leading Coq-level binders (e.g. the
+   existentially-quantified return values), exactly as if one had written
+   [iIntros (x1 ... xn) "ipat"] by hand.
+
+   Coq's [Tactic Notation] cannot take a variadic number of [simple_intropattern]
+   arguments in a single rule, so we enumerate the arities (matching the
+   convention used by Iris's own [wp_apply ... as] notation). Each rule packages
+   the introduction as a deferred thunk carried by [AsClause]; [wp_apply] forces
+   it on the last goal after running the lemma. *)
 Tactic Notation "as" constr(ipat) :=
   let f := ltac2:(ipat' |-
-      Control.zero (WpParamExn (AsClause ipat'))) in
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(ip |- iIntros ip) ipat')))) in
   f ipat.
+Tactic Notation "as" "(" simple_intropattern(x1) ")" constr(ipat) :=
+  let f := ltac2:(x1 ipat' |-
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(a1 ip |- iIntros (a1); iIntros ip) x1 ipat')))) in
+  f x1 ipat.
+Tactic Notation "as" "(" simple_intropattern(x1) simple_intropattern(x2) ")"
+    constr(ipat) :=
+  let f := ltac2:(x1 x2 ipat' |-
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(a1 a2 ip |- iIntros (a1); iIntros (a2); iIntros ip)
+          x1 x2 ipat')))) in
+  f x1 x2 ipat.
+Tactic Notation "as" "(" simple_intropattern(x1) simple_intropattern(x2)
+    simple_intropattern(x3) ")" constr(ipat) :=
+  let f := ltac2:(x1 x2 x3 ipat' |-
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(a1 a2 a3 ip |-
+          iIntros (a1); iIntros (a2); iIntros (a3); iIntros ip)
+          x1 x2 x3 ipat')))) in
+  f x1 x2 x3 ipat.
+Tactic Notation "as" "(" simple_intropattern(x1) simple_intropattern(x2)
+    simple_intropattern(x3) simple_intropattern(x4) ")" constr(ipat) :=
+  let f := ltac2:(x1 x2 x3 x4 ipat' |-
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(a1 a2 a3 a4 ip |-
+          iIntros (a1); iIntros (a2); iIntros (a3); iIntros (a4); iIntros ip)
+          x1 x2 x3 x4 ipat')))) in
+  f x1 x2 x3 x4 ipat.
+Tactic Notation "as" "(" simple_intropattern(x1) simple_intropattern(x2)
+    simple_intropattern(x3) simple_intropattern(x4) simple_intropattern(x5) ")"
+    constr(ipat) :=
+  let f := ltac2:(x1 x2 x3 x4 x5 ipat' |-
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(a1 a2 a3 a4 a5 ip |-
+          iIntros (a1); iIntros (a2); iIntros (a3); iIntros (a4); iIntros (a5);
+          iIntros ip)
+          x1 x2 x3 x4 x5 ipat')))) in
+  f x1 x2 x3 x4 x5 ipat.
+Tactic Notation "as" "(" simple_intropattern(x1) simple_intropattern(x2)
+    simple_intropattern(x3) simple_intropattern(x4) simple_intropattern(x5)
+    simple_intropattern(x6) ")" constr(ipat) :=
+  let f := ltac2:(x1 x2 x3 x4 x5 x6 ipat' |-
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(a1 a2 a3 a4 a5 a6 ip |-
+          iIntros (a1); iIntros (a2); iIntros (a3); iIntros (a4); iIntros (a5);
+          iIntros (a6); iIntros ip)
+          x1 x2 x3 x4 x5 x6 ipat')))) in
+  f x1 x2 x3 x4 x5 x6 ipat.
+Tactic Notation "as" "(" simple_intropattern(x1) simple_intropattern(x2)
+    simple_intropattern(x3) simple_intropattern(x4) simple_intropattern(x5)
+    simple_intropattern(x6) simple_intropattern(x7) ")" constr(ipat) :=
+  let f := ltac2:(x1 x2 x3 x4 x5 x6 x7 ipat' |-
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(a1 a2 a3 a4 a5 a6 a7 ip |-
+          iIntros (a1); iIntros (a2); iIntros (a3); iIntros (a4); iIntros (a5);
+          iIntros (a6); iIntros (a7); iIntros ip)
+          x1 x2 x3 x4 x5 x6 x7 ipat')))) in
+  f x1 x2 x3 x4 x5 x6 x7 ipat.
+Tactic Notation "as" "(" simple_intropattern(x1) simple_intropattern(x2)
+    simple_intropattern(x3) simple_intropattern(x4) simple_intropattern(x5)
+    simple_intropattern(x6) simple_intropattern(x7) simple_intropattern(x8) ")"
+    constr(ipat) :=
+  let f := ltac2:(x1 x2 x3 x4 x5 x6 x7 x8 ipat' |-
+      Control.zero (WpParamExn (AsClause (fun () =>
+        ltac1:(a1 a2 a3 a4 a5 a6 a7 a8 ip |-
+          iIntros (a1); iIntros (a2); iIntros (a3); iIntros (a4); iIntros (a5);
+          iIntros (a6); iIntros (a7); iIntros (a8); iIntros ip)
+          x1 x2 x3 x4 x5 x6 x7 x8 ipat')))) in
+  f x1 x2 x3 x4 x5 x6 x7 x8 ipat.
 
 Ltac2 Type exn ::= [WrappedExn(message option, exn)].
 Ltac2 catch_wp_param (thunk : unit -> 'a) : wp_param :=
@@ -185,10 +263,11 @@ Ltac2 wp_apply_core (lem: Ltac1.t) : unit :=
 Ltac2 iIntros (ipat: Ltac1.t) : unit :=
   ltac1:(ipat |- iIntros ipat) ipat.
 
-Ltac2 wp_apply (lem: Ltac1.t) (do_auto: bool) (lc: int) (as_clause: Ltac1.t option) :=
+Ltac2 wp_apply (lem: Ltac1.t) (do_auto: bool) (lc: int)
+    (as_clause: (unit -> unit) option) :=
     wp_apply_core lem; try ltac1:(iPkgInit);
     match as_clause with
-    | Some ipat => focus_last (iIntros ipat)
+    | Some cl => focus_last (cl ())
     | None => ()
     end;
     if do_auto then
@@ -199,13 +278,13 @@ Tactic Notation "wp_apply" open_constr(lem) tactic1_list(ps) :=
   let f := ltac2:(lem ps_raw |-
     let r_auto := Ref.ref wp_apply_auto_default in
     let r_lc := Ref.ref 0 in
-    let r_as: (Ltac1.t option) Ref.ref := Ref.ref None in
+    let r_as: ((unit -> unit) option) Ref.ref := Ref.ref None in
     let ps : Ltac1.t list := Option.get (Ltac1.to_list ps_raw) in
     List.iter (fun p =>
       let param := catch_wp_param (fun () => Ltac1.run p) in
       match param with
       | GenLc n => Ref.set r_lc n
-      | AsClause ipat => Ref.set r_as (Some ipat)
+      | AsClause cl => Ref.set r_as (Some cl)
       | RunAuto b => Ref.set r_auto b
       end
     ) ps;

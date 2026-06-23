@@ -25,8 +25,7 @@ Lemma wp_Node__Propose  ctx ctx_desc n γraft data_sl data :
   {{{ (err : error.t), RET #err; True }}}.
 Proof.
   wp_start. iNamed "Hpre". iNamed "Hnode". subst. simpl.
-  wp_apply (wp_node__Propose with "[$]").
-  iIntros (?) "_". by iApply "HΦ".
+  wp_apply (wp_node__Propose with "[$]") as (?) "_" --no-auto. by iApply "HΦ".
 Qed.
 
 End proof.

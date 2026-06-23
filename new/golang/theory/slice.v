@@ -886,9 +886,8 @@ Proof.
   iDestruct (own_slice_wf with "Hs") as %Hwf.
   wp_apply wp_slice_make2; first word.
   iIntros (zero_sl) "[? _]". wp_auto.
-  wp_apply (wp_slice_copy with "[-HΦ]"); first iFrame.
-  iIntros (?) "(%Hlen' & Hsl & _)".
-  wp_auto. iApply "HΦ".
+  wp_apply (wp_slice_copy with "[-HΦ]") as (?) "(%Hlen' & Hsl & _)"; first iFrame.
+  iApply "HΦ".
   rewrite drop_ge; last len.
   rewrite take_ge; last len. rewrite app_nil_r.
   replace (sint.nat _) with (length vs) by word.

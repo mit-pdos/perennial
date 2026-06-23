@@ -109,8 +109,7 @@ Example wp_Fields_mixed_ws :
       sl ↦* ["hello"%go; "there"%go; "general"%go; "kenobi"%go] ∗ own_slice_cap w8 sl (DfracOwn 1) }}}.
 Proof.
   iIntros (Φ) "#Hinit HΦ".
-  wp_apply (wp_Fields).
-  iIntros (sl) "(Hsl & Hcap)".
+  wp_apply (wp_Fields) as (sl) "(Hsl & Hcap)" --no-auto.
   iApply "HΦ". iFrame.
 Qed.
 
@@ -124,8 +123,7 @@ Example wp_Fields_two_words:
   }}}.
 Proof.
   iIntros (Φ) "#Hinit HΦ".
-  wp_apply (wp_Fields "hello world"%go).
-  iIntros (sl) "(Hsl & Hcap)".
+  wp_apply (wp_Fields "hello world"%go) as (sl) "(Hsl & Hcap)" --no-auto.
   iApply "HΦ". iFrame.
 Qed.
 

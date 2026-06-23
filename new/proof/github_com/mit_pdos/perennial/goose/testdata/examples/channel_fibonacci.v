@@ -182,8 +182,7 @@ Proof.
     wp_apply wp_slice_literal. iSplitR; first done. iIntros "%sl0 [Hsl0 _]". wp_auto.
     iDestruct (slice.own_slice_len with "Hsl0") as "[%Hl0 %Hcap0]".
     iDestruct (slice.own_slice_len with "Hsl0") as "[%Hlen_slice0 %Hslgtz0]".
-    wp_apply (wp_slice_append with "[$Hsl $Hsl0 $oslc ]").
-    iIntros (sl') "Hsl'". wp_auto. wp_for_post. iFrame.
+    wp_apply (wp_slice_append with "[$Hsl $Hsl0 $oslc ]") as (sl') "Hsl'". wp_for_post. iFrame.
     iExists (S i). iDestruct "Hsl'" as "(Hsl & Hcap3 & Hsl0)".
     rewrite Hfib.
     rewrite fib_list_length. rewrite Nat2Z.id. do 2 rewrite <- fib_list_succ.
