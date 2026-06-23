@@ -43,9 +43,8 @@ Lemma wp_worker (γs: chan_names) (ch: loc) (wg: loc) (x y: w64) :
 Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
-  wp_apply (wp_bag_receive with "[$Hchan]").
-  iIntros (s) "Hrcv".
-  wp_auto. iPersist "y x".
+  wp_apply (wp_bag_receive with "[$Hchan]") as (s) "Hrcv".
+  iPersist "y x".
   iAssert (∃ s,
       "s" ∷ s_ptr ↦ s ∗
       "Hrcv" ∷ chanP wg x y s
@@ -69,9 +68,8 @@ Proof.
     { rewrite take_ge; last word. rewrite drop_ge; last word.
       rewrite app_nil_r. iFrame. }
     wp_for_post.
-    wp_apply (wp_bag_receive with "[$Hchan]").
-    iIntros (s') "Hrcv".
-    wp_auto. iFrame.
+    wp_apply (wp_bag_receive with "[$Hchan]") as (s') "Hrcv".
+    iFrame.
   - rewrite -> decide_True; last done. wp_auto.
     rewrite -> decide_True; last word.
     assert (sint.nat i < length xs)%nat as Hlt by word.

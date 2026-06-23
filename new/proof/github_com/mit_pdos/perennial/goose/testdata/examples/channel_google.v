@@ -169,8 +169,7 @@ Lemma wp_Google (q : go_string) :
       ∃ xs, sl ↦* xs ∗ ⌜xs ≡ₚ google_expected q⌝ }}}.
 Proof using All.
   wp_start. wp_auto.
-  wp_apply (chan.wp_make2 (W64 3)); first done.
-  iIntros (c γch) "(#Hchan & %Hcap3 & Hown)".
+  wp_apply (chan.wp_make2 (W64 3)) as (c γch) "(#Hchan & %Hcap3 & Hown)" --no-auto; first done.
   simpl in *.
   iMod (start_future
           (V:=go_string)
@@ -218,9 +217,7 @@ Proof using All.
               with "[$Hmf $Hprom_vid]");done.
   }
 
-  wp_apply (wp_slice_make3 (V:=go_string) (t:=go.string));first word.
-  iIntros (sl) "[Hsl [Hcap_sl %Hcap]]".
-  wp_auto.
+  wp_apply (wp_slice_make3 (V:=go_string) (t:=go.string)) as (sl) "[Hsl [Hcap_sl %Hcap]]";first word.
 
   iAssert (∃ (i : Z) (xs : list go_string)
                   (donek remk : list kind) (sl0 : slice.t),
@@ -262,9 +259,8 @@ Proof using All.
     iDestruct (contract_of_sound q k v with "HPv") as %->.
     wp_auto.
     wp_apply wp_slice_literal. iSplitR; first done. iIntros "% [Hsl1 _]". wp_auto.
-    wp_apply (wp_slice_append with "[$Hsl $Hcap $Hsl1]").
-    iIntros (sl') "[Hsl' Hcap']".
-    wp_auto. set j := length pre. set remk' := delete j remk.
+    wp_apply (wp_slice_append with "[$Hsl $Hcap $Hsl1]") as (sl') "[Hsl' Hcap']".
+    set j := length pre. set remk' := delete j remk.
     have Hj_lt_map : j < length (map (contract_of q) remk).
     {
       subst j. rewrite HsplitP. rewrite app_length /=.

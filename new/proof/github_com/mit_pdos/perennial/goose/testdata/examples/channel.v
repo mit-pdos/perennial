@@ -178,8 +178,7 @@ Lemma wp_HelloWorldSync :
 Proof.
   wp_start. wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hchan #Hfut]".
-  wp_apply (wp_bag_receive with "Hfut").
-  iIntros (v) "%Hv". wp_auto. subst v.
+  wp_apply (wp_bag_receive with "Hfut") as (v) "%Hv". subst v.
   iApply "HΦ". done.
 Qed.
 
@@ -248,8 +247,7 @@ Proof.
     iIntros "_". wp_auto. done.
   }
 
-  wp_apply (wp_HelloWorldCancellable with "[$Hdone_broadcast]").
-  iIntros (result) "%Hres". wp_auto. iApply "HΦ".
+  wp_apply (wp_HelloWorldCancellable with "[$Hdone_broadcast]") as (result) "%Hres". iApply "HΦ".
   iPureIntro. destruct Hres; auto.
 Qed.
 
@@ -281,8 +279,7 @@ Proof.
     wp_apply (wp_future_fulfill (V:=unit) (t:=go.StructType []) with "[$Hisfut $Hpromise $message]").
     done.
   }
-  wp_apply (wp_future_await (V:=unit) (t:=go.StructType []) with "[$Hisfut $HAwait]").
-  iIntros (v P pre post) "(%Hsplit & HP & _)".
+  wp_apply (wp_future_await (V:=unit) (t:=go.StructType []) with "[$Hisfut $HAwait]") as (v P pre post) "(%Hsplit & HP & _)" --no-auto.
   destruct pre; simpl in Hsplit; [injection Hsplit as <- | exfalso; by destruct pre].
   destruct post; [|done].
   wp_auto.
@@ -322,8 +319,7 @@ Proof.
     wp_apply (wp_future_fulfill (V:=unit) (t:=go.StructType []) with "[$Hisfut $Hpromise2 $world]").
     done.
   }
-  wp_apply (wp_future_await (V:=unit) (t:=go.StructType []) with "[$Hisfut $HAwait]").
-  iIntros (v1 P1 pre1 post1) "(%Hsplit1 & HP1 & HAwait)".
+  wp_apply (wp_future_await (V:=unit) (t:=go.StructType []) with "[$Hisfut $HAwait]") as (v1 P1 pre1 post1) "(%Hsplit1 & HP1 & HAwait)" --no-auto.
   (* Resolve which contract was fulfilled first *)
   destruct pre1 as [|? pre1']; simpl in Hsplit1;
     [ injection Hsplit1 as ? Hpost1; subst P1 post1; simpl in *
@@ -368,12 +364,9 @@ Lemma wp_BroadcastExample :
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
-  wp_apply (chan.wp_make1).
-  iIntros (done_ch γdone) "(#Hdone_is_chan & _ & Hdone_own)". wp_auto. simpl.
-  wp_apply (chan.wp_make1).
-  iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
-  wp_apply (chan.wp_make1).
-  iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
+  wp_apply (chan.wp_make1) as (done_ch γdone) "(#Hdone_is_chan & _ & Hdone_own)". simpl.
+  wp_apply (chan.wp_make1) as (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". simpl.
+  wp_apply (chan.wp_make1) as (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". simpl.
   iMod (start_bag (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own")
     as "#Hbag1".
   { done. }
@@ -405,9 +398,8 @@ Proof.
   iPersist "sharedValue".
   wp_apply (wp_broadcast_chan_close (ty:=go.ChannelType go.sendrecv (go.StructType [])) with "[$Hown_done $sharedValue]").
   iIntros "_". wp_auto.
-  wp_apply (wp_bag_receive with "Hbag1").
-  iIntros (v1) "%Hv1". subst v1. wp_auto.
-  wp_apply (wp_bag_receive with "Hbag2"). iIntros (v2) "%Hv2".
+  wp_apply (wp_bag_receive with "Hbag1") as (v1) "%Hv1" --no-auto. subst v1. wp_auto.
+  wp_apply (wp_bag_receive with "Hbag2") as (v2) "%Hv2" --no-auto.
   subst v2. wp_auto. by iApply "HΦ".
   Unshelve. all: try apply _. all: try exact sem.
 Qed.

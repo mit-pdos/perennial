@@ -100,9 +100,7 @@ Proof.
   wp_start as "#HisLock".
   iNamed "HisLock".
   wp_auto.
-  wp_apply (wp_After).
-  iIntros (after_ch γafter_ch) "#Hafter_chan".
-  wp_auto_lc 2.
+  wp_apply (wp_After) as (after_ch γafter_ch) "#Hafter_chan" --lc 2.
   wp_apply chan.wp_select_blocking. simpl.
    iSplit.
   - simpl. iExists unit, l.(Lock.ch'), γ.(lchan_name), tt, _, _, _.

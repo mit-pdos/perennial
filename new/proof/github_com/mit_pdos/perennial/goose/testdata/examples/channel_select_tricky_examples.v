@@ -223,9 +223,7 @@ Lemma wp_select_nb_full_buffer_not_ready :
 Proof.
   wp_start. wp_auto_lc 2.
 
-  wp_apply (chan.wp_make2); first done.
-  iIntros (ch γ) "(#His_chan & %Hcap & Hown)".
-  wp_auto.
+  wp_apply (chan.wp_make2) as (ch γ) "(#His_chan & %Hcap & Hown)"; first done.
 
   (* First send: use the empty-buffer AU to fill buffer to [0]. *)
   wp_apply (chan.wp_send ch (W64 0) γ with "[$His_chan]").

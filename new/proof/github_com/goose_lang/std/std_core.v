@@ -221,9 +221,7 @@ Proof.
       repeat f_equal.
       word.
     + f_equal; word.
-  - wp_apply (wp_Shuffle with "[$Hs]").
-    iIntros (xs') "[%Hperm Hs]".
-    wp_auto.
+  - wp_apply (wp_Shuffle with "[$Hs]") as (xs') "[%Hperm Hs]".
     iApply "HΦ".
     iFrame.
     iPureIntro.

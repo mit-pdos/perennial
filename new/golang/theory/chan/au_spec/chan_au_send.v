@@ -159,8 +159,7 @@ Proof using W.
       iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
       iDestruct (slice.own_slice_len with "slice") as "[%Hlen_slice %Hslgtz]".
       iDestruct (own_slice_wf with "slice") as "%Hwf".
-      wp_apply (wp_slice_append with "[$slice $Hsl $slice_cap]").
-      iIntros (fr) "(Hfr & Hfrsl & Hsl)". wp_auto_lc 1.
+      wp_apply (wp_slice_append with "[$slice $Hsl $slice_cap]") as (fr) "(Hfr & Hfrsl & Hsl)" --lc 1.
 
       iApply fupd_wp. iLeft in "HΦ". iMod "HΦ".
       iMod (lc_fupd_elim_later with "[$] HΦ") as "Hlogatom".
@@ -397,8 +396,7 @@ Proof using W.
       { simpl in *. len. }
       iMod ("Hcont" with "Hchanrepfrag") as "Hstep". iModIntro.
       wp_apply wp_slice_literal. iSplitR; first done. iIntros "%sl [Hsl _]". wp_auto.
-      wp_apply (wp_slice_append with "[$slice_inv $Hsl $slice_cap_inv]").
-      iIntros (fr) "(slice_inv & slice_cap_inv & Hsl)". wp_auto.
+      wp_apply (wp_slice_append with "[$slice_inv $Hsl $slice_cap_inv]") as (fr) "(slice_inv & slice_cap_inv & Hsl)".
       iCombineNamed "*_inv" as "Hi".
       wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
       { iNamed "Hi". unfold chan_inv_inner. iExists (Buffered (buffer ++ [v])). iFrame. }
@@ -510,8 +508,7 @@ Proof using W.
       2:{ exfalso. word. }
       iMod ("Hcont" with "Hchanrepfrag") as "Hstep". iModIntro.
       wp_apply wp_slice_literal. iSplitR; first done. iIntros "%sl [Hsl _]". wp_auto.
-      wp_apply (wp_slice_append with "[$slice_inv $Hsl $slice_cap_inv]").
-      iIntros (fr) "(slice_inv & slice_cap_inv & Hsl)". wp_auto.
+      wp_apply (wp_slice_append with "[$slice_inv $Hsl $slice_cap_inv]") as (fr) "(slice_inv & slice_cap_inv & Hsl)".
       iCombineNamed "*_inv" as "Hi".
       wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
       { iNamed "Hi". unfold chan_inv_inner. iExists (Buffered (buffer ++ [v])). iFrame. }

@@ -163,13 +163,11 @@ Proof.
       iMod "Hau". iModIntro. iNext. iNamed "Hau".
       iFrame. destruct s.
       * iIntros "H". iSpecialize ("Hcont" with "[$]").
-        iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-        iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
+        iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont") as (?) "HΦ". iApply "Hwand". iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
         iMod "Hcont". iModIntro. iNext. iNamed "Hcont". iFrame.
         destruct s; try iFrame. iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-        iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
-        iIntros (v) "HΦ". wp_auto. iApply "Hwand". iFrame.
+        iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner") as (v) "HΦ". iApply "Hwand". iFrame.
       * iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
         wp_auto. wp_apply (wp_wand with "Hcont"). iIntros (v) "HΦ".
@@ -332,8 +330,7 @@ Proof.
       iLeft in "Hau". iMod "Hau". iModIntro. iNext. iNamed "Hau".
       iFrame. destruct s.
       * iIntros "H". iSpecialize ("Hcont" with "[$]").
-        iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-        iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
+        iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont") as (?) "HΦ". iApply "Hwand". iFrame.
       * done.
       * done.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.

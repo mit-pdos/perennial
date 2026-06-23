@@ -49,8 +49,7 @@ Qed.
   Proof using All.
 
   wp_start as "Hawait". iNamed "Hawait".
-  wp_apply (wp_future_await with "[$Hfut $HAwait]").
-  iIntros (v P pre post) "(%Hsplit & HP & _HAwait)".
+  wp_apply (wp_future_await with "[$Hfut $HAwait]") as (v P pre post) "(%Hsplit & HP & _HAwait)" --no-auto.
   destruct pre as [|? pre']; simpl in Hsplit.
   - injection Hsplit as <-.
     destruct post as [|? post']; last done.

@@ -283,8 +283,7 @@ Proof.
   }
   iSpecialize ("Hiter" $! i key v with "[//] HP").
   erewrite drop_S; last done. rewrite fmap_cons foldr_cons.
-  rewrite Hagree Hlookup /=. wp_apply (wp_wand with "Hiter").
-  iIntros (execv) "Hpost".
+  rewrite Hagree Hlookup /=. wp_apply (wp_wand with "Hiter") as (execv) "Hpost" --no-auto.
   rewrite -Z2Nat.inj_succ; last lia.
   iDestruct "Hpost" as "[[-> H]|Hpost]".
   { wp_auto. rewrite continue_val_unseal. wp_auto.

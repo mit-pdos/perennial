@@ -87,8 +87,7 @@ Proof using W.
     rewrite -wp_fupd.
     wp_alloc mu as "mu".
     wp_auto.
-    wp_apply (wp_slice_make2 (V:=V)); first done.
-    iIntros (sl) ("Hsl"). wp_auto.
+    wp_apply (wp_slice_make2 (V:=V)) as (sl) "Hsl"; first done.
     wp_alloc ch as "Hch".
     wp_auto.
     iDestruct (typed_pointsto_not_null with "Hch") as "%Hnot_null".
