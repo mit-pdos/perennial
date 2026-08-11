@@ -52,7 +52,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.UV_VERSION }}
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           # pin exact version for deterministic stdlib translation.
           go-version: "1.26.0"
