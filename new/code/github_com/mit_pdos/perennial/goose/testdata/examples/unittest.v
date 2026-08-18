@@ -512,6 +512,8 @@ Definition CopyMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :=
 
 Definition MapSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/perennial/goose/testdata/examples/unittest.MapSize"%go.
 
+Definition NamedMapAssignment {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/perennial/goose/testdata/examples/unittest.NamedMapAssignment"%go.
+
 Definition MapTypeAliases {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/perennial/goose/testdata/examples/unittest.MapTypeAliases"%go.
 
 Definition StringMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/perennial/goose/testdata/examples/unittest.StringMap"%go.
@@ -2135,6 +2137,16 @@ Definition MapSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
      (FuncResolve go.len [go.MapType go.uint64 go.bool] #()) "$a0"))).
 
 (* go: maps.go:26:6 *)
+Definition NamedMapAssignmentⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "m" := (GoAlloc MapWrapper (GoZeroVal MapWrapper #())) in
+    let: "$r0" := ((FuncResolve go.make1 [MapWrapper] #()) #()) in
+    do:  ("m" <-[MapWrapper] "$r0");;;
+    let: "$r0" := #true in
+    do:  (map.insert go.uint64 (![MapWrapper] "m") #(W64 1) "$r0");;;
+    return: (![MapWrapper] "m")).
+
+(* go: maps.go:32:6 *)
 Definition MapTypeAliasesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m1" "m2",
     exception_do (let: "m2" := (GoAlloc MapWrapper "m2") in
@@ -2143,13 +2155,13 @@ Definition MapTypeAliasesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  (map.insert IntWrapper (![go.MapType IntWrapper go.bool] "m1") #(W64 4) "$r0");;;
     return: #()).
 
-(* go: maps.go:30:6 *)
+(* go: maps.go:36:6 *)
 Definition StringMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
     exception_do (let: "m" := (GoAlloc (go.MapType go.string go.uint64) "m") in
     return: (map.lookup1 go.string go.uint64 (![go.MapType go.string go.uint64] "m") #"foo"%go)).
 
-(* go: maps.go:39:6 *)
+(* go: maps.go:45:6 *)
 Definition mapUpdateFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.MapType go.uint64 (go.PointerType mapElem)) (GoZeroVal (go.MapType go.uint64 (go.PointerType mapElem)) #())) in
@@ -2159,7 +2171,7 @@ Definition mapUpdateFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  ((StructFieldRef mapElem "a"%go (map.lookup1 go.uint64 (go.PointerType mapElem) (![go.MapType go.uint64 (go.PointerType mapElem)] "x") #(W64 0))) <-[go.uint64] "$r0");;;
     return: #()).
 
-(* go: maps.go:52:6 *)
+(* go: maps.go:58:6 *)
 Definition mapGetCallⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "handlers" := (GoAlloc (go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))) (GoZeroVal (go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))) #())) in
@@ -2172,7 +2184,7 @@ Definition mapGetCallⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     do:  ((map.lookup1 go.uint64 (go.FunctionType (go.Signature [] false [])) (![go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))] "handlers") #(W64 0)) #());;;
     return: #()).
 
-(* go: maps.go:58:6 *)
+(* go: maps.go:64:6 *)
 Definition mapLiteralTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ascii" := (GoAlloc (go.MapType go.string go.uint64) (GoZeroVal (go.MapType go.string go.uint64) #())) in
@@ -2186,7 +2198,7 @@ Definition mapLiteralTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  ("ascii" <-[go.MapType go.string go.uint64] "$r0");;;
     return: (![go.MapType go.string go.uint64] "ascii")).
 
-(* go: maps.go:67:6 *)
+(* go: maps.go:73:6 *)
 Definition mapClearTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "m" := (GoAlloc (go.MapType go.int go.bool) (GoZeroVal (go.MapType go.int go.bool) #())) in
@@ -2203,7 +2215,7 @@ Definition mapClearTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     return: (let: "$a0" := (![go.MapType go.int go.bool] "m") in
      (FuncResolve go.len [go.MapType go.int go.bool] #()) "$a0")).
 
-(* go: maps.go:76:6 *)
+(* go: maps.go:82:6 *)
 Definition mapLookupConversionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "m" := (GoAlloc (go.MapType go.any go.bool) (GoZeroVal (go.MapType go.any go.bool) #())) in
@@ -4551,6 +4563,7 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] IterateMapKeys_unfold :: FuncUnfold IterateMapKeys [] (IterateMapKeysⁱᵐᵖˡ);
   #[global] CopyMap_unfold :: FuncUnfold CopyMap [] (CopyMapⁱᵐᵖˡ);
   #[global] MapSize_unfold :: FuncUnfold MapSize [] (MapSizeⁱᵐᵖˡ);
+  #[global] NamedMapAssignment_unfold :: FuncUnfold NamedMapAssignment [] (NamedMapAssignmentⁱᵐᵖˡ);
   #[global] MapTypeAliases_unfold :: FuncUnfold MapTypeAliases [] (MapTypeAliasesⁱᵐᵖˡ);
   #[global] StringMap_unfold :: FuncUnfold StringMap [] (StringMapⁱᵐᵖˡ);
   #[global] mapUpdateField_unfold :: FuncUnfold mapUpdateField [] (mapUpdateFieldⁱᵐᵖˡ);
