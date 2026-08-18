@@ -1524,7 +1524,7 @@ Definition readSet__addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
       do:  ("resp" <-[go.PointerType etcdserverpb.ResponseOp] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := (Convert (go.PointerType etcdserverpb.RangeResponse) (go.PointerType clientv3.GetResponse) ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] "resp")) #())) in
-      do:  ((IndexRef readSet (![readSet] "rs", ![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] "keys", ![go.int] "i")))) <-[go.PointerType clientv3.GetResponse] "$r0")));;;
+      do:  (map.insert go.string (![readSet] "rs") (![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] "keys", ![go.int] "i"))) "$r0")));;;
     return: #()).
 
 (* first returns the store revision from the first fetch
@@ -1675,7 +1675,7 @@ Definition stm__Putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "$a2" := (![go.SliceType clientv3.OpOption] "opts") in
     (FuncResolve clientv3.OpPut [] #()) "$a0" "$a1" "$a2") in
     CompositeLiteral stmPut (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression clientv3.Op "$v1")])) in
-    do:  ((IndexRef writeSet (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s")), ![go.string] "key")) <-[stmPut] "$r0");;;
+    do:  (map.insert go.string (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s"))) (![go.string] "key") "$r0");;;
     return: #()).
 
 (* go: stm.go:256:15 *)
@@ -1688,7 +1688,7 @@ Definition stm__Delⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "$a1" := #slice.nil in
     (FuncResolve clientv3.OpDelete [] #()) "$a0" "$a1") in
     CompositeLiteral stmPut (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression clientv3.Op "$v1")])) in
-    do:  ((IndexRef writeSet (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s")), ![go.string] "key")) <-[stmPut] "$r0");;;
+    do:  (map.insert go.string (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s"))) (![go.string] "key") "$r0");;;
     return: #()).
 
 (* go: stm.go:258:15 *)
@@ -1833,7 +1833,7 @@ Definition stmSerializable__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
         let: "$a1" := (![go.string] "key") in
         (FuncResolve go.delete [go.MapType go.string (go.PointerType clientv3.GetResponse)] #()) "$a0" "$a1");;;
         let: "$r0" := (![go.PointerType clientv3.GetResponse] "resp") in
-        do:  ((IndexRef readSet (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))), ![go.string] "key")) <-[go.PointerType clientv3.GetResponse] "$r0")
+        do:  (map.insert go.string (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) (![go.string] "key") "$r0")
       else do:  #()))));;;
     let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "keys") in
