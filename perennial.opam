@@ -22,7 +22,7 @@ tags: [
 depends: [
   "rocq-runtime" { (>= "9.1" & < "9.3~") | (= "dev") }
   "rocq-stdlib"
-  "coq-coqutil"
+  ("coq-coqutil" | "coq-fiat-crypto-with-bedrock")
   "coq-record-update"
   "rocq-stdpp"
   "rocq-iris"

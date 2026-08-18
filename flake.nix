@@ -64,6 +64,17 @@
               export COQUSERCONTRIB="$out/lib/coq/${rocqVersion}/user-contrib"
             ''
           );
+        # rocq-stdlib is the only store path that holds a complete Rocq prefix:
+        # opam-nix copies rocq-core's Corelib and Ltac2 into it and then installs
+        # Stdlib alongside. rocq-stdlib's setup hook exports ROCQLIB accordingly,
+        # but rocq-core is one of its propagated inputs and unconditionally
+        # re-exports ROCQLIB to its *own* prefix, which has Corelib and Ltac2 but
+        # no Stdlib. Since these opam-nix derivations list their dependencies in
+        # both nativeBuildInputs and buildInputs, rocq-core's hook is activated
+        # last and wins, and every `Require Import List` then fails with
+        # "Unable to locate library List". Re-export ROCQLIB from a build phase,
+        # which runs after all setup hooks, so it cannot be clobbered again.
+        rocqLibOf = rocqStdlib: ocamlVersion: "${rocqStdlib}/lib/ocaml/${ocamlVersion}/site-lib/coq";
         perennialPkgs' =
           (buildOpamProject {
             repos = [
@@ -77,10 +88,14 @@
               final: prev:
               let
                 rocqHook = mkRocqHook prev.rocq-runtime.version prev.ocaml.version;
+                rocqLib = rocqLibOf prev.rocq-stdlib prev.ocaml.version;
                 addRocqHook =
                   pkg:
                   pkg.overrideAttrs (old: {
                     nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ rocqHook ];
+                    preConfigure = (old.preConfigure or "") + ''
+                      export ROCQLIB="${rocqLib}"
+                    '';
                   });
               in
               {
@@ -91,10 +106,13 @@
                 iris-named-props = addRocqHook prev.iris-named-props;
               }
             );
+        # The ROCQLIB that actually contains Stdlib; see rocqLibOf above.
+        rocqLib = rocqLibOf perennialPkgs'.rocq-stdlib perennialPkgs'.ocaml.version;
         perennial = perennialPkgs'.perennial.overrideAttrs (
           finalAttrs: previousAttrs: {
             nativeBuildInputs = with pkgs; [ python3 ] ++ previousAttrs.nativeBuildInputs;
             preBuild = ''
+              export ROCQLIB="${rocqLib}"
               # swap ROCQPATH for COQPATH, avoiding overriding the complex configurationPhase
               export ROCQPATH=$COQPATH
               unset COQPATH
@@ -150,6 +168,7 @@
             ]);
 
             shellHook = ''
+              export ROCQLIB="${rocqLib}"
               # swap ROCQPATH for COQPATH
               export ROCQPATH=$COQPATH
               unset COQPATH
