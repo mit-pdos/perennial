@@ -199,6 +199,19 @@ Proof.
   rewrite lookup_insert_eq. wp_auto. wp_end.
 Qed.
 
+Lemma wp_NamedMapAssignment :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.NamedMapAssignment #()
+  {{{ m, RET #m; m ↦$ {[W64 1 := true]} }}}.
+Proof.
+  wp_start. wp_auto. rewrite go.make1_underlying.
+  rewrite (go.is_underlying (t := unittest.MapWrapper)
+             (tunder := unittest.MapWrapperⁱᵐᵖˡ)).
+  wp_apply wp_map_make1 as "* Hm".
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  wp_end.
+Qed.
+
 Lemma wp_mapLiteralTest :
   {{{
         is_pkg_init unittest

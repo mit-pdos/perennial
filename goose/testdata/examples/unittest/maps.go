@@ -23,6 +23,12 @@ type IntWrapper uint64
 
 type MapWrapper map[uint64]bool
 
+func NamedMapAssignment() MapWrapper {
+	m := make(MapWrapper)
+	m[1] = true
+	return m
+}
+
 func MapTypeAliases(m1 map[IntWrapper]bool, m2 MapWrapper) {
 	m1[4] = m2[uint64(0)]
 }

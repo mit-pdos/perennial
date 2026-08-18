@@ -1487,7 +1487,7 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 		}
 	case *ast.IndexExpr:
 		targetTy := ctx.typeOf(lhs.X)
-		switch t := targetTy.(type) {
+		switch t := targetTy.Underlying().(type) {
 		case *types.Map:
 			return glang.NewDoSeq(glang.NewCallExpr(glang.VerbatimExpr("map.insert"),
 				ctx.glangType(lhs.Index, t.Key()),
