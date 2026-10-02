@@ -21,8 +21,10 @@ reasoning, `program_proof/`) is out of scope.
 * **Iris/stdpp substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. stdpp-style helpers that iris-lean lacks
   live in `Perennial/Std`.
-  * Finite maps are `Std.ExtTreeMap K V compare` (extensional, so `=` works as
-    in stdpp's `gmap`). `gset` is `Std.ExtTreeSet`.
+  * Finite maps are `Perennial.gmap K V` (`Perennial/Std/GMap.lean`): finite
+    partial functions, extensional so `=` works as in stdpp, needing only
+    `DecidableEq K`. `gset K = gmap K Unit`. It is an iris-lean
+    `LawfulFiniteMap`, so iris-lean's `ghost_map`/`gen_heap` apply.
   * Machine words are `BitVec n` (`w64 = BitVec 64`, ...). `uint.Z x` is
     `(x.toNat : Int)` and `sint.Z x` is `x.toInt`. Arithmetic side conditions
     are discharged with `omega`, `bv_omega` and `bv_decide` in place of
@@ -63,8 +65,9 @@ See `PORTING_STATUS.md`.
 * Rocq `Admitted` becomes `sorry`, with a comment `-- Rocq: Admitted` when the
   Rocq source was also admitted. A proof that is merely not ported yet is
   `sorry` with `-- TODO(port)`. Never add `axiom`s except where Rocq has one.
-* Notation: `#x` is `into_val x`; `m !! k`, `<[k := v]> m`, `{[k := v]}` are
-  `gmap` operations; `go!"abc"` is a `go_string` literal; `l +ₗ i` is location
+* Notation: `#x` is `into_val x`; `m !! k`, `<[k := v]> m`, `{[k := v]}` work on
+  both `gmap` and `List` (on lists they are `l[i]?` and `l.set i v`); stdpp's
+  set-valued `dom m` is `domSet m`; `go!"abc"` is a `go_string` literal; `l +ₗ i` is location
   offset.
 * Equality on GooseLang syntax and `go.type` is decided classically
   (`noncomputable instance`), as Rocq admits these instances.

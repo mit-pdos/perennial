@@ -64,6 +64,8 @@ structure t where
 deriving DecidableEq, Inhabited
 
 def nil : slice.t := ⟨null, 0, 0⟩
+/-- Rocq `slice.mk`. -/
+abbrev mk (ptr : loc) (len cap : w64) : slice.t := ⟨ptr, len, cap⟩
 end slice
 
 /-- Primitive (non-composite) values, injected into `val` by `LitV`. -/
@@ -318,6 +320,8 @@ structure t [ffi_syntax] where
 def nil [ffi_syntax] : func.t := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
 
 instance [ffi_syntax] : Inhabited func.t := ⟨nil⟩
+/-- Rocq `func.mk`. -/
+abbrev mk [ffi_syntax] (f x : binder) (e : expr) : func.t := ⟨f, x, e⟩
 end func
 
 /-- `GoGlobalContext` contains the `into_val` function. This allows for the Go
@@ -341,6 +345,8 @@ access, map updates, etc. -/
 class GoLocalContext [ffi_syntax] where
   is_go_step_pure : go_instruction → val → expr → Prop
 
+export GoLocalContext (is_go_step_pure)
+
 namespace chan
 abbrev t := loc
 def nil : chan.t := null
@@ -356,7 +362,11 @@ inductive t [ffi_syntax] where
   | ok (i : t_ok)
   | nil
 
+export t (ok nil)
+
 abbrev mk_ok [ffi_syntax] (ty : go.type) (v : val) : t := .ok ⟨ty, v⟩
+/-- Rocq `interface.mk`. -/
+abbrev mk [ffi_syntax] (ty : go.type) (v : val) : t_ok := ⟨ty, v⟩
 
 end interface
 
@@ -364,6 +374,8 @@ namespace array
 structure t (V : Type) (n : Int) where
   mk ::
   arr : List V
+/-- Rocq `array.mk n arr`. -/
+abbrev mk {V : Type} (n : Int) (arr : List V) : array.t V n := ⟨arr⟩
 end array
 
 /-! ## State -/

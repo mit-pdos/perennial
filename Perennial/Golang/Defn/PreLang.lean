@@ -54,6 +54,15 @@ noncomputable instance : DecidableEq signature := fun a b => Classical.propDecid
 
 instance : Inhabited type := ⟨.Named go!"any" []⟩
 
+-- Rocq constructors live directly in `Module go` (`go.Named`, `go.FieldDecl`, ...).
+export type (Named ArrayType StructType PointerType FunctionType InterfaceType SliceType MapType
+  ChannelType UntypedType)
+export chan_dir (sendrecv sendonly recvonly)
+export field_decl (FieldDecl EmbeddedField)
+export signature (Signature)
+export interface_elem (MethodElem TypeElem)
+export type_term (TypeTerm TypeTermUnderlying)
+
 def string_to_go_string (s : String) : go_string := Perennial.string_to_go_string s
 
 /-- Rocq `type_to_string`, used for comparisons and method lookups. -/
