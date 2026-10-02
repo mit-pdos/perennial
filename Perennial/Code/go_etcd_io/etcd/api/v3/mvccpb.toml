@@ -1,0 +1,3 @@
+translate = ["KeyValue", "Event_EventType", "PUT", "DELETE", "Event"]
+
+imports = ["!*"]

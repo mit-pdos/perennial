@@ -1,0 +1,78 @@
+{{ define "LeanGallinaType" -}}
+{{- if .TypeParams }}({{.PkgName}}.{{.Name}}.t {{- range $param := .TypeParams }} {{$param}}'{{ end -}}){{ else }}{{.PkgName}}.{{.Name}}.t{{ end -}}
+{{- end -}}
+
+{{ define "LeanGoTypeImpl" -}}
+{{- if .TypeParams }}({{.PkgName}}.{{.ImplName}} {{- range $param := .TypeParams }} {{$param}}{{ end -}}){{ else }}{{.PkgName}}.{{.ImplName}}{{ end -}}
+{{- end -}}
+
+{{ define "LeanTypedPointstoParams" -}}
+{{- range $param := . -}}{ {{- $param}}' : Type} [TypedPointsto (GF := GF) {{$param}}'] {{ end -}}
+{{- end -}}
+
+{{ define "LeanIntoValParams" -}}
+{{- range $p:= . -}}
+({{$p}} : go.type) { {{- $p}}' : Type} [ZeroVal {{$p}}'] [TypedPointsto (GF := GF) {{$p}}'] [IntoValTyped {{$p}}' {{$p}}] {{ end -}}
+{{- end -}}
+
+{{- range $t := .Types -}}
+namespace {{$t.Name}}
+section def_
+
+variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
+{{ if eq $.Ffi "" -}}
+variable [hG : heapGS GF]
+{{ else -}}
+variable [heapGS GF]
+{{ end -}}
+variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+{{ if $.Bootstrap -}}
+variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
+{{ else -}}
+variable [sem : go.Semantics]
+{{ end -}}
+variable [package_sem' : {{$t.PkgName}}.Assumptions]
+
+{{ if $t.Axiomatize -}}
+instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}:
+    TypedPointsto (GF := GF) {{template "LeanGallinaType" $t}} :=
+  sorry -- Rocq: Admitted
+{{- else -}}
+instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}:
+    TypedPointsto (GF := GF) {{template "LeanGallinaType" $t}} where
+  typed_pointsto_def l v dq := iprop(
+{{- range $f := $t.LeanFields }}
+    typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq ∗
+{{- end }}
+    True)
+  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
+  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+  typed_pointsto_agree := {{ if $.TrustProofGen }}sorry -- Rocq: Admitted{{ else }}sorry -- TODO(port): solve_typed_pointsto_agree{{ end }}
+{{- end }}
+
+instance {{leanq (print $t.RawName "_into_val_typed")}} {{ template "LeanIntoValParams" $t.TypeParams }}:
+    IntoValTypedUnderlying (GF := GF) {{template "LeanGallinaType" $t}} {{ template "LeanGoTypeImpl" $t}} :=
+{{- if or $t.Axiomatize $.TrustProofGen }}
+  sorry -- Rocq: Admitted
+{{- else }}
+  sorry -- TODO(port): solve_into_val_typed_struct
+{{- end }}
+{{ range $f := $t.LeanFields }}
+instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : loc) (v : {{ template "LeanGallinaType" $t}}) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
+      (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+  sorry -- {{ if $.TrustProofGen }}Rocq: Admitted{{ else }}TODO(port): solve_pointsto_access_struct{{ end }}
+
+instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : loc) (v : {{ template "LeanGallinaType" $t}}) ({{$f.Proj}} : {{$f.Type}}) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} (DFrac.own 1))
+      (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) {{$f.Proj}} (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with {{$f.Proj}} := {{$f.Proj}} } : {{ template "LeanGallinaType" $t}}) (DFrac.own 1)) :=
+  sorry -- {{ if $.TrustProofGen }}Rocq: Admitted{{ else }}TODO(port): solve_pointsto_access_struct{{ end }}
+{{ end }}
+end def_
+end {{$t.Name}}
+
+{{ end -}}

@@ -1,0 +1,226 @@
+package proofgen
+
+import (
+	"fmt"
+	"go/ast"
+	"go/token"
+	"go/types"
+	"iter"
+	"log"
+	"slices"
+	"strconv"
+	"strings"
+
+	"github.com/mit-pdos/perennial/goose/declfilter"
+	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/proofgen/tmpl"
+	"github.com/mit-pdos/perennial/goose/util"
+	"github.com/mit-pdos/perennial/goose/util/toposort"
+	"golang.org/x/tools/go/packages"
+)
+
+type typesTranslator struct {
+	pkg *packages.Package
+
+	specs          []*ast.TypeSpec
+	nameToTypeSpec map[string]*ast.TypeSpec
+
+	filter declfilter.DeclFilter
+}
+
+func (tr typesTranslator) ReadablePos(p token.Pos) string {
+	return tr.pkg.Fset.Position(p).String()
+}
+
+func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Struct) []tmpl.TypeDecl {
+	decl := tr.newTypeDecl(spec, false)
+	if spec.TypeParams != nil {
+		for _, tp := range spec.TypeParams.List {
+			for _, name := range tp.Names {
+				decl.TypeParams = append(decl.TypeParams, name.Name)
+			}
+		}
+	}
+	for i := 0; i < s.NumFields(); i++ {
+		fieldName := s.Field(i).Name()
+		if fieldName == "_" {
+			fieldName = "_" + strconv.Itoa(i)
+		}
+		decl.Fields = append(decl.Fields, fieldName)
+		if glang.Lean {
+			decl.LeanFields = append(decl.LeanFields, tmpl.LeanField{
+				Name:     fieldName,
+				Proj:     glang.LeanQuoteComponent(fieldName + "'"),
+				GoString: glang.LeanStringLit(fieldName),
+				Type:     tr.toLeanType(s.Field(i).Type()),
+			})
+		}
+	}
+	return []tmpl.TypeDecl{decl}
+}
+
+func (tr *typesTranslator) translateType(spec *ast.TypeSpec) []tmpl.TypeDecl {
+	if tr.filter.GetAction(spec.Name.Name) == declfilter.Axiomatize {
+		decl := tr.newTypeDecl(spec, true)
+		if spec.TypeParams != nil {
+			for _, tp := range spec.TypeParams.List {
+				for _, name := range tp.Names {
+					decl.TypeParams = append(decl.TypeParams, name.Name)
+				}
+			}
+		}
+		return []tmpl.TypeDecl{decl}
+	}
+
+	switch s := tr.pkg.TypesInfo.TypeOf(spec.Type).(type) {
+	case *types.Struct:
+		return tr.translateStructType(spec, s)
+	}
+	return nil
+}
+
+func (tr *typesTranslator) Decl(d ast.Decl) {
+	switch d := d.(type) {
+	case *ast.FuncDecl:
+	case *ast.GenDecl:
+		switch d.Tok {
+		case token.TYPE:
+			for _, spec := range d.Specs {
+				spec := spec.(*ast.TypeSpec)
+				if spec.Assign == token.NoPos {
+					switch tr.filter.GetAction(spec.Name.Name) {
+					case declfilter.Translate, declfilter.Axiomatize:
+						tr.specs = append(tr.specs, spec)
+						tr.nameToTypeSpec[spec.Name.Name] = spec
+						continue
+					case declfilter.Trust:
+						continue
+					}
+				}
+			}
+		}
+	case *ast.BadDecl:
+	default:
+	}
+}
+
+func translateTypes(pkg *packages.Package, filter declfilter.DeclFilter) []tmpl.TypeDecl {
+	tr := &typesTranslator{
+		pkg:            pkg,
+		filter:         filter,
+		nameToTypeSpec: make(map[string]*ast.TypeSpec),
+	}
+	for _, f := range pkg.Syntax {
+		for _, d := range f.Decls {
+			tr.Decl(d)
+		}
+	}
+
+	var decls []tmpl.TypeDecl
+
+	for t := range toposort.ToposortSeq(slices.Values(tr.specs),
+		func(s *ast.TypeSpec) iter.Seq[*ast.TypeSpec] {
+			return func(yield func(s *ast.TypeSpec) bool) {
+				if tr.filter.GetAction(s.Name.Name) == declfilter.Axiomatize {
+					return
+				}
+				for n := range util.TypeGetDependencies(pkg.PkgPath, pkg.TypesInfo.TypeOf(s.Type)) {
+					if t, ok := tr.nameToTypeSpec[n]; ok {
+						if !yield(t) {
+							return
+						}
+					}
+				}
+			}
+		},
+		func(cycle []*ast.TypeSpec) {
+			s := "cycle: "
+			sep := ""
+			for _, t := range cycle {
+				s += sep + t.Name.Name
+				sep = "-> "
+			}
+			log.Fatal(cycle[0], "%s", s)
+		}) {
+		decls = append(decls, tr.translateType(t)...)
+	}
+	return decls
+}
+
+func (tr *typesTranslator) newTypeDecl(spec *ast.TypeSpec, axiomatize bool) tmpl.TypeDecl {
+	decl := tmpl.TypeDecl{
+		PkgName:    tr.pkg.Name,
+		Name:       glang.GallinaIdent(spec.Name.Name).Coq(false),
+		TypeParams: nil, // populated by caller
+		Fields:     nil, // populated by caller
+		Axiomatize: axiomatize,
+	}
+	if glang.Lean {
+		decl.PkgName = glang.LeanNamespace(tr.pkg.PkgPath)
+		decl.RawName = decl.Name
+		decl.ImplName = glang.LeanIdent(decl.Name + "ⁱᵐᵖˡ")
+		decl.Name = glang.LeanIdent(spec.Name.Name)
+	}
+	return decl
+}
+
+// toLeanType is the Lean type modeling a Go type (cf. goose's toGallinaType)
+func (tr *typesTranslator) toLeanType(t types.Type) string {
+	switch t := types.Unalias(t).(type) {
+	case *types.Basic:
+		switch t.Name() {
+		case "uint64", "int64", "uint", "int", "float64":
+			return "w64"
+		case "uint32", "int32", "float32":
+			return "w32"
+		case "uint16", "int16":
+			return "w16"
+		case "uint8", "int8", "byte":
+			return "w8"
+		case "bool":
+			return "Bool"
+		case "string", "untyped string":
+			return "go_string"
+		case "Pointer", "uintptr":
+			return "loc"
+		}
+		log.Fatalf("unknown basic type %s", t.Name())
+	case *types.Slice:
+		return "slice.t"
+	case *types.Array:
+		return fmt.Sprintf("(array.t %s %d)", tr.toLeanType(t.Elem()), t.Len())
+	case *types.Pointer:
+		return "loc"
+	case *types.Signature:
+		return "func.t"
+	case *types.Interface:
+		return "interface.t"
+	case *types.Map:
+		return "map.t"
+	case *types.Chan:
+		return "chan.t"
+	case *types.Named:
+		base := glang.ToIdent(t.Obj().Name()) + ".t"
+		if pkg := t.Obj().Pkg(); pkg != nil {
+			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanQuote(base)
+		} else {
+			base = glang.LeanQuote(base)
+		}
+		if t.TypeArgs().Len() > 0 {
+			var params []string
+			for i := 0; i < t.TypeArgs().Len(); i++ {
+				params = append(params, tr.toLeanType(t.TypeArgs().At(i)))
+			}
+			return fmt.Sprintf("(%s %s)", base, strings.Join(params, " "))
+		}
+		return base
+	case *types.TypeParam:
+		return glang.LeanQuote(t.Obj().Name() + "'")
+	case *types.Struct:
+		if t.NumFields() == 0 {
+			return "Unit"
+		}
+	}
+	log.Fatalf("unsupported type %s in struct field", t)
+	return ""
+}

@@ -1,0 +1,12 @@
+translate = ["!*"]
+imports = ["!*"]
+trusted = [
+  "Assume",
+  "RandomUint64",
+  "Mutex*",
+  "ProphId",
+  # FIXME: add remaining functions
+]
+[bootstrap]
+enabled = true
+prelude = []

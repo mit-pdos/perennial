@@ -1,0 +1,5 @@
+translate = ["Ldate", "Ltime", "LstdFlags"]
+
+trusted = ["Printf", "Println"]
+
+imports = ["!*"]

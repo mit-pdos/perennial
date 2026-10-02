@@ -1,0 +1,10 @@
+translate = [
+  "!*",
+  "Unwrap",
+  "New",
+  "AsType",
+  "asType",
+  "errorString*",
+  "ErrUnsupported",
+]
+imports = ["!*"]

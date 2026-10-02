@@ -1,0 +1,2 @@
+translate = ["SortFunc", "*CmpFunc", "xorshift", "xorshift.*", "*Hint"]
+imports = ["!*", "math/bits"]

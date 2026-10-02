@@ -1,0 +1,3 @@
+translate = ["MaxUint64", "MaxInt64", "MaxInt", "MinInt"]
+
+imports = ["!*"]
