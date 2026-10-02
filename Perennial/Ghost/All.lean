@@ -1,5 +1,6 @@
 import Iris
 import Perennial.Std.GMap
+import Perennial.Golang.Theory.Chan.Idioms.Dsp.ProtoModel
 
 /-!
 Port of `new/ghost/all.v`: a universal camera and an `own` that needs no
@@ -77,6 +78,8 @@ inductive ofe where
   | laterO
   | discrete_funO (t : ty) (o : ofe)
   | prodO (a b : ofe)
+  /-- `Later (proto V PROP PROP)` (Actris protocols, `Dsp/ProtoModel.lean`) with `V = t.El`. -/
+  | protoO (t : ty)
 
 mutual
 inductive cmra where
@@ -92,6 +95,8 @@ inductive cmra where
   | max_natR
   | fracR
   | dfracR
+  /-- Rocq `positiveR`: positive naturals under addition (`Perennial.positive`). -/
+  | positiveR
 inductive ucmra where
   | unitUR
   | natUR
@@ -125,6 +130,30 @@ abbrev OFunctorB := Σ F : OFunctorPre.{0,0,0}, OFunctorContractive F
 abbrev RFunctorB := Σ F : OFunctorPre.{0,0,0}, RFunctorContractive F
 abbrev URFunctorB := Σ F : OFunctorPre.{0,0,0}, URFunctorContractive F
 
+/-! ## Positive naturals under addition (Rocq `positiveR`) -/
+
+/-- Rocq `positive` as a CMRA: `⟨k⟩` stands for `k + 1`, the operation is addition, and there
+is no core. (Iris' `Pos` is binary and lacks the arithmetic lemmas needed here.) -/
+@[ext] structure positive where
+  ofPred ::
+  pred : Nat
+  deriving DecidableEq
+
+namespace positive
+instance : Add positive := ⟨fun x y => ⟨x.pred + y.pred + 1⟩⟩
+@[simp] theorem add_pred (x y : positive) : (x + y).pred = x.pred + y.pred + 1 := rfl
+/-- Rocq `Pos.of_nat` (with `of_nat 0 = 1`). -/
+def of_nat (n : Nat) : positive := ⟨n - 1⟩
+/-- `1%positive`. -/
+def one : positive := ⟨0⟩
+instance : Std.Associative (α := positive) (· + ·) := ⟨fun _ _ _ => by ext; simp; omega⟩
+instance : Std.Commutative (α := positive) (· + ·) := ⟨fun _ _ => by ext; simp; omega⟩
+instance : COFE positive := COFE.ofDiscrete positive
+instance : OFE.Discrete positive := ⟨id⟩
+instance : CMRA positive := PosCommMonoidLike.instCMRA
+instance : CMRA.Discrete positive := PosCommMonoidLike.instDiscrete
+end positive
+
 def intO : Syntax.ofe → OFunctorB
   | .unitO => ⟨constOF Unit, inferInstance⟩
   | .leibnizO t => ⟨constOF (DiscreteO t.El), inferInstance⟩
@@ -135,6 +164,7 @@ def intO : Syntax.ofe → OFunctorB
   | .prodO a b =>
     letI := (intO a).2; letI := (intO b).2
     ⟨ProdOF (intO a).1 (intO b).1, inferInstance⟩
+  | .protoO t => ⟨LaterOF (protoOF t.El IdOF IdOF), inferInstance⟩
 
 instance (o : Syntax.ofe) : OFunctorContractive (intO o).1 := (intO o).2
 
@@ -154,6 +184,7 @@ def intF : Syntax.cmra → RFunctorB
   | .max_natR => ⟨constOF MaxNat, inferInstance⟩
   | .fracR => ⟨constOF Qp, inferInstance⟩
   | .dfracR => ⟨constOF DFrac, inferInstance⟩
+  | .positiveR => ⟨constOF positive, inferInstance⟩
 def intUF : Syntax.ucmra → URFunctorB
   | .unitUR => ⟨constOF Unit, inferInstance⟩
   | .natUR => ⟨constOF Nat, inferInstance⟩
@@ -253,6 +284,8 @@ instance is_laterO : IsOfe PROP (Later PROP) .laterO := ⟨rfl⟩
 instance is_discrete_funO [ht : IsTy A t] [OFE B] [hB : IsOfe PROP B o] :
     IsOfe PROP (A → B) (.discrete_funO t o) := by
   obtain ⟨rfl⟩ := ht; is_subst hB; exact ⟨rfl⟩
+instance is_protoO [h : IsTy V t] : IsOfe PROP (Later (proto V PROP PROP)) (.protoO t) := by
+  obtain ⟨rfl⟩ := h; exact ⟨rfl⟩
 instance is_prodO [OFE A] [OFE B] [hA : IsOfe PROP A a] [hB : IsOfe PROP B b] :
     IsOfe PROP (A × B) (.prodO a b) := by
   is_subst hA; is_subst hB; exact ⟨rfl⟩
@@ -281,6 +314,7 @@ instance is_natR : IsCmra PROP Nat .natR := ⟨rfl⟩
 instance is_max_natR : IsCmra PROP MaxNat .max_natR := ⟨rfl⟩
 instance is_fracR : IsCmra PROP Qp .fracR := ⟨rfl⟩
 instance is_dfracR : IsCmra PROP DFrac .dfracR := ⟨rfl⟩
+instance is_positiveR : IsCmra PROP positive .positiveR := ⟨rfl⟩
 
 instance is_unitUR : IsUcmra PROP Unit .unitUR := ⟨rfl⟩
 instance is_natUR : IsUcmra PROP Nat .natUR := ⟨rfl⟩
