@@ -11,3 +11,6 @@ import Perennial.GooseLang.Ffi.DiskFfi.Adequacy
 import Perennial.Ghost
 import Perennial.Golang.Defn
 import Perennial.Golang.Theory
+import Perennial.Golang.Theory.Chan
+import Perennial.Golang.Theory.ChanAuto
+import Perennial.Golang.Theory.Chan.Idioms.Idioms
