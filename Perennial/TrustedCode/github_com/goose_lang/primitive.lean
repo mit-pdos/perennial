@@ -51,7 +51,7 @@ def «ResolveProphⁱᵐᵖˡ» : val := λ: "p" "val", ResolveProph (Var "p") (
 
 def «Linearizeⁱᵐᵖˡ» : val := λ: <>, #()
 
-def «Mutexⁱᵐᵖˡ» : go.type := go.bool
+@[reducible] def «Mutexⁱᵐᵖˡ» : go.type := go.bool
 
 def «Mutex__Lockⁱᵐᵖˡ» : val :=
   λ: "m" <>, lock.lock "m"
@@ -59,7 +59,7 @@ def «Mutex__Lockⁱᵐᵖˡ» : val :=
 def «Mutex__Unlockⁱᵐᵖˡ» : val :=
   λ: "m" <>, lock.unlock "m"
 
-def «ProphIdⁱᵐᵖˡ» : go.type := go.proph_id
+@[reducible] def «ProphIdⁱᵐᵖˡ» : go.type := go.proph_id
 
 end code
 

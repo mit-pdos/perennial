@@ -14,7 +14,7 @@ namespace sync
 section code
 variable [ffi_syntax] [GoGlobalContext]
 
-def «Mutexⁱᵐᵖˡ» : go.type := go.bool
+@[reducible] def «Mutexⁱᵐᵖˡ» : go.type := go.bool
 
 def «Mutex__TryLockⁱᵐᵖˡ» : val :=
   λ: "m" <>, lock.trylock "m"
