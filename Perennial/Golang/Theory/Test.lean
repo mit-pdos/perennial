@@ -306,6 +306,16 @@ example (l : loc) (v : w64) (Φ : val → IProp GF) :
   iexists l
   iexact Hl
 
+/-- `wp_apply` discharges closed pure side conditions of the spec (here the
+bounds check `0 ≤ 0` of `wp_load_slice_index`). -/
+example (sl : slice.t) (x : w64) (Φ : val → IProp GF) :
+    sl ↦* [x] ∗ (sl ↦* [x] -∗ Φ #x) ⊢
+      WP (App (Val (GoInstruction (GoLoad go.uint64))) (Val #(slice_index_ref w64 0 sl))) {{ Φ }} := by
+  iintro ⟨Hs, H⟩
+  wp_apply wp_load_slice_index sl 0 [x] _ x $$ [$Hs] as Hs
+  · ipureintro; rfl
+  iapply H $$ Hs
+
 set_option goose.wp.extras true in
 /-- Projections of interface values are reduced (extras). -/
 example (Φ : val → IProp GF) (t : go.type) (v : val) :
@@ -318,6 +328,8 @@ section consts
 variable [ffi_syntax] [GoGlobalContext]
 /-- A package constant, as goose generates it. -/
 def testConst : val := #(W64 3)
+/-- An implementation constant, as `wp_func_call`/`wp_method_call` produce. -/
+def «testFnⁱᵐᵖˡ» : val := LamV "x" (Var "x")
 end consts
 
 section proofs2
@@ -331,6 +343,13 @@ set_option goose.wp.extras true in
 example (Φ : val → IProp GF) :
     Φ #(W64 3 + W64 1) ⊢ WP (App (Val (GoInstruction (GoOp GoPlus go.uint64)))
       (Pair (Val testConst) (Val #(W64 1)))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+/-- `wp_auto` steps into a call of an implementation constant `«Fooⁱᵐᵖˡ»`. -/
+example (Φ : val → IProp GF) :
+    Φ #(W64 3) ⊢ WP (App (Val «testFnⁱᵐᵖˡ») (Val #(W64 3))) {{ Φ }} := by
   iintro H
   wp_auto
   iexact H

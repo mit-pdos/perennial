@@ -166,8 +166,10 @@ first `n` pure steps (fails if there are fewer).
 It stops at: calls of functions (use `wp_apply`, or `wp_func_call; wp_call`),
 `if:` on a non-literal condition (`wp_if_destruct`), loops (`wp_for`),
 and anonymous allocations (`wp_alloc`, `wp_alloc_anon`). With `goose.wp.extras`
-(the default) it also stores function literals and unfolds blocking package
-constants.
+(the default) it also stores function literals, unfolds blocking package
+constants and steps into calls of implementation constants `«Fooⁱᵐᵖˡ» v` (as left
+by `wp_method_call`/`wp_func_call`). It only clears the points-to facts of Go
+local variables (`x_ptr`), not of other locations.
 
 ### `wp_pures`, `wp_pure [pat]`, `wp_pure_lc H`, `wp_expr_simp`
 
@@ -207,8 +209,13 @@ Lean comment) and are rejected with an error. `with` is a synonym of `as`.
    binding the context (Rocq `wp_bind` + `iApply`). If it does not fit, run
    `wp_pures` and try again.
 2. Strip a leading `▷` from the premise goals and close trivial ones; solve
-   `is_pkg_init` premises (`iPkgInit`).
-3. Introduce `pats` (iris-lean intro patterns) in the continuation and run
+   `is_pkg_init` premises (`iPkgInit`); close pure side conditions without
+   metavariables (e.g. a bounds check `0 ≤ 0`) with `decide` or `word`. If the
+   spec does not apply because an argument is a function literal `RecV ..` where
+   the spec expects a `func.t`, it is retried after `wp_func_lits`.
+3. Introduce `pats` (iris-lean intro patterns) in the continuation (the
+   introduced hypotheses are simplified with the WP simp set, so that they agree
+   with the expression, e.g. `W64 (go.array_literal_size [..])`) and run
    `wp_auto` on it.
 
 Premise goals created by `[...]` spec patterns come before the continuation:

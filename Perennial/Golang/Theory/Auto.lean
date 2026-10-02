@@ -425,6 +425,14 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
    if let some (e', k) ← iWpUnfoldValConst? wp ehyps then
     let (pf', lc', _) ← iWpAuto hyps { wp with e := e' } lc lcIdx (simpFirst := true)
     return (← k pf', lc', true)
+  -- a call of an implementation constant `«Fooⁱᵐᵖˡ» v` (e.g. after
+  -- `wp_method_call`): take the beta step
+  if extras then
+    let saved ← saveState
+    if let some ⟨_, hyps', e', k⟩ ← observing? (iWpCallStep hyps wp (onlyImpl := true)) then
+      let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx (simpFirst := false)
+      return (← k pf', lc', true)
+    saved.restore
   -- done: clean up dead points-to facts
   let unused ← unusedPointsto hyps (wp.mk' wp.e wp.Φ)
   return (← addGoalCleaning hyps (wp.mk' wp.e wp.Φ), lc, !unused.isEmpty)
@@ -630,6 +638,29 @@ def checkNoDashDashOpts (stx : Syntax) : TacticM Unit := do
     throwErrorAt stx "wp_apply: `--no-auto`/`--lc n` are Lean comments here and would be \
       ignored; write `wp_apply +noauto lem ...` or `wp_apply (lc := n) lem ...`"
 
+open Lean Elab Tactic Meta Iris.ProofMode in
+/-- Internal (`wp_apply`): try to close the pure (Lean) side goals of the applied
+spec that contain no metavariables, e.g. a constant bounds check `0 ≤ 0`, with
+`decide` or `word`. Goals that are not propositions, or still contain
+metavariables, are left alone. -/
+elab "wp_apply_side" : tactic => do
+  let gs ← getGoals
+  let mut out := []
+  for g in gs do
+    if ← g.isAssigned then continue
+    let ty ← instantiateMVars (← g.getType)
+    if (isIrisGoal ty).or (ty.hasExprMVar.or !(← g.withContext (isProp ty))) then
+      out := out ++ [g]; continue
+    setGoals [g]
+    let saved ← saveState
+    try
+      evalTactic (← `(tactic| first | decide | word))
+      unless (← getGoals).isEmpty do throwError "unsolved"
+    catch _ =>
+      saved.restore
+      out := out ++ [g]
+  setGoals out
+
 open Lean Elab Tactic in
 elab_rules : tactic
   | `(tactic| wp_apply%$tk $opts:wpApplyOpt* $wpmt:wpPmTerm $[$as?:wpAs]?) => do
@@ -656,7 +687,7 @@ elab_rules : tactic
       -- credits were asked for: failing to produce them is an error
       else `(tactic| wp_focus_cont (wp_auto_lc $n))
     let core ← `(tactic| focus ((first | wp_apply_raw $pmt | (wp_pures; wp_apply_raw $pmt) | (wp_func_lits; wp_apply_raw $pmt) | (wp_pures; wp_apply_raw $pmt)) <;> wp_apply_post))
-    evalTactic (← `(tactic| focus (($core:tactic) <;> (try iPkgInit); $intro:tactic; $auto:tactic; wp_untag_cont)))
+    evalTactic (← `(tactic| focus (($core:tactic) <;> (try iPkgInit); wp_apply_side; $intro:tactic; $auto:tactic; wp_untag_cont)))
 
 /-! ## Boolean cleanup -/
 

@@ -142,7 +142,6 @@ theorem wp_NewSession (client : loc) (γetcd : clientv3_names) :
     iapply Hkrecv
     iintro %v %ok
     wp_auto
-    -- (`wp_if_destruct` fails here with "unknown free variable")
     cases ok
     · wp_auto
       wp_for_post

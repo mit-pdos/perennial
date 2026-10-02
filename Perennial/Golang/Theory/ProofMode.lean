@@ -1511,13 +1511,19 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode
 /-- Find a call `App (Val fv) (Val v)` where `fv` unfolds (with default
 transparency) to `RecV f x e`, and take the beta step. -/
 def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (lc : Bool := false) :
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (lc : Bool := false) (onlyImpl : Bool := false) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
   let some ((fv, v2, f, x, body), K, _) ← findEctx wp.e (fun _ e => do
       let e ← whnfR e
       let_expr Perennial.expr.App _ e1 e2 := e | throwError "not an application"
       let some fv ← isGooseVal? e1 | throwError "not a value"
       let some v2 ← isGooseVal? e2 | throwError "not a value"
+      -- `onlyImpl`: only implementation constants `«Fooⁱᵐᵖˡ»` (as produced by
+      -- `wp_func_call`/`wp_method_call`)
+      if onlyImpl then
+        let some n := (← instantiateMVars fv).getAppFn.constName? | throwError "not a constant"
+        unless (n.toString.endsWith "ⁱᵐᵖˡ") || (n.toString.endsWith "ⁱᵐᵖˡ»") do
+          throwError "not an implementation constant"
       let fv' ← whnf fv
       let_expr Perennial.val.RecV _ f x body := fv' | throwError "not a function"
       return (fv, v2, f, x, body))

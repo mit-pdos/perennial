@@ -925,7 +925,6 @@ theorem wp_RWMutex__RUnlock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
     simp only [h', decide_true]
     wp_auto
     wp_method_call
-    unfold «RWMutex__rUnlockSlowⁱᵐᵖˡ»
     wp_auto
     have hA : ¬ (rc + W32 (-1) + W32 1 = W32 0) := by
       intro h; apply H1; simp only [rwmutexMaxReaders_Z] at *; word
