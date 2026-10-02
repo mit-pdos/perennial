@@ -24,14 +24,44 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
 
 namespace encoding.binary
 
+/-- `x ||| (b <<< k)` is `x + b * 2^k` when `x` fits in `k` bits. -/
+theorem toNat_or_shl {n m : Nat} (x : BitVec n) (b : BitVec m) (k : Nat) (hx : x.toNat < 2 ^ k)
+    (hk : k + m ≤ n) : (x ||| (b.setWidth n <<< k)).toNat = x.toNat + b.toNat * 2 ^ k := by
+  have hb := b.isLt
+  have hkm : b.toNat * 2 ^ k < 2 ^ n :=
+    calc b.toNat * 2 ^ k < 2 ^ m * 2 ^ k := Nat.mul_lt_mul_of_pos_right hb (Nat.two_pow_pos k)
+      _ = 2 ^ (k + m) := by rw [← Nat.pow_add, Nat.add_comm]
+      _ ≤ 2 ^ n := Nat.pow_le_pow_right (by decide) hk
+  have hmn : 2 ^ m ≤ 2 ^ n := Nat.pow_le_pow_right (by decide) (by omega)
+  rw [BitVec.toNat_or, BitVec.toNat_shiftLeft, BitVec.toNat_setWidth, Nat.shiftLeft_eq,
+    Nat.mod_eq_of_lt (by omega : b.toNat < 2 ^ n), Nat.mod_eq_of_lt hkm, Nat.or_comm,
+    Nat.mul_comm, ← Nat.two_pow_add_eq_or_of_lt hx, Nat.mul_comm, Nat.add_comm]
+
 theorem le_to_u64_8 (w0 w1 w2 w3 w4 w5 w6 w7 : w8) :
     le_to_u64 [w0, w1, w2, w3, w4, w5, w6, w7] =
       W64 (uint.Z w0) ||| (W64 (uint.Z w1) <<< W64 8) ||| (W64 (uint.Z w2) <<< W64 16) |||
       (W64 (uint.Z w3) <<< W64 24) ||| (W64 (uint.Z w4) <<< W64 32) ||| (W64 (uint.Z w5) <<< W64 40) |||
       (W64 (uint.Z w6) <<< W64 48) ||| (W64 (uint.Z w7) <<< W64 56) := by
   simp only [le_to_u64, le_to_u64_def, LittleEndian.combine, W64, uint.Z, BitVec.ofInt_natCast,
-    BitVec.ofNat_toNat, BitVec.ofNat_add, BitVec.ofNat_mul, Nat.add_zero, Nat.mul_zero]
-  bv_decide
+    BitVec.ofNat_toNat, BitVec.shiftLeft_eq', BitVec.toNat_ofInt, Nat.reducePow, Int.cast_ofNat_Int,
+    Int.reduceMod, Int.reduceToNat]
+  apply BitVec.eq_of_toNat_eq
+  have := w0.isLt; have := w1.isLt; have := w2.isLt; have := w3.isLt
+  have := w4.isLt; have := w5.isLt; have := w6.isLt; have := w7.isLt
+  have h0 : (w0.setWidth 64).toNat = w0.toNat := by simp; omega
+  have h1 := toNat_or_shl (w0.setWidth 64) w1 8 (by omega) (by omega)
+  have h2 := toNat_or_shl (w0.setWidth 64 ||| w1.setWidth 64 <<< 8) w2 16 (by omega) (by omega)
+  have h3 := toNat_or_shl (w0.setWidth 64 ||| w1.setWidth 64 <<< 8 ||| w2.setWidth 64 <<< 16) w3 24
+    (by omega) (by omega)
+  have h4 := toNat_or_shl (w0.setWidth 64 ||| w1.setWidth 64 <<< 8 ||| w2.setWidth 64 <<< 16 |||
+    w3.setWidth 64 <<< 24) w4 32 (by omega) (by omega)
+  have h5 := toNat_or_shl (w0.setWidth 64 ||| w1.setWidth 64 <<< 8 ||| w2.setWidth 64 <<< 16 |||
+    w3.setWidth 64 <<< 24 ||| w4.setWidth 64 <<< 32) w5 40 (by omega) (by omega)
+  have h6 := toNat_or_shl (w0.setWidth 64 ||| w1.setWidth 64 <<< 8 ||| w2.setWidth 64 <<< 16 |||
+    w3.setWidth 64 <<< 24 ||| w4.setWidth 64 <<< 32 ||| w5.setWidth 64 <<< 40) w6 48
+    (by omega) (by omega)
+  rw [toNat_or_shl _ w7 56 (by omega) (by omega), BitVec.toNat_ofNat]
+  omega
 
 theorem u64_le_8 (v : w64) :
     u64_le v = [W8 (uint.Z v), W8 (uint.Z (v >>> W64 8)), W8 (uint.Z (v >>> W64 16)),
@@ -52,8 +82,15 @@ theorem le_to_u32_4 (w0 w1 w2 w3 : w8) :
       W32 (uint.Z w0) ||| (W32 (uint.Z w1) <<< W32 8) ||| (W32 (uint.Z w2) <<< W32 16) |||
       (W32 (uint.Z w3) <<< W32 24) := by
   simp only [le_to_u32, le_to_u32_def, LittleEndian.combine, W32, uint.Z, BitVec.ofInt_natCast,
-    BitVec.ofNat_toNat, BitVec.ofNat_add, BitVec.ofNat_mul, Nat.add_zero, Nat.mul_zero]
-  bv_decide
+    BitVec.ofNat_toNat, BitVec.shiftLeft_eq', BitVec.toNat_ofInt, Nat.reducePow, Int.cast_ofNat_Int,
+    Int.reduceMod, Int.reduceToNat]
+  apply BitVec.eq_of_toNat_eq
+  have := w0.isLt; have := w1.isLt; have := w2.isLt; have := w3.isLt
+  have h0 : (w0.setWidth 32).toNat = w0.toNat := by simp; omega
+  have h1 := toNat_or_shl (w0.setWidth 32) w1 8 (by omega) (by omega)
+  have h2 := toNat_or_shl (w0.setWidth 32 ||| w1.setWidth 32 <<< 8) w2 16 (by omega) (by omega)
+  rw [toNat_or_shl _ w3 24 (by omega) (by omega), BitVec.toNat_ofNat]
+  omega
 
 theorem sint_W64_lit (z : Int) (h : 0 ≤ z ∧ z < 2 ^ 63) : sint.Z (W64 z) = z := by
   simp only [sint.Z, W64, BitVec.toInt_ofInt]

@@ -338,7 +338,7 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
   iNamedSuffix H_inv "_inv"
   by_cases Hz1 : remainingv + W64 (-1) = W64 0
   · -- about to close done
-    have Hr1 : remainingv = W64 1 := by bv_decide
+    have Hr1 : remainingv = W64 1 := by word
     have Hsize1 : remaining_docs.size = 1 := by rw [← Hremaining_size_inv, Hr1]; rfl
     have Htot : counted_sum word_count γ.docs remaining_docs = (γ.docs.map word_count).sum :=
       imap_sum_no_some_some _ _ _ (fun j _ d hd => by

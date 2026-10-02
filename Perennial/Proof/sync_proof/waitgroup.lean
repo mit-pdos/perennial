@@ -48,35 +48,73 @@ theorem wait_nonneg_msb (w : w32) (h : 0 ≤ sint.Z w) : w < 2147483648#32 := by
   · simp only [BitVec.lt_def]; simp only [BitVec.toNat_ofNat]; omega
   · have := w.isLt; omega
 
+theorem enc_toNat (wait counter : w32) :
+    (enc wait counter).toNat = counter.toNat * 2 ^ 32 + wait.toNat := by
+  have := wait.isLt; have := counter.isLt
+  simp only [enc, BitVec.toNat_add, BitVec.toNat_shiftLeft, BitVec.toNat_setWidth, Nat.shiftLeft_eq]
+  omega
+
+theorem wait_nonneg_lt (w : w32) (h : 0 ≤ sint.Z w) : w.toNat < 2 ^ 31 := by
+  have := BitVec.lt_def.mp (wait_nonneg_msb w h); simpa using this
+
 theorem enc_get_counter (wait counter : w32) :
     W32 (uint.Z (enc wait counter >>> W64 32)) = counter := by
-  simp only [W32_uint_Z]; unfold enc; bv_decide
+  simp only [W32_uint_Z]
+  apply BitVec.eq_of_toNat_eq
+  have := wait.isLt; have := counter.isLt
+  simp only [BitVec.toNat_setWidth, BitVec.ushiftRight_eq', show (W64 32).toNat = 32 from rfl,
+    BitVec.toNat_ushiftRight, enc_toNat, Nat.shiftRight_eq_div_pow]
+  omega
 
 theorem enc_get_wait (wait counter : w32) (h : 0 ≤ sint.Z wait) :
     W32 (uint.Z (enc wait counter &&& W64 2147483647)) = wait := by
-  have := wait_nonneg_msb wait h
-  simp only [W32_uint_Z]; unfold enc; bv_decide
+  have h' := wait_nonneg_lt wait h
+  simp only [W32_uint_Z]
+  apply BitVec.eq_of_toNat_eq
+  have := wait.isLt; have := counter.isLt
+  simp only [BitVec.toNat_setWidth, BitVec.toNat_and, enc_toNat]
+  rw [show (W64 2147483647).toNat = 2^31 - 1 from rfl, Nat.and_two_pow_sub_one_eq_mod]
+  omega
 
 theorem enc_add_counter (wait counter : w32) (delta : w64) :
     enc wait counter + (delta <<< W64 32) = enc wait (counter + W32 (sint.Z delta)) := by
-  simp only [W32_sint_Z]; unfold enc; bv_decide
+  simp only [W32_sint_Z]
+  apply BitVec.eq_of_toNat_eq
+  have := wait.isLt; have := counter.isLt; have := delta.isLt
+  simp only [BitVec.toNat_add, enc_toNat, BitVec.shiftLeft_eq', show (W64 32).toNat = 32 from rfl,
+    BitVec.toNat_shiftLeft, BitVec.toNat_setWidth, Nat.shiftLeft_eq]
+  omega
 
 theorem enc_add_wait (wait counter : w32) (h : 0 ≤ sint.Z wait) :
     enc wait counter + W64 1 = enc (W32 1 + wait) counter := by
-  have := wait_nonneg_msb wait h
-  unfold enc; bv_decide
+  have h' := wait_nonneg_lt wait h
+  apply BitVec.eq_of_toNat_eq
+  have := wait.isLt; have := counter.isLt
+  simp only [BitVec.toNat_add, enc_toNat, show (W64 1).toNat = 1 from rfl,
+    show (W32 1).toNat = 1 from rfl]
+  omega
 
 theorem enc_get_waitGroupBubbleFlag (wait counter : w32) (h : 0 ≤ sint.Z wait) :
     enc wait counter &&& W64 2147483648 = W64 0 := by
-  have := wait_nonneg_msb wait h
-  unfold enc; bv_decide
+  have h' := wait_nonneg_lt wait h
+  apply BitVec.eq_of_toNat_eq
+  have := wait.isLt; have := counter.isLt
+  simp only [BitVec.toNat_and, enc_toNat, show (W64 2147483648).toNat = 2 ^ 31 from rfl,
+    show (W64 0).toNat = 0 from rfl]
+  apply Nat.eq_of_testBit_eq; intro i
+  simp only [Nat.testBit_and, Nat.testBit_two_pow, Nat.zero_testBit]
+  by_cases hi : 31 = i
+  · subst hi; simp only [Nat.testBit_eq_decide_div_mod_eq, decide_true, Bool.and_true,
+      decide_eq_false_iff_not]; omega
+  · simp [hi]
 
 theorem enc_inj (wait counter wait' counter' : w32) :
     enc wait counter = enc wait' counter' → wait = wait' ∧ counter = counter' := by
   intro h
-  constructor
-  · unfold enc at h; bv_decide
-  · unfold enc at h; bv_decide
+  have h := congrArg BitVec.toNat h
+  simp only [enc_toNat] at h
+  have := wait.isLt; have := counter.isLt; have := wait'.isLt; have := counter'.isLt
+  constructor <;> apply BitVec.eq_of_toNat_eq <;> omega
 
 theorem enc_0 : (0#64 : w64) = enc (W32 0) (W32 0) := by
   unfold enc; decide

@@ -27,8 +27,9 @@ reasoning, `program_proof/`) is out of scope.
     `LawfulFiniteMap`, so iris-lean's `ghost_map`/`gen_heap` apply.
   * Machine words are `BitVec n` (`w64 = BitVec 64`, ...). `uint.Z x` is
     `(x.toNat : Int)` and `sint.Z x` is `x.toInt`. Arithmetic side conditions
-    are discharged with `omega`, `bv_omega` and `bv_decide` in place of
-    coqutil's `word`.
+    are discharged with `word`, `omega` and `bv_omega` in place of
+    coqutil's `word`. Do not use `bv_decide`/`native_decide`: they trust
+    native code (`Lean.ofReduceBool`); prove bitwise facts via `toNat`.
   * `go_string` (Rocq `byte_string`) is `List w8`.
 * **Generated code is regenerated, not translated.** `new/code` and
   `new/generatedproof` come from goose. `goose/` here carries a Lean backend

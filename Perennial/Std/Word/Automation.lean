@@ -29,13 +29,16 @@ becomes `wrap (uint.Z x + uint.Z y)`) and calls `lia`. Here words are
 
 Only if that fails, the old, unfiltered pipeline (`word_prep; omega`, which
 case-splits on the sign of every `toInt` and can be exponential) is tried under
-a heartbeat limit, then `omega`, then `bv_decide` (bit-blasting; good for
-bitwise ops on concrete widths, where `omega` is helpless), also bounded.
-`word` therefore fails in bounded time instead of hanging.
+a heartbeat limit, then `omega`, then `bv_normalize` (the kernel-checked
+rewriting front end of `bv_decide`; it closes some bitwise goals on concrete
+widths, where `omega` is helpless), also bounded. `word` never calls
+`bv_decide` itself: its SAT step is trusted via `Lean.ofReduceBool` (native
+code), which this port avoids. `word` therefore fails in bounded time instead
+of hanging.
 
 Like Rocq's `word`, it is good at linear arithmetic (`x + y`, `4 * x`, `x / 8`,
 `x % 8`), treats non-linear products as atoms, and does not understand
-bitwise operations unless `bv_decide` can do the whole goal.
+bitwise operations unless `bv_normalize` can do the whole goal.
 
 `word` closes the goal or fails. For a non-terminal version use `word_simp`,
 which rewrites `uint.Z` of arithmetic ops into `Int` arithmetic, discharging
@@ -187,7 +190,7 @@ macro "word_lit_reduce" : tactic => `(tactic|
     Nat.shiftLeft_eq] at *))
 
 open Lean Elab Tactic Meta in
-/-- Fails unless the goal mentions a bitwise operation (where `bv_decide` may help). -/
+/-- Fails unless the goal mentions a bitwise operation (where `bv_normalize` may help). -/
 elab "word_bitwise_goal" : tactic => withMainContext do
   let tgt ← instantiateMVars (← getMainTarget)
   let ops := [``HAnd.hAnd, ``HOr.hOr, ``HXor.hXor, ``Complement.complement, ``HShiftLeft.hShiftLeft,
@@ -531,7 +534,7 @@ macro_rules
       | word_bounded 50000 (word_filter iris; word_prep; omega)
       | word_bounded 50000 (word_filter iris; word_prep; word_lit_reduce; (try omega); done)
       | word_bounded 20000 omega
-      | word_bounded 50000 bv_decide (timeout := 3))
+      | word_bounded 50000 (bv_normalize; done))
 
 /-! ## Rewriting lemmas for `uint.Z` / `sint.Z` of operations
 

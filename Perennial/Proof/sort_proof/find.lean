@@ -78,7 +78,10 @@ theorem is_valid_cmp_adapted (cmp : Int → Int) (n : Int) :
   · unfold adapt_cmp; (repeat' split) <;> omega
 
 theorem shiftr_1_eq_div (x : w64) : x >>> W64 1 = x / (2 : w64) := by
-  simp only [W64]; bv_decide
+  apply BitVec.eq_of_toNat_eq
+  simp only [BitVec.ushiftRight_eq', show (W64 1).toNat = 1 from rfl, BitVec.toNat_ushiftRight,
+    Nat.shiftRight_eq_div_pow, BitVec.toNat_udiv]
+  rfl
 
 /-- Formerly `word` plus literal normalization; `word` now does that itself. -/
 macro "word'" : tactic => `(tactic| word)
