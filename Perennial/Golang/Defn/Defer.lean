@@ -8,7 +8,7 @@ namespace Perennial
 section defn
 variable [ffi_syntax] [GoGlobalContext]
 
-def deferType : go.type := go.FunctionType (go.Signature [] false [])
+abbrev deferType : go.type := go.FunctionType (go.Signature [] false [])
 
 def wrap_defer : val :=
   λ: "body",
