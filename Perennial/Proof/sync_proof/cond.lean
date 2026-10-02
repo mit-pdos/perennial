@@ -59,6 +59,7 @@ theorem wp_copyChecker__check (c : loc) (c_v : copyChecker.t) (dq : DFrac) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.sync ∗ typed_pointsto (GF := GF) c c_v dq }}
       (App (Val (c @!! go.type.PointerType copyChecker @!! go!"check")) (Val #()))
     {{ RET #(); typed_pointsto (GF := GF) c c_v dq }} := by
+  -- Unprovable: `copyChecker.check` has no translated body (no `MethodUnfold` in `sync.Assumptions`).
   sorry -- Rocq: Admitted
 
 theorem wp_runtime_notifyListAdd (l : loc) (l_v : notifyList.t) (dq : DFrac) :

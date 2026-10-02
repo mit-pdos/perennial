@@ -31,6 +31,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
       (App (Val initialize') (Val #()))
     {{ RET #(); own_initializing get_is_pkg_init ∗
         is_pkg_init (PROP := IProp GF) pkg_id.log }} := by
+  -- Unprovable: `std'init` and `bufferPool'init` are opaque (axioms in Perennial/Code/log.lean).
   sorry -- Rocq: Admitted
 
 theorem wp_Printf (msg : go_string) (arg : slice.t) :

@@ -19,6 +19,51 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 namespace go_etcd_io.etcd.pkg.v3.idutil
 
+/-- The IDs handed out by a fresh `Generator` (prefix `p`, initial suffix `s`)
+are distinct values in `[0, 2^64)`. -/
+theorem ids_subperm (p s : Int) (hp : 0 ≤ p ∧ p < 2 ^ 16) :
+    ((seqZ (s + 1) (2 ^ 48)).map (fun i => p * 2 ^ 48 + i % 2 ^ 48)).Subperm (seqZ 0 (2 ^ 64)) := by
+  have h48 : (2 : Int) ^ 48 = 281474976710656 := by decide
+  have h64 : (2 : Int) ^ 64 = 18446744073709551616 := by decide
+  have h16 : (2 : Int) ^ 16 = 65536 := by decide
+  apply List.subperm_of_subset
+  · unfold List.Nodup
+    rw [List.pairwise_map]
+    refine (NoDup_seqZ (s + 1) (2 ^ 48)).imp_of_mem ?_
+    intro a b ha hb hne heq
+    rw [elem_of_seqZ] at ha hb
+    rw [h48] at ha hb heq
+    omega
+  · intro x hx
+    rw [List.mem_map] at hx
+    obtain ⟨i, hi, rfl⟩ := hx
+    rw [elem_of_seqZ]
+    rw [h48, h64]; rw [h16] at hp
+    omega
+
+theorem bigSepL_subperm {GF : BundledGFunctors} {A : Type _} (Φ : A → IProp GF) {l₁ l₂ : List A}
+    (h : l₁.Subperm l₂) : ([∗list] x ∈ l₂, Φ x) ⊢ [∗list] x ∈ l₁, Φ x := by
+  obtain ⟨l, hperm, hsub⟩ := h
+  obtain ⟨rest, hrest⟩ := hsub.exists_perm_append
+  have h1 : ([∗list] x ∈ l₂, Φ x) ⊢ [∗list] x ∈ l, Φ x := BigSepL.bigSepL_submseteq hrest.symm
+  have h2 : ([∗list] x ∈ l, Φ x) ⊢ [∗list] x ∈ l₁, Φ x := (BigSepL.bigSepL_perm hperm).1
+  exact h1.trans h2
+
+/-- `2^48` is abstracted as `N`: elaborating or kernel-checking terms whose
+types mention `seqZ _ (2^48)` may evaluate `List.range (2^48)`. -/
+theorem ids_bigSepL_sub {GF : BundledGFunctors} (R : w64 → IProp GF) (p s : Int)
+    (hp : 0 ≤ p ∧ p < 2 ^ 16) (L : List Int) (hL : L = seqZ 0 (2 ^ 64)) (N : Int)
+    (hN : N = 2 ^ 48) :
+    ([∗list] i ∈ L, R (W64 i)) ⊢
+      [∗list] i ∈ seqZ (s + 1) N, R (W64 (p * N + i % N)) := by
+  subst hN
+  have hs := ids_subperm p s hp
+  rw [← hL] at hs
+  generalize seqZ (s + 1) (2 ^ 48) = L1 at hs ⊢
+  have h := bigSepL_subperm (fun i => R (W64 i)) hs
+  rw [BigSepL.bigSepL_map] at h
+  exact h
+
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
@@ -101,7 +146,61 @@ theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
     {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_Generator g R }}
       (App (Val (g @!! go.type.PointerType Generator @!! go!"Next")) (Val #()))
     {{ (i : w64), RET #i; R i }} := by
+  -- Unprovable as stated: the invariant of `is_Generator` allows `num_used ≥ 2^48`, where no `R` token is left.
   sorry -- Rocq: Admitted (overflow: requires fewer than 2^56 calls to `Next`)
+
+/-- Allocating the invariant of `is_Generator` (`2^48` is kept abstract as `N`,
+see `ids_bigSepL_sub`). -/
+theorem is_Generator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 0 (2^64)) (g : loc)
+    (memberID : w16) (sv : w64) :
+    ⊢ g.[Generator.t, go!"prefix"] ↦ W64 (uint.Z memberID * 2 ^ 48) -∗
+      g.[Generator.t, go!"suffix"] ↦ sv -∗
+      ([∗list] i ∈ L, R (W64 i)) ={⊤}=∗ is_Generator g R := by
+  iintro prefix' suffix HR
+  have hp : 0 ≤ uint.Z memberID ∧ uint.Z memberID < 2 ^ 16 := by word
+  ipersist prefix'
+  obtain ⟨N, hN⟩ : ∃ N : Int, N = 2 ^ 48 := ⟨_, rfl⟩
+  rw [← hN]
+  imod inv_alloc nroot ⊤ iprop(∃ (init num_used : Int),
+          "suffix" ∷ g.[Generator.t, go!"suffix"] ↦ W64 (init + num_used) ∗
+          "HR" ∷ ([∗list] i ∈ seqZ (init + num_used + 1) (N - num_used),
+                    R (W64 (uint.Z memberID * N + i % N)))) $$ [suffix HR] with #Hinv
+  · inext
+    iexists (uint.Z sv), 0
+    have hw : ∀ x : w64, W64 (uint.Z x) = x := fun x => by word
+    simp only [Int.add_zero, Int.sub_zero, hw]
+    iframe suffix
+    iapply (ids_bigSepL_sub R _ _ hp L hL N hN)
+    iexact HR
+  imodintro
+  rw [is_Generator_unseal]; unfold is_Generator_def
+  rw [← hN]
+  iexists (uint.Z memberID)
+  iframe #
+
+/-- `wp_NewGenerator` with the list `seqZ 0 (2^64)` abstracted as `L`. -/
+theorem wp_NewGenerator' (R : w64 → IProp GF) (memberID : w16) (now : time.Time.t) (L : List Int)
+    (hL : L = seqZ 0 (2^64)) :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+        ([∗list] i ∈ L, R (W64 i)) }}
+      (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
+    {{ (g : loc), RET #g; is_Generator g R }} := by
+  wp_start as HR
+  wp_auto
+  wp_apply time.wp_Time__UnixNano $$ [$now] as %nowNano now
+  wp_apply wp_lowbit
+  · ipureintro; word
+  wp_alloc g as Hg
+  iapply wp_fupd
+  wp_auto
+  iStructNamed Hg
+  have hpre : (W64 (uint.Z memberID) <<< W64 48 : w64) = W64 (uint.Z memberID * 2 ^ 48) := by
+    word
+  rw [hpre]
+  imod is_Generator_alloc R L hL g memberID
+    (W64 (uint.Z (nowNano / BitVec.sdiv (W64 1000000) (W64 1)) % 2 ^ 40) <<< W64 8 : w64)
+    $$ prefix' suffix HR with Hgen
+  iapply HΦ $$ Hgen
 
 /-- (Rocq TODO:) this is overly conservative. Really should only demand `R` for
 the range of IDs with future timestamps, since the old ones might've been used
@@ -110,8 +209,8 @@ theorem wp_NewGenerator (R : w64 → IProp GF) (memberID : w16) (now : time.Time
     {{ is_pkg_init (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
-    {{ (g : loc), RET #g; is_Generator g R }} := by
-  sorry -- Rocq: Admitted
+    {{ (g : loc), RET #g; is_Generator g R }} :=
+  wp_NewGenerator' R memberID now _ rfl
 
 end wps
 

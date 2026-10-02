@@ -33,6 +33,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
       (App (Val initialize') (Val #()))
     {{ RET #(); own_initializing get_is_pkg_init ∗
         is_pkg_init (PROP := IProp GF) pkg_id.math }} := by
+  -- Unprovable: `useFMA'init`, `_sin'init`, ... are opaque (axioms in Perennial/Code/math.lean).
   sorry -- Rocq: Admitted
 
 end wps

@@ -48,6 +48,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
       (App (Val initialize') (Val #()))
     {{ RET #(); own_initializing get_is_pkg_init ∗
         is_pkg_init (PROP := IProp GF) pkg_id.time }} := by
+  -- Unprovable: `UTC'init`, `Local'init`, ... are opaque (axioms in Perennial/Code/time.lean).
   sorry -- Rocq: Admitted
 
 theorem wp_Time__sec (t : loc) (tv : time.Time.t) :

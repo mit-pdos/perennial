@@ -38,6 +38,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
+  -- Unprovable: `ErrTooLarge'init`, `asciiSpace'init`, ... are opaque (axioms in Perennial/Code/bytes.lean).
   sorry -- Rocq: Admitted
 
 theorem wp_Clone (sl_b : slice.t) (dq : DFrac) (b : List w8) :

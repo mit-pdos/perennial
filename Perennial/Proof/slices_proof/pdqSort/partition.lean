@@ -704,6 +704,7 @@ theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
         data ↦* xs' ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
         "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
+  -- Unprovable: `slices.nextPowerOfTwo` (called when `b - a ≥ 8`) has no translated body.
   sorry -- Rocq: Admitted
 
 /-- The loop invariant of `partitionEqualCmpFunc`. -/

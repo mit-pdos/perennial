@@ -8,13 +8,13 @@ Differences from Rocq:
   in Rocq, via `disk_prelude`) the FFI is the disk FFI: the generated
   `semantics.Assumptions` is stated for `disk_op`, and the sections below do not
   bind `ffi_syntax`/`ffi_model`.
-* The `IsPkgInit`/`GetIsPkgInitWf` instances of `semantics` are not defined yet
-  (TODO(port)): `define_is_pkg_init` needs the instances of all imported
-  packages, and `encoding/binary` and `primitive/disk` have no proofs yet.
-  `test_fun_ok` does not mention `is_pkg_init`, so no test needs them.
 -/
 import Perennial.Proof.DiskPrelude
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
+import Perennial.Proof.sync_proof.base
+import Perennial.Proof.encoding.binary
+import Perennial.Proof.github_com.goose_lang.primitive
+import Perennial.Proof.github_com.goose_lang.primitive.disk
 
 set_option linter.iris.style.nameCheck false
 
@@ -30,6 +30,13 @@ section wps
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
+
+instance is_pkg_init_inst :
+    IsPkgInit (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics :=
+  define_is_pkg_init iprop(True)
+instance get_is_pkg_init_wf_inst :
+    GetIsPkgInitWf (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics :=
+  build_get_is_pkg_init_wf
 
 /-- A semantics test function `name` returns `true`. -/
 def test_fun_ok (name : go_string) : Prop :=

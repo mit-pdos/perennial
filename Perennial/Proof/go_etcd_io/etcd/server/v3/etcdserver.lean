@@ -211,6 +211,7 @@ theorem wp_EtcdServer__processInternalRaftRequestOnce (s : loc) (γ : EtcdServer
       (App (App (Val (s @!! go.type.PointerType etcdserver.EtcdServer
           @!! go!"processInternalRaftRequestOnce")) (Val #(interface.ok ctx))) (Val #req))
     {{ (a : loc) (err : interface.t), RET (PairV #a #err); own_EtcdServer s γ }} := by
+  -- Unprovable: calls opaque packages (prometheus, otel `SpanFromContext`, `strconv.FormatBool`) and `context.WithTimeout` (unprovable).
   sorry -- Rocq: Admitted
 
 end wps

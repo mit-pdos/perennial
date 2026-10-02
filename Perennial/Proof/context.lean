@@ -105,6 +105,7 @@ theorem wp_Cause (ctx : interface.t_ok) (ctx_desc : Context_desc.t (IProp GF)) :
         "#Hctx" ∷ is_Context ctx ctx_desc }}
       (App (Val (@! context.Cause)) (Val #(interface.ok ctx)))
     {{ (err : interface.t), RET #err; True }} := by
+  -- Unprovable as stated: `Cause` calls `c.Value(&cancelCtxKey)`, whose spec `is_Context` does not provide.
   sorry -- Rocq: Admitted
 
 theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF)) :
@@ -114,6 +115,7 @@ theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc
     {{ (ctx : loc) (ok : Bool), RET (PairV #ctx #ok);
         if ok then ∃ c : context.cancelCtx.t, ctx ↦ c
         else iprop(⌜ctx = loc.null⌝) }} := by
+  -- Unprovable as stated: `parentCancelCtx` calls `parent.Value(&cancelCtxKey)`, whose spec `is_Context` does not provide.
   sorry -- Rocq: Admitted
 
 theorem wp_propagateCancel (c : loc) (parent : interface.t_ok)
@@ -124,6 +126,7 @@ theorem wp_propagateCancel (c : loc) (parent : interface.t_ok)
       (App (App (Val (c @!! go.type.PointerType context.cancelCtx @!! go!"propagateCancel"))
         (Val #(interface.ok parent))) (Val #(interface.ok child)))
     {{ RET #(); True }} := by
+  -- Unprovable as stated: calls `parentCancelCtx` (hence `parent.Value`, unspecified by `is_Context`) and `AfterFunc` methods.
   sorry -- Rocq: Admitted
 
 theorem wp_WithCancel (PDone' : IProp GF) (ctx : interface.t_ok)
@@ -135,6 +138,7 @@ theorem wp_WithCancel (PDone' : IProp GF) (ctx : interface.t_ok)
         □ (∀ Φ : val → IProp GF, PDone' -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         is_Context ctx' { ctx_desc with PDone := iprop(ctx_desc.PDone ∨ PDone'), Done := done' } }} := by
+  -- Unprovable as stated: goes through `propagateCancel`, which calls `parent.Value` (unspecified by `is_Context`).
   sorry -- Rocq: Admitted
 
 theorem wp_WithDeadlineCause (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
@@ -147,6 +151,7 @@ theorem wp_WithDeadlineCause (parent : interface.t_ok) (parent_desc : Context_de
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         is_Context ctx' { parent_desc with Deadline := some d, PDone := iprop(True), Done := done' } }} := by
+  -- Unprovable as stated: goes through `propagateCancel`, which calls `parent.Value` (unspecified by `is_Context`).
   sorry -- Rocq: Admitted
 
 theorem wp_WithDeadline (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
@@ -158,6 +163,7 @@ theorem wp_WithDeadline (parent : interface.t_ok) (parent_desc : Context_desc.t 
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         is_Context ctx' { parent_desc with Deadline := some d, PDone := iprop(True), Done := done' } }} := by
+  -- Unprovable as stated: calls `WithDeadlineCause` (see there).
   sorry -- Rocq: Admitted
 
 theorem wp_WithTimeout (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
@@ -169,6 +175,7 @@ theorem wp_WithTimeout (parent : interface.t_ok) (parent_desc : Context_desc.t (
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         is_Context ctx' { parent_desc with Deadline := some d, PDone := iprop(True), Done := done' } }} := by
+  -- Unprovable as stated: calls `WithDeadline` (see there).
   sorry -- Rocq: Admitted
 
 end wps

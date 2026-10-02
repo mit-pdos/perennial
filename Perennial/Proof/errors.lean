@@ -41,6 +41,7 @@ theorem wp_errorType_init :
     {{ (True : IProp GF) }}
       (App (Val errorType'init) (Val #()))
     {{ RET #(); True }} := by
+  -- Unprovable: `errorType'init` is opaque (an axiom in Perennial/Code/errors.lean).
   sorry -- Rocq: Admitted
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
@@ -110,6 +111,7 @@ theorem wp_AsType (err : error.t) {T' : Type} [ZeroVal T'] [TypedPointsto (GF :=
     {{ (True : IProp GF) }}
       (App (Val #(functions AsType [T])) (Val #err))
     {{ (e : T') (found : Bool), RET (PairV #e #found); True }} := by
+  -- Unprovable: `asType` calls the arbitrary `Unwrap`/`As` methods of `err`, about which the precondition says nothing.
   sorry -- Rocq: Admitted
 
 end wps

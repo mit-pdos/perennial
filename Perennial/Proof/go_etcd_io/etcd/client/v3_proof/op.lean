@@ -87,6 +87,7 @@ theorem wp_OpGet (key : go_string) :
       (App (App (Val (@! v3.OpGet)) (Val #key)) (Val #slice.nil))
     {{ (op : v3.Op.t), RET #op;
         is_Op op (.Get { RangeRequest.default with key := key }) }} := by
+  -- Unprovable: `OpGet` calls `clientv3.IsOptsWithPrefix`/`IsOptsWithFromKey`, which have no translated body.
   sorry -- Rocq: Admitted
 
 theorem wp_Op__applyOpts (op : loc) :

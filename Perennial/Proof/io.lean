@@ -30,6 +30,7 @@ theorem wp_blackHolePool_init :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.sync }}
       (App (Val blackHolePool'init) (Val #()))
     {{ RET #(); True }} := by
+  -- Unprovable: `blackHolePool'init` is opaque (an axiom in Perennial/Code/io.lean).
   sorry -- Rocq: Admitted
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)

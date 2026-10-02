@@ -428,6 +428,7 @@ theorem wp_Cache__Get (c : loc) (ctx : interface.t) (key : go_string) (opts_sl :
       (App (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"Get")) (Val #ctx))
         (Val #key)) (Val #opts_sl))
     {{ (resp : loc) (err : error.t), RET (PairV #resp #err); True }} := by
+  -- Unprovable: calls `clientv3.OpGet` with arbitrary `opts` (unspecified closures; `IsOptsWithPrefix` has no translated body).
   sorry -- Rocq: Admitted
 
 end store

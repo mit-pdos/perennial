@@ -592,6 +592,7 @@ theorem wp_ProgressTracker__IsSingleton (p : loc) :
       (App (Val (p @!! go.type.PointerType v3.tracker.ProgressTracker @!! go!"IsSingleton"))
         (Val #()))
     {{ RET #false; True }} := by
+  -- False in general: `IsSingleton` returns true for a single-voter config; the precondition says nothing about `p`.
   sorry -- Rocq: Admitted (trusted)
 
 theorem wp_raft__committedEntryInCurrentTerm (r : loc) (rf : v3.raft.t) (γ : raft_names) :
@@ -600,6 +601,7 @@ theorem wp_raft__committedEntryInCurrentTerm (r : loc) (rf : v3.raft.t) (γ : ra
         (Val #()))
     {{ (c : Bool), RET #c; r ↦ rf ∗ own_raft γ rf ∗
         if c then ∃ l, is_committed_in_term γ rf.Term' l else True }} := by
+  -- Unprovable: `own_raft` is an opaque axiom, so nothing links `rf.raftLog` to `is_committed_in_term`.
   sorry -- Rocq: Admitted (trusted)
 
 /-- Rocq `is_readIndexRequest`. -/
@@ -852,6 +854,7 @@ theorem wp_raft__sendMsgReadIndexresponse (γ : raft_names) (r : loc) (rf : v3.r
         "#Hcom_in_term" ∷ True }}
       (App (App (Val (@! v3.sendMsgReadIndexResponse)) (Val #r)) (Val #m))
     {{ RET #(); True }} := by
+  -- Unprovable as stated: reads `rf.readOnly`, calls `send`/`bcastHeartbeat`/`readOnly.addRequest`, but `rf` is described only by the opaque axiom `own_raft`.
   sorry -- Rocq: Admitted
 
 theorem wp_raft__stepLeader_MsgReadIndex (γ : raft_names) (r : loc) (rf : v3.raft.t)
@@ -861,6 +864,7 @@ theorem wp_raft__stepLeader_MsgReadIndex (γ : raft_names) (r : loc) (rf : v3.ra
         "%HmType" ∷ ⌜m.Type' = MsgReadIndex⌝ }}
       (App (App (Val (@! v3.stepLeader)) (Val #r)) (Val #m))
     {{ RET #(); True }} := by
+  -- Unprovable as stated: `stepLeader` uses `raft` state (trk, readOnly, ...) that only the opaque axiom `own_raft` describes.
   sorry -- Rocq: Admitted
 
 set_option goose.wp.extras true in
@@ -1127,6 +1131,7 @@ theorem wp_readOnly_addRequest (γ : raft_names) (r : loc) (term commitIndex : w
   ihave %Hrr_len := BigSepL2.bigSepL2_length $$ HunconfirmedReads
   imod own_heartbeat_auth_new
       (union_list (read_reqs.map Prod.snd ++ [stale_ids'])) γ term _
+      -- Unprovable as stated: `own_readOnly` does not bound `confirmedReads + len unconfirmedReads` below `2^64 - 1`.
       (by sorry) -- Rocq: Admitted (admit for overflow of incrementing value)
       $$ Hhb_auth with ⟨Hhb_auth, #Hhb⟩
   ipersist Hreq

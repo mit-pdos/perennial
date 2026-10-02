@@ -124,6 +124,7 @@ theorem wp_node__Advance (γraft : raft_names) (n : loc) :
     {{ is_pkg_init (PROP := IProp GF) raft ∗ is_node γraft n }}
       (App (Val (n @!! go.type.PointerType v3.node @!! go!"Advance")) (Val #()))
     {{ RET #(); True }} := by
+  -- Unprovable as stated: the invariant `∃ s, own_chan γa Unit s` allows a closed `advancec`, where the send AU must give `False`.
   sorry -- Rocq: Admitted
 
 theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
@@ -137,6 +138,7 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
       (App (App (Val (n @!! go.type.PointerType v3.node @!! go!"Propose"))
         (Val #(interface.ok ctx))) (Val #data_sl))
     {{ (err : interface.t), RET #err; if err = interface.nil then True else True }} := by
+  -- Unprovable as stated: `Hpropc` is an `is_chan_bag` at element type `interface.t` (as in Rocq), but `propc` carries `msgWithResult`; also needs `ctx.Done`/`Err` beyond `is_Context`.
   sorry -- Rocq: Admitted
 
 end wps

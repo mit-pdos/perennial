@@ -6,15 +6,16 @@ Differences from Rocq:
 * `unittest` imports `github.com/goose-lang/primitive/disk`, so the FFI is the
   disk FFI (the generated `unittest.Assumptions` is stated for `disk_op`); the
   section does not bind `ffi_syntax`/`ffi_model`.
-* The `IsPkgInit` instance is written by hand with no dependency part:
-  `define_is_pkg_init` needs the `IsPkgInit` instances of all imported packages,
-  and `fmt`, `log`, `primitive/disk` and `std` have none yet
-  (TODO(port): switch to `define_is_pkg_init iprop(True)` and add
-  `GetIsPkgInitWf` once they exist). None of the specs below depends on it.
 -/
 import Perennial.Proof.DiskPrelude
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 import Perennial.Golang.Theory.IfJoin
+import Perennial.Proof.fmt
+import Perennial.Proof.log
+import Perennial.Proof.sync_proof.base
+import Perennial.Proof.github_com.goose_lang.primitive
+import Perennial.Proof.github_com.goose_lang.primitive.disk
+import Perennial.Proof.github_com.goose_lang.std
 
 set_option linter.iris.style.nameCheck false
 
@@ -35,7 +36,10 @@ variable [package_sem : unittest.Assumptions]
 
 instance is_pkg_init_inst :
     IsPkgInit (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest :=
-  ⟨iprop(True), iprop(True)⟩
+  define_is_pkg_init iprop(True)
+instance get_is_pkg_init_wf_inst :
+    GetIsPkgInitWf (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest :=
+  build_get_is_pkg_init_wf
 
 /-- `wp_auto`, also rewriting with a negated hypothesis `h : ¬ P` (to decide
 `decide P` and `if P` as they appear). -/

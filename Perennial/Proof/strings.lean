@@ -74,6 +74,7 @@ theorem wp_asciiSpace_init :
     {{ (True : IProp GF) }}
       (App (Val asciiSpace'init) (Val #()))
     {{ RET #(); True }} := by
+  -- Unprovable: `asciiSpace'init` is opaque (an axiom in Perennial/Code/strings.lean).
   sorry -- Rocq: Admitted
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)

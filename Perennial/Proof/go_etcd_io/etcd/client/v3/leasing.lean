@@ -222,6 +222,7 @@ theorem own_leasingKV_unseal : @own_leasingKV = @own_leasingKV_def := by
 
 instance own_leasingKV_locked_frac (lkv : loc) (γ : leasingKV_names) :
     Fractional (own_leasingKV_locked (GF := GF) lkv γ) :=
+  -- False as stated: `own_leasingKV_locked` holds `revokes_ptr ↦$ revokes`, `entries_ptr ↦$ entries` and (if not ready) `dghost_var .. (DFrac.own 1)` unscaled by `q`, so it cannot be split.
   sorry -- Rocq: Admitted
 
 end proof
