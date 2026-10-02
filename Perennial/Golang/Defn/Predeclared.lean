@@ -95,7 +95,10 @@ def int32 : go.type := go.Named go!"int32" []
 def int64 : go.type := go.Named go!"int64" []
 abbrev rune : go.type := int32
 def string : go.type := go.Named go!"string" []
-def error : go.type :=
+/-- `error` is reducible (like `any`; in Rocq it is a notation-like definition), so that
+typeclass search sees that it is an interface type (`go.error ↓u go.InterfaceType _`,
+`IntoValTyped interface.t go.error`, ...). -/
+@[reducible] def error : go.type :=
   go.InterfaceType [go.MethodElem go!"Error" (go.Signature [] false [go.string])]
 
 def uint : go.type := go.Named go!"uint" []

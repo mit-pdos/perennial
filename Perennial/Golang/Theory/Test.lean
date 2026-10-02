@@ -135,7 +135,72 @@ theorem wp_countTo (n : w64) :
     iapply HΦ
     itrivial
 
+/-! ### Regression tests for the tactic fixes -/
+
+/-- `wp_apply ... $$ [..] as pats`: the `as` is not swallowed by the spec pattern. -/
+example (l : loc) (v : w64) (Φ : val → IProp GF) :
+    (l ↦ v) ∗ (l ↦ v -∗ Φ #v) ⊢ WP gl(![go.uint64] #l) {{ Φ }} := by
+  iintro ⟨Hl, H⟩
+  wp_apply IntoValTyped.wp_load (t := go.uint64) l (DFrac.own 1) v $$ [$Hl] as Hl
+  iapply H $$ Hl
+
+/-- An ill-typed lemma given to `wp_apply` is an error (not a silent `sorry`). -/
+example (Φ : val → IProp GF) :
+    (∀ x : w64, Φ #x) ⊢ WP gl(let: "x" := ArbitraryInt in "x") {{ Φ }} := by
+  iintro H
+  fail_if_success wp_apply wp_ArbitraryInt 1 2 3 as %x _
+  wp_apply wp_ArbitraryInt as %x _
+  iapply H
+
+/-- `wp_if_destruct` splits on the condition of the head `if:`, not on a
+`decide` in the postcondition. -/
+example (b : Bool) (P : Prop) [Decidable P] (Φ : val → IProp GF) :
+    Φ #() ⊢ WP gl(if: #(decide P) then #() else #())
+      {{ v, ⌜decide (b = true) = decide (b = true)⌝ -∗ Φ v }} := by
+  iintro H
+  wp_if_destruct
+  · iintro _; iexact H
+  · iintro _; iexact H
+
+/-- `len` leaves the Iris goal alone. -/
+example (l : List Nat) (_h : (l ++ [1]).length = 3) (Φ : val → IProp GF) : Φ #() ⊢ Φ #() := by
+  len
+  iintro H; iexact H
+
+set_option goose.wp.extras true in
+/-- With `goose.wp.extras`, `wp_auto` stores function literals (`RecV`) as `#(func.mk ..)`. -/
+example (l : loc) (f : func.t) (Φ : val → IProp GF) :
+    (l ↦ f) ∗ (l ↦ func.mk BAnon BAnon (Val #()) -∗ Φ #()) ⊢
+      WP (App (Val (GoInstruction (GoStore (go.FunctionType (go.Signature [] false [])))))
+        (Pair (Val #l) (Rec BAnon BAnon (Val #())))) {{ Φ }} := by
+  iintro ⟨Hl, H⟩
+  wp_auto
+  iapply H $$ Hl
+
 end proofs
+
+section consts
+variable [ffi_syntax] [GoGlobalContext]
+/-- A package constant, as goose generates it. -/
+def testConst : val := #(W64 3)
+end consts
+
+section proofs2
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+set_option goose.wp.extras true in
+/-- With `goose.wp.extras`, `wp_auto` unfolds a package constant that blocks a step. -/
+example (Φ : val → IProp GF) :
+    Φ #(W64 3 + W64 1) ⊢ WP (App (Val (GoInstruction (GoOp GoPlus go.uint64)))
+      (Pair (Val testConst) (Val #(W64 1)))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+end proofs2
 
 /-! ### A struct, in the shape goose generates (with the template changes
 described in the porting notes: `[ext] [ffi]` instance binders, `heapGS hlc GF`,

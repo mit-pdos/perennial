@@ -11,8 +11,44 @@ import Perennial.Std.Word.Automation
 
 namespace Perennial
 
-/-- Rocq `len`: simplify list lengths, then try `word`. -/
-macro "len" : tactic => `(tactic| ((try simp only [len, uint.nat, uint.Z] at *) <;> try word))
+open Lean Elab Tactic Meta in
+/-- Internal: `simp only [len, uint.nat, uint.Z]` at the hypotheses and the goal that
+do not mention Iris entailments (so that `len` stays cheap inside large Iris proof
+mode goals). Does not fail. -/
+elab "len_simp" : tactic => withMainContext do
+  let mut fvars := #[]
+  for h in ← getLCtx do
+    if h.isImplementationDetail then continue
+    let ty ← instantiateMVars h.type
+    unless ← isProp ty do continue
+    if word.mentionsEntailment ty then continue
+    fvars := fvars.push h.fvarId
+  let tgt ← instantiateMVars (← getMainTarget)
+  let simpTgt := !word.mentionsEntailment tgt
+  let stx ← `(tactic| simp only [len, uint.nat, uint.Z])
+  let { ctx, simprocs, .. } ← mkSimpContext stx (eraseLocal := false)
+  try
+    let (result?, _) ← simpGoal (← getMainGoal) ctx (simprocs := simprocs)
+      (simplifyTarget := simpTgt) (fvarIdsToSimp := fvars)
+    match result? with
+    | none => replaceMainGoal []
+    | some (_, m) => replaceMainGoal [m]
+  catch _ => pure ()
+
+open Lean Elab Tactic Meta in
+/-- Internal: is the main goal free of Iris entailments? -/
+elab "guard_pure_target" : tactic => withMainContext do
+  if word.mentionsEntailment (← instantiateMVars (← getMainTarget)) then
+    throwError "the goal is an Iris goal"
+
+/-- Rocq `len`: simplify list lengths (`@[len]` simp set) in the goal and the
+hypotheses, then try `word`. Hypotheses and goals that mention Iris entailments
+(e.g. the Iris proof mode goal) are not touched, so `len` is cheap inside large
+Iris proofs; on an Iris goal, `word` is only used to find a contradiction in the
+pure hypotheses. -/
+macro "len" : tactic => `(tactic| (len_simp; first
+  | (guard_pure_target; try word)
+  | (try (exfalso; word))))
 
 /-- Rocq `list_elem l i as x`: obtain `x` and `Hx_lookup : l !! i = some x`,
 proving the bound `i < l.length` with `len`. The index must be a `Nat`

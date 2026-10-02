@@ -57,13 +57,49 @@ partial def collectToInt (e : Expr) (acc : Array Expr) : Array Expr :=
   | .proj _ _ b => collectToInt b acc
   | _ => acc
 
-/-- Add `sint_Z_cases t` for every `BitVec.toInt t` in the goal and context. -/
+/-- Does `e` mention an Iris entailment (an Iris proof mode goal, a spec, ...)? -/
+def mentionsEntailment (e : Expr) : Bool :=
+  (e.find? fun s => match s with
+    | .const n _ => n == `Iris.BI.BIBase.Entails || n == `Iris.ProofMode.Entails' ||
+        n == `Iris.Wp.wp
+    | _ => false).isSome
+
+/-- Add `sint_Z_cases t` for every `BitVec.toInt t` in the goal and context.
+Each fact is a case split for `omega`, so when there are more than ten such
+terms only those of the goal and of the hypotheses connected to the goal through
+shared free variables are used. Hypotheses mentioning
+Iris entailments are ignored. -/
 elab "word_sint_facts" : tactic => withMainContext do
-  let mut ts : Array Expr := #[]
+  let maxAll := 10
+  let tgt ← instantiateMVars (← getMainTarget)
+  let mut hyps : Array Expr := #[]
   for h in ← getLCtx do
     unless h.isImplementationDetail do
-      ts := collectToInt (← instantiateMVars h.type) ts
-  ts := collectToInt (← instantiateMVars (← getMainTarget)) ts
+      let ty ← instantiateMVars h.type
+      unless mentionsEntailment ty do hyps := hyps.push ty
+  let mut ts : Array Expr := #[]
+  for ty in hyps do ts := collectToInt ty ts
+  ts := collectToInt tgt ts
+  if ts.size > maxAll then
+    -- only the relevant ones: those of the goal and of the hypotheses connected to
+    -- the goal through shared free variables (transitively)
+    let mut vars : Std.HashSet FVarId := {}
+    for x in (collectFVars {} tgt).fvarSet.toList do vars := vars.insert x
+    let mut relevant : Array Bool := hyps.map fun _ => false
+    let mut changed := true
+    while changed do
+      changed := false
+      for h : i in [:hyps.size] do
+        if relevant[i]! then continue
+        let fvs := (collectFVars {} hyps[i]).fvarSet.toList
+        if fvs.any vars.contains then
+          relevant := relevant.set! i true
+          changed := true
+          for x in fvs do vars := vars.insert x
+    let mut ts' := collectToInt tgt #[]
+    for h : i in [:hyps.size] do
+      if relevant[i]! then ts' := collectToInt hyps[i] ts'
+    ts := ts'
   for t in ts do
     let pf ← mkAppM ``sint_Z_cases #[t.appArg!]
     let ty ← inferType pf
@@ -85,13 +121,41 @@ macro "word_prep" : tactic => `(tactic| (
       BitVec.toNat_cast, BitVec.toNat_ofNatLT, BitVec.toNat_ofBool,
       Int.toNat_natCast, Int.natCast_pow] at *)))
 
-/-- Solve word-arithmetic goals (Rocq `word`). See the module docstring. -/
+/-- Reduce arithmetic on literals left by `word_prep` (e.g. `x / (2 % 2^64)`,
+`(W64 3).toNat`) and shifts by literals, at the hypotheses and the goal. -/
+macro "word_lit_reduce" : tactic => `(tactic|
+  (try simp only [Nat.reduceMod, Nat.reducePow, Nat.reduceDiv, Nat.reduceMul, Nat.reduceAdd,
+    Nat.reduceSub, Int.reduceMod, Int.reducePow, Int.reduceDiv, Int.reduceMul, Int.reduceAdd,
+    Int.reduceSub, Int.reduceToNat, Int.reduceNeg, Int.reduceNatCast, Int.reduceNatCast', Int.reduceOfNat,
+    Int.natCast_pow, BitVec.toNat_udiv, BitVec.toNat_umod,
+    BitVec.toNat_ofNat, BitVec.toNat_ofInt, BitVec.ushiftRight_eq', BitVec.shiftLeft_eq',
+    BitVec.toNat_ushiftRight, BitVec.toNat_shiftLeft, Nat.shiftRight_eq_div_pow,
+    Nat.shiftLeft_eq] at *))
+
+open Lean Elab Tactic Meta in
+/-- Fails unless the goal mentions a bitwise operation (where `bv_decide` may help). -/
+elab "word_bitwise_goal" : tactic => withMainContext do
+  let tgt ← instantiateMVars (← getMainTarget)
+  let ops := [``HAnd.hAnd, ``HOr.hOr, ``HXor.hXor, ``Complement.complement, ``HShiftLeft.hShiftLeft,
+    ``HShiftRight.hShiftRight, ``BitVec.sshiftRight, ``BitVec.sdiv, ``BitVec.smod, ``BitVec.srem]
+  unless (tgt.find? fun s => match s with
+      | .const n _ => ops.contains n
+      | _ => false).isSome do
+    throwError "word: not a bitwise goal"
+
+/-- Solve word-arithmetic goals (Rocq `word`). See the module docstring.
+
+`word` first tries `word_prep; omega`, then the same after reducing literal
+arithmetic and shifts by literals (`word_lit_reduce`), then plain `omega`, then
+`bv_decide` with a 3 second SAT timeout (previously 10). Only the `toInt` facts
+relevant to the goal are added when there are many (`word_sint_facts`). -/
 syntax "word" : tactic
 macro_rules
   | `(tactic| word) => `(tactic| first
       | (word_prep; omega)
+      | (word_prep; word_lit_reduce; (try omega); done)
       | omega
-      | bv_decide)
+      | bv_decide (timeout := 3))
 
 /-! ## Rewriting lemmas for `uint.Z` / `sint.Z` of operations
 

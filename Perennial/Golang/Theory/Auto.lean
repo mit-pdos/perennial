@@ -15,12 +15,28 @@ Port of `new/golang/theory/auto.v`: the user-facing automation.
 Differences from Rocq:
 * `wp_apply ... as "%x Hx"` is written `wp_apply ... as %x Hx` (iris-lean intro
   patterns; `with` is accepted as a synonym of `as`). Lean-level binders are
-  introduced with `%x` (Rocq `as (x) "..."`).
+  introduced with `%x` (Rocq `as (x) "..."`). The spec patterns of `wp_apply` are
+  iris-lean's minus `[H] as name`, so `wp_apply lem $$ [H] as pats` works.
 * Rocq's global `wp_apply_auto_default` switch is not ported; use `--no-auto`.
 * `wp_if_destruct` names the case hypothesis `Hif` (Rocq leaves it anonymous)
-  and substitutes it when it is an equation with a variable side.
+  and substitutes it when it is an equation with a variable side. It splits on
+  the condition of the `if:` at the head of the expression.
+* All WP tactics fail (instead of leaving a `sorry`) when a term does not
+  elaborate (`withNoSorry`).
+* With `set_option goose.wp.extras true` (off by default, for backwards
+  compatibility with proofs that do these steps by hand): `wp_auto` rewrites
+  stored function literals to `#(func.mk ..)` and unfolds package constants
+  (`def a : val := #..`) that block a step; `wp_pures`/`wp_auto` stop at slice
+  composite literals (use `wp_slice_literal`, as in Rocq), reduce `match`es on
+  definitions of constructors, and use the `goose_wp_simp_extra` simp set
+  (`Perennial/Golang/Theory/TacticsSimp.lean`).
+* `wp_func_call` only rewrites the WP expression (not the hypotheses), and (with
+  `goose.wp.extras`) finds `FuncUnfold f (List.replicate n t)` instances for type
+  arguments `[t, .., t]`.
+* `wp_alloc_auto` (not `wp_auto`) also does anonymous allocations.
 -/
 import Perennial.Golang.Theory.Pkg
+import Perennial.Golang.Theory.TacticsSimp
 
 namespace Perennial
 
@@ -28,9 +44,105 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 /-! ## Function and method calls -/
 
-/-- Rocq `wp_func_call`: rewrite `#(functions f ts)` with its `FuncUnfold`
-instance and try to solve `is_pkg_init` goals. -/
-macro "wp_func_call" : tactic => `(tactic| (rw [func_unfold]; (try iPkgInit)))
+section func_call
+open Lean Elab Tactic Meta Qq Iris.ProofMode
+
+theorem tac_wp_func_unfold {PROP : Type _} [BI PROP] {Δ P Q : PROP} (h : Δ ⊢ Q) (heq : P = Q) :
+    Δ ⊢ P := heq ▸ h
+
+/-- `[t, t, ..., t]` (`n` copies), as `(n, t)`. -/
+partial def replicateLit? (ts : Expr) (t? : Option Expr := none) (n : Nat := 0) :
+    MetaM (Option (Nat × Expr)) := do
+  let ts ← whnfR ts
+  if ts.isAppOfArity ``List.nil 1 then return t?.map (n, ·)
+  if ts.isAppOfArity ``List.cons 3 then
+    let t := ts.getArg! 1
+    if let some t0 := t? then
+      unless ← isDefEq t t0 do return none
+    return ← replicateLit? (ts.getArg! 2) (some (t?.getD t)) (n + 1)
+  return none
+
+/-- A proof of `#(functions f ts) = impl` from a `FuncUnfold f ts impl` instance;
+if none is found and `ts = [t, ..., t]`, from `FuncUnfold f (List.replicate n t) impl`
+(e.g. `go.min`, `go.max`). -/
+def funcUnfoldEq (fv : Expr) (f ts : Expr) : MetaM (Option Expr) := do
+  let valTy ← inferType fv
+  let tryInst (ts' : Expr) : MetaM (Option Expr) := do
+    let impl ← mkFreshExprMVar valTy
+    let ty ← mkAppM ``FuncUnfold #[f, ts', impl]
+    let some inst ← synthInstance? ty | return none
+    let pf ← mkAppOptM ``FuncUnfold.func_unfold #[none, none, none, none, none, none, some inst]
+    let pfTy ← instantiateMVars (← inferType pf)
+    let some (_, _, rhs) := pfTy.eq? | return none
+    -- `#(functions f ts') = impl`, cast to `fv = impl` (definitional)
+    return some (← mkExpectedTypeHint pf (← mkEq fv rhs))
+  if let some p ← tryInst ts then return some p
+  -- (only with `goose.wp.extras`, for backwards compatibility)
+  unless goose.wp.extras.get (← getOptions) do return none
+  if let some (n, t) ← replicateLit? ts then
+    let rep ← mkAppM ``List.replicate #[mkNatLit n, t]
+    if let some p ← tryInst rep then return some p
+  return none
+
+/-- The function value `#(functions f ts)` of the next call in the WP expression:
+the innermost call `App (Val #(functions f ts)) _` in evaluation position, or else
+the first `#(functions f ts)` in the expression. Returns `(#(functions f ts), f, ts)`. -/
+def findFuncCall (e : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+  let isFn (fv : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+    let fv := (← instantiateMVars fv).consumeMData
+    unless fv.isAppOfArity ``GoGlobalContext.into_val 4 do return none
+    let x ← whnfR (fv.getArg! 3)
+    unless x.isAppOfArity ``functions 6 || x.getAppFn.constName? == some ``functions do return none
+    let args := x.getAppArgs
+    if args.size < 2 then return none
+    return some (fv, args[args.size - 2]!, args[args.size - 1]!)
+  let mut found := none
+  for (_, e') in ← allEctx e do
+    let e' ← whnfR e'
+    let_expr Perennial.expr.App _ fe _ := e' | continue
+    let some fv ← isGooseVal? fe | continue
+    if let some r ← isFn fv then found := some r
+  if found.isSome then return found
+  let some fv := (← instantiateMVars e).find? (fun s =>
+      s.isAppOfArity ``GoGlobalContext.into_val 4 &&
+        (s.getArg! 3).getAppFn.constName? == some ``functions) | return none
+  isFn fv
+
+end func_call
+
+open Lean Elab Tactic Meta Qq Iris.ProofMode in
+/-- The core of `wp_func_call`; `false` if no call was found. -/
+def wpFuncCallCore : TacticM Bool :=
+  withNoSorry `wp_func_call <| ProofModeM.runTactic `wp_func_call fun mvar g => do
+    let some wp ← parseGooseWp? g.goal | return false
+    let some (fv, f, ts) ← findFuncCall wp.e | return false
+    let some heq ← funcUnfoldEq fv f ts | return false
+    let some (_, _, impl) := (← instantiateMVars (← inferType heq)).eq? | return false
+    let e' := wp.e.replace fun s => if s == fv then some impl else none
+    let wpE' := { wp with e := e' }
+    let motive ← withLocalDeclD `x (← inferType fv) fun x => do
+      let ex := wp.e.replace fun s => if s == fv then some x else none
+      mkLambdaFVars #[x] (wp.mk' ex wp.Φ)
+    let heq' ← mkCongrArg motive heq
+    let pf ← addBIGoal g.hyps (wpE'.mk' e' wp.Φ)
+    mvar.assign (← mkAppNamed ``tac_wp_func_unfold
+      [("Δ", g.e), ("P", g.goal), ("Q", wpE'.mk' e' wp.Φ), ("!h", pf), ("!heq", heq')])
+    return true
+
+open Lean Elab Tactic Meta Qq Iris.ProofMode in
+/-- Rocq `wp_func_call`: unfold the function value `#(functions f ts)` of the next
+call in the WP expression (see `findFuncCall`) with its `FuncUnfold` instance
+(with `goose.wp.extras`, also for type arguments `[t, ..., t]` matching an
+instance for `List.replicate n t`), then try to solve `is_pkg_init` goals. Only the WP
+expression is rewritten (all occurrences of that function value in it), not the
+hypotheses. Falls back to `rw [func_unfold]`. -/
+elab "wp_func_call" : tactic => do
+  let saved ← saveState
+  let done ← try wpFuncCallCore catch _ => pure false
+  unless done do
+    saved.restore
+    evalTactic (← `(tactic| rw [func_unfold]))
+  evalTactic (← `(tactic| try iPkgInit))
 
 /-- Rocq `wp_method_call`: rewrite `#(methods t m v)` with its `MethodUnfold`
 instance and try to solve `is_pkg_init` goals. -/
@@ -202,11 +314,28 @@ keeping their later credit, introduced as `Hlc1`, `Hlc2`, ...), loads, stores
 and `let:`-allocations; when the expression becomes a value, continue in the
 postcondition if it is again a WP. At the end, points-to facts of dead locals
 are cleared. Returns the proof, the number of credits still wanted and whether
-progress was made. -/
+progress was made.
+
+Performance notes: the expression is kept in `goose_wp_simp` normal form, so
+`simp` is only run on the whole expression when a newly inserted value (e.g. a
+loaded `#v`) could be simplified (`simpOnlyIf`); substitutions get kernel-cheap
+proofs (`substPf`); the later introduced by a pure step is `laterN_intro` unless
+a hypothesis contains `▷` (`iLaterIntro`); loads and stores try the points-to at
+the same address first (`hypsListFor`); allocations do not re-abstract the
+continuation proof (`iWpAllocStep`). Together these make `wp_auto` roughly linear
+in the length of straight-line code.
+
+Only the search for the next step may fail silently; an error while taking a
+step that was found (e.g. in `simp`) is reported. -/
 partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (lc : Nat) (lcIdx : Nat := 1)
-    (simpFirst : Bool := true) :
+    (simpFirst : Bool := true) (simpOnlyIf : Option Expr := none) :
     ProofModeM (Expr × Nat × Bool) := do
+  let simpFirst ← if simpFirst then
+      match simpOnlyIf with
+      | some v => needsGooseSimp v
+      | none => pure true
+    else pure false
   if simpFirst then
     if let some (e', k) ← iWpExprSimp wp ehyps then
       let (pf, lc', _) ← iWpAuto hyps { wp with e := e' } lc lcIdx (simpFirst := false)
@@ -223,8 +352,8 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     return (pf, lc', p)
   let saved ← saveState
   -- pure step
-  if let some ⟨_, hyps', e', k⟩ ← observing? (iWpPureStep hyps wp (failOnUnsolved := true)
-      (lc := lc > 0)) then
+  if let some (st, hφ) ← observing? (iWpPureStepFind wp (failOnUnsolved := true) (multi := true)) then
+    let ⟨_, hyps', e', k⟩ ← iWpPureStepTake hyps wp st hφ (lc := lc > 0)
     if e' == wp.e then
       saved.restore
     else if lc > 0 then
@@ -245,20 +374,39 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx (simpFirst := false)
       return (← k pf', lc', true)
   -- load
-  if let some ⟨_, hyps', e', k⟩ ← observing? (iWpLoadStep hyps wp) then
-    let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx
+  if let some ⟨_, hyps', e', k, vv⟩ ← observing? (iWpLoadStepV hyps wp) then
+    let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx (simpOnlyIf := some vv)
     return (← k pf', lc', true)
-  -- store
+  -- store (of a function literal: first rewrite it to `#(func.mk ..)`)
   if let some ⟨_, hyps', e', k⟩ ← observing? (iWpStoreStep hyps wp) then
-    let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx
+    let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx (simpFirst := false)
+    return (← k pf', lc', true)
+  let extras := goose.wp.extras.get (← getOptions)
+  if extras then
+   if let some (e', k) ← iWpStoreFuncLit? wp ehyps then
+    let (pf', lc', _) ← iWpAuto hyps { wp with e := e' } lc lcIdx (simpFirst := false)
     return (← k pf', lc', true)
   -- allocation of a local variable
   let res ← IO.mkRef lc
-  if let some pf ← observing? (iWpAllocStep hyps wp (auto := true) none fun hyps' wp' => do
-      let (pf', lc', _) ← iWpAuto hyps' wp' lc lcIdx
+  let entered ← IO.mkRef false
+  let saved ← saveState
+  try
+    let pf ← iWpAllocStep hyps wp (auto := true) none fun hyps' wp' => do
+      entered.set true
+      let (pf', lc', _) ← iWpAuto hyps' wp' lc lcIdx (simpFirst := false)
       res.set lc'
-      return pf') then
+      return pf'
     return (pf, ← res.get, true)
+  catch ex =>
+    -- errors in the steps after the allocation are reported
+    if ← entered.get then throw ex
+    saved.restore
+  -- a value constant (e.g. a package constant `def a : val := #(W64 3)`) blocks
+  -- the next step: unfold it
+  if extras then
+   if let some (e', k) ← iWpUnfoldValConst? wp ehyps then
+    let (pf', lc', _) ← iWpAuto hyps { wp with e := e' } lc lcIdx (simpFirst := true)
+    return (← k pf', lc', true)
   -- done: clean up dead points-to facts
   let unused ← unusedPointsto hyps (wp.mk' wp.e wp.Φ)
   return (← addGoalCleaning hyps (wp.mk' wp.e wp.Φ), lc, !unused.isEmpty)
@@ -286,32 +434,117 @@ macro "wp_auto" : tactic => `(tactic| wp_auto_lc 0)
 
 /-! ## `wp_apply` -/
 
+/-! Specialization patterns of `wp_apply`. These are iris-lean's `specPat`s
+without the `[H₁ … Hₙ] as name` form (naming the premise goal), whose `as` would
+swallow the `as pats` of `wp_apply`. -/
+declare_syntax_cat wpSpecPat
+syntax ident : wpSpecPat
+syntax "%" term:max : wpSpecPat
+syntax "[" ("-")? (colGt ppSpace frameIdent)* (" //")? " ]" : wpSpecPat
+syntax "[>" ("-")? (colGt ppSpace frameIdent)* (" //")? " ]" : wpSpecPat
+syntax "[#" (colGt ppSpace frameIdent)* (" //")? " ]" : wpSpecPat
+syntax "[" "$" "]" : wpSpecPat
+syntax "[>" "$" "]" : wpSpecPat
+syntax "[#" "$" "]" : wpSpecPat
+syntax "(" pmTerm ")" : wpSpecPat
+
+/-- The proof mode term of `wp_apply`: `lem $$ spat₁ … spatₙ`. -/
+syntax wpPmTerm := term (colGt " $$ " (colGt ppSpace wpSpecPat)+)?
+
+open Lean in
+/-- Convert a `wpSpecPat` to the corresponding iris-lean `specPat`. -/
+def wpSpecPatToSpecPat : TSyntax `wpSpecPat → MacroM (TSyntax `specPat)
+  | `(wpSpecPat| $x:ident) => `(specPat| $x:ident)
+  | `(wpSpecPat| % $t:term) => `(specPat| % $t)
+  | `(wpSpecPat| [$[-%$negTk]? $[$names:frameIdent]* $[//%$trivTk]?]) =>
+    `(specPat| [$[-%$negTk]? $[$names:frameIdent]* $[//%$trivTk]?])
+  | `(wpSpecPat| [> $[-%$negTk]? $[$names:frameIdent]* $[//%$trivTk]?]) =>
+    `(specPat| [> $[-%$negTk]? $[$names:frameIdent]* $[//%$trivTk]?])
+  | `(wpSpecPat| [# $[$names:frameIdent]* $[//%$trivTk]?]) =>
+    `(specPat| [# $[$names:frameIdent]* $[//%$trivTk]?])
+  | `(wpSpecPat| [$]) => `(specPat| [$])
+  | `(wpSpecPat| [> $]) => `(specPat| [> $])
+  | `(wpSpecPat| [# $]) => `(specPat| [# $])
+  | `(wpSpecPat| ( $p:pmTerm )) => `(specPat| ( $p:pmTerm ))
+  | _ => Macro.throwUnsupported
+
+open Lean in
+/-- Convert a `wpPmTerm` to an iris-lean `pmTerm`. -/
+def wpPmTermToPmTerm (stx : TSyntax ``wpPmTerm) : MacroM (TSyntax `pmTerm) := do
+  let t : Term := ⟨stx.raw[0]⟩
+  let spats := stx.raw[1]
+  if spats.isNone then return ← `(pmTerm| $t:term)
+  let ps ← spats[1].getArgs.mapM fun p => wpSpecPatToSpecPat ⟨p⟩
+  `(pmTerm| $t:term $$ $ps*)
+
+section focus
+open Lean Elab Tactic Meta Iris.ProofMode
+
+/-- Run `tac` on the continuation goal of the last `wp_apply_raw` (the goal
+tagged `wp_apply_cont`; failing that, the last Iris goal). Does nothing if there
+is no such goal (e.g. the applied spec closed the goal). -/
+elab "wp_focus_cont " tac:tactic : tactic => do
+  let goals := (← getUnsolvedGoals).toArray
+  let mut idx : Option Nat := none
+  for h : i in [:goals.size] do
+    if (← goals[i].getTag) == `wp_apply_cont then idx := some i
+  if idx.isNone then
+    for h : i in [:goals.size] do
+      if isIrisGoal (← instantiateMVars (← goals[i].getType)) then idx := some i
+  let some i := idx | return
+  let g := goals[i]!
+  let tagged := (← g.getTag) == `wp_apply_cont
+  setGoals [g]
+  evalTactic tac
+  let gs' ← getUnsolvedGoals
+  -- keep the tag on the (last Iris goal) resulting from the continuation
+  if tagged then
+    for g' in gs'.reverse do
+      if isIrisGoal (← instantiateMVars (← g'.getType)) then
+        g'.setTag `wp_apply_cont
+        break
+  setGoals (goals.toList.take i ++ gs' ++ goals.toList.drop (i + 1))
+
+end focus
+
 /-- `wp_apply lem $$ spats as pats` (Rocq `wp_apply (lem with "spats") as "pats"`):
 `wp_apply_core lem $$ spats`, then solve `is_pkg_init` premises (`iPkgInit`),
-introduce `pats` in the continuation (the last goal), and run `wp_auto` on it
-(`--no-auto` disables this; `--lc n` makes `wp_auto` produce `n` credits).
-`with` is accepted for `as`. -/
+introduce `pats` in the continuation, and run `wp_auto` on it (`--no-auto`
+disables this; `--lc n` makes `wp_auto` produce `n` credits). `with` is
+accepted for `as`.
+
+The continuation is the goal whose conclusion is the WP of the rest of the
+program (tagged by `wp_apply_raw`), even when side goals come after it; if the
+applied spec closes the goal, `as`/`wp_auto` are skipped. If the spec does not
+apply, `wp_pures` is run first and it is tried again (e.g. for a call whose
+argument is still `Pair (Val _) (Val _)`). To apply an Iris hypothesis `IH` with
+Lean arguments, pass them as pure spec patterns: `wp_apply IH $$ %x %y [H]`.
+The spec patterns are
+iris-lean's, except that `[H] as name` (naming a premise goal) is not
+available, so that `wp_apply lem $$ [H] as pats` introduces `pats`. -/
 syntax wpNoAuto := " --no-auto"
 syntax wpLc := " --lc " num
 syntax wpAs := (" as " <|> " with ") (colGt ppSpace introPat)+
 
-syntax (name := wpApply) "wp_apply " pmTerm (wpNoAuto)? (wpLc)? (wpAs)? : tactic
+syntax (name := wpApply) "wp_apply " wpPmTerm (wpNoAuto)? (wpLc)? (wpAs)? : tactic
 
 macro_rules
-  | `(tactic| wp_apply $pmt:pmTerm $[$na:wpNoAuto]? $[$lc:wpLc]? $[$as?:wpAs]?) => do
+  | `(tactic| wp_apply $wpmt:wpPmTerm $[$na:wpNoAuto]? $[$lc:wpLc]? $[$as?:wpAs]?) => do
+    let pmt ← wpPmTermToPmTerm wpmt
     let intro : Lean.TSyntax `tactic ←
       match as? with
       | some a =>
         let pats : Lean.TSyntaxArray `introPat := a.raw[1].getArgs.map (⟨·⟩)
-        `(tactic| focusLastIrisGoal (iintro $pats*))
+        `(tactic| wp_focus_cont (iintro $pats*))
       | none => `(tactic| skip)
     let n : Lean.TSyntax `num := match lc with
       | some l => ⟨l.raw[1]⟩
       | none => Lean.Syntax.mkNumLit "0"
     let auto : Lean.TSyntax `tactic ←
       if na.isSome then `(tactic| skip)
-      else `(tactic| focusLastIrisGoal (try wp_auto_lc $n))
-    `(tactic| focus ((wp_apply_core $pmt) <;> (try iPkgInit); $intro:tactic; $auto:tactic))
+      else `(tactic| wp_focus_cont (try wp_auto_lc $n))
+    let core ← `(tactic| focus ((first | wp_apply_raw $pmt | (wp_pures; wp_apply_raw $pmt)) <;> wp_apply_post))
+    `(tactic| focus (($core:tactic) <;> (try iPkgInit); $intro:tactic; $auto:tactic; wp_untag_cont))
 
 /-! ## Boolean cleanup -/
 
@@ -365,34 +598,79 @@ def findIfCond (e : Expr) : MetaM (Option (Sum Expr Expr)) := do
     return some (.inr (b.getArg! 3))
   return none
 
+/-- `#(decide P) = #b` (for a literal `b`) becomes `P`; other propositions are
+unchanged. -/
+def peelDecideEq (p : Expr) : MetaM Expr := do
+  let p ← instantiateMVars p
+  let_expr Eq _ a b := p | return p
+  let a := a.consumeMData
+  let b ← whnfR b
+  unless a.isAppOfArity ``GoGlobalContext.into_val 4 && b.isAppOfArity ``GoGlobalContext.into_val 4 do
+    return p
+  let x := (a.getArg! 3).consumeMData
+  let lit := (← whnfR (b.getArg! 3))
+  unless lit.isConstOf ``Bool.true || lit.isConstOf ``Bool.false do return p
+  if x.isAppOfArity ``Decidable.decide 2 then return x.getArg! 0
+  return p
+
+/-- The condition of the `if:` at the head of the WP expression: the `If c _ _`
+in evaluation position whose condition `c` is a value (the next redex), or else
+the outermost `If` in evaluation position. -/
+def findHeadIf (e : Expr) : MetaM (Option Expr) := do
+  let mut outer : Option Expr := none
+  for (_, e') in ← allEctx e do
+    let e' ← whnfR (← instantiateMVars e')
+    let_expr Perennial.expr.If _ c _ _ := e' | continue
+    if (← isGooseVal? c).isSome then return some c
+    if outer.isNone then outer := some c
+  return outer
+
 end if_destruct
 
 set_option hygiene false in
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
-/-- Rocq `wp_if_destruct`: case split on the first `decide P` (or Boolean
-variable `#b`) in the WP expression, then `wp_pures`, `cleanup_bool_decide` and
-`wp_auto`. The case hypothesis is `Hif` (accessible: the tactic is unhygienic). -/
+/-- Rocq `wp_if_destruct`: case split on the condition of the `if:` at the head
+of the WP expression — the first `decide P` (or Boolean variable `#b`) in it
+(if there is no such `if:`, the first one in the expression, then in the whole
+goal) — then `wp_pures`, `cleanup_bool_decide` and `wp_auto`. The case
+hypothesis is `Hif` (accessible: the tactic is unhygienic).
+
+Unlike earlier versions, a `decide` elsewhere in the expression (e.g. in a loop
+postcondition) is not picked when there is an `if:` at the head. -/
 elab "wp_if_destruct" : tactic => do
   let some g := parseIrisGoal? (← instantiateMVars (← getMainTarget))
     | throwError "wp_if_destruct: not in the Iris proof mode"
   let target ← match ← parseGooseWp? g.goal with
     | some wp => Pure.pure wp.e
     | none => Pure.pure g.goal
-  let cond ← match ← findIfCond target with
+  -- the condition of the `if:` at the head of the expression; then (as before)
+  -- anywhere in the expression, then anywhere in the goal
+  let headCond ← match ← findHeadIf target with
+    | some c => match ← findIfCond c with
+      | some (.inl p) => Pure.pure (some (.inl (← peelDecideEq p)))
+      | r => Pure.pure r
+    | none => Pure.pure none
+  let cond ← match headCond with
     | some c => Pure.pure (some c)
-    | none => findIfCond g.goal
+    | none => match ← findIfCond target with
+      | some c => Pure.pure (some c)
+      | none => findIfCond g.goal
   match cond with
   | some (.inl p) =>
     let pStx ← Term.exprToSyntax p
     evalTactic (← `(tactic| by_cases Hif : $pStx))
-    evalTactic (← `(tactic| all_goals (
-      (first | simp only [decide_eq_true Hif, ↓reduceIte] |
-        simp only [decide_eq_false Hif, Bool.false_eq_true, ↓reduceIte] | skip);
-      (try subst Hif);
-      wp_pures;
-      cleanup_bool_decide;
-      (try wp_auto);
-      cleanup_bool_decide)))
+    -- the positive case rewrites with `decide_eq_true Hif`, the negative one with
+    -- `decide_eq_false Hif` (trying both in each case could rewrite the wrong way)
+    let post ← `(tactic| ((try subst Hif); wp_pures; cleanup_bool_decide; (try wp_auto); cleanup_bool_decide))
+    match ← getGoals with
+    | gPos :: gNeg :: rest =>
+      setGoals [gPos]
+      evalTactic (← `(tactic| ((try simp only [decide_eq_true Hif, ↓reduceIte]); $post:tactic)))
+      let r1 ← getGoals
+      setGoals [gNeg]
+      evalTactic (← `(tactic| ((try simp only [decide_eq_false Hif, Bool.false_eq_true, ↓reduceIte]); $post:tactic)))
+      setGoals (r1 ++ (← getGoals) ++ rest)
+    | _ => throwError "wp_if_destruct: by_cases did not produce two goals"
   | some (.inr b) =>
     let bStx ← Term.exprToSyntax b
     evalTactic (← `(tactic| cases $bStx:term))
@@ -482,15 +760,37 @@ macro_rules
 `wp_for_post_core`), then `wp_auto`. -/
 macro "wp_for_post" : tactic => `(tactic| (wp_for_post_core; (try wp_auto)))
 
+open Lean Elab Tactic Meta Iris.ProofMode in
+set_option hygiene false in
+/-- Internal: `iapply HΦ` (or `iapply HPost` when there is no `HΦ`), reporting
+the error of `iapply` itself (e.g. a postcondition that does not match because of
+a stuck `Convert`) rather than "unknown identifier `HPost`". -/
+elab "wp_end_apply" : tactic => do
+  let some g := parseIrisGoal? (← instantiateMVars (← getMainTarget))
+    | throwError "wp_end: not in the Iris proof mode"
+  let names := (hypsList g.hyps).map (·.1)
+  let hasΦ := names.contains `HΦ
+  let hasPost := names.contains `HPost
+  if !hasΦ && !hasPost then
+    throwError "wp_end: no continuation hypothesis `HΦ` or `HPost` in the Iris context"
+  if hasΦ then
+    let saved ← saveState
+    try
+      evalTactic (← `(tactic| iapply HΦ))
+      return
+    catch ex =>
+      unless hasPost do throw ex
+      saved.restore
+  evalTactic (← `(tactic| iapply HPost))
+
 set_option hygiene false in
 /-- Rocq `wp_end`: finish a function proof by applying the continuation `HΦ`
-(or `HPost`) and trying to discharge the remaining goal. -/
+(or `HPost`) and trying to discharge the remaining goal. If applying the
+continuation fails, the error of `iapply` is reported. -/
 macro "wp_end" : tactic => `(tactic| (
   wp_pures
   repeat imodintro
-  (first
-  | iapply HΦ
-  | iapply HPost);
+  wp_end_apply;
   (try (first
     | (iframe; done)
     | itrivial

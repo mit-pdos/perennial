@@ -941,7 +941,8 @@ theorem wp_slice_clear {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (
     {{ RET #(); sl ↦* List.replicate vs.length (zero_val V) }} := by
   wp_start as Hs
   ihave %Hlen := own_slice_len _ _ _ $$ Hs
-  wp_apply wp_slice_make2 (V := V) sl.len $$ %(Hlen.2) with %zsl ⟨Hz, _⟩
+  wp_apply wp_slice_make2 (V := V) sl.len $$ [] with %zsl ⟨Hz, _⟩
+  · ipureintro; exact Hlen.2
   wp_apply wp_slice_copy sl vs zsl (List.replicate (sint.nat sl.len) (zero_val V)) (DFrac.own 1) $$ [Hs Hz] with %n ⟨%Hn, Hs, _⟩
   · iframe Hs Hz
   iapply HΦ

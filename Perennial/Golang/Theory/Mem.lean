@@ -187,6 +187,16 @@ theorem tac_wp_alloc {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (
 
 end tac_lemmas
 
+section func_lit
+variable [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
+
+/-- A function literal value is the Go function value `#(func.mk f x e)` (used
+by `wp_store` to store function literals). -/
+theorem recv_eq_func_mk (f x : binder) (e : expr) : (RecV f x e : val) = #(func.mk f x e) := by
+  rw [go.into_val_unfold func.t]
+
+end func_lit
+
 /-! ## The memory tactics -/
 
 section tactics
@@ -220,6 +230,20 @@ def hypsList {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
   | _, .hyp _ name ivar p ty _ => [(name, ivar, p, ty)]
   | _, .sep _ _ _ _ lhs rhs => hypsList rhs ++ hypsList lhs
 
+/-- The hypotheses of `hyps` (as `hypsList`), with those that are a typed
+points-to at exactly the address `l` first: these are tried first by
+`wp_load`/`wp_store`, so that the common case needs a single `Access` search
+instead of one per hypothesis. -/
+def hypsListFor {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) (l : Expr) :
+    MetaM (List (Name × IVarId × Q(Bool) × Q($prop))) := do
+  let mut exact := #[]
+  let mut rest := #[]
+  for h@(_, _, _, ty) in hypsList hyps do
+    let ty ← instantiateMVars ty
+    if ty.isAppOfArity ``typed_pointsto 6 && ty.getArg! 3 == l then exact := exact.push h
+    else rest := rest.push h
+  return exact.toList ++ rest.toList
+
 /-- The typed points-to `@typed_pointsto GF V inst l v dq`, with fresh
 metavariables for `V`, the `TypedPointsto` instance, `v` (unless given) and
 `dq` (unless given). -/
@@ -243,17 +267,17 @@ def synthAccess (A A' P : Expr) : ProofModeM (Option (Expr × Expr)) := do
 
 /-- One `wp_load` step: find `![t] #l` in evaluation position and a hypothesis
 `P` (spatial or intuitionistic) with `Access (l ↦{dq} v) (l ↦{dq} v) P P`;
-the load returns `#v` and keeps the context. -/
-def iWpLoadStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+the load returns `#v` and keeps the context. Also returns the loaded value `#v`. -/
+def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
-    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
+    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr) × Expr) := do
   let some ((t, l), K, _) ← findEctx wp.e (fun _ e => do
       let some (i, lv) ← isGoInstrApp? e ``go_instruction.GoLoad | throwError "no"
       let some (_, l) ← isIntoVal? lv | throwError "no"
       return (i.getArg! 1, l))
     | throwIPMError "could not find a load `![t] #l`"
   let GF := (← gooseGSArgs wp.ι)[6]!
-  for (_, ivar, p, P) in hypsList hyps do
+  for (_, ivar, p, P) in ← hypsListFor hyps l do
     let saved ← saveState
     let (A, V, inst, v, dq) ← mkTypedPointstoMVars GF l none none none
     if let some (hacc, P') ← synthAccess A A P then
@@ -271,9 +295,16 @@ def iWpLoadStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
              ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("tpt", inst), ("hacc", hacc),
              ("hsplit", r.pf), ("!h", h)]
         let _ := p
-        return ⟨ehyps, hyps, filled, k⟩
+        return ⟨ehyps, hyps, filled, k, vv⟩
     restoreState saved
   throwIPMError "could not find a points-to in context covering the address {l}"
+
+/-- `iWpLoadStepV` without the loaded value. -/
+def iWpLoadStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
+    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
+  let ⟨_, hyps', e', k, _⟩ ← iWpLoadStepV hyps wp
+  return ⟨_, hyps', e', k⟩
 
 /-- One `wp_store` step: find `GoStore t (#l, #w)` and a spatial hypothesis
 `P` with `Access (l ↦ v) (l ↦ w) P P'`; `P` is replaced by `P'` (same name). -/
@@ -290,7 +321,7 @@ def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     | throwIPMError "could not find a store `GoStore t (#l, #w)`"
   let GF := (← gooseGSArgs wp.ι)[6]!
   let own1 ← mkAppM ``DFrac.own #[← mkAppOptM ``OfNat.ofNat #[some (mkConst ``Iris.Qp), some (mkRawNatLit 1), none]]
-  for (name, ivar, p, P) in hypsList hyps do
+  for (name, ivar, p, P) in ← hypsListFor hyps l do
     if isTrue p then continue
     let saved ← saveState
     let (A, _, inst, v, _) ← mkTypedPointstoMVars GF l (some W) none (some own1)
@@ -309,6 +340,45 @@ def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       return ⟨_, hyps'', filled, k⟩
     restoreState saved
   throwIPMError "could not find a points-to in context covering the address {l}"
+
+/-- If the WP expression stores a function literal, `GoStore t (#l, RecV f x e)`,
+rewrite the stored value to the Go function value `#(func.mk f x e)`
+(`recv_eq_func_mk`), so that `wp_store` can use the typed points-to at `func.t`.
+Returns the new (inner) expression and a function turning a proof of the new goal
+into a proof of the old one. -/
+def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Expr) :
+    ProofModeM (Option (Expr × (Expr → MetaM Expr))) := do
+  let some ((sv, lv, f, x, body), K, _) ← findEctx (α := Expr × Expr × Expr × Expr × Expr) wp.e
+      (fun _ e => do
+        let e ← whnfR e
+        let_expr Perennial.expr.App _ fe arg := e | throwError "no"
+        let some _ ← isGoInstrApp? e ``go_instruction.GoStore | throwError "no"
+        let some argv ← isGooseVal? arg | throwError "no"
+        let argv ← whnfR argv
+        let_expr Perennial.val.PairV _ lv wv := argv | throwError "no"
+        if (← isIntoVal? wv).isSome then throwError "no"
+        let wv ← whnfR wv
+        let_expr Perennial.val.RecV _ f x body := wv | throwError "no"
+        return (fe, lv, f, x, body))
+    | return none
+  let _ := sv
+  let ext := wp.ext
+  let pf ← mkAppM ``recv_eq_func_mk #[f, x, body]
+  let valTy := mkApp (mkConst ``Perennial.val) ext
+  let motive ← withLocalDeclD `w valTy fun w => do
+    let pair := mkApp3 (mkConst ``Perennial.val.PairV) ext lv w
+    let inner := mkApp3 (mkConst ``Perennial.expr.App) ext sv (mkApp2 (mkConst ``Perennial.expr.Val) ext pair)
+    mkLambdaFVars #[w] (wp.wrap (← fillExpr K inner))
+  let heq ← mkCongrArg motive pf
+  let some (_, _, rhs) := (← instantiateMVars (← inferType heq)).eq? | return none
+  let rhs ← instantiateMVars rhs
+  let e' := match wp.tail with
+    | none => rhs.headBeta
+    | some _ => rhs.headBeta.appArg!
+  let lhs := (mkApp motive (mkApp4 (mkConst ``Perennial.val.RecV) ext f x body)).headBeta
+  return some (e', fun h => mkAppNamed ``tac_wp_expr_simp
+    [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", lhs), ("e'", wp.wrap e'),
+     ("!h", h), ("!heq", heq)])
 
 /-- A `wp_alloc` step: find `GoAlloc t #v` (optionally only as the argument of
 `let: "x" := _ in _`, when `auto`), and continue under a fresh location `l`
@@ -354,17 +424,32 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   let instTy ← mkAppOptM ``TypedPointsto #[some GF, some V]
   let inst ← synthInstance instTy
   let locTy := mkConst ``Perennial.loc
-  let pf ← withLocalDeclD lName locTy fun l => do
+  -- the continuation `∀ l, Δ ∗ l ↦ v ⊢ WP K[#l]` is a metavariable, introduced with
+  -- `MVarId.intro` (a delayed assignment), so that the (large) continuation proof is
+  -- not abstracted over `l` here (that made `wp_auto` quadratic)
+  let mkParts (l : Expr) : MetaM (Expr × Expr) := do
     let pt ← mkAppOptM ``typed_pointsto #[some GF, some V, some inst, some l, some v, some own1]
-    let ivar ← mkFreshIVarId false
-    let ⟨_, hyps', hadd⟩ := hyps.add bi hName ivar q(false) pt
     let lv ← mkAppOptM ``GoGlobalContext.into_val #[none, none, some locTy, some l]
     let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext lv)
+    return (pt, filled)
+  let hTy ← withLocalDeclD lName locTy fun l => do
+    let (pt, filled) ← mkParts l
+    let lhs ← mkAppOptM ``BIBase.sep #[some prop, none, some ehyps, some pt]
+    let T ← mkAppOptM ``BIBase.Entails #[some prop, none, some lhs, some (wp.mk' filled wp.Φ)]
+    mkForallFVars #[l] T
+  let m ← mkFreshExprSyntheticOpaqueMVar hTy
+  let (l, m') ← m.mvarId!.intro lName
+  m'.withContext do
+    let l := mkFVar l
+    let (pt, filled) ← mkParts l
+    let ivar ← mkFreshIVarId false
+    let ⟨_, hyps', hadd⟩ := hyps.add bi hName ivar q(false) pt
     let pfCont ← k hyps' { wp with e := filled }
     -- `hadd : Δ ∗ □?false (l ↦ v) ⊣⊢ Δ'`
     let pfl ← mkAppNamed ``tac_add_hyp
       [("Δ", ehyps), ("P", pt), ("hadd", hadd), ("Q", wp.mk' filled wp.Φ), ("!h", pfCont)]
-    mkLambdaFVars #[l] pfl
+    m'.assign pfl
+  let pf := m
   mkAppNamed ``tac_wp_alloc
     [("V", V), ("t", t), ("K", wp.quoteK K), ("v", v), ("Δ", ehyps),
      ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("tpt", inst), ("!h", pf)]
@@ -387,8 +472,12 @@ position, using a spatial hypothesis covering `l` with full ownership, which is
 updated to the new value. -/
 elab "wp_store" : tactic =>
   runTacticGooseWp `wp_store fun mvar g wp => do
+    -- a stored function literal `RecV f x e` is first rewritten to `#(func.mk f x e)`
+    let (wp, k0) ← match ← iWpStoreFuncLit? wp g.e with
+      | some (e', k0) => pure ({ wp with e := e' }, k0)
+      | none => pure (wp, pure)
     let ⟨_, hyps', e', k⟩ ← iWpStoreStep g.hyps wp
-    mvar.assign (← k (← iWpFinish hyps' { wp with e := e' }))
+    mvar.assign (← k0 (← k (← iWpFinish hyps' { wp with e := e' })))
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- `wp_alloc l as H` performs an allocation `GoAlloc t #v` in evaluation
@@ -400,9 +489,18 @@ elab "wp_alloc " l:ident " as " H:ident : tactic =>
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- `wp_alloc_auto` performs an allocation `let: "x" := GoAlloc t #v in e`,
-naming the location `x_ptr` and the points-to `x`. -/
+naming the location `x_ptr` and the points-to `x`. If there is no `let:`-bound
+allocation, an anonymous allocation (e.g. `&S{..}`) is performed, with
+inaccessible names. (`wp_auto` only does `let:`-bound allocations, as in Rocq.) -/
 elab "wp_alloc_auto" : tactic =>
   runTacticGooseWp `wp_alloc_auto fun mvar g wp => do
-    mvar.assign (← iWpAllocStep g.hyps wp true none fun hyps' wp' => iWpFinish hyps' wp')
+    let saved ← saveState
+    try
+      mvar.assign (← iWpAllocStep g.hyps wp true none fun hyps' wp' => iWpFinish hyps' wp')
+    catch _ =>
+      saved.restore
+      let l ← mkFreshUserName `l
+      let H ← mkFreshUserName `H
+      mvar.assign (← iWpAllocStep g.hyps wp false (some (l, H)) fun hyps' wp' => iWpFinish hyps' wp')
 
 end Perennial
