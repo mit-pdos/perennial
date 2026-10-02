@@ -1,0 +1,593 @@
+# Perennial Proof Reference (Lean)
+
+Detailed reference for the GooseLang/Go proof tactics of the Lean port, the
+Perennial-specific proof mode helpers, and the main specification lemmas. For a
+guided introduction see [`PERENNIAL_PROOF_TUTORIAL.md`](PERENNIAL_PROOF_TUTORIAL.md);
+for the generic Iris proof mode see [`IRIS_PROOF_MODE.md`](IRIS_PROOF_MODE.md).
+Lean blocks are copied from [`TutorialExamples.lean`](TutorialExamples.lean),
+which is checked with `lake env lean docs/TutorialExamples.lean`.
+
+Source locations are given as files plus the tactic or lemma name (grep for
+`"wp_auto"`, `theorem wp_map_insert`, ...). The docstrings in those files are
+authoritative.
+
+---
+
+## 1. Specifications
+
+### Texan triples
+
+```
+{{ P }} e {{ (x : T) (y : U), RET v; Q }}
+{{ P }} e @ s; E {{ RET v; Q }}          -- with stuckness and mask
+```
+
+is notation (from iris-lean's `Iris/BI/WeakestPre.lean`) for
+
+```
+⊢ ∀ Φ, P -∗ ▷ (∀ x y, Q -∗ Φ v) -∗ WP e {{ Φ }}
+```
+
+Inside `iprop(...)` (e.g. as an argument of another spec) a triple means
+`□ (∀ Φ, ...)`, so a triple is persistent. Some proofs state specs directly in
+the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.lean`):
+
+```
+⊢ ∀ Φ : val → IProp GF, iprop(is_pkg_init pkg_id.sync ∗ is_sema sema γ N) -∗
+    (|={⊤ \ ↑N,∅}=> ...) -∗ WP (App (Val (@! runtime_Semacquire)) (Val #sema)) {{ Φ }}
+```
+
+### Expressions
+
+| Lean | Meaning |
+|:--|:--|
+| `@! F` | `#(functions F [])`, the function `F` (a `go_string` like `go!"sort.Search"`) |
+| `r @!! T @!! go!"m"` | `#(methods T go!"m" #r)`, method `m` of `r : T` (Rocq `r @! T @! "m"`) |
+| `(App (App (Val f) (Val #x)) (Val #y))` | the call `f x y` |
+| `#x` | `into_val x`: Lean value to GooseLang `val` |
+| `PairV #a #b` | multiple return values `(a, b)` |
+| `gl(let: "x" := e1 in e2)` | GooseLang term syntax (see `Perennial/GooseLang/Notation.lean`) |
+| `![t] e`, `e1 <-[t] e2` | typed load and store |
+
+### Points-to and resources
+
+| Notation | Meaning | File |
+|:--|:--|:--|
+| `l ↦ v`, `l ↦{dq} v`, `l ↦□ v` | typed points-to (`typed_pointsto l v dq`) | `Golang/Theory/PostLifting.lean` |
+| `l.[S.t, go!"f"]` | address of field `f` of the struct at `l` | `Golang/Defn/PostLang.lean` |
+| `s ↦* vs`, `s ↦*{dq} vs` | slice points-to (`own_slice`) | `Golang/Theory/Slice.lean` |
+| `own_slice_cap V s dq` | ownership of the capacity beyond the length | `Golang/Theory/Slice.lean` |
+| `m ↦$ mv`, `m ↦${dq} mv`, `m ↦$□ mv` | map points-to (`own_map`), `mv : gmap K V` | `Golang/Theory/Map.lean` |
+| `is_pkg_init (PROP := IProp GF) pkg` | package `pkg` is initialized | `Golang/Theory/Pkg.lean` |
+| `"H" ∷ P` | named proposition (for `iNamed`) | `Helpers/NamedProps.lean` |
+
+### Words, maps, lists
+
+`w64 = BitVec 64` etc.; `W64 3` is a literal; `uint.Z x = (x.toNat : Int)`,
+`sint.Z x = x.toInt`, `uint.nat`, `sint.nat`. Maps are `Perennial.gmap K V`
+(`m !! k`, `<[k := v]> m`, `{[k := v]}`, `gmap.delete k m`); on lists, `l !! i`
+is `l[i]?` and `<[i := v]> l` is `l.set i v`. `go!"abc"` is a `go_string` (a
+`List w8`). See `PORTING.md`.
+
+### Sealing
+
+Rocq `Opaque` definitions are written
+
+```
+def is_Mutex_def (m : loc) (R : IProp GF) : IProp GF := is_lock m R
+@[irreducible] def is_Mutex (m : loc) (R : IProp GF) : IProp GF := is_Mutex_def m R
+theorem is_Mutex_unseal : @is_Mutex = @is_Mutex_def := by funext; with_unfolding_all rfl
+```
+
+(`Perennial/Proof/sync_proof/mutex.lean`) and unfolded in proofs with
+`simp only [is_Mutex_unseal, is_Mutex_def]`. Typeclass facts (`Persistent`,
+`Timeless`) are proved by unsealing and `infer_instance`.
+
+---
+
+## 2. WP tactics
+
+All of these work on an Iris proof mode goal whose conclusion is a GooseLang
+`WP`. They fail (never leave a `sorry`) when an argument does not elaborate.
+
+### `wp_start`, `wp_start as pat`, `wp_start_folded as pat`
+
+`Perennial/Golang/Theory/Auto.lean`. Begin the proof of a Texan triple (or of
+the wand form above):
+
+1. `iintro %Φ Hpre HΦ` (after an `imodintro` if the goal is `□ ...`);
+2. move the `is_pkg_init` conjuncts at the front of `Hpre` to the intuitionistic
+   context (anonymous hypotheses, used by `iPkgInit`);
+3. destruct the rest with `pat` (an iris-lean cases pattern), or keep it as
+   `Hpre`;
+4. `wp_start` only: unfold the called function (`wp_func_call`) or method
+   (`wp_method_call`) and take the call step (`wp_call`).
+
+Use `wp_start_folded` to prove a spec of a closure or a function value that
+should not be unfolded (e.g. `pred_implements_adapt` in
+`Perennial/Proof/sort_proof/search.lean`).
+
+Proof state of `wp_S__writeB'` before `wp_start as Hs`:
+
+```
+⊢ ⊢
+    ∀ Φ,
+      is_pkg_init pkg ∗ s ↦ v -∗
+        ▷ (s ↦ { a' := v.a', b' := two, c' := v.c' } -∗ Φ #()) -∗
+          WP (#(methods S.PointerType [119#8, 114#8, 105#8, 116#8, 101#8, 66#8] #s) #two) {{ Φ }}
+```
+
+after it:
+
+```
+  ∗HΦ : s ↦ { a' := v.a', b' := two, c' := v.c' } -∗ Φ #()
+  □x✝ : is_pkg_init pkg
+  ∗Hs : s ↦ v
+  ⊢
+  WP
+    (exception_do
+      (let: "s" := (GoAlloc S.PointerType) #s in
+        let: "two" := (GoAlloc TwoInts) #two in
+          (exception_seq (Lam BAnon (return: #())))
+            (Let (BNamed "$r0") (![TwoInts] "two")
+              (do: (StructFieldRef S [98#8]) ![S.PointerType] "s" <-[TwoInts] "$r0"))))
+    {{ Φ }}
+```
+
+and after `wp_auto`:
+
+```
+  ∗HΦ : s ↦ { a' := v.a', b' := two, c' := v.c' } -∗ Φ #()
+  □x✝ : is_pkg_init pkg
+  ∗Hs : s ↦ { a' := v.a', b' := two, c' := v.c' }
+  ⊢ Φ #()
+```
+
+(`go_string` literals are displayed as byte lists: `[98#8]` is `go!"b"`.)
+
+### `wp_func_call`, `wp_method_call`
+
+`Auto.lean`. Rewrite the next `#(functions f ts)` (resp. `#(methods t m v)`)
+with its `FuncUnfold` (resp. `MethodUnfold`) instance from the package's
+`Assumptions`. `wp_func_call` only rewrites the WP expression, choosing the
+innermost call in evaluation position (else the first occurrence). Follow with
+`wp_call`. Use them to step into a function that has no spec.
+
+### `wp_auto`, `wp_auto_lc n`
+
+`Auto.lean`. Repeatedly: pure steps (`wp_pures`), loads (`wp_load`), stores
+(`wp_store`) and allocations bound by `let:` (`wp_alloc_auto`, naming Go
+variable `x`'s cell `x_ptr` and its points-to `x`); when the expression becomes
+a value, continue in the postcondition. At the end it clears the points-to
+facts of local variables that no longer occur. **Fails if no progress is
+made.** `wp_auto_lc n` also produces later credits `Hlc1 ... Hlcn` from the
+first `n` pure steps (fails if there are fewer).
+
+It stops at: calls of functions (use `wp_apply`, or `wp_func_call; wp_call`),
+`if:` on a non-literal condition (`wp_if_destruct`), loops (`wp_for`),
+anonymous allocations (`wp_alloc`), and (without `goose.wp.extras`) stores of
+function literals and blocking package constants.
+
+### `wp_pures`, `wp_pure [pat]`, `wp_pure_lc H`, `wp_expr_simp`
+
+`Perennial/Golang/Theory/ProofMode.lean`. `wp_pures` takes all pure steps
+(`PureWp` instances: beta, `if:` on literals, pair projections, deterministic
+Go instructions, `exception_seq`, ...) and simplifies substitutions; never
+fails. `wp_pure` takes one step, leaving unsolved side conditions as goals;
+`wp_pure (if: _ then _ else _)` steps a redex matching a GooseLang pattern.
+`wp_pure_lc H` keeps the later credit as `H : £ 1`. `wp_expr_simp` only
+simplifies the expression.
+
+### `wp_call`, `wp_call_lc H`
+
+`ProofMode.lean`. Beta-reduce the application `fv v` at the head, where `fv`
+unfolds to a `rec:`/`λ:` (e.g. a `«Fⁱᵐᵖˡ»` constant), then `wp_pures`.
+
+### `wp_bind [pat]`
+
+`ProofMode.lean`. `wp_bind e` focuses `WP K[e'] {{ Φ }}` on the outermost
+subexpression `e'` in evaluation position matching the pattern `e` (holes `_`),
+giving `WP e' {{ v, WP K[v] {{ Φ }} }}`; e.g. `wp_bind (CmpXchg _ _ _)` before
+opening an invariant. Without argument: the next "interesting" operation (Rocq
+`wp_bind_next`). `wp_apply` binds automatically.
+
+### `wp_apply lem $$ spats as pats`
+
+`Auto.lean`. Options: `--no-auto` (no `wp_auto` afterwards), `--lc n` (the
+final `wp_auto` produces `n` credits); `with` is a synonym of `as`.
+
+1. Apply `lem` (a Lean lemma, possibly with explicit arguments, or an Iris
+   hypothesis) to the first subexpression in evaluation position where it fits,
+   binding the context (Rocq `wp_bind` + `iApply`). If it does not fit, run
+   `wp_pures` and try again.
+2. Strip a leading `▷` from the premise goals and close trivial ones; solve
+   `is_pkg_init` premises (`iPkgInit`).
+3. Introduce `pats` (iris-lean intro patterns) in the continuation and run
+   `wp_auto` on it.
+
+Premise goals created by `[...]` spec patterns come before the continuation:
+
+```
+wp_apply wp_load_slice_index s (sint.Z i) vs _ x Hi.1 $$ [Hs] with Hs
+· iframe; ipureintro; exact Hx_lookup        -- the precondition
+-- continuation, with `Hs` reintroduced
+```
+
+Specialization patterns are iris-lean's (see `IRIS_PROOF_MODE.md`) except the
+`[H] as name` form. To pass Lean arguments to an Iris hypothesis `IH`, use pure
+patterns: `wp_apply IH $$ %x %y [H]`. If the continuation still contains
+metavariables (e.g. an output not yet determined), `as` patterns may not be
+introduced; then `iintro` by hand (see `wp_wrapUnwrapInt` in
+`Perennial/Proof/.../examples/unittest.lean`). If the spec closes the goal, use
+`wp_apply_core`.
+
+### `wp_apply_core lem $$ spats`
+
+`ProofMode.lean`. Step 1 only: no `is_pkg_init` solving, no introduction, no
+automation. The last goal is the continuation `∀ x, Q -∗ WP K[v] {{ Φ }}`.
+
+### `wp_load`, `wp_store`, `wp_alloc l as H`, `wp_alloc_auto`
+
+`Perennial/Golang/Theory/Mem.lean`. `wp_load` performs `![t] #l` using a
+hypothesis `l ↦{dq} v` or one from which it can be accessed (an `Access`
+instance, e.g. the struct points-to for a field address). `wp_store` needs full
+ownership and updates the hypothesis. `wp_alloc l as H` introduces `l` and
+`H : l ↦ v`. `wp_alloc_auto` names a `let:`-bound allocation after its
+variable, and otherwise does an anonymous allocation with inaccessible names.
+
+### `wp_if_destruct`
+
+`Auto.lean`. Case split on the condition of the `if:` at the head of the
+expression — a `decide P` or a Boolean variable `#b` — then `wp_pures`,
+`cleanup_bool_decide` and `wp_auto`. For `decide P` the case hypothesis is
+`Hif : P` / `Hif : ¬P` (accessible), substituted when it is an equation with a
+variable side; for `#b` it does `cases b`. If there is no head `if:`, it falls
+back to the first `decide` in the expression, then in the goal.
+
+### `wp_for`, `wp_for HI`, `wp_for_post`
+
+`Auto.lean`, `Perennial/Golang/Theory/Loop.lean`. `wp_for` binds the `do_for`
+loop at the head and applies `wp_for` with the **whole spatial context** as the
+invariant (`iNamedAccu`), then `wp_auto` and `cleanup_bool_decide`. The goal is
+then
+
+```
+if decide (cond) = true then WP body {{ for_postcondition ... }} else Φ execute_val
+```
+
+so the next step is usually `wp_if_destruct`. `wp_for HI` also `iNamed`s `HI`,
+the hypothesis holding your loop invariant (`ihave HI : (∃ i, ...) $$ [..]`).
+Hypotheses you do not want in the invariant must be cleared or framed away
+before `wp_for`.
+
+`wp_for_post` proves a `for_postcondition` goal at the end of an iteration with
+`wp_for_post_do` (fall-through: then the post statement runs, e.g. `i++`),
+`wp_for_post_continue`, `wp_for_post_break` or `wp_for_post_return`, then runs
+`wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
+
+Proof state of `wp_intSliceLoop'` after `wp_for HI` (abbreviated):
+
+```
+Hlen : vs.length = sint.nat s.len ∧ 0 ≤ sint.Z s.len
+i : w64
+Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z s.len
+⊢
+  ∗HΦ : s ↦* vs -∗ Φ #(sum_w64 vs)
+  ∗Hs : s ↦* vs
+  ∗xs : xs_ptr ↦ s
+  ∗i : i_ptr ↦ i
+  ∗sum : sum_ptr ↦ sum_w64 (List.take (sint.nat i) vs)
+  ⊢
+  if decide (sint.Z i < sint.Z s.len) = true then
+    WP (... loop body ...)
+      {{ for_postcondition Stuckness.NotStuck ⊤ (λ: <>, do: #i_ptr <-[go.int] ...)
+            iprop("HΦ" ∷ ... ∗ "Hs" ∷ s ↦* vs ∗ "xs" ∷ xs_ptr ↦ s ∗ "HI" ∷ ∃ i, ...)
+            fun v => WP (exception_do (v ;;; return: ![go.uint64] #sum_ptr)) {{ Φ }} }}
+  else ...
+```
+
+### `wp_end`
+
+`Auto.lean`. `wp_pures`, `imodintro`s, then `iapply HΦ` (or `HPost`), then try
+`iframe; done`, `itrivial`, `ipureintro; trivial`. If applying `HΦ` fails, its
+error is reported; otherwise remaining goals are left to you (often
+`ipureintro; word`).
+
+### Not ported / different
+
+* Rocq `wp_if_join` is not ported: `wp_if_destruct` (or `cases b`) and prove the
+  rest of the function in each branch.
+* Rocq `wp_apply ... as "%x Hx"` is `wp_apply ... as %x Hx`; `as (x) "H"` is
+  `as %x H`.
+* Rocq's global `wp_apply_auto_default` switch: use `--no-auto`.
+* Rocq `wp_alloc l as "?"`: `wp_alloc_auto` (or a local macro, see
+  `wp_alloc_anon` in `examples/TacticWorkarounds.lean`).
+
+### Options
+
+| Option | Default | Effect |
+|:--|:--|:--|
+| `goose.wp.extras` | `false` | `wp_auto` stores function literals as `#(func.mk ..)` and unfolds blocking package constants; `wp_pures`/`wp_auto` reduce `match`es on constructors, stop at slice composite literals and use the `goose_wp_simp_extra` simp set; `wp_func_call` finds `FuncUnfold f (List.replicate n t)` for `[t, .., t]` |
+| `goose.wp.unfoldSliceLiterals` | `false` | let `wp_pures` step slice composite literals instead of stopping (normally use `wp_slice_literal`) |
+
+Use them as `set_option goose.wp.extras true in` before a declaration.
+
+---
+
+## 3. Perennial proof mode helpers
+
+| Tactic | Description | File |
+|:--|:--|:--|
+| `iNamed H` | destruct existentials and the `∗`-spine of named conjuncts of `H`, naming them; unfolds the head definition unless `@[irreducible]`; `"*"` destructs a conjunct recursively | `Helpers/NamedProps.lean` |
+| `iNamed 1` | introduce the premise of a wand and `iNamed` it | same |
+| `iNamedPrefix H "pre"`, `iNamedSuffix H "suf"` | `iNamed`, renaming | same |
+| `iNamedDestruct H` | `iNamed` without destructing existentials | same |
+| `iNamedAccu` | solve a metavariable goal with the named spatial context | same |
+| `iFrameNamed` | frame each named conjunct with the hypothesis of the same name | same |
+| `iExactEq H` | prove `Q` from `H : P`, leaving `P = Q` | same |
+| `iStructNamed H` | split `H : l ↦{dq} (v : S.t)` into field points-tos named after the fields | `Golang/Theory/PostLifting.lean` |
+| `iStructNamedPrefix H "p"`, `iStructNamedSuffix H "s"` | with renaming | same |
+| `ipersist H` | turn `H : l ↦ v` (or anything with `UpdateIntoPersistently`) into persistent `H : l ↦□ v`; needs an update in the goal (a WP is fine) | `GooseLang/IPersist.lean` |
+| `iPkgInit` | solve an `is_pkg_init` goal or the `is_pkg_init` conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
+| `solve_pkg_init` | solve one `is_pkg_init pkg` goal (also through the dependencies of other packages' `is_pkg_init`) | same |
+| `is_pkg_init_unfold`, `is_pkg_init_finish` | unfold `is_pkg_init` in the goal; finish a `wp_initialize'` proof | `Golang/Theory/Auto.lean` |
+| `cleanup_bool_decide` | simplify `if decide (#(decide P) = #true)` and friends | `Golang/Theory/Auto.lean` |
+| `word`, `word_simp`, `len`, `list_elem l i as x` | arithmetic and lists (below) | `Std/Word/Automation.lean`, `Std/ListLen.lean` |
+
+The generated files also use `solve_into_val_typed_struct`,
+`solve_typed_pointsto_dfractional`, `solve_typed_pointsto_timeless`,
+`solve_typed_pointsto_agree`, `solve_pointsto_access_struct` (instances for
+structs) and `solve_atomic_wps`.
+
+### Arithmetic
+
+```lean
+example (x : w64) (h : uint.Z x < 10) : uint.Z (x + W64 1) = uint.Z x + 1 := by word
+example (x y : w64) (h : sint.Z x ≤ sint.Z y) (h' : 0 ≤ sint.Z x) : 0 ≤ sint.Z y := by word
+example (l : List Nat) (n : Nat) (h : n ≤ l.length) : (l.take n ++ [3]).length = n + 1 := by len
+example (l : List w64) (h : 2 < l.length) : True := by
+  list_elem l 2 as y          -- `y : w64` and `Hy_lookup : l[2]? = some y`
+  trivial
+```
+
+* `word`: unfolds `uint.Z`, `sint.Z`, `W64` and `@[word_unfold]` definitions,
+  adds `toInt`/`toNat` relations, rewrites `toNat` of BitVec operations to `Nat`
+  arithmetic modulo `2^n`, and calls `omega`; then tries `bv_decide`. Closes the
+  goal or fails. Good at linear arithmetic, treats products as atoms.
+* `word_simp`: non-terminal; rewrites `uint.Z` of operations to `Int`
+  arithmetic, discharging no-overflow side conditions with `word`.
+* `len`: `simp only [len, uint.nat, uint.Z]` (the `@[len]` set) on hypotheses and
+  goals that do not mention Iris entailments, then `word`; never fails. Extend
+  with `attribute [len] foo_length`.
+* `list_elem l i as x`: `x` and `Hx_lookup : l[i]? = some x`, the bound proved by
+  `len`; `i : Nat` (write `sint.nat i` for a word index).
+
+---
+
+## 4. Specification lemmas
+
+Names follow Rocq. Specs take `is_pkg_init` of their package where Rocq does;
+`wp_apply` discharges it.
+
+### Memory (`Golang/Theory/Mem.lean`, `PostLifting.lean`)
+
+| Lemma | |
+|:--|:--|
+| `wp_alloc`, `wp_store`, `IntoValTyped.wp_load` | typed allocation/store/load (used by the tactics; `wp_load` is not exported, write `IntoValTyped.wp_load`) |
+| `wp_cmpxchg_suc`, `wp_cmpxchg_fail`, `wp_atomic_load`, `wp_atomic_swap` | atomic operations on typed points-to (`AtomicWps`) |
+| `typed_pointsto_split` | struct points-to to fields (used by `iStructNamed`) |
+| `wp_AngelicExit` | unreachable code |
+| `wp_GoPrealloc`, `wp_GlobalAlloc` | low level allocation |
+
+### Slices (`Golang/Theory/Slice.lean`)
+
+| Lemma | |
+|:--|:--|
+| `own_slice_len` | `s ↦*{dq} vs ⊢ ⌜vs.length = sint.nat s.len ∧ 0 ≤ sint.Z s.len⌝` |
+| `own_slice_wf`, `own_slice_cap_wf` | `0 ≤ len ≤ cap` |
+| `own_slice_nil`, `own_slice_empty`, `own_slice_agree`, `own_slice_persist` | |
+| `own_slice_split`, `own_slice_combine`, `own_slice_slice`, `own_slice_elem_acc` | splitting and element access |
+| `wp_load_slice_index s i vs dq v (hpos : 0 ≤ i)` | `{{ s ↦*{dq} vs ∗ ⌜vs[i.toNat]? = some v⌝ }} ![t] #(slice_index_ref V i s) {{ RET #v; s ↦*{dq} vs }}` |
+| `wp_store_slice_index` | `{{ s ↦* vs ∗ ⌜0 ≤ i ∧ i < vs.length⌝ }} ... {{ RET #(); s ↦* vs.set i.toNat v' }}` |
+| `wp_slice_make2`, `wp_slice_make3` | `make([]T, n)`, `make([]T, n, c)` |
+| `wp_slice_append`, `wp_slice_copy`, `wp_slice_clear` | `append`, `copy`, `clear` |
+| `wp_slice_literal` | `[]T{...}` (with `goose.wp.extras`, `wp_auto` stops before it) |
+
+### Maps (`Golang/Theory/Map.lean`)
+
+| Lemma | |
+|:--|:--|
+| `wp_map_make1`, `wp_map_make2` | `make(map[K]V)`; give `(K := ..) (V := ..)` |
+| `wp_map_insert` | `{{ l ↦$ m }} ... {{ RET #(); l ↦$ <[k := v]> m }}` (needs `SafeMapKey`) |
+| `wp_map_lookup1`, `wp_map_lookup2` | `m[k]`, `v, ok := m[k]`; the result is `(m !! k).getD (zero_val V)` (and `decide (m !! k).isSome`) |
+| `wp_map_delete`, `wp_map_clear`, `wp_map_for_range` | |
+
+Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `gmap.insert_empty`.
+
+### Control (`Golang/Theory/Loop.lean`, `Defer.lean`, `Assume.lean`, `GooseLang/Lifting.lean`)
+
+| Lemma | |
+|:--|:--|
+| `wp_for`, `wp_for_post_do/continue/break/return` | loops (used by the tactics) |
+| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `wp_Once__doSlow`) |
+| `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
+| `wp_assume`, `wp_sum_assume_no_overflow`, ... | `primitive.Assume*` |
+| `wp_package_init` | package initialization (in `wp_initialize'`) |
+
+### `sync` (`Perennial/Proof/sync_proof/*.lean`, `Perennial/Proof/sync/atomic.lean`)
+
+| Lemma | |
+|:--|:--|
+| `sync.init_Mutex R E m` | `m ↦ zero_val Mutex.t -∗ ▷ R ={E}=∗ is_Mutex m R` |
+| `sync.wp_Mutex__Lock`, `wp_Mutex__Unlock`, `wp_Mutex__TryLock` | `Lock`: `{{ is_Mutex m R }} {{ own_Mutex m ∗ R }}`; `Unlock` takes `own_Mutex m ∗ ▷ R` |
+| `sync.Mutex_is_Locker` | a `*Mutex` implements `Locker` |
+| `sync.wp_NewCond`, `wp_Cond__Wait`, `wp_Cond__Signal`, `wp_Cond__Broadcast` | condition variables |
+| `sync.init_Once`, `wp_Once__Do` | `sync.Once` |
+| `sync.wp_RWMutex__*` | `RWMutex` |
+| `sync.wp_runtime_Semacquire`, `wp_runtime_Semrelease` | runtime semaphores (atomic-update style specs) |
+| `sync.atomic.wp_*` (`wp_Uint64__Load`, `wp_Bool__Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic` |
+
+### Other proved packages
+
+`Perennial/Proof/{sort,slices,math,bytes,strings,errors,cmp,unsafe}.lean` and
+their `*_proof` directories (`wp_Search`, `wp_SearchInts`, `wp_Find`, the
+`pdqSort` family, ...). See `PORTING_STATUS.md` if present, or
+`etc/lean-port-status.py`.
+
+---
+
+## 5. Patterns
+
+### Specs for function arguments
+
+A Go function value `f : func.t` is specified by a persistent Texan triple about
+`App (Val #f) (Val #i)`; see `pred_implements` in
+`Perennial/Proof/sort_proof/search.lean`, where the caller proves the triple for
+a closure with `iintro %i; wp_start as ...; wp_auto; ...` and the callee uses it
+with `wp_apply Hf $$ [I] with %r ⟨I, %Hf_result⟩`.
+
+### Locks
+
+```lean
+/-- `func DoSomeLocking(l *sync.Mutex) { l.Lock(); l.Unlock() }`, for any lock
+invariant `R`. -/
+theorem wp_DoSomeLocking' [sync.Assumptions] (l : loc) (R : IProp GF) :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_pkg_init (PROP := IProp GF) pkg_id.sync ∗
+        sync.is_Mutex l R }}
+      (App (Val (@! DoSomeLocking)) (Val #l))
+    {{ RET #(); True }} := by
+  wp_start as #Hm
+  wp_auto
+  wp_apply sync.wp_Mutex__Lock $$ [$Hm] as ⟨Hlocked, HR⟩
+  wp_apply sync.wp_Mutex__Unlock $$ [$Hm $Hlocked $HR]
+  wp_end
+```
+
+### Goroutines
+
+````lean
+/-- ```go
+func simpleSpawn() {
+	l := new(sync.Mutex)
+	v := new(uint64)
+	go func() {
+		l.Lock(); x := *v; if x > 0 { Skip() }; l.Unlock()
+	}()
+	l.Lock(); *v = 1; l.Unlock()
+}
+``` -/
+theorem wp_simpleSpawn' [sync.Assumptions] :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_pkg_init (PROP := IProp GF) pkg_id.sync }}
+      (App (Val (@! simpleSpawn)) (Val #()))
+    {{ RET #(); True }} := by
+  wp_start
+  wp_auto
+  -- both `new` allocations are bound to `$r0` by goose, so the mutex's location
+  -- and points-to are inaccessible: name them (by position, then by type)
+  rename_i mu_ptr
+  irename : (mu_ptr ↦ zero_val Bool : IProp GF) => Hmu
+  imod sync.init_Mutex iprop(∃ x : w64, «$r0_ptr» ↦ x) ⊤ mu_ptr $$ Hmu [«$r0»] with #Hlock
+  · inext; iexists _; iexact «$r0»
+  -- the local variables `l` and `v` are read by both goroutines
+  ipersist l
+  ipersist v
+  wp_apply wp_fork $$ []
+  · -- the spawned goroutine
+    wp_auto
+    wp_apply sync.wp_Mutex__Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
+    wp_if_destruct
+    · wp_func_call   -- `Skip()`: unfold the function and step through it
+      wp_call
+      wp_auto
+      wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+      · iexists _; iexact Hx
+      itrivial
+    · wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+      · iexists _; iexact Hx
+      itrivial
+  -- the main goroutine
+  wp_apply sync.wp_Mutex__Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
+  wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+  · iexists _; iexact Hx
+  wp_end
+````
+
+### Ghost state and invariants
+
+```lean
+/-- The invariant owns half of a ghost variable `γ` holding a counter; the
+other half is held by a client. (An `abbrev`, so that `iexists`/`icases` see
+through it; for a `def`, `unfold counter_inv` first.) -/
+abbrev counter_inv (γ : GName) : IProp GF :=
+  iprop(∃ n : Nat, ghost_var γ (1 : Qp).half n)
+
+theorem counter_alloc (N : Namespace) (E : CoPset) :
+    ⊢ |={E}=> ∃ γ, inv N (counter_inv γ) ∗ ghost_var γ (1 : Qp).half (0 : Nat) := by
+  imod ghost_var_alloc (0 : Nat) with ⟨%γ, Hv⟩
+  icases ghost_var_split γ (0 : Nat) (1 : Qp).half (1 : Qp).half $$ [Hv] with ⟨Hv1, Hv2⟩
+  · rw [Qp.half_add_half]; iexact Hv
+  imod inv_alloc N E (counter_inv γ) $$ [Hv1] with #Hinv
+  · inext; iexists 0; iexact Hv1
+  imodintro
+  iexists γ
+  iframe # ∗
+
+theorem counter_incr (N : Namespace) (γ : GName) (n : Nat) :
+    inv N (counter_inv γ) ∗ ghost_var γ (1 : Qp).half n ⊢
+      |={⊤}=> ghost_var γ (1 : Qp).half (n + 1) := by
+  iintro ⟨#Hinv, Hv⟩
+  iinv Hinv with ⟨%m, >Hv'⟩ Hclose
+  icombine Hv Hv' gives % ⟨_, Heq⟩
+  subst Heq
+  imod ghost_var_update_halves (n + 1) γ n n $$ Hv Hv' with ⟨Hv, Hv'⟩
+  imod Hclose $$ [Hv'] with _
+  · inext; iexists _; iexact Hv'
+  imodintro
+  iexact Hv
+```
+
+Inside a WP: `wp_bind` the atomic instruction, `iinv`, `wp_apply_core` the
+atomic spec, `iintro` its postcondition, `imodintro`, close the invariant
+(`isplitl [..]` against the closing conjunct, as `wp_runtime_Semacquire` in
+`sema.lean` does, or `imod Hclose $$ [..]`), and continue with `wp_auto`.
+
+### Later credits
+
+`wp_auto_lc n` (or `wp_apply ... --lc n`, `wp_pure_lc H`, `wp_call_lc H`) yields
+`£ 1` hypotheses. Use them to strip a later from a non-timeless hypothesis under
+a fancy update: `imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi`
+(`once.lean`), or `inext 1 credit: Hlc1` (iris-lean).
+
+### Löb induction
+
+`iloeb as IH generalizing %x H` (see `wp_Assume` in
+`Perennial/Proof/github_com/goose_lang/primitive.lean` and the proof of
+`wp_for` in `Loop.lean`).
+
+### Package initialization
+
+```lean
+-- The two instances every package proof defines (here as `example`s, since
+-- `sync_proof/base.lean` already declares them for `sync`):
+example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
+example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
+
+-- The initialization proof: run `package.init`, initialize the imported
+-- packages in order, and conclude `is_pkg_init`.
+example (get_is_pkg_init : go_string → IProp GF)
+    (Hinit : get_is_pkg_init_prop pkg_id.sync get_is_pkg_init) :
+    {{ own_initializing get_is_pkg_init }}
+      (App (Val initialize') (Val #()))
+    {{ RET #(); own_initializing get_is_pkg_init ∗
+        is_pkg_init (PROP := IProp GF) pkg_id.sync }} := by
+  wp_start as Hown
+  iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
+  iframe Hown
+  iintro Hown
+  wp_auto
+  wp_apply internal.synctest.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsynctest⟩
+  wp_apply internal.race.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hrace⟩
+  wp_apply sync.atomic.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Hatomic⟩
+  iframe Hown
+  is_pkg_init_finish
+```
