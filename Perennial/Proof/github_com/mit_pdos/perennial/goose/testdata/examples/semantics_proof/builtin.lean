@@ -22,19 +22,9 @@ variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
 theorem wp_testMinUint64 : test_fun_ok (GF := GF) testMinUint64 := by
   semantics_auto
-  -- the `FuncUnfold go.min (List.replicate n t)` instance does not match `[t, t]`
-  rw [show ([go.uint64, go.uint64] : List go.type) = List.replicate 2 go.uint64 from rfl,
-    func_unfold (f := go.min)]
-  steps
-  iexact HΦ
 
 theorem wp_testMaxUint64 : test_fun_ok (GF := GF) testMaxUint64 := by
   semantics_auto
-  -- the `FuncUnfold go.max (List.replicate n t)` instance does not match `[t, t]`
-  rw [show ([go.uint64, go.uint64] : List go.type) = List.replicate 2 go.uint64 from rfl,
-    func_unfold (f := go.max)]
-  steps
-  iexact HΦ
 
 end wps
 

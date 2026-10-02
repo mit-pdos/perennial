@@ -238,7 +238,6 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
     iexact Hs
   wp_apply chan.wp_make2 (V := slice.t) (W64 4) $$ [] as %ch %γch_names ⟨#His_chan, %Hcap4, Hoc⟩
   · ipureintro; decide
-  simp only [show (W64 4 = W64 0) = False from by decide, ↓reduceIte]
   imod sync.init_WaitGroup (sync.join.wgjN.@"wg") wg_ptr $$ wg with ⟨%γwg, H⟩
   imod sync.join.init wg_ptr γwg $$ H with Hwg
   imod start_bag (chanP wg_ptr x y) (.Buffered []) ch γch_names trivial $$ His_chan Hoc with #Hchan

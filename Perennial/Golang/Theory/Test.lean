@@ -177,6 +177,96 @@ example (l : loc) (f : func.t) (Φ : val → IProp GF) :
   wp_auto
   iapply H $$ Hl
 
+/-! ### Regression tests (tactic backlog, round 2) -/
+
+/-- `wp_apply +noauto ... as pats` introduces `pats` and stops right after the call. -/
+example (Φ : val → IProp GF) :
+    (∀ x : w64, Φ #x) ⊢ WP gl(let: "x" := ArbitraryInt in let: "y" := "x" in "y") {{ Φ }} := by
+  iintro H
+  wp_apply +noauto wp_ArbitraryInt as %x _
+  -- the `let:`s have not been stepped
+  wp_pure; wp_pure
+  wp_pures
+  iapply H
+
+/-- `wp_apply (lc := n)` produces credits, and fails when there are too few steps. -/
+example (Φ : val → IProp GF) :
+    (∀ x : w64, £ 1 -∗ Φ #x) ⊢ WP gl(let: "x" := ArbitraryInt in let: "y" := "x" in "y") {{ Φ }} := by
+  iintro H
+  fail_if_success wp_apply (lc := 5) wp_ArbitraryInt as %x _
+  wp_apply (lc := 1) wp_ArbitraryInt as %x _
+  iapply H $$ Hlc1
+
+/-- `+noauto` with a spec pattern and `as`. -/
+example (l : loc) (v : w64) (Φ : val → IProp GF) :
+    (l ↦ v) ∗ (l ↦ v -∗ Φ #v) ⊢ WP gl(let: "x" := ![go.uint64] #l in "x") {{ Φ }} := by
+  iintro ⟨Hl, H⟩
+  wp_apply +noauto (IntoValTyped.wp_load (t := go.uint64) l (DFrac.own 1) v) $$ [$Hl] as Hl
+  wp_pures
+  iapply H $$ Hl
+
+/-- `iNamed` on `∃ s, ... ∗ match s with ...` (used to fail with "unknown free
+variable"); the unnamed rest does not shadow a conjunct with the same name. -/
+example (P Q : IProp GF) :
+    (∃ s : Option Nat, "H" ∷ P ∗ match s with | some _ => Q | none => P) ⊢ P := by
+  iintro H
+  iNamed H
+  iexact H
+
+/-- `solve_ndisj` proves namespace mask conditions. -/
+example (N : Namespace) : (↑(N.@"inv") : CoPset) ⊆ ⊤ \ ↑(N.@"sema") := by solve_ndisj
+example (N : Namespace) : (⊤ \ ↑N : CoPset) ⊆ ⊤ \ ↑(N.@"x") := by solve_ndisj
+example (N : Namespace) : (↑(N.@"a") : CoPset) ## ↑(N.@"b") := by solve_ndisj
+example (N : Namespace) (E : CoPset) (h : ↑N ⊆ E) :
+    (↑(N.@"inv") : CoPset) ⊆ E \ ↑(N.@"sema") := by solve_ndisj
+example (N : Namespace) : ¬ ((↑(N.@"inv") : CoPset) ⊆ ⊤ \ ↑(N.@"inv")) ∨ True := by
+  fail_if_success (left; solve_ndisj)
+  right; trivial
+
+/-- `iinv` discharges the namespace side condition (used to be left as a goal),
+also with word facts in the context. -/
+example (N : Namespace) (P : IProp GF) (x y : w64) (_h1 : sint.Z x < sint.Z y)
+    (_h2 : uint.Z x + 1 = uint.Z y) :
+    inv (N.@"inv") P ⊢ |={⊤ \ ↑(N.@"sema")}=> True := by
+  iintro #Hinv
+  iinv Hinv with Hi Hclose
+  imod Hclose $$ Hi with _
+  imodintro; itrivial
+
+/-- `iinv` on a non-atomic WP is an error (not a leftover `Atomic` goal). -/
+example (N : Namespace) (P : IProp GF) :
+    inv N P ⊢ WP gl(let: "x" := #(W64 1) in "x") {{ _v, (True : IProp GF) }} := by
+  iintro #Hinv
+  fail_if_success iinv Hinv with Hi Hclose
+  wp_pures; itrivial
+
+/-- `wp_if_destruct` after introducing a Lean variable inside the proof (used to
+fail with "unknown free variable"). -/
+example (Φ : val → IProp GF) :
+    (∀ b : Bool, Φ #b) ⊢ ∀ b : Bool, WP gl(if: #b then #true else #false) {{ Φ }} := by
+  iintro H %b
+  wp_if_destruct
+  · iapply H
+  · iapply H
+
+set_option goose.wp.extras true in
+/-- `decide` with classical instances and `#a = #b` are simplified (extras). -/
+example (x : w64) (v : val) (Φ : val → IProp GF) :
+    Φ #true ∗ Φ #false ∗ Φ #false ∗ Φ #true ⊢
+      WP (Val #(decide (x = x))) {{ Φ }} ∗ WP (Val #(!decide (v = v))) {{ Φ }} ∗
+      WP (Val #(decide ((#false : val) = #true))) {{ Φ }} ∗ WP (Val #(decide True)) {{ Φ }} := by
+  iintro ⟨H1, H2, H3, H4⟩
+  isplitl [H1]; · wp_pures; iexact H1
+  isplitl [H2]; · wp_pures; iexact H2
+  isplitl [H3]; · wp_pures; iexact H3
+  wp_pures; iexact H4
+
+set_option goose.wp.extras true in
+/-- Projections of interface values are reduced (extras). -/
+example (Φ : val → IProp GF) (t : go.type) (v : val) :
+    Φ v ⊢ WP (Val (interface.mk t v).v) {{ Φ }} := by
+  iintro H; wp_pures; iexact H
+
 end proofs
 
 section consts

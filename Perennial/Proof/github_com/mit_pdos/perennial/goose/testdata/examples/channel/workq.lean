@@ -624,7 +624,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ 2 ∧ workers.length = sint.nat i⌝ : IProp GF)
     $$ [i j workers_sl]
   · iexists W64 0, _, []
-    rw [show List.replicate (sint.nat (W64 2)) (zero_val loc) =
+    rw [show ([zero_val loc, zero_val loc] : List loc) =
       [] ++ List.replicate (2 - sint.nat (W64 0)) null from rfl]
     iframe
     isplitr

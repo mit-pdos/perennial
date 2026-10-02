@@ -13,7 +13,6 @@ Differences from Rocq:
   `GetIsPkgInitWf` once they exist). None of the specs below depends on it.
 -/
 import Perennial.Proof.DiskPrelude
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.TacticWorkarounds
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 import Perennial.Golang.Theory.IfJoin
 
@@ -239,13 +238,8 @@ theorem wp_mapGetCall :
   wp_start
   wp_auto
   wp_apply (wp_map_make1 (K := w64) (V := func.t)) with %m Hm
-  -- the function literal is a raw `RecV`; `wp_map_insert` wants `#(f : func.t)`
-  rw [recv_eq_func]
   wp_apply wp_map_insert $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm
-  rw [lookup_insert_eq]
-  simp only [Option.getD_some, ← recv_eq_func]
-  wp_auto
   wp_end
 
 theorem wp_NamedMapAssignment :
@@ -290,12 +284,7 @@ theorem wp_testConversionLiteral :
     ⟨fun s E Φ => by iintro H; wp_auto; iapply H⟩
   wp_apply wp_map_insert $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm
-  rw [lookup_insert_eq]
-  simp only [Option.getD_some]
   wp_apply wp_map_lookup1 $$ Hm with Hm
-  rw [lookup_insert_ne _ _ (by simp), lookup_insert_eq]
-  simp only [Option.getD_some]
-  wp_auto
   iapply HΦ
   itrivial
 
@@ -321,9 +310,7 @@ theorem wp_testU32NewtypeLen :
   have h : sint.Z sl.len = 20 := by
     have h1 := Hlen.1
     have h2 := Hlen.2
-    simp only [List.length_replicate, sint.nat, sint.Z] at h1 h2 ⊢
-    have h3 : (W64 20).toInt = 20 := rfl
-    omega
+    word
   rw [decide_eq_true (by rw [h])]
   iapply HΦ
   itrivial

@@ -201,7 +201,11 @@ def existsBinderName (e : Expr) : MetaM Name := do
 mutual
 /-- Core of `iNamed`: name the conjuncts of `h`. `deex`: destruct top-level
 existentials first. -/
-partial def iNamedCore (h : Name) (f : String → String) (deex : Bool) : TacticM Unit := do
+partial def iNamedCore (h : Name) (f : String → String) (deex : Bool) : TacticM Unit :=
+  -- the goal (and with it the local context) changes after each `icases`, which
+  -- may introduce new Lean variables (`%x`): all inspection of hypothesis types
+  -- must happen in the main goal's context
+  withMainContext do
   let ty ← unfoldHypHead h
   -- a single named hypothesis
   if let some (n, _) := isNamed? ty then
@@ -241,7 +245,11 @@ partial def iNamedCore (h : Name) (f : String → String) (deex : Bool) : Tactic
         stars := stars.push tmp
       cur := rhs
     if pats.isEmpty then return
-    unless restNamed do pats := pats.push h.toString
+    unless restNamed do
+      -- the unnamed rest keeps the name `h`, unless a conjunct is called `h`
+      if (pats.map patIdent).contains h.toString then
+        pats := pats.push (← mkFreshUserName `Hrest).eraseMacroScopes.toString
+      else pats := pats.push h.toString
     let pat ← parsePat ("⟨" ++ ", ".intercalate pats.toList ++ "⟩")
     evalTactic (← `(tactic| icases $(mkIdent h):ident with $pat))
     stripNamedHyps (pats.toList.map patIdent)
@@ -326,7 +334,7 @@ elab "iNamedAccu" : tactic => do
 
 /-- Rocq `iFrameNamed`: frame each conjunct `"H" ∷ P` of the goal with the
 hypothesis `H`. -/
-elab "iFrameNamed" : tactic => do
+elab "iFrameNamed" : tactic => withMainContext do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType))
     | throwError "not in the Iris proof mode"
   let mut names : Array Name := #[]
@@ -345,7 +353,7 @@ elab "iFrameNamed" : tactic => do
 
 /-- Rocq `iExactEq H`: prove the goal `Q` from the hypothesis `H : P`, leaving
 the Lean goal `P = Q`. -/
-elab "iExactEq " h:ident : tactic => do
+elab "iExactEq " h:ident : tactic => withMainContext do
   let (g, _, P) ← findIrisHyp h.getId
   let mvar ← getMainGoal
   let Q := g.goal

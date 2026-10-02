@@ -97,7 +97,7 @@ the wand form above):
 
 1. `iintro %Φ Hpre HΦ` (after an `imodintro` if the goal is `□ ...`);
 2. move the `is_pkg_init` conjuncts at the front of `Hpre` to the intuitionistic
-   context (anonymous hypotheses, used by `iPkgInit`);
+   context, named `Hpkg`, `Hpkg2`, ... (used by `iPkgInit`);
 3. destruct the rest with `pat` (an iris-lean cases pattern), or keep it as
    `Hpre`;
 4. `wp_start` only: unfold the called function (`wp_func_call`) or method
@@ -121,7 +121,7 @@ after it:
 
 ```
   ∗HΦ : s ↦ { a' := v.a', b' := two, c' := v.c' } -∗ Φ #()
-  □x✝ : is_pkg_init pkg
+  □Hpkg : is_pkg_init pkg
   ∗Hs : s ↦ v
   ⊢
   WP
@@ -138,7 +138,7 @@ and after `wp_auto`:
 
 ```
   ∗HΦ : s ↦ { a' := v.a', b' := two, c' := v.c' } -∗ Φ #()
-  □x✝ : is_pkg_init pkg
+  □Hpkg : is_pkg_init pkg
   ∗Hs : s ↦ { a' := v.a', b' := two, c' := v.c' }
   ⊢ Φ #()
 ```
@@ -165,8 +165,9 @@ first `n` pure steps (fails if there are fewer).
 
 It stops at: calls of functions (use `wp_apply`, or `wp_func_call; wp_call`),
 `if:` on a non-literal condition (`wp_if_destruct`), loops (`wp_for`),
-anonymous allocations (`wp_alloc`), and (without `goose.wp.extras`) stores of
-function literals and blocking package constants.
+and anonymous allocations (`wp_alloc`, `wp_alloc_anon`). With `goose.wp.extras`
+(the default) it also stores function literals and unfolds blocking package
+constants.
 
 ### `wp_pures`, `wp_pure [pat]`, `wp_pure_lc H`, `wp_expr_simp`
 
@@ -193,8 +194,13 @@ opening an invariant. Without argument: the next "interesting" operation (Rocq
 
 ### `wp_apply lem $$ spats as pats`
 
-`Auto.lean`. Options: `--no-auto` (no `wp_auto` afterwards), `--lc n` (the
-final `wp_auto` produces `n` credits); `with` is a synonym of `as`.
+`Auto.lean`. Options, written right after `wp_apply`: `wp_apply +noauto lem ...`
+(introduce `pats` but do not run `wp_auto`: the goal is `WP K[v] {{ Φ }}` right
+after the call, e.g. to `imod` an update the spec returns; to eliminate an update
+in the spec's own postcondition first `iapply wp_fupd`), `wp_apply (lc := n) lem
+...` (the final `wp_auto` produces `n` credits `Hlc1 ... Hlcn`, and fails if there
+are fewer pure steps). Rocq's `--no-auto`/`--lc n` cannot be used (`--` starts a
+Lean comment) and are rejected with an error. `with` is a synonym of `as`.
 
 1. Apply `lem` (a Lean lemma, possibly with explicit arguments, or an Iris
    hypothesis) to the first subexpression in evaluation position where it fits,
@@ -240,8 +246,10 @@ variable, and otherwise does an anonymous allocation with inaccessible names.
 `Auto.lean`. Case split on the condition of the `if:` at the head of the
 expression — a `decide P` or a Boolean variable `#b` — then `wp_pures`,
 `cleanup_bool_decide` and `wp_auto`. For `decide P` the case hypothesis is
-`Hif : P` / `Hif : ¬P` (accessible), substituted when it is an equation with a
-variable side; for `#b` it does `cases b`. If there is no head `if:`, it falls
+`Hif : P` / `Hif : ¬P` (accessible). An equation `x = e` (or `e = x`) between a
+variable `x` and a term `e` that is not a variable (e.g. `x = W64 0`) is
+substituted; an equation between two variables (`i = n`) is kept as `Hif` (use
+`subst Hif` if wanted). For `#b` it does `cases b`. If there is no head `if:`, it falls
 back to the first `decide` in the expression, then in the goal.
 
 ### `wp_for`, `wp_for HI`, `wp_for_post`
@@ -299,18 +307,18 @@ error is reported; otherwise remaining goals are left to you (often
   rest of the function in each branch.
 * Rocq `wp_apply ... as "%x Hx"` is `wp_apply ... as %x Hx`; `as (x) "H"` is
   `as %x H`.
-* Rocq's global `wp_apply_auto_default` switch: use `--no-auto`.
-* Rocq `wp_alloc l as "?"`: `wp_alloc_auto` (or a local macro, see
-  `wp_alloc_anon` in `examples/TacticWorkarounds.lean`).
+* Rocq's global `wp_apply_auto_default` switch: use `wp_apply +noauto`.
+* Rocq `wp_alloc l as "?"`: `wp_alloc_anon` (or `wp_alloc_auto`).
 
 ### Options
 
 | Option | Default | Effect |
 |:--|:--|:--|
-| `goose.wp.extras` | `false` | `wp_auto` stores function literals as `#(func.mk ..)` and unfolds blocking package constants; `wp_pures`/`wp_auto` reduce `match`es on constructors, stop at slice composite literals and use the `goose_wp_simp_extra` simp set; `wp_func_call` finds `FuncUnfold f (List.replicate n t)` for `[t, .., t]` |
+| `goose.wp.extras` | `true` | `wp_auto` stores function literals as `#(func.mk ..)` and unfolds blocking package constants; `wp_pures`/`wp_auto` reduce `match`es on constructors and projections of constructors (`(zero_val S.t).f'`, `(interface.mk t v).v`, `zero_val` of base types), stop at slice composite literals (the list of `[]T{a, b}` comes out as `[a, b]`) and use the `goose_wp_simp_extra` simp set (`decide` with classical instances, `#a = #b` for injective `into_val`, `go.type` equalities, `ite` on closed conditions, ...); `wp_func_call` finds `FuncUnfold f (List.replicate n t)` for `[t, .., t]` |
 | `goose.wp.unfoldSliceLiterals` | `false` | let `wp_pures` step slice composite literals instead of stopping (normally use `wp_slice_literal`) |
 
-Use them as `set_option goose.wp.extras true in` before a declaration.
+Use them as `set_option goose.wp.extras false in` before a declaration (to get
+the old behaviour).
 
 ---
 
@@ -332,6 +340,11 @@ Use them as `set_option goose.wp.extras true in` before a declaration.
 | `solve_pkg_init` | solve one `is_pkg_init pkg` goal (also through the dependencies of other packages' `is_pkg_init`) | same |
 | `is_pkg_init_unfold`, `is_pkg_init_finish` | unfold `is_pkg_init` in the goal; finish a `wp_initialize'` proof | `Golang/Theory/Auto.lean` |
 | `cleanup_bool_decide` | simplify `if decide (#(decide P) = #true)` and friends | `Golang/Theory/Auto.lean` |
+| `solve_ndisj` | prove namespace mask conditions (`↑(N.@"a") ⊆ ⊤ ∖ ↑(N.@"b")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@x)`, `↑(N.@"a") ## ↑(N.@"b")`, using mask hypotheses); also tried by `trivial`, so `iinv`/`imod`/... discharge these side conditions | `Golang/Theory/IrisTactics.lean` |
+| `iinv H with pat Hclose` | iris-lean's `iinv`, re-implemented: mask side conditions by `solve_ndisj`, no `simp [*]` (no deep recursion with word facts), an error (suggesting `wp_bind`) on a non-atomic WP | same |
+| `wp_func_lits` | rewrite function literal values `RecV f x e` in the WP expression to `#(func.mk f x e)` (`wp_apply` tries it when a spec does not apply, e.g. `wp_map_insert` of a closure) | `Golang/Theory/Auto.lean` |
+| `wp_alloc_anon` | an allocation not bound by `let:` (e.g. `&S{..}`), inaccessible names (Rocq `wp_alloc l as "?"`) | `Golang/Theory/Mem.lean` |
+| `word_lit_simp` | evaluate `sint.Z`/`uint.Z`/`sint.nat`/`uint.nat` of word literals everywhere (`sint.Z (W64 7)` to `7`), keeping `W64 n` (a bare `simp` turns `W64 n` into `n#64`, which then no longer matches `W64 n` for `iframe`) | `Golang/Theory/TacticsSimp.lean` |
 | `word`, `word_simp`, `len`, `list_elem l i as x` | arithmetic and lists (below) | `Std/Word/Automation.lean`, `Std/ListLen.lean` |
 
 The generated files also use `solve_into_val_typed_struct`,
@@ -391,7 +404,7 @@ Names follow Rocq. Specs take `is_pkg_init` of their package where Rocq does;
 | `wp_store_slice_index` | `{{ s ↦* vs ∗ ⌜0 ≤ i ∧ i < vs.length⌝ }} ... {{ RET #(); s ↦* vs.set i.toNat v' }}` |
 | `wp_slice_make2`, `wp_slice_make3` | `make([]T, n)`, `make([]T, n, c)` |
 | `wp_slice_append`, `wp_slice_copy`, `wp_slice_clear` | `append`, `copy`, `clear` |
-| `wp_slice_literal` | `[]T{...}` (with `goose.wp.extras`, `wp_auto` stops before it) |
+| `wp_slice_literal` | `[]T{...}` (`wp_auto` stops before it) |
 
 ### Maps (`Golang/Theory/Map.lean`)
 
@@ -553,7 +566,7 @@ atomic spec, `iintro` its postcondition, `imodintro`, close the invariant
 
 ### Later credits
 
-`wp_auto_lc n` (or `wp_apply ... --lc n`, `wp_pure_lc H`, `wp_call_lc H`) yields
+`wp_auto_lc n` (or `wp_apply (lc := n) ...`, `wp_pure_lc H`, `wp_call_lc H`) yields
 `£ 1` hypotheses. Use them to strip a later from a non-timeless hypothesis under
 a fancy update: `imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi`
 (`once.lean`), or `inext 1 credit: Hlc1` (iris-lean).

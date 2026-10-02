@@ -34,8 +34,7 @@ theorem wp_New (msg : go_string) :
   wp_start
   wp_auto
   wp_alloc x as Hx
-  wp_pure
-  simp only [go.is_interface_type, go.is_untyped_nil, Bool.false_eq_true, ↓reduceIte]
+  wp_auto
   wp_end
 
 theorem wp_errorType_init :
@@ -87,16 +86,13 @@ theorem wp_Unwrap (err : error.t) :
   | nil =>
     dsimp only
     wp_auto
-    simp only [go.is_interface_type, go.is_untyped_nil, go.untyped_nil, decide_true, Bool.false_eq_true, ↓reduceIte]
     wp_end
   | ok ii =>
     dsimp only
-    simp only [go.is_interface_type, ↓reduceIte]
     cases Hhas_unwrap : go.type_set_contains ii.ty
       (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])])
     · simp only [Bool.false_eq_true, ↓reduceIte]
       wp_auto
-      simp only [go.is_interface_type, go.is_untyped_nil, go.untyped_nil, decide_true, Bool.false_eq_true, ↓reduceIte]
       wp_end
     · simp only [↓reduceIte]
       wp_auto

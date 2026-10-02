@@ -72,7 +72,6 @@ theorem wp_HelloWorldAsync :
   wp_auto
   wp_apply chan.wp_make2 (V := go_string) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
-  simp only [show (W64 1 = W64 0) = False by decide, ↓reduceIte]
   imod start_bag (fun (v : go_string) => iprop(⌜v = go!"Hello, World!"⌝)) _ ch γ trivial $$ Hch Hoc
     with #Hbag
   ipersist ch
@@ -105,7 +104,6 @@ theorem wp_simple_join :
   wp_auto
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
-  simp only [show (W64 1 = W64 0) = False by decide, ↓reduceIte]
   imod start_future (V := Unit) ch γ _ (.inr rfl) $$ Hch Hoc
     with ⟨%γfut, #Hfut, HAwait⟩
   imod future_alloc_promise (V := Unit) γfut ch
@@ -133,7 +131,6 @@ theorem wp_simple_multi_join :
   wp_auto
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
-  simp only [show (W64 2 = W64 0) = False by decide, ↓reduceIte]
   imod start_future (V := Unit) ch γ _ (.inr rfl) $$ Hch Hoc
     with ⟨%γfut, #Hfut, HAwait⟩
   imod future_alloc_promise (V := Unit) γfut ch
@@ -265,7 +262,7 @@ theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : 
   wp_pures
   wp_alloc d as Hd
   wp_auto
-  wp_apply wp_HelloWorldAsync --no-auto
+  wp_apply +noauto wp_HelloWorldAsync
   iintro %ch %γfut ⟨#Hch, #Hfut⟩
   wp_auto_lc 2
   wp_apply_core chan.wp_select_blocking
@@ -347,7 +344,6 @@ theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.D
   wp_auto
   wp_apply chan.wp_make2 (V := Result.t) $$ [] as %c %γc ⟨#Hc_chan, -, Hc_own⟩
   · ipureintro; decide
-  simp only [show (W64 2 = W64 0) = False by decide, ↓reduceIte]
   imod start_bag (fun (v : Result.t) => iprop(⌜v = Result.t.mk (query ++ go!"_primary.html") true ∨
       v = Result.t.mk (query ++ go!"_secondary.html") false⌝)) _ c γc trivial $$ Hc_chan Hc_own
     with #Hch
@@ -361,7 +357,7 @@ theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.D
     · ipureintro; exact .inl rfl
     itrivial
   -- `time.After` gives a channel that fires after the hedge threshold
-  wp_apply time.wp_After --no-auto
+  wp_apply +noauto time.wp_After
   iintro %hedge_ch %γhedge #Hhedge
   wp_auto_lc 4
   -- first select: result on `c` | hedge threshold fires | `done` closes

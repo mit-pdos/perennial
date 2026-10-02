@@ -101,9 +101,6 @@ theorem wp_Once__doSlow (o : loc) (P Q : IProp GF) (f : func.t) :
   iintro %defer Hdefer
   wp_auto_lc 2
   wp_apply wp_Mutex__Lock $$ [$Hm] with ⟨Hlocked, Hlk⟩
-  rw [show ∀ b : expr, (RecV BAnon BAnon b : val) = #(func.mk BAnon BAnon b) from
-    fun b => by rw [go.into_val_unfold func.t]]
-  wp_auto
   unfold Once_lock_inv
   icases Hlk with ⟨%done, done2, HPQ⟩
   wp_apply_core sync.atomic.wp_Bool__Load $$ [] [-]
@@ -127,9 +124,6 @@ theorem wp_Once__doSlow (o : loc) (P Q : IProp GF) (f : func.t) :
   wp_auto
   cases done0
   · simp only [Bool.not_false, Bool.false_eq_true, ↓reduceIte]
-    wp_auto
-    rw [show ∀ b : expr, (RecV BAnon BAnon b : val) = #(func.mk BAnon BAnon b) from
-      fun b => by rw [go.into_val_unfold func.t]]
     wp_auto
     wp_apply Hf $$ HPQ with HQ'
     ihave #HQ2 := Q_persistent $$ HQ'

@@ -11,7 +11,6 @@ import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.cha
 import Perennial.Golang.Theory.Chan
 import Perennial.Golang.Theory.Chan.Idioms.Bag
 import Perennial.Golang.Theory.Chan.Idioms.Future
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.TacticWorkarounds
 
 set_option linter.iris.style.nameCheck false
 
@@ -57,7 +56,6 @@ theorem wp_mkRequest (f : func.t) (Q : go_string → IProp GF) :
   iapply wp_fupd
   wp_apply chan.wp_make2 (V := go_string) (W64 1) $$ [] as %ch %γ ⟨#Hch, %Hcap, Hown⟩
   · ipureintro; decide
-  simp only [show (W64 1 = W64 0) = False by decide, ite_false]
   imod start_future (V := go_string) ch γ (.Buffered []) (.inr rfl) $$ Hch Hown
     with ⟨%γfut, #Hfut, HAwait⟩
   imod future_alloc_promise (V := go_string) γfut ch Q [] $$ Hfut HAwait with ⟨Hpromise, HAwait⟩
@@ -140,17 +138,14 @@ theorem wp_HigherOrderExample :
   wp_apply wp_fork $$ []
   · wp_apply wp_ho_worker $$ [$Hreqs]
     itrivial
-  rw [recv_eq_func]
   wp_apply wp_mkRequest _ (fun s => iprop(⌜s = go!"hello world"⌝)) $$ [] as %γfut1 %r1 ⟨Hdo1, Hawait1⟩
   · wp_auto
     iexists _
     ipureintro; exact ⟨rfl, rfl⟩
-  rw [recv_eq_func]
   wp_apply wp_mkRequest _ (fun s => iprop(⌜s = go!"HELLO"⌝)) $$ [] as %γfut2 %r2 ⟨Hdo2, Hawait2⟩
   · wp_auto
     iexists _
     ipureintro; exact ⟨rfl, rfl⟩
-  rw [recv_eq_func]
   wp_apply wp_mkRequest _ (fun s => iprop(⌜s = go!"world"⌝)) $$ [] as %γfut3 %r3 ⟨Hdo3, Hawait3⟩
   · wp_auto
     iexists _

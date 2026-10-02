@@ -69,9 +69,7 @@ theorem wp_testStoreSlice : test_fun_ok (GF := GF) testStoreSlice := by
 theorem wp_testStructFieldFunc : test_fun_ok (GF := GF) testStructFieldFunc := by
   semantics_auto
   -- the stored function literal is a raw `RecV`
-  rw [recv_eq_func]
   steps
-  iexact HΦ
 
 end wps
 

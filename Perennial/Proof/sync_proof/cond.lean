@@ -43,9 +43,6 @@ theorem wp_NewCond (m : interface.t_ok) :
     {{ (c : loc), RET #c; is_Cond c m }} := by
   wp_start as _
   wp_auto
-  simp (config := {decide := true}) only [go.struct_field_type]
-  wp_auto
-  simp only [go.is_interface_type, ↓reduceIte]
   wp_pures
   wp_alloc c as Hc
   iStructNamed Hc

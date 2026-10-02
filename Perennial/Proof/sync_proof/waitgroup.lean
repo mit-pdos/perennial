@@ -466,8 +466,6 @@ theorem wp_WaitGroup__Add (wg : loc) (delta : w64) (γ : WaitGroup_names) (N : N
       imod Hmask with -
       imodintro
       wp_auto
-      simp only [eq_self_iff_true, _root_.decide_true, Bool.not_true]
-      wp_auto
       wp_apply_core sync.atomic.wp_Uint64__Store (wg_state wg) (W64 0) $$ [] [-]
       · iPkgInit
       imod inv_acc_timeless (E := ⊤) (fun _ _ => CoPset.mem_full) $$ Hinv with ⟨Hi, Hclose⟩

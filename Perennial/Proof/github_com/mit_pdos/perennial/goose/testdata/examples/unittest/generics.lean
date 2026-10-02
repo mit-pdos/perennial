@@ -3,7 +3,6 @@ Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/unittes
 specs for the goose generics unit tests.
 -/
 import Perennial.Proof.ProofPrelude
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.TacticWorkarounds
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics
 
@@ -131,24 +130,15 @@ theorem wp_multiParamFunc {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A']
       (App (App (Val #(functions multiParamFunc [A, B])) (Val #x)) (Val #y))
     {{ (s : slice.t), RET #s; s ↦* [y] }} := by
   wp_start
-  -- `wp_auto` would also unfold the slice literal, so step up to it by hand
-  wp_alloc b_ptr as Hb
-  wp_pures
-  wp_alloc x_ptr as Hx
-  wp_pures
-  wp_load
-  wp_pure
-  wp_pure
-  wp_pure
+  wp_auto
   wp_apply wp_slice_literal
   isplitr
   · ipureintro; rfl
   iintro %sl ⟨Hsl, _⟩
-  have h : (zero_val (array.t B' (go.array_literal_size
-      [KeyedElement none (ElementExpression B #y)]))).arr.set (sint.nat (W64 0)) y = [y] := rfl
-  simp only [h]
   wp_auto
-  wp_end
+  iapply HΦ
+  iExactEq Hsl
+  rfl
 
 theorem wp_useMultiParamFunc :
     {{ is_pkg_init (PROP := IProp GF) pkg }}

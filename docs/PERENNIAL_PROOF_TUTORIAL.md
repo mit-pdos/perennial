@@ -208,7 +208,9 @@ theorem wp_usePtr' :
 `wp_apply lem $$ spats as pats` finds the call in the goal, applies the spec,
 proves its `is_pkg_init` premises, introduces the postcondition with the
 iris-lean intro patterns `pats` and runs `wp_auto`. (`with` is a synonym of
-`as`; `--no-auto` skips the `wp_auto`.)
+`as`; `wp_apply +noauto lem ...` skips the `wp_auto`, `wp_apply (lc := n) lem ...`
+asks it for `n` later credits. Rocq's `--no-auto`/`--lc n` are Lean comments and
+are rejected.)
 
 ```lean
 /-- `func returnTwo(p []byte) (uint64, uint64) { return 0, 0 }`.
@@ -605,16 +607,16 @@ example (l : List w64) (h : 2 < l.length) : True := by
   example (P Q : IProp GF) : iprop(▷ P ∗ Q) = iprop((▷ P) ∗ Q) := rfl
   ```
 
-* **`set_option goose.wp.extras true`** (off by default, for backwards
-  compatibility) enables extra automation in `wp_pures`/`wp_auto`: stored
-  function literals become `#(func.mk ..)`, blocking package constants are
-  unfolded, `match`es on constructors are reduced, slice composite literals are
-  left for `wp_slice_literal`. Without it you sometimes need manual rewrites
-  such as `rw [show ∀ b, (RecV BAnon BAnon b : val) = #(func.mk BAnon BAnon b) ...]`
-  (see `once.lean`). Turn it on per declaration:
+* **`goose.wp.extras`** (on by default; `set_option goose.wp.extras false in`
+  restores the old behaviour) enables extra automation in `wp_pures`/`wp_auto`:
+  stored function literals become `#(func.mk ..)`, blocking package constants are
+  unfolded, `match`es and projections of constructors are reduced (e.g.
+  `(zero_val S.t).f'`), `decide`s with classical instances are evaluated, slice
+  composite literals are left for `wp_slice_literal`. Without it you need manual
+  rewrites such as
+  `rw [show ∀ b, (RecV BAnon BAnon b : val) = #(func.mk BAnon BAnon b) ...]`:
 
   ```lean
-  set_option goose.wp.extras true in
   /-- `ifStmtInitialization` stores a function literal `f := func() uint64 {..}`
   in a local variable. -/
   theorem wp_ifStmtInitialization' (x : w64) :
@@ -622,7 +624,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
         (App (Val (@! ifStmtInitialization)) (Val #x))
       {{ (r : w64), RET #r; True }} := by
     wp_start
-    wp_auto      -- without `goose.wp.extras`, stuck at the store of `f`
+    wp_auto      -- with `goose.wp.extras false`, stuck at the store of `f`
     repeat' wp_if_destruct
     all_goals wp_end
   ```
@@ -677,7 +679,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
 | `wp_start`, `wp_start as pat` | begin a triple proof (`HΦ`, precondition, unfold the call) |
 | `wp_start_folded as pat` | same, without unfolding the function |
 | `wp_auto`, `wp_auto_lc n` | pure steps, loads/stores/allocations of locals; `n` later credits `Hlc1..Hlcn` |
-| `wp_apply lem $$ spats as pats` | apply a spec (`--no-auto`, `--lc n`) |
+| `wp_apply lem $$ spats as pats` | apply a spec (`wp_apply +noauto`, `wp_apply (lc := n)`) |
 | `wp_apply_core lem $$ spats` | apply a spec, no automation |
 | `wp_if_destruct` | case split on the head `if:` (`Hif`) |
 | `wp_for`, `wp_for HI` | loop rule (`HI` destructed with `iNamed`) |

@@ -503,4 +503,14 @@ elab "wp_alloc_auto" : tactic =>
       let H ← mkFreshUserName `H
       mvar.assign (← iWpAllocStep g.hyps wp false (some (l, H)) fun hyps' wp' => iWpFinish hyps' wp')
 
+open Lean Elab Tactic Meta Qq Iris.ProofMode in
+/-- `wp_alloc_anon` (Rocq `wp_alloc x as "?"`): perform an allocation
+`GoAlloc t #v` in evaluation position (not necessarily bound by `let:`), with
+inaccessible names. -/
+elab "wp_alloc_anon" : tactic =>
+  runTacticGooseWp `wp_alloc_anon fun mvar g wp => do
+    let l ← mkFreshUserName `l
+    let H ← mkFreshUserName `H
+    mvar.assign (← iWpAllocStep g.hyps wp false (some (l, H)) fun hyps' wp' => iWpFinish hyps' wp')
+
 end Perennial

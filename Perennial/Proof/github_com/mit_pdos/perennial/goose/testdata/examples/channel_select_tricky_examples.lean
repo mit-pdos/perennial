@@ -256,7 +256,6 @@ theorem wp_select_nb_full_buffer_not_ready :
   wp_auto
   wp_apply chan.wp_make2 (V := w64) (W64 1) $$ [] as %ch %γ ⟨#His_chan, %Hcap, Hown⟩
   · ipureintro; decide
-  simp only [show (W64 1 = W64 0) = False from by decide, ↓reduceIte]
   -- First send: use the empty-buffer AU to fill buffer to [0].
   wp_apply_core chan.wp_send ch (W64 0) γ $$ His_chan
   iintro -

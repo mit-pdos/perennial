@@ -109,11 +109,12 @@ example :
         sl ↦* [go!"hello", go!"there", go!"general", go!"kenobi"] ∗
         own_slice_cap w8 sl (DFrac.own 1) }} := by
   iintro %Φ #Hinit HΦ
-  wp_apply wp_Fields --no-auto with %sl ⟨Hsl, Hcap⟩
+  wp_apply +noauto wp_Fields with %sl ⟨Hsl, Hcap⟩
   have h : split_fields go!"  hello\tthere\ngeneral\rkenobi " =
       [go!"hello", go!"there", go!"general", go!"kenobi"] := by decide
   rw [h]
   iapply HΦ
+  iframe
 
 example :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.strings }}
@@ -122,10 +123,11 @@ example :
         sl ↦* [go!"hello", go!"world"] ∗
         own_slice_cap w8 sl (DFrac.own 1) }} := by
   iintro %Φ #Hinit HΦ
-  wp_apply wp_Fields go!"hello world" --no-auto with %sl ⟨Hsl, Hcap⟩
+  wp_apply +noauto wp_Fields go!"hello world" with %sl ⟨Hsl, Hcap⟩
   have h : split_fields go!"hello world" = [go!"hello", go!"world"] := by decide
   rw [h]
   iapply HΦ
+  iframe
 
 end wps
 

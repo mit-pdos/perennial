@@ -7,7 +7,8 @@ are shown with the notation of `Perennial/GooseLang/Notation.lean`
 (`![t] e`, `e1 <-[t] e2`, `e1 +⟨t⟩ e2`, ...).
 
 This is display only (unexpanders); the printed terms are not always valid
-input (e.g. a value lambda prints like an expression lambda).
+input. A function value `RecV f x e` is printed in value mode, `glv(λ: x, e)`,
+to distinguish it from the expression `Rec f x e` (`λ: x, e`).
 -/
 import Perennial.Golang.Defn.Pre
 
@@ -46,7 +47,17 @@ def unexpandGooseRec : Unexpander
   | _ => throw ()
 
 attribute [app_unexpander Perennial.expr.Rec] unexpandGooseRec
-attribute [app_unexpander Perennial.val.RecV] unexpandGooseRec
+
+/-- A function value `RecV f x e` is shown as `glv(λ: x, e)` / `glv(rec: f x := e)`,
+to distinguish it from the (unevaluated) expression `Rec f x e`, shown as `λ: x, e`. -/
+@[app_unexpander Perennial.val.RecV]
+def unexpandGooseRecV : Unexpander
+  | `($_ $f $x $e) => do
+    let x ← binderStx x
+    match f with
+    | `(BAnon) => `(glv(λ: $x, $e))
+    | _ => let f ← binderStx f; `(glv(rec: $f $x := $e))
+  | _ => throw ()
 
 @[app_unexpander Perennial.expr.If]
 def unexpandGooseIf : Unexpander

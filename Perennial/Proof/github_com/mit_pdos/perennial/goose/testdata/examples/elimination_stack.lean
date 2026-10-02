@@ -84,7 +84,6 @@ theorem wp_NewLockedStack :
   · ipureintro; decide
   wp_alloc s as Hs
   iStructNamed Hs
-  rw [show sint.nat (W64 0) = 0 from rfl, List.replicate_zero]
   imod ghost_var_alloc ([] : List go_string) with ⟨%γ, Hγ⟩
   icases ghost_var_split γ ([] : List go_string) (1 : Qp).half (1 : Qp).half $$ [Hγ] with ⟨Hauth, Hfrag⟩
   · rw [Qp.half_add_half]; iexact Hγ

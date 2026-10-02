@@ -89,8 +89,6 @@ theorem wp_NewSession (client : loc) (γetcd : clientv3_names) :
   wp_apply wp_Client__GetLogger $$ [$His_client] as %lg -
   wp_apply wp_Client__Ctx $$ [$His_client] as %ctx %ctx_desc #Hcontext
   wp_for
-  rw [show (zero_val sessionOptions.t).leaseID' = W64 0 from rfl]
-  wp_auto
   wp_apply wp_Client__Grant $$ [$His_client] as %resp_ptr %resp %err ⟨Hresp, Hl⟩
   cases err with
   | ok err =>

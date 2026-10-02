@@ -246,10 +246,7 @@ theorem wp_newJoinHandle (P : IProp GF) :
     {{ (l : loc), RET #l; is_JoinHandle l P }} := by
   wp_start
   wp_auto
-  simp only [go.is_interface_type, go.is_untyped_nil, Bool.false_eq_true, ↓reduceIte]
   wp_apply sync.wp_NewCond as %cond_l #Hcond
-  simp (config := {decide := true}) only [go.struct_field_type]
-  wp_auto
   wp_alloc jh_l as Hjh
   iStructNamed Hjh
   ipersist mu

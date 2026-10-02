@@ -1110,9 +1110,9 @@ theorem wp_readOnly_addRequest (γ : raft_names) (r : loc) (term commitIndex : w
   · ipureintro; rfl
   iintro %sl_ptr ⟨Hsl, -⟩
   wp_auto
-  wp_apply wp_slice_append (V := loc) (t := go.type.PointerType v3.readIndexRequest)
+  wp_apply +noauto wp_slice_append (V := loc) (t := go.type.PointerType v3.readIndexRequest)
     ro.unconfirmedReads' unconfirmedReads _ [«$sl0_ptr»] (DFrac.own 1)
-    $$ [unconfirmedReads unconfirmedReads_cap Hsl] --no-auto
+    $$ [unconfirmedReads unconfirmedReads_cap Hsl]
   · iframe
   iintro %s' ⟨Hs', Hcap', -⟩
   iapply wp_fupd

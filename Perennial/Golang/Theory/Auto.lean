@@ -9,7 +9,8 @@ Port of `new/golang/theory/auto.v`: the user-facing automation.
   allocations of local variables, then drop points-to facts of dead locals.
 * `wp_apply lem $$ spats as pats`: apply a spec (see `wp_apply_core`), solve
   `is_pkg_init` premises, introduce `pats` in the continuation and run
-  `wp_auto` (disable with `--no-auto`; `--lc n` asks for `n` later credits).
+  `wp_auto` (`wp_apply +noauto` disables this; `wp_apply (lc := n)` asks for
+  `n` later credits).
 * `wp_if_destruct`, `wp_for`, `wp_for hyp`, `wp_for_post`, `wp_end`.
 
 Differences from Rocq:
@@ -17,14 +18,19 @@ Differences from Rocq:
   patterns; `with` is accepted as a synonym of `as`). Lean-level binders are
   introduced with `%x` (Rocq `as (x) "..."`). The spec patterns of `wp_apply` are
   iris-lean's minus `[H] as name`, so `wp_apply lem $$ [H] as pats` works.
-* Rocq's global `wp_apply_auto_default` switch is not ported; use `--no-auto`.
+* Rocq's global `wp_apply_auto_default` switch is not ported; use
+  `wp_apply +noauto`. Rocq's `--no-auto`/`--lc n` would be Lean comments and are
+  rejected with an error.
+* `wp_start` names the `is_pkg_init` facts it moves to the intuitionistic
+  context `Hpkg`, `Hpkg2`, ... (Rocq: anonymous).
 * `wp_if_destruct` names the case hypothesis `Hif` (Rocq leaves it anonymous)
-  and substitutes it when it is an equation with a variable side. It splits on
-  the condition of the `if:` at the head of the expression.
+  and substitutes it when it is an equation between a variable and a
+  non-variable term (`x = W64 0`); equations between two variables are kept. It
+  splits on the condition of the `if:` at the head of the expression.
 * All WP tactics fail (instead of leaving a `sorry`) when a term does not
   elaborate (`withNoSorry`).
-* With `set_option goose.wp.extras true` (off by default, for backwards
-  compatibility with proofs that do these steps by hand): `wp_auto` rewrites
+* With `goose.wp.extras` (on by default; `set_option goose.wp.extras false`
+  for proofs that do these steps by hand): `wp_auto` rewrites
   stored function literals to `#(func.mk ..)` and unfolds package constants
   (`def a : val := #..`) that block a step; `wp_pures`/`wp_auto` stop at slice
   composite literals (use `wp_slice_literal`, as in Rocq), reduce `match`es on
@@ -159,17 +165,23 @@ def isPkgInitProp (e : Expr) : MetaM Bool := do
 /-- Rocq `destruct_pkg_init H`: move the `is_pkg_init` conjuncts at the front of
 `H` to the intuitionistic context. Returns `false` if `H` was entirely an
 `is_pkg_init` (and is now gone). -/
-partial def destructPkgInit (h : Name) : TacticM Bool := do
+partial def destructPkgInit (h : Name) : TacticM Bool := withMainContext do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType)) | return true
   let some (_, ty) := g.hyps.find? h | return false
+  -- the `is_pkg_init` facts are named `Hpkg`, `Hpkg2`, ... (unless taken)
+  let names := (hypsList g.hyps).map (·.1)
+  let pkgName := (List.range 100).findSome? (fun i =>
+    let n := if i == 0 then `Hpkg else Name.mkSimple s!"Hpkg{i + 1}"
+    if names.contains n then none else some n) |>.getD `Hpkg
+  let pkgId := mkIdent pkgName
   let ty' ← whnfR (← instantiateMVars ty)
   if ty'.isAppOfArity ``BIBase.sep 4 then
     if ← isPkgInitProp (ty'.getArg! 2) then
-      evalTactic (← `(tactic| icases $(mkIdent h):ident with ⟨#_, $(mkIdent h):ident⟩))
+      evalTactic (← `(tactic| icases $(mkIdent h):ident with ⟨#$pkgId:ident, $(mkIdent h):ident⟩))
       return ← destructPkgInit h
     return true
   if ← isPkgInitProp ty' then
-    evalTactic (← `(tactic| icases $(mkIdent h):ident with #_))
+    evalTactic (← `(tactic| icases $(mkIdent h):ident with #$pkgId:ident))
     return false
   if ty'.isAppOfArity ``BIBase.emp 2 then
     evalTactic (← `(tactic| iclear $(mkIdent h):ident))
@@ -434,6 +446,26 @@ macro "wp_auto" : tactic => `(tactic| wp_auto_lc 0)
 
 /-! ## `wp_apply` -/
 
+open Lean Elab Tactic Meta Qq Iris.ProofMode in
+/-- Rewrite the function literal values `RecV f x e` in the WP expression to Go
+function values `#(func.mk f x e)` (`recv_eq_func_mk`), so that specs taking a
+`func.t` argument (e.g. `wp_map_insert`, or a function with a callback
+parameter) apply. Fails if there is none. `wp_apply` tries this when the spec
+does not apply. -/
+elab "wp_func_lits" : tactic =>
+  runTacticGooseWp `wp_func_lits fun mvar g wp => do
+    unless (wp.e.find? (·.isAppOfArity ``Perennial.val.RecV 4)).isSome do
+      throwIPMError "no function literal in the expression"
+    let thms ← ({} : SimpTheorems).addConst ``recv_eq_func_mk
+    let ctx ← Simp.mkContext (simpTheorems := #[thms]) (congrTheorems := ← getSimpCongrTheorems)
+    let ⟨res, _⟩ ← Meta.simp wp.e ctx
+    let some p := res.proof? | throwIPMError "no function literal in the expression"
+    let heq ← wp.wrapEq res.expr (some p)
+    let pf ← addBIGoal g.hyps (wp.mk' res.expr wp.Φ)
+    mvar.assign (← mkAppNamed ``tac_wp_expr_simp
+      [("Δ", g.e), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", wp.wrap wp.e),
+       ("e'", wp.wrap res.expr), ("!h", pf), ("!heq", heq)])
+
 /-! Specialization patterns of `wp_apply`. These are iris-lean's `specPat`s
 without the `[H₁ … Hₙ] as name` form (naming the premise goal), whose `as` would
 swallow the `as pats` of `wp_apply`. -/
@@ -505,13 +537,64 @@ elab "wp_focus_cont " tac:tactic : tactic => do
         break
   setGoals (goals.toList.take i ++ gs' ++ goals.toList.drop (i + 1))
 
+/-- Simplify the types of the Iris hypotheses `ivars` with the `goose_wp_simp`
+simp set(s), so that they are in the same normal form as the WP expression
+(e.g. `W64 (go.array_literal_size [..])` from a spec's postcondition). -/
+def simpIrisHyps (ivars : List IVarId) : TacticM Unit := withMainContext do
+  for ivar in ivars do
+    let mvar ← getMainGoal
+    let gty ← instantiateMVars (← mvar.getType)
+    let some g := parseIrisGoal? gty | return
+    let some (_, _, _, P) := (hypsList g.hyps).find? (·.2.1 == ivar) | continue
+    let P ← instantiateMVars P
+    unless ← needsGooseSimp P do continue
+    let (P', some pf) ← gooseExprSimp P | continue
+    if P' == P then continue
+    let motive ← withLocalDeclD `x (← inferType P) fun x => do
+      let ⟨e', hyps'⟩ := changeHypType (bi := g.bi) ivar x g.hyps
+      mkLambdaFVars #[x] (IrisGoal.toExpr { g with e := e', hyps := hyps' })
+    let ⟨e'', hyps''⟩ := changeHypType (bi := g.bi) ivar P' g.hyps
+    let newTy := IrisGoal.toExpr { g with e := e'', hyps := hyps'' }
+    let newG ← mkFreshExprSyntheticOpaqueMVar newTy (← mvar.getTag)
+    -- `gty = motive P` (definitionally), `motive P = motive P' = newTy`
+    let heq ← mkCongrArg motive pf
+    mvar.assign (← mkExpectedTypeHint (← mkEqMPR heq newG) gty)
+    replaceMainGoal [newG.mvarId!]
+
+/-- Run `tac` (an introduction), then simplify the hypotheses it introduced
+(`simpIrisHyps`). -/
+elab "wp_intro_simp " tac:tactic : tactic => do
+  let before ← withMainContext do
+    match parseIrisGoal? (← instantiateMVars (← getMainTarget)) with
+    | some g => pure ((hypsList g.hyps).map (·.2.1))
+    | none => pure []
+  evalTactic tac
+  let gs ← getGoals
+  match gs with
+  | [] => return
+  | g :: _ =>
+    let some ig := parseIrisGoal? (← instantiateMVars (← g.getType)) | return
+    let new := (hypsList ig.hyps).map (·.2.1) |>.filter (!before.contains ·)
+    unless new.isEmpty do
+      let saved ← saveState
+      try simpIrisHyps new catch _ => saved.restore
+
 end focus
 
 /-- `wp_apply lem $$ spats as pats` (Rocq `wp_apply (lem with "spats") as "pats"`):
 `wp_apply_core lem $$ spats`, then solve `is_pkg_init` premises (`iPkgInit`),
-introduce `pats` in the continuation, and run `wp_auto` on it (`--no-auto`
-disables this; `--lc n` makes `wp_auto` produce `n` credits). `with` is
+introduce `pats` in the continuation, and run `wp_auto` on it. `with` is
 accepted for `as`.
+
+Options (written right after `wp_apply`; Rocq's `--no-auto`/`--lc n` cannot be
+used since `--` starts a Lean comment, and are rejected with an error):
+* `wp_apply +noauto lem ... as pats`: introduce `pats` but do not run
+  `wp_auto`, so the goal is `WP K[v] {{ Φ }}` right after the call (e.g. to
+  `imod` a fancy update returned by the spec; to eliminate an update in the
+  postcondition of the spec itself, first `iapply wp_fupd`).
+* `wp_apply (lc := n) lem ... as pats`: the `wp_auto` after the call produces
+  `n` later credits `Hlc1 ... Hlcn`; fails if there are fewer than `n` pure
+  steps.
 
 The continuation is the goal whose conclusion is the WP of the rest of the
 program (tagged by `wp_apply_raw`), even when side goals come after it; if the
@@ -522,29 +605,52 @@ Lean arguments, pass them as pure spec patterns: `wp_apply IH $$ %x %y [H]`.
 The spec patterns are
 iris-lean's, except that `[H] as name` (naming a premise goal) is not
 available, so that `wp_apply lem $$ [H] as pats` introduces `pats`. -/
-syntax wpNoAuto := " --no-auto"
-syntax wpLc := " --lc " num
+declare_syntax_cat wpApplyOpt
+syntax (name := wpOptNoAuto) atomic("+" noWs &"noauto") : wpApplyOpt
+syntax (name := wpOptLc) atomic(" (" &"lc" " := ") num ")" : wpApplyOpt
 syntax wpAs := (" as " <|> " with ") (colGt ppSpace introPat)+
 
-syntax (name := wpApply) "wp_apply " wpPmTerm (wpNoAuto)? (wpLc)? (wpAs)? : tactic
+syntax (name := wpApply) "wp_apply" (ppSpace wpApplyOpt)* ppSpace wpPmTerm (wpAs)? : tactic
 
-macro_rules
-  | `(tactic| wp_apply $wpmt:wpPmTerm $[$na:wpNoAuto]? $[$lc:wpLc]? $[$as?:wpAs]?) => do
-    let pmt ← wpPmTermToPmTerm wpmt
-    let intro : Lean.TSyntax `tactic ←
+open Lean Elab Tactic in
+/-- Reject the Rocq-style options `--no-auto`/`--lc n` after a `wp_apply`: they
+are Lean comments, so they would be silently ignored. -/
+def checkNoDashDashOpts (stx : Syntax) : TacticM Unit := do
+  let some tail := stx.getTailPos? | return
+  let src := (← getFileMap).source
+  let rest := String.Pos.Raw.extract src tail src.rawEndPos
+  let rest := ((rest.splitOn "\n").headD "").trimAsciiStart.toString
+  if ["--no-auto", "--lc", "--auto"].any (fun (p : String) => rest.startsWith p) then
+    throwErrorAt stx "wp_apply: `--no-auto`/`--lc n` are Lean comments here and would be \
+      ignored; write `wp_apply +noauto lem ...` or `wp_apply (lc := n) lem ...`"
+
+open Lean Elab Tactic in
+elab_rules : tactic
+  | `(tactic| wp_apply%$tk $opts:wpApplyOpt* $wpmt:wpPmTerm $[$as?:wpAs]?) => do
+    checkNoDashDashOpts (← getRef)
+    let _ := tk
+    let mut noAuto := false
+    let mut lc : Nat := 0
+    for o in opts do
+      if o.raw.isOfKind ``wpOptNoAuto then noAuto := true
+      else if o.raw.isOfKind ``wpOptLc then
+        lc := (o.raw.getArgs.findSome? (·.isNatLit?)).getD 0
+      else throwErrorAt o "wp_apply: unknown option"
+    let pmt ← liftMacroM <| wpPmTermToPmTerm wpmt
+    let intro : TSyntax `tactic ←
       match as? with
       | some a =>
-        let pats : Lean.TSyntaxArray `introPat := a.raw[1].getArgs.map (⟨·⟩)
-        `(tactic| wp_focus_cont (iintro $pats*))
+        let pats : TSyntaxArray `introPat := a.raw[1].getArgs.map (⟨·⟩)
+        `(tactic| wp_focus_cont (wp_intro_simp (iintro $pats*)))
       | none => `(tactic| skip)
-    let n : Lean.TSyntax `num := match lc with
-      | some l => ⟨l.raw[1]⟩
-      | none => Lean.Syntax.mkNumLit "0"
-    let auto : Lean.TSyntax `tactic ←
-      if na.isSome then `(tactic| skip)
-      else `(tactic| wp_focus_cont (try wp_auto_lc $n))
-    let core ← `(tactic| focus ((first | wp_apply_raw $pmt | (wp_pures; wp_apply_raw $pmt)) <;> wp_apply_post))
-    `(tactic| focus (($core:tactic) <;> (try iPkgInit); $intro:tactic; $auto:tactic; wp_untag_cont))
+    let n := Syntax.mkNumLit (toString lc)
+    let auto : TSyntax `tactic ←
+      if noAuto then `(tactic| skip)
+      else if lc == 0 then `(tactic| wp_focus_cont (try wp_auto_lc 0))
+      -- credits were asked for: failing to produce them is an error
+      else `(tactic| wp_focus_cont (wp_auto_lc $n))
+    let core ← `(tactic| focus ((first | wp_apply_raw $pmt | (wp_pures; wp_apply_raw $pmt) | (wp_func_lits; wp_apply_raw $pmt) | (wp_pures; wp_apply_raw $pmt)) <;> wp_apply_post))
+    evalTactic (← `(tactic| focus (($core:tactic) <;> (try iPkgInit); $intro:tactic; $auto:tactic; wp_untag_cont)))
 
 /-! ## Boolean cleanup -/
 
@@ -627,6 +733,21 @@ def findHeadIf (e : Expr) : MetaM (Option Expr) := do
 
 end if_destruct
 
+open Lean Elab Tactic Meta in
+/-- Internal (`wp_if_destruct`): if `h : x = e` (or `e = x`) for a local
+variable `x` and a term `e` that is not a variable (e.g. `W64 0` or `y + 1`),
+substitute `x`. Equations between two variables (e.g. `i = n`, where it is not
+clear which one should go) and other propositions are kept as `h`. -/
+elab "wp_if_subst_closed " h:ident : tactic => withMainContext do
+  let some d := (← getLCtx).findFromUserName? h.getId | return
+  let ty ← instantiateMVars d.type
+  let some (_, a, b) := ty.eq? | return
+  let ok (x c : Expr) := x.isFVar && !c.isFVar && !c.containsFVar x.fvarId! && !c.hasMVar
+  if ok a b || ok b a then
+    liftMetaTactic fun g => do
+      let some r ← observing? (Lean.Meta.subst g d.fvarId) | return [g]
+      return [r]
+
 set_option hygiene false in
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Rocq `wp_if_destruct`: case split on the condition of the `if:` at the head
@@ -637,7 +758,7 @@ hypothesis is `Hif` (accessible: the tactic is unhygienic).
 
 Unlike earlier versions, a `decide` elsewhere in the expression (e.g. in a loop
 postcondition) is not picked when there is an `if:` at the head. -/
-elab "wp_if_destruct" : tactic => do
+elab "wp_if_destruct" : tactic => withMainContext do
   let some g := parseIrisGoal? (← instantiateMVars (← getMainTarget))
     | throwError "wp_if_destruct: not in the Iris proof mode"
   let target ← match ← parseGooseWp? g.goal with
@@ -661,7 +782,7 @@ elab "wp_if_destruct" : tactic => do
     evalTactic (← `(tactic| by_cases Hif : $pStx))
     -- the positive case rewrites with `decide_eq_true Hif`, the negative one with
     -- `decide_eq_false Hif` (trying both in each case could rewrite the wrong way)
-    let post ← `(tactic| ((try subst Hif); wp_pures; cleanup_bool_decide; (try wp_auto); cleanup_bool_decide))
+    let post ← `(tactic| (wp_if_subst_closed Hif; wp_pures; cleanup_bool_decide; (try wp_auto); cleanup_bool_decide))
     match ← getGoals with
     | gPos :: gNeg :: rest =>
       setGoals [gPos]
@@ -696,6 +817,7 @@ macro "solve_into_val_typed_struct" : tactic => `(tactic| (
     clear _tagged
     wp_apply wp_GoPrealloc as %l %Hnotnull
     repeat (wp_if_destruct; (rotate_left; wp_apply_core wp_AngelicExit))
+    subst_vars
     iapply HΦ
     try simp only [TypedPointsto.typed_pointsto_def, named]
     iframe

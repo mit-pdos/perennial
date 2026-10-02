@@ -110,11 +110,6 @@ theorem wp_OpPut (key v : go_string) :
   ipersist key_sl
   ipersist val_sl
   wp_apply wp_Op__applyOpts
-  have hz : zero_val v3.Op.t = ⟨zero_val _, slice.nil, slice.nil, W64 0, loc.null, false, false, false,
-      W64 0, W64 0, W64 0, W64 0, W64 0, false, false, false, false, false, false, false, false,
-      slice.nil, W64 0, slice.nil, slice.nil, slice.nil, false, false⟩ := rfl
-  simp only [hz]
-  wp_auto
   iapply HΦ
   simp only [is_Op_unseal, is_Op_def, is_Op_PutRequest]
   iframe # ∗

@@ -358,7 +358,6 @@ theorem wp_makeGreeting :
   wp_auto
   wp_apply chan.wp_make2 (V := streamold.t) (W64 2) $$ [] as %c %γ ⟨#Hic, %Hcap, Hoc⟩
   · ipureintro; decide
-  simp only [show (W64 2 = W64 0) = False from by decide, ↓reduceIte]
   imod start_mpmc c is_mapper_stream (fun _ => iprop(True)) γ 1 1 (.Buffered []) trivial
     (by decide) (by decide) $$ Hic Hoc with ⟨%γmpmc, #Hmpmc, Hprods, Hconss⟩
   simp only [List.replicate]

@@ -60,7 +60,6 @@ theorem wp_NewLock (R : IProp GF) :
   iapply wp_fupd
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γch ⟨#Hchan, %Hcap, Hoc⟩
   · ipureintro; decide
-  simp only [show ¬ (W64 1 = W64 0) from by decide, ↓reduceIte]
   imod start_lock_channel (V := Unit) ch R γch Hcap $$ Hchan Hoc HR with ⟨%γlock, #Hislock⟩
   imodintro
   iapply HΦ
@@ -123,7 +122,7 @@ theorem wp_Lock__LockWithTimeout (γ : lock_channel_names) (l : Lock.t) (R : IPr
   wp_start as #Hl
   unfold is_Lock
   wp_auto
-  wp_apply time.wp_After --no-auto
+  wp_apply +noauto time.wp_After
   iintro %after_ch %γafter #Hafter
   wp_auto_lc 2
   wp_apply_core chan.wp_select_blocking

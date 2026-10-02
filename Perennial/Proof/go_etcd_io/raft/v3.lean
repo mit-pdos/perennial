@@ -52,7 +52,7 @@ theorem wp_Node__Propose (ctx : interface.t_ok) (ctx_desc : context.Context_desc
   iNamed Hpre
   iNamed Hnode
   subst Hn
-  wp_apply (wp_node__Propose γraft n_ptr ctx ctx_desc data_sl data) $$ [$] --no-auto
+  wp_apply +noauto (wp_node__Propose γraft n_ptr ctx ctx_desc data_sl data) $$ [$]
   iintro %err -
   iapply HΦ
   itrivial

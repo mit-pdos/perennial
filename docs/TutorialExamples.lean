@@ -280,7 +280,6 @@ theorem wp_useMap' :
 -- ANCHOR_END: useMap
 
 -- ANCHOR: extras
-set_option goose.wp.extras true in
 /-- `ifStmtInitialization` stores a function literal `f := func() uint64 {..}`
 in a local variable. -/
 theorem wp_ifStmtInitialization' (x : w64) :
@@ -288,7 +287,7 @@ theorem wp_ifStmtInitialization' (x : w64) :
       (App (Val (@! ifStmtInitialization)) (Val #x))
     {{ (r : w64), RET #r; True }} := by
   wp_start
-  wp_auto      -- without `goose.wp.extras`, stuck at the store of `f`
+  wp_auto      -- with `goose.wp.extras false`, stuck at the store of `f`
   repeat' wp_if_destruct
   all_goals wp_end
 -- ANCHOR_END: extras

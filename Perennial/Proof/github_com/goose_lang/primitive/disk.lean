@@ -279,7 +279,6 @@ theorem wp_Read_atomic (a : w64) (q : DFrac) :
   imod Hupd $$ Hda with HQ
   imodintro
   wp_auto
-  rw [ite_eq_left_of_eq_true _ _ (eq_true (by decide))]
   simp only [show sint.Z (W64 0) = 0 from rfl, go.array_index_ref_0,
     show (W64 4096 - W64 0 : w64) = W64 4096 from rfl]
   wp_pures
@@ -322,7 +321,6 @@ theorem wp_Read (a : w64) (q : DFrac) (b : _root_.Perennial.Block) :
   · iexact Hda
   iintro %l ⟨Hda, Hl⟩
   wp_auto
-  rw [ite_eq_left_of_eq_true _ _ (eq_true (by decide))]
   simp only [show sint.Z (W64 0) = 0 from rfl, go.array_index_ref_0,
     show (W64 4096 - W64 0 : w64) = W64 4096 from rfl]
   wp_pures

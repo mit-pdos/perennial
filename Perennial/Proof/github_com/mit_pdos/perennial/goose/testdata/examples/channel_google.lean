@@ -120,7 +120,6 @@ theorem wp_Google (q : go_string) :
   wp_auto
   wp_apply chan.wp_make2 (V := go_string) (W64 3) $$ [] as %c %γch ⟨#Hchan, %Hcap3, Hown⟩
   · ipureintro; decide
-  rw [ite_eq_right (by decide)]
   imod start_future (V := go_string) c γch (.Buffered []) (.inr rfl) $$ Hchan Hown
     with ⟨%γmf, #Hmf, HAwait⟩
   imod future_alloc_promise γmf c (contract_of q KWeb) [] $$ Hmf HAwait
@@ -167,7 +166,6 @@ theorem wp_Google (q : go_string) :
       ipureintro; rfl
     itrivial
   wp_apply wp_slice_make3 (V := go_string) (W64 0) (W64 3) (by decide) as %sl ⟨Hsl, Hcap_sl, %Hcap⟩
-  rw [show List.replicate (sint.nat (W64 0)) (zero_val go_string) = [] from rfl]
   ihave HI : (∃ (xs : List go_string) (donek remk : List kind) (sl0 : slice.t),
       "i" ∷ i_ptr ↦ W64 xs.length ∗
       "results" ∷ results_ptr ↦ sl0 ∗

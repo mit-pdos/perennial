@@ -26,6 +26,7 @@ import Perennial.GooseLang.Lifting
 import Perennial.Golang.Theory.SimpAttr
 import Perennial.Golang.Theory.TacticsSimpAttr
 import Perennial.Golang.Theory.Display
+import Perennial.Golang.Theory.IrisTactics
 import Perennial.Golang.Defn.Pre
 import Iris.ProofMode
 
@@ -200,18 +201,35 @@ attribute [goose_wp_simp] subst subst_opt subst_keyed_elements subst_keyed_eleme
 
 end simp_lemmas
 
+theorem decide_inst_eq (p : Prop) (h1 h2 : Decidable p) : @decide p h1 = @decide p h2 := by
+  cases h1 <;> cases h2 <;> first | rfl | contradiction
+
 simproc [goose_wp_simp] goose_reduceStrEq (( _ : String) = _) := String.reduceEq
 simproc [goose_wp_simp] goose_reduceCtorEq (_ = _) := reduceCtorEq
 open Lean Meta in
 /-- Evaluate a closed `decide p` (e.g. comparisons of Go string literals in
 `exception_seq`), by reduction. -/
 simproc [goose_wp_simp] goose_reduceDecide (decide _) := fun e => do
-  let_expr Decidable.decide p _ := e | return .continue
-  if p.hasFVar then return .continue
+  let_expr Decidable.decide p inst := e | return .continue
   if p.hasMVar then return .continue
+  -- free variables are only allowed if they are instances (e.g. the section
+  -- variable `[ffi_syntax]` in a word literal), which evaluation does not need
+  if p.hasFVar then
+    for fv in (collectFVars {} p).fvarIds do
+      unless (← isClass? (← fv.getType)).isSome do return .continue
   let r ← withTransparency .default <| whnf e
   if r.isConstOf ``Bool.true ∨ r.isConstOf ``Bool.false then
     return .done { expr := r, proof? := some (mkExpectedPropHint (← mkEqRefl r) (← mkEq e r)) }
+  -- the instance may be opaque (e.g. a section variable providing `DecidableEq`):
+  -- evaluate with a synthesized instance instead
+  if inst.hasFVar then
+    let some inst' ← synthInstance? (mkApp (mkConst ``Decidable) p) | return .continue
+    let e' := mkApp2 (mkConst ``Decidable.decide) p inst'
+    let r ← withTransparency .default <| whnf e'
+    if r.isConstOf ``Bool.true ∨ r.isConstOf ``Bool.false then
+      let h1 := mkApp3 (mkConst ``decide_inst_eq) p inst inst'
+      let h2 := mkExpectedPropHint (← mkEqRefl r) (← mkEq e' r)
+      return .done { expr := r, proof? := some (← mkEqTrans h1 h2) }
   return .continue
 
 attribute [goose_wp_simp] List.foldr_cons List.foldr_nil List.foldl_cons List.foldl_nil
@@ -328,9 +346,9 @@ theorem subst_pf_cong {e e1 e' : expr} (h1 : e = e1) (h2 : subst x v e1 = e') :
 end subst_pf
 
 register_option goose.wp.extras : Bool := {
-  defValue := false
-  descr := "enable the extra automation of `wp_pures`/`wp_auto` (off by default for \
-    backwards compatibility): the `goose_wp_simp_extra` simp set, reduction of \
+  defValue := true
+  descr := "enable the extra automation of `wp_pures`/`wp_auto` (on by default): \
+    the `goose_wp_simp_extra` simp set, reduction of \
     `match`es on definitions of constructors, stopping at slice composite literals, \
     and (in `wp_auto`) storing function literals and unfolding package constants"
 }
@@ -594,10 +612,45 @@ def reduceMatchersDefault (e : Expr) : MetaM Expr := do
   unless goose.wp.extras.get (← getOptions) do return e
   let env ← getEnv
   unless (e.find? fun s => match s with
-      | .const n _ => isMatcherCore env n
+      | .const n _ => (isMatcherCore env n).or ((n == ``ZeroVal.zero_val_def).or
+          ((env.getProjectionFnInfo? n).any (!·.fromClass)))
       | _ => false).isSome do return e
   Meta.transform e (post := fun s => do
     let .const n _ := s.getAppFn | return .continue
+    -- a projection of a definition of a constructor application, e.g.
+    -- `(zero_val S.t).f'` or `(interface.mk t v).v`
+    if let some info := env.getProjectionFnInfo? n then
+      -- `zero_val V` of a base type (`W64 0`, `false`, `slice.nil`, ...); the
+      -- zero value of a struct stays folded
+      if n == ``ZeroVal.zero_val_def then
+        let args := s.getAppArgs
+        if h : 1 < args.size then
+          let inst ← withTransparency .default (whnf args[1])
+          if let some ctor := inst.getAppFn.constName? then
+            if let some (.ctorInfo ci) := env.find? ctor then
+              if ci.numParams < inst.getAppNumArgs then
+                let z := inst.getAppArgs[ci.numParams]!
+                let zh ← whnfR z
+                let isStructCtor := match zh.getAppFn.constName? >>= env.find? with
+                  | some (.ctorInfo zi) => isStructure env zi.induct
+                  | _ => false
+                unless isStructCtor || z.hasLooseBVars do
+                  return .visit (mkAppN z (args.extract 2 args.size))
+        return .continue
+      -- not class projections (`LT.lt`, ...): those are notation
+      if info.fromClass then return .continue
+      let args := s.getAppArgs
+      if h : info.numParams < args.size then
+        let st := args[info.numParams]
+        if st.getAppFn.isConst && !(env.find? st.getAppFn.constName!).any (·.isCtor) then
+          let st' ← withTransparency .default (whnf st)
+          if ← isConstructorApp st' then
+            let some ctor := st'.getAppFn.constName? | return .continue
+            let some (.ctorInfo ci) := env.find? ctor | return .continue
+            let fields := st'.getAppArgs.extract ci.numParams st'.getAppNumArgs
+            if h' : info.i < fields.size then
+              return .visit (mkAppN fields[info.i] (args.extract (info.numParams + 1) args.size)).headBeta
+      return .continue
     unless isMatcherCore env n do return .continue
     let some app ← matchMatcherApp? s | return .continue
     -- only when every discriminant unfolds to a constructor (no structure eta)
@@ -665,6 +718,19 @@ would do nothing. -/
 def needsGooseSimp (e : Expr) : MetaM Bool := do
   let some heads ← gooseSimpHeads | return true
   let env ← getEnv
+  let extras := goose.wp.extras.get (← getOptions)
+  -- reducible definitions (`sint.Z`, `W64`, ...) are seen through by simp's
+  -- discrimination trees: check the head of their unfolding
+  if extras then
+    for n in e.getUsedConstants do
+      if heads.contains n then return true
+      if (← getReducibilityStatus n) == .reducible then
+        if let some v := (env.find? n).bind (·.value?) then
+          let rec body : Expr → Expr
+            | .lam _ _ b _ => body b
+            | b => b
+          if let some h := (body v).getAppFn.constName? then
+            if heads.contains h then return true
   return (e.find? fun s =>
     match s with
     | .const n _ => (heads.contains n).or ((isMatcherCore env n).or
@@ -676,7 +742,8 @@ def needsGooseSimp (e : Expr) : MetaM Bool := do
             let args := s.getAppArgs
             if h : info.numParams < args.size then
               match args[info.numParams].getAppFn with
-              | .const c _ => (env.find? c).any (·.isCtor)
+              | .const c _ => (extras.and ((!info.fromClass).or (n == ``ZeroVal.zero_val_def))).or
+                  ((env.find? c).any (·.isCtor))
               | _ => false
             else false
           | none => false

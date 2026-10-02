@@ -341,7 +341,7 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
     cleanup_bool_decide
     wp_auto
     wp_if_destruct
-    · omega
+    · subst Hif; omega
     wp_if_destruct
     · -- short slice: give up
       wp_for_post

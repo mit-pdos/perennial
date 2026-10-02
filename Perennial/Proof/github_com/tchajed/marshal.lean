@@ -430,7 +430,6 @@ theorem wp_WriteBool (s : slice.t) (vs : List w8) (b : Bool) :
     iapply HΦ
     iframe Hcap'
     simp only [Bool.false_eq_true, ↓reduceIte]
-    rw [arr_set_1 _ _ (by rfl)]
     iexact Hs')
 
 end no_slice_literal_step

@@ -984,7 +984,7 @@ theorem wp_slice_append {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped 
   wp_if_destruct
   · rw [ite_eq_left ⟨by word, by word, Hif⟩]
     wp_auto
-    rw [ite_eq_left (by simp only [slice.slice]; word)]
+    rw [ite_eq_left (by (try simp only [slice.slice]); word)]
     wp_auto
     rw [slice_slice sl (W64 0) (sl.len + sl2.len) sl.len (sl.len + sl2.len) (by word)]
     have h0 : ∀ x : w64, W64 0 + x = x := fun x => by word
@@ -1048,6 +1048,7 @@ theorem wp_slice_append {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped 
     iexact H
 
 
+set_option goose.wp.unfoldSliceLiterals true in
 theorem wp_slice_literal {st t : go.type} [IntoValTyped (GF := GF) V t] [st ↓u go.SliceType t]
     (l : List V) (kvs : List keyed_element) (Φ : val → IProp GF) :
     WP (App (Val (GoInstruction (CompositeLiteral (go.ArrayType (go.array_literal_size kvs) t))))

@@ -14,7 +14,6 @@ Differences from Rocq:
   `test_fun_ok` does not mention `is_pkg_init`, so no test needs them.
 -/
 import Perennial.Proof.DiskPrelude
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.TacticWorkarounds
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
 set_option linter.iris.style.nameCheck false

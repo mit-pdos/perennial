@@ -1,8 +1,7 @@
 /-
 The `goose_wp_simp_extra` simp set: extensions of `goose_wp_simp` used by
 `wp_pures`/`wp_auto` to normalize the expression of a WP goal when
-`set_option goose.wp.extras true` (off by default, so that existing proofs that do
-these simplifications by hand keep working). No Rocq counterpart: in Rocq these
+`goose.wp.extras` (on by default). No Rocq counterpart: in Rocq these
 reductions are done by `simpl`/`vm_compute`/`bool_decide` hints.
 
 * `goose_reduceIteDecide`: `if p then a else b` whose (metavariable-free)
@@ -14,10 +13,14 @@ reductions are done by `simpl`/`vm_compute`/`bool_decide` hints.
   by reduction) are decided: `True` when definitionally equal (unfolding named
   types), `False` when the fingerprints `go.type_fingerprint` differ.
 * `zero_val_interface_nil`: `zero_val interface.t = interface.nil`.
+* `decide_*_any`, `into_val_eq_iff`: `decide` with arbitrary (classical)
+  `Decidable` instances, `#a = #b ↔ a = b`.
+* `goose_replicateArrayLiteral`, list lemmas: the zero array of a slice literal
+  is a literal list, so `[]T{a}` gives `[a]`; `sint.nat`/`uint.nat` of literals.
+* `Option.getD_some`/`_none` (map lookups).
 
-These were first written as local workarounds in
-`Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/TacticWorkarounds.lean`
-(with different names, so both can coexist).
+These were first written as local workarounds in a goose testdata
+file (`TacticWorkarounds.lean`, now removed).
 -/
 import Perennial.Golang.Theory.Pkg
 
@@ -114,6 +117,141 @@ simproc [goose_wp_simp_extra] goose_reduceGoTypeEq (@Eq go.type _ _) := fun e =>
       return .done { expr := mkConst ``False, proof? := some (← mkAppM ``eq_false #[h]) }
     return .continue)
     (fun _ => return .continue)
+
+/-! ### Booleans and `decide` with arbitrary `Decidable` instances
+
+Equality on `val` (and on other GooseLang types) is decided classically, so the
+usual `decide_true`/`decide_eq_true` simp lemmas (stated for specific instances)
+do not apply. These are stated for any instance. -/
+
+@[goose_wp_simp_extra] theorem decide_True_any {h : Decidable True} : @decide True h = true :=
+  decide_eq_true trivial
+@[goose_wp_simp_extra] theorem decide_False_any {h : Decidable False} : @decide False h = false :=
+  decide_eq_false id
+@[goose_wp_simp_extra] theorem decide_eq_self_any {α : Sort _} {a : α} {h : Decidable (a = a)} :
+    @decide (a = a) h = true := decide_eq_true rfl
+@[goose_wp_simp_extra] theorem decide_not_any {p : Prop} {h : Decidable p} {h' : Decidable (¬p)} :
+    @decide (¬p) h' = !(@decide p h) := by
+  by_cases hp : p <;> simp [hp]
+
+section into_val_eq
+variable [ffi_syntax] [GoGlobalContext]
+
+/-- `#a = #b` iff `a = b`, for a Go type with an injective `into_val` (e.g.
+`decide (#false = #true)` becomes `false`). -/
+@[goose_wp_simp_extra] theorem into_val_eq_iff {V : Type} [go.IntoValInj V] {a b : V} :
+    (#a : val) = #b ↔ a = b := ⟨fun h => go.into_val_inj h, fun h => h ▸ rfl⟩
+
+end into_val_eq
+
+/-! ### Array (slice) literal sizes and word literals -/
+
+section array_lit
+open Lean Meta
+
+/-- The value of `go.array_literal_size kvs` for a literal list `kvs` whose keys
+are all `none` (the elements themselves are not inspected). -/
+def arrayLiteralSize? (kvs : Expr) : MetaM (Option Int) := do
+  let mut n : Int := 0
+  let mut l ← whnfR kvs
+  repeat
+    if l.isAppOfArity ``List.nil 1 then break
+    unless l.isAppOfArity ``List.cons 3 do return none
+    let ke ← whnfR (l.getArg! 1)
+    unless ke.isAppOfArity ``keyed_element.KeyedElement 3 do return none
+    unless (← whnfR (ke.getArg! 1)).isAppOfArity ``Option.none 1 do return none
+    n := n + 1
+    l ← whnfR (l.getArg! 2)
+  return some n
+
+/-- The zero array of a slice (or array) composite literal, `List.replicate
+(go.array_literal_size kvs).toNat x` (from `(zero_val (array.t V n)).arr`), is
+evaluated to a literal list when the size can be computed, so that the list of a
+slice literal `[]T{a, b}` comes out as `[a, b]`. The size itself (also in the
+`slice.mk` of `wp_slice_literal`'s postcondition) is left alone, so that the WP
+expression and the hypotheses of the spec agree. -/
+simproc [goose_wp_simp_extra] goose_replicateArrayLiteral
+    (List.replicate (Int.toNat (@go.array_literal_size ?inst _)) _) := fun e => do
+  let_expr List.replicate α nE x := e | return .continue
+  let_expr Int.toNat sz := nE | return .continue
+  let_expr go.array_literal_size _ kvs := sz | return .continue
+  let some n ← arrayLiteralSize? kvs | return .continue
+  let us := e.getAppFn.constLevels!
+  let lit := (List.range n.toNat).foldr (fun _ acc => mkApp3 (mkConst ``List.cons us) α x acc)
+    (mkApp (mkConst ``List.nil us) α)
+  return .done { expr := lit, proof? := some (mkExpectedPropHint (← mkEqRefl lit) (← mkEq e lit)) }
+
+end array_lit
+
+section word_lit
+open Lean Meta
+
+/-- A word literal `BitVec.ofInt n z` / `BitVec.ofNat n k` (also through `W64`
+and friends) as `(n, value)`. -/
+def wordLit? (b : Expr) : MetaM (Option (Nat × Nat)) := do
+  let b ← whnfR b
+  if let some (n, z) ← (do
+      let_expr BitVec.ofInt n z := b | return none
+      let some n ← (Meta.evalNat n).run | return none
+      let some z ← getIntValue? z | return none
+      return some (n, z)) then
+    return some (n, (BitVec.ofInt n z).toNat)
+  let_expr BitVec.ofNat n k := b | return none
+  let some n ← (Meta.evalNat n).run | return none
+  let some k ← (Meta.evalNat k).run | return none
+  return some (n, (BitVec.ofNat n k).toNat)
+
+/-- Evaluate `toInt`/`toNat` of a word literal (`sint.Z (W64 7) = 7`,
+`uint.nat (W64 0) = 0`, `sint.nat (W64 3) = 3`, ...), by reduction. -/
+def evalWordLitConv (e : Expr) : MetaM Simp.Step := do
+  let e' ← whnfR e
+  let r : Option Expr ← do
+    match_expr e' with
+    | BitVec.toInt _ b =>
+      let some (n, v) ← wordLit? b | pure none
+      pure (some (toExpr (BitVec.ofNat n v).toInt))
+    | BitVec.toNat _ b =>
+      let some (_, v) ← wordLit? b | pure none
+      pure (some (mkNatLit v))
+    | Int.ofNat x =>
+      let x ← whnfR x
+      let_expr BitVec.toNat _ b := x | pure none
+      let some (_, v) ← wordLit? b | pure none
+      pure (some (toExpr (v : Int)))
+    | Int.toNat x =>
+      let x ← whnfR x
+      let_expr BitVec.toInt _ b := x | pure none
+      let some (n, v) ← wordLit? b | pure none
+      pure (some (mkNatLit (BitVec.ofNat n v).toInt.toNat))
+    | _ => pure none
+  let some rE := r | return .continue
+  return .done { expr := rE, proof? := some (mkExpectedPropHint (← mkEqRefl rE) (← mkEq e rE)) }
+
+/-- In WP expressions only the `Nat` conversions (list indices, e.g. the
+`sint.nat (W64 0)` of a slice literal) are evaluated; `sint.Z (W64 n)` is kept,
+as proofs refer to it (use `word_lit_simp` to evaluate it elsewhere). -/
+simproc [goose_wp_simp_extra] goose_sintNatLit (sint.nat _) := fun e => evalWordLitConv e
+simproc [goose_wp_simp_extra] goose_uintNatLit (uint.nat _) := fun e => evalWordLitConv e
+
+/-- `sint.Z (W64 7) = 7` and friends (not in any simp set by default; see
+`word_lit_simp`). -/
+simproc goose_sintZLit (sint.Z _) := fun e => evalWordLitConv e
+simproc goose_uintZLit (uint.Z _) := fun e => evalWordLitConv e
+simproc goose_toIntLit (BitVec.toInt _) := fun e => evalWordLitConv e
+simproc goose_toNatLit (BitVec.toNat _) := fun e => evalWordLitConv e
+
+/-- `word_lit_simp` evaluates `sint.Z`/`uint.Z`/`sint.nat`/`uint.nat` (and
+`toInt`/`toNat`) of word literals, everywhere (e.g. `sint.Z (W64 7)` becomes
+`7`), keeping `W64 n` itself (unlike a bare `simp`, which rewrites it to
+`n#64`). -/
+macro "word_lit_simp" : tactic => `(tactic| simp only [goose_sintZLit, goose_uintZLit,
+  goose_sintNatLit, goose_uintNatLit, goose_toIntLit, goose_toNatLit] at *)
+
+end word_lit
+
+attribute [goose_wp_simp_extra] Option.getD_some Option.getD_none
+attribute [goose_wp_simp_extra] Int.reduceToNat List.replicate_succ List.replicate_zero
+  List.set_cons_zero List.set_cons_succ List.set_nil
 
 @[goose_wp_simp_extra] theorem zero_val_interface_nil [ffi_syntax] [GoLocalContext] :
     (zero_val interface.t) = interface.nil := rfl

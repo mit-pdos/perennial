@@ -87,7 +87,6 @@ theorem wp_make1 :
   wp_apply wp_NewChannel (V := V) (W64 0) $$ [] as %ch %γ H
   · ipureintro; decide
   iapply HΦ
-  simp only [↓reduceIte]
   iexact H
 
 theorem wp_send (ch : loc) (v : V) (γ : chan_names) :

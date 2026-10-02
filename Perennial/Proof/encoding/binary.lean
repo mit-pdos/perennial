@@ -276,7 +276,6 @@ theorem wp_littleEndian_PutUint64 (le : littleEndian.t) (b : slice.t) (space rem
     omega
   iapply HΦ
   rw [u64_le_8]
-  simp (disch := decide) only [sint_W64_lit]
   simp only [Int.reduceToNat, List.cons_append, List.set_cons_succ, List.set_cons_zero]
   iexact Hb
 
@@ -328,7 +327,6 @@ theorem wp_littleEndian_PutUint32 (le : littleEndian.t) (b : slice.t) (space rem
     omega
   iapply HΦ
   rw [u32_le_4]
-  simp (disch := decide) only [sint_W64_lit]
   simp only [Int.reduceToNat, List.cons_append, List.set_cons_succ, List.set_cons_zero]
   iexact Hb
 

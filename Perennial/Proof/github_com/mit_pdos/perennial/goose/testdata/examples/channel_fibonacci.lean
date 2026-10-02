@@ -98,7 +98,6 @@ theorem wp_fib_consumer :
   wp_auto
   wp_apply chan.wp_make2 (V := w64) (W64 10) $$ [] as %c %γ ⟨#Hchan, %Hcap, Hown⟩
   · ipureintro; decide
-  simp only [show (W64 10 = W64 0) = False by decide, ite_false]
   imod start_spsc c (fun i v => iprop(⌜v = fib i.toNat⌝)) (fun sent => iprop(⌜sent = fib_list 10⌝))
     γ $$ Hchan [Hown] with ⟨%γspsc, #Hspsc, Hprod, Hcons⟩
   · iright; iexact Hown

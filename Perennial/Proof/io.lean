@@ -49,8 +49,6 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   wp_apply sync.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
   wp_apply errors.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
   repeat (wp_apply errors.wp_New as %_ _)
-  simp only [go.is_interface_type, go.is_untyped_nil, Bool.false_eq_true, ↓reduceIte]
-  wp_auto
   wp_apply wp_blackHolePool_init
   wp_apply errors.wp_New as %_ _
   iframe Hown
