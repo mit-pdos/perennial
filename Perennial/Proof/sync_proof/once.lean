@@ -1,0 +1,210 @@
+/-
+Port of `new/proof/sync_proof/once.v`: `sync.Once`.
+
+A `sync.Once` will perform exactly one action. The specification realizes this
+by requiring a specification for that action (a pre- and post-condition), a
+proof of the precondition (which is used only once), and a proof that the
+post-condition is persistent.
+
+Every call to `Once.Do(f)` returns `Q` as a postcondition (using its
+persistence to duplicate the postcondition to the first call), but uses the
+pre-condition only once.
+
+It is valid to call `Once.Do(f)` with different values of `f`, but they must
+all satisfy `{P} #f #() {Q}`.
+-/
+import Perennial.Proof.sync_proof.base
+import Perennial.Proof.sync_proof.mutex
+import Perennial.Proof.sync.atomic
+
+set_option linter.iris.style.nameCheck false
+
+noncomputable section
+
+namespace Perennial
+
+open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
+
+namespace sync
+
+section wps
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF]
+variable [sem : go.Semantics]
+variable [package_sem : sync.Assumptions]
+
+abbrev Once_done (o : loc) : loc := struct_field_ref Once.t go!"done" o
+abbrev Once_m (o : loc) : loc := struct_field_ref Once.t go!"m" o
+
+abbrev Once_inv (o : loc) (Q : IProp GF) : IProp GF :=
+  iprop(∃ done : Bool,
+    "done1" ∷ sync.atomic.own_Bool (GF := GF) (Once_done (GF := GF) o) (DFrac.own (1 : Qp).half) done ∗
+    "#HQ" ∷ □ (⌜done = true⌝ -∗ Q))
+
+abbrev Once_lock_inv (o : loc) (P Q : IProp GF) : IProp GF :=
+  iprop(∃ done : Bool,
+    "done2" ∷ sync.atomic.own_Bool (GF := GF) (Once_done (GF := GF) o) (DFrac.own (1 : Qp).half) done ∗
+    "HPQ" ∷ (if done then Q else P))
+
+def is_Once_def (o : loc) (P Q : IProp GF) : IProp GF :=
+  iprop("#Q_persistent" ∷ □ (Q -∗ □ Q) ∗
+    "#Qinv" ∷ inv nroot (Once_inv o Q) ∗
+    "#Hm" ∷ is_Mutex (Once_m (GF := GF) o) (Once_lock_inv o P Q))
+@[irreducible] def is_Once (o : loc) (P Q : IProp GF) : IProp GF := is_Once_def o P Q
+theorem is_Once_unseal : @is_Once = @is_Once_def := by funext; with_unfolding_all rfl
+
+instance is_Once_persistent (o : loc) (P Q : IProp GF) : Persistent (is_Once o P Q) := by
+  rw [is_Once_unseal]; unfold is_Once_def named; infer_instance
+
+theorem own_Bool_halves (u : loc) (b : Bool) :
+    sync.atomic.own_Bool (GF := GF) u (DFrac.own 1) b ⊣⊢
+      sync.atomic.own_Bool u (DFrac.own (1 : Qp).half) b ∗
+      sync.atomic.own_Bool u (DFrac.own (1 : Qp).half) b := by
+  have h := (sync.atomic.own_Bool_fractional (GF := GF) u b).fractional (1 : Qp).half (1 : Qp).half
+  rw [Qp.half_add_half] at h
+  exact h
+
+theorem init_Once (o : loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
+    typed_pointsto (GF := GF) o (zero_val Once.t) (DFrac.own 1) ∗ P ⊢ |={E}=> is_Once o P Q := by
+  iintro ⟨Ho, HP⟩
+  rw [is_Once_unseal]; unfold is_Once_def
+  iStructNamed Ho
+  have hz : (zero_val sync.atomic.Bool'.t) =
+      ({ _0' := zero_val _, v' := sync.atomic.b32w false } : sync.atomic.Bool'.t) := rfl
+  ihave Hd := (own_Bool_halves (Once_done (GF := GF) o) false).1 $$ [done]
+  · simp only [sync.atomic.own_Bool_unseal, sync.atomic.own_Bool_def]
+    rw [← hz]; iexact done
+  icases Hd with ⟨done1, done2⟩
+  imod init_Mutex (Once_lock_inv o P Q) E (Once_m (GF := GF) o) $$ m [done2 HP] with #Hm
+  · inext; unfold Once_lock_inv; iexists false
+    simp only [Bool.false_eq_true, ↓reduceIte]; iframe
+  imod inv_alloc nroot E (Once_inv o Q) $$ [done1] with #Hinv
+  · inext; unfold Once_inv; iexists false; iframe
+    imodintro; iintro %h; cases h
+  imodintro
+  iframe #
+  imodintro
+  iintro #HQ
+  imodintro
+  iexact HQ
+
+theorem wp_Once__doSlow (o : loc) (P Q : IProp GF) (f : func.t) :
+    {{ is_pkg_init (PROP := IProp GF) pkg_id.sync ∗ is_Once o P Q ∗
+        iprop({{ P }} (App (Val #f) (Val #())) {{ RET #(); Q }}) }}
+      (App (Val (o @!! go.type.PointerType Once @!! go!"doSlow")) (Val #f))
+    {{ RET #(); Q }} := by
+  wp_start as ⟨#HO, #Hf⟩
+  simp only [is_Once_unseal, is_Once_def]
+  iNamed HO
+  iapply wp_with_defer
+  iintro %defer Hdefer
+  wp_auto_lc 2
+  wp_apply wp_Mutex__Lock $$ [$Hm] with ⟨Hlocked, Hlk⟩
+  rw [show ∀ b : expr, (RecV BAnon BAnon b : val) = #(func.mk BAnon BAnon b) from
+    fun b => by rw [go.into_val_unfold func.t]]
+  wp_auto
+  unfold Once_lock_inv
+  icases Hlk with ⟨%done, done2, HPQ⟩
+  wp_apply_core sync.atomic.wp_Bool__Load $$ [] [-]
+  · iPkgInit
+  iinv Qinv with Hi Hclose
+  imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
+  unfold Once_inv
+  icases Hi with ⟨%done0, done1, #HQ⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
+  icombine done1 done2 gives %Heq
+  subst Heq
+  inext
+  iexists done0
+  iframe done1
+  iintro done1
+  imod Hmask with _
+  imod Hclose $$ [done1] with _
+  · inext; iexists done0; iframe done1; iframe #
+  imodintro
+  wp_auto
+  cases done0
+  · simp only [Bool.not_false, Bool.false_eq_true, ↓reduceIte]
+    wp_auto
+    rw [show ∀ b : expr, (RecV BAnon BAnon b : val) = #(func.mk BAnon BAnon b) from
+      fun b => by rw [go.into_val_unfold func.t]]
+    wp_auto
+    wp_apply Hf $$ HPQ with HQ'
+    ihave #HQ2 := Q_persistent $$ HQ'
+    wp_apply_core sync.atomic.wp_Bool__Store $$ [] [-]
+    · iPkgInit
+    iinv Qinv with Hi Hclose
+    imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
+    icases Hi with ⟨%d, done1, #HQ1⟩
+    iapply fupd_mask_intro Std.LawfulSet.empty_subset
+    iintro Hmask
+    icombine done1 done2 gives %Heq
+    subst Heq
+    ihave Hfull := (own_Bool_halves (Once_done (GF := GF) o) false).2 $$ [done1 done2]
+    · iframe
+    inext
+    iexists false
+    iframe Hfull
+    iintro Hfull
+    icases (own_Bool_halves (Once_done (GF := GF) o) true).1 $$ Hfull with ⟨done1, done2⟩
+    imod Hmask with _
+    imod Hclose $$ [done1] with _
+    · inext; iexists true; iframe done1; imodintro; iintro _; iexact HQ2
+    imodintro
+    wp_auto
+    wp_apply wp_Mutex__Unlock (Once_m (GF := GF) o) (Once_lock_inv o P Q) $$ [Hlocked done2 HQ']
+    · iframe #; iframe Hlocked; inext; unfold Once_lock_inv; iexists true
+      simp only [↓reduceIte]; iframe
+    iapply HΦ $$ HQ2
+  · simp only [Bool.not_true, ↓reduceIte]
+    ihave #HQ2 := Q_persistent $$ HPQ
+    wp_auto
+    wp_apply wp_Mutex__Unlock (Once_m (GF := GF) o) (Once_lock_inv o P Q) $$ [Hlocked done2 HPQ]
+    · iframe #; iframe Hlocked; inext; unfold Once_lock_inv; iexists true
+      simp only [↓reduceIte]; iframe
+    iapply HΦ $$ HQ2
+
+theorem wp_Once__Do (o : loc) (P Q : IProp GF) (f : func.t) :
+    {{ is_pkg_init (PROP := IProp GF) pkg_id.sync ∗ is_Once o P Q ∗
+        iprop({{ P }} (App (Val #f) (Val #())) {{ RET #(); Q }}) }}
+      (App (Val (o @!! go.type.PointerType Once @!! go!"Do")) (Val #f))
+    {{ RET #(); Q }} := by
+  wp_start as ⟨#HO, #Hf⟩
+  simp only [is_Once_unseal, is_Once_def]
+  iNamed HO
+  wp_auto_lc 1
+  wp_apply_core sync.atomic.wp_Bool__Load $$ [] [-]
+  · iPkgInit
+  iinv Qinv with Hi Hclose
+  imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
+  unfold Once_inv
+  icases Hi with ⟨%done, done1, #HQ⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
+  inext
+  iexists done
+  iframe done1
+  iintro done1
+  imod Hmask with _
+  imod Hclose $$ [done1] with _
+  · inext; iexists done; iframe done1; iframe #
+  imodintro
+  wp_auto
+  cases done
+  · (try wp_auto)
+    wp_apply wp_Once__doSlow o P Q f $$ [] with HQ'
+    · rw [is_Once_unseal]; unfold is_Once_def; iframe #
+    iapply HΦ $$ HQ'
+  · (try wp_auto)
+    iapply HΦ
+    iapply HQ
+    ipureintro; rfl
+
+end wps
+
+end sync
+
+end Perennial
+end
