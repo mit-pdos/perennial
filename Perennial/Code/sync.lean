@@ -142,10 +142,10 @@ axiom dequeueBits [ffi_syntax] [GoGlobalContext] : val
 
 axiom dequeueLimit [ffi_syntax] [GoGlobalContext] : val
 
-def rwmutexMaxReaders [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def rwmutexMaxReaders [ffi_syntax] [GoGlobalContext] : val :=
   #(1073741824 : Int)
 
-def waitGroupBubbleFlag [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def waitGroupBubbleFlag [ffi_syntax] [GoGlobalContext] : val :=
   #(2147483648 : Int)
 
 def poolRaceHash [ffi_syntax] [GoGlobalContext] : go_string :=

@@ -50,7 +50,7 @@ def txnLeasing [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] txnLeasing
 
-def revokeBackoff [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def revokeBackoff [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2000000000)
 
 def closedCh [ffi_syntax] [GoGlobalContext] : go_string :=

@@ -25,13 +25,13 @@ def Generator [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Generator
 
-def tsLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def tsLen [ffi_syntax] [GoGlobalContext] : val :=
   #(40 : Int)
 
-def cntLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def cntLen [ffi_syntax] [GoGlobalContext] : val :=
   #(8 : Int)
 
-def suffixLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def suffixLen [ffi_syntax] [GoGlobalContext] : val :=
   #(48 : Int)
 
 def NewGenerator [ffi_syntax] [GoGlobalContext] : go_string :=

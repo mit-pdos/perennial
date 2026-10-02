@@ -113,19 +113,19 @@ def stmSerializable [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] stmSerializable
 
-def defaultSessionTTL [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def defaultSessionTTL [ffi_syntax] [GoGlobalContext] : val :=
   #(60 : Int)
 
-def SerializableSnapshot [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SerializableSnapshot [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def Serializable [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Serializable [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def RepeatableReads [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RepeatableReads [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def ReadCommitted [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ReadCommitted [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
 def ErrElectionNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=

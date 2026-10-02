@@ -68,11 +68,11 @@ axiom SmallestNonzeroFloat64 [ffi_syntax] [GoGlobalContext] : val
 axiom intSize [ffi_syntax] [GoGlobalContext] : val
 
 /-- MaxInt32 or MaxInt64 depending on intSize. -/
-def MaxInt [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MaxInt [ffi_syntax] [GoGlobalContext] : val :=
   #(9223372036854775807 : Int)
 
 /-- MinInt32 or MinInt64 depending on intSize. -/
-def MinInt [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MinInt [ffi_syntax] [GoGlobalContext] : val :=
   #(-9223372036854775808 : Int)
 
 axiom MaxInt8 [ffi_syntax] [GoGlobalContext] : val
@@ -88,7 +88,7 @@ axiom MaxInt32 [ffi_syntax] [GoGlobalContext] : val
 axiom MinInt32 [ffi_syntax] [GoGlobalContext] : val
 
 /-- 9223372036854775807 -/
-def MaxInt64 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MaxInt64 [ffi_syntax] [GoGlobalContext] : val :=
   #(9223372036854775807 : Int)
 
 axiom MinInt64 [ffi_syntax] [GoGlobalContext] : val
@@ -102,7 +102,7 @@ axiom MaxUint16 [ffi_syntax] [GoGlobalContext] : val
 axiom MaxUint32 [ffi_syntax] [GoGlobalContext] : val
 
 /-- 18446744073709551615 -/
-def MaxUint64 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MaxUint64 [ffi_syntax] [GoGlobalContext] : val :=
   #(18446744073709551615 : Int)
 
 axiom haveArchMax [ffi_syntax] [GoGlobalContext] : val

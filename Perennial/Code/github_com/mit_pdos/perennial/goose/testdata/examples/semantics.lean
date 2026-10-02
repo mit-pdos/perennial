@@ -212,10 +212,10 @@ def DefinedStr2 [ffi_syntax] [GoGlobalContext] : go.type :=
   DefinedStr
 
 /-- 10 is completely arbitrary -/
-def MaxTxnWrites [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MaxTxnWrites [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 10)
 
-def logLength [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def logLength [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 21)
 
 def findKey [ffi_syntax] [GoGlobalContext] : go_string :=

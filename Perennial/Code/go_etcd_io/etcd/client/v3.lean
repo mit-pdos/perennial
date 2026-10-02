@@ -717,7 +717,7 @@ axiom CompareValue [ffi_syntax] [GoGlobalContext] : val
 
 axiom defaultTTL [ffi_syntax] [GoGlobalContext] : val
 
-def NoLease [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def NoLease [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 axiom retryConnWait [ffi_syntax] [GoGlobalContext] : val
@@ -728,16 +728,16 @@ axiom DowngradeEnable [ffi_syntax] [GoGlobalContext] : val
 
 axiom DowngradeCancel [ffi_syntax] [GoGlobalContext] : val
 
-def tRange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def tRange [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def tPut [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def tPut [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def tDeleteRange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def tDeleteRange [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-def tTxn [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def tTxn [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4)
 
 axiom MaxLeaseTTL [ffi_syntax] [GoGlobalContext] : val
@@ -746,31 +746,31 @@ axiom repeatable [ffi_syntax] [GoGlobalContext] : val
 
 axiom nonRepeatable [ffi_syntax] [GoGlobalContext] : val
 
-def SortNone [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SortNone [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def SortAscend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SortAscend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def SortDescend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SortDescend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def SortByKey [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SortByKey [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def SortByVersion [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SortByVersion [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def SortByCreateRevision [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SortByCreateRevision [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def SortByModRevision [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SortByModRevision [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-def SortByValue [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SortByValue [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4)
 
-def EventTypeDelete [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def EventTypeDelete [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
 axiom EventTypePut [ffi_syntax] [GoGlobalContext] : val

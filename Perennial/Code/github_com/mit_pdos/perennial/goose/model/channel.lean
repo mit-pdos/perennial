@@ -35,33 +35,33 @@ def SelectDir [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] SelectDir
 
-def buffered [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def buffered [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def idle [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def idle [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def sndPending [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def sndPending [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def rcvPending [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def rcvPending [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-def sndCommit [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def sndCommit [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4)
 
-def rcvDone [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def rcvDone [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 5)
 
-def closed [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def closed [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 6)
 
 /-- case ch <- Send -/
-def SelectSend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SelectSend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- case <-ch: -/
-def SelectRecv [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SelectRecv [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 def NewChannel [ffi_syntax] [GoGlobalContext] : go_string :=

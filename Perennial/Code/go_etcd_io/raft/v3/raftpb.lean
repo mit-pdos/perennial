@@ -89,85 +89,85 @@ attribute [irreducible] ConfChangeV2
 
 axiom «ConfChangeSingleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def EntryNormal [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def EntryNormal [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-def EntryConfChange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def EntryConfChange [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-def EntryConfChangeV2 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def EntryConfChangeV2 [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-def MsgHup [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgHup [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-def MsgBeat [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgBeat [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-def MsgProp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgProp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-def MsgApp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgApp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-def MsgAppResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgAppResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 4)
 
-def MsgVote [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgVote [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 5)
 
-def MsgVoteResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgVoteResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 6)
 
-def MsgSnap [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgSnap [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 7)
 
-def MsgHeartbeat [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgHeartbeat [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 8)
 
-def MsgHeartbeatResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgHeartbeatResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 9)
 
-def MsgUnreachable [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgUnreachable [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 10)
 
-def MsgSnapStatus [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgSnapStatus [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 11)
 
-def MsgCheckQuorum [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgCheckQuorum [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 12)
 
-def MsgTransferLeader [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgTransferLeader [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 13)
 
-def MsgTimeoutNow [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgTimeoutNow [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 14)
 
-def MsgReadIndex [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgReadIndex [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 15)
 
-def MsgReadIndexResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgReadIndexResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 16)
 
-def MsgPreVote [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgPreVote [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 17)
 
-def MsgPreVoteResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgPreVoteResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 18)
 
-def MsgStorageAppend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgStorageAppend [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 19)
 
-def MsgStorageAppendResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgStorageAppendResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 20)
 
-def MsgStorageApply [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgStorageApply [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 21)
 
-def MsgStorageApplyResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgStorageApplyResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 22)
 
-def MsgForgetLeader [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MsgForgetLeader [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 23)
 
 axiom ConfChangeTransitionAuto [ffi_syntax] [GoGlobalContext] : val
@@ -176,16 +176,16 @@ axiom ConfChangeTransitionJointImplicit [ffi_syntax] [GoGlobalContext] : val
 
 axiom ConfChangeTransitionJointExplicit [ffi_syntax] [GoGlobalContext] : val
 
-def ConfChangeAddNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ConfChangeAddNode [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-def ConfChangeRemoveNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ConfChangeRemoveNode [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-def ConfChangeUpdateNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ConfChangeUpdateNode [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-def ConfChangeAddLearnerNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ConfChangeAddLearnerNode [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
 def EntryType_name [ffi_syntax] [GoGlobalContext] : go_string :=

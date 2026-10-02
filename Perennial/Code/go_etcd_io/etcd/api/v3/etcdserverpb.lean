@@ -1124,55 +1124,55 @@ axiom AlarmType_NOSPACE [ffi_syntax] [GoGlobalContext] : val
 
 axiom AlarmType_CORRUPT [ffi_syntax] [GoGlobalContext] : val
 
-def RangeRequest_NONE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RangeRequest_NONE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-def RangeRequest_ASCEND [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RangeRequest_ASCEND [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-def RangeRequest_DESCEND [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RangeRequest_DESCEND [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-def RangeRequest_KEY [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RangeRequest_KEY [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-def RangeRequest_VERSION [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RangeRequest_VERSION [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-def RangeRequest_CREATE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RangeRequest_CREATE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-def RangeRequest_MOD [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RangeRequest_MOD [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-def RangeRequest_VALUE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def RangeRequest_VALUE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 4)
 
-def Compare_EQUAL [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_EQUAL [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-def Compare_GREATER [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_GREATER [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-def Compare_LESS [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_LESS [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-def Compare_NOT_EQUAL [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_NOT_EQUAL [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-def Compare_VERSION [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_VERSION [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-def Compare_CREATE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_CREATE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-def Compare_MOD [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_MOD [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-def Compare_VALUE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_VALUE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-def Compare_LEASE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Compare_LEASE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 4)
 
 axiom WatchCreateRequest_NOPUT [ffi_syntax] [GoGlobalContext] : val

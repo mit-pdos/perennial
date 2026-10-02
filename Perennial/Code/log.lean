@@ -26,11 +26,11 @@ attribute [irreducible] Logger
 axiom «Loggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 /-- the date in the local time zone: 2009/01/23 -/
-def Ldate [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Ldate [ffi_syntax] [GoGlobalContext] : val :=
   #(1 : Int)
 
 /-- the time in the local time zone: 01:23:23 -/
-def Ltime [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Ltime [ffi_syntax] [GoGlobalContext] : val :=
   #(2 : Int)
 
 axiom Lmicroseconds [ffi_syntax] [GoGlobalContext] : val
@@ -44,7 +44,7 @@ axiom LUTC [ffi_syntax] [GoGlobalContext] : val
 axiom Lmsgprefix [ffi_syntax] [GoGlobalContext] : val
 
 /-- initial values for the standard logger -/
-def LstdFlags [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def LstdFlags [ffi_syntax] [GoGlobalContext] : val :=
   #(3 : Int)
 
 def std [ffi_syntax] [GoGlobalContext] : go_string :=

@@ -24,47 +24,47 @@ attribute [irreducible] Code
 
 axiom OK [ffi_syntax] [GoGlobalContext] : val
 
-def Canceled [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Canceled [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
 axiom Unknown [ffi_syntax] [GoGlobalContext] : val
 
-def InvalidArgument [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def InvalidArgument [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-def DeadlineExceeded [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def DeadlineExceeded [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 4)
 
-def NotFound [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def NotFound [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 5)
 
 axiom AlreadyExists [ffi_syntax] [GoGlobalContext] : val
 
-def PermissionDenied [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def PermissionDenied [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 7)
 
-def ResourceExhausted [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ResourceExhausted [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 8)
 
-def FailedPrecondition [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def FailedPrecondition [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 9)
 
 axiom Aborted [ffi_syntax] [GoGlobalContext] : val
 
-def OutOfRange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def OutOfRange [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 11)
 
 axiom Unimplemented [ffi_syntax] [GoGlobalContext] : val
 
 axiom Internal [ffi_syntax] [GoGlobalContext] : val
 
-def Unavailable [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Unavailable [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 14)
 
-def DataLoss [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def DataLoss [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 15)
 
-def Unauthenticated [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Unauthenticated [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 16)
 
 axiom _maxCode [ffi_syntax] [GoGlobalContext] : val

@@ -62,13 +62,13 @@ def matchAckIndexer [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] matchAckIndexer
 
-def StateProbe [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def StateProbe [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def StateReplicate [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def StateReplicate [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def StateSnapshot [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def StateSnapshot [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
 def prstmap [ffi_syntax] [GoGlobalContext] : go_string :=

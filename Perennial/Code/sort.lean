@@ -69,13 +69,13 @@ axiom «Float64Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «StringSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def unknownHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def unknownHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def increasingHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def increasingHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def decreasingHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def decreasingHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
 def Search [ffi_syntax] [GoGlobalContext] : go_string :=

@@ -310,7 +310,7 @@ axiom DowngradeEnabledPath [ffi_syntax] [GoGlobalContext] : val
 
 axiom memorySnapshotCount [ffi_syntax] [GoGlobalContext] : val
 
-def maxGapBetweenApplyAndCommitIndex [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def maxGapBetweenApplyAndCommitIndex [ffi_syntax] [GoGlobalContext] : val :=
   #(5000 : Int)
 
 axiom maxNormalGap [ffi_syntax] [GoGlobalContext] : val

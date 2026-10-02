@@ -17,7 +17,7 @@ end pkg_id
 
 namespace internal.race
 
-def Enabled [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Enabled [ffi_syntax] [GoGlobalContext] : val :=
   #false
 
 def Acquire [ffi_syntax] [GoGlobalContext] : go_string :=

@@ -210,64 +210,64 @@ def entryPayloadSize [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] entryPayloadSize
 
-def calldepth [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def calldepth [ffi_syntax] [GoGlobalContext] : val :=
   #(2 : Int)
 
-def SnapshotFinish [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SnapshotFinish [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def SnapshotFailure [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SnapshotFailure [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def None' [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def None' [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def LocalAppendThread [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def LocalAppendThread [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 18446744073709551615)
 
-def LocalApplyThread [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def LocalApplyThread [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 18446744073709551614)
 
-def StateFollower [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def StateFollower [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def StateCandidate [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def StateCandidate [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def StateLeader [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def StateLeader [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def StatePreCandidate [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def StatePreCandidate [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-def numStates [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def numStates [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4)
 
-def ReadOnlySafe [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ReadOnlySafe [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def ReadOnlyLeaseBased [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ReadOnlyLeaseBased [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def campaignPreElection [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def campaignPreElection [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"CampaignPreElection")
 
-def campaignElection [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def campaignElection [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"CampaignElection")
 
-def campaignTransfer [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def campaignTransfer [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"CampaignTransfer")
 
-def noLimit [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def noLimit [ffi_syntax] [GoGlobalContext] : val :=
   #(18446744073709551615 : Int)
 
-def ProgressTypePeer [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ProgressTypePeer [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 0)
 
-def ProgressTypeLearner [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ProgressTypeLearner [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 1)
 
-def StateTraceDeployed [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def StateTraceDeployed [ffi_syntax] [GoGlobalContext] : val :=
   #false
 
 def defaultLogger [ffi_syntax] [GoGlobalContext] : go_string :=

@@ -32,10 +32,10 @@ def Event [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Event
 
-def PUT [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def PUT [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-def DELETE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def DELETE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
 axiom Event_PUT [ffi_syntax] [GoGlobalContext] : val

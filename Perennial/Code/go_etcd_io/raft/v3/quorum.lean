@@ -58,16 +58,16 @@ def VoteResult [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] VoteResult
 
-def VotePending [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def VotePending [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 1)
 
-def VoteLost [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def VoteLost [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 2)
 
-def VoteWon [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def VoteWon [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 3)
 
-def _VoteResult_name [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def _VoteResult_name [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"VotePendingVoteLostVoteWon")
 
 def _VoteResult_index [ffi_syntax] [GoGlobalContext] : go_string :=

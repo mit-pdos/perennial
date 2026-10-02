@@ -247,115 +247,115 @@ attribute [irreducible] UseNamedType
 def my_u64 [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
-def arrayA [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def arrayA [ffi_syntax] [GoGlobalContext] : val :=
   #(0 : Int)
 
-def arrayB [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def arrayB [ffi_syntax] [GoGlobalContext] : val :=
   #(10 : Int)
 
-def GlobalConstant [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def GlobalConstant [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"foo")
 
 /-- an untyped string -/
-def UntypedStringConstant [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def UntypedStringConstant [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"bar")
 
-def UntypedInt [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def UntypedInt [ffi_syntax] [GoGlobalContext] : val :=
   #(13 : Int)
 
-def OtherUntypedInt [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def OtherUntypedInt [ffi_syntax] [GoGlobalContext] : val :=
   #(26 : Int)
 
-def TypedInt [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def TypedInt [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 32)
 
-def ConstWithArith [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ConstWithArith [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 100)
 
-def TypedInt32 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def TypedInt32 [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-def DivisionInConst [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def DivisionInConst [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 511)
 
 /-- 517 -/
-def ModInConst [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ModInConst [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 517)
 
 /-- 5 -/
-def ModInConstParens [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ModInConstParens [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 5)
 
-def SignedIntegerExample [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def SignedIntegerExample [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 (-37))
 
-def First [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def First [ffi_syntax] [GoGlobalContext] : val :=
   #(0 : Int)
 
-def Second [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Second [ffi_syntax] [GoGlobalContext] : val :=
   #(1 : Int)
 
-def Third [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Third [ffi_syntax] [GoGlobalContext] : val :=
   #(2 : Int)
 
-def ComplicatedFirst [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ComplicatedFirst [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-def ComplicatedSecond [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ComplicatedSecond [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 5)
 
-def ComplicatedThird [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ComplicatedThird [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 7)
 
-def Enum1A [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Enum1A [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def Enum1B [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Enum1B [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def Enum1C [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Enum1C [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
 /-- line comment 1 -/
-def Enum2A [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Enum2A [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- line comment 2 -/
-def Enum2B [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Enum2B [ffi_syntax] [GoGlobalContext] : val :=
   #(3 : Int)
 
-def Enum2C [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Enum2C [ffi_syntax] [GoGlobalContext] : val :=
   #(4 : Int)
 
 /-- line comment 3 -/
-def Enum2D [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Enum2D [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 15)
 
-def a [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def a [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4607182418800017408)
 
-def b [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def b [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4696837146684686336)
 
-def MaxRune [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def MaxRune [ffi_syntax] [GoGlobalContext] : val :=
   #(1114111 : Int)
 
-def runeWithType [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def runeWithType [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 97)
 
-def IntWidth [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def IntWidth [ffi_syntax] [GoGlobalContext] : val :=
   #(8 : Int)
 
-def ConstWithAbbrevType [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ConstWithAbbrevType [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-def Disk1 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Disk1 [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def Disk2 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Disk2 [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-def DiskSize [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def DiskSize [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1000)
 
 def GlobalX [ffi_syntax] [GoGlobalContext] : go_string :=

@@ -75,37 +75,37 @@ def freeType [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] freeType
 
-def DefaultFreeListSize [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def DefaultFreeListSize [ffi_syntax] [GoGlobalContext] : val :=
   #(32 : Int)
 
 /-- removes the given item -/
-def removeItem [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def removeItem [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- removes smallest item in the subtree -/
-def removeMin [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def removeMin [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- removes largest item in the subtree -/
-def removeMax [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def removeMax [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def descend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def descend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 (-1))
 
-def ascend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ascend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- node was freed (available for GC, not stored in freelist) -/
-def ftFreelistFull [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ftFreelistFull [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- node was stored in the freelist for later use -/
-def ftStored [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ftStored [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- node was ignored by COW, since it's owned by another one -/
-def ftNotOwned [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def ftNotOwned [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
 def NewFreeList [ffi_syntax] [GoGlobalContext] : go_string :=

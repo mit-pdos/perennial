@@ -299,14 +299,14 @@ axiom runeSelf [ffi_syntax] [GoGlobalContext] : val
 
 axiom runeError [ffi_syntax] [GoGlobalContext] : val
 
-def hasMonotonic [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def hasMonotonic [ffi_syntax] [GoGlobalContext] : val :=
   #(9223372036854775808 : Int)
 
 axiom maxWall [ffi_syntax] [GoGlobalContext] : val
 
 axiom minWall [ffi_syntax] [GoGlobalContext] : val
 
-def nsecMask [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def nsecMask [ffi_syntax] [GoGlobalContext] : val :=
   #(1073741823 : Int)
 
 axiom nsecShift [ffi_syntax] [GoGlobalContext] : val
@@ -371,30 +371,30 @@ axiom internalToAbsolute [ffi_syntax] [GoGlobalContext] : val
 
 axiom unixToInternal [ffi_syntax] [GoGlobalContext] : val
 
-def internalToUnix [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def internalToUnix [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 (-62135596800))
 
 axiom absoluteToUnix [ffi_syntax] [GoGlobalContext] : val
 
 axiom unixToAbsolute [ffi_syntax] [GoGlobalContext] : val
 
-def wallToInternal [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def wallToInternal [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 59453308800)
 
 axiom minDuration [ffi_syntax] [GoGlobalContext] : val
 
 axiom maxDuration [ffi_syntax] [GoGlobalContext] : val
 
-def Nanosecond [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Nanosecond [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def Microsecond [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Microsecond [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1000)
 
-def Millisecond [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Millisecond [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1000000)
 
-def Second [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def Second [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1000000000)
 
 axiom Minute [ffi_syntax] [GoGlobalContext] : val

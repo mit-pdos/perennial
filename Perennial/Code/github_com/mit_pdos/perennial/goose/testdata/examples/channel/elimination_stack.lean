@@ -29,7 +29,7 @@ def EliminationStack [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] EliminationStack
 
-def timeout [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def timeout [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 10000)
 
 def NewLockedStack [ffi_syntax] [GoGlobalContext] : go_string :=

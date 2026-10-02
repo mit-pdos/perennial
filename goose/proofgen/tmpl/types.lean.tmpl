@@ -19,7 +19,12 @@
 namespace {{$t.Name}}
 section def_
 
+{{ if eq $.Ffi "" -}}
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+{{ else -}}
+-- the FFI instances are global (from the {{ $.Ffi }} prelude)
+variable [go_gctx : GoGlobalContext]
+{{ end -}}
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 {{ if $.Bootstrap -}}
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]

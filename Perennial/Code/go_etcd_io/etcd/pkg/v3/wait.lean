@@ -49,7 +49,7 @@ def timeList [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] timeList
 
-def defaultListElementLength [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] def defaultListElementLength [ffi_syntax] [GoGlobalContext] : val :=
   #(64 : Int)
 
 def closec [ffi_syntax] [GoGlobalContext] : go_string :=

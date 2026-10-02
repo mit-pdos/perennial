@@ -19,7 +19,8 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.append_log
 namespace Log
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Assumptions]

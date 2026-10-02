@@ -1030,7 +1030,13 @@ func (d FuncDecl) LeanDecl() string {
 }
 
 func (d ConstDecl) LeanDecl() string {
-	return leanComment(d.Comment) +
+	attr := ""
+	if v, ok := d.Type.(VerbatimExpr); ok && v == "val" {
+		// package constants are transparent in Rocq; make them visible to
+		// the wp automation
+		attr = "@[reducible] "
+	}
+	return leanComment(d.Comment) + attr +
 		fmt.Sprintf("def %s %s : %s :=\n  %s", LeanIdent(d.Name), leanDeclParams,
 			d.Type.Lean(LeanTerm), indent(2, d.Val.Lean(LeanTerm)))
 }
