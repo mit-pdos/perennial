@@ -89,7 +89,7 @@ namespace PublicKey
 abbrev t [ffi_syntax] : Type := slice.t
 end PublicKey
 
-def «PublicKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «PublicKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.SliceType go.byte)
 
 class PublicKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -446,7 +446,7 @@ namespace Reader
 abbrev t [ffi_syntax] : Type := interface.t
 end Reader
 
-def «Readerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Readerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Read" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.int, go.error]))])
 
 class Reader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -458,7 +458,7 @@ namespace Writer
 abbrev t [ffi_syntax] : Type := interface.t
 end Writer
 
-def «Writerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Writerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Write" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.int, go.error]))])
 
 class Writer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -620,7 +620,7 @@ namespace ReaderFrom
 abbrev t [ffi_syntax] : Type := interface.t
 end ReaderFrom
 
-def «ReaderFromⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ReaderFromⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ReadFrom" (go.signature.Signature [Reader] false [go.int64, go.error]))])
 
 class ReaderFrom_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -632,7 +632,7 @@ namespace WriterTo
 abbrev t [ffi_syntax] : Type := interface.t
 end WriterTo
 
-def «WriterToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «WriterToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"WriteTo" (go.signature.Signature [Writer] false [go.int64, go.error]))])
 
 class WriterTo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -749,7 +749,7 @@ namespace StringWriter
 abbrev t [ffi_syntax] : Type := interface.t
 end StringWriter
 
-def «StringWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «StringWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"WriteString" (go.signature.Signature [go.string] false [go.int, go.error]))])
 
 class StringWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -825,7 +825,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end discard
 
-def discard'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def discard'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def discard'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -835,7 +835,7 @@ instance equals_unfold_discard [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold discard'fds discard'fds_unsealed :=
   ⟨by unfold discard'fds; rfl⟩
 
-def «discardⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «discardⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType discard'fds)
 
 class discard_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -899,7 +899,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end multiReader
 
-def multiReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def multiReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"readers" (go.type.SliceType Reader))]
 
 @[irreducible] def multiReader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -909,7 +909,7 @@ instance equals_unfold_multiReader [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold multiReader'fds multiReader'fds_unsealed :=
   ⟨by unfold multiReader'fds; rfl⟩
 
-def «multiReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «multiReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType multiReader'fds)
 
 class multiReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -932,7 +932,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end multiWriter
 
-def multiWriter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def multiWriter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"writers" (go.type.SliceType Writer))]
 
 @[irreducible] def multiWriter'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -942,7 +942,7 @@ instance equals_unfold_multiWriter [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold multiWriter'fds multiWriter'fds_unsealed :=
   ⟨by unfold multiWriter'fds; rfl⟩
 
-def «multiWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «multiWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType multiWriter'fds)
 
 class multiWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

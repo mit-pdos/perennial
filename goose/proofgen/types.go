@@ -52,6 +52,8 @@ func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Stru
 				Name:     fieldName,
 				Proj:     glang.LeanQuoteComponent(fieldName + "'"),
 				GoString: glang.LeanStringLit(fieldName),
+				// iNamed needs the name to parse as an identifier
+				HypName: leanHypName(fieldName),
 				Type:     tr.toLeanType(s.Field(i).Type()),
 			})
 		}
@@ -223,4 +225,11 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 	}
 	log.Fatalf("unsupported type %s in struct field", t)
 	return ""
+}
+
+func leanHypName(s string) string {
+	if glang.LeanQuoteComponent(s) != s {
+		s = s + "'"
+	}
+	return glang.LeanRawString(s)
 }

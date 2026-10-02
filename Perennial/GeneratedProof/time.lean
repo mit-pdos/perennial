@@ -10,16 +10,15 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace time
 
 namespace ParseError
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -37,9 +36,8 @@ end ParseError
 namespace parseDurationError
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -57,53 +55,52 @@ end parseDurationError
 namespace Timer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
 instance Timer_typed_pointsto :
     TypedPointsto (GF := GF) time.Timer.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref time.Timer.t go!"C" l) v.C' dq ∗
-    typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) v.initTimer' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "C" ∷ typed_pointsto (struct_field_ref time.Timer.t go!"C" l) v.C' dq ∗
+    "initTimer" ∷ typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) v.initTimer' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Timer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.Timer.t time.«Timerⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) time.Timer.t time.«Timerⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Timer_access_load_C (l : loc) (v : time.Timer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Timer.t go!"C" l) v.C' dq)
       (typed_pointsto (struct_field_ref time.Timer.t go!"C" l) v.C' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Timer_access_store_C (l : loc) (v : time.Timer.t) (C' : chan.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Timer.t go!"C" l) v.C' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Timer.t go!"C" l) C' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with C' := C' } : time.Timer.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with C' := C' } : time.Timer.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Timer_access_load_initTimer (l : loc) (v : time.Timer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) v.initTimer' dq)
       (typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) v.initTimer' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Timer_access_store_initTimer (l : loc) (v : time.Timer.t) (initTimer' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) v.initTimer' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) initTimer' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with initTimer' := initTimer' } : time.Timer.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with initTimer' := initTimer' } : time.Timer.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Timer
@@ -111,9 +108,8 @@ end Timer
 namespace Ticker
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -131,68 +127,67 @@ end Ticker
 namespace Time
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
 instance Time_typed_pointsto :
     TypedPointsto (GF := GF) time.Time.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref time.Time.t go!"wall" l) v.wall' dq ∗
-    typed_pointsto (struct_field_ref time.Time.t go!"ext" l) v.ext' dq ∗
-    typed_pointsto (struct_field_ref time.Time.t go!"loc" l) v.loc' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "wall" ∷ typed_pointsto (struct_field_ref time.Time.t go!"wall" l) v.wall' dq ∗
+    "ext" ∷ typed_pointsto (struct_field_ref time.Time.t go!"ext" l) v.ext' dq ∗
+    "loc" ∷ typed_pointsto (struct_field_ref time.Time.t go!"loc" l) v.loc' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Time_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.Time.t time.«Timeⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) time.Time.t time.«Timeⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Time_access_load_wall (l : loc) (v : time.Time.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"wall" l) v.wall' dq)
       (typed_pointsto (struct_field_ref time.Time.t go!"wall" l) v.wall' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Time_access_store_wall (l : loc) (v : time.Time.t) (wall' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"wall" l) v.wall' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Time.t go!"wall" l) wall' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wall' := wall' } : time.Time.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wall' := wall' } : time.Time.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Time_access_load_ext (l : loc) (v : time.Time.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"ext" l) v.ext' dq)
       (typed_pointsto (struct_field_ref time.Time.t go!"ext" l) v.ext' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Time_access_store_ext (l : loc) (v : time.Time.t) (ext' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"ext" l) v.ext' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Time.t go!"ext" l) ext' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ext' := ext' } : time.Time.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ext' := ext' } : time.Time.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Time_access_load_loc (l : loc) (v : time.Time.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"loc" l) v.loc' dq)
       (typed_pointsto (struct_field_ref time.Time.t go!"loc" l) v.loc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Time_access_store_loc (l : loc) (v : time.Time.t) (loc' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"loc" l) v.loc' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Time.t go!"loc" l) loc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with loc' := loc' } : time.Time.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with loc' := loc' } : time.Time.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Time
@@ -200,9 +195,8 @@ end Time
 namespace Month
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -220,9 +214,8 @@ end Month
 namespace Weekday
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -240,9 +233,8 @@ end Weekday
 namespace absSeconds
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -260,9 +252,8 @@ end absSeconds
 namespace absDays
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -280,9 +271,8 @@ end absDays
 namespace absCentury
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -300,9 +290,8 @@ end absCentury
 namespace absCyear
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -320,9 +309,8 @@ end absCyear
 namespace absYday
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -340,9 +328,8 @@ end absYday
 namespace absMonth
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -360,9 +347,8 @@ end absMonth
 namespace absLeap
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -380,9 +366,8 @@ end absLeap
 namespace absJanFeb
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -400,9 +385,8 @@ end absJanFeb
 namespace Location
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -420,9 +404,8 @@ end Location
 namespace zone
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -440,9 +423,8 @@ end zone
 namespace zoneTrans
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -460,9 +442,8 @@ end zoneTrans
 namespace ruleKind
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -480,9 +461,8 @@ end ruleKind
 namespace rule
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -500,9 +480,8 @@ end rule
 namespace fileSizeError
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -520,9 +499,8 @@ end fileSizeError
 namespace dataIO
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 

@@ -130,7 +130,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Generator
 
-def Generator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Generator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"prefix" go.uint64),
 (go.field_decl.FieldDecl go!"suffix" go.uint64)]
 
@@ -141,7 +141,7 @@ instance equals_unfold_Generator [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Generator'fds Generator'fds_unsealed :=
   ⟨by unfold Generator'fds; rfl⟩
 
-def «Generatorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Generatorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Generator'fds)
 
 class Generator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

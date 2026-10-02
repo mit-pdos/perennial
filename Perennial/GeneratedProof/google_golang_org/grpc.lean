@@ -9,16 +9,15 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace google_golang_org.grpc
 
 namespace BackoffConfig
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -36,9 +35,8 @@ end BackoffConfig
 namespace ConnectParams
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -56,9 +54,8 @@ end ConnectParams
 namespace ccBalancerWrapper
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -76,9 +73,8 @@ end ccBalancerWrapper
 namespace acBalancerWrapper
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -96,9 +92,8 @@ end acBalancerWrapper
 namespace healthData
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -116,9 +111,8 @@ end healthData
 namespace refCountedProducer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -136,9 +130,8 @@ end refCountedProducer
 namespace defaultConfigSelector
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -156,9 +149,8 @@ end defaultConfigSelector
 namespace idler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -176,9 +168,8 @@ end idler
 namespace connectivityStateManager
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -196,9 +187,8 @@ end connectivityStateManager
 namespace ClientConnInterface
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -216,9 +206,8 @@ end ClientConnInterface
 namespace ClientConn
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -236,9 +225,8 @@ end ClientConn
 namespace addrConn
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -256,9 +244,8 @@ end addrConn
 namespace securityLevelKey
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -276,9 +263,8 @@ end securityLevelKey
 namespace retryThrottler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -296,9 +282,8 @@ end retryThrottler
 namespace baseCodec
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -316,9 +301,8 @@ end baseCodec
 namespace codecV0Bridge
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -336,9 +320,8 @@ end codecV0Bridge
 namespace codecV1Bridge
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -356,9 +339,8 @@ end codecV1Bridge
 namespace Codec
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -376,9 +358,8 @@ end Codec
 namespace dialOptions
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -396,9 +377,8 @@ end dialOptions
 namespace DialOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -416,9 +396,8 @@ end DialOption
 namespace perTargetDialOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -436,9 +415,8 @@ end perTargetDialOption
 namespace EmptyDialOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -456,9 +434,8 @@ end EmptyDialOption
 namespace disableGlobalDialOptions
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -476,9 +453,8 @@ end disableGlobalDialOptions
 namespace funcDialOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -496,9 +472,8 @@ end funcDialOption
 namespace joinDialOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -516,9 +491,8 @@ end joinDialOption
 namespace MaxHeaderListSizeDialOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -536,9 +510,8 @@ end MaxHeaderListSizeDialOption
 namespace UnaryInvoker
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -556,9 +529,8 @@ end UnaryInvoker
 namespace UnaryClientInterceptor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -576,9 +548,8 @@ end UnaryClientInterceptor
 namespace Streamer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -596,9 +567,8 @@ end Streamer
 namespace StreamClientInterceptor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -616,9 +586,8 @@ end StreamClientInterceptor
 namespace UnaryServerInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -636,9 +605,8 @@ end UnaryServerInfo
 namespace UnaryHandler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -656,9 +624,8 @@ end UnaryHandler
 namespace UnaryServerInterceptor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -676,9 +643,8 @@ end UnaryServerInterceptor
 namespace StreamServerInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -696,9 +662,8 @@ end StreamServerInfo
 namespace StreamServerInterceptor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -716,9 +681,8 @@ end StreamServerInterceptor
 namespace pickerGeneration
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -736,9 +700,8 @@ end pickerGeneration
 namespace pickerWrapper
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -756,9 +719,8 @@ end pickerWrapper
 namespace pick
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -776,9 +738,8 @@ end pick
 namespace dropError
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -796,9 +757,8 @@ end dropError
 namespace PreparedMsg
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -816,9 +776,8 @@ end PreparedMsg
 namespace ccResolverWrapper
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -836,9 +795,8 @@ end ccResolverWrapper
 namespace Compressor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -856,9 +814,8 @@ end Compressor
 namespace gzipCompressor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -876,9 +833,8 @@ end gzipCompressor
 namespace Decompressor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -896,9 +852,8 @@ end Decompressor
 namespace gzipDecompressor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -916,9 +871,8 @@ end gzipDecompressor
 namespace callInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -936,9 +890,8 @@ end callInfo
 namespace CallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -956,9 +909,8 @@ end CallOption
 namespace EmptyCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -976,9 +928,8 @@ end EmptyCallOption
 namespace StaticMethodCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -996,9 +947,8 @@ end StaticMethodCallOption
 namespace HeaderCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1016,9 +966,8 @@ end HeaderCallOption
 namespace TrailerCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1036,9 +985,8 @@ end TrailerCallOption
 namespace PeerCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1056,9 +1004,8 @@ end PeerCallOption
 namespace FailFastCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1076,9 +1023,8 @@ end FailFastCallOption
 namespace OnFinishCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1096,9 +1042,8 @@ end OnFinishCallOption
 namespace MaxRecvMsgSizeCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1116,9 +1061,8 @@ end MaxRecvMsgSizeCallOption
 namespace AuthorityOverrideCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1136,9 +1080,8 @@ end AuthorityOverrideCallOption
 namespace MaxSendMsgSizeCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1156,9 +1099,8 @@ end MaxSendMsgSizeCallOption
 namespace PerRPCCredsCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1176,9 +1118,8 @@ end PerRPCCredsCallOption
 namespace CompressorCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1196,9 +1137,8 @@ end CompressorCallOption
 namespace acceptCompressorsCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1216,9 +1156,8 @@ end acceptCompressorsCallOption
 namespace ContentSubtypeCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1236,9 +1175,8 @@ end ContentSubtypeCallOption
 namespace ForceCodecCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1256,9 +1194,8 @@ end ForceCodecCallOption
 namespace ForceCodecV2CallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1276,9 +1213,8 @@ end ForceCodecV2CallOption
 namespace CustomCodecCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1296,9 +1232,8 @@ end CustomCodecCallOption
 namespace MaxRetryRPCBufferSizeCallOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1316,9 +1251,8 @@ end MaxRetryRPCBufferSizeCallOption
 namespace payloadFormat
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1336,9 +1270,8 @@ end payloadFormat
 namespace streamReader
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1356,9 +1289,8 @@ end streamReader
 namespace noCopy
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1376,9 +1308,8 @@ end noCopy
 namespace parser
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1396,9 +1327,8 @@ end parser
 namespace payloadInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1416,9 +1346,8 @@ end payloadInfo
 namespace recvCompressor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1436,9 +1365,8 @@ end recvCompressor
 namespace rpcInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1456,9 +1384,8 @@ end rpcInfo
 namespace compressorInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1476,9 +1403,8 @@ end compressorInfo
 namespace rpcInfoContextKey
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1496,9 +1422,8 @@ end rpcInfoContextKey
 namespace MethodHandler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1516,9 +1441,8 @@ end MethodHandler
 namespace MethodDesc
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1536,9 +1460,8 @@ end MethodDesc
 namespace ServiceDesc
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1556,9 +1479,8 @@ end ServiceDesc
 namespace serviceInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1576,9 +1498,8 @@ end serviceInfo
 namespace Server
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1596,9 +1517,8 @@ end Server
 namespace serverOptions
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1616,9 +1536,8 @@ end serverOptions
 namespace ServerOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1636,9 +1555,8 @@ end ServerOption
 namespace EmptyServerOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1656,9 +1574,8 @@ end EmptyServerOption
 namespace funcServerOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1676,9 +1593,8 @@ end funcServerOption
 namespace joinServerOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1696,9 +1612,8 @@ end joinServerOption
 namespace MaxHeaderListSizeServerOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1716,9 +1631,8 @@ end MaxHeaderListSizeServerOption
 namespace ServiceRegistrar
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1736,9 +1650,8 @@ end ServiceRegistrar
 namespace MethodInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1756,9 +1669,8 @@ end MethodInfo
 namespace ServiceInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1776,9 +1688,8 @@ end ServiceInfo
 namespace listenSocket
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1796,9 +1707,8 @@ end listenSocket
 namespace streamKey
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1816,9 +1726,8 @@ end streamKey
 namespace ServerTransportStream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1836,9 +1745,8 @@ end ServerTransportStream
 namespace serverKey
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1856,9 +1764,8 @@ end serverKey
 namespace atomicSemaphore
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1876,9 +1783,8 @@ end atomicSemaphore
 namespace ServiceConfig
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1896,9 +1802,8 @@ end ServiceConfig
 namespace healthCheckConfig
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1916,9 +1821,8 @@ end healthCheckConfig
 namespace jsonRetryPolicy
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1936,9 +1840,8 @@ end jsonRetryPolicy
 namespace retryThrottlingPolicy
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1956,9 +1859,8 @@ end retryThrottlingPolicy
 namespace jsonName
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1976,9 +1878,8 @@ end jsonName
 namespace jsonMC
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1996,9 +1897,8 @@ end jsonMC
 namespace jsonSC
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2016,9 +1916,8 @@ end jsonSC
 namespace StreamHandler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2036,9 +1935,8 @@ end StreamHandler
 namespace StreamDesc
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2056,9 +1954,8 @@ end StreamDesc
 namespace Stream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2076,9 +1973,8 @@ end Stream
 namespace ClientStream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2096,9 +1992,8 @@ end ClientStream
 namespace clientStream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2116,9 +2011,8 @@ end clientStream
 namespace replayOp
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2136,9 +2030,8 @@ end replayOp
 namespace csAttempt
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2156,9 +2049,8 @@ end csAttempt
 namespace addrConnStream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2176,9 +2068,8 @@ end addrConnStream
 namespace ServerStream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2196,9 +2087,8 @@ end ServerStream
 namespace serverStream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2216,9 +2106,8 @@ end serverStream
 namespace ServerStreamingClient
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2226,7 +2115,7 @@ instance ServerStreamingClient_typed_pointsto {Res' : Type} [TypedPointsto (GF :
     TypedPointsto (GF := GF) (google_golang_org.grpc.ServerStreamingClient.t Res') :=
   sorry -- Rocq: Admitted
 
-instance ServerStreamingClient_into_val_typed (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped Res' Res] :
+instance ServerStreamingClient_into_val_typed (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
     IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.ServerStreamingClient.t Res') (google_golang_org.grpc.«ServerStreamingClientⁱᵐᵖˡ» Res) :=
   sorry -- Rocq: Admitted
 
@@ -2236,9 +2125,8 @@ end ServerStreamingClient
 namespace ServerStreamingServer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2246,7 +2134,7 @@ instance ServerStreamingServer_typed_pointsto {Res' : Type} [TypedPointsto (GF :
     TypedPointsto (GF := GF) (google_golang_org.grpc.ServerStreamingServer.t Res') :=
   sorry -- Rocq: Admitted
 
-instance ServerStreamingServer_into_val_typed (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped Res' Res] :
+instance ServerStreamingServer_into_val_typed (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
     IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.ServerStreamingServer.t Res') (google_golang_org.grpc.«ServerStreamingServerⁱᵐᵖˡ» Res) :=
   sorry -- Rocq: Admitted
 
@@ -2256,9 +2144,8 @@ end ServerStreamingServer
 namespace ClientStreamingClient
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2266,7 +2153,7 @@ instance ClientStreamingClient_typed_pointsto {Req' : Type} [TypedPointsto (GF :
     TypedPointsto (GF := GF) (google_golang_org.grpc.ClientStreamingClient.t Req' Res') :=
   sorry -- Rocq: Admitted
 
-instance ClientStreamingClient_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped Res' Res] :
+instance ClientStreamingClient_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
     IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.ClientStreamingClient.t Req' Res') (google_golang_org.grpc.«ClientStreamingClientⁱᵐᵖˡ» Req Res) :=
   sorry -- Rocq: Admitted
 
@@ -2276,9 +2163,8 @@ end ClientStreamingClient
 namespace ClientStreamingServer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2286,7 +2172,7 @@ instance ClientStreamingServer_typed_pointsto {Req' : Type} [TypedPointsto (GF :
     TypedPointsto (GF := GF) (google_golang_org.grpc.ClientStreamingServer.t Req' Res') :=
   sorry -- Rocq: Admitted
 
-instance ClientStreamingServer_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped Res' Res] :
+instance ClientStreamingServer_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
     IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.ClientStreamingServer.t Req' Res') (google_golang_org.grpc.«ClientStreamingServerⁱᵐᵖˡ» Req Res) :=
   sorry -- Rocq: Admitted
 
@@ -2296,9 +2182,8 @@ end ClientStreamingServer
 namespace BidiStreamingClient
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2306,7 +2191,7 @@ instance BidiStreamingClient_typed_pointsto {Req' : Type} [TypedPointsto (GF := 
     TypedPointsto (GF := GF) (google_golang_org.grpc.BidiStreamingClient.t Req' Res') :=
   sorry -- Rocq: Admitted
 
-instance BidiStreamingClient_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped Res' Res] :
+instance BidiStreamingClient_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
     IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.BidiStreamingClient.t Req' Res') (google_golang_org.grpc.«BidiStreamingClientⁱᵐᵖˡ» Req Res) :=
   sorry -- Rocq: Admitted
 
@@ -2316,9 +2201,8 @@ end BidiStreamingClient
 namespace BidiStreamingServer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2326,7 +2210,7 @@ instance BidiStreamingServer_typed_pointsto {Req' : Type} [TypedPointsto (GF := 
     TypedPointsto (GF := GF) (google_golang_org.grpc.BidiStreamingServer.t Req' Res') :=
   sorry -- Rocq: Admitted
 
-instance BidiStreamingServer_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped Res' Res] :
+instance BidiStreamingServer_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
     IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.BidiStreamingServer.t Req' Res') (google_golang_org.grpc.«BidiStreamingServerⁱᵐᵖˡ» Req Res) :=
   sorry -- Rocq: Admitted
 
@@ -2336,9 +2220,8 @@ end BidiStreamingServer
 namespace GenericClientStream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2346,7 +2229,7 @@ instance GenericClientStream_typed_pointsto {Req' : Type} [TypedPointsto (GF := 
     TypedPointsto (GF := GF) (google_golang_org.grpc.GenericClientStream.t Req' Res') :=
   sorry -- Rocq: Admitted
 
-instance GenericClientStream_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped Res' Res] :
+instance GenericClientStream_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
     IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericClientStream.t Req' Res') (google_golang_org.grpc.«GenericClientStreamⁱᵐᵖˡ» Req Res) :=
   sorry -- Rocq: Admitted
 
@@ -2356,9 +2239,8 @@ end GenericClientStream
 namespace GenericServerStream
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2366,7 +2248,7 @@ instance GenericServerStream_typed_pointsto {Req' : Type} [TypedPointsto (GF := 
     TypedPointsto (GF := GF) (google_golang_org.grpc.GenericServerStream.t Req' Res') :=
   sorry -- Rocq: Admitted
 
-instance GenericServerStream_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped Res' Res] :
+instance GenericServerStream_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
     IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericServerStream.t Req' Res') (google_golang_org.grpc.«GenericServerStreamⁱᵐᵖˡ» Req Res) :=
   sorry -- Rocq: Admitted
 
@@ -2376,9 +2258,8 @@ end GenericServerStream
 namespace traceEventLog
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2396,9 +2277,8 @@ end traceEventLog
 namespace traceLog
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2416,9 +2296,8 @@ end traceLog
 namespace traceInfo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2436,9 +2315,8 @@ end traceInfo
 namespace firstLine
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2456,9 +2334,8 @@ end firstLine
 namespace payload
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2476,9 +2353,8 @@ end payload
 namespace fmtStringer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -2496,9 +2372,8 @@ end fmtStringer
 namespace stringer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 

@@ -1055,7 +1055,12 @@ func (d TypeDecl) LeanDecl() string {
 	for _, t := range d.TypeParams {
 		typeParams += fmt.Sprintf(" (%s : go.type)", LeanIdent(t))
 	}
-	return fmt.Sprintf("def %s %s%s : go.type :=\n  %s", LeanIdent(d.Name), leanDeclParams, typeParams,
+	attr := ""
+	if strings.HasSuffix(d.Name, "ⁱᵐᵖˡ") {
+		// unfolded by the struct tactics of the theory
+		attr = "@[reducible] "
+	}
+	return fmt.Sprintf("%sdef %s %s%s : go.type :=\n  %s", attr, LeanIdent(d.Name), leanDeclParams, typeParams,
 		indent(2, d.Body.Lean(LeanTerm)))
 }
 

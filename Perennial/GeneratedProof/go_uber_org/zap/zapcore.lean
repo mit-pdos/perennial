@@ -9,16 +9,15 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace go_uber_org.zap.zapcore
 
 namespace BufferedWriteSyncer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -36,9 +35,8 @@ end BufferedWriteSyncer
 namespace Clock
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -56,9 +54,8 @@ end Clock
 namespace systemClock
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -76,9 +73,8 @@ end systemClock
 namespace consoleEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -96,9 +92,8 @@ end consoleEncoder
 namespace Core
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -116,9 +111,8 @@ end Core
 namespace nopCore
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -136,9 +130,8 @@ end nopCore
 namespace ioCore
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -156,9 +149,8 @@ end ioCore
 namespace LevelEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -176,9 +168,8 @@ end LevelEncoder
 namespace TimeEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -196,9 +187,8 @@ end TimeEncoder
 namespace DurationEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -216,9 +206,8 @@ end DurationEncoder
 namespace CallerEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -236,9 +225,8 @@ end CallerEncoder
 namespace NameEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -256,9 +244,8 @@ end NameEncoder
 namespace EncoderConfig
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -276,9 +263,8 @@ end EncoderConfig
 namespace ObjectEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -296,9 +282,8 @@ end ObjectEncoder
 namespace ArrayEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -316,9 +301,8 @@ end ArrayEncoder
 namespace PrimitiveArrayEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -336,9 +320,8 @@ end PrimitiveArrayEncoder
 namespace Encoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -356,9 +339,8 @@ end Encoder
 namespace EntryCaller
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -376,9 +358,8 @@ end EntryCaller
 namespace Entry
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -396,9 +377,8 @@ end Entry
 namespace CheckWriteHook
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -416,9 +396,8 @@ end CheckWriteHook
 namespace CheckWriteAction
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -436,9 +415,8 @@ end CheckWriteAction
 namespace CheckedEntry
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -456,9 +434,8 @@ end CheckedEntry
 namespace errorGroup
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -476,9 +453,8 @@ end errorGroup
 namespace errArray
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -496,9 +472,8 @@ end errArray
 namespace errArrayElem
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -516,98 +491,97 @@ end errArrayElem
 namespace Field
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance Field_typed_pointsto :
     TypedPointsto (GF := GF) go_uber_org.zap.zapcore.Field.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) v.Key' dq ∗
-    typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) v.Type' dq ∗
-    typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) v.Integer' dq ∗
-    typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) v.String' dq ∗
-    typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) v.Interface' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "Key" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) v.Key' dq ∗
+    "Type'" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) v.Type' dq ∗
+    "Integer" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) v.Integer' dq ∗
+    "String" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) v.String' dq ∗
+    "Interface" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) v.Interface' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Field_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Field.t go_uber_org.zap.zapcore.«Fieldⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Field.t go_uber_org.zap.zapcore.«Fieldⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Field_access_load_Key (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) v.Key' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) v.Key' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Field_access_store_Key (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (Key' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) v.Key' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) Key' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Key' := Key' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Key' := Key' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Field_access_load_Type (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) v.Type' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) v.Type' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Field_access_store_Type (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (Type' : go_uber_org.zap.zapcore.FieldType.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) v.Type' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) Type' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Type' := Type' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Type' := Type' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Field_access_load_Integer (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) v.Integer' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) v.Integer' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Field_access_store_Integer (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (Integer' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) v.Integer' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) Integer' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Integer' := Integer' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Integer' := Integer' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Field_access_load_String (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) v.String' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) v.String' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Field_access_store_String (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (String' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) v.String' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) String' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with String' := String' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with String' := String' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Field_access_load_Interface (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) v.Interface' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) v.Interface' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Field_access_store_Interface (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (Interface' : interface.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) v.Interface' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) Interface' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Interface' := Interface' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Interface' := Interface' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Field
@@ -615,9 +589,8 @@ end Field
 namespace hooked
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -635,9 +608,8 @@ end hooked
 namespace levelFilterCore
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -655,9 +627,8 @@ end levelFilterCore
 namespace jsonEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -675,9 +646,8 @@ end jsonEncoder
 namespace lazyWithCore
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -695,9 +665,8 @@ end lazyWithCore
 namespace Level
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -715,9 +684,8 @@ end Level
 namespace leveledEnabler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -735,9 +703,8 @@ end leveledEnabler
 namespace LevelEnabler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -755,9 +722,8 @@ end LevelEnabler
 namespace ObjectMarshaler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -775,9 +741,8 @@ end ObjectMarshaler
 namespace ObjectMarshalerFunc
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -795,9 +760,8 @@ end ObjectMarshalerFunc
 namespace ArrayMarshaler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -815,9 +779,8 @@ end ArrayMarshaler
 namespace ArrayMarshalerFunc
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -835,9 +798,8 @@ end ArrayMarshalerFunc
 namespace MapObjectEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -855,9 +817,8 @@ end MapObjectEncoder
 namespace sliceArrayEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -875,9 +836,8 @@ end sliceArrayEncoder
 namespace ReflectedEncoder
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -895,9 +855,8 @@ end ReflectedEncoder
 namespace counter
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -915,9 +874,8 @@ end counter
 namespace counters
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -935,9 +893,8 @@ end counters
 namespace SamplingDecision
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -955,9 +912,8 @@ end SamplingDecision
 namespace optionFunc
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -975,9 +931,8 @@ end optionFunc
 namespace SamplerOption
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -995,9 +950,8 @@ end SamplerOption
 namespace sampler
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -1015,9 +969,8 @@ end sampler
 namespace multiCore
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -1035,9 +988,8 @@ end multiCore
 namespace WriteSyncer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -1055,9 +1007,8 @@ end WriteSyncer
 namespace lockedWriteSyncer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -1075,9 +1026,8 @@ end lockedWriteSyncer
 namespace writerWrapper
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
@@ -1095,9 +1045,8 @@ end writerWrapper
 namespace multiWriteSyncer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 

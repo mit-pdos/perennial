@@ -259,7 +259,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Worker
 
-def Worker'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Worker'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"queue" (go.type.ChannelType go.chan_dir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"steal" (go.type.ChannelType go.chan_dir.sendrecv (go.type.ChannelType go.chan_dir.sendrecv (go.type.PointerType go.string))))]
 
@@ -270,7 +270,7 @@ instance equals_unfold_Worker [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Worker'fds Worker'fds_unsealed :=
   ⟨by unfold Worker'fds; rfl⟩
 
-def «Workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Worker'fds)
 
 class Worker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -303,7 +303,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end shared
 
-def shared'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def shared'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"remaining" (go.type.PointerType _root_.Perennial.sync.atomic.Int64)),
 (go.field_decl.FieldDecl go!"total" (go.type.PointerType _root_.Perennial.sync.atomic.Int64)),
 (go.field_decl.FieldDecl go!"done" (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))]
@@ -315,7 +315,7 @@ instance equals_unfold_shared [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold shared'fds shared'fds_unsealed :=
   ⟨by unfold shared'fds; rfl⟩
 
-def «sharedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «sharedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType shared'fds)
 
 class shared_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

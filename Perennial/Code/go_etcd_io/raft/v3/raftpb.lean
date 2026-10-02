@@ -354,7 +354,7 @@ namespace ConfChangeI
 abbrev t [ffi_syntax] : Type := interface.t
 end ConfChangeI
 
-def «ConfChangeIⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConfChangeIⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"AsV1" (go.signature.Signature [] false [ConfChange, go.bool])), (go.interface_elem.MethodElem go!"AsV2" (go.signature.Signature [] false [ConfChangeV2]))])
 
 class ConfChangeI_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -366,7 +366,7 @@ namespace EntryType
 abbrev t [ffi_syntax] : Type := w32
 end EntryType
 
-def «EntryTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «EntryTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class EntryType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -378,7 +378,7 @@ namespace MessageType
 abbrev t [ffi_syntax] : Type := w32
 end MessageType
 
-def «MessageTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «MessageTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class MessageType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -390,7 +390,7 @@ namespace ConfChangeTransition
 abbrev t [ffi_syntax] : Type := w32
 end ConfChangeTransition
 
-def «ConfChangeTransitionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConfChangeTransitionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class ConfChangeTransition_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -402,7 +402,7 @@ namespace ConfChangeType
 abbrev t [ffi_syntax] : Type := w32
 end ConfChangeType
 
-def «ConfChangeTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConfChangeTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class ConfChangeType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -422,7 +422,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Entry
 
-def Entry'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Entry'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Term" go.uint64),
 (go.field_decl.FieldDecl go!"Index" go.uint64),
 (go.field_decl.FieldDecl go!"Type" EntryType),
@@ -435,7 +435,7 @@ instance equals_unfold_Entry [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Entry'fds Entry'fds_unsealed :=
   ⟨by unfold Entry'fds; rfl⟩
 
-def «Entryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Entryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Entry'fds)
 
 class Entry_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -474,7 +474,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end ConfState
 
-def ConfState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ConfState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Voters" (go.type.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"Learners" (go.type.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"VotersOutgoing" (go.type.SliceType go.uint64)),
@@ -488,7 +488,7 @@ instance equals_unfold_ConfState [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ConfState'fds ConfState'fds_unsealed :=
   ⟨by unfold ConfState'fds; rfl⟩
 
-def «ConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ConfState'fds)
 
 class ConfState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -529,7 +529,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end SnapshotMetadata
 
-def SnapshotMetadata'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SnapshotMetadata'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ConfState" ConfState),
 (go.field_decl.FieldDecl go!"Index" go.uint64),
 (go.field_decl.FieldDecl go!"Term" go.uint64)]
@@ -541,7 +541,7 @@ instance equals_unfold_SnapshotMetadata [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold SnapshotMetadata'fds SnapshotMetadata'fds_unsealed :=
   ⟨by unfold SnapshotMetadata'fds; rfl⟩
 
-def «SnapshotMetadataⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SnapshotMetadataⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType SnapshotMetadata'fds)
 
 class SnapshotMetadata_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -573,7 +573,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Snapshot
 
-def Snapshot'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Snapshot'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Data" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"Metadata" SnapshotMetadata)]
 
@@ -584,7 +584,7 @@ instance equals_unfold_Snapshot [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Snapshot'fds Snapshot'fds_unsealed :=
   ⟨by unfold Snapshot'fds; rfl⟩
 
-def «Snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Snapshot'fds)
 
 class Snapshot_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -624,7 +624,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Message
 
-def Message'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Message'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Type" MessageType),
 (go.field_decl.FieldDecl go!"To" go.uint64),
 (go.field_decl.FieldDecl go!"From" go.uint64),
@@ -647,7 +647,7 @@ instance equals_unfold_Message [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Message'fds Message'fds_unsealed :=
   ⟨by unfold Message'fds; rfl⟩
 
-def «Messageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Messageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Message'fds)
 
 class Message_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -724,7 +724,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end HardState
 
-def HardState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def HardState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Term" go.uint64),
 (go.field_decl.FieldDecl go!"Vote" go.uint64),
 (go.field_decl.FieldDecl go!"Commit" go.uint64)]
@@ -736,7 +736,7 @@ instance equals_unfold_HardState [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold HardState'fds HardState'fds_unsealed :=
   ⟨by unfold HardState'fds; rfl⟩
 
-def «HardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «HardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType HardState'fds)
 
 class HardState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -770,7 +770,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end ConfChange
 
-def ConfChange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ConfChange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Type" ConfChangeType),
 (go.field_decl.FieldDecl go!"NodeID" go.uint64),
 (go.field_decl.FieldDecl go!"Context" (go.type.SliceType go.byte)),
@@ -783,7 +783,7 @@ instance equals_unfold_ConfChange [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ConfChange'fds ConfChange'fds_unsealed :=
   ⟨by unfold ConfChange'fds; rfl⟩
 
-def «ConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ConfChange'fds)
 
 class ConfChange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -835,7 +835,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end ConfChangeV2
 
-def ConfChangeV2'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ConfChangeV2'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Transition" ConfChangeTransition),
 (go.field_decl.FieldDecl go!"Changes" (go.type.SliceType ConfChangeSingle)),
 (go.field_decl.FieldDecl go!"Context" (go.type.SliceType go.byte))]
@@ -847,7 +847,7 @@ instance equals_unfold_ConfChangeV2 [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ConfChangeV2'fds ConfChangeV2'fds_unsealed :=
   ⟨by unfold ConfChangeV2'fds; rfl⟩
 
-def «ConfChangeV2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConfChangeV2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ConfChangeV2'fds)
 
 class ConfChangeV2_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

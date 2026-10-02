@@ -589,7 +589,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Enc
 
-def Enc'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Enc'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" (go.type.PointerType go.uint64))]
 
@@ -600,7 +600,7 @@ instance equals_unfold_Enc [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Enc'fds Enc'fds_unsealed :=
   ⟨by unfold Enc'fds; rfl⟩
 
-def «Encⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Encⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Enc'fds)
 
 class Enc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -628,7 +628,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Dec
 
-def Dec'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Dec'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" (go.type.PointerType go.uint64))]
 
@@ -639,7 +639,7 @@ instance equals_unfold_Dec [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Dec'fds Dec'fds_unsealed :=
   ⟨by unfold Dec'fds; rfl⟩
 
-def «Decⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Decⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Dec'fds)
 
 class Dec_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

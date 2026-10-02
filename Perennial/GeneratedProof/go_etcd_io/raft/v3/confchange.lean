@@ -10,27 +10,26 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace go_etcd_io.raft.v3.confchange
 
 namespace Changer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.confchange.Assumptions]
 
 instance Changer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.confchange.Changer.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.confchange.Changer.t go!"Tracker" l) v.Tracker' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.confchange.Changer.t go!"LastIndex" l) v.LastIndex' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "Tracker" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.confchange.Changer.t go!"Tracker" l) v.Tracker' dq ∗
+    "LastIndex" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.confchange.Changer.t go!"LastIndex" l) v.LastIndex' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance Changer_into_val_typed :

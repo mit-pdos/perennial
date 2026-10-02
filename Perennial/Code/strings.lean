@@ -372,7 +372,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Builder
 
-def Builder'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Builder'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"addr" (go.type.PointerType Builder)),
 (go.field_decl.FieldDecl go!"buf" (go.type.SliceType go.byte))]
 
@@ -383,7 +383,7 @@ instance equals_unfold_Builder [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Builder'fds Builder'fds_unsealed :=
   ⟨by unfold Builder'fds; rfl⟩
 
-def «Builderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Builderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Builder'fds)
 
 class Builder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

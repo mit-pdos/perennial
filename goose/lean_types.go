@@ -158,7 +158,7 @@ func (ctx *Ctx) leanFdsDecl(spec *ast.TypeSpec, ty glang.StructType) string {
 	fds := glang.LeanQuote(name + "'fds")
 	fdsU := glang.LeanQuote(name + "'fds_unsealed")
 	w := new(strings.Builder)
-	fmt.Fprintf(w, "def %s [ffi_syntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
+	fmt.Fprintf(w, "@[reducible] def %s [ffi_syntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
 		ty.LeanFields())
 	fmt.Fprintf(w, "\n@[irreducible] def %s [ffi_syntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n",
 		fds, binders, leanApplied(fdsU, params))

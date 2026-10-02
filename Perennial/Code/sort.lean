@@ -464,7 +464,7 @@ namespace sortedHint
 abbrev t [ffi_syntax] : Type := w64
 end sortedHint
 
-def «sortedHintⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «sortedHintⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class sortedHint_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -476,7 +476,7 @@ namespace xorshift
 abbrev t [ffi_syntax] : Type := w64
 end xorshift
 
-def «xorshiftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «xorshiftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 class xorshift_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

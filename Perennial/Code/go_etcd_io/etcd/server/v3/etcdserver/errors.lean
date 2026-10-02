@@ -302,7 +302,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end DiscoveryError
 
-def DiscoveryError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def DiscoveryError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Op" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
@@ -313,7 +313,7 @@ instance equals_unfold_DiscoveryError [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold DiscoveryError'fds DiscoveryError'fds_unsealed :=
   ⟨by unfold DiscoveryError'fds; rfl⟩
 
-def «DiscoveryErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «DiscoveryErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType DiscoveryError'fds)
 
 class DiscoveryError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

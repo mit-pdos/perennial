@@ -11,60 +11,59 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 
 namespace Worker
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Assumptions]
 
 instance Worker_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"queue" l) v.queue' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"steal" l) v.steal' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "queue" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"queue" l) v.queue' dq ∗
+    "steal" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"steal" l) v.steal' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Worker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.«Workerⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.«Workerⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Worker_access_load_queue (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"queue" l) v.queue' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"queue" l) v.queue' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Worker_access_store_queue (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (queue' : chan.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"queue" l) v.queue' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"queue" l) queue' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with queue' := queue' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with queue' := queue' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Worker_access_load_steal (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"steal" l) v.steal' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"steal" l) v.steal' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Worker_access_store_steal (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (steal' : chan.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"steal" l) v.steal' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t go!"steal" l) steal' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with steal' := steal' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with steal' := steal' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Worker
@@ -72,68 +71,67 @@ end Worker
 namespace shared
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Assumptions]
 
 instance shared_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"remaining" l) v.remaining' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"total" l) v.total' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"done" l) v.done' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "remaining" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"remaining" l) v.remaining' dq ∗
+    "total" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"total" l) v.total' dq ∗
+    "done" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"done" l) v.done' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance shared_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.«sharedⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.«sharedⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance shared_access_load_remaining (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"remaining" l) v.remaining' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"remaining" l) v.remaining' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance shared_access_store_remaining (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (remaining' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"remaining" l) v.remaining' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"remaining" l) remaining' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with remaining' := remaining' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with remaining' := remaining' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance shared_access_load_total (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"total" l) v.total' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"total" l) v.total' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance shared_access_store_total (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (total' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"total" l) v.total' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"total" l) total' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with total' := total' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with total' := total' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance shared_access_load_done (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"done" l) v.done' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"done" l) v.done' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance shared_access_store_done (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (done' : chan.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"done" l) v.done' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t go!"done" l) done' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end shared

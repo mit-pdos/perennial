@@ -307,7 +307,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def⟩
 end Box
 
-def Box'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def Box'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" T)]
 
 @[irreducible] def Box'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
@@ -317,7 +317,7 @@ instance equals_unfold_Box [ffi_syntax] [GoGlobalContext] (T : go.type) :
     EqualsUnfold (Box'fds T) (Box'fds_unsealed T) :=
   ⟨by unfold Box'fds; rfl⟩
 
-def «Boxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «Boxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (Box'fds T))
 
 class Box_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -348,7 +348,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Container
 
-def Container'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def Container'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" T),
 (go.field_decl.FieldDecl go!"Y" (go.type.MapType go.int T)),
 (go.field_decl.FieldDecl go!"Z" (go.type.PointerType T)),
@@ -361,7 +361,7 @@ instance equals_unfold_Container [ffi_syntax] [GoGlobalContext] (T : go.type) :
     EqualsUnfold (Container'fds T) (Container'fds_unsealed T) :=
   ⟨by unfold Container'fds; rfl⟩
 
-def «Containerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «Containerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (Container'fds T))
 
 class Container_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -396,7 +396,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end UseContainer
 
-def UseContainer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def UseContainer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" (Container go.uint64))]
 
 @[irreducible] def UseContainer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -406,7 +406,7 @@ instance equals_unfold_UseContainer [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold UseContainer'fds UseContainer'fds_unsealed :=
   ⟨by unfold UseContainer'fds; rfl⟩
 
-def «UseContainerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «UseContainerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType UseContainer'fds)
 
 class UseContainer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -430,7 +430,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end OnlyIndirect
 
-def OnlyIndirect'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def OnlyIndirect'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" (go.type.SliceType T)),
 (go.field_decl.FieldDecl go!"Y" (go.type.PointerType T))]
 
@@ -441,7 +441,7 @@ instance equals_unfold_OnlyIndirect [ffi_syntax] [GoGlobalContext] (T : go.type)
     EqualsUnfold (OnlyIndirect'fds T) (OnlyIndirect'fds_unsealed T) :=
   ⟨by unfold OnlyIndirect'fds; rfl⟩
 
-def «OnlyIndirectⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «OnlyIndirectⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (OnlyIndirect'fds T))
 
 class OnlyIndirect_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -469,7 +469,7 @@ instance zero_val [ffi_syntax] {A B : Type} [ZeroVal A] [ZeroVal B] : ZeroVal (t
   ⟨t.mk zero_val_def zero_val_def⟩
 end MultiParam
 
-def MultiParam'fds_unsealed [ffi_syntax] [GoGlobalContext] (A B : go.type) : List go.field_decl :=
+@[reducible] def MultiParam'fds_unsealed [ffi_syntax] [GoGlobalContext] (A B : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Y" B),
 (go.field_decl.FieldDecl go!"X" A)]
 
@@ -480,7 +480,7 @@ instance equals_unfold_MultiParam [ffi_syntax] [GoGlobalContext] (A B : go.type)
     EqualsUnfold (MultiParam'fds A B) (MultiParam'fds_unsealed A B) :=
   ⟨by unfold MultiParam'fds; rfl⟩
 
-def «MultiParamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) (B : go.type) : go.type :=
+@[reducible] def «MultiParamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) (B : go.type) : go.type :=
   (go.type.StructType (MultiParam'fds A B))
 
 class MultiParam_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -508,7 +508,7 @@ instance zero_val [ffi_syntax] {T C : Type} [ZeroVal T] [ZeroVal C] : ZeroVal (t
   ⟨t.mk zero_val_def zero_val_def⟩
 end TypeParamCollision
 
-def TypeParamCollision'fds_unsealed [ffi_syntax] [GoGlobalContext] (T C : go.type) : List go.field_decl :=
+@[reducible] def TypeParamCollision'fds_unsealed [ffi_syntax] [GoGlobalContext] (T C : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" T),
 (go.field_decl.FieldDecl go!"Y" C)]
 
@@ -519,7 +519,7 @@ instance equals_unfold_TypeParamCollision [ffi_syntax] [GoGlobalContext] (T C : 
     EqualsUnfold (TypeParamCollision'fds T C) (TypeParamCollision'fds_unsealed T C) :=
   ⟨by unfold TypeParamCollision'fds; rfl⟩
 
-def «TypeParamCollisionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) (C : go.type) : go.type :=
+@[reducible] def «TypeParamCollisionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) (C : go.type) : go.type :=
   (go.type.StructType (TypeParamCollision'fds T C))
 
 class TypeParamCollision_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -541,7 +541,7 @@ namespace nonStructGeneric
 abbrev t [ffi_syntax] (T : Type) : Type := slice.t
 end nonStructGeneric
 
-def «nonStructGenericⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «nonStructGenericⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.SliceType T)
 
 class nonStructGeneric_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -558,7 +558,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def⟩
 end useNonStructGeneric
 
-def useNonStructGeneric'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def useNonStructGeneric'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" (nonStructGeneric T))]
 
 @[irreducible] def useNonStructGeneric'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
@@ -568,7 +568,7 @@ instance equals_unfold_useNonStructGeneric [ffi_syntax] [GoGlobalContext] (T : g
     EqualsUnfold (useNonStructGeneric'fds T) (useNonStructGeneric'fds_unsealed T) :=
   ⟨by unfold useNonStructGeneric'fds; rfl⟩
 
-def «useNonStructGenericⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «useNonStructGenericⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (useNonStructGeneric'fds T))
 
 class useNonStructGeneric_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -1240,7 +1240,7 @@ namespace offerState
 abbrev t [ffi_syntax] : Type := w64
 end offerState
 
-def «offerStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «offerStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 class offerState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1261,7 +1261,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Channel
 
-def Channel'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def Channel'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"cap" go.int),
 (go.field_decl.FieldDecl go!"mu" (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)),
 (go.field_decl.FieldDecl go!"state" offerState),
@@ -1275,7 +1275,7 @@ instance equals_unfold_Channel [ffi_syntax] [GoGlobalContext] (T : go.type) :
     EqualsUnfold (Channel'fds T) (Channel'fds_unsealed T) :=
   ⟨by unfold Channel'fds; rfl⟩
 
-def «Channelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «Channelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (Channel'fds T))
 
 class Channel_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1329,7 +1329,7 @@ namespace SelectDir
 abbrev t [ffi_syntax] : Type := w64
 end SelectDir
 
-def «SelectDirⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SelectDirⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 class SelectDir_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

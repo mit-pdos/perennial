@@ -15,29 +15,28 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace go_etcd_io.raft.v3.quorum
 
 namespace tup
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.quorum.Assumptions]
 
 instance tup_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.quorum.tup.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "id" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' dq ∗
+    "idx" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' dq ∗
+    "ok" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' dq ∗
+    "bar" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance tup_into_val_typed :

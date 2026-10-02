@@ -1354,7 +1354,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end inflight
 
-def inflight'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def inflight'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"index" go.uint64),
 (go.field_decl.FieldDecl go!"bytes" go.uint64)]
 
@@ -1365,7 +1365,7 @@ instance equals_unfold_inflight [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold inflight'fds inflight'fds_unsealed :=
   ⟨by unfold inflight'fds; rfl⟩
 
-def «inflightⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «inflightⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType inflight'fds)
 
 class inflight_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1397,7 +1397,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Inflights
 
-def Inflights'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Inflights'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"start" go.int),
 (go.field_decl.FieldDecl go!"count" go.int),
 (go.field_decl.FieldDecl go!"bytes" go.uint64),
@@ -1412,7 +1412,7 @@ instance equals_unfold_Inflights [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Inflights'fds Inflights'fds_unsealed :=
   ⟨by unfold Inflights'fds; rfl⟩
 
-def «Inflightsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Inflightsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Inflights'fds)
 
 class Inflights_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1464,7 +1464,7 @@ namespace StateType
 abbrev t [ffi_syntax] : Type := w64
 end StateType
 
-def «StateTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «StateTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 class StateType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1494,7 +1494,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Progress
 
-def Progress'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Progress'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Match" go.uint64),
 (go.field_decl.FieldDecl go!"Next" go.uint64),
 (go.field_decl.FieldDecl go!"sentCommit" go.uint64),
@@ -1512,7 +1512,7 @@ instance equals_unfold_Progress [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Progress'fds Progress'fds_unsealed :=
   ⟨by unfold Progress'fds; rfl⟩
 
-def «Progressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Progressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Progress'fds)
 
 class Progress_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1584,7 +1584,7 @@ namespace ProgressMap
 abbrev t [ffi_syntax] : Type := map.t
 end ProgressMap
 
-def «ProgressMapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ProgressMapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.MapType go.uint64 (go.type.PointerType Progress))
 
 class ProgressMap_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1609,7 +1609,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Config
 
-def Config'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Config'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Voters" _root_.Perennial.go_etcd_io.raft.v3.quorum.JointConfig),
 (go.field_decl.FieldDecl go!"AutoLeave" go.bool),
 (go.field_decl.FieldDecl go!"Learners" (go.type.MapType go.uint64 (go.type.StructType []))),
@@ -1622,7 +1622,7 @@ instance equals_unfold_Config [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Config'fds Config'fds_unsealed :=
   ⟨by unfold Config'fds; rfl⟩
 
-def «Configⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Configⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Config'fds)
 
 class Config_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1668,7 +1668,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end ProgressTracker
 
-def ProgressTracker'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ProgressTracker'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Config" Config),
 (go.field_decl.FieldDecl go!"Progress" ProgressMap),
 (go.field_decl.FieldDecl go!"Votes" (go.type.MapType go.uint64 go.bool)),
@@ -1682,7 +1682,7 @@ instance equals_unfold_ProgressTracker [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ProgressTracker'fds ProgressTracker'fds_unsealed :=
   ⟨by unfold ProgressTracker'fds; rfl⟩
 
-def «ProgressTrackerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ProgressTrackerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ProgressTracker'fds)
 
 class ProgressTracker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1745,7 +1745,7 @@ namespace matchAckIndexer
 abbrev t [ffi_syntax] : Type := map.t
 end matchAckIndexer
 
-def «matchAckIndexerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «matchAckIndexerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.MapType go.uint64 (go.type.PointerType Progress))
 
 class matchAckIndexer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

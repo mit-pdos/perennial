@@ -468,7 +468,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end littleEndian
 
-def littleEndian'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def littleEndian'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def littleEndian'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -478,7 +478,7 @@ instance equals_unfold_littleEndian [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold littleEndian'fds littleEndian'fds_unsealed :=
   ⟨by unfold littleEndian'fds; rfl⟩
 
-def «littleEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «littleEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType littleEndian'fds)
 
 class littleEndian_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

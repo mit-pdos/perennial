@@ -510,7 +510,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end JoinHandle
 
-def JoinHandle'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def JoinHandle'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" (go.type.PointerType _root_.Perennial.sync.Mutex)),
 (go.field_decl.FieldDecl go!"done" go.bool),
 (go.field_decl.FieldDecl go!"cond" (go.type.PointerType _root_.Perennial.sync.Cond))]
@@ -522,7 +522,7 @@ instance equals_unfold_JoinHandle [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold JoinHandle'fds JoinHandle'fds_unsealed :=
   ⟨by unfold JoinHandle'fds; rfl⟩
 
-def «JoinHandleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «JoinHandleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType JoinHandle'fds)
 
 class JoinHandle_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

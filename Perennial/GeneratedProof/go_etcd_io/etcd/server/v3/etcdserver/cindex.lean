@@ -13,120 +13,119 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace go_etcd_io.etcd.server.v3.etcdserver.cindex
 
 namespace consistentIndex
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.cindex.Assumptions]
 
 instance consistentIndex_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"consistentIndex" l) v.consistentIndex' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"term" l) v.term' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingIndex" l) v.applyingIndex' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingTerm" l) v.applyingTerm' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"be" l) v.be' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"mutex" l) v.mutex' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "consistentIndex" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"consistentIndex" l) v.consistentIndex' dq ∗
+    "term" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"term" l) v.term' dq ∗
+    "applyingIndex" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingIndex" l) v.applyingIndex' dq ∗
+    "applyingTerm" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingTerm" l) v.applyingTerm' dq ∗
+    "be" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"be" l) v.be' dq ∗
+    "mutex" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"mutex" l) v.mutex' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance consistentIndex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go_etcd_io.etcd.server.v3.etcdserver.cindex.«consistentIndexⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go_etcd_io.etcd.server.v3.etcdserver.cindex.«consistentIndexⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance consistentIndex_access_load_consistentIndex (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"consistentIndex" l) v.consistentIndex' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"consistentIndex" l) v.consistentIndex' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_store_consistentIndex (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (consistentIndex' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"consistentIndex" l) v.consistentIndex' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"consistentIndex" l) consistentIndex' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with consistentIndex' := consistentIndex' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with consistentIndex' := consistentIndex' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_load_term (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"term" l) v.term' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"term" l) v.term' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_store_term (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (term' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"term" l) v.term' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"term" l) term' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with term' := term' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with term' := term' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_load_applyingIndex (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingIndex" l) v.applyingIndex' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingIndex" l) v.applyingIndex' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_store_applyingIndex (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (applyingIndex' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingIndex" l) v.applyingIndex' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingIndex" l) applyingIndex' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with applyingIndex' := applyingIndex' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with applyingIndex' := applyingIndex' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_load_applyingTerm (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingTerm" l) v.applyingTerm' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingTerm" l) v.applyingTerm' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_store_applyingTerm (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (applyingTerm' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingTerm" l) v.applyingTerm' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"applyingTerm" l) applyingTerm' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with applyingTerm' := applyingTerm' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with applyingTerm' := applyingTerm' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_load_be (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"be" l) v.be' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"be" l) v.be' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_store_be (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (be' : go_etcd_io.etcd.server.v3.etcdserver.cindex.Backend.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"be" l) v.be' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"be" l) be' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with be' := be' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with be' := be' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_load_mutex (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"mutex" l) v.mutex' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"mutex" l) v.mutex' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance consistentIndex_access_store_mutex (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (mutex' : sync.Mutex.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"mutex" l) v.mutex' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go!"mutex" l) mutex' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mutex' := mutex' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mutex' := mutex' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end consistentIndex
@@ -134,53 +133,52 @@ end consistentIndex
 namespace fakeConsistentIndex
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.cindex.Assumptions]
 
 instance fakeConsistentIndex_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"index" l) v.index' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"term" l) v.term' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "index" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"index" l) v.index' dq ∗
+    "term" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"term" l) v.term' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance fakeConsistentIndex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go_etcd_io.etcd.server.v3.etcdserver.cindex.«fakeConsistentIndexⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go_etcd_io.etcd.server.v3.etcdserver.cindex.«fakeConsistentIndexⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance fakeConsistentIndex_access_load_index (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"index" l) v.index' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"index" l) v.index' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance fakeConsistentIndex_access_store_index (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (index' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"index" l) v.index' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"index" l) index' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with index' := index' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with index' := index' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance fakeConsistentIndex_access_load_term (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"term" l) v.term' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"term" l) v.term' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance fakeConsistentIndex_access_store_term (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (term' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"term" l) v.term' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go!"term" l) term' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with term' := term' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with term' := term' } : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end fakeConsistentIndex

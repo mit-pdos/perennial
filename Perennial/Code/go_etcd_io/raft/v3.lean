@@ -10819,7 +10819,7 @@ namespace Storage
 abbrev t [ffi_syntax] : Type := interface.t
 end Storage
 
-def «Storageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Storageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Entries" (go.signature.Signature [go.uint64, go.uint64, go.uint64] false [(go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry), go.error])), (go.interface_elem.MethodElem go!"FirstIndex" (go.signature.Signature [] false [go.uint64, go.error])), (go.interface_elem.MethodElem go!"InitialState" (go.signature.Signature [] false [_root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState, _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState, go.error])), (go.interface_elem.MethodElem go!"LastIndex" (go.signature.Signature [] false [go.uint64, go.error])), (go.interface_elem.MethodElem go!"Snapshot" (go.signature.Signature [] false [_root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot, go.error])), (go.interface_elem.MethodElem go!"Term" (go.signature.Signature [go.uint64] false [go.uint64, go.error]))])
 
 class Storage_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -10831,7 +10831,7 @@ namespace Logger
 abbrev t [ffi_syntax] : Type := interface.t
 end Logger
 
-def «Loggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Loggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Debug" (go.signature.Signature [(go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Debugf" (go.signature.Signature [go.string, (go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Error" (go.signature.Signature [(go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Fatal" (go.signature.Signature [(go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Fatalf" (go.signature.Signature [go.string, (go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Info" (go.signature.Signature [(go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Infof" (go.signature.Signature [go.string, (go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Panic" (go.signature.Signature [(go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Panicf" (go.signature.Signature [go.string, (go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Warning" (go.signature.Signature [(go.type.SliceType (go.type.InterfaceType []))] true [])), (go.interface_elem.MethodElem go!"Warningf" (go.signature.Signature [go.string, (go.type.SliceType (go.type.InterfaceType []))] true []))])
 
 class Logger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -10853,7 +10853,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end unstable
 
-def unstable'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def unstable'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"snapshot" (go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot)),
 (go.field_decl.FieldDecl go!"entries" (go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)),
 (go.field_decl.FieldDecl go!"offset" go.uint64),
@@ -10868,7 +10868,7 @@ instance equals_unfold_unstable [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold unstable'fds unstable'fds_unsealed :=
   ⟨by unfold unstable'fds; rfl⟩
 
-def «unstableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «unstableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType unstable'fds)
 
 class unstable_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -10932,7 +10932,7 @@ namespace entryEncodingSize
 abbrev t [ffi_syntax] : Type := w64
 end entryEncodingSize
 
-def «entryEncodingSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «entryEncodingSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 class entryEncodingSize_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -10957,7 +10957,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end raftLog
 
-def raftLog'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def raftLog'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"storage" Storage),
 (go.field_decl.FieldDecl go!"unstable" unstable),
 (go.field_decl.FieldDecl go!"committed" go.uint64),
@@ -10975,7 +10975,7 @@ instance equals_unfold_raftLog [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold raftLog'fds raftLog'fds_unsealed :=
   ⟨by unfold raftLog'fds; rfl⟩
 
-def «raftLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «raftLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType raftLog'fds)
 
 class raftLog_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11101,7 +11101,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end DefaultLogger
 
-def DefaultLogger'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def DefaultLogger'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Logger" (go.type.PointerType _root_.Perennial.log.Logger)),
 (go.field_decl.FieldDecl go!"debug" go.bool)]
 
@@ -11112,7 +11112,7 @@ instance equals_unfold_DefaultLogger [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold DefaultLogger'fds DefaultLogger'fds_unsealed :=
   ⟨by unfold DefaultLogger'fds; rfl⟩
 
-def «DefaultLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «DefaultLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType DefaultLogger'fds)
 
 class DefaultLogger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11240,7 +11240,7 @@ namespace SnapshotStatus
 abbrev t [ffi_syntax] : Type := w64
 end SnapshotStatus
 
-def «SnapshotStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SnapshotStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class SnapshotStatus_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11252,7 +11252,7 @@ namespace StateType
 abbrev t [ffi_syntax] : Type := w64
 end StateType
 
-def «StateTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «StateTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 class StateType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11280,7 +11280,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end SoftState
 
-def SoftState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SoftState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Lead" go.uint64),
 (go.field_decl.FieldDecl go!"RaftState" StateType)]
 
@@ -11291,7 +11291,7 @@ instance equals_unfold_SoftState [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold SoftState'fds SoftState'fds_unsealed :=
   ⟨by unfold SoftState'fds; rfl⟩
 
-def «SoftStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SoftStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType SoftState'fds)
 
 class SoftState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11327,7 +11327,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Ready
 
-def Ready'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Ready'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"SoftState" (go.type.PointerType SoftState)),
 (go.field_decl.EmbeddedField go!"HardState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState),
 (go.field_decl.FieldDecl go!"ReadStates" (go.type.SliceType ReadState)),
@@ -11344,7 +11344,7 @@ instance equals_unfold_Ready [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Ready'fds Ready'fds_unsealed :=
   ⟨by unfold Ready'fds; rfl⟩
 
-def «Readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Ready'fds)
 
 class Ready_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11438,7 +11438,7 @@ namespace Node
 abbrev t [ffi_syntax] : Type := interface.t
 end Node
 
-def «Nodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Nodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Advance" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"ApplyConfChange" (go.signature.Signature [_root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeI] false [(go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState)])), (go.interface_elem.MethodElem go!"Campaign" (go.signature.Signature [_root_.Perennial.context.Context] false [go.error])), (go.interface_elem.MethodElem go!"ForgetLeader" (go.signature.Signature [_root_.Perennial.context.Context] false [go.error])), (go.interface_elem.MethodElem go!"Propose" (go.signature.Signature [_root_.Perennial.context.Context, (go.type.SliceType go.byte)] false [go.error])), (go.interface_elem.MethodElem go!"ProposeConfChange" (go.signature.Signature [_root_.Perennial.context.Context, _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeI] false [go.error])), (go.interface_elem.MethodElem go!"ReadIndex" (go.signature.Signature [_root_.Perennial.context.Context, (go.type.SliceType go.byte)] false [go.error])), (go.interface_elem.MethodElem go!"Ready" (go.signature.Signature [] false [(go.type.ChannelType go.chan_dir.recvonly Ready)])), (go.interface_elem.MethodElem go!"ReportSnapshot" (go.signature.Signature [go.uint64, SnapshotStatus] false [])), (go.interface_elem.MethodElem go!"ReportUnreachable" (go.signature.Signature [go.uint64] false [])), (go.interface_elem.MethodElem go!"Status" (go.signature.Signature [] false [Status])), (go.interface_elem.MethodElem go!"Step" (go.signature.Signature [_root_.Perennial.context.Context, _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message] false [go.error])), (go.interface_elem.MethodElem go!"Stop" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Tick" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"TransferLeadership" (go.signature.Signature [_root_.Perennial.context.Context, go.uint64, go.uint64] false []))])
 
 class Node_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11456,7 +11456,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Peer
 
-def Peer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Peer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.FieldDecl go!"Context" (go.type.SliceType go.byte))]
 
@@ -11467,7 +11467,7 @@ instance equals_unfold_Peer [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Peer'fds Peer'fds_unsealed :=
   ⟨by unfold Peer'fds; rfl⟩
 
-def «Peerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Peerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Peer'fds)
 
 class Peer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11495,7 +11495,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end msgWithResult
 
-def msgWithResult'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def msgWithResult'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"m" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message),
 (go.field_decl.FieldDecl go!"result" (go.type.ChannelType go.chan_dir.sendrecv go.error))]
 
@@ -11506,7 +11506,7 @@ instance equals_unfold_msgWithResult [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold msgWithResult'fds msgWithResult'fds_unsealed :=
   ⟨by unfold msgWithResult'fds; rfl⟩
 
-def «msgWithResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «msgWithResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType msgWithResult'fds)
 
 class msgWithResult_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11543,7 +11543,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end node
 
-def node'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def node'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"propc" (go.type.ChannelType go.chan_dir.sendrecv msgWithResult)),
 (go.field_decl.FieldDecl go!"recvc" (go.type.ChannelType go.chan_dir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message)),
 (go.field_decl.FieldDecl go!"confc" (go.type.ChannelType go.chan_dir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeV2)),
@@ -11563,7 +11563,7 @@ instance equals_unfold_node [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold node'fds node'fds_unsealed :=
   ⟨by unfold node'fds; rfl⟩
 
-def «nodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «nodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType node'fds)
 
 class node_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11659,7 +11659,7 @@ namespace ReadOnlyOption
 abbrev t [ffi_syntax] : Type := w64
 end ReadOnlyOption
 
-def «ReadOnlyOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ReadOnlyOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class ReadOnlyOption_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11676,7 +11676,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end lockedRand
 
-def lockedRand'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def lockedRand'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex)]
 
 @[irreducible] def lockedRand'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -11686,7 +11686,7 @@ instance equals_unfold_lockedRand [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold lockedRand'fds lockedRand'fds_unsealed :=
   ⟨by unfold lockedRand'fds; rfl⟩
 
-def «lockedRandⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «lockedRandⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType lockedRand'fds)
 
 class lockedRand_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11706,7 +11706,7 @@ namespace CampaignType
 abbrev t [ffi_syntax] : Type := go_string
 end CampaignType
 
-def «CampaignTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «CampaignTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.string
 
 class CampaignType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11718,7 +11718,7 @@ namespace TraceLogger
 abbrev t [ffi_syntax] : Type := interface.t
 end TraceLogger
 
-def «TraceLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «TraceLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [])
 
 class TraceLogger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11753,7 +11753,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Config
 
-def Config'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Config'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.FieldDecl go!"ElectionTick" go.int),
 (go.field_decl.FieldDecl go!"HeartbeatTick" go.int),
@@ -11781,7 +11781,7 @@ instance equals_unfold_Config [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Config'fds Config'fds_unsealed :=
   ⟨by unfold Config'fds; rfl⟩
 
-def «Configⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Configⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Config'fds)
 
 class Config_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11873,7 +11873,7 @@ namespace entryPayloadSize
 abbrev t [ffi_syntax] : Type := w64
 end entryPayloadSize
 
-def «entryPayloadSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «entryPayloadSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 class entryPayloadSize_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11885,7 +11885,7 @@ namespace stepFunc
 abbrev t [ffi_syntax] : Type := func.t
 end stepFunc
 
-def «stepFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «stepFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.FunctionType (go.signature.Signature [(go.type.PointerType raft), _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message] false [go.error]))
 
 class stepFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -11933,7 +11933,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end raft
 
-def raft'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def raft'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"id" go.uint64),
 (go.field_decl.FieldDecl go!"Term" go.uint64),
 (go.field_decl.FieldDecl go!"Vote" go.uint64),
@@ -11974,7 +11974,7 @@ instance equals_unfold_raft [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold raft'fds raft'fds_unsealed :=
   ⟨by unfold raft'fds; rfl⟩
 
-def «raftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «raftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType raft'fds)
 
 class raft_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12211,7 +12211,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end RawNode
 
-def RawNode'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RawNode'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"raft" (go.type.PointerType raft)),
 (go.field_decl.FieldDecl go!"asyncStorageWrites" go.bool),
 (go.field_decl.FieldDecl go!"prevSoftSt" (go.type.PointerType SoftState)),
@@ -12225,7 +12225,7 @@ instance equals_unfold_RawNode [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RawNode'fds RawNode'fds_unsealed :=
   ⟨by unfold RawNode'fds; rfl⟩
 
-def «RawNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RawNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RawNode'fds)
 
 class RawNode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12303,7 +12303,7 @@ namespace ProgressType
 abbrev t [ffi_syntax] : Type := w8
 end ProgressType
 
-def «ProgressTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ProgressTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.byte
 
 class ProgressType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12321,7 +12321,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end ReadState
 
-def ReadState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ReadState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Index" go.uint64),
 (go.field_decl.FieldDecl go!"RequestCtx" (go.type.SliceType go.byte))]
 
@@ -12332,7 +12332,7 @@ instance equals_unfold_ReadState [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ReadState'fds ReadState'fds_unsealed :=
   ⟨by unfold ReadState'fds; rfl⟩
 
-def «ReadStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ReadStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ReadState'fds)
 
 class ReadState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12360,7 +12360,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end readIndexRequest
 
-def readIndexRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def readIndexRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message),
 (go.field_decl.FieldDecl go!"index" go.uint64)]
 
@@ -12371,7 +12371,7 @@ instance equals_unfold_readIndexRequest [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold readIndexRequest'fds readIndexRequest'fds_unsealed :=
   ⟨by unfold readIndexRequest'fds; rfl⟩
 
-def «readIndexRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «readIndexRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType readIndexRequest'fds)
 
 class readIndexRequest_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12401,7 +12401,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end readOnly
 
-def readOnly'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def readOnly'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"option" ReadOnlyOption),
 (go.field_decl.FieldDecl go!"acks" (go.type.MapType go.uint64 go.uint64)),
 (go.field_decl.FieldDecl go!"unconfirmedReads" (go.type.SliceType (go.type.PointerType readIndexRequest))),
@@ -12414,7 +12414,7 @@ instance equals_unfold_readOnly [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold readOnly'fds readOnly'fds_unsealed :=
   ⟨by unfold readOnly'fds; rfl⟩
 
-def «readOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «readOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType readOnly'fds)
 
 class readOnly_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12458,7 +12458,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end TracingEvent
 
-def TracingEvent'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TracingEvent'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def TracingEvent'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -12468,7 +12468,7 @@ instance equals_unfold_TracingEvent [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold TracingEvent'fds TracingEvent'fds_unsealed :=
   ⟨by unfold TracingEvent'fds; rfl⟩
 
-def «TracingEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «TracingEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType TracingEvent'fds)
 
 class TracingEvent_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12491,7 +12491,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end BasicStatus
 
-def BasicStatus'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def BasicStatus'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.EmbeddedField go!"HardState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState),
 (go.field_decl.EmbeddedField go!"SoftState" SoftState),
@@ -12505,7 +12505,7 @@ instance equals_unfold_BasicStatus [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold BasicStatus'fds BasicStatus'fds_unsealed :=
   ⟨by unfold BasicStatus'fds; rfl⟩
 
-def «BasicStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «BasicStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType BasicStatus'fds)
 
 class BasicStatus_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12591,7 +12591,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end Status
 
-def Status'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Status'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"BasicStatus" BasicStatus),
 (go.field_decl.FieldDecl go!"Config" _root_.Perennial.go_etcd_io.raft.v3.tracker.Config),
 (go.field_decl.FieldDecl go!"Progress" (go.type.MapType go.uint64 _root_.Perennial.go_etcd_io.raft.v3.tracker.Progress))]
@@ -12603,7 +12603,7 @@ instance equals_unfold_Status [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Status'fds Status'fds_unsealed :=
   ⟨by unfold Status'fds; rfl⟩
 
-def «Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Status'fds)
 
 class Status_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12691,7 +12691,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end inMemStorageCallStats
 
-def inMemStorageCallStats'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def inMemStorageCallStats'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"initialState" go.int),
 (go.field_decl.FieldDecl go!"firstIndex" go.int),
 (go.field_decl.FieldDecl go!"lastIndex" go.int),
@@ -12706,7 +12706,7 @@ instance equals_unfold_inMemStorageCallStats [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold inMemStorageCallStats'fds inMemStorageCallStats'fds_unsealed :=
   ⟨by unfold inMemStorageCallStats'fds; rfl⟩
 
-def «inMemStorageCallStatsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «inMemStorageCallStatsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType inMemStorageCallStats'fds)
 
 class inMemStorageCallStats_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12753,7 +12753,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end MemoryStorage
 
-def MemoryStorage'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def MemoryStorage'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Mutex" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"hardState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState),
 (go.field_decl.FieldDecl go!"snapshot" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot),
@@ -12767,7 +12767,7 @@ instance equals_unfold_MemoryStorage [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold MemoryStorage'fds MemoryStorage'fds_unsealed :=
   ⟨by unfold MemoryStorage'fds; rfl⟩
 
-def «MemoryStorageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «MemoryStorageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType MemoryStorage'fds)
 
 class MemoryStorage_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12842,7 +12842,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end entryID
 
-def entryID'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def entryID'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"term" go.uint64),
 (go.field_decl.FieldDecl go!"index" go.uint64)]
 
@@ -12853,7 +12853,7 @@ instance equals_unfold_entryID [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold entryID'fds entryID'fds_unsealed :=
   ⟨by unfold entryID'fds; rfl⟩
 
-def «entryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «entryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType entryID'fds)
 
 class entryID_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12882,7 +12882,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end logSlice
 
-def logSlice'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def logSlice'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"term" go.uint64),
 (go.field_decl.FieldDecl go!"prev" entryID),
 (go.field_decl.FieldDecl go!"entries" (go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry))]
@@ -12894,7 +12894,7 @@ instance equals_unfold_logSlice [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold logSlice'fds logSlice'fds_unsealed :=
   ⟨by unfold logSlice'fds; rfl⟩
 
-def «logSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «logSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType logSlice'fds)
 
 class logSlice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -12935,7 +12935,7 @@ namespace EntryFormatter
 abbrev t [ffi_syntax] : Type := func.t
 end EntryFormatter
 
-def «EntryFormatterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «EntryFormatterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.FunctionType (go.signature.Signature [(go.type.SliceType go.byte)] false [go.string]))
 
 class EntryFormatter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

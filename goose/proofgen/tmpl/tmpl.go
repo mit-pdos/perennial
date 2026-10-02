@@ -49,6 +49,8 @@ type LeanField struct {
 	GoString string
 	// Lean type of the field
 	Type string
+	// name of the conjunct in typed_pointsto_def
+	HypName string
 }
 
 type Import struct {
@@ -82,6 +84,7 @@ func loadTemplates() *template.Template {
 	funcs := template.FuncMap{
 		"indent": indent,
 		"leanq":  leanq,
+		"trimgo": func(s string) string { return strings.TrimPrefix(s, "go!") },
 	}
 	tmpl, err := tmpl.Funcs(funcs).ParseFS(tmplFS, "*.tmpl")
 	if err != nil {

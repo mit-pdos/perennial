@@ -3089,7 +3089,7 @@ namespace Cluster
 abbrev t [ffi_syntax] : Type := interface.t
 end Cluster
 
-def «Clusterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Clusterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"MemberAdd" (go.signature.Signature [_root_.Perennial.context.Context, (go.type.SliceType go.string)] false [(go.type.PointerType MemberAddResponse), go.error])), (go.interface_elem.MethodElem go!"MemberAddAsLearner" (go.signature.Signature [_root_.Perennial.context.Context, (go.type.SliceType go.string)] false [(go.type.PointerType MemberAddResponse), go.error])), (go.interface_elem.MethodElem go!"MemberList" (go.signature.Signature [_root_.Perennial.context.Context, (go.type.SliceType OpOption)] true [(go.type.PointerType MemberListResponse), go.error])), (go.interface_elem.MethodElem go!"MemberPromote" (go.signature.Signature [_root_.Perennial.context.Context, go.uint64] false [(go.type.PointerType MemberPromoteResponse), go.error])), (go.interface_elem.MethodElem go!"MemberRemove" (go.signature.Signature [_root_.Perennial.context.Context, go.uint64] false [(go.type.PointerType MemberRemoveResponse), go.error])), (go.interface_elem.MethodElem go!"MemberUpdate" (go.signature.Signature [_root_.Perennial.context.Context, go.uint64, (go.type.SliceType go.string)] false [(go.type.PointerType MemberUpdateResponse), go.error]))])
 
 class Cluster_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3176,7 +3176,7 @@ namespace Cmp
 abbrev t [ffi_syntax] : Type := _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.Compare.t
 end Cmp
 
-def «Cmpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Cmpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.Compare
 
 class Cmp_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3263,7 +3263,7 @@ namespace PutResponse
 abbrev t [ffi_syntax] : Type := _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse.t
 end PutResponse
 
-def «PutResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «PutResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse
 
 class PutResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3275,7 +3275,7 @@ namespace GetResponse
 abbrev t [ffi_syntax] : Type := _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse.t
 end GetResponse
 
-def «GetResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «GetResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse
 
 class GetResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3287,7 +3287,7 @@ namespace DeleteResponse
 abbrev t [ffi_syntax] : Type := _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse.t
 end DeleteResponse
 
-def «DeleteResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «DeleteResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse
 
 class DeleteResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3299,7 +3299,7 @@ namespace TxnResponse
 abbrev t [ffi_syntax] : Type := _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse.t
 end TxnResponse
 
-def «TxnResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «TxnResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse
 
 class TxnResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3311,7 +3311,7 @@ namespace KV
 abbrev t [ffi_syntax] : Type := interface.t
 end KV
 
-def «KVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «KVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Compact" (go.signature.Signature [_root_.Perennial.context.Context, go.int64, (go.type.SliceType CompactOption)] true [(go.type.PointerType CompactResponse), go.error])), (go.interface_elem.MethodElem go!"Delete" (go.signature.Signature [_root_.Perennial.context.Context, go.string, (go.type.SliceType OpOption)] true [(go.type.PointerType DeleteResponse), go.error])), (go.interface_elem.MethodElem go!"Do" (go.signature.Signature [_root_.Perennial.context.Context, Op] false [OpResponse, go.error])), (go.interface_elem.MethodElem go!"Get" (go.signature.Signature [_root_.Perennial.context.Context, go.string, (go.type.SliceType OpOption)] true [(go.type.PointerType GetResponse), go.error])), (go.interface_elem.MethodElem go!"Put" (go.signature.Signature [_root_.Perennial.context.Context, go.string, go.string, (go.type.SliceType OpOption)] true [(go.type.PointerType PutResponse), go.error])), (go.interface_elem.MethodElem go!"Txn" (go.signature.Signature [_root_.Perennial.context.Context] false [Txn]))])
 
 class KV_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3331,7 +3331,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end OpResponse
 
-def OpResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def OpResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"put" (go.type.PointerType PutResponse)),
 (go.field_decl.FieldDecl go!"get" (go.type.PointerType GetResponse)),
 (go.field_decl.FieldDecl go!"del" (go.type.PointerType DeleteResponse)),
@@ -3344,7 +3344,7 @@ instance equals_unfold_OpResponse [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold OpResponse'fds OpResponse'fds_unsealed :=
   ⟨by unfold OpResponse'fds; rfl⟩
 
-def «OpResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «OpResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType OpResponse'fds)
 
 class OpResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3404,7 +3404,7 @@ namespace LeaseID
 abbrev t [ffi_syntax] : Type := w64
 end LeaseID
 
-def «LeaseIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «LeaseIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int64
 
 class LeaseID_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3424,7 +3424,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end LeaseGrantResponse
 
-def LeaseGrantResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LeaseGrantResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"ResponseHeader" (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader)),
 (go.field_decl.FieldDecl go!"ID" LeaseID),
 (go.field_decl.FieldDecl go!"TTL" go.int64),
@@ -3437,7 +3437,7 @@ instance equals_unfold_LeaseGrantResponse [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold LeaseGrantResponse'fds LeaseGrantResponse'fds_unsealed :=
   ⟨by unfold LeaseGrantResponse'fds; rfl⟩
 
-def «LeaseGrantResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «LeaseGrantResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType LeaseGrantResponse'fds)
 
 class LeaseGrantResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3542,7 +3542,7 @@ namespace Lease
 abbrev t [ffi_syntax] : Type := interface.t
 end Lease
 
-def «Leaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Leaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Close" (go.signature.Signature [] false [go.error])), (go.interface_elem.MethodElem go!"Grant" (go.signature.Signature [_root_.Perennial.context.Context, go.int64] false [(go.type.PointerType LeaseGrantResponse), go.error])), (go.interface_elem.MethodElem go!"KeepAlive" (go.signature.Signature [_root_.Perennial.context.Context, LeaseID] false [(go.type.ChannelType go.chan_dir.recvonly (go.type.PointerType LeaseKeepAliveResponse)), go.error])), (go.interface_elem.MethodElem go!"KeepAliveOnce" (go.signature.Signature [_root_.Perennial.context.Context, LeaseID] false [(go.type.PointerType LeaseKeepAliveResponse), go.error])), (go.interface_elem.MethodElem go!"Leases" (go.signature.Signature [_root_.Perennial.context.Context] false [(go.type.PointerType LeaseLeasesResponse), go.error])), (go.interface_elem.MethodElem go!"Revoke" (go.signature.Signature [_root_.Perennial.context.Context, LeaseID] false [(go.type.PointerType LeaseRevokeResponse), go.error])), (go.interface_elem.MethodElem go!"TimeToLive" (go.signature.Signature [_root_.Perennial.context.Context, LeaseID, (go.type.SliceType LeaseOption)] true [(go.type.PointerType LeaseTimeToLiveResponse), go.error]))])
 
 class Lease_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3779,7 +3779,7 @@ namespace opType
 abbrev t [ffi_syntax] : Type := w64
 end opType
 
-def «opTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «opTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class opType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3823,7 +3823,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Op
 
-def Op'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Op'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"t" opType),
 (go.field_decl.FieldDecl go!"key" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"end" (go.type.SliceType go.byte)),
@@ -3860,7 +3860,7 @@ instance equals_unfold_Op [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Op'fds Op'fds_unsealed :=
   ⟨by unfold Op'fds; rfl⟩
 
-def «Opⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Opⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Op'fds)
 
 class Op_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4149,7 +4149,7 @@ namespace OpOption
 abbrev t [ffi_syntax] : Type := func.t
 end OpOption
 
-def «OpOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «OpOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.FunctionType (go.signature.Signature [(go.type.PointerType Op)] false []))
 
 class OpOption_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4167,7 +4167,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end LeaseOp
 
-def LeaseOp'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LeaseOp'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"id" LeaseID),
 (go.field_decl.FieldDecl go!"attachedKeys" go.bool)]
 
@@ -4178,7 +4178,7 @@ instance equals_unfold_LeaseOp [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold LeaseOp'fds LeaseOp'fds_unsealed :=
   ⟨by unfold LeaseOp'fds; rfl⟩
 
-def «LeaseOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «LeaseOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType LeaseOp'fds)
 
 class LeaseOp_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4200,7 +4200,7 @@ namespace LeaseOption
 abbrev t [ffi_syntax] : Type := func.t
 end LeaseOption
 
-def «LeaseOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «LeaseOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.FunctionType (go.signature.Signature [(go.type.PointerType LeaseOp)] false []))
 
 class LeaseOption_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4362,7 +4362,7 @@ namespace SortTarget
 abbrev t [ffi_syntax] : Type := w64
 end SortTarget
 
-def «SortTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SortTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class SortTarget_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4374,7 +4374,7 @@ namespace SortOrder
 abbrev t [ffi_syntax] : Type := w64
 end SortOrder
 
-def «SortOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SortOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class SortOrder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4392,7 +4392,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end SortOption
 
-def SortOption'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SortOption'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Target" SortTarget),
 (go.field_decl.FieldDecl go!"Order" SortOrder)]
 
@@ -4403,7 +4403,7 @@ instance equals_unfold_SortOption [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold SortOption'fds SortOption'fds_unsealed :=
   ⟨by unfold SortOption'fds; rfl⟩
 
-def «SortOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SortOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType SortOption'fds)
 
 class SortOption_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4425,7 +4425,7 @@ namespace Txn
 abbrev t [ffi_syntax] : Type := interface.t
 end Txn
 
-def «Txnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Txnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Commit" (go.signature.Signature [] false [(go.type.PointerType TxnResponse), go.error])), (go.interface_elem.MethodElem go!"Else" (go.signature.Signature [(go.type.SliceType Op)] true [Txn])), (go.interface_elem.MethodElem go!"If" (go.signature.Signature [(go.type.SliceType Cmp)] true [Txn])), (go.interface_elem.MethodElem go!"Then" (go.signature.Signature [(go.type.SliceType Op)] true [Txn]))])
 
 class Txn_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4452,7 +4452,7 @@ namespace Event
 abbrev t [ffi_syntax] : Type := _root_.Perennial.go_etcd_io.etcd.api.v3.mvccpb.Event.t
 end Event
 
-def «Eventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Eventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   _root_.Perennial.go_etcd_io.etcd.api.v3.mvccpb.Event
 
 class Event_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4464,7 +4464,7 @@ namespace WatchChan
 abbrev t [ffi_syntax] : Type := chan.t
 end WatchChan
 
-def «WatchChanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «WatchChanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.ChannelType go.chan_dir.recvonly WatchResponse)
 
 class WatchChan_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4476,7 +4476,7 @@ namespace Watcher
 abbrev t [ffi_syntax] : Type := interface.t
 end Watcher
 
-def «Watcherⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Watcherⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Close" (go.signature.Signature [] false [go.error])), (go.interface_elem.MethodElem go!"RequestProgress" (go.signature.Signature [_root_.Perennial.context.Context] false [go.error])), (go.interface_elem.MethodElem go!"Watch" (go.signature.Signature [_root_.Perennial.context.Context, go.string, (go.type.SliceType OpOption)] true [WatchChan]))])
 
 class Watcher_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4499,7 +4499,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end WatchResponse
 
-def WatchResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def WatchResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Header" _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader),
 (go.field_decl.FieldDecl go!"Events" (go.type.SliceType (go.type.PointerType Event))),
 (go.field_decl.FieldDecl go!"CompactRevision" go.int64),
@@ -4515,7 +4515,7 @@ instance equals_unfold_WatchResponse [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold WatchResponse'fds WatchResponse'fds_unsealed :=
   ⟨by unfold WatchResponse'fds; rfl⟩
 
-def «WatchResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «WatchResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType WatchResponse'fds)
 
 class WatchResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

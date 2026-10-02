@@ -13,30 +13,29 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
 namespace unit
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance unit_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.unit.t where
   typed_pointsto_def l v dq := iprop(
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance unit_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.unit.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«unitⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.unit.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«unitⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end unit
@@ -44,53 +43,52 @@ end unit
 namespace Editor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance Editor_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"s" l) v.s' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"next_val" l) v.next_val' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "s" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"s" l) v.s' dq ∗
+    "next_val" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"next_val" l) v.next_val' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Editor_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Editorⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Editorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Editor_access_load_s (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"s" l) v.s' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"s" l) v.s' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Editor_access_store_s (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t) (s' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"s" l) v.s' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"s" l) s' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Editor_access_load_next_val (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"next_val" l) v.next_val' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"next_val" l) v.next_val' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Editor_access_store_next_val (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t) (next_val' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"next_val" l) v.next_val' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t go!"next_val" l) next_val' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with next_val' := next_val' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with next_val' := next_val' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Editor
@@ -98,53 +96,52 @@ end Editor
 namespace Pair'
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance Pair'_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"x" l) v.x' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"y" l) v.y' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "x" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"x" l) v.x' dq ∗
+    "y" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"y" l) v.y' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Pair'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Pair'ⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Pair'ⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Pair'_access_load_x (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"x" l) v.x' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"x" l) v.x' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Pair'_access_store_x (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t) (x' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"x" l) v.x' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"x" l) x' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Pair'_access_load_y (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"y" l) v.y' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"y" l) v.y' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Pair'_access_store_y (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t) (y' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"y" l) v.y' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t go!"y" l) y' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair'.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Pair'
@@ -152,38 +149,37 @@ end Pair'
 namespace SquareStruct
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance SquareStruct_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t go!"Side" l) v.Side' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "Side" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t go!"Side" l) v.Side' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance SquareStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«SquareStructⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«SquareStructⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance SquareStruct_access_load_Side (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t go!"Side" l) v.Side' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t go!"Side" l) v.Side' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance SquareStruct_access_store_Side (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t) (Side' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t go!"Side" l) v.Side' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t go!"Side" l) Side' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Side' := Side' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Side' := Side' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end SquareStruct
@@ -191,38 +187,37 @@ end SquareStruct
 namespace NumStruct
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance NumStruct_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t go!"Value" l) v.Value' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance NumStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«NumStructⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«NumStructⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance NumStruct_access_load_Value (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t go!"Value" l) v.Value' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t go!"Value" l) v.Value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance NumStruct_access_store_Value (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t) (Value' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t go!"Value" l) v.Value' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t go!"Value" l) Value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end NumStruct
@@ -230,38 +225,37 @@ end NumStruct
 namespace shapeStruct
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance shapeStruct_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t go!"Shape" l) v.Shape' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "Shape" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t go!"Shape" l) v.Shape' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance shapeStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«shapeStructⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«shapeStructⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance shapeStruct_access_load_Shape (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t go!"Shape" l) v.Shape' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t go!"Shape" l) v.Shape' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance shapeStruct_access_store_Shape (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t) (Shape' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t go!"Shape" l) v.Shape' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t go!"Shape" l) Shape' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Shape' := Shape' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Shape' := Shape' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end shapeStruct
@@ -269,53 +263,52 @@ end shapeStruct
 namespace polygonStruct
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance polygonStruct_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Shape" l) v.Shape' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Sides" l) v.Sides' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "Shape" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Shape" l) v.Shape' dq ∗
+    "Sides" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Sides" l) v.Sides' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance polygonStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«polygonStructⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«polygonStructⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance polygonStruct_access_load_Shape (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Shape" l) v.Shape' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Shape" l) v.Shape' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance polygonStruct_access_store_Shape (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t) (Shape' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Shape" l) v.Shape' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Shape" l) Shape' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Shape' := Shape' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Shape' := Shape' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance polygonStruct_access_load_Sides (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Sides" l) v.Sides' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Sides" l) v.Sides' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance polygonStruct_access_store_Sides (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t) (Sides' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Sides" l) v.Sides' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t go!"Sides" l) Sides' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Sides' := Sides' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Sides' := Sides' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end polygonStruct
@@ -323,38 +316,37 @@ end polygonStruct
 namespace PaperStruct
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance PaperStruct_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t go!"Title" l) v.Title' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "Title" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t go!"Title" l) v.Title' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance PaperStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«PaperStructⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«PaperStructⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance PaperStruct_access_load_Title (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t go!"Title" l) v.Title' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t go!"Title" l) v.Title' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance PaperStruct_access_store_Title (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t) (Title' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t go!"Title" l) v.Title' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t go!"Title" l) Title' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Title' := Title' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Title' := Title' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end PaperStruct
@@ -362,23 +354,22 @@ end PaperStruct
 namespace Lily
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance Lily_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Lily.t where
   typed_pointsto_def l v dq := iprop(
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Lily_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Lily.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Lilyⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Lily.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Lilyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end Lily
@@ -386,23 +377,22 @@ end Lily
 namespace Rose
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance Rose_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Rose.t where
   typed_pointsto_def l v dq := iprop(
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Rose_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Rose.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Roseⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Rose.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Roseⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end Rose
@@ -410,23 +400,22 @@ end Rose
 namespace Daisy
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance Daisy_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Daisy.t where
   typed_pointsto_def l v dq := iprop(
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Daisy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Daisy.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Daisyⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Daisy.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Daisyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end Daisy
@@ -434,38 +423,37 @@ end Daisy
 namespace LoopStruct
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance LoopStruct_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t go!"loopNext" l) v.loopNext' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "loopNext" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t go!"loopNext" l) v.loopNext' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance LoopStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«LoopStructⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«LoopStructⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance LoopStruct_access_load_loopNext (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t go!"loopNext" l) v.loopNext' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t go!"loopNext" l) v.loopNext' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance LoopStruct_access_store_loopNext (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t) (loopNext' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t go!"loopNext" l) v.loopNext' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t go!"loopNext" l) loopNext' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with loopNext' := loopNext' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with loopNext' := loopNext' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end LoopStruct
@@ -473,83 +461,82 @@ end LoopStruct
 namespace BoolTest
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance BoolTest_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"t" l) v.t' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"f" l) v.f' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"tc" l) v.tc' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"fc" l) v.fc' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "t" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"t" l) v.t' dq ∗
+    "f" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"f" l) v.f' dq ∗
+    "tc" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"tc" l) v.tc' dq ∗
+    "fc" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"fc" l) v.fc' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance BoolTest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«BoolTestⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«BoolTestⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance BoolTest_access_load_t (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"t" l) v.t' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"t" l) v.t' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance BoolTest_access_store_t (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (t' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"t" l) v.t' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"t" l) t' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with t' := t' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with t' := t' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance BoolTest_access_load_f (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"f" l) v.f' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"f" l) v.f' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance BoolTest_access_store_f (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (f' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"f" l) v.f' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"f" l) f' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with f' := f' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with f' := f' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance BoolTest_access_load_tc (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"tc" l) v.tc' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"tc" l) v.tc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance BoolTest_access_store_tc (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (tc' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"tc" l) v.tc' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"tc" l) tc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tc' := tc' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tc' := tc' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance BoolTest_access_load_fc (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"fc" l) v.fc' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"fc" l) v.fc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance BoolTest_access_store_fc (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (fc' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"fc" l) v.fc' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t go!"fc" l) fc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fc' := fc' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fc' := fc' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end BoolTest
@@ -557,53 +544,52 @@ end BoolTest
 namespace ArrayEditor
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance ArrayEditor_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"s" l) v.s' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"next_val" l) v.next_val' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "s" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"s" l) v.s' dq ∗
+    "next_val" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"next_val" l) v.next_val' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ArrayEditor_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«ArrayEditorⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«ArrayEditorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance ArrayEditor_access_load_s (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"s" l) v.s' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"s" l) v.s' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance ArrayEditor_access_store_s (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t) (s' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"s" l) v.s' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"s" l) s' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance ArrayEditor_access_load_next_val (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"next_val" l) v.next_val' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"next_val" l) v.next_val' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance ArrayEditor_access_store_next_val (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t) (next_val' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"next_val" l) v.next_val' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t go!"next_val" l) next_val' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with next_val' := next_val' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with next_val' := next_val' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end ArrayEditor
@@ -611,53 +597,52 @@ end ArrayEditor
 namespace Bar
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance Bar_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"a" l) v.a' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"b" l) v.b' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "a" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"a" l) v.a' dq ∗
+    "b" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"b" l) v.b' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Bar_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Barⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Barⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Bar_access_load_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Bar_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Bar_access_load_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"b" l) v.b' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Bar_access_store_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) (b' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"b" l) v.b' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Bar
@@ -665,38 +650,37 @@ end Bar
 namespace Foo
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance Foo_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t go!"bar" l) v.bar' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "bar" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t go!"bar" l) v.bar' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Foo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Fooⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Fooⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Foo_access_load_bar (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t go!"bar" l) v.bar' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t go!"bar" l) v.bar' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Foo_access_store_bar (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t) (bar' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t go!"bar" l) v.bar' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t go!"bar" l) bar' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with bar' := bar' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with bar' := bar' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Foo
@@ -704,53 +688,52 @@ end Foo
 namespace TwoInts
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance TwoInts_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"x" l) v.x' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"y" l) v.y' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "x" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"x" l) v.x' dq ∗
+    "y" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"y" l) v.y' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance TwoInts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«TwoIntsⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«TwoIntsⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance TwoInts_access_load_x (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"x" l) v.x' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"x" l) v.x' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance TwoInts_access_store_x (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) (x' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"x" l) v.x' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"x" l) x' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance TwoInts_access_load_y (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"y" l) v.y' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"y" l) v.y' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance TwoInts_access_store_y (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) (y' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"y" l) v.y' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t go!"y" l) y' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end TwoInts
@@ -758,68 +741,67 @@ end TwoInts
 namespace S
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance S_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"a" l) v.a' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"b" l) v.b' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"c" l) v.c' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "a" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"a" l) v.a' dq ∗
+    "b" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"b" l) v.b' dq ∗
+    "c" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"c" l) v.c' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance S_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Sⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Sⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance S_access_load_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance S_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance S_access_load_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"b" l) v.b' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance S_access_store_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (b' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"b" l) v.b' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance S_access_load_c (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"c" l) v.c' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"c" l) v.c' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance S_access_store_c (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (c' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"c" l) v.c' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t go!"c" l) c' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with c' := c' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with c' := c' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end S
@@ -827,38 +809,37 @@ end S
 namespace StructWrap
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance StructWrap_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t go!"i" l) v.i' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "i" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t go!"i" l) v.i' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance StructWrap_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«StructWrapⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«StructWrapⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance StructWrap_access_load_i (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t go!"i" l) v.i' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t go!"i" l) v.i' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance StructWrap_access_store_i (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t) (i' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t go!"i" l) v.i' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t go!"i" l) i' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with i' := i' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with i' := i' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end StructWrap
@@ -866,38 +847,37 @@ end StructWrap
 namespace StructWithFunc
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance StructWithFunc_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t go!"fn" l) v.fn' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "fn" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t go!"fn" l) v.fn' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance StructWithFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«StructWithFuncⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«StructWithFuncⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance StructWithFunc_access_load_fn (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t go!"fn" l) v.fn' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t go!"fn" l) v.fn' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance StructWithFunc_access_store_fn (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t) (fn' : func.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t go!"fn" l) v.fn' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t go!"fn" l) fn' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fn' := fn' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fn' := fn' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end StructWithFunc
@@ -905,23 +885,22 @@ end StructWithFunc
 namespace switchConcrete
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance switchConcrete_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.switchConcrete.t where
   typed_pointsto_def l v dq := iprop(
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance switchConcrete_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.switchConcrete.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«switchConcreteⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.switchConcrete.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«switchConcreteⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end switchConcrete
@@ -929,53 +908,52 @@ end switchConcrete
 namespace List'
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance List'_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
     TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"X" l) v.X' dq ∗
-    typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"Next" l) v.Next' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "X" ∷ typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"X" l) v.X' dq ∗
+    "Next" ∷ typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"Next" l) v.Next' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
-instance List'_into_val_typed (T : go.type) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«List'ⁱᵐᵖˡ» T) :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+instance List'_into_val_typed (T : go.type) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«List'ⁱᵐᵖˡ» T) := by
+  solve_into_val_typed_struct
 
 instance List'_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"X" l) v.X' dq)
       (typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"X" l) v.X' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance List'_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T')) (X' : T') :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"X" l) v.X' (DFrac.own 1))
       (typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"X" l) X' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with X' := X' } : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T')) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with X' := X' } : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T')) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance List'_access_load_Next {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"Next" l) v.Next' dq)
       (typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"Next" l) v.Next' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance List'_access_store_Next {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T')) (Next' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"Next" l) v.Next' (DFrac.own 1))
       (typed_pointsto (struct_field_ref (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T') go!"Next" l) Next' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Next' := Next' } : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T')) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Next' := Next' } : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List'.t T')) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end List'
@@ -983,83 +961,82 @@ end List'
 namespace Log
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 instance Log_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"d" l) v.d' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"l" l) v.l' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"cache" l) v.cache' dq ∗
-    typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"length" l) v.length' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "d" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"d" l) v.d' dq ∗
+    "l" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"l" l) v.l' dq ∗
+    "cache" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"cache" l) v.cache' dq ∗
+    "length" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"length" l) v.length' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Log_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Logⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Logⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Log_access_load_d (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"d" l) v.d' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"d" l) v.d' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Log_access_store_d (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (d' : github_com.goose_lang.primitive.disk.Disk.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"d" l) v.d' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"d" l) d' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with d' := d' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with d' := d' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Log_access_load_l (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"l" l) v.l' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"l" l) v.l' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Log_access_store_l (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (l' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"l" l) v.l' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"l" l) l' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with l' := l' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with l' := l' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Log_access_load_cache (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"cache" l) v.cache' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"cache" l) v.cache' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Log_access_store_cache (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (cache' : map.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"cache" l) v.cache' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"cache" l) cache' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cache' := cache' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cache' := cache' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Log_access_load_length (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"length" l) v.length' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"length" l) v.length' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Log_access_store_length (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (length' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"length" l) v.length' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t go!"length" l) length' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with length' := length' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with length' := length' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Log

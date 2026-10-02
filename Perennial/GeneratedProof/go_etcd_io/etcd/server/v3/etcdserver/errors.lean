@@ -11,60 +11,59 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace go_etcd_io.etcd.server.v3.etcdserver.errors
 
 namespace DiscoveryError
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.errors.Assumptions]
 
 instance DiscoveryError_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "Op" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq ∗
+    "Err" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance DiscoveryError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go_etcd_io.etcd.server.v3.etcdserver.errors.«DiscoveryErrorⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go_etcd_io.etcd.server.v3.etcdserver.errors.«DiscoveryErrorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance DiscoveryError_access_load_Op (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance DiscoveryError_access_store_Op (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (Op' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) Op' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Op' := Op' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Op' := Op' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance DiscoveryError_access_load_Err (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance DiscoveryError_access_store_Err (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (Err' : error.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) Err' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Err' := Err' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Err' := Err' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end DiscoveryError

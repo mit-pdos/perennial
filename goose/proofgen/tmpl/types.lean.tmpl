@@ -12,20 +12,15 @@
 
 {{ define "LeanIntoValParams" -}}
 {{- range $p:= . -}}
-({{$p}} : go.type) { {{- $p}}' : Type} [ZeroVal {{$p}}'] [TypedPointsto (GF := GF) {{$p}}'] [IntoValTyped {{$p}}' {{$p}}] {{ end -}}
+({{$p}} : go.type) { {{- $p}}' : Type} [ZeroVal {{$p}}'] [TypedPointsto (GF := GF) {{$p}}'] [IntoValTyped (GF := GF) {{$p}}' {{$p}}] {{ end -}}
 {{- end -}}
 
 {{- range $t := .Types -}}
 namespace {{$t.Name}}
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-{{ if eq $.Ffi "" -}}
-variable [hG : heapGS GF]
-{{ else -}}
-variable [heapGS GF]
-{{ end -}}
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 {{ if $.Bootstrap -}}
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 {{ else -}}
@@ -42,20 +37,20 @@ instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "LeanTypedPo
     TypedPointsto (GF := GF) {{template "LeanGallinaType" $t}} where
   typed_pointsto_def l v dq := iprop(
 {{- range $f := $t.LeanFields }}
-    typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq ∗
+    {{$f.HypName}} ∷ typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq ∗
 {{- end }}
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := {{ if $.TrustProofGen }}sorry -- Rocq: Admitted{{ else }}sorry -- TODO(port): solve_typed_pointsto_agree{{ end }}
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := {{ if $.TrustProofGen }}sorry -- Rocq: Admitted{{ else }}by solve_typed_pointsto_agree{{ end }}
 {{- end }}
 
 instance {{leanq (print $t.RawName "_into_val_typed")}} {{ template "LeanIntoValParams" $t.TypeParams }}:
     IntoValTypedUnderlying (GF := GF) {{template "LeanGallinaType" $t}} {{ template "LeanGoTypeImpl" $t}} :=
 {{- if or $t.Axiomatize $.TrustProofGen }}
   sorry -- Rocq: Admitted
-{{- else }}
-  sorry -- TODO(port): solve_into_val_typed_struct
+{{- else }} by
+  solve_into_val_typed_struct
 {{- end }}
 {{ range $f := $t.LeanFields }}
 instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : loc) (v : {{ template "LeanGallinaType" $t}}) (dq : DFrac) :
@@ -63,14 +58,18 @@ instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ template "LeanT
       (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
       (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- {{ if $.TrustProofGen }}Rocq: Admitted{{ else }}TODO(port): solve_pointsto_access_struct{{ end }}
+{{- if $.TrustProofGen }}
+  sorry -- Rocq: Admitted{{ else }} by
+  solve_pointsto_access_struct{{ end }}
 
 instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : loc) (v : {{ template "LeanGallinaType" $t}}) ({{$f.Proj}} : {{$f.Type}}) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} (DFrac.own 1))
       (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) {{$f.Proj}} (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with {{$f.Proj}} := {{$f.Proj}} } : {{ template "LeanGallinaType" $t}}) (DFrac.own 1)) :=
-  sorry -- {{ if $.TrustProofGen }}Rocq: Admitted{{ else }}TODO(port): solve_pointsto_access_struct{{ end }}
+{{- if $.TrustProofGen }}
+  sorry -- Rocq: Admitted{{ else }} by
+  solve_pointsto_access_struct{{ end }}
 {{ end }}
 end def_
 end {{$t.Name}}

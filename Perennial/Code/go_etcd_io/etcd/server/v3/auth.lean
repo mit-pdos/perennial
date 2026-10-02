@@ -562,7 +562,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end AuthInfo
 
-def AuthInfo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def AuthInfo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Username" go.string),
 (go.field_decl.FieldDecl go!"Revision" go.uint64)]
 
@@ -573,7 +573,7 @@ instance equals_unfold_AuthInfo [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold AuthInfo'fds AuthInfo'fds_unsealed :=
   ⟨by unfold AuthInfo'fds; rfl⟩
 
-def «AuthInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «AuthInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType AuthInfo'fds)
 
 class AuthInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

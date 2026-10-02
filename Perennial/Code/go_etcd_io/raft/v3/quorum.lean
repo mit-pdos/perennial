@@ -738,7 +738,7 @@ namespace MajorityConfig
 abbrev t [ffi_syntax] : Type := map.t
 end MajorityConfig
 
-def «MajorityConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «MajorityConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.MapType go.uint64 (go.type.StructType []))
 
 class MajorityConfig_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -775,7 +775,7 @@ namespace JointConfig
 abbrev t [ffi_syntax] : Type := (array.t MajorityConfig.t 2)
 end JointConfig
 
-def «JointConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «JointConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.ArrayType 2 MajorityConfig)
 
 class JointConfig_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -812,7 +812,7 @@ namespace Index'
 abbrev t [ffi_syntax] : Type := w64
 end Index'
 
-def «Index'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Index'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 class Index_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -837,7 +837,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end tup
 
-def tup'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def tup'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"id" go.uint64),
 (go.field_decl.FieldDecl go!"idx" Index'),
 (go.field_decl.FieldDecl go!"ok" go.bool),
@@ -850,7 +850,7 @@ instance equals_unfold_tup [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold tup'fds tup'fds_unsealed :=
   ⟨by unfold tup'fds; rfl⟩
 
-def «tupⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «tupⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType tup'fds)
 
 class tup_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -880,7 +880,7 @@ namespace AckedIndexer
 abbrev t [ffi_syntax] : Type := interface.t
 end AckedIndexer
 
-def «AckedIndexerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «AckedIndexerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"AckedIndex" (go.signature.Signature [go.uint64] false [Index', go.bool]))])
 
 class AckedIndexer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -892,7 +892,7 @@ namespace mapAckIndexer
 abbrev t [ffi_syntax] : Type := map.t
 end mapAckIndexer
 
-def «mapAckIndexerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «mapAckIndexerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.MapType go.uint64 Index')
 
 class mapAckIndexer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -909,7 +909,7 @@ namespace VoteResult
 abbrev t [ffi_syntax] : Type := w8
 end VoteResult
 
-def «VoteResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «VoteResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint8
 
 class VoteResult_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

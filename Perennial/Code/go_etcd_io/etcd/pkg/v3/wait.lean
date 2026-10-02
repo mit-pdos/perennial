@@ -406,7 +406,7 @@ namespace Wait
 abbrev t [ffi_syntax] : Type := interface.t
 end Wait
 
-def «Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"IsRegistered" (go.signature.Signature [go.uint64] false [go.bool])), (go.interface_elem.MethodElem go!"Register" (go.signature.Signature [go.uint64] false [(go.type.ChannelType go.chan_dir.recvonly go.any)])), (go.interface_elem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64, go.any] false []))])
 
 class Wait_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -423,7 +423,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end list'
 
-def list'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def list'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"e" (go.type.SliceType listElement))]
 
 @[irreducible] def list'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -433,7 +433,7 @@ instance equals_unfold_list [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold list'fds list'fds_unsealed :=
   ⟨by unfold list'fds; rfl⟩
 
-def «list'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «list'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType list'fds)
 
 class list_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -463,7 +463,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end listElement
 
-def listElement'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def listElement'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"l" _root_.Perennial.sync.RWMutex),
 (go.field_decl.FieldDecl go!"m" (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any)))]
 
@@ -474,7 +474,7 @@ instance equals_unfold_listElement [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold listElement'fds listElement'fds_unsealed :=
   ⟨by unfold listElement'fds; rfl⟩
 
-def «listElementⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «listElementⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType listElement'fds)
 
 class listElement_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -501,7 +501,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end waitWithResponse
 
-def waitWithResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def waitWithResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ch" (go.type.ChannelType go.chan_dir.recvonly go.any))]
 
 @[irreducible] def waitWithResponse'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -511,7 +511,7 @@ instance equals_unfold_waitWithResponse [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold waitWithResponse'fds waitWithResponse'fds_unsealed :=
   ⟨by unfold waitWithResponse'fds; rfl⟩
 
-def «waitWithResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «waitWithResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType waitWithResponse'fds)
 
 class waitWithResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -535,7 +535,7 @@ namespace WaitTime
 abbrev t [ffi_syntax] : Type := interface.t
 end WaitTime
 
-def «WaitTimeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «WaitTimeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64] false [])), (go.interface_elem.MethodElem go!"Wait" (go.signature.Signature [go.uint64] false [(go.type.ChannelType go.chan_dir.recvonly (go.type.StructType []))]))])
 
 class WaitTime_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -554,7 +554,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end timeList
 
-def timeList'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def timeList'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"l" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"lastTriggerDeadline" go.uint64),
 (go.field_decl.FieldDecl go!"m" (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))]
@@ -566,7 +566,7 @@ instance equals_unfold_timeList [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold timeList'fds timeList'fds_unsealed :=
   ⟨by unfold timeList'fds; rfl⟩
 
-def «timeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «timeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType timeList'fds)
 
 class timeList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -11,60 +11,59 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace github_com.tchajed.marshal
 
 namespace Enc
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.tchajed.marshal.Assumptions]
 
 instance Enc_typed_pointsto :
     TypedPointsto (GF := GF) github_com.tchajed.marshal.Enc.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"b" l) v.b' dq ∗
-    typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"off" l) v.off' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "b" ∷ typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"b" l) v.b' dq ∗
+    "off" ∷ typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"off" l) v.off' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Enc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Enc.t github_com.tchajed.marshal.«Encⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Enc.t github_com.tchajed.marshal.«Encⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Enc_access_load_b (l : loc) (v : github_com.tchajed.marshal.Enc.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"b" l) v.b' dq)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Enc_access_store_b (l : loc) (v : github_com.tchajed.marshal.Enc.t) (b' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"b" l) v.b' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.tchajed.marshal.Enc.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.tchajed.marshal.Enc.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Enc_access_load_off (l : loc) (v : github_com.tchajed.marshal.Enc.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"off" l) v.off' dq)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"off" l) v.off' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Enc_access_store_off (l : loc) (v : github_com.tchajed.marshal.Enc.t) (off' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"off" l) v.off' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Enc.t go!"off" l) off' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with off' := off' } : github_com.tchajed.marshal.Enc.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with off' := off' } : github_com.tchajed.marshal.Enc.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Enc
@@ -72,53 +71,52 @@ end Enc
 namespace Dec
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.tchajed.marshal.Assumptions]
 
 instance Dec_typed_pointsto :
     TypedPointsto (GF := GF) github_com.tchajed.marshal.Dec.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"b" l) v.b' dq ∗
-    typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"off" l) v.off' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "b" ∷ typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"b" l) v.b' dq ∗
+    "off" ∷ typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"off" l) v.off' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Dec_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Dec.t github_com.tchajed.marshal.«Decⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Dec.t github_com.tchajed.marshal.«Decⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Dec_access_load_b (l : loc) (v : github_com.tchajed.marshal.Dec.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"b" l) v.b' dq)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Dec_access_store_b (l : loc) (v : github_com.tchajed.marshal.Dec.t) (b' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"b" l) v.b' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.tchajed.marshal.Dec.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.tchajed.marshal.Dec.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Dec_access_load_off (l : loc) (v : github_com.tchajed.marshal.Dec.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"off" l) v.off' dq)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"off" l) v.off' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Dec_access_store_off (l : loc) (v : github_com.tchajed.marshal.Dec.t) (off' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"off" l) v.off' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.tchajed.marshal.Dec.t go!"off" l) off' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with off' := off' } : github_com.tchajed.marshal.Dec.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with off' := off' } : github_com.tchajed.marshal.Dec.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Dec

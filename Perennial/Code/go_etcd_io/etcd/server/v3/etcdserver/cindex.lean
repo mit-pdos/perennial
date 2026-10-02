@@ -420,7 +420,7 @@ namespace Backend
 abbrev t [ffi_syntax] : Type := interface.t
 end Backend
 
-def «Backendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Backendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ReadTx" (go.signature.Signature [] false [_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.ReadTx]))])
 
 class Backend_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -432,7 +432,7 @@ namespace ConsistentIndexer
 abbrev t [ffi_syntax] : Type := interface.t
 end ConsistentIndexer
 
-def «ConsistentIndexerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConsistentIndexerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ConsistentApplyingIndex" (go.signature.Signature [] false [go.uint64, go.uint64])), (go.interface_elem.MethodElem go!"ConsistentIndex" (go.signature.Signature [] false [go.uint64])), (go.interface_elem.MethodElem go!"SetBackend" (go.signature.Signature [Backend] false [])), (go.interface_elem.MethodElem go!"SetConsistentApplyingIndex" (go.signature.Signature [go.uint64, go.uint64] false [])), (go.interface_elem.MethodElem go!"SetConsistentIndex" (go.signature.Signature [go.uint64, go.uint64] false [])), (go.interface_elem.MethodElem go!"UnsafeConsistentIndex" (go.signature.Signature [] false [go.uint64])), (go.interface_elem.MethodElem go!"UnsafeSave" (go.signature.Signature [_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.UnsafeReadWriter] false []))])
 
 class ConsistentIndexer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -454,7 +454,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end consistentIndex
 
-def consistentIndex'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def consistentIndex'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"consistentIndex" go.uint64),
 (go.field_decl.FieldDecl go!"term" go.uint64),
 (go.field_decl.FieldDecl go!"applyingIndex" go.uint64),
@@ -469,7 +469,7 @@ instance equals_unfold_consistentIndex [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold consistentIndex'fds consistentIndex'fds_unsealed :=
   ⟨by unfold consistentIndex'fds; rfl⟩
 
-def «consistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «consistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType consistentIndex'fds)
 
 class consistentIndex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -527,7 +527,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end fakeConsistentIndex
 
-def fakeConsistentIndex'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def fakeConsistentIndex'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"index" go.uint64),
 (go.field_decl.FieldDecl go!"term" go.uint64)]
 
@@ -538,7 +538,7 @@ instance equals_unfold_fakeConsistentIndex [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold fakeConsistentIndex'fds fakeConsistentIndex'fds_unsealed :=
   ⟨by unfold fakeConsistentIndex'fds; rfl⟩
 
-def «fakeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «fakeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType fakeConsistentIndex'fds)
 
 class fakeConsistentIndex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

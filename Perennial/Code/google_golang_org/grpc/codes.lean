@@ -93,7 +93,7 @@ namespace Code
 abbrev t [ffi_syntax] : Type := w32
 end Code
 
-def «Codeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Codeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint32
 
 class Code_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

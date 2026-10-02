@@ -119,7 +119,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end Lock
 
-def Lock'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Lock'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ch" (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))]
 
 @[irreducible] def Lock'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -129,7 +129,7 @@ instance equals_unfold_Lock [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Lock'fds Lock'fds_unsealed :=
   ⟨by unfold Lock'fds; rfl⟩
 
-def «Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Lock'fds)
 
 class Lock_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -612,7 +612,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Cache
 
-def Cache'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Cache'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"prefix" go.string),
 (go.field_decl.FieldDecl go!"cfg" Config),
 (go.field_decl.FieldDecl go!"watcher" _root_.Perennial.go_etcd_io.etcd.client.v3.Watcher),
@@ -632,7 +632,7 @@ instance equals_unfold_Cache [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Cache'fds Cache'fds_unsealed :=
   ⟨by unfold Cache'fds; rfl⟩
 
-def «Cacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Cacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Cache'fds)
 
 class Cache_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -923,7 +923,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end snapshot
 
-def snapshot'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def snapshot'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"rev" go.int64),
 (go.field_decl.FieldDecl go!"tree" (go.type.PointerType (_root_.Perennial.k8s_io.utils.third_party.forked.golang.btree.BTree (go.type.PointerType kvItem))))]
 
@@ -934,7 +934,7 @@ instance equals_unfold_snapshot [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold snapshot'fds snapshot'fds_unsealed :=
   ⟨by unfold snapshot'fds; rfl⟩
 
-def «snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType snapshot'fds)
 
 class snapshot_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -965,7 +965,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end store
 
-def store'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def store'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.RWMutex),
 (go.field_decl.FieldDecl go!"revCond" (go.type.PointerType _root_.Perennial.sync.Cond)),
 (go.field_decl.FieldDecl go!"degree" go.int),
@@ -979,7 +979,7 @@ instance equals_unfold_store [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold store'fds store'fds_unsealed :=
   ⟨by unfold store'fds; rfl⟩
 
-def «storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType store'fds)
 
 class store_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

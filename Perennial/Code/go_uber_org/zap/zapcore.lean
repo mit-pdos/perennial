@@ -1146,7 +1146,7 @@ namespace FieldType
 abbrev t [ffi_syntax] : Type := w8
 end FieldType
 
-def «FieldTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «FieldTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint8
 
 class FieldType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1167,7 +1167,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Field
 
-def Field'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Field'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" go.string),
 (go.field_decl.FieldDecl go!"Type" FieldType),
 (go.field_decl.FieldDecl go!"Integer" go.int64),
@@ -1181,7 +1181,7 @@ instance equals_unfold_Field [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Field'fds Field'fds_unsealed :=
   ⟨by unfold Field'fds; rfl⟩
 
-def «Fieldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Fieldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Field'fds)
 
 class Field_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -3904,7 +3904,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end leaseCache
 
-def leaseCache'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def leaseCache'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.RWMutex),
 (go.field_decl.FieldDecl go!"entries" (go.type.MapType go.string (go.type.PointerType leaseKey))),
 (go.field_decl.FieldDecl go!"revokes" (go.type.MapType go.string _root_.Perennial.time.Time)),
@@ -3917,7 +3917,7 @@ instance equals_unfold_leaseCache [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold leaseCache'fds leaseCache'fds_unsealed :=
   ⟨by unfold leaseCache'fds; rfl⟩
 
-def «leaseCacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «leaseCacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType leaseCache'fds)
 
 class leaseCache_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3988,7 +3988,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end leaseKey
 
-def leaseKey'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def leaseKey'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"response" (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.GetResponse)),
 (go.field_decl.FieldDecl go!"rev" go.int64),
 (go.field_decl.FieldDecl go!"waitc" (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))]
@@ -4000,7 +4000,7 @@ instance equals_unfold_leaseKey [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold leaseKey'fds leaseKey'fds_unsealed :=
   ⟨by unfold leaseKey'fds; rfl⟩
 
-def «leaseKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «leaseKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType leaseKey'fds)
 
 class leaseKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4042,7 +4042,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end leasingKV
 
-def leasingKV'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def leasingKV'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"cl" (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.Client)),
 (go.field_decl.FieldDecl go!"kv" _root_.Perennial.go_etcd_io.etcd.client.v3.KV),
 (go.field_decl.FieldDecl go!"pfx" go.string),
@@ -4061,7 +4061,7 @@ instance equals_unfold_leasingKV [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold leasingKV'fds leasingKV'fds_unsealed :=
   ⟨by unfold leasingKV'fds; rfl⟩
 
-def «leasingKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «leasingKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType leasingKV'fds)
 
 class leasingKV_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4173,7 +4173,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end txnLeasing
 
-def txnLeasing'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def txnLeasing'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Txn" _root_.Perennial.go_etcd_io.etcd.client.v3.Txn),
 (go.field_decl.FieldDecl go!"lkv" (go.type.PointerType leasingKV)),
 (go.field_decl.FieldDecl go!"ctx" _root_.Perennial.context.Context),
@@ -4188,7 +4188,7 @@ instance equals_unfold_txnLeasing [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold txnLeasing'fds txnLeasing'fds_unsealed :=
   ⟨by unfold txnLeasing'fds; rfl⟩
 
-def «txnLeasingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «txnLeasingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType txnLeasing'fds)
 
 class txnLeasing_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

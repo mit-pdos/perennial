@@ -3639,7 +3639,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end RequestHeader
 
-def RequestHeader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RequestHeader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.FieldDecl go!"Username" go.string),
 (go.field_decl.FieldDecl go!"AuthRevision" go.uint64),
@@ -3654,7 +3654,7 @@ instance equals_unfold_RequestHeader [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RequestHeader'fds RequestHeader'fds_unsealed :=
   ⟨by unfold RequestHeader'fds; rfl⟩
 
-def «RequestHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RequestHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RequestHeader'fds)
 
 class RequestHeader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3731,7 +3731,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end InternalRaftRequest
 
-def InternalRaftRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def InternalRaftRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Header" (go.type.PointerType RequestHeader)),
 (go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.FieldDecl go!"Range" (go.type.PointerType RangeRequest)),
@@ -3775,7 +3775,7 @@ instance equals_unfold_InternalRaftRequest [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold InternalRaftRequest'fds InternalRaftRequest'fds_unsealed :=
   ⟨by unfold InternalRaftRequest'fds; rfl⟩
 
-def «InternalRaftRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «InternalRaftRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType InternalRaftRequest'fds)
 
 class InternalRaftRequest_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4049,7 +4049,7 @@ namespace RangeRequest_SortOrder
 abbrev t [ffi_syntax] : Type := w32
 end RangeRequest_SortOrder
 
-def «RangeRequest_SortOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RangeRequest_SortOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class RangeRequest_SortOrder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4066,7 +4066,7 @@ namespace RangeRequest_SortTarget
 abbrev t [ffi_syntax] : Type := w32
 end RangeRequest_SortTarget
 
-def «RangeRequest_SortTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RangeRequest_SortTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class RangeRequest_SortTarget_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4083,7 +4083,7 @@ namespace Compare_CompareResult
 abbrev t [ffi_syntax] : Type := w32
 end Compare_CompareResult
 
-def «Compare_CompareResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Compare_CompareResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class Compare_CompareResult_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4100,7 +4100,7 @@ namespace Compare_CompareTarget
 abbrev t [ffi_syntax] : Type := w32
 end Compare_CompareTarget
 
-def «Compare_CompareTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Compare_CompareTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class Compare_CompareTarget_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4173,7 +4173,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end ResponseHeader
 
-def ResponseHeader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ResponseHeader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ClusterId" go.uint64),
 (go.field_decl.FieldDecl go!"MemberId" go.uint64),
 (go.field_decl.FieldDecl go!"Revision" go.int64),
@@ -4189,7 +4189,7 @@ instance equals_unfold_ResponseHeader [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ResponseHeader'fds ResponseHeader'fds_unsealed :=
   ⟨by unfold ResponseHeader'fds; rfl⟩
 
-def «ResponseHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ResponseHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ResponseHeader'fds)
 
 class ResponseHeader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4251,7 +4251,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end RangeRequest
 
-def RangeRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RangeRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"RangeEnd" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"Limit" go.int64),
@@ -4276,7 +4276,7 @@ instance equals_unfold_RangeRequest [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RangeRequest'fds RangeRequest'fds_unsealed :=
   ⟨by unfold RangeRequest'fds; rfl⟩
 
-def «RangeRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RangeRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RangeRequest'fds)
 
 class RangeRequest_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4365,7 +4365,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end RangeResponse
 
-def RangeResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RangeResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Header" (go.type.PointerType ResponseHeader)),
 (go.field_decl.FieldDecl go!"Kvs" (go.type.SliceType (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.mvccpb.KeyValue))),
 (go.field_decl.FieldDecl go!"More" go.bool),
@@ -4381,7 +4381,7 @@ instance equals_unfold_RangeResponse [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RangeResponse'fds RangeResponse'fds_unsealed :=
   ⟨by unfold RangeResponse'fds; rfl⟩
 
-def «RangeResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RangeResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RangeResponse'fds)
 
 class RangeResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4436,7 +4436,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end PutRequest
 
-def PutRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def PutRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"Value" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"Lease" go.int64),
@@ -4454,7 +4454,7 @@ instance equals_unfold_PutRequest [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold PutRequest'fds PutRequest'fds_unsealed :=
   ⟨by unfold PutRequest'fds; rfl⟩
 
-def «PutRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «PutRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType PutRequest'fds)
 
 class PutRequest_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4513,7 +4513,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end PutResponse
 
-def PutResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def PutResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Header" (go.type.PointerType ResponseHeader)),
 (go.field_decl.FieldDecl go!"PrevKv" (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.mvccpb.KeyValue)),
 (go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
@@ -4527,7 +4527,7 @@ instance equals_unfold_PutResponse [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold PutResponse'fds PutResponse'fds_unsealed :=
   ⟨by unfold PutResponse'fds; rfl⟩
 
-def «PutResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «PutResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType PutResponse'fds)
 
 class PutResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4571,7 +4571,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end DeleteRangeRequest
 
-def DeleteRangeRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def DeleteRangeRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"RangeEnd" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"PrevKv" go.bool),
@@ -4586,7 +4586,7 @@ instance equals_unfold_DeleteRangeRequest [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold DeleteRangeRequest'fds DeleteRangeRequest'fds_unsealed :=
   ⟨by unfold DeleteRangeRequest'fds; rfl⟩
 
-def «DeleteRangeRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «DeleteRangeRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType DeleteRangeRequest'fds)
 
 class DeleteRangeRequest_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4634,7 +4634,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end DeleteRangeResponse
 
-def DeleteRangeResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def DeleteRangeResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Header" (go.type.PointerType ResponseHeader)),
 (go.field_decl.FieldDecl go!"Deleted" go.int64),
 (go.field_decl.FieldDecl go!"PrevKvs" (go.type.SliceType (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.mvccpb.KeyValue))),
@@ -4649,7 +4649,7 @@ instance equals_unfold_DeleteRangeResponse [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold DeleteRangeResponse'fds DeleteRangeResponse'fds_unsealed :=
   ⟨by unfold DeleteRangeResponse'fds; rfl⟩
 
-def «DeleteRangeResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «DeleteRangeResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType DeleteRangeResponse'fds)
 
 class DeleteRangeResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4687,7 +4687,7 @@ namespace isRequestOp_Request
 abbrev t [ffi_syntax] : Type := interface.t
 end isRequestOp_Request
 
-def «isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"MarshalTo" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.int, go.error])), (go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.int])), (go.interface_elem.MethodElem go!"isRequestOp_Request" (go.signature.Signature [] false []))])
 
 class isRequestOp_Request_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4707,7 +4707,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end RequestOp
 
-def RequestOp'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RequestOp'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Request" isRequestOp_Request),
 (go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte)),
@@ -4720,7 +4720,7 @@ instance equals_unfold_RequestOp [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RequestOp'fds RequestOp'fds_unsealed :=
   ⟨by unfold RequestOp'fds; rfl⟩
 
-def «RequestOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RequestOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RequestOp'fds)
 
 class RequestOp_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4755,7 +4755,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end RequestOp_RequestRange
 
-def RequestOp_RequestRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RequestOp_RequestRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"RequestRange" (go.type.PointerType RangeRequest))]
 
 @[irreducible] def RequestOp_RequestRange'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -4765,7 +4765,7 @@ instance equals_unfold_RequestOp_RequestRange [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RequestOp_RequestRange'fds RequestOp_RequestRange'fds_unsealed :=
   ⟨by unfold RequestOp_RequestRange'fds; rfl⟩
 
-def «RequestOp_RequestRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RequestOp_RequestRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RequestOp_RequestRange'fds)
 
 class RequestOp_RequestRange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4796,7 +4796,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end RequestOp_RequestPut
 
-def RequestOp_RequestPut'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RequestOp_RequestPut'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"RequestPut" (go.type.PointerType PutRequest))]
 
 @[irreducible] def RequestOp_RequestPut'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -4806,7 +4806,7 @@ instance equals_unfold_RequestOp_RequestPut [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RequestOp_RequestPut'fds RequestOp_RequestPut'fds_unsealed :=
   ⟨by unfold RequestOp_RequestPut'fds; rfl⟩
 
-def «RequestOp_RequestPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RequestOp_RequestPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RequestOp_RequestPut'fds)
 
 class RequestOp_RequestPut_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4837,7 +4837,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end RequestOp_RequestDeleteRange
 
-def RequestOp_RequestDeleteRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RequestOp_RequestDeleteRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"RequestDeleteRange" (go.type.PointerType DeleteRangeRequest))]
 
 @[irreducible] def RequestOp_RequestDeleteRange'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -4847,7 +4847,7 @@ instance equals_unfold_RequestOp_RequestDeleteRange [ffi_syntax] [GoGlobalContex
     EqualsUnfold RequestOp_RequestDeleteRange'fds RequestOp_RequestDeleteRange'fds_unsealed :=
   ⟨by unfold RequestOp_RequestDeleteRange'fds; rfl⟩
 
-def «RequestOp_RequestDeleteRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RequestOp_RequestDeleteRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RequestOp_RequestDeleteRange'fds)
 
 class RequestOp_RequestDeleteRange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4878,7 +4878,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end RequestOp_RequestTxn
 
-def RequestOp_RequestTxn'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RequestOp_RequestTxn'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"RequestTxn" (go.type.PointerType TxnRequest))]
 
 @[irreducible] def RequestOp_RequestTxn'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -4888,7 +4888,7 @@ instance equals_unfold_RequestOp_RequestTxn [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RequestOp_RequestTxn'fds RequestOp_RequestTxn'fds_unsealed :=
   ⟨by unfold RequestOp_RequestTxn'fds; rfl⟩
 
-def «RequestOp_RequestTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RequestOp_RequestTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RequestOp_RequestTxn'fds)
 
 class RequestOp_RequestTxn_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4914,7 +4914,7 @@ namespace isResponseOp_Response
 abbrev t [ffi_syntax] : Type := interface.t
 end isResponseOp_Response
 
-def «isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"MarshalTo" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.int, go.error])), (go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.int])), (go.interface_elem.MethodElem go!"isResponseOp_Response" (go.signature.Signature [] false []))])
 
 class isResponseOp_Response_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4934,7 +4934,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end ResponseOp
 
-def ResponseOp'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ResponseOp'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Response" isResponseOp_Response),
 (go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte)),
@@ -4947,7 +4947,7 @@ instance equals_unfold_ResponseOp [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ResponseOp'fds ResponseOp'fds_unsealed :=
   ⟨by unfold ResponseOp'fds; rfl⟩
 
-def «ResponseOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ResponseOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ResponseOp'fds)
 
 class ResponseOp_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -4982,7 +4982,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end ResponseOp_ResponseRange
 
-def ResponseOp_ResponseRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ResponseOp_ResponseRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ResponseRange" (go.type.PointerType RangeResponse))]
 
 @[irreducible] def ResponseOp_ResponseRange'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -4992,7 +4992,7 @@ instance equals_unfold_ResponseOp_ResponseRange [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ResponseOp_ResponseRange'fds ResponseOp_ResponseRange'fds_unsealed :=
   ⟨by unfold ResponseOp_ResponseRange'fds; rfl⟩
 
-def «ResponseOp_ResponseRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ResponseOp_ResponseRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ResponseOp_ResponseRange'fds)
 
 class ResponseOp_ResponseRange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5023,7 +5023,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end ResponseOp_ResponsePut
 
-def ResponseOp_ResponsePut'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ResponseOp_ResponsePut'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ResponsePut" (go.type.PointerType PutResponse))]
 
 @[irreducible] def ResponseOp_ResponsePut'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5033,7 +5033,7 @@ instance equals_unfold_ResponseOp_ResponsePut [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ResponseOp_ResponsePut'fds ResponseOp_ResponsePut'fds_unsealed :=
   ⟨by unfold ResponseOp_ResponsePut'fds; rfl⟩
 
-def «ResponseOp_ResponsePutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ResponseOp_ResponsePutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ResponseOp_ResponsePut'fds)
 
 class ResponseOp_ResponsePut_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5064,7 +5064,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end ResponseOp_ResponseDeleteRange
 
-def ResponseOp_ResponseDeleteRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ResponseOp_ResponseDeleteRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ResponseDeleteRange" (go.type.PointerType DeleteRangeResponse))]
 
 @[irreducible] def ResponseOp_ResponseDeleteRange'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5074,7 +5074,7 @@ instance equals_unfold_ResponseOp_ResponseDeleteRange [ffi_syntax] [GoGlobalCont
     EqualsUnfold ResponseOp_ResponseDeleteRange'fds ResponseOp_ResponseDeleteRange'fds_unsealed :=
   ⟨by unfold ResponseOp_ResponseDeleteRange'fds; rfl⟩
 
-def «ResponseOp_ResponseDeleteRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ResponseOp_ResponseDeleteRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ResponseOp_ResponseDeleteRange'fds)
 
 class ResponseOp_ResponseDeleteRange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5105,7 +5105,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end ResponseOp_ResponseTxn
 
-def ResponseOp_ResponseTxn'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ResponseOp_ResponseTxn'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ResponseTxn" (go.type.PointerType TxnResponse))]
 
 @[irreducible] def ResponseOp_ResponseTxn'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5115,7 +5115,7 @@ instance equals_unfold_ResponseOp_ResponseTxn [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ResponseOp_ResponseTxn'fds ResponseOp_ResponseTxn'fds_unsealed :=
   ⟨by unfold ResponseOp_ResponseTxn'fds; rfl⟩
 
-def «ResponseOp_ResponseTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ResponseOp_ResponseTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ResponseOp_ResponseTxn'fds)
 
 class ResponseOp_ResponseTxn_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5141,7 +5141,7 @@ namespace isCompare_TargetUnion
 abbrev t [ffi_syntax] : Type := interface.t
 end isCompare_TargetUnion
 
-def «isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"MarshalTo" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.int, go.error])), (go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.int])), (go.interface_elem.MethodElem go!"isCompare_TargetUnion" (go.signature.Signature [] false []))])
 
 class isCompare_TargetUnion_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5165,7 +5165,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Compare
 
-def Compare'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Compare'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Result" Compare_CompareResult),
 (go.field_decl.FieldDecl go!"Target" Compare_CompareTarget),
 (go.field_decl.FieldDecl go!"Key" (go.type.SliceType go.byte)),
@@ -5182,7 +5182,7 @@ instance equals_unfold_Compare [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Compare'fds Compare'fds_unsealed :=
   ⟨by unfold Compare'fds; rfl⟩
 
-def «Compareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Compareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Compare'fds)
 
 class Compare_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5233,7 +5233,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end Compare_Version
 
-def Compare_Version'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Compare_Version'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Version" go.int64)]
 
 @[irreducible] def Compare_Version'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5243,7 +5243,7 @@ instance equals_unfold_Compare_Version [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Compare_Version'fds Compare_Version'fds_unsealed :=
   ⟨by unfold Compare_Version'fds; rfl⟩
 
-def «Compare_Versionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Compare_Versionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Compare_Version'fds)
 
 class Compare_Version_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5274,7 +5274,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end Compare_CreateRevision
 
-def Compare_CreateRevision'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Compare_CreateRevision'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"CreateRevision" go.int64)]
 
 @[irreducible] def Compare_CreateRevision'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5284,7 +5284,7 @@ instance equals_unfold_Compare_CreateRevision [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Compare_CreateRevision'fds Compare_CreateRevision'fds_unsealed :=
   ⟨by unfold Compare_CreateRevision'fds; rfl⟩
 
-def «Compare_CreateRevisionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Compare_CreateRevisionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Compare_CreateRevision'fds)
 
 class Compare_CreateRevision_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5315,7 +5315,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end Compare_ModRevision
 
-def Compare_ModRevision'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Compare_ModRevision'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ModRevision" go.int64)]
 
 @[irreducible] def Compare_ModRevision'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5325,7 +5325,7 @@ instance equals_unfold_Compare_ModRevision [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Compare_ModRevision'fds Compare_ModRevision'fds_unsealed :=
   ⟨by unfold Compare_ModRevision'fds; rfl⟩
 
-def «Compare_ModRevisionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Compare_ModRevisionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Compare_ModRevision'fds)
 
 class Compare_ModRevision_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5356,7 +5356,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end Compare_Value
 
-def Compare_Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Compare_Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" (go.type.SliceType go.byte))]
 
 @[irreducible] def Compare_Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5366,7 +5366,7 @@ instance equals_unfold_Compare_Value [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Compare_Value'fds Compare_Value'fds_unsealed :=
   ⟨by unfold Compare_Value'fds; rfl⟩
 
-def «Compare_Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Compare_Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Compare_Value'fds)
 
 class Compare_Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5397,7 +5397,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end Compare_Lease
 
-def Compare_Lease'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Compare_Lease'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Lease" go.int64)]
 
 @[irreducible] def Compare_Lease'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5407,7 +5407,7 @@ instance equals_unfold_Compare_Lease [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Compare_Lease'fds Compare_Lease'fds_unsealed :=
   ⟨by unfold Compare_Lease'fds; rfl⟩
 
-def «Compare_Leaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Compare_Leaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Compare_Lease'fds)
 
 class Compare_Lease_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5443,7 +5443,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end TxnRequest
 
-def TxnRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TxnRequest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Compare" (go.type.SliceType (go.type.PointerType Compare))),
 (go.field_decl.FieldDecl go!"Success" (go.type.SliceType (go.type.PointerType RequestOp))),
 (go.field_decl.FieldDecl go!"Failure" (go.type.SliceType (go.type.PointerType RequestOp))),
@@ -5458,7 +5458,7 @@ instance equals_unfold_TxnRequest [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold TxnRequest'fds TxnRequest'fds_unsealed :=
   ⟨by unfold TxnRequest'fds; rfl⟩
 
-def «TxnRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «TxnRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType TxnRequest'fds)
 
 class TxnRequest_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5506,7 +5506,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end TxnResponse
 
-def TxnResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TxnResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Header" (go.type.PointerType ResponseHeader)),
 (go.field_decl.FieldDecl go!"Succeeded" go.bool),
 (go.field_decl.FieldDecl go!"Responses" (go.type.SliceType (go.type.PointerType ResponseOp))),
@@ -5521,7 +5521,7 @@ instance equals_unfold_TxnResponse [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold TxnResponse'fds TxnResponse'fds_unsealed :=
   ⟨by unfold TxnResponse'fds; rfl⟩
 
-def «TxnResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «TxnResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType TxnResponse'fds)
 
 class TxnResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

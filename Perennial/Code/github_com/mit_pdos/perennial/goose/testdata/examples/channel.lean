@@ -1870,7 +1870,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Cond
 
-def Cond'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Cond'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"L" _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock),
 (go.field_decl.FieldDecl go!"waiters" (go.type.SliceType (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))]
 
@@ -1881,7 +1881,7 @@ instance equals_unfold_Cond [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Cond'fds Cond'fds_unsealed :=
   ⟨by unfold Cond'fds; rfl⟩
 
-def «Condⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Condⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Cond'fds)
 
 class Cond_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1919,7 +1919,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Result
 
-def Result'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Result'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"value" go.string),
 (go.field_decl.FieldDecl go!"primary_won" go.bool)]
 
@@ -1930,7 +1930,7 @@ instance equals_unfold_Result [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Result'fds Result'fds_unsealed :=
   ⟨by unfold Result'fds; rfl⟩
 
-def «Resultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Resultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Result'fds)
 
 class Result_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1958,7 +1958,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end request
 
-def request'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def request'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"f" (go.type.FunctionType (go.signature.Signature [] false [go.string]))),
 (go.field_decl.FieldDecl go!"result" (go.type.ChannelType go.chan_dir.sendrecv go.string))]
 
@@ -1969,7 +1969,7 @@ instance equals_unfold_request [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold request'fds request'fds_unsealed :=
   ⟨by unfold request'fds; rfl⟩
 
-def «requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType request'fds)
 
 class request_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1997,7 +1997,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end stream
 
-def stream'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def stream'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" (go.type.ChannelType go.chan_dir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"res" (go.type.ChannelType go.chan_dir.sendrecv go.string))]
 
@@ -2008,7 +2008,7 @@ instance equals_unfold_stream [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold stream'fds stream'fds_unsealed :=
   ⟨by unfold stream'fds; rfl⟩
 
-def «streamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «streamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType stream'fds)
 
 class stream_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2037,7 +2037,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end streamold
 
-def streamold'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def streamold'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" (go.type.ChannelType go.chan_dir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"res" (go.type.ChannelType go.chan_dir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"f" (go.type.FunctionType (go.signature.Signature [go.string] false [go.string])))]
@@ -2049,7 +2049,7 @@ instance equals_unfold_streamold [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold streamold'fds streamold'fds_unsealed :=
   ⟨by unfold streamold'fds; rfl⟩
 
-def «streamoldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «streamoldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType streamold'fds)
 
 class streamold_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

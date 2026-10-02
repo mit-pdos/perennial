@@ -200,7 +200,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end LockedStack
 
-def LockedStack'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LockedStack'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"stack" (go.type.SliceType go.string))]
 
@@ -211,7 +211,7 @@ instance equals_unfold_LockedStack [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold LockedStack'fds LockedStack'fds_unsealed :=
   ⟨by unfold LockedStack'fds; rfl⟩
 
-def «LockedStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «LockedStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType LockedStack'fds)
 
 class LockedStack_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -243,7 +243,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end EliminationStack
 
-def EliminationStack'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def EliminationStack'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"base" (go.type.PointerType LockedStack)),
 (go.field_decl.FieldDecl go!"exchanger" (go.type.ChannelType go.chan_dir.sendrecv go.string))]
 
@@ -254,7 +254,7 @@ instance equals_unfold_EliminationStack [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold EliminationStack'fds EliminationStack'fds_unsealed :=
   ⟨by unfold EliminationStack'fds; rfl⟩
 
-def «EliminationStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «EliminationStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType EliminationStack'fds)
 
 class EliminationStack_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

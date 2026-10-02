@@ -975,7 +975,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Timer
 
-def Timer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Timer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"C" (go.type.ChannelType go.chan_dir.recvonly Time)),
 (go.field_decl.FieldDecl go!"initTimer" go.bool)]
 
@@ -986,7 +986,7 @@ instance equals_unfold_Timer [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Timer'fds Timer'fds_unsealed :=
   ⟨by unfold Timer'fds; rfl⟩
 
-def «Timerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Timerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Timer'fds)
 
 class Timer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1030,7 +1030,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end Time
 
-def Time'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Time'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wall" go.uint64),
 (go.field_decl.FieldDecl go!"ext" go.int64),
 (go.field_decl.FieldDecl go!"loc" (go.type.PointerType Location))]
@@ -1042,7 +1042,7 @@ instance equals_unfold_Time [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Time'fds Time'fds_unsealed :=
   ⟨by unfold Time'fds; rfl⟩
 
-def «Timeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Timeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Time'fds)
 
 class Time_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1229,7 +1229,7 @@ namespace Duration
 abbrev t [ffi_syntax] : Type := w64
 end Duration
 
-def «Durationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Durationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int64
 
 class Duration_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

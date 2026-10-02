@@ -84,7 +84,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Changer
 
-def Changer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Changer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Tracker" _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker),
 (go.field_decl.FieldDecl go!"LastIndex" go.uint64)]
 
@@ -95,7 +95,7 @@ instance equals_unfold_Changer [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Changer'fds Changer'fds_unsealed :=
   ⟨by unfold Changer'fds; rfl⟩
 
-def «Changerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Changerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Changer'fds)
 
 class Changer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

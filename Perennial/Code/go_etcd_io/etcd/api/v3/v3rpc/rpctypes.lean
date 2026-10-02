@@ -1799,7 +1799,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end EtcdError
 
-def EtcdError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def EtcdError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"code" _root_.Perennial.google_golang_org.grpc.codes.Code),
 (go.field_decl.FieldDecl go!"desc" go.string)]
 
@@ -1810,7 +1810,7 @@ instance equals_unfold_EtcdError [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold EtcdError'fds EtcdError'fds_unsealed :=
   ⟨by unfold EtcdError'fds; rfl⟩
 
-def «EtcdErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «EtcdErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType EtcdError'fds)
 
 class EtcdError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1846,7 +1846,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end TokenFieldNameGRPCKey
 
-def TokenFieldNameGRPCKey'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TokenFieldNameGRPCKey'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def TokenFieldNameGRPCKey'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -1856,7 +1856,7 @@ instance equals_unfold_TokenFieldNameGRPCKey [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold TokenFieldNameGRPCKey'fds TokenFieldNameGRPCKey'fds_unsealed :=
   ⟨by unfold TokenFieldNameGRPCKey'fds; rfl⟩
 
-def «TokenFieldNameGRPCKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «TokenFieldNameGRPCKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType TokenFieldNameGRPCKey'fds)
 
 class TokenFieldNameGRPCKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

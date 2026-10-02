@@ -328,7 +328,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end Log
 
-def Log'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Log'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"m" (go.type.PointerType _root_.Perennial.sync.Mutex)),
 (go.field_decl.FieldDecl go!"sz" go.uint64),
 (go.field_decl.FieldDecl go!"diskSz" go.uint64)]
@@ -340,7 +340,7 @@ instance equals_unfold_Log [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Log'fds Log'fds_unsealed :=
   ⟨by unfold Log'fds; rfl⟩
 
-def «Logⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Logⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Log'fds)
 
 class Log_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

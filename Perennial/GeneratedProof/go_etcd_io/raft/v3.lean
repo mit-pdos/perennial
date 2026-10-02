@@ -27,31 +27,30 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace go_etcd_io.raft.v3
 
 namespace unstable
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance unstable_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.unstable.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"snapshot" l) v.snapshot' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"entries" l) v.entries' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"offset" l) v.offset' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"snapshotInProgress" l) v.snapshotInProgress' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"offsetInProgress" l) v.offsetInProgress' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"logger" l) v.logger' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "snapshot" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"snapshot" l) v.snapshot' dq ∗
+    "entries" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"entries" l) v.entries' dq ∗
+    "offset" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"offset" l) v.offset' dq ∗
+    "snapshotInProgress" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"snapshotInProgress" l) v.snapshotInProgress' dq ∗
+    "offsetInProgress" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"offsetInProgress" l) v.offsetInProgress' dq ∗
+    "logger" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.unstable.t go!"logger" l) v.logger' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance unstable_into_val_typed :
@@ -148,27 +147,26 @@ end unstable
 namespace raftLog
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance raftLog_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.raftLog.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"storage" l) v.storage' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"unstable" l) v.unstable' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"committed" l) v.committed' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"applying" l) v.applying' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"applied" l) v.applied' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"logger" l) v.logger' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"maxApplyingEntsSize" l) v.maxApplyingEntsSize' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"applyingEntsSize" l) v.applyingEntsSize' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"applyingEntsPaused" l) v.applyingEntsPaused' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "storage" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"storage" l) v.storage' dq ∗
+    "unstable" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"unstable" l) v.unstable' dq ∗
+    "committed" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"committed" l) v.committed' dq ∗
+    "applying" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"applying" l) v.applying' dq ∗
+    "applied" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"applied" l) v.applied' dq ∗
+    "logger" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"logger" l) v.logger' dq ∗
+    "maxApplyingEntsSize" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"maxApplyingEntsSize" l) v.maxApplyingEntsSize' dq ∗
+    "applyingEntsSize" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"applyingEntsSize" l) v.applyingEntsSize' dq ∗
+    "applyingEntsPaused" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raftLog.t go!"applyingEntsPaused" l) v.applyingEntsPaused' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance raftLog_into_val_typed :
@@ -307,20 +305,19 @@ end raftLog
 namespace DefaultLogger
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance DefaultLogger_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.DefaultLogger.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.DefaultLogger.t go!"Logger" l) v.Logger' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.DefaultLogger.t go!"debug" l) v.debug' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "Logger" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.DefaultLogger.t go!"Logger" l) v.Logger' dq ∗
+    "debug" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.DefaultLogger.t go!"debug" l) v.debug' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance DefaultLogger_into_val_typed :
@@ -361,20 +358,19 @@ end DefaultLogger
 namespace SoftState
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance SoftState_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.SoftState.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.SoftState.t go!"Lead" l) v.Lead' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.SoftState.t go!"RaftState" l) v.RaftState' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "Lead" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.SoftState.t go!"Lead" l) v.Lead' dq ∗
+    "RaftState" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.SoftState.t go!"RaftState" l) v.RaftState' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance SoftState_into_val_typed :
@@ -415,26 +411,25 @@ end SoftState
 namespace Ready
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance Ready_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.Ready.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"SoftState" l) v.SoftState' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"HardState" l) v.HardState' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"ReadStates" l) v.ReadStates' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"Entries" l) v.Entries' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"Snapshot" l) v.Snapshot' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"CommittedEntries" l) v.CommittedEntries' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"Messages" l) v.Messages' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"MustSync" l) v.MustSync' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "SoftState" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"SoftState" l) v.SoftState' dq ∗
+    "HardState" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"HardState" l) v.HardState' dq ∗
+    "ReadStates" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"ReadStates" l) v.ReadStates' dq ∗
+    "Entries" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"Entries" l) v.Entries' dq ∗
+    "Snapshot" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"Snapshot" l) v.Snapshot' dq ∗
+    "CommittedEntries" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"CommittedEntries" l) v.CommittedEntries' dq ∗
+    "Messages" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"Messages" l) v.Messages' dq ∗
+    "MustSync" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Ready.t go!"MustSync" l) v.MustSync' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance Ready_into_val_typed :
@@ -559,20 +554,19 @@ end Ready
 namespace Peer
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance Peer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.Peer.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Peer.t go!"ID" l) v.ID' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Peer.t go!"Context" l) v.Context' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "ID" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Peer.t go!"ID" l) v.ID' dq ∗
+    "Context" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Peer.t go!"Context" l) v.Context' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance Peer_into_val_typed :
@@ -613,20 +607,19 @@ end Peer
 namespace msgWithResult
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance msgWithResult_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.msgWithResult.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.msgWithResult.t go!"m" l) v.m' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.msgWithResult.t go!"result" l) v.result' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "m" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.msgWithResult.t go!"m" l) v.m' dq ∗
+    "result" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.msgWithResult.t go!"result" l) v.result' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance msgWithResult_into_val_typed :
@@ -667,29 +660,28 @@ end msgWithResult
 namespace node
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance node_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.node.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"propc" l) v.propc' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"recvc" l) v.recvc' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"confc" l) v.confc' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"confstatec" l) v.confstatec' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"readyc" l) v.readyc' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"advancec" l) v.advancec' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"tickc" l) v.tickc' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"done" l) v.done' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"stop" l) v.stop' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"status" l) v.status' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"rn" l) v.rn' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "propc" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"propc" l) v.propc' dq ∗
+    "recvc" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"recvc" l) v.recvc' dq ∗
+    "confc" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"confc" l) v.confc' dq ∗
+    "confstatec" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"confstatec" l) v.confstatec' dq ∗
+    "readyc" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"readyc" l) v.readyc' dq ∗
+    "advancec" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"advancec" l) v.advancec' dq ∗
+    "tickc" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"tickc" l) v.tickc' dq ∗
+    "done" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"done" l) v.done' dq ∗
+    "stop" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"stop" l) v.stop' dq ∗
+    "status" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"status" l) v.status' dq ∗
+    "rn" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.node.t go!"rn" l) v.rn' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance node_into_val_typed :
@@ -856,19 +848,18 @@ end node
 namespace lockedRand
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance lockedRand_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.lockedRand.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.lockedRand.t go!"mu" l) v.mu' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "mu" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.lockedRand.t go!"mu" l) v.mu' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance lockedRand_into_val_typed :
@@ -895,37 +886,36 @@ end lockedRand
 namespace Config
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance Config_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.Config.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"ID" l) v.ID' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"ElectionTick" l) v.ElectionTick' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"HeartbeatTick" l) v.HeartbeatTick' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"Storage" l) v.Storage' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"Applied" l) v.Applied' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"AsyncStorageWrites" l) v.AsyncStorageWrites' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxSizePerMsg" l) v.MaxSizePerMsg' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxCommittedSizePerReady" l) v.MaxCommittedSizePerReady' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxUncommittedEntriesSize" l) v.MaxUncommittedEntriesSize' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxInflightMsgs" l) v.MaxInflightMsgs' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxInflightBytes" l) v.MaxInflightBytes' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"CheckQuorum" l) v.CheckQuorum' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"PreVote" l) v.PreVote' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"ReadOnlyOption" l) v.ReadOnlyOption' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"Logger" l) v.Logger' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"DisableProposalForwarding" l) v.DisableProposalForwarding' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"DisableConfChangeValidation" l) v.DisableConfChangeValidation' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"StepDownOnRemoval" l) v.StepDownOnRemoval' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"TraceLogger" l) v.TraceLogger' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "ID" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"ID" l) v.ID' dq ∗
+    "ElectionTick" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"ElectionTick" l) v.ElectionTick' dq ∗
+    "HeartbeatTick" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"HeartbeatTick" l) v.HeartbeatTick' dq ∗
+    "Storage" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"Storage" l) v.Storage' dq ∗
+    "Applied" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"Applied" l) v.Applied' dq ∗
+    "AsyncStorageWrites" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"AsyncStorageWrites" l) v.AsyncStorageWrites' dq ∗
+    "MaxSizePerMsg" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxSizePerMsg" l) v.MaxSizePerMsg' dq ∗
+    "MaxCommittedSizePerReady" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxCommittedSizePerReady" l) v.MaxCommittedSizePerReady' dq ∗
+    "MaxUncommittedEntriesSize" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxUncommittedEntriesSize" l) v.MaxUncommittedEntriesSize' dq ∗
+    "MaxInflightMsgs" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxInflightMsgs" l) v.MaxInflightMsgs' dq ∗
+    "MaxInflightBytes" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"MaxInflightBytes" l) v.MaxInflightBytes' dq ∗
+    "CheckQuorum" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"CheckQuorum" l) v.CheckQuorum' dq ∗
+    "PreVote" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"PreVote" l) v.PreVote' dq ∗
+    "ReadOnlyOption" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"ReadOnlyOption" l) v.ReadOnlyOption' dq ∗
+    "Logger" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"Logger" l) v.Logger' dq ∗
+    "DisableProposalForwarding" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"DisableProposalForwarding" l) v.DisableProposalForwarding' dq ∗
+    "DisableConfChangeValidation" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"DisableConfChangeValidation" l) v.DisableConfChangeValidation' dq ∗
+    "StepDownOnRemoval" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"StepDownOnRemoval" l) v.StepDownOnRemoval' dq ∗
+    "TraceLogger" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Config.t go!"TraceLogger" l) v.TraceLogger' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance Config_into_val_typed :
@@ -1204,50 +1194,49 @@ end Config
 namespace raft
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance raft_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.raft.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"id" l) v.id' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"Term" l) v.Term' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"Vote" l) v.Vote' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"readStates" l) v.readStates' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"raftLog" l) v.raftLog' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"maxMsgSize" l) v.maxMsgSize' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"maxUncommittedSize" l) v.maxUncommittedSize' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"trk" l) v.trk' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"state" l) v.state' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"isLearner" l) v.isLearner' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"msgs" l) v.msgs' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"msgsAfterAppend" l) v.msgsAfterAppend' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"lead" l) v.lead' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"leadTransferee" l) v.leadTransferee' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"pendingConfIndex" l) v.pendingConfIndex' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"disableConfChangeValidation" l) v.disableConfChangeValidation' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"uncommittedSize" l) v.uncommittedSize' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"readOnly" l) v.readOnly' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"electionElapsed" l) v.electionElapsed' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"heartbeatElapsed" l) v.heartbeatElapsed' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"checkQuorum" l) v.checkQuorum' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"preVote" l) v.preVote' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"heartbeatTimeout" l) v.heartbeatTimeout' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"electionTimeout" l) v.electionTimeout' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"randomizedElectionTimeout" l) v.randomizedElectionTimeout' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"disableProposalForwarding" l) v.disableProposalForwarding' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"stepDownOnRemoval" l) v.stepDownOnRemoval' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"tick" l) v.tick' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"step" l) v.step' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"logger" l) v.logger' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"pendingReadIndexMessages" l) v.pendingReadIndexMessages' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"traceLogger" l) v.traceLogger' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "id" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"id" l) v.id' dq ∗
+    "Term" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"Term" l) v.Term' dq ∗
+    "Vote" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"Vote" l) v.Vote' dq ∗
+    "readStates" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"readStates" l) v.readStates' dq ∗
+    "raftLog" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"raftLog" l) v.raftLog' dq ∗
+    "maxMsgSize" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"maxMsgSize" l) v.maxMsgSize' dq ∗
+    "maxUncommittedSize" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"maxUncommittedSize" l) v.maxUncommittedSize' dq ∗
+    "trk" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"trk" l) v.trk' dq ∗
+    "state" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"state" l) v.state' dq ∗
+    "isLearner" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"isLearner" l) v.isLearner' dq ∗
+    "msgs" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"msgs" l) v.msgs' dq ∗
+    "msgsAfterAppend" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"msgsAfterAppend" l) v.msgsAfterAppend' dq ∗
+    "lead" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"lead" l) v.lead' dq ∗
+    "leadTransferee" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"leadTransferee" l) v.leadTransferee' dq ∗
+    "pendingConfIndex" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"pendingConfIndex" l) v.pendingConfIndex' dq ∗
+    "disableConfChangeValidation" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"disableConfChangeValidation" l) v.disableConfChangeValidation' dq ∗
+    "uncommittedSize" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"uncommittedSize" l) v.uncommittedSize' dq ∗
+    "readOnly" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"readOnly" l) v.readOnly' dq ∗
+    "electionElapsed" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"electionElapsed" l) v.electionElapsed' dq ∗
+    "heartbeatElapsed" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"heartbeatElapsed" l) v.heartbeatElapsed' dq ∗
+    "checkQuorum" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"checkQuorum" l) v.checkQuorum' dq ∗
+    "preVote" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"preVote" l) v.preVote' dq ∗
+    "heartbeatTimeout" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"heartbeatTimeout" l) v.heartbeatTimeout' dq ∗
+    "electionTimeout" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"electionTimeout" l) v.electionTimeout' dq ∗
+    "randomizedElectionTimeout" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"randomizedElectionTimeout" l) v.randomizedElectionTimeout' dq ∗
+    "disableProposalForwarding" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"disableProposalForwarding" l) v.disableProposalForwarding' dq ∗
+    "stepDownOnRemoval" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"stepDownOnRemoval" l) v.stepDownOnRemoval' dq ∗
+    "tick" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"tick" l) v.tick' dq ∗
+    "step" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"step" l) v.step' dq ∗
+    "logger" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"logger" l) v.logger' dq ∗
+    "pendingReadIndexMessages" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"pendingReadIndexMessages" l) v.pendingReadIndexMessages' dq ∗
+    "traceLogger" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.raft.t go!"traceLogger" l) v.traceLogger' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance raft_into_val_typed :
@@ -1708,23 +1697,22 @@ end raft
 namespace RawNode
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance RawNode_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.RawNode.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"raft" l) v.raft' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"asyncStorageWrites" l) v.asyncStorageWrites' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"prevSoftSt" l) v.prevSoftSt' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"prevHardSt" l) v.prevHardSt' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"stepsOnAdvance" l) v.stepsOnAdvance' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "raft" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"raft" l) v.raft' dq ∗
+    "asyncStorageWrites" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"asyncStorageWrites" l) v.asyncStorageWrites' dq ∗
+    "prevSoftSt" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"prevSoftSt" l) v.prevSoftSt' dq ∗
+    "prevHardSt" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"prevHardSt" l) v.prevHardSt' dq ∗
+    "stepsOnAdvance" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.RawNode.t go!"stepsOnAdvance" l) v.stepsOnAdvance' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance RawNode_into_val_typed :
@@ -1807,20 +1795,19 @@ end RawNode
 namespace ReadState
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance ReadState_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.ReadState.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.ReadState.t go!"Index" l) v.Index' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.ReadState.t go!"RequestCtx" l) v.RequestCtx' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "Index" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.ReadState.t go!"Index" l) v.Index' dq ∗
+    "RequestCtx" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.ReadState.t go!"RequestCtx" l) v.RequestCtx' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance ReadState_into_val_typed :
@@ -1861,20 +1848,19 @@ end ReadState
 namespace readIndexRequest
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance readIndexRequest_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.readIndexRequest.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readIndexRequest.t go!"req" l) v.req' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readIndexRequest.t go!"index" l) v.index' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "req" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readIndexRequest.t go!"req" l) v.req' dq ∗
+    "index" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readIndexRequest.t go!"index" l) v.index' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance readIndexRequest_into_val_typed :
@@ -1915,22 +1901,21 @@ end readIndexRequest
 namespace readOnly
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance readOnly_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.readOnly.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readOnly.t go!"option" l) v.option' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readOnly.t go!"acks" l) v.acks' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readOnly.t go!"unconfirmedReads" l) v.unconfirmedReads' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readOnly.t go!"confirmedReads" l) v.confirmedReads' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "option" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readOnly.t go!"option" l) v.option' dq ∗
+    "acks" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readOnly.t go!"acks" l) v.acks' dq ∗
+    "unconfirmedReads" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readOnly.t go!"unconfirmedReads" l) v.unconfirmedReads' dq ∗
+    "confirmedReads" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.readOnly.t go!"confirmedReads" l) v.confirmedReads' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance readOnly_into_val_typed :
@@ -1999,18 +1984,17 @@ end readOnly
 namespace TracingEvent
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance TracingEvent_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.TracingEvent.t where
   typed_pointsto_def l v dq := iprop(
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance TracingEvent_into_val_typed :
@@ -2023,23 +2007,22 @@ end TracingEvent
 namespace BasicStatus
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance BasicStatus_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.BasicStatus.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"ID" l) v.ID' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"HardState" l) v.HardState' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"SoftState" l) v.SoftState' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"Applied" l) v.Applied' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"LeadTransferee" l) v.LeadTransferee' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "ID" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"ID" l) v.ID' dq ∗
+    "HardState" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"HardState" l) v.HardState' dq ∗
+    "SoftState" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"SoftState" l) v.SoftState' dq ∗
+    "Applied" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"Applied" l) v.Applied' dq ∗
+    "LeadTransferee" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.BasicStatus.t go!"LeadTransferee" l) v.LeadTransferee' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance BasicStatus_into_val_typed :
@@ -2122,21 +2105,20 @@ end BasicStatus
 namespace Status
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance Status_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.Status.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Status.t go!"BasicStatus" l) v.BasicStatus' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Status.t go!"Config" l) v.Config' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Status.t go!"Progress" l) v.Progress' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "BasicStatus" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Status.t go!"BasicStatus" l) v.BasicStatus' dq ∗
+    "Config" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Status.t go!"Config" l) v.Config' dq ∗
+    "Progress" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.Status.t go!"Progress" l) v.Progress' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance Status_into_val_typed :
@@ -2191,24 +2173,23 @@ end Status
 namespace inMemStorageCallStats
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance inMemStorageCallStats_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.inMemStorageCallStats.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"initialState" l) v.initialState' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"firstIndex" l) v.firstIndex' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"lastIndex" l) v.lastIndex' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"entries" l) v.entries' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"term" l) v.term' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"snapshot" l) v.snapshot' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "initialState" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"initialState" l) v.initialState' dq ∗
+    "firstIndex" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"firstIndex" l) v.firstIndex' dq ∗
+    "lastIndex" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"lastIndex" l) v.lastIndex' dq ∗
+    "entries" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"entries" l) v.entries' dq ∗
+    "term" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"term" l) v.term' dq ∗
+    "snapshot" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.inMemStorageCallStats.t go!"snapshot" l) v.snapshot' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance inMemStorageCallStats_into_val_typed :
@@ -2305,23 +2286,22 @@ end inMemStorageCallStats
 namespace MemoryStorage
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance MemoryStorage_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.MemoryStorage.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"Mutex" l) v.Mutex' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"hardState" l) v.hardState' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"snapshot" l) v.snapshot' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"ents" l) v.ents' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"callStats" l) v.callStats' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "Mutex" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"Mutex" l) v.Mutex' dq ∗
+    "hardState" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"hardState" l) v.hardState' dq ∗
+    "snapshot" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"snapshot" l) v.snapshot' dq ∗
+    "ents" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"ents" l) v.ents' dq ∗
+    "callStats" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.MemoryStorage.t go!"callStats" l) v.callStats' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance MemoryStorage_into_val_typed :
@@ -2404,20 +2384,19 @@ end MemoryStorage
 namespace entryID
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance entryID_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.entryID.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.entryID.t go!"term" l) v.term' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.entryID.t go!"index" l) v.index' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "term" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.entryID.t go!"term" l) v.term' dq ∗
+    "index" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.entryID.t go!"index" l) v.index' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance entryID_into_val_typed :
@@ -2458,21 +2437,20 @@ end entryID
 namespace logSlice
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance logSlice_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.raft.v3.logSlice.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.logSlice.t go!"term" l) v.term' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.logSlice.t go!"prev" l) v.prev' dq ∗
-    typed_pointsto (struct_field_ref go_etcd_io.raft.v3.logSlice.t go!"entries" l) v.entries' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
+    "term" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.logSlice.t go!"term" l) v.term' dq ∗
+    "prev" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.logSlice.t go!"prev" l) v.prev' dq ∗
+    "entries" ∷ typed_pointsto (struct_field_ref go_etcd_io.raft.v3.logSlice.t go!"entries" l) v.entries' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
   typed_pointsto_agree := sorry -- Rocq: Admitted
 
 instance logSlice_into_val_typed :

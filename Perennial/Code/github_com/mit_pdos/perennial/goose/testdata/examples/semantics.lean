@@ -5268,7 +5268,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end unit
 
-def unit'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def unit'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def unit'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5278,7 +5278,7 @@ instance equals_unfold_unit [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold unit'fds unit'fds_unsealed :=
   ⟨by unfold unit'fds; rfl⟩
 
-def «unitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «unitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType unit'fds)
 
 class unit_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5298,7 +5298,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Editor
 
-def Editor'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Editor'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" (go.type.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"next_val" go.uint64)]
 
@@ -5309,7 +5309,7 @@ instance equals_unfold_Editor [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Editor'fds Editor'fds_unsealed :=
   ⟨by unfold Editor'fds; rfl⟩
 
-def «Editorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Editorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Editor'fds)
 
 class Editor_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5339,7 +5339,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Pair'
 
-def Pair'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Pair'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
 (go.field_decl.FieldDecl go!"y" go.uint64)]
 
@@ -5350,7 +5350,7 @@ instance equals_unfold_Pair [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Pair'fds Pair'fds_unsealed :=
   ⟨by unfold Pair'fds; rfl⟩
 
-def «Pair'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Pair'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Pair'fds)
 
 class Pair_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5372,7 +5372,7 @@ namespace Uint32
 abbrev t [ffi_syntax] : Type := w32
 end Uint32
 
-def «Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint32
 
 class Uint32_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5384,7 +5384,7 @@ namespace geometryInterface
 abbrev t [ffi_syntax] : Type := interface.t
 end geometryInterface
 
-def «geometryInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «geometryInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Square" (go.signature.Signature [] false [go.uint64])), (go.interface_elem.MethodElem go!"Volume" (go.signature.Signature [] false [go.uint64]))])
 
 class geometryInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5401,7 +5401,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end SquareStruct
 
-def SquareStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SquareStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Side" go.uint64)]
 
 @[irreducible] def SquareStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5411,7 +5411,7 @@ instance equals_unfold_SquareStruct [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold SquareStruct'fds SquareStruct'fds_unsealed :=
   ⟨by unfold SquareStruct'fds; rfl⟩
 
-def «SquareStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SquareStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType SquareStruct'fds)
 
 class SquareStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5444,7 +5444,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end NumStruct
 
-def NumStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def NumStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.int)]
 
 @[irreducible] def NumStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5454,7 +5454,7 @@ instance equals_unfold_NumStruct [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold NumStruct'fds NumStruct'fds_unsealed :=
   ⟨by unfold NumStruct'fds; rfl⟩
 
-def «NumStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «NumStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType NumStruct'fds)
 
 class NumStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5472,7 +5472,7 @@ namespace shapeInterface
 abbrev t [ffi_syntax] : Type := interface.t
 end shapeInterface
 
-def «shapeInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «shapeInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"describe" (go.signature.Signature [] false [go.string]))])
 
 class shapeInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5484,7 +5484,7 @@ namespace polygonInterface
 abbrev t [ffi_syntax] : Type := interface.t
 end polygonInterface
 
-def «polygonInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «polygonInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"sides" (go.signature.Signature [] false [go.uint64]))])
 
 class polygonInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5501,7 +5501,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end shapeStruct
 
-def shapeStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def shapeStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Shape" go.string)]
 
 @[irreducible] def shapeStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5511,7 +5511,7 @@ instance equals_unfold_shapeStruct [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold shapeStruct'fds shapeStruct'fds_unsealed :=
   ⟨by unfold shapeStruct'fds; rfl⟩
 
-def «shapeStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «shapeStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType shapeStruct'fds)
 
 class shapeStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5540,7 +5540,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end polygonStruct
 
-def polygonStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def polygonStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Shape" go.string),
 (go.field_decl.FieldDecl go!"Sides" go.uint64)]
 
@@ -5551,7 +5551,7 @@ instance equals_unfold_polygonStruct [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold polygonStruct'fds polygonStruct'fds_unsealed :=
   ⟨by unfold polygonStruct'fds; rfl⟩
 
-def «polygonStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «polygonStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType polygonStruct'fds)
 
 class polygonStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5583,7 +5583,7 @@ namespace dogInterface
 abbrev t [ffi_syntax] : Type := interface.t
 end dogInterface
 
-def «dogInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «dogInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.interface_elem.MethodElem go!"Speed" (go.signature.Signature [] false [go.uint64]))])
 
 class dogInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5595,7 +5595,7 @@ namespace catInterface
 abbrev t [ffi_syntax] : Type := interface.t
 end catInterface
 
-def «catInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «catInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.interface_elem.MethodElem go!"Weight" (go.signature.Signature [] false [go.uint64]))])
 
 class catInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5607,7 +5607,7 @@ namespace Puppy
 abbrev t [ffi_syntax] : Type := go_string
 end Puppy
 
-def «Puppyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Puppyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.string
 
 class Puppy_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5629,7 +5629,7 @@ namespace Kitten
 abbrev t [ffi_syntax] : Type := go_string
 end Kitten
 
-def «Kittenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Kittenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.string
 
 class Kitten_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5651,7 +5651,7 @@ namespace printInterface
 abbrev t [ffi_syntax] : Type := interface.t
 end printInterface
 
-def «printInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «printInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Assign" (go.signature.Signature [go.string] false [])), (go.interface_elem.MethodElem go!"GetTitle" (go.signature.Signature [] false [go.string]))])
 
 class printInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5668,7 +5668,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end PaperStruct
 
-def PaperStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def PaperStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Title" go.string)]
 
 @[irreducible] def PaperStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5678,7 +5678,7 @@ instance equals_unfold_PaperStruct [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold PaperStruct'fds PaperStruct'fds_unsealed :=
   ⟨by unfold PaperStruct'fds; rfl⟩
 
-def «PaperStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «PaperStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType PaperStruct'fds)
 
 class PaperStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5700,7 +5700,7 @@ namespace Flower
 abbrev t [ffi_syntax] : Type := interface.t
 end Flower
 
-def «Flowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Flowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Petals" (go.signature.Signature [] false [go.uint64]))])
 
 class Flower_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5712,7 +5712,7 @@ namespace Flora
 abbrev t [ffi_syntax] : Type := interface.t
 end Flora
 
-def «Floraⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Floraⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Flower)])])
 
 class Flora_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5728,7 +5728,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Lily
 
-def Lily'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Lily'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def Lily'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5738,7 +5738,7 @@ instance equals_unfold_Lily [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Lily'fds Lily'fds_unsealed :=
   ⟨by unfold Lily'fds; rfl⟩
 
-def «Lilyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Lilyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Lily'fds)
 
 class Lily_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5766,7 +5766,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Rose
 
-def Rose'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Rose'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def Rose'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5776,7 +5776,7 @@ instance equals_unfold_Rose [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Rose'fds Rose'fds_unsealed :=
   ⟨by unfold Rose'fds; rfl⟩
 
-def «Roseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Roseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Rose'fds)
 
 class Rose_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5804,7 +5804,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Daisy
 
-def Daisy'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Daisy'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def Daisy'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5814,7 +5814,7 @@ instance equals_unfold_Daisy [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Daisy'fds Daisy'fds_unsealed :=
   ⟨by unfold Daisy'fds; rfl⟩
 
-def «Daisyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Daisyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Daisy'fds)
 
 class Daisy_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5843,7 +5843,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end LoopStruct
 
-def LoopStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LoopStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"loopNext" (go.type.PointerType go.uint64))]
 
 @[irreducible] def LoopStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -5853,7 +5853,7 @@ instance equals_unfold_LoopStruct [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold LoopStruct'fds LoopStruct'fds_unsealed :=
   ⟨by unfold LoopStruct'fds; rfl⟩
 
-def «LoopStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «LoopStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType LoopStruct'fds)
 
 class LoopStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5884,7 +5884,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end BoolTest
 
-def BoolTest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def BoolTest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"t" go.bool),
 (go.field_decl.FieldDecl go!"f" go.bool),
 (go.field_decl.FieldDecl go!"tc" go.uint64),
@@ -5897,7 +5897,7 @@ instance equals_unfold_BoolTest [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold BoolTest'fds BoolTest'fds_unsealed :=
   ⟨by unfold BoolTest'fds; rfl⟩
 
-def «BoolTestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «BoolTestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType BoolTest'fds)
 
 class BoolTest_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5933,7 +5933,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end ArrayEditor
 
-def ArrayEditor'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ArrayEditor'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" (go.type.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"next_val" go.uint64)]
 
@@ -5944,7 +5944,7 @@ instance equals_unfold_ArrayEditor [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold ArrayEditor'fds ArrayEditor'fds_unsealed :=
   ⟨by unfold ArrayEditor'fds; rfl⟩
 
-def «ArrayEditorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ArrayEditorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType ArrayEditor'fds)
 
 class ArrayEditor_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -5974,7 +5974,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Bar
 
-def Bar'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Bar'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" go.uint64)]
 
@@ -5985,7 +5985,7 @@ instance equals_unfold_Bar [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Bar'fds Bar'fds_unsealed :=
   ⟨by unfold Bar'fds; rfl⟩
 
-def «Barⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Barⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Bar'fds)
 
 class Bar_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6014,7 +6014,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end Foo
 
-def Foo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Foo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"bar" Bar)]
 
 @[irreducible] def Foo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -6024,7 +6024,7 @@ instance equals_unfold_Foo [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Foo'fds Foo'fds_unsealed :=
   ⟨by unfold Foo'fds; rfl⟩
 
-def «Fooⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Fooⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Foo'fds)
 
 class Foo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6050,7 +6050,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end TwoInts
 
-def TwoInts'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TwoInts'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
 (go.field_decl.FieldDecl go!"y" go.uint64)]
 
@@ -6061,7 +6061,7 @@ instance equals_unfold_TwoInts [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold TwoInts'fds TwoInts'fds_unsealed :=
   ⟨by unfold TwoInts'fds; rfl⟩
 
-def «TwoIntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «TwoIntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType TwoInts'fds)
 
 class TwoInts_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6090,7 +6090,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end S
 
-def S'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def S'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" TwoInts),
 (go.field_decl.FieldDecl go!"c" go.bool)]
@@ -6102,7 +6102,7 @@ instance equals_unfold_S [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold S'fds S'fds_unsealed :=
   ⟨by unfold S'fds; rfl⟩
 
-def «Sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType S'fds)
 
 class S_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6146,7 +6146,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end StructWrap
 
-def StructWrap'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def StructWrap'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"i" go.uint64)]
 
 @[irreducible] def StructWrap'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -6156,7 +6156,7 @@ instance equals_unfold_StructWrap [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold StructWrap'fds StructWrap'fds_unsealed :=
   ⟨by unfold StructWrap'fds; rfl⟩
 
-def «StructWrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «StructWrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType StructWrap'fds)
 
 class StructWrap_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6179,7 +6179,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end StructWithFunc
 
-def StructWithFunc'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def StructWithFunc'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"fn" (go.type.FunctionType (go.signature.Signature [go.uint64] false [go.uint64])))]
 
 @[irreducible] def StructWithFunc'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -6189,7 +6189,7 @@ instance equals_unfold_StructWithFunc [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold StructWithFunc'fds StructWithFunc'fds_unsealed :=
   ⟨by unfold StructWithFunc'fds; rfl⟩
 
-def «StructWithFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «StructWithFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType StructWithFunc'fds)
 
 class StructWithFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6211,7 +6211,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end switchConcrete
 
-def switchConcrete'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def switchConcrete'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def switchConcrete'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -6221,7 +6221,7 @@ instance equals_unfold_switchConcrete [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold switchConcrete'fds switchConcrete'fds_unsealed :=
   ⟨by unfold switchConcrete'fds; rfl⟩
 
-def «switchConcreteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «switchConcreteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType switchConcrete'fds)
 
 class switchConcrete_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6237,7 +6237,7 @@ namespace switchInterface
 abbrev t [ffi_syntax] : Type := interface.t
 end switchInterface
 
-def «switchInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «switchInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"marker" (go.signature.Signature [] false []))])
 
 class switchInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6249,7 +6249,7 @@ namespace DefinedStr
 abbrev t [ffi_syntax] : Type := go_string
 end DefinedStr
 
-def «DefinedStrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «DefinedStrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.string
 
 class DefinedStr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6267,7 +6267,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end List'
 
-def List'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def List'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" T),
 (go.field_decl.FieldDecl go!"Next" (go.type.PointerType (List' T)))]
 
@@ -6278,7 +6278,7 @@ instance equals_unfold_List [ffi_syntax] [GoGlobalContext] (T : go.type) :
     EqualsUnfold (List'fds T) (List'fds_unsealed T) :=
   ⟨by unfold List'fds; rfl⟩
 
-def «List'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «List'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (List'fds T))
 
 class List_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -6308,7 +6308,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Log
 
-def Log'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Log'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"d" _root_.Perennial.github_com.goose_lang.primitive.disk.Disk),
 (go.field_decl.FieldDecl go!"l" (go.type.PointerType _root_.Perennial.sync.Mutex)),
 (go.field_decl.FieldDecl go!"cache" (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)),
@@ -6321,7 +6321,7 @@ instance equals_unfold_Log [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Log'fds Log'fds_unsealed :=
   ⟨by unfold Log'fds; rfl⟩
 
-def «Logⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Logⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Log'fds)
 
 class Log_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

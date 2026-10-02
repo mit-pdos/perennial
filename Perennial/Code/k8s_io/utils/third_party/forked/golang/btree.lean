@@ -2263,7 +2263,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end FreeList
 
-def FreeList'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def FreeList'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"freelist" (go.type.SliceType (go.type.PointerType (node T))))]
 
@@ -2274,7 +2274,7 @@ instance equals_unfold_FreeList [ffi_syntax] [GoGlobalContext] (T : go.type) :
     EqualsUnfold (FreeList'fds T) (FreeList'fds_unsealed T) :=
   ⟨by unfold FreeList'fds; rfl⟩
 
-def «FreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «FreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (FreeList'fds T))
 
 class FreeList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2300,7 +2300,7 @@ namespace ItemIterator
 abbrev t [ffi_syntax] (T : Type) : Type := func.t
 end ItemIterator
 
-def «ItemIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «ItemIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.FunctionType (go.signature.Signature [T] false [go.bool]))
 
 class ItemIterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2312,7 +2312,7 @@ namespace items
 abbrev t [ffi_syntax] (T : Type) : Type := slice.t
 end items
 
-def «itemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «itemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.SliceType T)
 
 class items_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2344,7 +2344,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end node
 
-def node'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def node'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"items" (items T)),
 (go.field_decl.FieldDecl go!"children" (items (go.type.PointerType (node T)))),
 (go.field_decl.FieldDecl go!"cow" (go.type.PointerType (copyOnWriteContext T)))]
@@ -2356,7 +2356,7 @@ instance equals_unfold_node [ffi_syntax] [GoGlobalContext] (T : go.type) :
     EqualsUnfold (node'fds T) (node'fds_unsealed T) :=
   ⟨by unfold node'fds; rfl⟩
 
-def «nodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «nodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (node'fds T))
 
 class node_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2402,7 +2402,7 @@ namespace toRemove
 abbrev t [ffi_syntax] : Type := w64
 end toRemove
 
-def «toRemoveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «toRemoveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class toRemove_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2414,7 +2414,7 @@ namespace direction
 abbrev t [ffi_syntax] : Type := w64
 end direction
 
-def «directionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «directionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class direction_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2432,7 +2432,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end optionalItem
 
-def optionalItem'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def optionalItem'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"item" T),
 (go.field_decl.FieldDecl go!"valid" go.bool)]
 
@@ -2443,7 +2443,7 @@ instance equals_unfold_optionalItem [ffi_syntax] [GoGlobalContext] (T : go.type)
     EqualsUnfold (optionalItem'fds T) (optionalItem'fds_unsealed T) :=
   ⟨by unfold optionalItem'fds; rfl⟩
 
-def «optionalItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «optionalItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (optionalItem'fds T))
 
 class optionalItem_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2473,7 +2473,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end BTree
 
-def BTree'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def BTree'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"degree" go.int),
 (go.field_decl.FieldDecl go!"length" go.int),
 (go.field_decl.FieldDecl go!"root" (go.type.PointerType (node T))),
@@ -2486,7 +2486,7 @@ instance equals_unfold_BTree [ffi_syntax] [GoGlobalContext] (T : go.type) :
     EqualsUnfold (BTree'fds T) (BTree'fds_unsealed T) :=
   ⟨by unfold BTree'fds; rfl⟩
 
-def «BTreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «BTreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (BTree'fds T))
 
 class BTree_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2560,7 +2560,7 @@ namespace LessFunc
 abbrev t [ffi_syntax] (T : Type) : Type := func.t
 end LessFunc
 
-def «LessFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «LessFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.FunctionType (go.signature.Signature [T, T] false [go.bool]))
 
 class LessFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2578,7 +2578,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end copyOnWriteContext
 
-def copyOnWriteContext'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def copyOnWriteContext'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"freelist" (go.type.PointerType (FreeList T))),
 (go.field_decl.FieldDecl go!"less" (LessFunc T))]
 
@@ -2589,7 +2589,7 @@ instance equals_unfold_copyOnWriteContext [ffi_syntax] [GoGlobalContext] (T : go
     EqualsUnfold (copyOnWriteContext'fds T) (copyOnWriteContext'fds_unsealed T) :=
   ⟨by unfold copyOnWriteContext'fds; rfl⟩
 
-def «copyOnWriteContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «copyOnWriteContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (copyOnWriteContext'fds T))
 
 class copyOnWriteContext_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2615,7 +2615,7 @@ namespace freeType
 abbrev t [ffi_syntax] : Type := w64
 end freeType
 
-def «freeTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «freeTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int
 
 class freeType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

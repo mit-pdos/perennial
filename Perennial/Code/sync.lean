@@ -1217,7 +1217,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noCopy
 
-def noCopy'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noCopy'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def noCopy'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -1227,7 +1227,7 @@ instance equals_unfold_noCopy [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold noCopy'fds noCopy'fds_unsealed :=
   ⟨by unfold noCopy'fds; rfl⟩
 
-def «noCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «noCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType noCopy'fds)
 
 class noCopy_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1241,7 +1241,7 @@ namespace Locker
 abbrev t [ffi_syntax] : Type := interface.t
 end Locker
 
-def «Lockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Lockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Lock" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Unlock" (go.signature.Signature [] false []))])
 
 class Locker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1291,7 +1291,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Cond
 
-def Cond'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Cond'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"L" Locker),
 (go.field_decl.FieldDecl go!"notify" notifyList),
@@ -1304,7 +1304,7 @@ instance equals_unfold_Cond [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Cond'fds Cond'fds_unsealed :=
   ⟨by unfold Cond'fds; rfl⟩
 
-def «Condⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Condⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Cond'fds)
 
 class Cond_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1375,7 +1375,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end Once
 
-def Once'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Once'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"done" _root_.Perennial.sync.atomic.Bool'),
 (go.field_decl.FieldDecl go!"m" Mutex)]
@@ -1387,7 +1387,7 @@ instance equals_unfold_Once [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Once'fds Once'fds_unsealed :=
   ⟨by unfold Once'fds; rfl⟩
 
-def «Onceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Onceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Once'fds)
 
 class Once_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1546,7 +1546,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end RWMutex
 
-def RWMutex'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RWMutex'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"w" Mutex),
 (go.field_decl.FieldDecl go!"writerSem" go.uint32),
 (go.field_decl.FieldDecl go!"readerSem" go.uint32),
@@ -1560,7 +1560,7 @@ instance equals_unfold_RWMutex [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold RWMutex'fds RWMutex'fds_unsealed :=
   ⟨by unfold RWMutex'fds; rfl⟩
 
-def «RWMutexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RWMutexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType RWMutex'fds)
 
 class RWMutex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1610,7 +1610,7 @@ namespace rlocker
 abbrev t [ffi_syntax] : Type := RWMutex.t
 end rlocker
 
-def «rlockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «rlockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   RWMutex
 
 class rlocker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1629,7 +1629,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end WaitGroup
 
-def WaitGroup'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def WaitGroup'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"state" _root_.Perennial.sync.atomic.Uint64),
 (go.field_decl.FieldDecl go!"sema" go.uint32)]
@@ -1641,7 +1641,7 @@ instance equals_unfold_WaitGroup [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold WaitGroup'fds WaitGroup'fds_unsealed :=
   ⟨by unfold WaitGroup'fds; rfl⟩
 
-def «WaitGroupⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «WaitGroupⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType WaitGroup'fds)
 
 class WaitGroup_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

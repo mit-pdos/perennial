@@ -1183,7 +1183,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noCopy
 
-def noCopy'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noCopy'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def noCopy'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -1193,7 +1193,7 @@ instance equals_unfold_noCopy [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold noCopy'fds noCopy'fds_unsealed :=
   ⟨by unfold noCopy'fds; rfl⟩
 
-def «noCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «noCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType noCopy'fds)
 
 class noCopy_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1213,7 +1213,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Bool'
 
-def Bool'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Bool'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
@@ -1224,7 +1224,7 @@ instance equals_unfold_Bool [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Bool'fds Bool'fds_unsealed :=
   ⟨by unfold Bool'fds; rfl⟩
 
-def «Bool'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Bool'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Bool'fds)
 
 class Bool_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1261,7 +1261,7 @@ instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end Pointer
 
-def Pointer'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def Pointer'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" (go.type.ArrayType 0 (go.type.PointerType T))),
 (go.field_decl.FieldDecl go!"_1" noCopy),
 (go.field_decl.FieldDecl go!"v" «unsafe».Pointer)]
@@ -1273,7 +1273,7 @@ instance equals_unfold_Pointer [ffi_syntax] [GoGlobalContext] (T : go.type) :
     EqualsUnfold (Pointer'fds T) (Pointer'fds_unsealed T) :=
   ⟨by unfold Pointer'fds; rfl⟩
 
-def «Pointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+@[reducible] def «Pointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
   (go.type.StructType (Pointer'fds T))
 
 class Pointer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1313,7 +1313,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Int32
 
-def Int32'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Int32'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"v" go.int32)]
 
@@ -1324,7 +1324,7 @@ instance equals_unfold_Int32 [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Int32'fds Int32'fds_unsealed :=
   ⟨by unfold Int32'fds; rfl⟩
 
-def «Int32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Int32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Int32'fds)
 
 class Int32_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1364,7 +1364,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk⟩
 end align64
 
-def align64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def align64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   []
 
 @[irreducible] def align64'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -1374,7 +1374,7 @@ instance equals_unfold_align64 [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold align64'fds align64'fds_unsealed :=
   ⟨by unfold align64'fds; rfl⟩
 
-def «align64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «align64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType align64'fds)
 
 class align64_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1395,7 +1395,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end Int64
 
-def Int64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Int64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"_1" align64),
 (go.field_decl.FieldDecl go!"v" go.int64)]
@@ -1407,7 +1407,7 @@ instance equals_unfold_Int64 [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Int64'fds Int64'fds_unsealed :=
   ⟨by unfold Int64'fds; rfl⟩
 
-def «Int64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Int64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Int64'fds)
 
 class Int64_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1453,7 +1453,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end Uint32
 
-def Uint32'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uint32'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
@@ -1464,7 +1464,7 @@ instance equals_unfold_Uint32 [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Uint32'fds Uint32'fds_unsealed :=
   ⟨by unfold Uint32'fds; rfl⟩
 
-def «Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Uint32'fds)
 
 class Uint32_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1507,7 +1507,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end Uint64
 
-def Uint64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uint64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"_1" align64),
 (go.field_decl.FieldDecl go!"v" go.uint64)]
@@ -1519,7 +1519,7 @@ instance equals_unfold_Uint64 [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Uint64'fds Uint64'fds_unsealed :=
   ⟨by unfold Uint64'fds; rfl⟩
 
-def «Uint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Uint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Uint64'fds)
 
 class Uint64_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1579,7 +1579,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end Value
 
-def Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"v" go.any)]
 
 @[irreducible] def Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -1589,7 +1589,7 @@ instance equals_unfold_Value [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Value'fds Value'fds_unsealed :=
   ⟨by unfold Value'fds; rfl⟩
 
-def «Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Value'fds)
 
 class Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1621,7 +1621,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def⟩
 end efaceWords
 
-def efaceWords'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def efaceWords'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"typ" «unsafe».Pointer),
 (go.field_decl.FieldDecl go!"data" «unsafe».Pointer)]
 
@@ -1632,7 +1632,7 @@ instance equals_unfold_efaceWords [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold efaceWords'fds efaceWords'fds_unsealed :=
   ⟨by unfold efaceWords'fds; rfl⟩
 
-def «efaceWordsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «efaceWordsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType efaceWords'fds)
 
 class efaceWords_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -307,7 +307,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def⟩
 end errorString
 
-def errorString'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def errorString'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" go.string)]
 
 @[irreducible] def errorString'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
@@ -317,7 +317,7 @@ instance equals_unfold_errorString [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold errorString'fds errorString'fds_unsealed :=
   ⟨by unfold errorString'fds; rfl⟩
 
-def «errorStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «errorStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType errorString'fds)
 
 class errorString_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -14,75 +14,74 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace github_com.goose_lang.std
 
 namespace JoinHandle
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.goose_lang.std.Assumptions]
 
 instance JoinHandle_typed_pointsto :
     TypedPointsto (GF := GF) github_com.goose_lang.std.JoinHandle.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) v.mu' dq ∗
-    typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) v.done' dq ∗
-    typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) v.cond' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "mu" ∷ typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) v.mu' dq ∗
+    "done" ∷ typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) v.done' dq ∗
+    "cond" ∷ typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) v.cond' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance JoinHandle_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.std.JoinHandle.t github_com.goose_lang.std.«JoinHandleⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.std.JoinHandle.t github_com.goose_lang.std.«JoinHandleⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance JoinHandle_access_load_mu (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) v.mu' dq)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) v.mu' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance JoinHandle_access_store_mu (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (mu' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) v.mu' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) mu' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance JoinHandle_access_load_done (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) v.done' dq)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) v.done' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance JoinHandle_access_store_done (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (done' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) v.done' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) done' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance JoinHandle_access_load_cond (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) v.cond' dq)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) v.cond' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance JoinHandle_access_store_cond (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (cond' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) v.cond' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) cond' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cond' := cond' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cond' := cond' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end JoinHandle

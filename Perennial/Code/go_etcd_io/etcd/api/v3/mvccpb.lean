@@ -130,7 +130,7 @@ namespace Event_EventType
 abbrev t [ffi_syntax] : Type := w32
 end Event_EventType
 
-def «Event_EventTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Event_EventTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   go.int32
 
 class Event_EventType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -155,7 +155,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end KeyValue
 
-def KeyValue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def KeyValue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" (go.type.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"CreateRevision" go.int64),
 (go.field_decl.FieldDecl go!"ModRevision" go.int64),
@@ -173,7 +173,7 @@ instance equals_unfold_KeyValue [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold KeyValue'fds KeyValue'fds_unsealed :=
   ⟨by unfold KeyValue'fds; rfl⟩
 
-def «KeyValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «KeyValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType KeyValue'fds)
 
 class KeyValue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -233,7 +233,7 @@ instance zero_val [ffi_syntax] : ZeroVal t :=
   ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Event
 
-def Event'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Event'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Type" Event_EventType),
 (go.field_decl.FieldDecl go!"Kv" (go.type.PointerType KeyValue)),
 (go.field_decl.FieldDecl go!"PrevKv" (go.type.PointerType KeyValue)),
@@ -248,7 +248,7 @@ instance equals_unfold_Event [ffi_syntax] [GoGlobalContext] :
     EqualsUnfold Event'fds Event'fds_unsealed :=
   ⟨by unfold Event'fds; rfl⟩
 
-def «Eventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Eventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.StructType Event'fds)
 
 class Event_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

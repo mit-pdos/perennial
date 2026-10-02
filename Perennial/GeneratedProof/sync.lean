@@ -13,30 +13,29 @@ set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 
 namespace Perennial
-open Iris
+open Iris Iris.BI
 noncomputable section
 namespace sync
 
 namespace noCopy
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
 instance noCopy_typed_pointsto :
     TypedPointsto (GF := GF) sync.noCopy.t where
   typed_pointsto_def l v dq := iprop(
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance noCopy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.noCopy.t sync.«noCopyⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) sync.noCopy.t sync.«noCopyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end noCopy
@@ -44,9 +43,8 @@ end noCopy
 namespace notifyList
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -64,9 +62,8 @@ end notifyList
 namespace copyChecker
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -84,83 +81,82 @@ end copyChecker
 namespace Cond
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
 instance Cond_typed_pointsto :
     TypedPointsto (GF := GF) sync.Cond.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref sync.Cond.t go!"noCopy" l) v.noCopy' dq ∗
-    typed_pointsto (struct_field_ref sync.Cond.t go!"L" l) v.L' dq ∗
-    typed_pointsto (struct_field_ref sync.Cond.t go!"notify" l) v.notify' dq ∗
-    typed_pointsto (struct_field_ref sync.Cond.t go!"checker" l) v.checker' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "noCopy" ∷ typed_pointsto (struct_field_ref sync.Cond.t go!"noCopy" l) v.noCopy' dq ∗
+    "L" ∷ typed_pointsto (struct_field_ref sync.Cond.t go!"L" l) v.L' dq ∗
+    "notify" ∷ typed_pointsto (struct_field_ref sync.Cond.t go!"notify" l) v.notify' dq ∗
+    "checker" ∷ typed_pointsto (struct_field_ref sync.Cond.t go!"checker" l) v.checker' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Cond_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.Cond.t sync.«Condⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) sync.Cond.t sync.«Condⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Cond_access_load_noCopy (l : loc) (v : sync.Cond.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"noCopy" l) v.noCopy' dq)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Cond_access_store_noCopy (l : loc) (v : sync.Cond.t) (noCopy' : sync.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.Cond.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : sync.Cond.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : sync.Cond.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Cond_access_load_L (l : loc) (v : sync.Cond.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"L" l) v.L' dq)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"L" l) v.L' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Cond_access_store_L (l : loc) (v : sync.Cond.t) (L' : sync.Locker.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"L" l) v.L' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.Cond.t go!"L" l) L' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with L' := L' } : sync.Cond.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with L' := L' } : sync.Cond.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Cond_access_load_notify (l : loc) (v : sync.Cond.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"notify" l) v.notify' dq)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"notify" l) v.notify' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Cond_access_store_notify (l : loc) (v : sync.Cond.t) (notify' : sync.notifyList.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"notify" l) v.notify' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.Cond.t go!"notify" l) notify' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with notify' := notify' } : sync.Cond.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with notify' := notify' } : sync.Cond.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Cond_access_load_checker (l : loc) (v : sync.Cond.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"checker" l) v.checker' dq)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"checker" l) v.checker' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Cond_access_store_checker (l : loc) (v : sync.Cond.t) (checker' : sync.copyChecker.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Cond.t go!"checker" l) v.checker' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.Cond.t go!"checker" l) checker' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with checker' := checker' } : sync.Cond.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with checker' := checker' } : sync.Cond.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Cond
@@ -168,9 +164,8 @@ end Cond
 namespace Map
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -188,68 +183,67 @@ end Map
 namespace Once
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
 instance Once_typed_pointsto :
     TypedPointsto (GF := GF) sync.Once.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref sync.Once.t go!"_0" l) v._0' dq ∗
-    typed_pointsto (struct_field_ref sync.Once.t go!"done" l) v.done' dq ∗
-    typed_pointsto (struct_field_ref sync.Once.t go!"m" l) v.m' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "_0" ∷ typed_pointsto (struct_field_ref sync.Once.t go!"_0" l) v._0' dq ∗
+    "done" ∷ typed_pointsto (struct_field_ref sync.Once.t go!"done" l) v.done' dq ∗
+    "m" ∷ typed_pointsto (struct_field_ref sync.Once.t go!"m" l) v.m' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Once_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.Once.t sync.«Onceⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) sync.Once.t sync.«Onceⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Once_access_load__0 (l : loc) (v : sync.Once.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Once.t go!"_0" l) v._0' dq)
       (typed_pointsto (struct_field_ref sync.Once.t go!"_0" l) v._0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Once_access_store__0 (l : loc) (v : sync.Once.t) (_0' : sync.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Once.t go!"_0" l) v._0' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.Once.t go!"_0" l) _0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.Once.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.Once.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Once_access_load_done (l : loc) (v : sync.Once.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Once.t go!"done" l) v.done' dq)
       (typed_pointsto (struct_field_ref sync.Once.t go!"done" l) v.done' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Once_access_store_done (l : loc) (v : sync.Once.t) (done' : sync.atomic.Bool'.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Once.t go!"done" l) v.done' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.Once.t go!"done" l) done' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : sync.Once.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : sync.Once.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance Once_access_load_m (l : loc) (v : sync.Once.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Once.t go!"m" l) v.m' dq)
       (typed_pointsto (struct_field_ref sync.Once.t go!"m" l) v.m' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance Once_access_store_m (l : loc) (v : sync.Once.t) (m' : sync.Mutex.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.Once.t go!"m" l) v.m' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.Once.t go!"m" l) m' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with m' := m' } : sync.Once.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with m' := m' } : sync.Once.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end Once
@@ -257,9 +251,8 @@ end Once
 namespace Pool
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -277,9 +270,8 @@ end Pool
 namespace poolLocalInternal
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -297,9 +289,8 @@ end poolLocalInternal
 namespace poolLocal
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -317,9 +308,8 @@ end poolLocal
 namespace poolDequeue
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -337,9 +327,8 @@ end poolDequeue
 namespace eface
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -357,9 +346,8 @@ end eface
 namespace dequeueNil
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -377,9 +365,8 @@ end dequeueNil
 namespace poolChain
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -397,9 +384,8 @@ end poolChain
 namespace poolChainElt
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
@@ -417,98 +403,97 @@ end poolChainElt
 namespace RWMutex
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
 instance RWMutex_typed_pointsto :
     TypedPointsto (GF := GF) sync.RWMutex.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref sync.RWMutex.t go!"w" l) v.w' dq ∗
-    typed_pointsto (struct_field_ref sync.RWMutex.t go!"writerSem" l) v.writerSem' dq ∗
-    typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerSem" l) v.readerSem' dq ∗
-    typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerCount" l) v.readerCount' dq ∗
-    typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerWait" l) v.readerWait' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "w" ∷ typed_pointsto (struct_field_ref sync.RWMutex.t go!"w" l) v.w' dq ∗
+    "writerSem" ∷ typed_pointsto (struct_field_ref sync.RWMutex.t go!"writerSem" l) v.writerSem' dq ∗
+    "readerSem" ∷ typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerSem" l) v.readerSem' dq ∗
+    "readerCount" ∷ typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerCount" l) v.readerCount' dq ∗
+    "readerWait" ∷ typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerWait" l) v.readerWait' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance RWMutex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.RWMutex.t sync.«RWMutexⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) sync.RWMutex.t sync.«RWMutexⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance RWMutex_access_load_w (l : loc) (v : sync.RWMutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"w" l) v.w' dq)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"w" l) v.w' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_store_w (l : loc) (v : sync.RWMutex.t) (w' : sync.Mutex.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"w" l) v.w' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"w" l) w' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with w' := w' } : sync.RWMutex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with w' := w' } : sync.RWMutex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_load_writerSem (l : loc) (v : sync.RWMutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"writerSem" l) v.writerSem' dq)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"writerSem" l) v.writerSem' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_store_writerSem (l : loc) (v : sync.RWMutex.t) (writerSem' : w32) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"writerSem" l) v.writerSem' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"writerSem" l) writerSem' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with writerSem' := writerSem' } : sync.RWMutex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with writerSem' := writerSem' } : sync.RWMutex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_load_readerSem (l : loc) (v : sync.RWMutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerSem" l) v.readerSem' dq)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerSem" l) v.readerSem' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_store_readerSem (l : loc) (v : sync.RWMutex.t) (readerSem' : w32) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerSem" l) v.readerSem' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerSem" l) readerSem' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerSem' := readerSem' } : sync.RWMutex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerSem' := readerSem' } : sync.RWMutex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_load_readerCount (l : loc) (v : sync.RWMutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerCount" l) v.readerCount' dq)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerCount" l) v.readerCount' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_store_readerCount (l : loc) (v : sync.RWMutex.t) (readerCount' : sync.atomic.Int32.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerCount" l) v.readerCount' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerCount" l) readerCount' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerCount' := readerCount' } : sync.RWMutex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerCount' := readerCount' } : sync.RWMutex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_load_readerWait (l : loc) (v : sync.RWMutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerWait" l) v.readerWait' dq)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerWait" l) v.readerWait' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance RWMutex_access_store_readerWait (l : loc) (v : sync.RWMutex.t) (readerWait' : sync.atomic.Int32.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerWait" l) v.readerWait' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.RWMutex.t go!"readerWait" l) readerWait' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerWait' := readerWait' } : sync.RWMutex.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerWait' := readerWait' } : sync.RWMutex.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end RWMutex
@@ -516,68 +501,67 @@ end RWMutex
 namespace WaitGroup
 section def_
 
-variable {ext : ffi_syntax} {ffi : ffi_model} [ffi_semantics ext ffi] {GF : BundledGFunctors}
-variable [hG : heapGS GF]
-variable [go_gctx : GoGlobalContext] [go_lctx : GoLocalContext]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
 instance WaitGroup_typed_pointsto :
     TypedPointsto (GF := GF) sync.WaitGroup.t where
   typed_pointsto_def l v dq := iprop(
-    typed_pointsto (struct_field_ref sync.WaitGroup.t go!"noCopy" l) v.noCopy' dq ∗
-    typed_pointsto (struct_field_ref sync.WaitGroup.t go!"state" l) v.state' dq ∗
-    typed_pointsto (struct_field_ref sync.WaitGroup.t go!"sema" l) v.sema' dq ∗
-    True)
-  typed_pointsto_def_dfractional := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_def_timeless := sorry -- TODO(port): solved by Program in Rocq
-  typed_pointsto_agree := sorry -- TODO(port): solve_typed_pointsto_agree
+    "noCopy" ∷ typed_pointsto (struct_field_ref sync.WaitGroup.t go!"noCopy" l) v.noCopy' dq ∗
+    "state" ∷ typed_pointsto (struct_field_ref sync.WaitGroup.t go!"state" l) v.state' dq ∗
+    "sema" ∷ typed_pointsto (struct_field_ref sync.WaitGroup.t go!"sema" l) v.sema' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance WaitGroup_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.WaitGroup.t sync.«WaitGroupⁱᵐᵖˡ» :=
-  sorry -- TODO(port): solve_into_val_typed_struct
+    IntoValTypedUnderlying (GF := GF) sync.WaitGroup.t sync.«WaitGroupⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance WaitGroup_access_load_noCopy (l : loc) (v : sync.WaitGroup.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"noCopy" l) v.noCopy' dq)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance WaitGroup_access_store_noCopy (l : loc) (v : sync.WaitGroup.t) (noCopy' : sync.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : sync.WaitGroup.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : sync.WaitGroup.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance WaitGroup_access_load_state (l : loc) (v : sync.WaitGroup.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"state" l) v.state' dq)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"state" l) v.state' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance WaitGroup_access_store_state (l : loc) (v : sync.WaitGroup.t) (state' : sync.atomic.Uint64.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"state" l) v.state' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"state" l) state' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with state' := state' } : sync.WaitGroup.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with state' := state' } : sync.WaitGroup.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 instance WaitGroup_access_load_sema (l : loc) (v : sync.WaitGroup.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"sema" l) v.sema' dq)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"sema" l) v.sema' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
 
 instance WaitGroup_access_store_sema (l : loc) (v : sync.WaitGroup.t) (sema' : w32) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"sema" l) v.sema' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.WaitGroup.t go!"sema" l) sema' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sema' := sema' } : sync.WaitGroup.t) (DFrac.own 1)) :=
-  sorry -- TODO(port): solve_pointsto_access_struct
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sema' := sema' } : sync.WaitGroup.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
 
 end def_
 end WaitGroup
