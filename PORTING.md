@@ -57,8 +57,13 @@ See `PORTING_STATUS.md`.
 ## Conventions for porters
 
 * Keep Rocq identifiers (`wp_load`, `is_Mutex`, `own_slice`) so a Rocq name can
-  be found with grep. Rename only when a name is not legal Lean (for example the
-  `'` suffix and `ⁱᵐᵖˡ` work, but `go.type` is the namespaced `go.type`).
+  be found with grep. Rename only when a name is not legal Lean; quote with «» when
+  possible (e.g. `«Mutexⁱᵐᵖˡ»`, `«unsafe»`).
+* Sealing: `def foo_def`, `@[irreducible] def foo := foo_def`,
+  `theorem foo_unseal : foo = foo_def`. `Global Opaque` is `attribute [irreducible]`.
+* GooseLang code notation (`Perennial/GooseLang/Notation.lean`): `λ: "x", e`,
+  `let: "x" := e1 in e2`, `e1 ;; e2`, `if: c then a else b`, `rec: "f" "x" := e`,
+  Go operators `e1 +⟨t⟩ e2` etc. Method calls are `rcvr @!! T @!! m`.
 * Everything lives in `namespace Perennial`. Rocq `Module foo` becomes
   `namespace foo`.
 * Files do not use the Lean `module` system (no `public import`).
