@@ -261,6 +261,51 @@ example (x : w64) (v : val) (Φ : val → IProp GF) :
   isplitl [H3]; · wp_pures; iexact H3
   wp_pures; iexact H4
 
+
+/-- `iNamed` does not unfold an `if` into a raw `Decidable.rec` (which could
+send the kernel into a deep recursion for classical instances). -/
+noncomputable def testIfProp (v : val) (P Q : IProp GF) : IProp GF :=
+  if v = #(W64 3) then iprop("H" ∷ P) else iprop("H" ∷ Q)
+
+example (v : val) (P Q : IProp GF) : testIfProp v P Q ⊢ ⌜True⌝ := by
+  iintro H
+  iNamed H
+  -- `H : if v = #(W64 3) then .. else ..`
+  by_cases h : v = #(W64 3)
+  · simp only [h, ↓reduceIte]; ipureintro; trivial
+  · simp only [h, ↓reduceIte]; ipureintro; trivial
+
+/-- `iframe` frames up to computation (`[] ++ [v]`, unreduced `match`). -/
+example (v : w64) (P : List w64 → IProp GF) : P [v] ⊢ P ([] ++ [v]) := by
+  iintro H
+  iframe
+
+/-- `iframe` uses a spatial persistent hypothesis for several conjuncts. -/
+example (P : IProp GF) [Persistent P] : P ⊢ P ∗ P := by
+  iintro HP
+  iframe
+
+/-- `iframe` picks the existential witness from the hypothesis that matches the
+conjunct mentioning it (not `2` from `H2`). -/
+example (P : Nat → IProp GF) (n : Nat) : P n ∗ P 2 ⊢ ∃ m, P m ∗ P 2 := by
+  iintro ⟨H1, H2⟩
+  iframe
+
+/-- `word_lit_simp` evaluates word literals, keeping `W64 n` elsewhere. -/
+example (h : uint.Z (W64 300) = 3) : sint.Z (W64 7) = 7 ∧ False := by
+  word_lit_simp
+  omega
+
+/-- `wp_auto` keeps points-to facts of locations that are not Go local variables
+(e.g. obtained from a spec), even if the location occurs nowhere else. -/
+example (l : loc) (v : w64) (Φ : val → IProp GF) :
+    (l ↦ v) ∗ (∀ w : w64, (∃ l' : loc, l' ↦ v) -∗ Φ #w) ⊢ WP gl(let: "x" := #(W64 1) in "x") {{ Φ }} := by
+  iintro ⟨Hl, H⟩
+  wp_auto
+  iapply H
+  iexists l
+  iexact Hl
+
 set_option goose.wp.extras true in
 /-- Projections of interface values are reduced (extras). -/
 example (Φ : val → IProp GF) (t : go.type) (v : val) :
@@ -381,6 +426,12 @@ example (l : loc) (v : pt.t) :
   iintro %Φ Hl HΦ
   wp_auto
   iapply HΦ $$ Hl
+
+/-- Projections of the zero value of a struct are reduced (extras). -/
+example (Φ : val → IProp GF) : Φ #(0 : w64) ⊢ WP (Val #((zero_val pt.t).x')) {{ Φ }} := by
+  iintro H
+  wp_pures
+  iexact H
 
 end def_
 end testpkg

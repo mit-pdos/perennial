@@ -96,6 +96,90 @@ theorem sdiv_cases {n : Nat} (x y : BitVec n) (hy : 0 < y.toInt) :
     have := Int.ediv_nonneg h' (Int.le_of_lt hy)
     rw [Int.bmod_eq_of_le] <;> push_cast <;> omega
 
+/-! ## Word literals -/
+
+namespace word
+open Lean Meta
+
+/-- A word literal `BitVec.ofInt n z` / `BitVec.ofNat n k` (also through `W64`
+and friends) as `(n, value)`. -/
+def wordLit? (b : Expr) : MetaM (Option (Nat × Nat)) := do
+  let b ← whnfR b
+  if let some (n, z) ← (do
+      let_expr BitVec.ofInt n z := b | return none
+      let some n ← (Meta.evalNat n).run | return none
+      let some z ← getIntValue? z | return none
+      return some (n, z)) then
+    return some (n, (BitVec.ofInt n z).toNat)
+  if let some r ← (do
+      let_expr BitVec.ofNat n k := b | return none
+      let some n ← (Meta.evalNat n).run | return none
+      let some k ← (Meta.evalNat k).run | return none
+      return some (n, (BitVec.ofNat n k).toNat)) then
+    return some r
+  -- `OfNat` literals `7#64` / `(7 : w64)`
+  let_expr OfNat.ofNat ty k _ := b | return none
+  let ty ← whnfR ty
+  let_expr BitVec n := ty | return none
+  let some n ← (Meta.evalNat n).run | return none
+  let some k ← (Meta.evalNat k).run | return none
+  return some (n, (BitVec.ofNat n k).toNat)
+
+/-- Evaluate `toInt`/`toNat` of a word literal (`sint.Z (W64 7) = 7`,
+`uint.nat (W64 0) = 0`, `sint.nat (W64 3) = 3`, ...), by reduction. -/
+def evalWordLitConv (e : Expr) : MetaM Simp.Step :=
+  tryCatchRuntimeEx (evalWordLitConvCore e) fun _ => return .continue
+where evalWordLitConvCore (e : Expr) : MetaM Simp.Step := do
+  let e' ← whnfR e
+  let r : Option Expr ← do
+    match_expr e' with
+    | NatCast.natCast _ _ x =>
+      let x ← whnfR x
+      let_expr BitVec.toNat _ b := x | pure none
+      let some (_, v) ← wordLit? b | pure none
+      pure (some (toExpr (v : Int)))
+    | Nat.cast _ _ x =>
+      let x ← whnfR x
+      let_expr BitVec.toNat _ b := x | pure none
+      let some (_, v) ← wordLit? b | pure none
+      pure (some (toExpr (v : Int)))
+    | BitVec.toInt _ b =>
+      let some (n, v) ← wordLit? b | pure none
+      pure (some (toExpr (BitVec.ofNat n v).toInt))
+    | BitVec.toNat _ b =>
+      let some (_, v) ← wordLit? b | pure none
+      pure (some (mkNatLit v))
+    | Int.ofNat x =>
+      let x ← whnfR x
+      let_expr BitVec.toNat _ b := x | pure none
+      let some (_, v) ← wordLit? b | pure none
+      pure (some (toExpr (v : Int)))
+    | Int.toNat x =>
+      let x ← whnfR x
+      let_expr BitVec.toInt _ b := x | pure none
+      let some (n, v) ← wordLit? b | pure none
+      pure (some (mkNatLit (BitVec.ofNat n v).toInt.toNat))
+    | _ => pure none
+  let some rE := r | return .continue
+  return .done { expr := rE, proof? := some (mkExpectedPropHint (← mkEqRefl rE) (← mkEq e rE)) }
+
+/-- Evaluate `sint.Z`/`uint.Z`/`sint.nat`/`uint.nat` of word literals:
+`sint.Z (W64 7) = 7`, `uint.nat 3#64 = 3` (used by `word_lit_simp`; not in the
+default simp set). -/
+simproc_decl word_lit_sintZ (sint.Z _) := fun e => evalWordLitConv e
+simproc_decl word_lit_uintZ (uint.Z _) := fun e => evalWordLitConv e
+simproc_decl word_lit_sintNat (sint.nat _) := fun e => evalWordLitConv e
+simproc_decl word_lit_uintNat (uint.nat _) := fun e => evalWordLitConv e
+
+end word
+
+/-- `word_lit_simp` evaluates `sint.Z`/`uint.Z`/`sint.nat`/`uint.nat` of word
+literals everywhere (e.g. `sint.Z (W64 7)` becomes `7`), keeping `W64 n` itself
+(unlike a bare `simp`, which also rewrites `W64 n` to `n#64`, so that the result
+no longer matches `W64 n` syntactically, e.g. for `iframe`). -/
+macro "word_lit_simp" : tactic => `(tactic| simp only [word.word_lit_sintZ, word.word_lit_uintZ,
+  word.word_lit_sintNat, word.word_lit_uintNat] at *)
+
 namespace word
 
 open Lean Elab Tactic Meta

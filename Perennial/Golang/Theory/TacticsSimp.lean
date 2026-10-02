@@ -183,71 +183,12 @@ simproc [goose_wp_simp_extra] goose_replicateArrayLiteral
 
 end array_lit
 
-section word_lit
-open Lean Meta
-
-/-- A word literal `BitVec.ofInt n z` / `BitVec.ofNat n k` (also through `W64`
-and friends) as `(n, value)`. -/
-def wordLit? (b : Expr) : MetaM (Option (Nat × Nat)) := do
-  let b ← whnfR b
-  if let some (n, z) ← (do
-      let_expr BitVec.ofInt n z := b | return none
-      let some n ← (Meta.evalNat n).run | return none
-      let some z ← getIntValue? z | return none
-      return some (n, z)) then
-    return some (n, (BitVec.ofInt n z).toNat)
-  let_expr BitVec.ofNat n k := b | return none
-  let some n ← (Meta.evalNat n).run | return none
-  let some k ← (Meta.evalNat k).run | return none
-  return some (n, (BitVec.ofNat n k).toNat)
-
-/-- Evaluate `toInt`/`toNat` of a word literal (`sint.Z (W64 7) = 7`,
-`uint.nat (W64 0) = 0`, `sint.nat (W64 3) = 3`, ...), by reduction. -/
-def evalWordLitConv (e : Expr) : MetaM Simp.Step := do
-  let e' ← whnfR e
-  let r : Option Expr ← do
-    match_expr e' with
-    | BitVec.toInt _ b =>
-      let some (n, v) ← wordLit? b | pure none
-      pure (some (toExpr (BitVec.ofNat n v).toInt))
-    | BitVec.toNat _ b =>
-      let some (_, v) ← wordLit? b | pure none
-      pure (some (mkNatLit v))
-    | Int.ofNat x =>
-      let x ← whnfR x
-      let_expr BitVec.toNat _ b := x | pure none
-      let some (_, v) ← wordLit? b | pure none
-      pure (some (toExpr (v : Int)))
-    | Int.toNat x =>
-      let x ← whnfR x
-      let_expr BitVec.toInt _ b := x | pure none
-      let some (n, v) ← wordLit? b | pure none
-      pure (some (mkNatLit (BitVec.ofNat n v).toInt.toNat))
-    | _ => pure none
-  let some rE := r | return .continue
-  return .done { expr := rE, proof? := some (mkExpectedPropHint (← mkEqRefl rE) (← mkEq e rE)) }
-
 /-- In WP expressions only the `Nat` conversions (list indices, e.g. the
-`sint.nat (W64 0)` of a slice literal) are evaluated; `sint.Z (W64 n)` is kept,
-as proofs refer to it (use `word_lit_simp` to evaluate it elsewhere). -/
-simproc [goose_wp_simp_extra] goose_sintNatLit (sint.nat _) := fun e => evalWordLitConv e
-simproc [goose_wp_simp_extra] goose_uintNatLit (uint.nat _) := fun e => evalWordLitConv e
-
-/-- `sint.Z (W64 7) = 7` and friends (not in any simp set by default; see
-`word_lit_simp`). -/
-simproc goose_sintZLit (sint.Z _) := fun e => evalWordLitConv e
-simproc goose_uintZLit (uint.Z _) := fun e => evalWordLitConv e
-simproc goose_toIntLit (BitVec.toInt _) := fun e => evalWordLitConv e
-simproc goose_toNatLit (BitVec.toNat _) := fun e => evalWordLitConv e
-
-/-- `word_lit_simp` evaluates `sint.Z`/`uint.Z`/`sint.nat`/`uint.nat` (and
-`toInt`/`toNat`) of word literals, everywhere (e.g. `sint.Z (W64 7)` becomes
-`7`), keeping `W64 n` itself (unlike a bare `simp`, which rewrites it to
-`n#64`). -/
-macro "word_lit_simp" : tactic => `(tactic| simp only [goose_sintZLit, goose_uintZLit,
-  goose_sintNatLit, goose_uintNatLit, goose_toIntLit, goose_toNatLit] at *)
-
-end word_lit
+`sint.nat (W64 0)` of a slice literal) are evaluated by the extras;
+`sint.Z (W64 n)` is evaluated by `simp` (`word_lit_*` simprocs) but kept in WP
+expressions, as proofs refer to it. -/
+simproc [goose_wp_simp_extra] goose_sintNatLit (sint.nat _) := fun e => word.evalWordLitConv e
+simproc [goose_wp_simp_extra] goose_uintNatLit (uint.nat _) := fun e => word.evalWordLitConv e
 
 attribute [goose_wp_simp_extra] Option.getD_some Option.getD_none
 attribute [goose_wp_simp_extra] Int.reduceToNat List.replicate_succ List.replicate_zero

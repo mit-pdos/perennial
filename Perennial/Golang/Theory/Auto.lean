@@ -271,8 +271,9 @@ macro "is_pkg_init_finish" : tactic => `(tactic| (
 section auto
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
-/-- Hypotheses `l ↦{dq} v` whose location `l` is a local variable that occurs
-nowhere else (Rocq `wp_clear_unused_pointsto`). -/
+/-- Hypotheses `l ↦{dq} v` whose location `l` is the cell `x_ptr` of a Go local
+variable that occurs nowhere else (Rocq `wp_clear_unused_pointsto`, which clears
+any such `l`). -/
 def unusedPointsto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (goal : Expr) : MetaM (List (IVarId × FVarId)) := do
   let goal ← instantiateMVars goal
@@ -285,6 +286,11 @@ def unusedPointsto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     unless ty.isAppOfArity ``typed_pointsto 6 do continue
     let l := ty.getArg! 3
     let .fvar lid := l | continue
+    -- only the cells of Go local variables (named `x_ptr` by `wp_alloc_auto`):
+    -- a location obtained otherwise (e.g. from a spec) may still be needed, e.g.
+    -- for a postcondition `∃ l, l ↦ v`
+    let some ldecl := (← getLCtx).find? lid | continue
+    unless ldecl.userName.eraseMacroScopes.toString.endsWith "_ptr" do continue
     -- `l` must not occur in the goal, in other hypotheses, or in the Lean context
     if goal.containsFVar lid then continue
     let mut used := false

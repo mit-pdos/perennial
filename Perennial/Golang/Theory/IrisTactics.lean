@@ -16,6 +16,7 @@ counterpart file; Rocq gets these from Iris/stdpp).
   condition on a non-atomic expression is an error suggesting `wp_bind`.
 -/
 import Iris.ProofMode
+import Perennial.Helpers.NamedProps
 
 namespace Perennial
 
@@ -216,6 +217,152 @@ elab_rules : tactic
         pure ivar
       let pf ← iInvCore hyps goal ivar specPat casesPat closePat
       mvar.assign pf
+
+end IrisTactics
+
+/-! ## `iframe` -/
+
+namespace IrisTactics
+open Lean Elab Tactic Meta Qq Iris.ProofMode
+
+/-- The atoms of a goal: the conjuncts of its `∗`-spine, looking through `∃`
+(atoms mentioning the bound variable are skipped) and `named`. -/
+partial def goalAtoms (e : Expr) (acc : Array Expr := #[]) : MetaM (Array Expr) := do
+  let e := e.consumeMData
+  if e.isAppOfArity ``BIBase.sep 4 then
+    return ← goalAtoms (e.getArg! 3) (← goalAtoms (e.getArg! 2) acc)
+  if e.isAppOfArity ``BIBase.exists 4 then
+    match e.getArg! 3 with
+    | .lam _ _ b _ => return ← goalAtoms b acc
+    | _ => return acc
+  if e.isAppOfArity ``Perennial.named 3 then return ← goalAtoms (e.getArg! 2) acc
+  if e.hasLooseBVars then return acc
+  return acc.push e
+
+/-- Does `P` match `Q` by computation (default transparency, no metavariable
+assignment), e.g. `P [v]` and `P ([] ++ [v])`, `ghost_var γ q a` under a `let`?
+Bounded; errors count as no match. -/
+def matchesByDefEq (P Q : Expr) : MetaM Bool := do
+  if Q.hasMVar || P.hasMVar then return false
+  if P.getAppFn != Q.getAppFn then return false
+  tryCatchRuntimeEx (Core.withCurrHeartbeats <|
+    withTheReader Core.Context (fun c => { c with maxHeartbeats := 20000 * 1000 }) <|
+    withNewMCtxDepth <| withTransparency .default <| isDefEq P Q) fun _ => return false
+
+/-- The conjuncts of the `∗`-spine of `e` (through `named`), with loose bound
+variables allowed. -/
+partial def sepAtoms (e : Expr) (acc : Array Expr := #[]) : Array Expr :=
+  let e := e.consumeMData
+  if e.isAppOfArity ``BIBase.sep 4 then sepAtoms (e.getArg! 3) (sepAtoms (e.getArg! 2) acc)
+  else if e.isAppOfArity ``Perennial.named 3 then sepAtoms (e.getArg! 2) acc
+  else acc.push e
+
+/-- For a goal `∃ x, body`: a witness for `x` determined by the spatial
+hypotheses, ignoring hypotheses that exactly match a conjunct of `body` that
+does not mention `x` (those are framed there). `none` unless exactly one
+witness is found. -/
+def existsWitness? (goal : Expr) (hs : Array (Name × Expr)) : MetaM (Option Expr) := do
+  let goal := goal.consumeMData
+  unless goal.isAppOfArity ``BIBase.exists 4 do return none
+  let .lam _ ty body _ := goal.getArg! 3 | return none
+  let atoms := sepAtoms body
+  let closed := atoms.filter (!·.hasLooseBVars)
+  let open_ := atoms.filter (·.hasLooseBVars)
+  if open_.isEmpty then return none
+  let cands := hs.filter fun (_, t) => !closed.contains t
+  let mut found : Option Expr := none
+  for a in open_ do
+    for (_, t) in cands do
+      let r ← withNewMCtxDepth do
+        let m ← mkFreshExprMVar ty
+        let a' := a.instantiate1 m
+        if a'.getAppFn != t.getAppFn then return none
+        if ← tryCatchRuntimeEx (withReducible (isDefEq a' t)) (fun _ => pure false) then
+          let m ← instantiateMVars m
+          if m.hasMVar then return none
+          return some m
+        return none
+      if let some w := r then
+        if let some w0 := found then
+          unless w0 == w do return none
+        found := some w
+  return found
+
+initialize inIframe : IO.Ref Bool ← IO.mkRef false
+
+/-- The spatial hypotheses (name, type). -/
+def hypsSpatial {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
+    ∀ {e}, Hyps bi e → Array (Name × Expr)
+  | _, .emp _ => #[]
+  | _, .hyp _ name _ p ty _ => if isTrue p then #[] else #[(name, ty)]
+  | _, .sep _ _ _ _ lhs rhs => hypsSpatial lhs ++ hypsSpatial rhs
+
+/-- Before the generic framing of `iframe`/`iframe ∗`:
+0. (see below) a spatial hypothesis with a persistent type that matches several
+   conjuncts is made intuitionistic;
+1. a conjunct of the goal that is equal by computation (but not syntactically)
+   to a spatial hypothesis is replaced by the hypothesis' type (so that
+   `P ([] ++ [v])`, an unreduced `match`, ... can be framed);
+2. for a goal `∃ x, ..`, the witness is chosen from the hypotheses matching a
+   conjunct that mentions `x`, ignoring hypotheses that exactly match a
+   conjunct that does not (so that framing `∃ n, P n ∗ P 2` with `H1 : P n`,
+   `H2 : P 2` picks `n`, not `2`); it is only used when it is unique. -/
+def iframePrep (n0 : Nat) : TacticM Unit := withMainContext do
+  let mvar ← getMainGoal
+  let some g := parseIrisGoal? (← instantiateMVars (← mvar.getType)) | return
+  let hs := hypsSpatial g.hyps
+  if hs.isEmpty then return
+  let atoms ← goalAtoms (← instantiateMVars g.goal)
+  if atoms.isEmpty then return
+  -- 1. conversion of conjuncts
+  let mut goal ← instantiateMVars g.goal
+  let mut changed := false
+  for a in atoms do
+    if hs.any (·.2 == a) then continue
+    for (_, ty) in hs do
+      if ← matchesByDefEq ty a then
+        goal := goal.replace fun s => if s.consumeMData == a then some ty else none
+        changed := true
+        break
+  if changed then
+    let newTy := IrisGoal.toExpr { g with goal := goal }
+    replaceMainGoal [← mvar.replaceTargetDefEq newTy]
+  -- 2. a spatial hypothesis with a persistent type needed for several conjuncts
+  -- is made intuitionistic (so that framing does not consume it)
+  let atoms ← goalAtoms goal
+  for (n, ty) in hs do
+    if n.isAnonymous || n.hasMacroScopes then continue
+    if (atoms.filter (· == ty)).size < 2 then continue
+    let saved ← saveState
+    try
+      evalTactic (← `(tactic| icases $(mkIdent n):ident with #$(mkIdent n):ident))
+      evalTactic (← `(tactic| iframe $(mkIdent n):ident))
+    catch _ => saved.restore
+  -- 3. existential witnesses determined by the hypotheses (not by a
+  -- hypothesis that belongs to a conjunct without the bound variable)
+  for _ in [:8] do
+    if (← getGoals).length < n0 then return
+    let mvar ← getMainGoal
+    let some g := parseIrisGoal? (← instantiateMVars (← mvar.getType)) | break
+    let some w ← existsWitness? (← instantiateMVars g.goal) (hypsSpatial g.hyps) | break
+    let saved ← saveState
+    try evalTactic (← `(tactic| iexists $(← Term.exprToSyntax w)))
+    catch _ => saved.restore; break
+
+/-- Perennial's `iframe`/`iframe ∗` (see `iframePrep`), then iris-lean's. -/
+elab_rules : tactic
+  | `(tactic| iframe $pats:selPat*) => do
+    if ← inIframe.get then throwUnsupportedSyntax
+    unless pats.size == 1 && (pats[0]!.raw.getArg 0).isToken "∗" do
+      throwUnsupportedSyntax
+    let saved ← saveState
+    let n0 := (← getGoals).length
+    try iframePrep n0 catch _ => saved.restore
+    -- the prepass may already have closed the goal
+    if (← getGoals).length < n0 then return
+    inIframe.set true
+    try evalTactic (← `(tactic| iframe $pats:selPat*))
+    finally inIframe.set false
 
 end IrisTactics
 

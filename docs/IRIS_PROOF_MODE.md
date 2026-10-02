@@ -23,7 +23,7 @@ Main differences from Rocq at a glance:
 ```
 Hlen : vs.length = sint.nat s.len ∧ 0 ≤ sint.Z s.len     -- Lean (pure) context
 ⊢
-  □x✝ : is_pkg_init pkg                                 -- intuitionistic (□)
+  □Hpkg : is_pkg_init pkg                               -- intuitionistic (□)
   ∗HΦ : s ↦* vs -∗ Φ #(sum_w64 vs)                      -- spatial (∗)
   ∗Hs : s ↦* vs
   ⊢ Φ #(sum_w64 vs)                                      -- the Iris goal
@@ -203,8 +203,15 @@ example (P Q : PROP) :
 
 `iframe` also instantiates existentials it frames through (disable with
 `set_option iris.frame.instantiateExists false`) and leaves what it cannot frame.
-It only matches syntactically (up to reducible unfolding); rewrite the goal first
-when the terms differ (`rw [show f x = y from ...]`).
+iris-lean's framing only matches syntactically (up to reducible unfolding). With
+Perennial's tactics imported (`Perennial/Golang/Theory/IrisTactics.lean`),
+`iframe`/`iframe ∗` first (1) replaces conjuncts of the goal that are equal *by
+computation* to a spatial hypothesis (`P ([] ++ [v])` vs `P [v]`, an unreduced
+`match`, a `let`), (2) makes a spatial hypothesis with a persistent type
+intuitionistic when several conjuncts need it, and (3) for `∃ x, ..` picks the
+witness from the hypothesis matching the conjunct that mentions `x` (ignoring
+hypotheses that exactly match a conjunct without `x`), when it is unique. Other
+differences still need a rewrite first (`rw [show f x = y from ...]`).
 
 ```lean
 example (P : PROP) (x y : Nat) (h : x = y) :
@@ -276,14 +283,18 @@ example (P Q : IProp GF) :
 ```
 
 `iinv H with pat Hclose` on a goal `|={E}=> Q` (or a WP of an atomic
-expression) opens `H : inv N P`, destructs `▷ P` with `pat` (use `>` to strip
+expression; on a non-atomic one it is an error, `wp_bind` first) opens `H : inv N P`, destructs `▷ P` with `pat` (use `>` to strip
 the later of timeless parts) and destructs the closing view shift (which takes
 `▷ P` back and restores the mask) with `Hclose`; close with
 `imod Hclose $$ [..] with _`. Without the second pattern, giving `▷ P` back
 becomes part of the goal instead (in `wp_runtime_Semacquire`,
 `Perennial/Proof/sync_proof/sema.lean`, it is proved with `isplitl [..]` after
 the atomic step). See the ghost-state example in
-`PERENNIAL_PROOF_TUTORIAL.md` §10.
+`PERENNIAL_PROOF_TUTORIAL.md` §10. The mask side condition (`↑N ⊆ E`, e.g.
+`↑(N.@"inv") ⊆ ⊤ ∖ ↑(N.@"sema")`) is proved by `solve_ndisj` (Perennial's
+`iinv`, `Perennial/Golang/Theory/IrisTactics.lean`; `solve_ndisj` is also tried by
+`trivial`, hence by every iris-lean side-condition solver); a condition it cannot
+prove is left as a goal before the main one.
 
 ### Induction and rewriting
 

@@ -113,6 +113,11 @@ partial def unfoldNamedHead (e : Expr) (fuel : Nat := 64) : MetaM Expr := do
     if (← getReducibilityStatus c) matches .irreducible then return e'
     -- never unfold BI connectives or other class projections
     if (← isProjectionFn c) then return e'
+    -- nor `if`/`match` (unfolding `ite` exposes a raw `Decidable.rec` on the
+    -- instance, which may be classical and send the kernel into a deep
+    -- recursion): case split or `simp` first
+    if [``ite, ``dite, ``cond, ``Decidable.rec, ``Decidable.casesOn].contains c then return e'
+    if Lean.Meta.isMatcherCore (← getEnv) c then return e'
     match ← unfoldDefinition? e' with
     | some e'' => unfoldNamedHead e''.headBeta (fuel - 1)
     | none => return e'
