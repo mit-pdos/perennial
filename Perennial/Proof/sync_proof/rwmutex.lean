@@ -68,6 +68,10 @@ macro "rw_word" : tactic => `(tactic| (
 
 namespace sync
 
+/- Rocq's `rwmutex.v` is used qualified (`rwmutex.own_RWMutex`), since
+`rwmutex_guard.v` reuses the names for its fractional-resource interface. -/
+namespace rwmutex
+
 /-- Rocq `rwmutexMaxReaders` (renamed: `sync.rwmutexMaxReaders` is the Go constant). -/
 abbrev rwmutexMaxReaders_Z : Int := 1073741824
 
@@ -1456,6 +1460,8 @@ theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : loc) :
   iapply own_toks_replicate $$ Htoks
 
 end wps
+
+end rwmutex
 
 end sync
 

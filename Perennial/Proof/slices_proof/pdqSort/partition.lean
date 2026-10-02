@@ -20,14 +20,8 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 namespace slices
 
-/-- `word`, additionally normalizing constant `%`/`^`/`toNat` after
-preprocessing (`word` leaves `x / (4 % 2 ^ 64)` and `(3 % ↑2 ^ 64).toNat` as atoms
-for `omega`). -/
-macro "word_p" : tactic => `(tactic| (
-  word_prep
-  (try simp only [Nat.reduceMod, Nat.reducePow, Int.reduceMod, Int.reducePow, Int.reduceToNat]
-    at *)
-  omega))
+/-- Formerly `word` plus literal normalization; `word` now does that itself. -/
+macro "word_p" : tactic => `(tactic| word)
 
 theorem sdiv4_nonneg (x : w64) (h : 0 ≤ sint.Z x) : BitVec.sdiv x (W64 4) = x / (4 : w64) := by
   have hm : x.msb = false := BitVec.msb_eq_false_iff_two_mul_lt.mpr (by word)

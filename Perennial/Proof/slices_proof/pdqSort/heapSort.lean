@@ -18,15 +18,8 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 namespace slices
 
-/-- `word`, after turning `W64 n` literals into `BitVec.ofNat` (plain `word`
-leaves `(2 % ↑2 ^ 64).toNat * x` from `W64 2 * x` as a non-linear atom for
-`omega`). -/
-macro "hword" : tactic => `(tactic| first
-  | rfl
-  | (word_prep; omega)
-  | ((try simp only [W64, BitVec.ofInt_ofNat] at *); word_prep; omega)
-  | ((try simp only [W64, BitVec.ofInt_ofNat] at *); word_prep;
-     (try simp only [Nat.reduceMod, Nat.reducePow] at *); omega))
+/-- `rfl` or `word` (`word` now evaluates `W64 n` literals itself). -/
+macro "hword" : tactic => `(tactic| first | rfl | word)
 
 theorem sdiv2_nonneg (x : w64) (h : 0 ≤ sint.Z x) : BitVec.sdiv x (W64 2) = x / (2 : w64) := by
   have hmsb : x.msb = false := by

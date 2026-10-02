@@ -80,12 +80,8 @@ theorem is_valid_cmp_adapted (cmp : Int → Int) (n : Int) :
 theorem shiftr_1_eq_div (x : w64) : x >>> W64 1 = x / (2 : w64) := by
   simp only [W64]; bv_decide
 
-/-- `word`, additionally normalizing constant `%`/`^` after preprocessing (the
-`word` tactic leaves `x / (2 % 2 ^ 64)` as an atom for `omega`). -/
-macro "word'" : tactic => `(tactic| (
-  word_prep
-  (try simp only [Nat.reduceMod, Nat.reducePow, Int.reduceMod, Int.reducePow, Int.reduceToNat] at *)
-  omega))
+/-- Formerly `word` plus literal normalization; `word` now does that itself. -/
+macro "word'" : tactic => `(tactic| word)
 
 theorem find_prefix (cmp : Int → Int) (n i : Int)
     (Hmono : ∀ i j, -1 ≤ i ∧ i < j ∧ j ≤ n →
