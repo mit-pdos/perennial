@@ -54,27 +54,27 @@ axiom «stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom instrumentationScope [ffi_syntax] [GoGlobalContext] : val
 
-def Tracer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Tracer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.Tracer"
 
 axiom Tracer'init [ffi_syntax] [GoGlobalContext] : val
 
-def Init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Init [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.Init"
 
-def writeFields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeFields [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.writeFields"
 
-def newTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.newTrace"
 
-def TODO [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TODO [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.TODO"
 
-def Get [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Get [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.Get"
 
-def EnsureTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EnsureTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.EnsureTrace"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.pkg.v3.traceutil where
@@ -82,7 +82,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.pkg.v3.traceutil where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.pkg.v3.traceutil)) (Lam BAnon
   (App (Val exception_do)

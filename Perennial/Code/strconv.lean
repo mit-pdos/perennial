@@ -30,189 +30,189 @@ axiom lowerhex [ffi_syntax] [GoGlobalContext] : val
 
 axiom upperhex [ffi_syntax] [GoGlobalContext] : val
 
-def isPrint16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isPrint16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.isPrint16"
 
 axiom isPrint16'init [ffi_syntax] [GoGlobalContext] : val
 
-def isNotPrint16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNotPrint16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.isNotPrint16"
 
 axiom isNotPrint16'init [ffi_syntax] [GoGlobalContext] : val
 
-def isPrint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isPrint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.isPrint32"
 
 axiom isPrint32'init [ffi_syntax] [GoGlobalContext] : val
 
-def isNotPrint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNotPrint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.isNotPrint32"
 
 axiom isNotPrint32'init [ffi_syntax] [GoGlobalContext] : val
 
-def isGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.isGraphic"
 
 axiom isGraphic'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.ErrRange"
 
 axiom ErrRange'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrSyntax [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrSyntax [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.ErrSyntax"
 
 axiom ErrSyntax'init [ffi_syntax] [GoGlobalContext] : val
 
-def index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def index [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.index"
 
-def ParseBool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseBool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.ParseBool"
 
-def FormatBool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FormatBool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.FormatBool"
 
-def AppendBool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendBool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendBool"
 
-def ParseComplex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseComplex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.ParseComplex"
 
-def ParseFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseFloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.ParseFloat"
 
-def ParseUint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseUint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.ParseUint"
 
-def ParseInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.ParseInt"
 
-def Atoi [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Atoi [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.Atoi"
 
-def FormatComplex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FormatComplex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.FormatComplex"
 
-def FormatFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FormatFloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.FormatFloat"
 
-def AppendFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendFloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendFloat"
 
-def FormatUint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FormatUint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.FormatUint"
 
-def FormatInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FormatInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.FormatInt"
 
-def Itoa [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Itoa [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.Itoa"
 
-def AppendInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendInt"
 
-def AppendUint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendUint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendUint"
 
-def toError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.toError"
 
-def syntaxError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syntaxError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.syntaxError"
 
-def rangeError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rangeError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.rangeError"
 
-def baseError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def baseError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.baseError"
 
-def bitSizeError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bitSizeError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.bitSizeError"
 
-def contains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def contains [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.contains"
 
-def quoteWith [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def quoteWith [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.quoteWith"
 
-def quoteRuneWith [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def quoteRuneWith [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.quoteRuneWith"
 
-def appendQuotedWith [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendQuotedWith [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.appendQuotedWith"
 
-def appendQuotedRuneWith [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendQuotedRuneWith [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.appendQuotedRuneWith"
 
-def appendEscapedRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendEscapedRune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.appendEscapedRune"
 
-def Quote [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Quote [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.Quote"
 
-def AppendQuote [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendQuote [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendQuote"
 
-def QuoteToASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def QuoteToASCII [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.QuoteToASCII"
 
-def AppendQuoteToASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendQuoteToASCII [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendQuoteToASCII"
 
-def QuoteToGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def QuoteToGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.QuoteToGraphic"
 
-def AppendQuoteToGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendQuoteToGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendQuoteToGraphic"
 
-def QuoteRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def QuoteRune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.QuoteRune"
 
-def AppendQuoteRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendQuoteRune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendQuoteRune"
 
-def QuoteRuneToASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def QuoteRuneToASCII [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.QuoteRuneToASCII"
 
-def AppendQuoteRuneToASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendQuoteRuneToASCII [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendQuoteRuneToASCII"
 
-def QuoteRuneToGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def QuoteRuneToGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.QuoteRuneToGraphic"
 
-def AppendQuoteRuneToGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendQuoteRuneToGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.AppendQuoteRuneToGraphic"
 
-def CanBackquote [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CanBackquote [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.CanBackquote"
 
-def unhex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unhex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.unhex"
 
-def UnquoteChar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnquoteChar [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.UnquoteChar"
 
-def QuotedPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def QuotedPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.QuotedPrefix"
 
-def Unquote [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Unquote [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.Unquote"
 
-def unquote [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unquote [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.unquote"
 
-def bsearch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bsearch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.bsearch"
 
-def IsPrint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsPrint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.IsPrint"
 
-def IsGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsGraphic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.IsGraphic"
 
-def isInGraphicList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isInGraphicList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strconv.isInGraphicList"
 
 instance info' : PkgInfo pkg_id.strconv where
@@ -220,7 +220,7 @@ instance info' : PkgInfo pkg_id.strconv where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.strconv)) (Lam BAnon
   (App (Val exception_do)

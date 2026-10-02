@@ -27,46 +27,46 @@ def JoinHandle [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] JoinHandle
 
-def Assert [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Assert [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.Assert"
 
-def SumNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SumNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.SumNoOverflow"
 
-def SumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.SumAssumeNoOverflow"
 
-def SignedSumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SignedSumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.SignedSumAssumeNoOverflow"
 
-def BytesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BytesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.BytesEqual"
 
-def BytesClone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BytesClone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.BytesClone"
 
-def SliceSplit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SliceSplit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.SliceSplit"
 
-def newJoinHandle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newJoinHandle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.newJoinHandle"
 
-def Spawn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Spawn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.Spawn"
 
-def Multipar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Multipar [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.Multipar"
 
-def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.Skip"
 
-def WaitTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WaitTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std.WaitTimeout"
 
 /-- Assert(b) panics if b doesn't hold
 
     go: goose_std.go:13:6 -/
-def «Assertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Assertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
@@ -83,7 +83,7 @@ def «Assertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Returns true if x + y does not overflow
 
     go: goose_std.go:20:6 -/
-def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -99,7 +99,7 @@ def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     *Use with care* - if the assumption is violated this function will panic.
 
     go: goose_std.go:27:6 -/
-def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -111,7 +111,7 @@ def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.std.std_core.SumAssumeNoOverflow []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: goose_std.go:31:6 -/
-def «SignedSumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SignedSumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -127,7 +127,7 @@ def «SignedSumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
 /-- BytesEqual returns if the two byte slices are equal.
 
     go: goose_std.go:37:6 -/
-def «BytesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «BytesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -182,7 +182,7 @@ def «BytesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     [reference]: https://pkg.go.dev/bytes#Clone
 
     go: goose_std.go:58:6 -/
-def «BytesCloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «BytesCloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
@@ -203,7 +203,7 @@ def «BytesCloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     no longer safe to append to the first slice.
 
     go: goose_std.go:69:6 -/
-def «SliceSplitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «SliceSplitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "xs"
   (Lam "n"
   (App (Val exception_do)
@@ -215,7 +215,7 @@ def «SliceSplitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
   (App (Val (GoInstruction (Slice (go.type.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (Var "xs")))))))))))))
 
 /-- go: goose_std.go:84:6 -/
-def «newJoinHandleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newJoinHandleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "mu" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
@@ -236,7 +236,7 @@ def «newJoinHandleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "mu") (Var "$r0")))))))))
 
 /-- go: goose_std.go:94:22 -/
-def «JoinHandle__finishⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JoinHandle__finishⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam BAnon
   (App (Val exception_do)
@@ -266,7 +266,7 @@ def «JoinHandle__finishⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     result value.
 
     go: goose_std.go:108:6 -/
-def «Spawnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Spawnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exception_do)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
@@ -293,7 +293,7 @@ def «Spawnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType JoinHandle)))) (Pair (Var "h") (Var "$r0"))))))))))
 
 /-- go: goose_std.go:117:22 -/
-def «JoinHandle__Joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JoinHandle__Joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam BAnon
   (App (Val exception_do)
@@ -330,7 +330,7 @@ def «JoinHandle__Joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     and condition variables since these are modeled in Goose
 
     go: goose_std.go:136:6 -/
-def «Multiparⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Multiparⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "num"
   (Lam "op"
   (App (Val exception_do)
@@ -416,7 +416,7 @@ def «Multiparⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     application to a value.
 
     go: goose_std.go:167:6 -/
-def «Skipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Skipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_execute)
@@ -429,7 +429,7 @@ def «Skipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     ourselves.
 
     go: goose_std.go:174:6 -/
-def «WaitTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WaitTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "cond"
   (Lam "timeoutMs"
   (App (Val exception_do)
@@ -480,7 +480,7 @@ def «WaitTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.goose_lang.std where
   pkg_imported_pkgs := [pkg_id.math, pkg_id.sync, pkg_id.time, pkg_id.github_com.goose_lang.primitive, pkg_id.github_com.goose_lang.std.std_core]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.std)) (Lam BAnon
   (App (Val exception_do)

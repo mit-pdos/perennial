@@ -20,7 +20,7 @@ namespace «unsafe»
 instance info' : PkgInfo pkg_id.«unsafe» where
   pkg_imported_pkgs := []
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.«unsafe»)) (Lam BAnon
   (App (Val exception_do)

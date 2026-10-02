@@ -58,23 +58,23 @@ def VoteResult [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] VoteResult
 
-@[reducible] def VotePending [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def VotePending [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 1)
 
-@[reducible] def VoteLost [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def VoteLost [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 2)
 
-@[reducible] def VoteWon [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def VoteWon [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 3)
 
-@[reducible] def _VoteResult_name [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def _VoteResult_name [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"VotePendingVoteLostVoteWon")
 
-def _VoteResult_index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _VoteResult_index [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/quorum._VoteResult_index"
 
 /-- go: joint.go:21:22 -/
-def «JointConfig__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JointConfig__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -93,7 +93,7 @@ def «JointConfig__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     in the joint configuration.
 
     go: joint.go:30:22 -/
-def «JointConfig__IDsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JointConfig__IDsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -134,7 +134,7 @@ def «JointConfig__IDsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     given lookuper.
 
     go: joint.go:43:22 -/
-def «JointConfig__Describeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JointConfig__Describeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "l"
   (App (Val exception_do)
@@ -149,7 +149,7 @@ def «JointConfig__Describeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     majorities.
 
     go: joint.go:50:22 -/
-def «JointConfig__CommittedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JointConfig__CommittedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "l"
   (App (Val exception_do)
@@ -181,7 +181,7 @@ def «JointConfig__CommittedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     requires both majority quorums to vote in favor.
 
     go: joint.go:62:22 -/
-def «JointConfig__VoteResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JointConfig__VoteResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "votes"
   (App (Val exception_do)
@@ -215,7 +215,7 @@ def «JointConfig__VoteResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore VoteResult))) (Pair (Var "r1") (Var "$r0"))))))))))))
 
 /-- go: majority.go:28:25 -/
-def «MajorityConfig__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MajorityConfig__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -282,7 +282,7 @@ def «MajorityConfig__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
     given lookuper.
 
     go: majority.go:55:25 -/
-def «MajorityConfig__Describeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MajorityConfig__Describeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "l"
   (App (Val exception_do)
@@ -450,7 +450,7 @@ def «MajorityConfig__Describeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
 /-- Slice returns the MajorityConfig as a sorted slice.
 
     go: majority.go:110:25 -/
-def «MajorityConfig__Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MajorityConfig__Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -482,7 +482,7 @@ def «MajorityConfig__Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided AckedIndexer (for the active config).
 
     go: majority.go:121:25 -/
-def «MajorityConfig__CommittedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MajorityConfig__CommittedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "l"
   (App (Val exception_do)
@@ -566,7 +566,7 @@ def «MajorityConfig__CommittedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
     quorum of no has been reached).
 
     go: majority.go:170:25 -/
-def «MajorityConfig__VoteResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MajorityConfig__VoteResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "votes"
   (App (Val exception_do)
@@ -638,7 +638,7 @@ def «MajorityConfig__VoteResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (Val #())))))))))
 
 /-- go: quorum.go:25:16 -/
-def «Index__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Index__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "i"
   (Lam BAnon
   (App (Val exception_do)
@@ -655,7 +655,7 @@ def «Index__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))
 
 /-- go: quorum.go:40:24 -/
-def «mapAckIndexer__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «mapAckIndexer__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "id"
   (App (Val exception_do)
@@ -678,7 +678,7 @@ def «mapAckIndexer__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore Index'))) (Pair (Var "idx") (Var "$r0")))))))))))))))))
 
 /-- go: voteresult_string.go:20:21 -/
-def «VoteResult__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «VoteResult__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "i"
   (Lam BAnon
   (App (Val exception_do)
@@ -701,7 +701,7 @@ def «VoteResult__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.quorum where
   pkg_imported_pkgs := [pkg_id.cmp, pkg_id.fmt, pkg_id.math, pkg_id.slices, pkg_id.strings, pkg_id.strconv]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.raft.v3.quorum)) (Lam BAnon
   (App (Val exception_do)

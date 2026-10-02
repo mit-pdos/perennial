@@ -91,154 +91,176 @@ instance Cache_access_load_prefix (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"prefix" l) v.prefix' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"prefix" l) v.prefix' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_prefix (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (prefix' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"prefix" l) v.prefix' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"prefix" l) prefix' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with prefix' := prefix' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with prefix' := prefix' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_cfg (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"cfg" l) v.cfg' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"cfg" l) v.cfg' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_cfg (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (cfg' : go_etcd_io.etcd.cache.v3.Config.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"cfg" l) v.cfg' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"cfg" l) cfg' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cfg' := cfg' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cfg' := cfg' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_watcher (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"watcher" l) v.watcher' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"watcher" l) v.watcher' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_watcher (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (watcher' : go_etcd_io.etcd.client.v3.Watcher.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"watcher" l) v.watcher' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"watcher" l) watcher' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with watcher' := watcher' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with watcher' := watcher' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_kv (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"kv" l) v.kv' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"kv" l) v.kv' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_kv (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (kv' : go_etcd_io.etcd.client.v3.KV.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"kv" l) v.kv' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"kv" l) kv' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with kv' := kv' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with kv' := kv' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_demux (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"demux" l) v.demux' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"demux" l) v.demux' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_demux (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (demux' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"demux" l) v.demux' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"demux" l) demux' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with demux' := demux' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with demux' := demux' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_store (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"store" l) v.store' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"store" l) v.store' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_store (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (store' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"store" l) v.store' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"store" l) store' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with store' := store' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with store' := store' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_ready (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"ready" l) v.ready' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"ready" l) v.ready' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_ready (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (ready' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"ready" l) v.ready' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"ready" l) ready' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ready' := ready' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ready' := ready' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_stop (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"stop" l) v.stop' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"stop" l) v.stop' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_stop (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (stop' : context.CancelFunc.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"stop" l) v.stop' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"stop" l) stop' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stop' := stop' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stop' := stop' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_waitGroup (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"waitGroup" l) v.waitGroup' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"waitGroup" l) v.waitGroup' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_waitGroup (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (waitGroup' : sync.WaitGroup.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"waitGroup" l) v.waitGroup' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"waitGroup" l) waitGroup' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waitGroup' := waitGroup' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waitGroup' := waitGroup' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_internalCtx (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"internalCtx" l) v.internalCtx' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"internalCtx" l) v.internalCtx' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_internalCtx (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (internalCtx' : context.Context.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"internalCtx" l) v.internalCtx' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"internalCtx" l) internalCtx' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with internalCtx' := internalCtx' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with internalCtx' := internalCtx' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_load_progressRequestor (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"progressRequestor" l) v.progressRequestor' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"progressRequestor" l) v.progressRequestor' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Cache_access_store_progressRequestor (l : loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (progressRequestor' : go_etcd_io.etcd.cache.v3.progressRequestor.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"progressRequestor" l) v.progressRequestor' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.Cache.t go!"progressRequestor" l) progressRequestor' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with progressRequestor' := progressRequestor' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with progressRequestor' := progressRequestor' } : go_etcd_io.etcd.cache.v3.Cache.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -555,28 +577,32 @@ instance snapshot_access_load_rev (l : loc) (v : go_etcd_io.etcd.cache.v3.snapsh
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.snapshot.t go!"rev" l) v.rev' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.snapshot.t go!"rev" l) v.rev' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance snapshot_access_store_rev (l : loc) (v : go_etcd_io.etcd.cache.v3.snapshot.t) (rev' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.snapshot.t go!"rev" l) v.rev' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.snapshot.t go!"rev" l) rev' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with rev' := rev' } : go_etcd_io.etcd.cache.v3.snapshot.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with rev' := rev' } : go_etcd_io.etcd.cache.v3.snapshot.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance snapshot_access_load_tree (l : loc) (v : go_etcd_io.etcd.cache.v3.snapshot.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.snapshot.t go!"tree" l) v.tree' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.snapshot.t go!"tree" l) v.tree' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance snapshot_access_store_tree (l : loc) (v : go_etcd_io.etcd.cache.v3.snapshot.t) (tree' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.snapshot.t go!"tree" l) v.tree' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.snapshot.t go!"tree" l) tree' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tree' := tree' } : go_etcd_io.etcd.cache.v3.snapshot.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tree' := tree' } : go_etcd_io.etcd.cache.v3.snapshot.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -611,70 +637,80 @@ instance store_access_load_mu (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"mu" l) v.mu' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"mu" l) v.mu' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_store_mu (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (mu' : sync.RWMutex.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"mu" l) v.mu' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"mu" l) mu' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_load_revCond (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"revCond" l) v.revCond' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"revCond" l) v.revCond' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_store_revCond (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (revCond' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"revCond" l) v.revCond' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"revCond" l) revCond' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with revCond' := revCond' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with revCond' := revCond' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_load_degree (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"degree" l) v.degree' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"degree" l) v.degree' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_store_degree (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (degree' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"degree" l) v.degree' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"degree" l) degree' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with degree' := degree' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with degree' := degree' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_load_latest (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"latest" l) v.latest' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"latest" l) v.latest' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_store_latest (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (latest' : go_etcd_io.etcd.cache.v3.snapshot.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"latest" l) v.latest' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"latest" l) latest' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with latest' := latest' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with latest' := latest' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_load_history (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"history" l) v.history' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"history" l) v.history' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance store_access_store_history (l : loc) (v : go_etcd_io.etcd.cache.v3.store.t) (history' : (go_etcd_io.etcd.cache.v3.ringBuffer.t loc)) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"history" l) v.history' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.store.t go!"history" l) history' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with history' := history' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with history' := history' } : go_etcd_io.etcd.cache.v3.store.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

@@ -49,25 +49,25 @@ def timeList [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] timeList
 
-@[reducible] def defaultListElementLength [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def defaultListElementLength [ffi_syntax] [GoGlobalContext] : val :=
   #(64 : Int)
 
-def closec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/wait.closec"
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/wait.New"
 
-def NewWithResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewWithResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/wait.NewWithResponse"
 
-def NewTimeList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewTimeList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/wait.NewTimeList"
 
 /-- New creates a Wait.
 
     go: wait.go:53:6 -/
-def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "res" (App (Val (GoInstruction (GoAlloc list'))) (App (Val (GoInstruction (GoZeroVal list'))) (Val #())))
@@ -95,7 +95,7 @@ def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore list'))) (Pair (Var "res") (Var "$r0")))))))))
 
 /-- go: wait.go:63:16 -/
-def «list__Registerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «list__Registerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (App (Val wrap_defer)
@@ -148,7 +148,7 @@ def «list__Registerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))
 
 /-- go: wait.go:76:16 -/
-def «list__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «list__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (Lam "x"
@@ -193,7 +193,7 @@ def «list__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))))
 
 /-- go: wait.go:88:16 -/
-def «list__IsRegisteredⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «list__IsRegisteredⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (App (Val wrap_defer)
@@ -231,7 +231,7 @@ def «list__IsRegisteredⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))
 
 /-- go: wait.go:100:6 -/
-def «NewWithResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewWithResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ch"
   (App (Val exception_do)
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.recvonly go.any)))) (Var "ch"))
@@ -240,7 +240,7 @@ def «NewWithResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral waitWithResponse))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.type.ChannelType go.chan_dir.recvonly go.any) (Var "$v0")))])))))))))
 
 /-- go: wait.go:104:28 -/
-def «waitWithResponse__Registerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitWithResponse__Registerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (App (Val exception_do)
@@ -250,7 +250,7 @@ def «waitWithResponse__Registerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.recvonly go.any)))) (App (Val (GoInstruction (StructFieldRef waitWithResponse go!"ch"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType waitWithResponse)))) (Var "w"))))))))))
 
 /-- go: wait.go:107:28 -/
-def «waitWithResponse__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitWithResponse__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (Lam "x"
@@ -262,7 +262,7 @@ def «waitWithResponse__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (Val #())))))))))
 
 /-- go: wait.go:108:28 -/
-def «waitWithResponse__IsRegisteredⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitWithResponse__IsRegisteredⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (App (Val exception_do)
@@ -273,7 +273,7 @@ def «waitWithResponse__IsRegisteredⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))))
 
 /-- go: wait_time.go:38:6 -/
-def «NewTimeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewTimeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -281,7 +281,7 @@ def «NewTimeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral timeList))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))) (Var "$v0")))])))))))
 
 /-- go: wait_time.go:42:21 -/
-def «timeList__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «timeList__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "tl"
   (Lam "deadline"
   (App (Val wrap_defer)
@@ -324,7 +324,7 @@ def «timeList__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl")))) (Val #()))))))))))
 
 /-- go: wait_time.go:56:21 -/
-def «timeList__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «timeList__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "tl"
   (Lam "deadline"
   (App (Val wrap_defer)
@@ -375,7 +375,7 @@ def «timeList__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.pkg.v3.wait where
   pkg_imported_pkgs := [pkg_id.log, pkg_id.sync]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.pkg.v3.wait)) (Lam BAnon
   (App (Val exception_do)

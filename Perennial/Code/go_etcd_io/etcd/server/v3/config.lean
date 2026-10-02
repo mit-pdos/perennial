@@ -53,7 +53,7 @@ axiom V2DeprDefault [ffi_syntax] [GoGlobalContext] : val
 
 axiom V2_DEPR_DEFAULT [ffi_syntax] [GoGlobalContext] : val
 
-def CheckDuplicateURL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CheckDuplicateURL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/config.CheckDuplicateURL"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.config where
@@ -61,7 +61,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.config where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.config)) (Lam BAnon
   (App (Val exception_do)

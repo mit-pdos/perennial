@@ -75,71 +75,71 @@ def freeType [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] freeType
 
-@[reducible] def DefaultFreeListSize [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def DefaultFreeListSize [ffi_syntax] [GoGlobalContext] : val :=
   #(32 : Int)
 
 /-- removes the given item -/
-@[reducible] def removeItem [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def removeItem [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- removes smallest item in the subtree -/
-@[reducible] def removeMin [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def removeMin [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- removes largest item in the subtree -/
-@[reducible] def removeMax [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def removeMax [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] def descend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def descend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 (-1))
 
-@[reducible] def ascend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ascend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- node was freed (available for GC, not stored in freelist) -/
-@[reducible] def ftFreelistFull [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ftFreelistFull [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- node was stored in the freelist for later use -/
-@[reducible] def ftStored [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ftStored [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- node was ignored by COW, since it's owned by another one -/
-@[reducible] def ftNotOwned [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ftNotOwned [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def NewFreeList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFreeList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.NewFreeList"
 
-def Less [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Less [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.Less"
 
-def NewOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.NewOrdered"
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.New"
 
-def NewWithFreeList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewWithFreeList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.NewWithFreeList"
 
-def min [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def min [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.min"
 
-def max [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def max [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.max"
 
-def optional [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def optional [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.optional"
 
-def empty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def empty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"k8s.io/utils/third_party/forked/golang/btree.empty"
 
 /-- NewFreeList creates a new free list.
     size is the maximum size of the returned free list.
 
     go: btree.go:77:6 -/
-def «NewFreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NewFreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "size"
   (App (Val exception_do)
   (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (Var "size"))
@@ -148,7 +148,7 @@ def «NewFreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : va
   (App (Val (GoInstruction (CompositeLiteral (FreeList T)))) (LiteralValue [(KeyedElement (some (KeyField go!"freelist")) (ElementExpression (go.type.SliceType (go.type.PointerType (node T))) (Var "$v0")))]))))))))
 
 /-- go: btree.go:81:23 -/
-def «FreeList__newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «FreeList__newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "f"
   (Lam BAnon
   (App (Val exception_do)
@@ -192,7 +192,7 @@ def «FreeList__newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f")))) (Val #())))))))))
 
 /-- go: btree.go:95:23 -/
-def «FreeList__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «FreeList__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "f"
   (Lam "n"
   (App (Val exception_do)
@@ -227,7 +227,7 @@ def «FreeList__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.typ
 /-- Less returns a default LessFunc that uses the '<' operator for types that support it.
 
     go: btree.go:111:6 -/
-def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -242,7 +242,7 @@ def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
 /-- NewOrdered creates a new B-Tree for ordered types.
 
     go: btree.go:116:6 -/
-def «NewOrderedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NewOrderedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "degree"
   (App (Val exception_do)
   (Let "degree" (App (Val (GoInstruction (GoAlloc go.int))) (Var "degree"))
@@ -259,7 +259,7 @@ def «NewOrderedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
     The passed-in LessFunc determines how objects of type T are ordered.
 
     go: btree.go:126:6 -/
-def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "degree"
   (Lam "less"
   (App (Val exception_do)
@@ -275,7 +275,7 @@ def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
 /-- NewWithFreeList creates a new B-Tree that uses the given node free list.
 
     go: btree.go:131:6 -/
-def «NewWithFreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NewWithFreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "degree"
   (Lam "less"
   (Lam "f"
@@ -301,7 +301,7 @@ def «NewWithFreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) 
     forward.
 
     go: btree.go:146:20 -/
-def «items__insertAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__insertAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "s"
   (Lam "index"
   (Lam "item"
@@ -339,7 +339,7 @@ def «items__insertAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) 
     back.
 
     go: btree.go:157:20 -/
-def «items__removeAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__removeAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "s"
   (Lam "index"
   (App (Val exception_do)
@@ -375,7 +375,7 @@ def «items__removeAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) 
 /-- pop removes and returns the last element in the list.
 
     go: btree.go:167:20 -/
-def «items__popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -408,7 +408,7 @@ def «items__popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
     first index items. index must be less than or equal to length.
 
     go: btree.go:178:20 -/
-def «items__truncateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__truncateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "s"
   (Lam "index"
   (App (Val exception_do)
@@ -449,7 +449,7 @@ def «items__truncateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) 
     index.
 
     go: btree.go:190:19 -/
-def «items__findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "s"
   (Lam "item"
   (Lam "less"
@@ -485,7 +485,7 @@ def «items__findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : va
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))))))
 
 /-- go: btree.go:211:19 -/
-def «node__mutableForⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__mutableForⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "cow"
   (App (Val exception_do)
@@ -544,7 +544,7 @@ def «node__mutableForⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type)
   (Val #())))))))))
 
 /-- go: btree.go:232:19 -/
-def «node__mutableChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__mutableChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "i"
   (App (Val exception_do)
@@ -568,7 +568,7 @@ def «node__mutableChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.typ
     containing all items/children after it.
 
     go: btree.go:241:19 -/
-def «node__splitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__splitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "i"
   (App (Val exception_do)
@@ -617,7 +617,7 @@ def «node__splitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : va
     Returns whether or not a split occurred.
 
     go: btree.go:255:19 -/
-def «node__maybeSplitChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__maybeSplitChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "i"
   (Lam "maxItems"
@@ -670,7 +670,7 @@ def «node__maybeSplitChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.
     be found/replaced by insert, it will be returned.
 
     go: btree.go:269:19 -/
-def «node__insertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__insertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "item"
   (Lam "maxItems"
@@ -767,7 +767,7 @@ def «node__insertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : v
 /-- get finds the given key in the subtree and returns it.
 
     go: btree.go:297:19 -/
-def «node__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "key"
   (App (Val exception_do)
@@ -810,7 +810,7 @@ def «node__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val 
 /-- min returns the first item in the subtree.
 
     go: btree.go:308:6 -/
-def «minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (App (Val exception_do)
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -844,7 +844,7 @@ def «minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
 /-- max returns the last item in the subtree.
 
     go: btree.go:322:6 -/
-def «maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (App (Val exception_do)
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -880,7 +880,7 @@ def «maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
 /-- remove removes an item from the subtree rooted at this node.
 
     go: btree.go:345:19 -/
-def «node__removeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__removeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "item"
   (Lam "minItems"
@@ -1031,7 +1031,7 @@ def «node__removeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : v
     that we hit case A.
 
     go: btree.go:418:19 -/
-def «node__growChildAndRemoveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__growChildAndRemoveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "i"
   (Lam "item"
@@ -1180,7 +1180,7 @@ def «node__growChildAndRemoveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : 
   (Val #()))))))))))))))))))
 
 /-- go: btree.go:467:6 -/
-def «optionalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «optionalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "item"
   (App (Val exception_do)
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
@@ -1190,7 +1190,7 @@ def «optionalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :
   (App (Val (GoInstruction (CompositeLiteral (optionalItem T)))) (LiteralValue [(KeyedElement (some (KeyField go!"item")) (ElementExpression T (Var "$v0"))), (KeyedElement (some (KeyField go!"valid")) (ElementExpression go.bool (Var "$v1")))]))))))))
 
 /-- go: btree.go:470:6 -/
-def «emptyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «emptyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -1205,7 +1205,7 @@ def «emptyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
     "greaterThan" or "lessThan" queries.
 
     go: btree.go:481:19 -/
-def «node__iterateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__iterateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "dir"
   (Lam "start"
@@ -1476,7 +1476,7 @@ def «node__iterateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : 
     the original performance characteristics of the original tree.
 
     go: btree.go:597:20 -/
-def «BTree__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -1511,7 +1511,7 @@ def «BTree__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : v
 /-- maxItems returns the max number of items to allow per node.
 
     go: btree.go:611:20 -/
-def «BTree__maxItemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__maxItemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -1523,7 +1523,7 @@ def «BTree__maxItemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) 
     root node).
 
     go: btree.go:617:20 -/
-def «BTree__minItemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__minItemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -1532,7 +1532,7 @@ def «BTree__minItemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) 
   (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"degree"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1)))))))))
 
 /-- go: btree.go:621:33 -/
-def «copyOnWriteContext__newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «copyOnWriteContext__newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -1554,7 +1554,7 @@ def «copyOnWriteContext__newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T
     documentation).
 
     go: btree.go:638:33 -/
-def «copyOnWriteContext__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «copyOnWriteContext__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam "n"
   (App (Val exception_do)
@@ -1595,7 +1595,7 @@ def «copyOnWriteContext__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (
     nil cannot be added to the tree (will panic).
 
     go: btree.go:657:20 -/
-def «BTree__ReplaceOrInsertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__ReplaceOrInsertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "item"
   (App (Val exception_do)
@@ -1698,7 +1698,7 @@ def «BTree__ReplaceOrInsertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go
     it.  If no such item exists, returns (zeroValue, false).
 
     go: btree.go:681:20 -/
-def «BTree__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "item"
   (App (Val exception_do)
@@ -1716,7 +1716,7 @@ def «BTree__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : 
     If no such item exists, returns (zeroValue, false).
 
     go: btree.go:687:20 -/
-def «BTree__DeleteMinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DeleteMinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -1734,7 +1734,7 @@ def «BTree__DeleteMinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type)
     If no such item exists, returns (zeroValue, false).
 
     go: btree.go:694:20 -/
-def «BTree__DeleteMaxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DeleteMaxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -1749,7 +1749,7 @@ def «BTree__DeleteMaxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type)
   (Pair (Var "$ret0") (Var "$ret1")))))))))))
 
 /-- go: btree.go:699:20 -/
-def «BTree__deleteItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__deleteItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "item"
   (Lam "typ"
@@ -1818,7 +1818,7 @@ def «BTree__deleteItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type
     [greaterOrEqual, lessThan), until iterator returns false.
 
     go: btree.go:718:20 -/
-def «BTree__AscendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__AscendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "greaterOrEqual"
   (Lam "lessThan"
@@ -1852,7 +1852,7 @@ def «BTree__AscendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.typ
     [first, pivot), until iterator returns false.
 
     go: btree.go:727:20 -/
-def «BTree__AscendLessThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__AscendLessThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
@@ -1883,7 +1883,7 @@ def «BTree__AscendLessThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.
     the range [pivot, last], until iterator returns false.
 
     go: btree.go:736:20 -/
-def «BTree__AscendGreaterOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__AscendGreaterOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
@@ -1914,7 +1914,7 @@ def «BTree__AscendGreaterOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T
     [first, last], until iterator returns false.
 
     go: btree.go:745:20 -/
-def «BTree__Ascendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Ascendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "iterator"
   (App (Val exception_do)
@@ -1942,7 +1942,7 @@ def «BTree__Ascendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : 
     [lessOrEqual, greaterThan), until iterator returns false.
 
     go: btree.go:754:20 -/
-def «BTree__DescendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DescendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "lessOrEqual"
   (Lam "greaterThan"
@@ -1976,7 +1976,7 @@ def «BTree__DescendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.ty
     [pivot, first], until iterator returns false.
 
     go: btree.go:763:20 -/
-def «BTree__DescendLessOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DescendLessOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
@@ -2007,7 +2007,7 @@ def «BTree__DescendLessOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T :
     the range [last, pivot), until iterator returns false.
 
     go: btree.go:772:20 -/
-def «BTree__DescendGreaterThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DescendGreaterThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
@@ -2038,7 +2038,7 @@ def «BTree__DescendGreaterThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T :
     [last, first], until iterator returns false.
 
     go: btree.go:781:20 -/
-def «BTree__Descendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Descendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "iterator"
   (App (Val exception_do)
@@ -2066,7 +2066,7 @@ def «BTree__Descendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) :
     (zeroValue, false) if unable to find that item.
 
     go: btree.go:790:20 -/
-def «BTree__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "key"
   (App (Val exception_do)
@@ -2090,7 +2090,7 @@ def «BTree__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
 /-- Min returns the smallest item in the tree, or (zeroValue, false) if the tree is empty.
 
     go: btree.go:798:20 -/
-def «BTree__Minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -2107,7 +2107,7 @@ def «BTree__Minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
 /-- Max returns the largest item in the tree, or (zeroValue, false) if the tree is empty.
 
     go: btree.go:803:20 -/
-def «BTree__Maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -2124,7 +2124,7 @@ def «BTree__Maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
 /-- Has returns true if the given key is in the tree.
 
     go: btree.go:808:20 -/
-def «BTree__Hasⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Hasⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "key"
   (App (Val exception_do)
@@ -2149,7 +2149,7 @@ def «BTree__Hasⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
 /-- Len returns the number of items currently in the tree.
 
     go: btree.go:814:20 -/
-def «BTree__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -2180,7 +2180,7 @@ def «BTree__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
     	    ownership, none are.
 
     go: btree.go:839:20 -/
-def «BTree__Clearⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Clearⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "t"
   (Lam "addNodesToFreelist"
   (App (Val exception_do)
@@ -2209,7 +2209,7 @@ def «BTree__Clearⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : v
     freelist up.  Returns true if parent reset call should continue.
 
     go: btree.go:849:19 -/
-def «node__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "n"
   (Lam "c"
   (App (Val exception_do)
@@ -2240,7 +2240,7 @@ def «node__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : va
 instance info' : PkgInfo pkg_id.k8s_io.utils.third_party.forked.golang.btree where
   pkg_imported_pkgs := [pkg_id.cmp, pkg_id.sort, pkg_id.sync]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.k8s_io.utils.third_party.forked.golang.btree)) (Lam BAnon
   (App (Val exception_do)

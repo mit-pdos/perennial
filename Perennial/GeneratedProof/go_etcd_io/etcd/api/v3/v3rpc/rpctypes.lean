@@ -41,28 +41,32 @@ instance EtcdError_access_load_code (l : loc) (v : go_etcd_io.etcd.api.v3.v3rpc.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance EtcdError_access_store_code (l : loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (code' : google_golang_org.grpc.codes.Code.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) code' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with code' := code' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with code' := code' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance EtcdError_access_load_desc (l : loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance EtcdError_access_store_desc (l : loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (desc' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) desc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with desc' := desc' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with desc' := desc' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

@@ -17,11 +17,11 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers
 
-def AnyPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AnyPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics/helpers.AnyPointer"
 
 /-- go: helpers.go:3:6 -/
-def «AnyPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «AnyPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "x"
   (App (Val exception_do)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.PointerType T)))) (Var "x"))
@@ -31,7 +31,7 @@ def «AnyPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers where
   pkg_imported_pkgs := []
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers)) (Lam BAnon
   (App (Val exception_do)

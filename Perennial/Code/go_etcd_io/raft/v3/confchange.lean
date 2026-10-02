@@ -23,43 +23,43 @@ def Changer [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Changer
 
-def checkInvariants [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkInvariants [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.checkInvariants"
 
-def checkAndReturn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkAndReturn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.checkAndReturn"
 
-def nilAwareAdd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilAwareAdd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.nilAwareAdd"
 
-def nilAwareDelete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilAwareDelete [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.nilAwareDelete"
 
-def symdiff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symdiff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.symdiff"
 
-def joint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def joint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.joint"
 
-def incoming [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def incoming [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.incoming"
 
-def outgoing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def outgoing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.outgoing"
 
-def outgoingPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def outgoingPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.outgoingPtr"
 
-def Describe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Describe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.Describe"
 
-def toConfChangeSingle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toConfChangeSingle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.toConfChangeSingle"
 
-def chain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chain [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.chain"
 
-def Restore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Restore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/confchange.Restore"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.confchange where
@@ -67,7 +67,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.confchange where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.raft.v3.confchange)) (Lam BAnon
   (App (Val exception_do)

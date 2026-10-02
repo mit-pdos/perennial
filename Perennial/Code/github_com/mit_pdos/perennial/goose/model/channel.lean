@@ -35,55 +35,55 @@ def SelectDir [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] SelectDir
 
-@[reducible] def buffered [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def buffered [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def idle [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def idle [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def sndPending [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def sndPending [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] def rcvPending [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def rcvPending [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-@[reducible] def sndCommit [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def sndCommit [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4)
 
-@[reducible] def rcvDone [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def rcvDone [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 5)
 
-@[reducible] def closed [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def closed [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 6)
 
 /-- case ch <- Send -/
-@[reducible] def SelectSend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SelectSend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- case <-ch: -/
-@[reducible] def SelectRecv [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SelectRecv [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-def NewChannel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewChannel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NewChannel"
 
-def NonBlockingSelect1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NonBlockingSelect1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect1"
 
-def BlockingSelect2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BlockingSelect2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.BlockingSelect2"
 
-def NonBlockingSelect2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NonBlockingSelect2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect2"
 
-def BlockingSelect3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BlockingSelect3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.BlockingSelect3"
 
-def NonBlockingSelect3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NonBlockingSelect3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect3"
 
 /-- go: channel.go:31:6 -/
-def «NewChannelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NewChannelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "cap"
   (App (Val exception_do)
   (Let "cap" (App (Val (GoInstruction (GoAlloc go.int))) (Var "cap"))
@@ -110,7 +110,7 @@ def «NewChannelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
     statements simply call this in a for loop until it returns true.
 
     go: channel.go:46:22 -/
-def «Channel__TrySendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__TrySendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam "val"
   (Lam "blocking"
@@ -224,7 +224,7 @@ def «Channel__TrySendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type)
     c <- val
 
     go: channel.go:105:22 -/
-def «Channel__Sendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Sendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam "v"
   (App (Val exception_do)
@@ -259,7 +259,7 @@ def «Channel__Sendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : 
     with another non-blocking send.
 
     go: channel.go:120:22 -/
-def «Channel__TryReceiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__TryReceiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam "blocking"
   (App (Val exception_do)
@@ -392,7 +392,7 @@ def «Channel__TryReceiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.ty
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))))))
 
 /-- go: channel.go:189:22 -/
-def «Channel__Receiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Receiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -442,7 +442,7 @@ def «Channel__Receiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type)
     the closer must still obtain the channel's lock
 
     go: channel.go:206:22 -/
-def «Channel__tryCloseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__tryCloseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -478,7 +478,7 @@ def «Channel__tryCloseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type
     close(c)
 
     go: channel.go:228:22 -/
-def «Channel__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -506,7 +506,7 @@ def «Channel__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) :
     v := c<-
 
     go: channel.go:240:22 -/
-def «Channel__ReceiveDiscardOkⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__ReceiveDiscardOkⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -535,7 +535,7 @@ def «Channel__ReceiveDiscardOkⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T :
     semantics.
 
     go: channel.go:252:22 -/
-def «Channel__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -567,7 +567,7 @@ def «Channel__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : v
     cap(c)
 
     go: channel.go:266:22 -/
-def «Channel__Capⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Capⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -584,7 +584,7 @@ def «Channel__Capⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : v
 /-- c.Iter() returns an iterator that models a for range loop over the channel.
 
     go: channel.go:274:22 -/
-def «Channel__Iterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Iterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -643,7 +643,7 @@ def «Channel__Iterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : 
     Returns (selected, received_value, ok)
 
     go: select.go:19:6 -/
-def «NonBlockingSelect1ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NonBlockingSelect1ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "ch"
   (Lam "dir"
   (Lam "value"
@@ -689,7 +689,7 @@ def «NonBlockingSelect1ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.typ
     Returns (caseIndex, received_value1, received_value2, ok)
 
     go: select.go:33:6 -/
-def «BlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 : go.type) : val :=
+noncomputable def «BlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 : go.type) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -782,7 +782,7 @@ def «BlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 : go.ty
     caseIndex = 2 means no selection
 
     go: select.go:73:6 -/
-def «NonBlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 : go.type) : val :=
+noncomputable def «NonBlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 : go.type) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -938,7 +938,7 @@ def «NonBlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 : go
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))))))))))))))))))))
 
 /-- go: select.go:135:6 -/
-def «BlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 T3 : go.type) : val :=
+noncomputable def «BlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 T3 : go.type) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -1078,7 +1078,7 @@ def «BlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 T3 : go
     caseIndex = 3 means no selection
 
     go: select.go:189:6 -/
-def «NonBlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 T3 : go.type) : val :=
+noncomputable def «NonBlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 T3 : go.type) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -1229,7 +1229,7 @@ def «NonBlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 T3 :
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.channel where
   pkg_imported_pkgs := [pkg_id.github_com.goose_lang.primitive]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.model.channel)) (Lam BAnon
   (App (Val exception_do)

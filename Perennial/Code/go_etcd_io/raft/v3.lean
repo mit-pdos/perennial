@@ -210,325 +210,325 @@ def entryPayloadSize [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] entryPayloadSize
 
-@[reducible] def calldepth [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def calldepth [ffi_syntax] [GoGlobalContext] : val :=
   #(2 : Int)
 
-@[reducible] def SnapshotFinish [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SnapshotFinish [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def SnapshotFailure [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SnapshotFailure [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] def None' [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def None' [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def LocalAppendThread [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def LocalAppendThread [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 18446744073709551615)
 
-@[reducible] def LocalApplyThread [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def LocalApplyThread [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 18446744073709551614)
 
-@[reducible] def StateFollower [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def StateFollower [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def StateCandidate [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def StateCandidate [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def StateLeader [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def StateLeader [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] def StatePreCandidate [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def StatePreCandidate [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-@[reducible] def numStates [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def numStates [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4)
 
-@[reducible] def ReadOnlySafe [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ReadOnlySafe [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def ReadOnlyLeaseBased [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ReadOnlyLeaseBased [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def campaignPreElection [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def campaignPreElection [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"CampaignPreElection")
 
-@[reducible] def campaignElection [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def campaignElection [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"CampaignElection")
 
-@[reducible] def campaignTransfer [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def campaignTransfer [ffi_syntax] [GoGlobalContext] : val :=
   #(go!"CampaignTransfer")
 
-@[reducible] def noLimit [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def noLimit [ffi_syntax] [GoGlobalContext] : val :=
   #(18446744073709551615 : Int)
 
-@[reducible] def ProgressTypePeer [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ProgressTypePeer [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 0)
 
-@[reducible] def ProgressTypeLearner [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ProgressTypeLearner [ffi_syntax] [GoGlobalContext] : val :=
   #(W8 1)
 
-@[reducible] def StateTraceDeployed [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def StateTraceDeployed [ffi_syntax] [GoGlobalContext] : val :=
   #false
 
-def defaultLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.defaultLogger"
 
-def discardLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def discardLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.discardLogger"
 
-def raftLoggerMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raftLoggerMu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.raftLoggerMu"
 
-def raftLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raftLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.raftLogger"
 
-def emptyState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.emptyState"
 
-def ErrStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrStopped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ErrStopped"
 
-def ErrProposalDropped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrProposalDropped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ErrProposalDropped"
 
-def globalRand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalRand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.globalRand"
 
-def stmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.stmap"
 
-def errBreak [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBreak [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.errBreak"
 
-def ErrStepLocalMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrStepLocalMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ErrStepLocalMsg"
 
-def ErrStepPeerNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrStepPeerNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ErrStepPeerNotFound"
 
-def ErrCompacted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrCompacted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ErrCompacted"
 
-def ErrSnapOutOfDate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrSnapOutOfDate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ErrSnapOutOfDate"
 
-def ErrUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ErrUnavailable"
 
-def ErrSnapshotTemporarilyUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrSnapshotTemporarilyUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ErrSnapshotTemporarilyUnavailable"
 
-def isLocalMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isLocalMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.isLocalMsg"
 
-def isResponseMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isResponseMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.isResponseMsg"
 
-def newLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newLog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newLog"
 
-def newLogWithSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newLogWithSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newLogWithSize"
 
-def SetLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.SetLogger"
 
-def ResetDefaultLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ResetDefaultLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.ResetDefaultLogger"
 
-def getLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.getLogger"
 
-def header [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def header [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.header"
 
-def isHardStateEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isHardStateEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.isHardStateEqual"
 
-def IsEmptyHardState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsEmptyHardState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.IsEmptyHardState"
 
-def IsEmptySnap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsEmptySnap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.IsEmptySnap"
 
-def setupNode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setupNode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.setupNode"
 
-def StartNode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StartNode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.StartNode"
 
-def RestartNode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RestartNode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.RestartNode"
 
-def newNode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newNode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newNode"
 
-def confChangeToMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def confChangeToMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.confChangeToMsg"
 
-def newRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newRaft"
 
-def stepLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stepLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.stepLeader"
 
-def stepCandidate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stepCandidate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.stepCandidate"
 
-def stepFollower [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stepFollower [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.stepFollower"
 
-def logSliceFromMsgApp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def logSliceFromMsgApp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.logSliceFromMsgApp"
 
-def releasePendingReadIndexMessages [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def releasePendingReadIndexMessages [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.releasePendingReadIndexMessages"
 
-def sendMsgReadIndexResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sendMsgReadIndexResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.sendMsgReadIndexResponse"
 
-def NewRawNode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRawNode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.NewRawNode"
 
-def MustSync [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustSync [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.MustSync"
 
-def needStorageAppendMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needStorageAppendMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.needStorageAppendMsg"
 
-def needStorageAppendRespMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needStorageAppendRespMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.needStorageAppendRespMsg"
 
-def newStorageAppendMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newStorageAppendMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newStorageAppendMsg"
 
-def newStorageAppendRespMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newStorageAppendRespMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newStorageAppendRespMsg"
 
-def needStorageApplyMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needStorageApplyMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.needStorageApplyMsg"
 
-def needStorageApplyRespMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needStorageApplyRespMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.needStorageApplyRespMsg"
 
-def newStorageApplyMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newStorageApplyMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newStorageApplyMsg"
 
-def newStorageApplyRespMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newStorageApplyRespMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newStorageApplyRespMsg"
 
-def newReadOnly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newReadOnly [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.newReadOnly"
 
-def traceInitState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceInitState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceInitState"
 
-def traceReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceReady"
 
-def traceCommit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceCommit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceCommit"
 
-def traceReplicate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceReplicate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceReplicate"
 
-def traceBecomeFollower [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceBecomeFollower [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceBecomeFollower"
 
-def traceBecomeCandidate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceBecomeCandidate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceBecomeCandidate"
 
-def traceBecomeLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceBecomeLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceBecomeLeader"
 
-def traceChangeConfEvent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceChangeConfEvent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceChangeConfEvent"
 
-def traceConfChangeEvent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceConfChangeEvent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceConfChangeEvent"
 
-def traceSendMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceSendMessage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceSendMessage"
 
-def traceReceiveMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceReceiveMessage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.traceReceiveMessage"
 
-def getProgressCopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getProgressCopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.getProgressCopy"
 
-def getBasicStatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getBasicStatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.getBasicStatus"
 
-def getStatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getStatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.getStatus"
 
-def NewMemoryStorage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMemoryStorage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.NewMemoryStorage"
 
-def pbEntryID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pbEntryID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.pbEntryID"
 
-def isMsgInArray [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isMsgInArray [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.isMsgInArray"
 
-def IsLocalMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsLocalMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.IsLocalMsg"
 
-def IsResponseMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsResponseMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.IsResponseMsg"
 
-def IsLocalMsgTarget [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsLocalMsgTarget [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.IsLocalMsgTarget"
 
-def voteRespMsgType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def voteRespMsgType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.voteRespMsgType"
 
-def DescribeHardState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeHardState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.DescribeHardState"
 
-def DescribeSoftState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeSoftState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.DescribeSoftState"
 
-def DescribeConfState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeConfState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.DescribeConfState"
 
-def DescribeSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.DescribeSnapshot"
 
-def DescribeReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.DescribeReady"
 
-def DescribeMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeMessage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.DescribeMessage"
 
-def describeMessageWithIndent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def describeMessageWithIndent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.describeMessageWithIndent"
 
-def describeTarget [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def describeTarget [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.describeTarget"
 
-def DescribeEntry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeEntry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.DescribeEntry"
 
-def DescribeEntries [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeEntries [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.DescribeEntries"
 
-def entsSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def entsSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.entsSize"
 
-def limitSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def limitSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.limitSize"
 
-def payloadSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def payloadSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.payloadSize"
 
-def payloadsSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def payloadsSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.payloadsSize"
 
-def assertConfStatesEquivalent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def assertConfStatesEquivalent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.assertConfStatesEquivalent"
 
-def extend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3.extend"
 
 /-- Bootstrap initializes the RawNode for first use by appending configuration
@@ -540,7 +540,7 @@ def extend [ffi_syntax] [GoGlobalContext] : go_string :=
     which stores the desired ConfState as its InitialState.
 
     go: bootstrap.go:30:20 -/
-def «RawNode__Bootstrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__Bootstrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "peers"
   (App (Val exception_do)
@@ -676,7 +676,7 @@ def «RawNode__Bootstrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     latest snapshot.
 
     go: log.go:67:6 -/
-def «newLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "storage"
   (Lam "logger"
   (App (Val exception_do)
@@ -692,7 +692,7 @@ def «newLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     message size.
 
     go: log.go:73:6 -/
-def «newLogWithSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newLogWithSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "storage"
   (Lam "logger"
   (Lam "maxApplyingEntsSize"
@@ -753,7 +753,7 @@ def «newLogWithSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "firstIndex") (Var "$r0")))))))))))))))))))
 
 /-- go: log.go:100:19 -/
-def «raftLog__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -774,7 +774,7 @@ def «raftLog__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     it returns (last index of new entries, true).
 
     go: log.go:107:19 -/
-def «raftLog__maybeAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__maybeAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "a"
   (Lam "committed"
@@ -845,7 +845,7 @@ def «raftLog__maybeAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))))
 
 /-- go: log.go:131:19 -/
-def «raftLog__appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "ents"
   (App (Val exception_do)
@@ -892,7 +892,7 @@ def «raftLog__appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     The index of the given entries MUST be continuously increasing.
 
     go: log.go:152:19 -/
-def «raftLog__findConflictⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__findConflictⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "ents"
   (App (Val exception_do)
@@ -954,7 +954,7 @@ def «raftLog__findConflictⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     of appends.
 
     go: log.go:180:19 -/
-def «raftLog__findConflictByTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__findConflictByTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "index"
   (Lam "term"
@@ -997,7 +997,7 @@ def «raftLog__findConflictByTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     local stable log and are not already in-progress.
 
     go: log.go:196:19 -/
-def «raftLog__nextUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__nextUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1009,7 +1009,7 @@ def «raftLog__nextUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
     written to the local stable log and are not already in-progress.
 
     go: log.go:202:19 -/
-def «raftLog__hasNextUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__hasNextUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1023,7 +1023,7 @@ def «raftLog__hasNextUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
     written to the local stable log.
 
     go: log.go:209:19 -/
-def «raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1039,7 +1039,7 @@ def «raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlob
     to reside locally on stable storage will be returned.
 
     go: log.go:218:19 -/
-def «raftLog__nextCommittedEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__nextCommittedEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "allowUnstable"
   (App (Val exception_do)
@@ -1122,7 +1122,7 @@ def «raftLog__nextCommittedEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     This is a fast check without heavy raftLog.slice() in nextCommittedEnts().
 
     go: log.go:246:19 -/
-def «raftLog__hasNextCommittedEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__hasNextCommittedEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "allowUnstable"
   (App (Val exception_do)
@@ -1160,7 +1160,7 @@ def «raftLog__hasNextCommittedEntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
     can be applied.
 
     go: log.go:265:19 -/
-def «raftLog__maxAppliableIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__maxAppliableIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "allowUnstable"
   (App (Val exception_do)
@@ -1187,7 +1187,7 @@ def «raftLog__maxAppliableIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     be applied to the local storage and is not already in-progress.
 
     go: log.go:275:19 -/
-def «raftLog__nextUnstableSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__nextUnstableSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1199,7 +1199,7 @@ def «raftLog__nextUnstableSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
     be applied to the local storage and is not already in-progress.
 
     go: log.go:281:19 -/
-def «raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1211,7 +1211,7 @@ def «raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContex
     applying or in the process of being applied.
 
     go: log.go:287:19 -/
-def «raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1220,7 +1220,7 @@ def «raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot)))) (App (Val (GoInstruction (StructFieldRef unstable go!"snapshot"))) (App (Val (GoInstruction (StructFieldRef raftLog go!"unstable"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raftLog)))) (Var "l"))))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot)))) (Val UntypedNil))))))))))
 
 /-- go: log.go:291:19 -/
-def «raftLog__snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1238,7 +1238,7 @@ def «raftLog__snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))
 
 /-- go: log.go:298:19 -/
-def «raftLog__firstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__firstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1286,7 +1286,7 @@ def «raftLog__firstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
 /-- go: log.go:309:19 -/
-def «raftLog__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1334,7 +1334,7 @@ def «raftLog__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
 /-- go: log.go:320:19 -/
-def «raftLog__commitToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__commitToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "tocommit"
   (App (Val exception_do)
@@ -1361,7 +1361,7 @@ def «raftLog__commitToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: log.go:330:19 -/
-def «raftLog__appliedToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__appliedToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (Lam "size"
@@ -1405,7 +1405,7 @@ def «raftLog__appliedToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))))))
 
 /-- go: log.go:345:19 -/
-def «raftLog__acceptApplyingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__acceptApplyingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (Lam "size"
@@ -1442,7 +1442,7 @@ def «raftLog__acceptApplyingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (Val #()))))))))))))))
 
 /-- go: log.go:365:19 -/
-def «raftLog__stableToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__stableToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "id"
   (App (Val exception_do)
@@ -1456,7 +1456,7 @@ def «raftLog__stableToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType unstable) go!"stableTo"))) (App (Val (GoInstruction (StructFieldRef raftLog go!"unstable"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raftLog)))) (Var "l")))) (Var "$a0"))))))))))
 
 /-- go: log.go:367:19 -/
-def «raftLog__stableSnapToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__stableSnapToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (App (Val exception_do)
@@ -1475,7 +1475,7 @@ def «raftLog__stableSnapToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     to Ready().
 
     go: log.go:373:19 -/
-def «raftLog__acceptUnstableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__acceptUnstableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1489,7 +1489,7 @@ def «raftLog__acceptUnstableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
 /-- lastEntryID returns the ID of the last entry in the log.
 
     go: log.go:376:19 -/
-def «raftLog__lastEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__lastEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1529,7 +1529,7 @@ def «raftLog__lastEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "index") (Var "$r0")))))))))))
 
 /-- go: log.go:385:19 -/
-def «raftLog__termⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__termⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (App (Val exception_do)
@@ -1598,7 +1598,7 @@ def «raftLog__termⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "t") (Var "$r0"))))))))))))))))))
 
 /-- go: log.go:413:19 -/
-def «raftLog__entriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__entriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (Lam "maxSize"
@@ -1624,7 +1624,7 @@ def «raftLog__entriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- allEntries returns all entries in the log.
 
     go: log.go:421:19 -/
-def «raftLog__allEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__allEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -1669,7 +1669,7 @@ def «raftLog__allEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     the same, the given log is up-to-date.
 
     go: log.go:440:19 -/
-def «raftLog__isUpToDateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__isUpToDateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "their"
   (App (Val exception_do)
@@ -1684,7 +1684,7 @@ def «raftLog__isUpToDateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore entryID))) (Pair (Var "our") (Var "$r0"))))))))))))
 
 /-- go: log.go:445:19 -/
-def «raftLog__matchTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__matchTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "id"
   (App (Val exception_do)
@@ -1714,7 +1714,7 @@ def «raftLog__matchTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "t") (Var "$r0")))))))))))))))))
 
 /-- go: log.go:453:19 -/
-def «raftLog__maybeCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__maybeCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "at"
   (App (Val exception_do)
@@ -1735,7 +1735,7 @@ def «raftLog__maybeCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: log.go:464:19 -/
-def «raftLog__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "s"
   (App (Val exception_do)
@@ -1772,7 +1772,7 @@ def «raftLog__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     immediately. This can be used to stop the scan early ("break" the loop).
 
     go: log.go:480:19 -/
-def «raftLog__scanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__scanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "lo"
   (Lam "hi"
@@ -1840,7 +1840,7 @@ def «raftLog__scanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- slice returns a slice of log entries from lo through hi-1, inclusive.
 
     go: log.go:497:19 -/
-def «raftLog__sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "lo"
   (Lam "hi"
@@ -1977,7 +1977,7 @@ def «raftLog__sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- l.firstIndex <= lo <= hi <= l.firstIndex + len(l.entries)
 
     go: log.go:549:19 -/
-def «raftLog__mustCheckOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__mustCheckOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "lo"
   (Lam "hi"
@@ -2027,7 +2027,7 @@ def «raftLog__mustCheckOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
   (Val #())))))))))))
 
 /-- go: log.go:565:19 -/
-def «raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "t"
   (Lam "err"
@@ -2060,7 +2060,7 @@ def «raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
     if it has a snapshot.
 
     go: log_unstable.go:54:20 -/
-def «unstable__maybeFirstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__maybeFirstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exception_do)
@@ -2078,7 +2078,7 @@ def «unstable__maybeFirstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
     unstable entry or snapshot.
 
     go: log_unstable.go:63:20 -/
-def «unstable__maybeLastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__maybeLastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exception_do)
@@ -2108,7 +2108,7 @@ def «unstable__maybeLastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
     is any.
 
     go: log_unstable.go:75:20 -/
-def «unstable__maybeTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__maybeTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "i"
   (App (Val exception_do)
@@ -2158,7 +2158,7 @@ def «unstable__maybeTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     of being written to storage.
 
     go: log_unstable.go:96:20 -/
-def «unstable__nextEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__nextEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exception_do)
@@ -2183,7 +2183,7 @@ def «unstable__nextEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     in the process of being written to storage.
 
     go: log_unstable.go:106:20 -/
-def «unstable__nextSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__nextSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exception_do)
@@ -2204,7 +2204,7 @@ def «unstable__nextSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
     from those methods, until the next call to acceptInProgress.
 
     go: log_unstable.go:118:20 -/
-def «unstable__acceptInProgressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__acceptInProgressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exception_do)
@@ -2236,7 +2236,7 @@ def «unstable__acceptInProgressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     in newStorageAppendRespMsg.
 
     go: log_unstable.go:134:20 -/
-def «unstable__stableToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__stableToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "id"
   (App (Val exception_do)
@@ -2327,7 +2327,7 @@ def «unstable__stableToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     entries wouldn't be safe because clients might still be using them.
 
     go: log_unstable.go:166:20 -/
-def «unstable__shrinkEntriesArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__shrinkEntriesArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exception_do)
@@ -2362,7 +2362,7 @@ def «unstable__shrinkEntriesArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
   (Val #()))))))))))
 
 /-- go: log_unstable.go:181:20 -/
-def «unstable__stableSnapToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__stableSnapToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "i"
   (App (Val exception_do)
@@ -2383,7 +2383,7 @@ def «unstable__stableSnapToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (Val #())))))))))
 
 /-- go: log_unstable.go:188:20 -/
-def «unstable__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "s"
   (App (Val exception_do)
@@ -2413,7 +2413,7 @@ def «unstable__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef unstable go!"offset"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType unstable)))) (Var "u"))) (Var "$r0"))))))))))))
 
 /-- go: log_unstable.go:196:20 -/
-def «unstable__truncateAndAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__truncateAndAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "ents"
   (App (Val exception_do)
@@ -2488,7 +2488,7 @@ def «unstable__truncateAndAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     similarly, and document how the client can use them.
 
     go: log_unstable.go:228:20 -/
-def «unstable__sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "lo"
   (Lam "hi"
@@ -2508,7 +2508,7 @@ def «unstable__sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- u.offset <= lo <= hi <= u.offset+len(u.entries)
 
     go: log_unstable.go:237:20 -/
-def «unstable__mustCheckOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «unstable__mustCheckOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "lo"
   (Lam "hi"
@@ -2548,7 +2548,7 @@ def «unstable__mustCheckOutOfBoundsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
   (Val #()))))))))))))
 
 /-- go: logger.go:45:6 -/
-def «SetLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SetLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (App (Val exception_do)
   (Let "l" (App (Val (GoInstruction (GoAlloc Logger))) (Var "l"))
@@ -2566,7 +2566,7 @@ def «SetLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr raftLoggerMu))) (Val #()))) (Val #()))))))))
 
 /-- go: logger.go:51:6 -/
-def «ResetDefaultLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResetDefaultLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -2577,7 +2577,7 @@ def «ResetDefaultLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve SetLogger []))) (Val #())) (Var "$a0")))))))
 
 /-- go: logger.go:55:6 -/
-def «getLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «getLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val wrap_defer)
   (Lam "$defer"
@@ -2595,7 +2595,7 @@ def «getLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr raftLoggerMu))) (Val #()))) (Val #())))))))
 
 /-- go: logger.go:78:25 -/
-def «DefaultLogger__EnableTimestampsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__EnableTimestampsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -2608,7 +2608,7 @@ def «DefaultLogger__EnableTimestampsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"SetFlags"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")))))))))
 
 /-- go: logger.go:82:25 -/
-def «DefaultLogger__EnableDebugⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__EnableDebugⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -2621,7 +2621,7 @@ def «DefaultLogger__EnableDebugⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"debug"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$r0"))))))))))
 
 /-- go: logger.go:86:25 -/
-def «DefaultLogger__Debugⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Debugⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exception_do)
@@ -2642,7 +2642,7 @@ def «DefaultLogger__Debugⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: logger.go:92:25 -/
-def «DefaultLogger__Debugfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Debugfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2666,7 +2666,7 @@ def «DefaultLogger__Debugfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))
 
 /-- go: logger.go:98:25 -/
-def «DefaultLogger__Infoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Infoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exception_do)
@@ -2684,7 +2684,7 @@ def «DefaultLogger__Infoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: logger.go:102:25 -/
-def «DefaultLogger__Infofⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Infofⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2705,7 +2705,7 @@ def «DefaultLogger__Infofⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: logger.go:106:25 -/
-def «DefaultLogger__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exception_do)
@@ -2723,7 +2723,7 @@ def «DefaultLogger__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: logger.go:110:25 -/
-def «DefaultLogger__Errorfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Errorfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2744,7 +2744,7 @@ def «DefaultLogger__Errorfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: logger.go:114:25 -/
-def «DefaultLogger__Warningⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Warningⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exception_do)
@@ -2762,7 +2762,7 @@ def «DefaultLogger__Warningⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: logger.go:118:25 -/
-def «DefaultLogger__Warningfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Warningfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2783,7 +2783,7 @@ def «DefaultLogger__Warningfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: logger.go:122:25 -/
-def «DefaultLogger__Fatalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Fatalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exception_do)
@@ -2805,7 +2805,7 @@ def «DefaultLogger__Fatalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- go: logger.go:127:25 -/
-def «DefaultLogger__Fatalfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Fatalfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2830,7 +2830,7 @@ def «DefaultLogger__Fatalfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1"))))))))))))))
 
 /-- go: logger.go:132:25 -/
-def «DefaultLogger__Panicⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Panicⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exception_do)
@@ -2844,7 +2844,7 @@ def «DefaultLogger__Panicⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.log.Logger) go!"Panic"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))))) (Var "$a0"))))))))))
 
 /-- go: logger.go:136:25 -/
-def «DefaultLogger__Panicfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DefaultLogger__Panicfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2861,7 +2861,7 @@ def «DefaultLogger__Panicfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.log.Logger) go!"Panicf"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType DefaultLogger)))) (Var "l"))))) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: logger.go:140:6 -/
-def «headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lvl"
   (Lam "msg"
   (App (Val exception_do)
@@ -2875,7 +2875,7 @@ def «headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: node.go:45:21 -/
-def «SoftState__equalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SoftState__equalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
   (App (Val exception_do)
@@ -2885,7 +2885,7 @@ def «SoftState__equalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SoftState go!"Lead"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType SoftState)))) (Var "a")))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SoftState go!"Lead"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType SoftState)))) (Var "b")))))) (App (Val (GoInstruction (GoOp GoEquals StateType))) (Pair (App (Val (GoInstruction (GoLoad StateType))) (App (Val (GoInstruction (StructFieldRef SoftState go!"RaftState"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType SoftState)))) (Var "a")))) (App (Val (GoInstruction (GoLoad StateType))) (App (Val (GoInstruction (StructFieldRef SoftState go!"RaftState"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType SoftState)))) (Var "b")))))) (Val #false))))))))
 
 /-- go: node.go:117:6 -/
-def «isHardStateEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «isHardStateEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
   (App (Val exception_do)
@@ -2897,7 +2897,7 @@ def «isHardStateEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsEmptyHardState returns true if the given HardState is empty.
 
     go: node.go:122:6 -/
-def «IsEmptyHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «IsEmptyHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "st"
   (App (Val exception_do)
   (Let "st" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState))) (Var "st"))
@@ -2909,7 +2909,7 @@ def «IsEmptyHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsEmptySnap returns true if the given Snapshot is empty.
 
     go: node.go:127:6 -/
-def «IsEmptySnapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «IsEmptySnapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "sp"
   (App (Val exception_do)
   (Let "sp" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot))) (Var "sp"))
@@ -2917,7 +2917,7 @@ def «IsEmptySnapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.SnapshotMetadata go!"Index"))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot go!"Metadata"))) (Var "sp")))) (Val #(W64 0))))))))
 
 /-- go: node.go:250:6 -/
-def «setupNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «setupNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "peers"
   (App (Val exception_do)
@@ -2981,7 +2981,7 @@ def «setupNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Peers must not be zero length; call RestartNode in that case.
 
     go: node.go:271:6 -/
-def «StartNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «StartNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "peers"
   (App (Val exception_do)
@@ -3008,7 +3008,7 @@ def «StartNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     has been applied to it; otherwise use zero.
 
     go: node.go:281:6 -/
-def «RestartNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RestartNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exception_do)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Config)))) (Var "c"))
@@ -3048,7 +3048,7 @@ def «RestartNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType RawNode)))) (Pair (Var "rn") (Var "$r0")))))))))))))))
 
 /-- go: node.go:312:6 -/
-def «newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (App (Val exception_do)
   (Let "rn" (App (Val (GoInstruction (GoAlloc (go.type.PointerType RawNode)))) (Var "rn"))
@@ -3067,7 +3067,7 @@ def «newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral node))) (LiteralValue [(KeyedElement (some (KeyField go!"propc")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv msgWithResult) (Var "$v0"))), (KeyedElement (some (KeyField go!"recvc")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message) (Var "$v1"))), (KeyedElement (some (KeyField go!"confc")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeV2) (Var "$v2"))), (KeyedElement (some (KeyField go!"confstatec")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState) (Var "$v3"))), (KeyedElement (some (KeyField go!"readyc")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv Ready) (Var "$v4"))), (KeyedElement (some (KeyField go!"advancec")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) (Var "$v5"))), (KeyedElement (some (KeyField go!"tickc")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) (Var "$v6"))), (KeyedElement (some (KeyField go!"done")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) (Var "$v7"))), (KeyedElement (some (KeyField go!"stop")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) (Var "$v8"))), (KeyedElement (some (KeyField go!"status")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv (go.type.ChannelType go.chan_dir.sendrecv Status)) (Var "$v9"))), (KeyedElement (some (KeyField go!"rn")) (ElementExpression (go.type.PointerType RawNode) (Var "$v10")))])))))))))))))))))
 
 /-- go: node.go:331:16 -/
-def «node__Stopⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__Stopⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exception_do)
@@ -3088,7 +3088,7 @@ def «node__Stopⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))])))))))))))
 
 /-- go: node.go:343:16 -/
-def «node__runⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__runⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exception_do)
@@ -3368,7 +3368,7 @@ def «node__runⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     and heartbeat timeouts are in units of ticks.
 
     go: node.go:458:16 -/
-def «node__Tickⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__Tickⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exception_do)
@@ -3390,7 +3390,7 @@ def «node__Tickⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))]))))))))))
 
 /-- go: node.go:467:16 -/
-def «node__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (App (Val exception_do)
@@ -3403,7 +3403,7 @@ def «node__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType node) go!"step"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: node.go:469:16 -/
-def «node__Proposeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__Proposeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "data"
@@ -3420,7 +3420,7 @@ def «node__Proposeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType node) go!"stepWait"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- go: node.go:473:16 -/
-def «node__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "m"
@@ -3442,7 +3442,7 @@ def «node__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))
 
 /-- go: node.go:482:6 -/
-def «confChangeToMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «confChangeToMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exception_do)
   (Let "c" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeI))) (Var "c"))
@@ -3480,7 +3480,7 @@ def «confChangeToMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.EntryType))) (Pair (Var "typ") (Var "$r0"))))))))))))))))))
 
 /-- go: node.go:490:16 -/
-def «node__ProposeConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__ProposeConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "cc"
@@ -3514,7 +3514,7 @@ def «node__ProposeConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message))) (Pair (Var "msg") (Var "$r0")))))))))))))))))))
 
 /-- go: node.go:498:16 -/
-def «node__stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "m"
@@ -3529,7 +3529,7 @@ def «node__stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType node) go!"stepWithWaitOption"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))))
 
 /-- go: node.go:502:16 -/
-def «node__stepWaitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__stepWaitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "m"
@@ -3547,7 +3547,7 @@ def «node__stepWaitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     if any.
 
     go: node.go:508:16 -/
-def «node__stepWithWaitOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__stepWithWaitOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "m"
@@ -3632,7 +3632,7 @@ def «node__stepWithWaitOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (Val #())))))))))))))
 
 /-- go: node.go:547:16 -/
-def «node__Readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__Readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exception_do)
@@ -3641,7 +3641,7 @@ def «node__Readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert (go.type.ChannelType go.chan_dir.sendrecv Ready) (go.type.ChannelType go.chan_dir.recvonly Ready)))) (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv Ready)))) (App (Val (GoInstruction (StructFieldRef node go!"readyc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType node)))) (Var "n"))))))))))
 
 /-- go: node.go:549:16 -/
-def «node__Advanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__Advanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exception_do)
@@ -3659,7 +3659,7 @@ def «node__Advanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))]))))))))))
 
 /-- go: node.go:556:16 -/
-def «node__ApplyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__ApplyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "cc"
   (App (Val exception_do)
@@ -3692,7 +3692,7 @@ def «node__ApplyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))]))))))))))))
 
 /-- go: node.go:569:16 -/
-def «node__Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exception_do)
@@ -3712,7 +3712,7 @@ def «node__Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv Status)))) (Pair (Var "c") (Var "$r0")))))))))))
 
 /-- go: node.go:579:16 -/
-def «node__ReportUnreachableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__ReportUnreachableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "id"
   (App (Val exception_do)
@@ -3733,7 +3733,7 @@ def «node__ReportUnreachableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (Val #()))))])))))))))))
 
 /-- go: node.go:586:16 -/
-def «node__ReportSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__ReportSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "id"
   (Lam "status"
@@ -3762,7 +3762,7 @@ def «node__ReportSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "rej") (Var "$r0")))))))))))))))
 
 /-- go: node.go:595:16 -/
-def «node__TransferLeadershipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__TransferLeadershipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "lead"
@@ -3792,7 +3792,7 @@ def «node__TransferLeadershipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (Val #()))))]))))))))))))))))
 
 /-- go: node.go:604:16 -/
-def «node__ForgetLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__ForgetLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (App (Val exception_do)
@@ -3805,7 +3805,7 @@ def «node__ForgetLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType node) go!"step"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: node.go:608:16 -/
-def «node__ReadIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «node__ReadIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "rctx"
@@ -3822,7 +3822,7 @@ def «node__ReadIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType node) go!"step"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- go: raft.go:95:22 -/
-def «lockedRand__Intnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «lockedRand__Intnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "n"
   (App (Val exception_do)
@@ -3853,7 +3853,7 @@ def «lockedRand__Intnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef lockedRand go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType lockedRand)))) (Var "r")))) (Val #())))))))))
 
 /-- go: raft.go:119:21 -/
-def «StateType__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «StateType__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "st"
   (Lam BAnon
   (App (Val exception_do)
@@ -3862,7 +3862,7 @@ def «StateType__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 4 go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 4 go.string)))) (App (Val (GoInstruction (GlobalVarAddr stmap))) (Val #()))) (App (Val (GoInstruction (Convert StateType go.int))) (App (Val (GoInstruction (GoLoad StateType))) (Var "st")))))))))))
 
 /-- go: raft.go:291:18 -/
-def «Config__validateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Config__validateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -3953,7 +3953,7 @@ def «Config__validateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))
 
 /-- go: raft.go:437:6 -/
-def «newRaftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newRaftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exception_do)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Config)))) (Var "c"))
@@ -4135,7 +4135,7 @@ def «newRaftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))))))
 
 /-- go: raft.go:498:16 -/
-def «raft__hasLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__hasLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -4144,7 +4144,7 @@ def «raft__hasLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef raft go!"lead"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r")))) (Val None')))))))))
 
 /-- go: raft.go:500:16 -/
-def «raft__softStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__softStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -4155,7 +4155,7 @@ def «raft__softStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral SoftState))) (LiteralValue [(KeyedElement (some (KeyField go!"Lead")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"RaftState")) (ElementExpression StateType (Var "$v1")))])))))))))
 
 /-- go: raft.go:502:16 -/
-def «raft__hardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__hardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -4170,7 +4170,7 @@ def «raft__hardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     sending the message (as part of next Ready message processing).
 
     go: raft.go:512:16 -/
-def «raft__sendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__sendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -4249,7 +4249,7 @@ def «raft__sendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     current commit index to the given peer.
 
     go: raft.go:603:16 -/
-def «raft__sendAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__sendAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (App (Val exception_do)
@@ -4274,7 +4274,7 @@ def «raft__sendAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     message.
 
     go: raft.go:616:16 -/
-def «raft__maybeSendAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__maybeSendAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (Lam "sendIfEmpty"
@@ -4380,7 +4380,7 @@ def «raft__maybeSendAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     node. Returns true iff the snapshot message has been emitted successfully.
 
     go: raft.go:664:16 -/
-def «raft__maybeSendSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__maybeSendSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (Lam "pr"
@@ -4488,7 +4488,7 @@ def «raft__maybeSendSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
 /-- sendHeartbeat sends a heartbeat RPC to the given peer.
 
     go: raft.go:692:16 -/
-def «raft__sendHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__sendHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (Lam "ctx"
@@ -4527,7 +4527,7 @@ def «raft__sendHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     according to the progress recorded in r.trk.
 
     go: raft.go:712:16 -/
-def «raft__bcastAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__bcastAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -4557,7 +4557,7 @@ def «raft__bcastAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- bcastHeartbeat sends RPC, without entries to all the peers.
 
     go: raft.go:722:16 -/
-def «raft__bcastHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__bcastHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -4570,7 +4570,7 @@ def «raft__bcastHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType raft) go!"bcastHeartbeatWithCtx"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r"))) (Var "$a0")))))))))
 
 /-- go: raft.go:726:16 -/
-def «raft__bcastHeartbeatWithCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__bcastHeartbeatWithCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "ctx"
   (App (Val exception_do)
@@ -4600,7 +4600,7 @@ def «raft__bcastHeartbeatWithCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker) go!"Visit"))) (App (Val (GoInstruction (StructFieldRef raft go!"trk"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r")))) (Var "$a0"))))))))))
 
 /-- go: raft.go:735:16 -/
-def «raft__appliedToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__appliedToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "index"
   (Lam "size"
@@ -4672,7 +4672,7 @@ def «raft__appliedToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "oldApplied") (Var "$r0")))))))))))))))
 
 /-- go: raft.go:764:16 -/
-def «raft__appliedSnapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__appliedSnapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "snap"
   (App (Val exception_do)
@@ -4700,7 +4700,7 @@ def «raft__appliedSnapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     only be called in StateLeader.
 
     go: raft.go:773:16 -/
-def «raft__maybeCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__maybeCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -4721,7 +4721,7 @@ def «raft__maybeCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Var "$oldf") (Val #()))))))))))))))))
 
 /-- go: raft.go:779:16 -/
-def «raft__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "term"
   (App (Val exception_do)
@@ -4803,7 +4803,7 @@ def «raft__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))))
 
 /-- go: raft.go:810:16 -/
-def «raft__appendEntryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__appendEntryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "es"
   (App (Val exception_do)
@@ -4867,7 +4867,7 @@ def «raft__appendEntryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- tickElection is run by followers and candidates after r.electionTimeout.
 
     go: raft.go:845:16 -/
-def «raft__tickElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__tickElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -4905,7 +4905,7 @@ def «raft__tickElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- tickHeartbeat is run by leaders to send a MsgBeat after r.heartbeatTimeout.
 
     go: raft.go:857:16 -/
-def «raft__tickHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__tickHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -4983,7 +4983,7 @@ def «raft__tickHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef raft go!"heartbeatElapsed"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef raft go!"heartbeatElapsed"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r")))) (Val #(W64 1)))))))))))))
 
 /-- go: raft.go:886:16 -/
-def «raft__becomeFollowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__becomeFollowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "term"
   (Lam "lead"
@@ -5026,7 +5026,7 @@ def «raft__becomeFollowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stepFunc))) (Pair (App (Val (GoInstruction (StructFieldRef raft go!"step"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r"))) (Var "$r0"))))))))))))))
 
 /-- go: raft.go:897:16 -/
-def «raft__becomeCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__becomeCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -5073,7 +5073,7 @@ def «raft__becomeCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: raft.go:912:16 -/
-def «raft__becomePreCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__becomePreCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -5115,7 +5115,7 @@ def «raft__becomePreCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (Val #())))))))))
 
 /-- go: raft.go:928:16 -/
-def «raft__becomeLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__becomeLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -5194,7 +5194,7 @@ def «raft__becomeLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: raft.go:968:16 -/
-def «raft__hupⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__hupⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "t"
   (App (Val exception_do)
@@ -5252,7 +5252,7 @@ def «raft__hupⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))))
 
 /-- go: raft.go:990:16 -/
-def «raft__hasUnappliedConfChangesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__hasUnappliedConfChangesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -5332,7 +5332,7 @@ def «raft__hasUnappliedConfChangesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
     called after verifying that this is a legitimate transition.
 
     go: raft.go:1020:16 -/
-def «raft__campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "t"
   (App (Val exception_do)
@@ -5463,7 +5463,7 @@ def «raft__campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))))
 
 /-- go: raft.go:1070:16 -/
-def «raft__pollⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__pollⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "id"
   (Lam "t"
@@ -5507,7 +5507,7 @@ def «raft__pollⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (MethodResolve Logger go!"Infof"))) (App (Val (GoInstruction (GoLoad Logger))) (App (Val (GoInstruction (StructFieldRef raft go!"logger"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r"))))) (Var "$a0")) (Var "$a1")))))))))))))))))))
 
 /-- go: raft.go:1080:16 -/
-def «raft__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -5795,7 +5795,7 @@ def «raft__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve traceReceiveMessage []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: raft.go:1262:6 -/
-def «stepLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stepLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -6408,7 +6408,7 @@ def «stepLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     whether they respond to MsgVoteResp or MsgPreVoteResp.
 
     go: raft.go:1660:6 -/
-def «stepCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stepCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -6527,7 +6527,7 @@ def «stepCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType))) (Pair (Var "myVoteRespType") (Var "$r0")))))))))))))
 
 /-- go: raft.go:1705:6 -/
-def «stepFollowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stepFollowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -6716,7 +6716,7 @@ def «stepFollowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- logSliceFromMsgApp extracts the appended logSlice from a MsgApp message.
 
     go: raft.go:1769:6 -/
-def «logSliceFromMsgAppⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «logSliceFromMsgAppⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (App (Val exception_do)
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message)))) (Var "m"))
@@ -6729,7 +6729,7 @@ def «logSliceFromMsgAppⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral logSlice))) (LiteralValue [(KeyedElement (some (KeyField go!"term")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"prev")) (ElementExpression entryID (Var "$v1"))), (KeyedElement (some (KeyField go!"entries")) (ElementExpression (go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry) (Var "$v2")))])))))))))
 
 /-- go: raft.go:1778:16 -/
-def «raft__handleAppendEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__handleAppendEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -6834,7 +6834,7 @@ def «raft__handleAppendEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore logSlice))) (Pair (Var "a") (Var "$r0")))))))))))))
 
 /-- go: raft.go:1822:16 -/
-def «raft__handleHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__handleHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -6855,7 +6855,7 @@ def «raft__handleHeartbeatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType raftLog) go!"commitTo"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raftLog)))) (App (Val (GoInstruction (StructFieldRef raft go!"raftLog"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r"))))) (Var "$a0")))))))))))
 
 /-- go: raft.go:1827:16 -/
-def «raft__handleSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__handleSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -6920,7 +6920,7 @@ def «raft__handleSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     ignored, either because it was obsolete or because of an error.
 
     go: raft.go:1849:16 -/
-def «raft__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "s"
   (App (Val exception_do)
@@ -7120,7 +7120,7 @@ def «raft__restoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     which is true when its own id is in progress list.
 
     go: raft.go:1934:16 -/
-def «raft__promotableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__promotableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -7134,7 +7134,7 @@ def «raft__promotableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.tracker.Progress)))) (Pair (Var "pr") (Var "$r0")))))))))))
 
 /-- go: raft.go:1939:16 -/
-def «raft__applyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__applyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "cc"
   (App (Val exception_do)
@@ -7226,7 +7226,7 @@ def «raft__applyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     The inputs usually result from restoring a ConfState or applying a ConfChange.
 
     go: raft.go:1967:16 -/
-def «raft__switchToConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__switchToConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "cfg"
   (Lam "trk"
@@ -7342,7 +7342,7 @@ def «raft__switchToConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve traceConfChangeEvent []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: raft.go:2025:16 -/
-def «raft__loadStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__loadStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "state"
   (App (Val exception_do)
@@ -7380,7 +7380,7 @@ def «raft__loadStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     [electiontimeout, 2 * electiontimeout - 1].
 
     go: raft.go:2037:16 -/
-def «raft__pastElectionTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__pastElectionTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -7389,7 +7389,7 @@ def «raft__pastElectionTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef raft go!"electionElapsed"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r")))) (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef raft go!"randomizedElectionTimeout"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r")))))))))))
 
 /-- go: raft.go:2041:16 -/
-def «raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -7403,7 +7403,7 @@ def «raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef raft go!"randomizedElectionTimeout"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r"))) (Var "$r0"))))))))))
 
 /-- go: raft.go:2045:16 -/
-def «raft__sendTimeoutNowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__sendTimeoutNowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (App (Val exception_do)
@@ -7419,7 +7419,7 @@ def «raft__sendTimeoutNowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType raft) go!"send"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r"))) (Var "$a0"))))))))))
 
 /-- go: raft.go:2049:16 -/
-def «raft__abortLeaderTransferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__abortLeaderTransferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -7434,7 +7434,7 @@ def «raft__abortLeaderTransferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
 /-- committedEntryInCurrentTerm return true if the peer has committed an entry in its term.
 
     go: raft.go:2054:16 -/
-def «raft__committedEntryInCurrentTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__committedEntryInCurrentTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -7452,7 +7452,7 @@ def «raft__committedEntryInCurrentTermⁱᵐᵖˡ» [ffi_syntax] [GoGlobalConte
     itself, a blank value will be returned.
 
     go: raft.go:2062:16 -/
-def «raft__responseToReadIndexReqⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__responseToReadIndexReqⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "req"
   (Lam "readIndex"
@@ -7492,7 +7492,7 @@ def «raft__responseToReadIndexReqⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
     entry at a new leader's term, as well as leaving a joint configuration.
 
     go: raft.go:2086:16 -/
-def «raft__increaseUncommittedSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__increaseUncommittedSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "ents"
   (App (Val exception_do)
@@ -7520,7 +7520,7 @@ def «raft__increaseUncommittedSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
     the uncommitted entry size limit.
 
     go: raft.go:2104:16 -/
-def «raft__reduceUncommittedSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «raft__reduceUncommittedSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "s"
   (App (Val exception_do)
@@ -7537,7 +7537,7 @@ def «raft__reduceUncommittedSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore entryPayloadSize))) (Pair (App (Val (GoInstruction (StructFieldRef raft go!"uncommittedSize"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoSub entryPayloadSize))) (Pair (App (Val (GoInstruction (GoLoad entryPayloadSize))) (App (Val (GoInstruction (StructFieldRef raft go!"uncommittedSize"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType raft)))) (Var "r")))) (App (Val (GoInstruction (GoLoad entryPayloadSize))) (Var "s"))))))))))))))
 
 /-- go: raft.go:2115:6 -/
-def «releasePendingReadIndexMessagesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «releasePendingReadIndexMessagesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (App (Val exception_do)
   (Let "r" (App (Val (GoInstruction (GoAlloc (go.type.PointerType raft)))) (Var "r"))
@@ -7588,7 +7588,7 @@ def «releasePendingReadIndexMessagesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
   (Val #()))))))))
 
 /-- go: raft.go:2134:6 -/
-def «sendMsgReadIndexResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «sendMsgReadIndexResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exception_do)
@@ -7637,7 +7637,7 @@ def «sendMsgReadIndexResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
     stores the desired ConfState as its InitialState.
 
     go: rawnode.go:51:6 -/
-def «NewRawNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewRawNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "config"
   (App (Val exception_do)
   (Let "config" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Config)))) (Var "config"))
@@ -7676,7 +7676,7 @@ def «NewRawNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Tick advances the internal logical clock by a single tick.
 
     go: rawnode.go:64:20 -/
-def «RawNode__Tickⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__Tickⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -7699,7 +7699,7 @@ def «RawNode__Tickⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     DEPRECATED: This method will be removed in a future release.
 
     go: rawnode.go:78:20 -/
-def «RawNode__TickQuiescedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__TickQuiescedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -7713,7 +7713,7 @@ def «RawNode__TickQuiescedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Campaign causes this RawNode to transition to candidate state.
 
     go: rawnode.go:83:20 -/
-def «RawNode__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -7726,7 +7726,7 @@ def «RawNode__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Propose proposes data be appended to the raft log.
 
     go: rawnode.go:90:20 -/
-def «RawNode__Proposeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__Proposeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "data"
   (App (Val exception_do)
@@ -7744,7 +7744,7 @@ def «RawNode__Proposeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     details.
 
     go: rawnode.go:101:20 -/
-def «RawNode__ProposeConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__ProposeConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "cc"
   (App (Val exception_do)
@@ -7779,7 +7779,7 @@ def «RawNode__ProposeConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     the configuration change, in which case no call must take place.
 
     go: rawnode.go:112:20 -/
-def «RawNode__ApplyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__ApplyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "cc"
   (App (Val exception_do)
@@ -7797,7 +7797,7 @@ def «RawNode__ApplyConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
 /-- Step advances the state machine using the given message.
 
     go: rawnode.go:118:20 -/
-def «RawNode__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "m"
   (App (Val exception_do)
@@ -7829,7 +7829,7 @@ def «RawNode__Stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     passed back via Advance().
 
     go: rawnode.go:133:20 -/
-def «RawNode__Readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__Readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -7850,7 +7850,7 @@ def «RawNode__Readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     is no obligation that the Ready must be handled.
 
     go: rawnode.go:141:20 -/
-def «RawNode__readyWithoutAcceptⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__readyWithoutAcceptⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -7989,7 +7989,7 @@ def «RawNode__readyWithoutAcceptⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     that a synchronous write to persistent storage is required.
 
     go: rawnode.go:193:6 -/
-def «MustSyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MustSyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "st"
   (Lam "prevst"
   (Lam "entsnum"
@@ -8001,7 +8001,7 @@ def «MustSyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "entsnum")) (Val #(W64 0))))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState go!"Vote"))) (Var "st"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState go!"Vote"))) (Var "prevst"))))))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState go!"Term"))) (Var "st"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState go!"Term"))) (Var "prevst")))))))))))))))
 
 /-- go: rawnode.go:202:6 -/
-def «needStorageAppendMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «needStorageAppendMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exception_do)
@@ -8015,7 +8015,7 @@ def «needStorageAppendMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))))))))
 
 /-- go: rawnode.go:212:6 -/
-def «needStorageAppendRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «needStorageAppendRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exception_do)
@@ -8032,7 +8032,7 @@ def «needStorageAppendRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
     with AsyncStorageWrites.
 
     go: rawnode.go:225:6 -/
-def «newStorageAppendMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newStorageAppendMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exception_do)
@@ -8103,7 +8103,7 @@ def «newStorageAppendMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     storage.
 
     go: rawnode.go:268:6 -/
-def «newStorageAppendRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newStorageAppendRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exception_do)
@@ -8151,7 +8151,7 @@ def «newStorageAppendRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message))) (Pair (Var "m") (Var "$r0"))))))))))))
 
 /-- go: rawnode.go:368:6 -/
-def «needStorageApplyMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «needStorageApplyMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rd"
   (App (Val exception_do)
   (Let "rd" (App (Val (GoInstruction (GoAlloc Ready))) (Var "rd"))
@@ -8160,7 +8160,7 @@ def «needStorageApplyMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)]))) (Val #())) (Var "$a0"))) (Val #(W64 0))))))))
 
 /-- go: rawnode.go:369:6 -/
-def «needStorageApplyRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «needStorageApplyRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rd"
   (App (Val exception_do)
   (Let "rd" (App (Val (GoInstruction (GoAlloc Ready))) (Var "rd"))
@@ -8174,7 +8174,7 @@ def «needStorageApplyRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
     message is processed. Used with AsyncStorageWrites.
 
     go: rawnode.go:375:6 -/
-def «newStorageApplyMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newStorageApplyMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exception_do)
@@ -8202,7 +8202,7 @@ def «newStorageApplyMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     prior Ready structs) have been applied to the local state machine.
 
     go: rawnode.go:392:6 -/
-def «newStorageApplyRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newStorageApplyRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "ents"
   (App (Val exception_do)
@@ -8221,7 +8221,7 @@ def «newStorageApplyRespMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
     this call and the prior call to Ready().
 
     go: rawnode.go:405:20 -/
-def «RawNode__acceptReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__acceptReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "rd"
   (App (Val exception_do)
@@ -8365,7 +8365,7 @@ def «RawNode__acceptReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     stable storage.
 
     go: rawnode.go:448:20 -/
-def «RawNode__applyUnstableEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__applyUnstableEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -8376,7 +8376,7 @@ def «RawNode__applyUnstableEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
 /-- HasReady called when RawNode user need to check if any Ready pending.
 
     go: rawnode.go:453:20 -/
-def «RawNode__HasReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__HasReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -8450,7 +8450,7 @@ def «RawNode__HasReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     the local append and apply threads take its place.
 
     go: rawnode.go:482:20 -/
-def «RawNode__Advanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__Advanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -8496,7 +8496,7 @@ def «RawNode__Advanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     BasicStatus and WithProgress for allocation-friendlier choices.
 
     go: rawnode.go:498:20 -/
-def «RawNode__Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -8514,7 +8514,7 @@ def «RawNode__Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Progress map; see WithProgress for an allocation-free way to inspect it.
 
     go: rawnode.go:505:20 -/
-def «RawNode__BasicStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__BasicStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -8527,7 +8527,7 @@ def «RawNode__BasicStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     peers.
 
     go: rawnode.go:521:20 -/
-def «RawNode__WithProgressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__WithProgressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "visitor"
   (App (Val exception_do)
@@ -8576,7 +8576,7 @@ def «RawNode__WithProgressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- ReportUnreachable reports the given node is not reachable for the last send.
 
     go: rawnode.go:534:20 -/
-def «RawNode__ReportUnreachableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__ReportUnreachableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "id"
   (App (Val exception_do)
@@ -8595,7 +8595,7 @@ def «RawNode__ReportUnreachableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
 /-- ReportSnapshot reports the status of the sent snapshot.
 
     go: rawnode.go:539:20 -/
-def «RawNode__ReportSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__ReportSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "id"
   (Lam "status"
@@ -8622,7 +8622,7 @@ def «RawNode__ReportSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
 /-- TransferLeader tries to transfer leadership to the given transferee.
 
     go: rawnode.go:546:20 -/
-def «RawNode__TransferLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__TransferLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "transferee"
   (App (Val exception_do)
@@ -8642,7 +8642,7 @@ def «RawNode__TransferLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
     See (Node).ForgetLeader for details.
 
     go: rawnode.go:552:20 -/
-def «RawNode__ForgetLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__ForgetLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exception_do)
@@ -8658,7 +8658,7 @@ def «RawNode__ForgetLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     processed safely. The read state will have the same rctx attached.
 
     go: rawnode.go:560:20 -/
-def «RawNode__ReadIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RawNode__ReadIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "rctx"
   (App (Val exception_do)
@@ -8676,7 +8676,7 @@ def «RawNode__ReadIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Var "$r0")))))))))
 
 /-- go: read_only.go:49:6 -/
-def «newReadOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newReadOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "option"
   (App (Val exception_do)
   (Let "option" (App (Val (GoInstruction (GoAlloc ReadOnlyOption))) (Var "option"))
@@ -8691,7 +8691,7 @@ def «newReadOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     `req` is the original read only request message from the local or remote node.
 
     go: read_only.go:60:21 -/
-def «readOnly__addRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «readOnly__addRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam "commitIndex"
   (Lam "req"
@@ -8714,7 +8714,7 @@ def «readOnly__addRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- recvAck notifies the `readOnly` of an acknowledgment of a heartbeat response.
 
     go: read_only.go:65:21 -/
-def «readOnly__recvAckⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «readOnly__recvAckⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam "from"
   (Lam "ctx"
@@ -8739,7 +8739,7 @@ def «readOnly__recvAckⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- AckedIndex allows for using `CommittedIndex` in `maybeAdvance`.
 
     go: read_only.go:72:21 -/
-def «readOnly__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «readOnly__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam "voterID"
   (App (Val exception_do)
@@ -8765,7 +8765,7 @@ def «readOnly__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     configuration to confirm and return as many unconfirmed reads as possible.
 
     go: read_only.go:79:21 -/
-def «readOnly__maybeAdvanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «readOnly__maybeAdvanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam "c"
   (App (Val exception_do)
@@ -8805,7 +8805,7 @@ def «readOnly__maybeAdvanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
     all currently unconfirmed reads.
 
     go: read_only.go:93:21 -/
-def «readOnly__heartbeatCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «readOnly__heartbeatCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam BAnon
   (App (Val exception_do)
@@ -8837,28 +8837,28 @@ def «readOnly__heartbeatCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (Val #()))))))))
 
 /-- go: state_trace_nop.go:30:6 -/
-def «traceInitStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceInitStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_execute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:32:6 -/
-def «traceReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_execute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:34:6 -/
-def «traceCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_execute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:36:6 -/
-def «traceReplicateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceReplicateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -8866,28 +8866,28 @@ def «traceReplicateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))
 
 /-- go: state_trace_nop.go:38:6 -/
-def «traceBecomeFollowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceBecomeFollowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_execute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:40:6 -/
-def «traceBecomeCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceBecomeCandidateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_execute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:42:6 -/
-def «traceBecomeLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceBecomeLeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_execute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:44:6 -/
-def «traceChangeConfEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceChangeConfEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -8895,7 +8895,7 @@ def «traceChangeConfEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))
 
 /-- go: state_trace_nop.go:46:6 -/
-def «traceConfChangeEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceConfChangeEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -8903,7 +8903,7 @@ def «traceConfChangeEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))
 
 /-- go: state_trace_nop.go:48:6 -/
-def «traceSendMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceSendMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -8911,7 +8911,7 @@ def «traceSendMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))
 
 /-- go: state_trace_nop.go:50:6 -/
-def «traceReceiveMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «traceReceiveMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -8919,7 +8919,7 @@ def «traceReceiveMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))
 
 /-- go: status.go:44:6 -/
-def «getProgressCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «getProgressCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (App (Val exception_do)
   (Let "r" (App (Val (GoInstruction (GoAlloc (go.type.PointerType raft)))) (Var "r"))
@@ -8959,7 +8959,7 @@ def «getProgressCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 _root_.Perennial.go_etcd_io.raft.v3.tracker.Progress)))) (Pair (Var "m") (Var "$r0"))))))))))
 
 /-- go: status.go:56:6 -/
-def «getBasicStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «getBasicStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (App (Val exception_do)
   (Let "r" (App (Val (GoInstruction (GoAlloc (go.type.PointerType raft)))) (Var "r"))
@@ -8988,7 +8988,7 @@ def «getBasicStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- getStatus gets a copy of the current raft status.
 
     go: status.go:68:6 -/
-def «getStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «getStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (App (Val exception_do)
   (Let "r" (App (Val (GoInstruction (GoAlloc (go.type.PointerType raft)))) (Var "r"))
@@ -9017,7 +9017,7 @@ def «getStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     TODO: try to simplify this by introducing ID type into raft
 
     go: status.go:80:17 -/
-def «Status__MarshalJSONⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Status__MarshalJSONⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -9082,7 +9082,7 @@ def «Status__MarshalJSONⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "j") (Var "$r0")))))))))))
 
 /-- go: status.go:99:17 -/
-def «Status__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Status__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -9115,7 +9115,7 @@ def «Status__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- NewMemoryStorage creates an empty MemoryStorage.
 
     go: storage.go:113:6 -/
-def «NewMemoryStorageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewMemoryStorageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -9125,7 +9125,7 @@ def «NewMemoryStorageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- InitialState implements the Storage interface.
 
     go: storage.go:121:26 -/
-def «MemoryStorage__InitialStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__InitialStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val exception_do)
@@ -9139,7 +9139,7 @@ def «MemoryStorage__InitialStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
 /-- SetHardState saves the current HardState.
 
     go: storage.go:127:26 -/
-def «MemoryStorage__SetHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__SetHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "st"
   (App (Val wrap_defer)
@@ -9166,7 +9166,7 @@ def «MemoryStorage__SetHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
 /-- Entries implements the Storage interface.
 
     go: storage.go:135:26 -/
-def «MemoryStorage__Entriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__Entriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "lo"
   (Lam "hi"
@@ -9235,7 +9235,7 @@ def «MemoryStorage__Entriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
 /-- Term implements the Storage interface.
 
     go: storage.go:159:26 -/
-def «MemoryStorage__Termⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__Termⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "i"
   (App (Val wrap_defer)
@@ -9279,7 +9279,7 @@ def «MemoryStorage__Termⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- LastIndex implements the Storage interface.
 
     go: storage.go:174:26 -/
-def «MemoryStorage__LastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__LastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -9302,7 +9302,7 @@ def «MemoryStorage__LastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType MemoryStorage) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType MemoryStorage)))) (Var "ms"))) (Val #())))))))))
 
 /-- go: storage.go:181:26 -/
-def «MemoryStorage__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val exception_do)
@@ -9314,7 +9314,7 @@ def «MemoryStorage__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
 /-- FirstIndex implements the Storage interface.
 
     go: storage.go:186:26 -/
-def «MemoryStorage__FirstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__FirstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -9337,7 +9337,7 @@ def «MemoryStorage__FirstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType MemoryStorage) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType MemoryStorage)))) (Var "ms"))) (Val #())))))))))
 
 /-- go: storage.go:193:26 -/
-def «MemoryStorage__firstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__firstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val exception_do)
@@ -9348,7 +9348,7 @@ def «MemoryStorage__firstIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
 /-- Snapshot implements the Storage interface.
 
     go: storage.go:198:26 -/
-def «MemoryStorage__Snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__Snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -9374,7 +9374,7 @@ def «MemoryStorage__Snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
     those of the given snapshot.
 
     go: storage.go:207:26 -/
-def «MemoryStorage__ApplySnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__ApplySnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "snap"
   (App (Val wrap_defer)
@@ -9426,7 +9426,7 @@ def «MemoryStorage__ApplySnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
     the result of the last ApplyConfChange must be passed in.
 
     go: storage.go:230:26 -/
-def «MemoryStorage__CreateSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__CreateSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "i"
   (Lam "cs"
@@ -9495,7 +9495,7 @@ def «MemoryStorage__CreateSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
     greater than raftLog.applied.
 
     go: storage.go:254:26 -/
-def «MemoryStorage__Compactⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__Compactⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "compactIndex"
   (App (Val wrap_defer)
@@ -9571,7 +9571,7 @@ def «MemoryStorage__Compactⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
     entries[0].Index > ms.entries[0].Index
 
     go: storage.go:280:26 -/
-def «MemoryStorage__Appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MemoryStorage__Appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "entries"
   (App (Val wrap_defer)
@@ -9654,7 +9654,7 @@ def «MemoryStorage__Appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- pbEntryID returns the ID of the given pb.Entry.
 
     go: types.go:34:6 -/
-def «pbEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «pbEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "entry"
   (App (Val exception_do)
   (Let "entry" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)))) (Var "entry"))
@@ -9667,7 +9667,7 @@ def «pbEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     prev.index if there are no entries.
 
     go: types.go:78:19 -/
-def «logSlice__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «logSlice__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -9680,7 +9680,7 @@ def «logSlice__lastIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     there are no entries.
 
     go: types.go:84:19 -/
-def «logSlice__lastEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «logSlice__lastEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -9705,7 +9705,7 @@ def «logSlice__lastEntryIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     comment for details on what constitutes a valid raft log slice.
 
     go: types.go:93:19 -/
-def «logSlice__validⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «logSlice__validⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -9758,7 +9758,7 @@ def «logSlice__validⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore entryID))) (Pair (Var "prev") (Var "$r0")))))))))))
 
 /-- go: util.go:25:21 -/
-def «StateType__MarshalJSONⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «StateType__MarshalJSONⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "st"
   (Lam BAnon
   (App (Val exception_do)
@@ -9770,7 +9770,7 @@ def «StateType__MarshalJSONⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1"))))) (App (Val (GoInstruction (Convert go.untyped_nil go.error))) (Val UntypedNil))))))))
 
 /-- go: util.go:52:6 -/
-def «isMsgInArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «isMsgInArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "msgt"
   (Lam "arr"
   (App (Val exception_do)
@@ -9786,7 +9786,7 @@ def «isMsgInArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: util.go:57:6 -/
-def «IsLocalMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «IsLocalMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "msgt"
   (App (Val exception_do)
   (Let "msgt" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType))) (Var "msgt"))
@@ -9797,7 +9797,7 @@ def «IsLocalMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve isMsgInArray []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:61:6 -/
-def «IsResponseMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «IsResponseMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "msgt"
   (App (Val exception_do)
   (Let "msgt" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType))) (Var "msgt"))
@@ -9808,7 +9808,7 @@ def «IsResponseMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve isMsgInArray []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:65:6 -/
-def «IsLocalMsgTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «IsLocalMsgTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "id"
   (App (Val exception_do)
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
@@ -9818,7 +9818,7 @@ def «IsLocalMsgTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- voteResponseType maps vote and prevote message types to their corresponding responses.
 
     go: util.go:70:6 -/
-def «voteRespMsgTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «voteRespMsgTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "msgt"
   (App (Val exception_do)
   (Let "msgt" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType))) (Var "msgt"))
@@ -9837,7 +9837,7 @@ def «voteRespMsgTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))))
 
 /-- go: util.go:81:6 -/
-def «DescribeHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DescribeHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "hs"
   (App (Val exception_do)
   (Let "hs" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState))) (Var "hs"))
@@ -9870,7 +9870,7 @@ def «DescribeHardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Fprintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))
 
 /-- go: util.go:91:6 -/
-def «DescribeSoftStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DescribeSoftStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ss"
   (App (Val exception_do)
   (Let "ss" (App (Val (GoInstruction (GoAlloc SoftState))) (Var "ss"))
@@ -9882,7 +9882,7 @@ def «DescribeSoftStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:95:6 -/
-def «DescribeConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DescribeConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "state"
   (App (Val exception_do)
   (Let "state" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState))) (Var "state"))
@@ -9897,7 +9897,7 @@ def «DescribeConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:102:6 -/
-def «DescribeSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DescribeSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "snap"
   (App (Val exception_do)
   (Let "snap" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot))) (Var "snap"))
@@ -9916,7 +9916,7 @@ def «DescribeSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.SnapshotMetadata))) (Pair (Var "m") (Var "$r0"))))))))))
 
 /-- go: util.go:107:6 -/
-def «DescribeReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DescribeReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rd"
   (Lam "f"
   (App (Val exception_do)
@@ -10056,7 +10056,7 @@ def «DescribeReadyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Message for debugging.
 
     go: util.go:150:6 -/
-def «DescribeMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DescribeMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "f"
   (App (Val exception_do)
@@ -10069,7 +10069,7 @@ def «DescribeMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (App (Val (GoInstruction (FuncResolve describeMessageWithIndent []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))
 
 /-- go: util.go:154:6 -/
-def «describeMessageWithIndentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «describeMessageWithIndentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "indent"
   (Lam "m"
   (Lam "f"
@@ -10239,7 +10239,7 @@ def «describeMessageWithIndentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Fprintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))))))
 
 /-- go: util.go:191:6 -/
-def «describeTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «describeTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "id"
   (App (Val exception_do)
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
@@ -10263,7 +10263,7 @@ def «describeTargetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Entry for debugging.
 
     go: util.go:206:6 -/
-def «DescribeEntryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DescribeEntryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "f"
   (App (Val exception_do)
@@ -10355,7 +10355,7 @@ def «DescribeEntryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     each.
 
     go: util.go:244:6 -/
-def «DescribeEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DescribeEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ents"
   (Lam "f"
   (App (Val exception_do)
@@ -10391,7 +10391,7 @@ def «DescribeEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry))) (Pair (Var "e") (Var "$value")))))))))))))))))
 
 /-- go: util.go:256:6 -/
-def «entsSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «entsSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ents"
   (App (Val exception_do)
   (Let "ents" (App (Val (GoInstruction (GoAlloc (go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)))) (Var "ents"))
@@ -10419,7 +10419,7 @@ def «entsSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     entry exceeds maxSize, a non-empty slice with just this entry is returned.
 
     go: util.go:268:6 -/
-def «limitSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «limitSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ents"
   (Lam "maxSize"
   (App (Val exception_do)
@@ -10464,7 +10464,7 @@ def «limitSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- payloadSize is the size of the payload of the provided entry.
 
     go: util.go:289:6 -/
-def «payloadSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «payloadSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (App (Val exception_do)
   (Let "e" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry))) (Var "e"))
@@ -10475,7 +10475,7 @@ def «payloadSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- payloadsSize is the size of the payloads of the provided entries.
 
     go: util.go:294:6 -/
-def «payloadsSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «payloadsSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ents"
   (App (Val exception_do)
   (Let "ents" (App (Val (GoInstruction (GoAlloc (go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)))) (Var "ents"))
@@ -10499,7 +10499,7 @@ def «payloadsSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry))) (Pair (Var "e") (Var "$value")))))))))))))))
 
 /-- go: util.go:302:6 -/
-def «assertConfStatesEquivalentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «assertConfStatesEquivalentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "cs1"
   (Lam "cs2"
@@ -10535,7 +10535,7 @@ def «assertConfStatesEquivalentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     append to dst, so there is no sense in allocating more than needed.
 
     go: util.go:316:6 -/
-def «extendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «extendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "dst"
   (Lam "vals"
   (App (Val exception_do)
@@ -10580,7 +10580,7 @@ def «extendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3 where
   pkg_imported_pkgs := [pkg_id.errors, pkg_id.go_etcd_io.raft.v3.raftpb, pkg_id.fmt, pkg_id.io, pkg_id.log, pkg_id.os, pkg_id.sync, pkg_id.context, pkg_id.bytes, pkg_id.crypto.rand, pkg_id.math, pkg_id.math.big, pkg_id.slices, pkg_id.strings, pkg_id.go_etcd_io.raft.v3.confchange, pkg_id.go_etcd_io.raft.v3.quorum, pkg_id.go_etcd_io.raft.v3.tracker, pkg_id.encoding.binary]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.raft.v3)) (Lam BAnon
   (App (Val exception_do)

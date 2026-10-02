@@ -168,196 +168,196 @@ axiom tokenTypeSimple [ffi_syntax] [GoGlobalContext] : val
 
 axiom tokenTypeJWT [ffi_syntax] [GoGlobalContext] : val
 
-def currentAuthRevision [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def currentAuthRevision [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.currentAuthRevision"
 
 axiom currentAuthRevision'init [ffi_syntax] [GoGlobalContext] : val
 
-def reportCurrentAuthRevMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reportCurrentAuthRevMu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.reportCurrentAuthRevMu"
 
-def reportCurrentAuthRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reportCurrentAuthRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.reportCurrentAuthRev"
 
 axiom reportCurrentAuthRev'init [ffi_syntax] [GoGlobalContext] : val
 
-def knownOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def knownOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.knownOptions"
 
 axiom knownOptions'init [ffi_syntax] [GoGlobalContext] : val
 
-def DefaultTTL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultTTL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.DefaultTTL"
 
 axiom DefaultTTL'init [ffi_syntax] [GoGlobalContext] : val
 
-def simpleTokenTTLDefault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def simpleTokenTTLDefault [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.simpleTokenTTLDefault"
 
 axiom simpleTokenTTLDefault'init [ffi_syntax] [GoGlobalContext] : val
 
-def simpleTokenTTLResolution [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def simpleTokenTTLResolution [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.simpleTokenTTLResolution"
 
 axiom simpleTokenTTLResolution'init [ffi_syntax] [GoGlobalContext] : val
 
-def rootPerm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootPerm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.rootPerm"
 
 axiom rootPerm'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrRootUserNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRootUserNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrRootUserNotExist"
 
 axiom ErrRootUserNotExist'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrRootRoleNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRootRoleNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrRootRoleNotExist"
 
 axiom ErrRootRoleNotExist'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUserAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUserAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrUserAlreadyExist"
 
 axiom ErrUserAlreadyExist'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUserEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUserEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrUserEmpty"
 
 axiom ErrUserEmpty'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUserNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUserNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrUserNotFound"
 
 axiom ErrUserNotFound'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrRoleAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRoleAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrRoleAlreadyExist"
 
 axiom ErrRoleAlreadyExist'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrRoleNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRoleNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrRoleNotFound"
 
 axiom ErrRoleNotFound'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrRoleEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRoleEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrRoleEmpty"
 
 axiom ErrRoleEmpty'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrPermissionNotGiven [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrPermissionNotGiven [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrPermissionNotGiven"
 
 axiom ErrPermissionNotGiven'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrAuthFailed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrAuthFailed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrAuthFailed"
 
 axiom ErrAuthFailed'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrNoPasswordUser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoPasswordUser [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrNoPasswordUser"
 
 axiom ErrNoPasswordUser'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrPermissionDenied [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrPermissionDenied [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrPermissionDenied"
 
 axiom ErrPermissionDenied'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrRoleNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRoleNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrRoleNotGranted"
 
 axiom ErrRoleNotGranted'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrPermissionNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrPermissionNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrPermissionNotGranted"
 
 axiom ErrPermissionNotGranted'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrAuthNotEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrAuthNotEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrAuthNotEnabled"
 
 axiom ErrAuthNotEnabled'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrAuthOldRevision [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrAuthOldRevision [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrAuthOldRevision"
 
 axiom ErrAuthOldRevision'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidAuthToken [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidAuthToken [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrInvalidAuthToken"
 
 axiom ErrInvalidAuthToken'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidAuthOpts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidAuthOpts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrInvalidAuthOpts"
 
 axiom ErrInvalidAuthOpts'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidAuthMgmt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidAuthMgmt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrInvalidAuthMgmt"
 
 axiom ErrInvalidAuthMgmt'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidAuthMethod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidAuthMethod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrInvalidAuthMethod"
 
 axiom ErrInvalidAuthMethod'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrMissingKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMissingKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrMissingKey"
 
 axiom ErrMissingKey'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrKeyMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrKeyMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrKeyMismatch"
 
 axiom ErrKeyMismatch'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrVerifyOnly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrVerifyOnly [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.ErrVerifyOnly"
 
 axiom ErrVerifyOnly'init [ffi_syntax] [GoGlobalContext] : val
 
-def newTokenProviderJWT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTokenProviderJWT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.newTokenProviderJWT"
 
-def newTokenProviderNop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTokenProviderNop [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.newTokenProviderNop"
 
-def getMergedPerms [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMergedPerms [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.getMergedPerms"
 
-def checkKeyInterval [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkKeyInterval [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.checkKeyInterval"
 
-def checkKeyPoint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkKeyPoint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.checkKeyPoint"
 
-def isOpenEnded [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isOpenEnded [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.isOpenEnded"
 
-def isValidPermissionRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isValidPermissionRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.isValidPermissionRange"
 
-def newTokenProviderSimple [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTokenProviderSimple [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.newTokenProviderSimple"
 
-def NewAuthStore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAuthStore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.NewAuthStore"
 
-def hasRootRole [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hasRootRole [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.hasRootRole"
 
-def decomposeOpts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decomposeOpts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.decomposeOpts"
 
-def NewTokenProvider [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewTokenProvider [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.NewTokenProvider"
 
-def redactToken [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def redactToken [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/auth.redactToken"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.auth where
@@ -365,7 +365,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.auth where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.auth)) (Lam BAnon
   (App (Val exception_do)

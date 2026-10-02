@@ -160,181 +160,181 @@ axiom FLOAT64SLICE [ffi_syntax] [GoGlobalContext] : val
 
 axiom STRINGSLICE [ffi_syntax] [GoGlobalContext] : val
 
-def encoderIDCounter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encoderIDCounter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.encoderIDCounter"
 
-def defaultEncoderOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultEncoderOnce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.defaultEncoderOnce"
 
-def defaultEncoderID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultEncoderID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.defaultEncoderID"
 
 axiom defaultEncoderID'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultEncoderInstance [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultEncoderInstance [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.defaultEncoderInstance"
 
-def keyValueType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def keyValueType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.keyValueType"
 
 axiom keyValueType'init [ffi_syntax] [GoGlobalContext] : val
 
-def emptyHash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyHash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.emptyHash"
 
 axiom emptyHash'init [ffi_syntax] [GoGlobalContext] : val
 
-def userDefinedEmptySet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def userDefinedEmptySet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.userDefinedEmptySet"
 
 axiom userDefinedEmptySet'init [ffi_syntax] [GoGlobalContext] : val
 
-def emptySet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptySet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.emptySet"
 
 axiom emptySet'init [ffi_syntax] [GoGlobalContext] : val
 
-def _Type_index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Type_index [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute._Type_index"
 
 axiom _Type_index'init [ffi_syntax] [GoGlobalContext] : val
 
-def NewEncoderID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewEncoderID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.NewEncoderID"
 
-def DefaultEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.DefaultEncoder"
 
-def copyAndEscape [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyAndEscape [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.copyAndEscape"
 
-def NewAllowKeysFilter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAllowKeysFilter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.NewAllowKeysFilter"
 
-def NewDenyKeysFilter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDenyKeysFilter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.NewDenyKeysFilter"
 
-def hashKVs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashKVs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.hashKVs"
 
-def hashKV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashKV [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.hashKV"
 
-def NewMergeIterator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMergeIterator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.NewMergeIterator"
 
-def makeOne [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeOne [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.makeOne"
 
-def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Bool"
 
-def BoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.BoolSlice"
 
-def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Int"
 
-def IntSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IntSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.IntSlice"
 
-def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Int64"
 
-def Int64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Int64Slice"
 
-def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Float64"
 
-def Float64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Float64Slice"
 
-def String [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def String [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.String"
 
-def StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.StringSlice"
 
-def Stringer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stringer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Stringer"
 
-def boolToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def boolToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.boolToRaw"
 
-def rawToBool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawToBool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.rawToBool"
 
-def int64ToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int64ToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.int64ToRaw"
 
-def rawToInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawToInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.rawToInt64"
 
-def float64ToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float64ToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.float64ToRaw"
 
-def rawToFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawToFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.rawToFloat64"
 
-def isComparable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isComparable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.isComparable"
 
-def EmptySet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EmptySet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.EmptySet"
 
-def NewSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.NewSet"
 
-def NewSetWithSortable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSetWithSortable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.NewSetWithSortable"
 
-def NewSetWithFiltered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSetWithFiltered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.NewSetWithFiltered"
 
-def NewSetWithSortableFiltered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSetWithSortableFiltered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.NewSetWithSortableFiltered"
 
-def filteredToFront [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def filteredToFront [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.filteredToFront"
 
-def newSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.newSet"
 
-def computeDataFixed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def computeDataFixed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.computeDataFixed"
 
-def computeDataReflect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def computeDataReflect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.computeDataReflect"
 
-def BoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.BoolValue"
 
-def BoolSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BoolSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.BoolSliceValue"
 
-def IntValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IntValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.IntValue"
 
-def IntSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IntSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.IntSliceValue"
 
-def Int64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Int64Value"
 
-def Int64SliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64SliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Int64SliceValue"
 
-def Float64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Float64Value"
 
-def Float64SliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64SliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.Float64SliceValue"
 
-def StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.StringValue"
 
-def StringSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/attribute.StringSliceValue"
 
 instance info' : PkgInfo pkg_id.go_opentelemetry_io.otel.«attribute» where
@@ -342,7 +342,7 @@ instance info' : PkgInfo pkg_id.go_opentelemetry_io.otel.«attribute» where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_opentelemetry_io.otel.«attribute»)) (Lam BAnon
   (App (Val exception_do)

@@ -4249,6804 +4249,6804 @@ axiom vdsoBloomSizeScale [ffi_syntax] [GoGlobalContext] : val
 
 axiom vdsoArrayMax [ffi_syntax] [GoGlobalContext] : val
 
-def useAeshash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def useAeshash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.useAeshash"
 
-def aeskeysched [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def aeskeysched [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.aeskeysched"
 
-def hashkey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashkey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.hashkey"
 
-def userArenaState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def userArenaState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.userArenaState"
 
-def _cgo_init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_init [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_init"
 
-def _cgo_thread_start [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_thread_start [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_thread_start"
 
-def _cgo_sys_thread_create [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_sys_thread_create [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_sys_thread_create"
 
-def _cgo_notify_runtime_init_done [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_notify_runtime_init_done [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_notify_runtime_init_done"
 
-def _cgo_callers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_callers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_callers"
 
-def _cgo_set_traceback_functions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_set_traceback_functions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_set_traceback_functions"
 
-def _cgo_call_traceback_function [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_call_traceback_function [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_call_traceback_function"
 
-def _cgo_call_symbolizer_function [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_call_symbolizer_function [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_call_symbolizer_function"
 
-def _cgo_yield [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_yield [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_yield"
 
-def _cgo_pthread_key_created [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_pthread_key_created [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_pthread_key_created"
 
-def _cgo_bindm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_bindm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_bindm"
 
-def _cgo_getstackbound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_getstackbound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_getstackbound"
 
-def iscgo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def iscgo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.iscgo"
 
-def set_crosscall2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def set_crosscall2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.set_crosscall2"
 
-def cgoHasExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoHasExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoHasExtraM"
 
-def cgoAlwaysFalse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoAlwaysFalse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoAlwaysFalse"
 
-def cgo_yield [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgo_yield [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgo_yield"
 
 axiom cgo_yield'init [ffi_syntax] [GoGlobalContext] : val
 
-def _cgo_mmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_mmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_mmap"
 
-def _cgo_munmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_munmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_munmap"
 
-def _cgo_sigaction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_sigaction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_sigaction"
 
-def ncgocall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ncgocall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ncgocall"
 
-def racecgosync [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racecgosync [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racecgosync"
 
-def cgroupScratch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgroupScratch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgroupScratch"
 
-def cgroupOK [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgroupOK [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgroupOK"
 
-def cgroupCPU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgroupCPU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgroupCPU"
 
-def containermaxprocsNonDefault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def containermaxprocsNonDefault [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.containermaxprocsNonDefault"
 
-def containermaxprocs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def containermaxprocs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.containermaxprocs"
 
 axiom containermaxprocs'init [ffi_syntax] [GoGlobalContext] : val
 
-def x86HasAVX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def x86HasAVX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.x86HasAVX"
 
-def x86HasFMA [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def x86HasFMA [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.x86HasFMA"
 
-def x86HasPOPCNT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def x86HasPOPCNT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.x86HasPOPCNT"
 
-def x86HasSSE41 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def x86HasSSE41 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.x86HasSSE41"
 
-def armHasVFPv4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def armHasVFPv4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.armHasVFPv4"
 
-def arm64HasATOMICS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def arm64HasATOMICS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.arm64HasATOMICS"
 
-def loong64HasLAMCAS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loong64HasLAMCAS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.loong64HasLAMCAS"
 
-def loong64HasLAM_BH [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loong64HasLAM_BH [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.loong64HasLAM_BH"
 
-def loong64HasLSX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loong64HasLSX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.loong64HasLSX"
 
-def riscv64HasZbb [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def riscv64HasZbb [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.riscv64HasZbb"
 
-def memmoveBits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memmoveBits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memmoveBits"
 
-def cpuprof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cpuprof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cpuprof"
 
-def debugPinnerKeepUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugPinnerKeepUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugPinnerKeepUnpin"
 
 axiom debugPinnerKeepUnpin'init [ffi_syntax] [GoGlobalContext] : val
 
-def allDloggers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allDloggers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allDloggers"
 
-def _cgo_setenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_setenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_setenv"
 
-def _cgo_unsetenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_unsetenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_unsetenv"
 
-def boundsErrorFmts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def boundsErrorFmts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.boundsErrorFmts"
 
 axiom boundsErrorFmts'init [ffi_syntax] [GoGlobalContext] : val
 
-def boundsNegErrorFmts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def boundsNegErrorFmts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.boundsNegErrorFmts"
 
 axiom boundsNegErrorFmts'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultGOROOT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultGOROOT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.defaultGOROOT"
 
-def buildVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.buildVersion"
 
-def fastlog2Table [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fastlog2Table [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fastlog2Table"
 
 axiom fastlog2Table'init [ffi_syntax] [GoGlobalContext] : val
 
-def inf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inf"
 
 axiom inf'init [ffi_syntax] [GoGlobalContext] : val
 
-def dumpfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpfd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpfd"
 
-def tmpbuf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tmpbuf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tmpbuf"
 
-def buf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.buf"
 
-def nbuf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nbuf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nbuf"
 
-def typecache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typecache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typecache"
 
-def freemark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freemark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freemark"
 
-def dumphdr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumphdr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumphdr"
 
 axiom dumphdr'init [ffi_syntax] [GoGlobalContext] : val
 
-def itabLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itabLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itabLock"
 
-def itabTable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itabTable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itabTable"
 
 axiom itabTable'init [ffi_syntax] [GoGlobalContext] : val
 
-def itabTableInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itabTableInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itabTableInit"
 
 axiom itabTableInit'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint16Eface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint16Eface [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.uint16Eface"
 
 axiom uint16Eface'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint32Eface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint32Eface [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.uint32Eface"
 
 axiom uint32Eface'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint64Eface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint64Eface [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.uint64Eface"
 
 axiom uint64Eface'init [ffi_syntax] [GoGlobalContext] : val
 
-def stringEface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringEface [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stringEface"
 
 axiom stringEface'init [ffi_syntax] [GoGlobalContext] : val
 
-def sliceEface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sliceEface [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sliceEface"
 
 axiom sliceEface'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint16Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint16Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.uint16Type"
 
 axiom uint16Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint32Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint32Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.uint32Type"
 
 axiom uint32Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint64Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint64Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.uint64Type"
 
 axiom uint64Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def stringType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stringType"
 
 axiom stringType'init [ffi_syntax] [GoGlobalContext] : val
 
-def sliceType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sliceType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sliceType"
 
 axiom sliceType'init [ffi_syntax] [GoGlobalContext] : val
 
-def emptyTypeAssertCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyTypeAssertCache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.emptyTypeAssertCache"
 
 axiom emptyTypeAssertCache'init [ffi_syntax] [GoGlobalContext] : val
 
-def emptyInterfaceSwitchCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyInterfaceSwitchCache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.emptyInterfaceSwitchCache"
 
 axiom emptyInterfaceSwitchCache'init [ffi_syntax] [GoGlobalContext] : val
 
-def staticuint64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def staticuint64s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.staticuint64s"
 
-def lockNames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockNames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockNames"
 
 axiom lockNames'init [ffi_syntax] [GoGlobalContext] : val
 
-def lockPartialOrder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockPartialOrder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockPartialOrder"
 
 axiom lockPartialOrder'init [ffi_syntax] [GoGlobalContext] : val
 
-def physPageSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def physPageSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.physPageSize"
 
-def physHugePageSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def physHugePageSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.physHugePageSize"
 
-def physHugePageShift [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def physHugePageShift [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.physHugePageShift"
 
-def heapRandSeed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapRandSeed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapRandSeed"
 
-def heapRandSeedBitsRemaining [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapRandSeedBitsRemaining [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapRandSeedBitsRemaining"
 
-def zerobase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def zerobase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.zerobase"
 
-def globalAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.globalAlloc"
 
-def persistentChunks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def persistentChunks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.persistentChunks"
 
-def mallocScanTable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocScanTable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocScanTable"
 
 axiom mallocScanTable'init [ffi_syntax] [GoGlobalContext] : val
 
-def mallocNoScanTable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocNoScanTable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocNoScanTable"
 
 axiom mallocNoScanTable'init [ffi_syntax] [GoGlobalContext] : val
 
-def maps_errNilAssign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maps_errNilAssign [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maps_errNilAssign"
 
 axiom maps_errNilAssign'init [ffi_syntax] [GoGlobalContext] : val
 
-def debugPtrmask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugPtrmask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugPtrmask"
 
-def emptymspan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptymspan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.emptymspan"
 
-def useCheckmark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def useCheckmark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.useCheckmark"
 
 axiom useCheckmark'init [ffi_syntax] [GoGlobalContext] : val
 
-def cleanupFnPtrMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cleanupFnPtrMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cleanupFnPtrMask"
 
 axiom cleanupFnPtrMask'init [ffi_syntax] [GoGlobalContext] : val
 
-def cleanupBlockPtrMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cleanupBlockPtrMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cleanupBlockPtrMask"
 
-def gcCleanups [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcCleanups [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcCleanups"
 
-def adviseUnused [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adviseUnused [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adviseUnused"
 
 axiom adviseUnused'init [ffi_syntax] [GoGlobalContext] : val
 
-def metricsSema [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def metricsSema [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.metricsSema"
 
 axiom metricsSema'init [ffi_syntax] [GoGlobalContext] : val
 
-def metricsInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def metricsInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.metricsInit"
 
-def metrics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def metrics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.metrics"
 
-def sizeClassBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeClassBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sizeClassBuckets"
 
-def timeHistBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeHistBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timeHistBuckets"
 
-def agg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def agg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.agg"
 
-def fingStatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fingStatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fingStatus"
 
-def finlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finlock"
 
-def fing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fing"
 
-def finq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finq"
 
-def finc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finc"
 
-def finptrmask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finptrmask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finptrmask"
 
-def finqueued [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finqueued [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finqueued"
 
-def finexecuted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finexecuted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finexecuted"
 
-def allfin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allfin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allfin"
 
-def finalizer1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finalizer1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finalizer1"
 
 axiom finalizer1'init [ffi_syntax] [GoGlobalContext] : val
 
-def gcphase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcphase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcphase"
 
-def writeBarrier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeBarrier [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.writeBarrier"
 
-def gcBlackenEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcBlackenEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcBlackenEnabled"
 
-def gcMarkWorkerModeStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcMarkWorkerModeStrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcMarkWorkerModeStrings"
 
 axiom gcMarkWorkerModeStrings'init [ffi_syntax] [GoGlobalContext] : val
 
-def work [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def work [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.work"
 
-def gcMarkDoneFlushed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcMarkDoneFlushed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcMarkDoneFlushed"
 
-def gcDebugMarkDone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcDebugMarkDone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcDebugMarkDone"
 
-def poolcleanup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poolcleanup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poolcleanup"
 
-def boringCaches [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def boringCaches [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.boringCaches"
 
-def gcCPULimiter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcCPULimiter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcCPULimiter"
 
-def oneptrmask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def oneptrmask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.oneptrmask"
 
 axiom oneptrmask'init [ffi_syntax] [GoGlobalContext] : val
 
-def gcController [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcController [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcController"
 
-def scavenge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scavenge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scavenge"
 
-def scavenger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scavenger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scavenger"
 
-def sweep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sweep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sweep"
 
-def mheap_ [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mheap_ [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mheap_"
 
-def mSpanStateNames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mSpanStateNames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mSpanStateNames"
 
 axiom mSpanStateNames'init [ffi_syntax] [GoGlobalContext] : val
 
-def gcBitsArenas [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcBitsArenas [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcBitsArenas"
 
-def levelBits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def levelBits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.levelBits"
 
 axiom levelBits'init [ffi_syntax] [GoGlobalContext] : val
 
-def levelShift [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def levelShift [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.levelShift"
 
 axiom levelShift'init [ffi_syntax] [GoGlobalContext] : val
 
-def levelLogPages [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def levelLogPages [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.levelLogPages"
 
 axiom levelLogPages'init [ffi_syntax] [GoGlobalContext] : val
 
-def profInsertLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def profInsertLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.profInsertLock"
 
-def profBlockLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def profBlockLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.profBlockLock"
 
-def profMemActiveLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def profMemActiveLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.profMemActiveLock"
 
-def profMemFutureLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def profMemFutureLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.profMemFutureLock"
 
-def mbuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mbuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mbuckets"
 
-def bbuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bbuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bbuckets"
 
-def xbuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xbuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.xbuckets"
 
-def buckhash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buckhash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.buckhash"
 
-def mProfCycle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mProfCycle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mProfCycle"
 
-def blockprofilerate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockprofilerate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.blockprofilerate"
 
-def mutexprofilerate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexprofilerate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mutexprofilerate"
 
-def MemProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MemProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.MemProfileRate"
 
 axiom MemProfileRate'init [ffi_syntax] [GoGlobalContext] : val
 
-def disableMemoryProfiling [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def disableMemoryProfiling [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.disableMemoryProfiling"
 
-def goroutineProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineProfile"
 
 axiom goroutineProfile'init [ffi_syntax] [GoGlobalContext] : val
 
-def minOffAddr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minOffAddr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.minOffAddr"
 
 axiom minOffAddr'init [ffi_syntax] [GoGlobalContext] : val
 
-def maxOffAddr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxOffAddr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maxOffAddr"
 
 axiom maxOffAddr'init [ffi_syntax] [GoGlobalContext] : val
 
-def spanSetBlockPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanSetBlockPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanSetBlockPool"
 
-def memstats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memstats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memstats"
 
-def doubleCheckReadMemStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckReadMemStats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckReadMemStats"
 
 axiom doubleCheckReadMemStats'init [ffi_syntax] [GoGlobalContext] : val
 
-def netpollInitLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollInitLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollInitLock"
 
-def netpollInited [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollInited [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollInited"
 
-def pollcache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pollcache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pollcache"
 
-def netpollWaiters [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollWaiters [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollWaiters"
 
-def pdEface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pdEface [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pdEface"
 
 axiom pdEface'init [ffi_syntax] [GoGlobalContext] : val
 
-def pdType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pdType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pdType"
 
 axiom pdType'init [ffi_syntax] [GoGlobalContext] : val
 
-def epfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def epfd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.epfd"
 
 axiom epfd'init [ffi_syntax] [GoGlobalContext] : val
 
-def netpollEventFd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollEventFd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollEventFd"
 
-def netpollWakeSig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollWakeSig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollWakeSig"
 
-def haveHighResSleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def haveHighResSleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.haveHighResSleep"
 
 axiom haveHighResSleep'init [ffi_syntax] [GoGlobalContext] : val
 
-def procAuxv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def procAuxv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.procAuxv"
 
 axiom procAuxv'init [ffi_syntax] [GoGlobalContext] : val
 
-def addrspace_vec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addrspace_vec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addrspace_vec"
 
-def auxvreadbuf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def auxvreadbuf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.auxvreadbuf"
 
-def secureMode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secureMode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secureMode"
 
-def sysTHPSizePath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysTHPSizePath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysTHPSizePath"
 
 axiom sysTHPSizePath'init [ffi_syntax] [GoGlobalContext] : val
 
-def urandom_dev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def urandom_dev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.urandom_dev"
 
 axiom urandom_dev'init [ffi_syntax] [GoGlobalContext] : val
 
-def perThreadSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def perThreadSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.perThreadSyscall"
 
-def sigset_all [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigset_all [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigset_all"
 
 axiom sigset_all'init [ffi_syntax] [GoGlobalContext] : val
 
-def shiftError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shiftError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.shiftError"
 
 axiom shiftError'init [ffi_syntax] [GoGlobalContext] : val
 
-def divideError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divideError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.divideError"
 
 axiom divideError'init [ffi_syntax] [GoGlobalContext] : val
 
-def overflowError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def overflowError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.overflowError"
 
 axiom overflowError'init [ffi_syntax] [GoGlobalContext] : val
 
-def floatError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def floatError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.floatError"
 
 axiom floatError'init [ffi_syntax] [GoGlobalContext] : val
 
-def memoryError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memoryError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memoryError"
 
 axiom memoryError'init [ffi_syntax] [GoGlobalContext] : val
 
-def simdImmError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def simdImmError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.simdImmError"
 
 axiom simdImmError'init [ffi_syntax] [GoGlobalContext] : val
 
-def rangeDoneError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rangeDoneError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rangeDoneError"
 
 axiom rangeDoneError'init [ffi_syntax] [GoGlobalContext] : val
 
-def rangePanicError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rangePanicError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rangePanicError"
 
 axiom rangePanicError'init [ffi_syntax] [GoGlobalContext] : val
 
-def rangeExhaustedError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rangeExhaustedError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rangeExhaustedError"
 
 axiom rangeExhaustedError'init [ffi_syntax] [GoGlobalContext] : val
 
-def rangeMissingPanicError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rangeMissingPanicError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rangeMissingPanicError"
 
 axiom rangeMissingPanicError'init [ffi_syntax] [GoGlobalContext] : val
 
-def panicnil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicnil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicnil"
 
 axiom panicnil'init [ffi_syntax] [GoGlobalContext] : val
 
-def runningPanicDefers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runningPanicDefers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runningPanicDefers"
 
-def panicking [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicking [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicking"
 
-def paniclk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def paniclk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.paniclk"
 
-def didothers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def didothers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.didothers"
 
-def deadlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deadlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deadlock"
 
-def pinnerLeakPanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pinnerLeakPanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pinnerLeakPanic"
 
 axiom pinnerLeakPanic'init [ffi_syntax] [GoGlobalContext] : val
 
-def asyncPreemptStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asyncPreemptStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asyncPreemptStack"
 
 axiom asyncPreemptStack'init [ffi_syntax] [GoGlobalContext] : val
 
-def xRegAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xRegAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.xRegAlloc"
 
-def printBacklog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printBacklog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printBacklog"
 
-def printBacklogIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printBacklogIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printBacklogIndex"
 
-def debuglock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debuglock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debuglock"
 
-def minhexdigits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minhexdigits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.minhexdigits"
 
 axiom minhexdigits'init [ffi_syntax] [GoGlobalContext] : val
 
-def modinfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def modinfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.modinfo"
 
-def m0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def m0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.m0"
 
-def g0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def g0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.g0"
 
-def mcache0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mcache0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mcache0"
 
-def raceprocctx0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceprocctx0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceprocctx0"
 
-def raceFiniLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceFiniLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceFiniLock"
 
-def runtime_inittasks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_inittasks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_inittasks"
 
-def main_init_done [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def main_init_done [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.main_init_done"
 
-def mainStarted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mainStarted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mainStarted"
 
-def runtimeInitTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtimeInitTime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtimeInitTime"
 
-def initSigmask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initSigmask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.initSigmask"
 
-def gcrash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcrash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcrash"
 
-def crashingG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def crashingG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.crashingG"
 
-def allglock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allglock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allglock"
 
-def allgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allgs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allgs"
 
-def allglen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allglen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allglen"
 
-def allgptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allgptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allgptr"
 
-def freezing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freezing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freezing"
 
-def casgstatusAlwaysTrack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def casgstatusAlwaysTrack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.casgstatusAlwaysTrack"
 
 axiom casgstatusAlwaysTrack'init [ffi_syntax] [GoGlobalContext] : val
 
-def stwReasonStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stwReasonStrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stwReasonStrings"
 
 axiom stwReasonStrings'init [ffi_syntax] [GoGlobalContext] : val
 
-def stopTheWorldContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stopTheWorldContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stopTheWorldContext"
 
-def worldsema [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def worldsema [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.worldsema"
 
 axiom worldsema'init [ffi_syntax] [GoGlobalContext] : val
 
-def gcsema [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcsema [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcsema"
 
 axiom gcsema'init [ffi_syntax] [GoGlobalContext] : val
 
-def cgoThreadStart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoThreadStart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoThreadStart"
 
-def extraM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extraM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.extraM"
 
-def extraMLength [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extraMLength [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.extraMLength"
 
-def extraMWaiters [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extraMWaiters [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.extraMWaiters"
 
-def extraMInUse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extraMInUse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.extraMInUse"
 
-def allocmLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allocmLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allocmLock"
 
-def execLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def execLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.execLock"
 
-def newmHandoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newmHandoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newmHandoff"
 
-def inForkedChild [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inForkedChild [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inForkedChild"
 
-def pendingPreemptSignals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pendingPreemptSignals [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pendingPreemptSignals"
 
-def prof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.prof"
 
-def forcegcperiod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forcegcperiod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forcegcperiod"
 
 axiom forcegcperiod'init [ffi_syntax] [GoGlobalContext] : val
 
-def starttime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def starttime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.starttime"
 
-def updatemaxprocs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def updatemaxprocs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.updatemaxprocs"
 
 axiom updatemaxprocs'init [ffi_syntax] [GoGlobalContext] : val
 
-def updateMaxProcsG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def updateMaxProcsG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.updateMaxProcsG"
 
-def computeMaxProcsLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def computeMaxProcsLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.computeMaxProcsLock"
 
-def stealOrder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stealOrder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stealOrder"
 
-def inittrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inittrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inittrace"
 
-def overflowTag [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def overflowTag [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.overflowTag"
 
-def labelSync [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def labelSync [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.labelSync"
 
-def startupRand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startupRand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startupRand"
 
-def globalRand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalRand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.globalRand"
 
-def readRandomFailed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readRandomFailed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readRandomFailed"
 
-def ticks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ticks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ticks"
 
-def envs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def envs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.envs"
 
-def argslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def argslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.argslice"
 
-def godebugDefault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def godebugDefault [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.godebugDefault"
 
-def godebugUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def godebugUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.godebugUpdate"
 
-def godebugEnv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def godebugEnv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.godebugEnv"
 
-def godebugNewIncNonDefault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def godebugNewIncNonDefault [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.godebugNewIncNonDefault"
 
-def crashFD [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def crashFD [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.crashFD"
 
-def auxv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def auxv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.auxv"
 
-def zeroVal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def zeroVal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.zeroVal"
 
-def traceback_cache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceback_cache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceback_cache"
 
 axiom traceback_cache'init [ffi_syntax] [GoGlobalContext] : val
 
-def traceback_env [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceback_env [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceback_env"
 
-def argc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def argc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.argc"
 
-def argv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def argv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.argv"
 
-def test_z64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def test_z64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.test_z64"
 
-def test_x64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def test_x64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.test_x64"
 
-def debug [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debug [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debug"
 
-def dbgvars [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dbgvars [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dbgvars"
 
 axiom dbgvars'init [ffi_syntax] [GoGlobalContext] : val
 
-def waitReasonStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitReasonStrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.waitReasonStrings"
 
 axiom waitReasonStrings'init [ffi_syntax] [GoGlobalContext] : val
 
-def isWaitingForSuspendG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isWaitingForSuspendG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isWaitingForSuspendG"
 
 axiom isWaitingForSuspendG'init [ffi_syntax] [GoGlobalContext] : val
 
-def isIdleInSynctest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isIdleInSynctest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isIdleInSynctest"
 
 axiom isIdleInSynctest'init [ffi_syntax] [GoGlobalContext] : val
 
-def allm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allm"
 
-def gomaxprocs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gomaxprocs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gomaxprocs"
 
-def numCPUStartup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def numCPUStartup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.numCPUStartup"
 
-def forcegc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forcegc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forcegc"
 
-def sched [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sched [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sched"
 
-def newprocs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newprocs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newprocs"
 
-def allpLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allpLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allpLock"
 
-def allp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allp"
 
-def idlepMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def idlepMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.idlepMask"
 
-def timerpMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timerpMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timerpMask"
 
-def gcBgMarkWorkerPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcBgMarkWorkerPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcBgMarkWorkerPool"
 
-def gcBgMarkWorkerCount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcBgMarkWorkerCount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcBgMarkWorkerCount"
 
-def processorVersionInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def processorVersionInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.processorVersionInfo"
 
-def isIntel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isIntel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isIntel"
 
-def goarm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goarm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goarm"
 
-def goarmsoftfp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goarmsoftfp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goarmsoftfp"
 
-def islibrary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def islibrary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.islibrary"
 
-def isarchive [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isarchive [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isarchive"
 
-def _cgo_clearenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_clearenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_clearenv"
 
-def chansendpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chansendpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chansendpc"
 
 axiom chansendpc'init [ffi_syntax] [GoGlobalContext] : val
 
-def chanrecvpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chanrecvpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chanrecvpc"
 
 axiom chanrecvpc'init [ffi_syntax] [GoGlobalContext] : val
 
-def semtable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def semtable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.semtable"
 
-def prSetVMAUnsupported [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prSetVMAUnsupported [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.prSetVMAUnsupported"
 
-def fwdSig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fwdSig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fwdSig"
 
-def handlingSig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def handlingSig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.handlingSig"
 
-def disableSigChan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def disableSigChan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.disableSigChan"
 
-def enableSigChan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def enableSigChan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.enableSigChan"
 
-def maskUpdatedChan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maskUpdatedChan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maskUpdatedChan"
 
-def signalsOK [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signalsOK [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signalsOK"
 
-def sigprofCallers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigprofCallers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigprofCallers"
 
-def sigprofCallersUse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigprofCallersUse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigprofCallersUse"
 
-def adjustSignalStack2Indirect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustSignalStack2Indirect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustSignalStack2Indirect"
 
 axiom adjustSignalStack2Indirect'init [ffi_syntax] [GoGlobalContext] : val
 
-def crashing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def crashing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.crashing"
 
-def testSigtrap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSigtrap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.testSigtrap"
 
-def testSigusr1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSigusr1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.testSigusr1"
 
-def sigsysIgnored [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigsysIgnored [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigsysIgnored"
 
-def sigsetAllExiting [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigsetAllExiting [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigsetAllExiting"
 
 axiom sigsetAllExiting'init [ffi_syntax] [GoGlobalContext] : val
 
-def sig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sig"
 
-def sigtable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigtable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigtable"
 
 axiom sigtable'init [ffi_syntax] [GoGlobalContext] : val
 
-def stackPoisonCopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackPoisonCopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackPoisonCopy"
 
 axiom stackPoisonCopy'init [ffi_syntax] [GoGlobalContext] : val
 
-def stackpool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackpool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackpool"
 
-def stackLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackLarge"
 
-def maxstacksize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxstacksize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maxstacksize"
 
 axiom maxstacksize'init [ffi_syntax] [GoGlobalContext] : val
 
-def maxstackceiling [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxstackceiling [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maxstackceiling"
 
 axiom maxstackceiling'init [ffi_syntax] [GoGlobalContext] : val
 
-def ptrnames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ptrnames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ptrnames"
 
 axiom ptrnames'init [ffi_syntax] [GoGlobalContext] : val
 
-def startingStackSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startingStackSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startingStackSize"
 
 axiom startingStackSize'init [ffi_syntax] [GoGlobalContext] : val
 
-def methodValueCallFrameObjs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def methodValueCallFrameObjs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.methodValueCallFrameObjs"
 
-def intArgRegs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intArgRegs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.intArgRegs"
 
 axiom intArgRegs'init [ffi_syntax] [GoGlobalContext] : val
 
-def pinnedTypemaps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pinnedTypemaps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pinnedTypemaps"
 
-def aixStaticDataBase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def aixStaticDataBase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.aixStaticDataBase"
 
-def firstmoduledata [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def firstmoduledata [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.firstmoduledata"
 
-def lastmoduledatap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lastmoduledatap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lastmoduledatap"
 
-def modulesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def modulesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.modulesSlice"
 
-def bubbleGen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bubbleGen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bubbleGen"
 
-def faketime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def faketime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.faketime"
 
-def overrideWrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def overrideWrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.overrideWrite"
 
-def trace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.trace"
 
-def traceAdvanceSema [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceAdvanceSema [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceAdvanceSema"
 
 axiom traceAdvanceSema'init [ffi_syntax] [GoGlobalContext] : val
 
-def traceShutdownSema [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceShutdownSema [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceShutdownSema"
 
 axiom traceShutdownSema'init [ffi_syntax] [GoGlobalContext] : val
 
-def traceAdvancer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceAdvancer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceAdvancer"
 
-def gStatusStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gStatusStrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gStatusStrings"
 
 axiom gStatusStrings'init [ffi_syntax] [GoGlobalContext] : val
 
-def cgoTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoTraceback"
 
-def cgoContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoContext"
 
-def cgoSymbolizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoSymbolizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoSymbolizer"
 
-def traceBlockReasonStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceBlockReasonStrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceBlockReasonStrings"
 
 axiom traceBlockReasonStrings'init [ffi_syntax] [GoGlobalContext] : val
 
-def traceGoStopReasonStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceGoStopReasonStrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceGoStopReasonStrings"
 
 axiom traceGoStopReasonStrings'init [ffi_syntax] [GoGlobalContext] : val
 
-def inProgress [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inProgress [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inProgress"
 
-def reflectOffs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectOffs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectOffs"
 
-def vdsoLoadStart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoLoadStart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoLoadStart"
 
-def vdsoLoadEnd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoLoadEnd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoLoadEnd"
 
-def vdsoLinuxVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoLinuxVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoLinuxVersion"
 
 axiom vdsoLinuxVersion'init [ffi_syntax] [GoGlobalContext] : val
 
-def vdsoSymbolKeys [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoSymbolKeys [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoSymbolKeys"
 
 axiom vdsoSymbolKeys'init [ffi_syntax] [GoGlobalContext] : val
 
-def vdsoGettimeofdaySym [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoGettimeofdaySym [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoGettimeofdaySym"
 
-def vdsoClockgettimeSym [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoClockgettimeSym [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoClockgettimeSym"
 
-def vdsoGetrandomSym [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoGetrandomSym [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoGetrandomSym"
 
-def vgetrandomAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vgetrandomAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vgetrandomAlloc"
 
-def trimHash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimHash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.trimHash"
 
-def memhash0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash0"
 
-def memhash8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash8"
 
-def memhash16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash16"
 
-def memhash128 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash128 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash128"
 
-def memhash_varlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash_varlen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash_varlen"
 
-def memhash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash"
 
-def memhash32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash32"
 
-def memhash64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash64"
 
-def strhash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def strhash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.strhash"
 
-def strhashFallback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def strhashFallback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.strhashFallback"
 
-def f32hash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f32hash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f32hash"
 
-def f64hash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f64hash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f64hash"
 
-def c64hash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def c64hash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.c64hash"
 
-def c128hash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def c128hash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.c128hash"
 
-def interhash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def interhash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.interhash"
 
-def nilinterhash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilinterhash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nilinterhash"
 
-def typehash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typehash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typehash"
 
-def reflect_typehash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_typehash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_typehash"
 
-def memequal0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memequal0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memequal0"
 
-def memequal8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memequal8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memequal8"
 
-def memequal16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memequal16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memequal16"
 
-def memequal32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memequal32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memequal32"
 
-def memequal64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memequal64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memequal64"
 
-def memequal128 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memequal128 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memequal128"
 
-def f32equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f32equal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f32equal"
 
-def f64equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f64equal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f64equal"
 
-def c64equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def c64equal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.c64equal"
 
-def c128equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def c128equal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.c128equal"
 
-def strequal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def strequal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.strequal"
 
-def interequal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def interequal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.interequal"
 
-def nilinterequal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilinterequal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nilinterequal"
 
-def efaceeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def efaceeq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.efaceeq"
 
-def ifaceeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ifaceeq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ifaceeq"
 
-def stringHash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringHash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stringHash"
 
-def bytesHash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bytesHash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bytesHash"
 
-def int32Hash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int32Hash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.int32Hash"
 
-def int64Hash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int64Hash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.int64Hash"
 
-def efaceHash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def efaceHash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.efaceHash"
 
-def ifaceHash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ifaceHash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ifaceHash"
 
-def alginit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def alginit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.alginit"
 
-def initAlgAES [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initAlgAES [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.initAlgAES"
 
-def readUnaligned32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readUnaligned32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readUnaligned32"
 
-def readUnaligned64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readUnaligned64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readUnaligned64"
 
-def arena_newArena [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def arena_newArena [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.arena_newArena"
 
-def arena_arena_New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def arena_arena_New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.arena_arena_New"
 
-def arena_arena_Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def arena_arena_Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.arena_arena_Slice"
 
-def arena_arena_Free [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def arena_arena_Free [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.arena_arena_Free"
 
-def arena_heapify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def arena_heapify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.arena_heapify"
 
-def userArenaChunkReserveBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def userArenaChunkReserveBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.userArenaChunkReserveBytes"
 
-def newUserArena [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newUserArena [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newUserArena"
 
-def userArenaHeapBitsSetSliceType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def userArenaHeapBitsSetSliceType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.userArenaHeapBitsSetSliceType"
 
-def userArenaHeapBitsSetType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def userArenaHeapBitsSetType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.userArenaHeapBitsSetType"
 
-def bswapIfBigEndian [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bswapIfBigEndian [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bswapIfBigEndian"
 
-def newUserArenaChunk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newUserArenaChunk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newUserArenaChunk"
 
-def inUserArenaChunk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inUserArenaChunk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inUserArenaChunk"
 
-def freeUserArenaChunk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freeUserArenaChunk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freeUserArenaChunk"
 
-def asanread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asanread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asanread"
 
-def asanwrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asanwrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asanwrite"
 
-def asanunpoison [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asanunpoison [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asanunpoison"
 
-def asanpoison [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asanpoison [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asanpoison"
 
-def asanregisterglobals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asanregisterglobals [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asanregisterglobals"
 
-def lsanregisterrootregion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lsanregisterrootregion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lsanregisterrootregion"
 
-def lsanunregisterrootregion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lsanunregisterrootregion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lsanunregisterrootregion"
 
-def lsandoleakcheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lsandoleakcheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lsandoleakcheck"
 
-def atomicwb [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicwb [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.atomicwb"
 
-def atomicstorep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicstorep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.atomicstorep"
 
-def atomic_storePointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomic_storePointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.atomic_storePointer"
 
-def atomic_casPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomic_casPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.atomic_casPointer"
 
-def sync_atomic_StoreUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_atomic_StoreUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_atomic_StoreUintptr"
 
-def sync_atomic_StorePointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_atomic_StorePointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_atomic_StorePointer"
 
-def sync_atomic_SwapUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_atomic_SwapUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_atomic_SwapUintptr"
 
-def sync_atomic_SwapPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_atomic_SwapPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_atomic_SwapPointer"
 
-def sync_atomic_CompareAndSwapUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_atomic_CompareAndSwapUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_atomic_CompareAndSwapUintptr"
 
-def sync_atomic_CompareAndSwapPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_atomic_CompareAndSwapPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_atomic_CompareAndSwapPointer"
 
-def cgoUse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoUse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoUse"
 
-def cgoKeepAlive [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoKeepAlive [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoKeepAlive"
 
-def cgoNoCallback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoNoCallback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoNoCallback"
 
-def mmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mmap"
 
-def munmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def munmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.munmap"
 
-def sysMmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysMmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysMmap"
 
-def callCgoMmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def callCgoMmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.callCgoMmap"
 
-def sysMunmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysMunmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysMunmap"
 
-def callCgoMunmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def callCgoMunmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.callCgoMunmap"
 
-def sigaction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigaction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigaction"
 
-def callCgoSigaction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def callCgoSigaction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.callCgoSigaction"
 
-def syscall_cgocaller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_cgocaller [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_cgocaller"
 
-def cgocall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgocall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgocall"
 
-def callbackUpdateSystemStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def callbackUpdateSystemStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.callbackUpdateSystemStack"
 
-def cgocallbackg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgocallbackg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgocallbackg"
 
-def cgocallbackg1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgocallbackg1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgocallbackg1"
 
-def unwindm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unwindm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unwindm"
 
-def badcgocallback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badcgocallback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badcgocallback"
 
-def cgounimpl [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgounimpl [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgounimpl"
 
-def cgoCheckPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckPointer"
 
-def cgoCheckArg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckArg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckArg"
 
-def cgoCheckUnknownPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckUnknownPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckUnknownPointer"
 
-def cgoIsGoPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoIsGoPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoIsGoPointer"
 
-def cgoInRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoInRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoInRange"
 
-def cgoCheckResult [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckResult [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckResult"
 
-def cgoFormatErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoFormatErr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoFormatErr"
 
-def _cgo_panic_internal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cgo_panic_internal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._cgo_panic_internal"
 
-def cgoCheckPtrWrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckPtrWrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckPtrWrite"
 
-def cgoCheckMemmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckMemmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckMemmove"
 
-def cgoCheckMemmove2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckMemmove2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckMemmove2"
 
-def cgoCheckSliceCopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckSliceCopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckSliceCopy"
 
-def cgoCheckTypedBlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckTypedBlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckTypedBlock"
 
-def cgoCheckBits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoCheckBits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoCheckBits"
 
-def defaultGOMAXPROCSInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultGOMAXPROCSInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.defaultGOMAXPROCSInit"
 
-def defaultGOMAXPROCSUpdateGODEBUG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultGOMAXPROCSUpdateGODEBUG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.defaultGOMAXPROCSUpdateGODEBUG"
 
-def defaultGOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultGOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.defaultGOMAXPROCS"
 
-def adjustCgroupGOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustCgroupGOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustCgroupGOMAXPROCS"
 
-def reflect_makechan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_makechan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_makechan"
 
-def makechan64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makechan64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makechan64"
 
-def makechan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makechan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makechan"
 
-def chanbuf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chanbuf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chanbuf"
 
-def full [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def full [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.full"
 
-def chansend1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chansend1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chansend1"
 
-def chansend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chansend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chansend"
 
-def send [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def send [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.send"
 
-def timerchandrain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timerchandrain [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timerchandrain"
 
-def sendDirect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sendDirect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sendDirect"
 
-def recvDirect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recvDirect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.recvDirect"
 
-def closechan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closechan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.closechan"
 
-def empty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def empty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.empty"
 
-def chanrecv1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chanrecv1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chanrecv1"
 
-def chanrecv2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chanrecv2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chanrecv2"
 
-def chanrecv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chanrecv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chanrecv"
 
-def recv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.recv"
 
-def chanparkcommit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chanparkcommit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chanparkcommit"
 
-def selectnbsend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def selectnbsend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.selectnbsend"
 
-def selectnbrecv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def selectnbrecv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.selectnbrecv"
 
-def reflect_chansend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_chansend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_chansend"
 
-def reflect_chanrecv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_chanrecv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_chanrecv"
 
-def chanlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chanlen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chanlen"
 
-def chancap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chancap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chancap"
 
-def reflect_chanlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_chanlen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_chanlen"
 
-def reflectlite_chanlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectlite_chanlen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectlite_chanlen"
 
-def reflect_chancap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_chancap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_chancap"
 
-def reflect_chanclose [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_chanclose [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_chanclose"
 
-def racesync [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racesync [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racesync"
 
-def racenotify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racenotify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racenotify"
 
-def checkptrAlignment [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkptrAlignment [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkptrAlignment"
 
-def checkptrStraddles [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkptrStraddles [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkptrStraddles"
 
-def checkptrArithmetic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkptrArithmetic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkptrArithmetic"
 
-def checkptrBase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkptrBase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkptrBase"
 
-def inf2one [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inf2one [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inf2one"
 
-def complex128div [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def complex128div [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.complex128div"
 
-def newcoro [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newcoro [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newcoro"
 
-def corostart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def corostart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.corostart"
 
-def coroexit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def coroexit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.coroexit"
 
-def coroswitch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def coroswitch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.coroswitch"
 
-def coroswitch_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def coroswitch_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.coroswitch_m"
 
-def coverage_getCovCounterList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def coverage_getCovCounterList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.coverage_getCovCounterList"
 
-def addCovMeta [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addCovMeta [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addCovMeta"
 
-def SetCPUProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetCPUProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.SetCPUProfileRate"
 
-def CPUProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CPUProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.CPUProfile"
 
-def pprof_cyclesPerSecond [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_cyclesPerSecond [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_cyclesPerSecond"
 
-def runtime_pprof_readProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_pprof_readProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_pprof_readProfile"
 
-def cputicks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cputicks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cputicks"
 
-def create [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def create [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.create"
 
-def GOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.GOMAXPROCS"
 
-def SetDefaultGOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetDefaultGOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.SetDefaultGOMAXPROCS"
 
-def NumCPU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NumCPU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.NumCPU"
 
-def NumCgoCall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NumCgoCall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.NumCgoCall"
 
-def totalMutexWaitTimeNanos [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def totalMutexWaitTimeNanos [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.totalMutexWaitTimeNanos"
 
-def NumGoroutine [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NumGoroutine [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.NumGoroutine"
 
-def debug_modinfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debug_modinfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debug_modinfo"
 
-def mayMoreStackPreempt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mayMoreStackPreempt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mayMoreStackPreempt"
 
-def mayMoreStackMove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mayMoreStackMove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mayMoreStackMove"
 
-def debugPinnerV1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugPinnerV1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugPinnerV1"
 
-def debugCallV2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugCallV2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugCallV2"
 
-def debugCallPanicked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugCallPanicked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugCallPanicked"
 
-def debugCallCheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugCallCheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugCallCheck"
 
-def debugCallWrap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugCallWrap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugCallWrap"
 
-def debugCallWrap1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugCallWrap1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugCallWrap1"
 
-def debugCallWrap2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def debugCallWrap2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.debugCallWrap2"
 
-def dlog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dlog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dlog"
 
-def dlogFake [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dlogFake [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dlogFake"
 
-def dlogImpl [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dlogImpl [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dlogImpl"
 
-def printDebugLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printDebugLog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printDebugLog"
 
-def printDebugLogImpl [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printDebugLogImpl [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printDebugLogImpl"
 
-def printDebugLogPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printDebugLogPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printDebugLogPC"
 
-def dlog1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dlog1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dlog1"
 
-def getCachedDlogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getCachedDlogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getCachedDlogger"
 
-def putCachedDlogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def putCachedDlogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.putCachedDlogger"
 
-def dit_setEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dit_setEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dit_setEnabled"
 
-def dit_setDisabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dit_setDisabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dit_setDisabled"
 
-def gogetenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gogetenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gogetenv"
 
-def envKeyEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def envKeyEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.envKeyEqual"
 
-def lowerASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lowerASCII [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lowerASCII"
 
-def setenv_c [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setenv_c [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setenv_c"
 
-def unsetenv_c [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsetenv_c [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsetenv_c"
 
-def cstring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cstring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cstring"
 
-def itoa [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itoa [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itoa"
 
-def appendIntStr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendIntStr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.appendIntStr"
 
-def printpanicval [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printpanicval [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printpanicval"
 
-def printanycustomtype [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printanycustomtype [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printanycustomtype"
 
-def printindented [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printindented [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printindented"
 
-def panicwrap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicwrap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicwrap"
 
-def Caller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Caller [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.Caller"
 
-def Callers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Callers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.Callers"
 
-def GOROOT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GOROOT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.GOROOT"
 
-def Version [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Version [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.Version"
 
-def fastlog2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fastlog2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fastlog2"
 
-def checkfds [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkfds [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkfds"
 
-def fips140_setBypass [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fips140_setBypass [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fips140_setBypass"
 
-def fips140_unsetBypass [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fips140_unsetBypass [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fips140_unsetBypass"
 
-def fips140_isBypassed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fips140_isBypassed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fips140_isBypassed"
 
-def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isNaN"
 
-def isFinite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isFinite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isFinite"
 
-def isInf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isInf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isInf"
 
-def abs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def abs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.abs"
 
-def copysign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copysign [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.copysign"
 
-def float64bits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float64bits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.float64bits"
 
-def float64frombits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float64frombits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.float64frombits"
 
-def floor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def floor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.floor"
 
-def ceil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ceil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ceil"
 
-def modf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def modf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.modf"
 
-def memhashFallback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhashFallback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhashFallback"
 
-def memhash32Fallback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash32Fallback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash32Fallback"
 
-def memhash64Fallback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memhash64Fallback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memhash64Fallback"
 
-def mix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mix"
 
-def r4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def r4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.r4"
 
-def r8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def r8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.r8"
 
-def runtime_debug_WriteHeapDump [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_debug_WriteHeapDump [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_debug_WriteHeapDump"
 
-def dwrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dwrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dwrite"
 
-def dwritebyte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dwritebyte [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dwritebyte"
 
-def flush [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def flush [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.flush"
 
-def dumpint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpint"
 
-def dumpbool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpbool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpbool"
 
-def dumpmemrange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpmemrange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpmemrange"
 
-def dumpslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpslice"
 
-def dumpstr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpstr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpstr"
 
-def dumptype [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumptype [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumptype"
 
-def dumpobj [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpobj [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpobj"
 
-def dumpotherroot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpotherroot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpotherroot"
 
-def dumpfinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpfinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpfinalizer"
 
-def dumpbv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpbv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpbv"
 
-def dumpframe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpframe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpframe"
 
-def dumpgoroutine [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpgoroutine [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpgoroutine"
 
-def dumpgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpgs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpgs"
 
-def finq_callback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finq_callback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finq_callback"
 
-def dumproots [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumproots [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumproots"
 
-def dumpobjs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpobjs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpobjs"
 
-def dumpparams [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpparams [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpparams"
 
-def itab_callback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itab_callback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itab_callback"
 
-def dumpitabs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpitabs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpitabs"
 
-def dumpms [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpms [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpms"
 
-def dumpmemstats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpmemstats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpmemstats"
 
-def dumpmemprof_callback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpmemprof_callback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpmemprof_callback"
 
-def dumpmemprof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpmemprof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpmemprof"
 
-def mdump [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mdump [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mdump"
 
-def writeheapdump_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeheapdump_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.writeheapdump_m"
 
-def dumpfields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpfields [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpfields"
 
-def makeheapobjbv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeheapobjbv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeheapobjbv"
 
-def hexdumpWords [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hexdumpWords [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.hexdumpWords"
 
-def float64Inf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float64Inf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.float64Inf"
 
-def float64NegInf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float64NegInf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.float64NegInf"
 
-def timeHistogramMetricsBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeHistogramMetricsBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timeHistogramMetricsBuckets"
 
-def itabHashFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itabHashFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itabHashFunc"
 
-def getitab [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getitab [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getitab"
 
-def itabAdd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itabAdd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itabAdd"
 
-def itabInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itabInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itabInit"
 
-def itabsinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itabsinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itabsinit"
 
-def panicdottypeE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicdottypeE [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicdottypeE"
 
-def panicdottypeI [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicdottypeI [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicdottypeI"
 
-def panicnildottype [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicnildottype [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicnildottype"
 
-def convT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.convT"
 
-def convTnoptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convTnoptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.convTnoptr"
 
-def convT16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convT16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.convT16"
 
-def convT32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convT32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.convT32"
 
-def convT64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convT64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.convT64"
 
-def convTstring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convTstring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.convTstring"
 
-def convTslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convTslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.convTslice"
 
-def assertE2I [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def assertE2I [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.assertE2I"
 
-def assertE2I2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def assertE2I2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.assertE2I2"
 
-def typeAssert [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeAssert [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typeAssert"
 
-def buildTypeAssertCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildTypeAssertCache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.buildTypeAssertCache"
 
-def interfaceSwitch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def interfaceSwitch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.interfaceSwitch"
 
-def buildInterfaceSwitchCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildInterfaceSwitchCache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.buildInterfaceSwitchCache"
 
-def reflect_ifaceE2I [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_ifaceE2I [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_ifaceE2I"
 
-def reflectlite_ifaceE2I [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectlite_ifaceE2I [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectlite_ifaceE2I"
 
-def iterate_itabs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def iterate_itabs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.iterate_itabs"
 
-def getStaticuint64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getStaticuint64s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getStaticuint64s"
 
-def unreachableMethod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unreachableMethod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unreachableMethod"
 
-def lfnodeValidate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lfnodeValidate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lfnodeValidate"
 
-def lfstackPack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lfstackPack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lfstackPack"
 
-def lfstackUnpack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lfstackUnpack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lfstackUnpack"
 
-def mapiterinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapiterinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapiterinit"
 
-def reflect_mapiterinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapiterinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapiterinit"
 
-def mapiternext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapiternext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapiternext"
 
-def reflect_mapiternext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapiternext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapiternext"
 
-def reflect_mapiterkey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapiterkey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapiterkey"
 
-def reflect_mapiterelem [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapiterelem [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapiterelem"
 
-def key32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def key32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.key32"
 
-def noteclear [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noteclear [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.noteclear"
 
-def notewakeup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notewakeup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notewakeup"
 
-def notesleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notesleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notesleep"
 
-def notetsleep_internal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notetsleep_internal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notetsleep_internal"
 
-def notetsleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notetsleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notetsleep"
 
-def notetsleepg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notetsleepg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notetsleepg"
 
-def beforeIdle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def beforeIdle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.beforeIdle"
 
-def checkTimeouts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkTimeouts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkTimeouts"
 
-def semacreate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def semacreate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.semacreate"
 
-def semasleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def semasleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.semasleep"
 
-def semawakeup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def semawakeup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.semawakeup"
 
-def key8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def key8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.key8"
 
-def lockVerifyMSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockVerifyMSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockVerifyMSize"
 
-def mutexWaitListHead [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexWaitListHead [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mutexWaitListHead"
 
-def mutexPreferLowLatency [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexPreferLowLatency [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mutexPreferLowLatency"
 
-def mutexContended [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexContended [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mutexContended"
 
-def lock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lock"
 
-def lock2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lock2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lock2"
 
-def unlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unlock"
 
-def unlock2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unlock2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unlock2"
 
-def mutexSampleContention [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexSampleContention [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mutexSampleContention"
 
-def unlock2Wake [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unlock2Wake [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unlock2Wake"
 
-def lockInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockInit"
 
-def getLockRank [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getLockRank [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getLockRank"
 
-def lockWithRank [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockWithRank [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockWithRank"
 
-def acquireLockRankAndM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acquireLockRankAndM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.acquireLockRankAndM"
 
-def unlockWithRank [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unlockWithRank [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unlockWithRank"
 
-def releaseLockRankAndM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def releaseLockRankAndM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.releaseLockRankAndM"
 
-def lockWithRankMayAcquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockWithRankMayAcquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockWithRankMayAcquire"
 
-def assertLockHeld [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def assertLockHeld [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.assertLockHeld"
 
-def assertRankHeld [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def assertRankHeld [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.assertRankHeld"
 
-def worldStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def worldStopped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.worldStopped"
 
-def worldStarted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def worldStarted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.worldStarted"
 
-def assertWorldStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def assertWorldStopped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.assertWorldStopped"
 
-def assertWorldStoppedOrLockHeld [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def assertWorldStoppedOrLockHeld [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.assertWorldStoppedOrLockHeld"
 
-def nextHeapRandBits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextHeapRandBits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nextHeapRandBits"
 
-def mallocinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocinit"
 
-def sysReserveAligned [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysReserveAligned [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysReserveAligned"
 
-def nextFreeFast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextFreeFast [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nextFreeFast"
 
-def mallocgc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgc"
 
-def mallocgcTiny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTiny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTiny"
 
-def mallocgcSmallNoscan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoscan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoscan"
 
-def mallocgcSmallNoscanReuse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoscanReuse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoscanReuse"
 
-def mallocgcSmallScanNoHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeader"
 
-def mallocgcSmallScanHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanHeader"
 
-def mallocgcLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcLarge"
 
-def preMallocgcDebug [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def preMallocgcDebug [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.preMallocgcDebug"
 
-def postMallocgcDebug [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def postMallocgcDebug [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.postMallocgcDebug"
 
-def deductAssistCredit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deductAssistCredit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deductAssistCredit"
 
-def addAssistCredit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addAssistCredit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addAssistCredit"
 
-def freegc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freegc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freegc"
 
-def doubleCheckNextReusable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckNextReusable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckNextReusable"
 
-def reusableSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reusableSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reusableSize"
 
-def memclrNoHeapPointersChunked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memclrNoHeapPointersChunked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memclrNoHeapPointersChunked"
 
-def newobject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newobject [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newobject"
 
-def maps_newobject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maps_newobject [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maps_newobject"
 
-def reflect_unsafe_New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_unsafe_New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_unsafe_New"
 
-def reflectlite_unsafe_New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectlite_unsafe_New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectlite_unsafe_New"
 
-def newarray [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newarray [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newarray"
 
-def reflect_unsafe_NewArray [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_unsafe_NewArray [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_unsafe_NewArray"
 
-def maps_newarray [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maps_newarray [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maps_newarray"
 
-def profilealloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def profilealloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.profilealloc"
 
-def nextSample [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextSample [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nextSample"
 
-def fastexprand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fastexprand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fastexprand"
 
-def persistentalloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def persistentalloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.persistentalloc"
 
-def persistentalloc1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def persistentalloc1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.persistentalloc1"
 
-def inPersistentAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inPersistentAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inPersistentAlloc"
 
-def redZoneSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def redZoneSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.redZoneSize"
 
-def mallocgcSmallScanNoHeaderSC1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC1"
 
-def mallocgcSmallScanNoHeaderSC2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC2"
 
-def mallocgcSmallScanNoHeaderSC3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC3"
 
-def mallocgcSmallScanNoHeaderSC4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC4"
 
-def mallocgcSmallScanNoHeaderSC5 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC5 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC5"
 
-def mallocgcSmallScanNoHeaderSC6 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC6 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC6"
 
-def mallocgcSmallScanNoHeaderSC7 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC7 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC7"
 
-def mallocgcSmallScanNoHeaderSC8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC8"
 
-def mallocgcSmallScanNoHeaderSC9 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC9 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC9"
 
-def mallocgcSmallScanNoHeaderSC10 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC10 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC10"
 
-def mallocgcSmallScanNoHeaderSC11 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC11 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC11"
 
-def mallocgcSmallScanNoHeaderSC12 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC12 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC12"
 
-def mallocgcSmallScanNoHeaderSC13 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC13 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC13"
 
-def mallocgcSmallScanNoHeaderSC14 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC14 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC14"
 
-def mallocgcSmallScanNoHeaderSC15 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC15 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC15"
 
-def mallocgcSmallScanNoHeaderSC16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC16"
 
-def mallocgcSmallScanNoHeaderSC17 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC17 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC17"
 
-def mallocgcSmallScanNoHeaderSC18 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC18 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC18"
 
-def mallocgcSmallScanNoHeaderSC19 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC19 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC19"
 
-def mallocgcSmallScanNoHeaderSC20 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC20 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC20"
 
-def mallocgcSmallScanNoHeaderSC21 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC21 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC21"
 
-def mallocgcSmallScanNoHeaderSC22 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC22 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC22"
 
-def mallocgcSmallScanNoHeaderSC23 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC23 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC23"
 
-def mallocgcSmallScanNoHeaderSC24 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC24 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC24"
 
-def mallocgcSmallScanNoHeaderSC25 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC25 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC25"
 
-def mallocgcSmallScanNoHeaderSC26 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallScanNoHeaderSC26 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallScanNoHeaderSC26"
 
-def mallocgcTinySize1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize1"
 
-def mallocgcTinySize2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize2"
 
-def mallocgcTinySize3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize3"
 
-def mallocgcTinySize4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize4"
 
-def mallocgcTinySize5 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize5 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize5"
 
-def mallocgcTinySize6 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize6 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize6"
 
-def mallocgcTinySize7 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize7 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize7"
 
-def mallocgcTinySize8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize8"
 
-def mallocgcTinySize9 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize9 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize9"
 
-def mallocgcTinySize10 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize10 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize10"
 
-def mallocgcTinySize11 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize11 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize11"
 
-def mallocgcTinySize12 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize12 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize12"
 
-def mallocgcTinySize13 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize13 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize13"
 
-def mallocgcTinySize14 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize14 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize14"
 
-def mallocgcTinySize15 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcTinySize15 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcTinySize15"
 
-def mallocgcSmallNoScanSC2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC2"
 
-def mallocgcSmallNoScanSC3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC3"
 
-def mallocgcSmallNoScanSC4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC4"
 
-def mallocgcSmallNoScanSC5 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC5 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC5"
 
-def mallocgcSmallNoScanSC6 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC6 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC6"
 
-def mallocgcSmallNoScanSC7 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC7 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC7"
 
-def mallocgcSmallNoScanSC8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC8"
 
-def mallocgcSmallNoScanSC9 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC9 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC9"
 
-def mallocgcSmallNoScanSC10 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC10 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC10"
 
-def mallocgcSmallNoScanSC11 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC11 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC11"
 
-def mallocgcSmallNoScanSC12 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC12 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC12"
 
-def mallocgcSmallNoScanSC13 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC13 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC13"
 
-def mallocgcSmallNoScanSC14 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC14 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC14"
 
-def mallocgcSmallNoScanSC15 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC15 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC15"
 
-def mallocgcSmallNoScanSC16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC16"
 
-def mallocgcSmallNoScanSC17 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC17 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC17"
 
-def mallocgcSmallNoScanSC18 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC18 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC18"
 
-def mallocgcSmallNoScanSC19 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC19 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC19"
 
-def mallocgcSmallNoScanSC20 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC20 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC20"
 
-def mallocgcSmallNoScanSC21 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC21 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC21"
 
-def mallocgcSmallNoScanSC22 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC22 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC22"
 
-def mallocgcSmallNoScanSC23 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC23 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC23"
 
-def mallocgcSmallNoScanSC24 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC24 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC24"
 
-def mallocgcSmallNoScanSC25 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC25 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC25"
 
-def mallocgcSmallNoScanSC26 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocgcSmallNoScanSC26 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocgcSmallNoScanSC26"
 
-def malloc0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def malloc0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.malloc0"
 
-def mallocPanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocPanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocPanic"
 
-def mallocStub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mallocStub [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mallocStub"
 
-def inlinedMalloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inlinedMalloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inlinedMalloc"
 
-def doubleCheckSmallScanNoHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckSmallScanNoHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckSmallScanNoHeader"
 
-def smallScanNoHeaderStub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def smallScanNoHeaderStub [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.smallScanNoHeaderStub"
 
-def doubleCheckSmallNoScan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckSmallNoScan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckSmallNoScan"
 
-def smallNoScanStub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def smallNoScanStub [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.smallNoScanStub"
 
-def doubleCheckTiny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckTiny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckTiny"
 
-def tinyStub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tinyStub [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tinyStub"
 
-def nextFreeFastTiny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextFreeFastTiny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nextFreeFastTiny"
 
-def nextFreeFastStub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextFreeFastStub [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nextFreeFastStub"
 
-def heapSetTypeNoHeaderStub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSetTypeNoHeaderStub [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapSetTypeNoHeaderStub"
 
-def writeHeapBitsSmallStub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeHeapBitsSmallStub [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.writeHeapBitsSmallStub"
 
-def writeHeapBitsDoubleCheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeHeapBitsDoubleCheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.writeHeapBitsDoubleCheck"
 
-def makemap64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makemap64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makemap64"
 
-def makemap_small [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makemap_small [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makemap_small"
 
-def makemap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makemap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makemap"
 
-def mapaccess1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess1"
 
-def mapaccess2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess2"
 
-def mapaccess1_fat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess1_fat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess1_fat"
 
-def mapaccess2_fat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess2_fat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess2_fat"
 
-def mapassign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapassign [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapassign"
 
-def mapdelete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapdelete [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapdelete"
 
-def mapIterStart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapIterStart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapIterStart"
 
-def mapIterNext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapIterNext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapIterNext"
 
-def mapclear [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapclear [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapclear"
 
-def reflect_makemap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_makemap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_makemap"
 
-def reflect_mapaccess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapaccess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapaccess"
 
-def reflect_mapaccess_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapaccess_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapaccess_faststr"
 
-def reflect_mapassign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapassign [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapassign"
 
-def reflect_mapassign_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapassign_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapassign_faststr"
 
-def reflect_mapdelete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapdelete [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapdelete"
 
-def reflect_mapdelete_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapdelete_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapdelete_faststr"
 
-def reflect_maplen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_maplen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_maplen"
 
-def reflect_mapclear [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_mapclear [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_mapclear"
 
-def reflectlite_maplen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectlite_maplen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectlite_maplen"
 
-def mapinitnoop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapinitnoop [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapinitnoop"
 
-def mapclone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapclone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapclone"
 
-def mapaccess1_fast32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess1_fast32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess1_fast32"
 
-def mapaccess2_fast32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess2_fast32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess2_fast32"
 
-def mapassign_fast32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapassign_fast32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapassign_fast32"
 
-def mapassign_fast32ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapassign_fast32ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapassign_fast32ptr"
 
-def mapdelete_fast32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapdelete_fast32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapdelete_fast32"
 
-def mapaccess1_fast64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess1_fast64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess1_fast64"
 
-def mapaccess2_fast64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess2_fast64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess2_fast64"
 
-def mapassign_fast64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapassign_fast64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapassign_fast64"
 
-def mapassign_fast64ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapassign_fast64ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapassign_fast64ptr"
 
-def mapdelete_fast64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapdelete_fast64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapdelete_fast64"
 
-def mapaccess1_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess1_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess1_faststr"
 
-def mapaccess2_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapaccess2_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapaccess2_faststr"
 
-def mapassign_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapassign_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapassign_faststr"
 
-def mapdelete_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapdelete_faststr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mapdelete_faststr"
 
-def typedmemmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typedmemmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typedmemmove"
 
-def wbZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wbZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wbZero"
 
-def wbMove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wbMove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wbMove"
 
-def reflect_typedmemmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_typedmemmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_typedmemmove"
 
-def reflectlite_typedmemmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectlite_typedmemmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectlite_typedmemmove"
 
-def maps_typedmemmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maps_typedmemmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maps_typedmemmove"
 
-def reflectcallmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectcallmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectcallmove"
 
-def typedslicecopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typedslicecopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typedslicecopy"
 
-def reflect_typedslicecopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_typedslicecopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_typedslicecopy"
 
-def typedmemclr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typedmemclr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typedmemclr"
 
-def reflect_typedmemclr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_typedmemclr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_typedmemclr"
 
-def maps_typedmemclr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maps_typedmemclr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maps_typedmemclr"
 
-def reflect_typedmemclrpartial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_typedmemclrpartial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_typedmemclrpartial"
 
-def reflect_typedarrayclear [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_typedarrayclear [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_typedarrayclear"
 
-def memclrHasPointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memclrHasPointers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memclrHasPointers"
 
-def heapBitsInSpan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapBitsInSpan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapBitsInSpan"
 
-def bulkBarrierPreWrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bulkBarrierPreWrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bulkBarrierPreWrite"
 
-def bulkBarrierPreWriteSrcOnly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bulkBarrierPreWriteSrcOnly [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bulkBarrierPreWriteSrcOnly"
 
-def heapBitsSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapBitsSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapBitsSlice"
 
-def spanHeapBitsRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanHeapBitsRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanHeapBitsRange"
 
-def heapSetTypeNoHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSetTypeNoHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapSetTypeNoHeader"
 
-def heapSetTypeSmallHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSetTypeSmallHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapSetTypeSmallHeader"
 
-def heapSetTypeLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSetTypeLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapSetTypeLarge"
 
-def doubleCheckHeapType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckHeapType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckHeapType"
 
-def doubleCheckHeapPointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckHeapPointers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckHeapPointers"
 
-def doubleCheckHeapPointersInterior [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckHeapPointersInterior [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckHeapPointersInterior"
 
-def doubleCheckTypePointersOfType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doubleCheckTypePointersOfType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doubleCheckTypePointersOfType"
 
-def dumpTypePointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpTypePointers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpTypePointers"
 
-def addb [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addb [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addb"
 
-def subtractb [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subtractb [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.subtractb"
 
-def add1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def add1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.add1"
 
-def subtract1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subtract1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.subtract1"
 
-def markBitsForAddr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def markBitsForAddr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.markBitsForAddr"
 
-def markBitsForSpan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def markBitsForSpan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.markBitsForSpan"
 
-def isMarkedOrNotInHeap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isMarkedOrNotInHeap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isMarkedOrNotInHeap"
 
-def badPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badPointer"
 
-def findObject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findObject [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findObject"
 
-def reflect_verifyNotInHeapPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_verifyNotInHeapPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_verifyNotInHeapPtr"
 
-def bulkBarrierBitmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bulkBarrierBitmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bulkBarrierBitmap"
 
-def typeBitsBulkBarrier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeBitsBulkBarrier [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typeBitsBulkBarrier"
 
-def readUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readUintptr"
 
-def progToPointerMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def progToPointerMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.progToPointerMask"
 
-def runGCProg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runGCProg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runGCProg"
 
-def dumpGCProg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpGCProg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpGCProg"
 
-def reflect_gcbits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_gcbits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_gcbits"
 
-def pointerMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pointerMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pointerMask"
 
-def allocmcache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allocmcache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allocmcache"
 
-def freemcache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freemcache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freemcache"
 
-def getMCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMCache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getMCache"
 
-def startCheckmarks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startCheckmarks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startCheckmarks"
 
-def endCheckmarks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def endCheckmarks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.endCheckmarks"
 
-def setCheckmark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setCheckmark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setCheckmark"
 
-def getCheckmark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getCheckmark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getCheckmark"
 
-def runCheckmark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runCheckmark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runCheckmark"
 
-def checkFinalizersAndCleanups [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkFinalizersAndCleanups [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkFinalizersAndCleanups"
 
-def forEachSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forEachSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forEachSpecial"
 
-def AddCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.AddCleanup"
 
-def callCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def callCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.callCleanup"
 
-def maxCleanupGs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxCleanupGs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maxCleanupGs"
 
-def runCleanups [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runCleanups [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runCleanups"
 
-def unique_runtime_blockUntilEmptyCleanupQueue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unique_runtime_blockUntilEmptyCleanupQueue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unique_runtime_blockUntilEmptyCleanupQueue"
 
-def sync_test_runtime_blockUntilEmptyCleanupQueue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_test_runtime_blockUntilEmptyCleanupQueue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_test_runtime_blockUntilEmptyCleanupQueue"
 
-def raceEnterNewCtx [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceEnterNewCtx [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceEnterNewCtx"
 
-def raceRestoreCtx [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceRestoreCtx [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceRestoreCtx"
 
-def sysAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysAlloc"
 
-def sysUnused [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysUnused [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysUnused"
 
-def needZeroAfterSysUnused [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needZeroAfterSysUnused [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.needZeroAfterSysUnused"
 
-def sysUsed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysUsed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysUsed"
 
-def sysHugePage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysHugePage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysHugePage"
 
-def sysNoHugePage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysNoHugePage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysNoHugePage"
 
-def sysHugePageCollapse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysHugePageCollapse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysHugePageCollapse"
 
-def sysFree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysFree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysFree"
 
-def sysFault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysFault [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysFault"
 
-def sysReserve [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysReserve [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysReserve"
 
-def sysMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysMap"
 
-def sysAllocOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysAllocOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysAllocOS"
 
-def sysUnusedOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysUnusedOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysUnusedOS"
 
-def sysUsedOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysUsedOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysUsedOS"
 
-def sysHugePageOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysHugePageOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysHugePageOS"
 
-def sysNoHugePageOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysNoHugePageOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysNoHugePageOS"
 
-def sysHugePageCollapseOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysHugePageCollapseOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysHugePageCollapseOS"
 
-def sysFreeOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysFreeOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysFreeOS"
 
-def sysFaultOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysFaultOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysFaultOS"
 
-def sysReserveOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysReserveOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysReserveOS"
 
-def sysMapOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysMapOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysMapOS"
 
-def needZeroAfterSysUnusedOS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needZeroAfterSysUnusedOS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.needZeroAfterSysUnusedOS"
 
-def sysReserveAlignedSbrk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysReserveAlignedSbrk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysReserveAlignedSbrk"
 
-def metricsLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def metricsLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.metricsLock"
 
-def metricsUnlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def metricsUnlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.metricsUnlock"
 
-def initMetrics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initMetrics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.initMetrics"
 
-def compute0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compute0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.compute0"
 
-def godebug_registerMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def godebug_registerMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.godebug_registerMetric"
 
-def makeStatDepSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStatDepSet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeStatDepSet"
 
-def nsToSec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nsToSec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nsToSec"
 
-def readMetricNames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readMetricNames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readMetricNames"
 
-def readMetrics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readMetrics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readMetrics"
 
-def readMetricsLocked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readMetricsLocked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readMetricsLocked"
 
-def lockRankMayQueueFinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockRankMayQueueFinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockRankMayQueueFinalizer"
 
-def queuefinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def queuefinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.queuefinalizer"
 
-def iterate_finq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def iterate_finq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.iterate_finq"
 
-def wakefing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wakefing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wakefing"
 
-def createfing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def createfing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.createfing"
 
-def finalizercommit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finalizercommit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finalizercommit"
 
-def finReadQueueStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finReadQueueStats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finReadQueueStats"
 
-def runFinalizers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runFinalizers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runFinalizers"
 
-def isGoPointerWithoutSpan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isGoPointerWithoutSpan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isGoPointerWithoutSpan"
 
-def blockUntilEmptyFinalizerQueue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockUntilEmptyFinalizerQueue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.blockUntilEmptyFinalizerQueue"
 
-def SetFinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetFinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.SetFinalizer"
 
-def KeepAlive [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def KeepAlive [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.KeepAlive"
 
-def heapObjectsCanMove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapObjectsCanMove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapObjectsCanMove"
 
-def gcinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcinit"
 
-def gcenable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcenable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcenable"
 
-def setGCPhase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setGCPhase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setGCPhase"
 
-def pollFractionalWorkerExit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pollFractionalWorkerExit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pollFractionalWorkerExit"
 
-def GC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.GC"
 
-def goroutineLeakGC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineLeakGC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineLeakGC"
 
-def gcWaitOnMark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWaitOnMark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWaitOnMark"
 
-def gcStart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcStart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcStart"
 
-def gcMarkDone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcMarkDone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcMarkDone"
 
-def findMaybeRunnableGoroutines [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findMaybeRunnableGoroutines [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findMaybeRunnableGoroutines"
 
-def setSyncObjectsUntraceable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setSyncObjectsUntraceable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setSyncObjectsUntraceable"
 
-def gcRestoreSyncObjects [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcRestoreSyncObjects [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcRestoreSyncObjects"
 
-def findGoroutineLeaks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findGoroutineLeaks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findGoroutineLeaks"
 
-def gcMarkTermination [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcMarkTermination [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcMarkTermination"
 
-def gcBgMarkStartWorkers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcBgMarkStartWorkers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcBgMarkStartWorkers"
 
-def gcBgMarkPrepare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcBgMarkPrepare [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcBgMarkPrepare"
 
-def gcBgMarkWorker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcBgMarkWorker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcBgMarkWorker"
 
-def gcShouldScheduleWorker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcShouldScheduleWorker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcShouldScheduleWorker"
 
-def gcIsMarkDone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcIsMarkDone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcIsMarkDone"
 
-def gcBeginWork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcBeginWork [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcBeginWork"
 
-def gcEndWork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcEndWork [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcEndWork"
 
-def gcMark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcMark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcMark"
 
-def gcSweep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcSweep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcSweep"
 
-def gcResetMarkState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcResetMarkState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcResetMarkState"
 
-def sync_runtime_registerPoolCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_registerPoolCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_registerPoolCleanup"
 
-def boring_registerCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def boring_registerCache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.boring_registerCache"
 
-def clearpools [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clearpools [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.clearpools"
 
-def itoaDiv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itoaDiv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.itoaDiv"
 
-def fmtNSAsMS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmtNSAsMS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmtNSAsMS"
 
-def gcTestMoveStackOnNextCall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcTestMoveStackOnNextCall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcTestMoveStackOnNextCall"
 
-def gcTestIsReachable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcTestIsReachable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcTestIsReachable"
 
-def gcTestPointerClass [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcTestPointerClass [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcTestPointerClass"
 
-def makeLimiterEventStamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeLimiterEventStamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeLimiterEventStamp"
 
-def allGsSnapshotSortedForGC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allGsSnapshotSortedForGC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allGsSnapshotSortedForGC"
 
-def gcPrepareMarkRoots [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcPrepareMarkRoots [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcPrepareMarkRoots"
 
-def gcMarkRootCheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcMarkRootCheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcMarkRootCheck"
 
-def markroot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def markroot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.markroot"
 
-def markrootBlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def markrootBlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.markrootBlock"
 
-def markrootFreeGStacks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def markrootFreeGStacks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.markrootFreeGStacks"
 
-def markrootSpans [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def markrootSpans [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.markrootSpans"
 
-def gcScanFinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcScanFinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcScanFinalizer"
 
-def gcScanCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcScanCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcScanCleanup"
 
-def gcAssistAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcAssistAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcAssistAlloc"
 
-def gcAssistAlloc1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcAssistAlloc1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcAssistAlloc1"
 
-def gcWakeAllAssists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWakeAllAssists [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWakeAllAssists"
 
-def gcParkAssist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcParkAssist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcParkAssist"
 
-def gcFlushBgCredit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcFlushBgCredit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcFlushBgCredit"
 
-def scanstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scanstack"
 
-def scanframeworker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanframeworker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scanframeworker"
 
-def gcDrainMarkWorkerIdle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcDrainMarkWorkerIdle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcDrainMarkWorkerIdle"
 
-def gcDrainMarkWorkerDedicated [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcDrainMarkWorkerDedicated [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcDrainMarkWorkerDedicated"
 
-def gcDrainMarkWorkerFractional [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcDrainMarkWorkerFractional [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcDrainMarkWorkerFractional"
 
-def gcNextMarkRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcNextMarkRoot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcNextMarkRoot"
 
-def gcDrain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcDrain [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcDrain"
 
-def gcDrainN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcDrainN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcDrainN"
 
-def scanblock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanblock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scanblock"
 
-def scanConservative [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanConservative [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scanConservative"
 
-def shade [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shade [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.shade"
 
-def greyobject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def greyobject [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.greyobject"
 
-def gcDumpObject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcDumpObject [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcDumpObject"
 
-def gcmarknewobject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcmarknewobject [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcmarknewobject"
 
-def gcMarkTinyAllocs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcMarkTinyAllocs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcMarkTinyAllocs"
 
-def spanInlineMarkBitsFromBase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanInlineMarkBitsFromBase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanInlineMarkBitsFromBase"
 
-def gcUsesSpanInlineMarkBits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcUsesSpanInlineMarkBits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcUsesSpanInlineMarkBits"
 
-def tryDeferToSpanScan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tryDeferToSpanScan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tryDeferToSpanScan"
 
-def newSpanSPMC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSpanSPMC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newSpanSPMC"
 
-def freeDeadSpanSPMCs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freeDeadSpanSPMCs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freeDeadSpanSPMCs"
 
-def makeObjPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeObjPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeObjPtr"
 
-def scanSpan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanSpan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scanSpan"
 
-def spanSetScans [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanSetScans [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanSetScans"
 
-def scanObjectSmall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanObjectSmall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scanObjectSmall"
 
-def scanObjectsSmall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanObjectsSmall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scanObjectsSmall"
 
-def extractHeapBitsSmall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extractHeapBitsSmall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.extractHeapBitsSmall"
 
-def spanPtrMaskUnsafe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanPtrMaskUnsafe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanPtrMaskUnsafe"
 
-def dumpScanStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpScanStats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpScanStats"
 
-def gcMarkWorkAvailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcMarkWorkAvailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcMarkWorkAvailable"
 
-def scanObject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanObject [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.scanObject"
 
-def setGCPercent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setGCPercent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setGCPercent"
 
-def readGOGC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readGOGC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readGOGC"
 
-def setMemoryLimit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setMemoryLimit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setMemoryLimit"
 
-def readGOMEMLIMIT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readGOMEMLIMIT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readGOMEMLIMIT"
 
-def gcControllerCommit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcControllerCommit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcControllerCommit"
 
-def heapRetained [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapRetained [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapRetained"
 
-def gcPaceScavenger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcPaceScavenger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcPaceScavenger"
 
-def bgscavenge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bgscavenge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bgscavenge"
 
-def printScavTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printScavTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printScavTrace"
 
-def fillAligned [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fillAligned [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fillAligned"
 
-def unpackScavChunkData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unpackScavChunkData [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unpackScavChunkData"
 
-def binarySearchTree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def binarySearchTree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.binarySearchTree"
 
-def finishsweep_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finishsweep_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finishsweep_m"
 
-def bgsweep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bgsweep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bgsweep"
 
-def sweepone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sweepone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sweepone"
 
-def isSweepDone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSweepDone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isSweepDone"
 
-def deductSweepCredit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deductSweepCredit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deductSweepCredit"
 
-def clobberfree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clobberfree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.clobberfree"
 
-def gcPaceSweeper [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcPaceSweeper [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcPaceSweeper"
 
-def getempty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getempty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getempty"
 
-def putempty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def putempty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.putempty"
 
-def putfull [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def putfull [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.putfull"
 
-def trygetfull [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trygetfull [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.trygetfull"
 
-def handoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def handoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.handoff"
 
-def prepareFreeWorkbufs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prepareFreeWorkbufs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.prepareFreeWorkbufs"
 
-def freeSomeWbufs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freeSomeWbufs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freeSomeWbufs"
 
-def recordspan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recordspan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.recordspan"
 
-def makeSpanClass [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeSpanClass [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeSpanClass"
 
-def arenaIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def arenaIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.arenaIndex"
 
-def arenaBase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def arenaBase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.arenaBase"
 
-def inheap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inheap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inheap"
 
-def inHeapOrStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inHeapOrStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inHeapOrStack"
 
-def spanOf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanOf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanOf"
 
-def spanOfUnchecked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanOfUnchecked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanOfUnchecked"
 
-def spanOfHeap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanOfHeap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanOfHeap"
 
-def pageIndexOf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pageIndexOf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pageIndexOf"
 
-def heapArenaOf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapArenaOf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.heapArenaOf"
 
-def runtime_debug_freeOSMemory [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_debug_freeOSMemory [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_debug_freeOSMemory"
 
-def spanHasSpecials [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanHasSpecials [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanHasSpecials"
 
-def spanHasNoSpecials [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanHasNoSpecials [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spanHasNoSpecials"
 
-def addspecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addspecial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addspecial"
 
-def removespecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removespecial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.removespecial"
 
-def addfinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addfinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addfinalizer"
 
-def removefinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removefinalizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.removefinalizer"
 
-def addCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addCleanup"
 
-def setFinalizerContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setFinalizerContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setFinalizerContext"
 
-def setCleanupContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setCleanupContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setCleanupContext"
 
-def getCleanupContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getCleanupContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getCleanupContext"
 
-def clearFinalizerContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clearFinalizerContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.clearFinalizerContext"
 
-def clearCleanupContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clearCleanupContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.clearCleanupContext"
 
-def setTinyBlockContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setTinyBlockContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setTinyBlockContext"
 
-def inTinyBlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inTinyBlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inTinyBlock"
 
-def internal_weak_runtime_registerWeakPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_weak_runtime_registerWeakPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_weak_runtime_registerWeakPointer"
 
-def internal_weak_runtime_makeStrongFromWeak [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_weak_runtime_makeStrongFromWeak [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_weak_runtime_makeStrongFromWeak"
 
-def gcParkStrongFromWeak [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcParkStrongFromWeak [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcParkStrongFromWeak"
 
-def gcWakeAllStrongFromWeak [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWakeAllStrongFromWeak [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWakeAllStrongFromWeak"
 
-def getOrAddWeakHandle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getOrAddWeakHandle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getOrAddWeakHandle"
 
-def getWeakHandle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getWeakHandle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getWeakHandle"
 
-def setprofilebucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setprofilebucket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setprofilebucket"
 
-def newSpecialsIter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSpecialsIter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newSpecialsIter"
 
-def freeSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freeSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freeSpecial"
 
-def newMarkBits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newMarkBits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newMarkBits"
 
-def newAllocBits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newAllocBits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newAllocBits"
 
-def nextMarkBitArenaEpoch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextMarkBitArenaEpoch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nextMarkBitArenaEpoch"
 
-def newArenaMayUnlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newArenaMayUnlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newArenaMayUnlock"
 
-def strmin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def strmin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.strmin"
 
-def strmax [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def strmax [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.strmax"
 
-def fmin32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmin32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmin32"
 
-def fmin64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmin64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmin64"
 
-def fmax32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmax32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmax32"
 
-def fmax64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmax64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmax64"
 
-def fmin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmin"
 
-def fmax [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmax [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmax"
 
-def forbits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forbits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forbits"
 
-def fandbits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fandbits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fandbits"
 
-def maxSearchAddr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxSearchAddr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maxSearchAddr"
 
-def chunkIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chunkIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chunkIndex"
 
-def chunkBase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chunkBase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chunkBase"
 
-def chunkPageIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chunkPageIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.chunkPageIndex"
 
-def offAddrToLevelIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def offAddrToLevelIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.offAddrToLevelIndex"
 
-def levelIndexToOffAddr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def levelIndexToOffAddr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.levelIndexToOffAddr"
 
-def addrsToSummaryRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addrsToSummaryRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addrsToSummaryRange"
 
-def blockAlignSummaryRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockAlignSummaryRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.blockAlignSummaryRange"
 
-def packPallocSum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def packPallocSum [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.packPallocSum"
 
-def mergeSummaries [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeSummaries [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mergeSummaries"
 
-def findBitRange64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findBitRange64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findBitRange64"
 
-def newBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newBucket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newBucket"
 
-def stkbucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stkbucket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stkbucket"
 
-def eqslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def eqslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.eqslice"
 
-def mProf_NextCycle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mProf_NextCycle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mProf_NextCycle"
 
-def mProf_Flush [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mProf_Flush [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mProf_Flush"
 
-def mProf_FlushLocked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mProf_FlushLocked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mProf_FlushLocked"
 
-def mProf_PostSweep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mProf_PostSweep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mProf_PostSweep"
 
-def mProf_Malloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mProf_Malloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mProf_Malloc"
 
-def mProf_Free [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mProf_Free [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mProf_Free"
 
-def SetBlockProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetBlockProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.SetBlockProfileRate"
 
-def blockevent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockevent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.blockevent"
 
-def blocksampled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blocksampled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.blocksampled"
 
-def saveblockevent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def saveblockevent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.saveblockevent"
 
-def fpTracebackPartialExpand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fpTracebackPartialExpand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fpTracebackPartialExpand"
 
-def saveBlockEventStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def saveBlockEventStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.saveBlockEventStack"
 
-def SetMutexProfileFraction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetMutexProfileFraction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.SetMutexProfileFraction"
 
-def mutexevent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexevent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mutexevent"
 
-def MemProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MemProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.MemProfile"
 
-def memProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memProfileInternal"
 
-def copyMemProfileRecord [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyMemProfileRecord [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.copyMemProfileRecord"
 
-def pprof_memProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_memProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_memProfileInternal"
 
-def iterate_memprof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def iterate_memprof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.iterate_memprof"
 
-def BlockProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BlockProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.BlockProfile"
 
-def expandFrames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def expandFrames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.expandFrames"
 
-def blockProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.blockProfileInternal"
 
-def copyBlockProfileRecord [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyBlockProfileRecord [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.copyBlockProfileRecord"
 
-def pprof_blockProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_blockProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_blockProfileInternal"
 
-def MutexProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MutexProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.MutexProfile"
 
-def mutexProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mutexProfileInternal"
 
-def pprof_mutexProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_mutexProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_mutexProfileInternal"
 
-def ThreadCreateProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ThreadCreateProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ThreadCreateProfile"
 
-def threadCreateProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def threadCreateProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.threadCreateProfileInternal"
 
-def pprof_threadCreateInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_threadCreateInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_threadCreateInternal"
 
-def pprof_goroutineProfileWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_goroutineProfileWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_goroutineProfileWithLabels"
 
-def goroutineProfileWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineProfileWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineProfileWithLabels"
 
-def pprof_goroutineLeakProfileWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_goroutineLeakProfileWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_goroutineLeakProfileWithLabels"
 
-def goroutineLeakProfileWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineLeakProfileWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineLeakProfileWithLabels"
 
-def goroutineLeakProfileWithLabelsConcurrent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineLeakProfileWithLabelsConcurrent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineLeakProfileWithLabelsConcurrent"
 
-def goroutineProfileWithLabelsConcurrent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineProfileWithLabelsConcurrent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineProfileWithLabelsConcurrent"
 
-def tryRecordGoroutineProfileWB [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tryRecordGoroutineProfileWB [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tryRecordGoroutineProfileWB"
 
-def tryRecordGoroutineProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tryRecordGoroutineProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tryRecordGoroutineProfile"
 
-def doRecordGoroutineProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doRecordGoroutineProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doRecordGoroutineProfile"
 
-def goroutineProfileWithLabelsSync [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineProfileWithLabelsSync [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineProfileWithLabelsSync"
 
-def GoroutineProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GoroutineProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.GoroutineProfile"
 
-def goroutineProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineProfileInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineProfileInternal"
 
-def saveg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def saveg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.saveg"
 
-def Stack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.Stack"
 
-def makeAddrRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeAddrRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeAddrRange"
 
-def msanread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msanread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.msanread"
 
-def msanwrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msanwrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.msanwrite"
 
-def msanmalloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msanmalloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.msanmalloc"
 
-def msanfree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msanfree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.msanfree"
 
-def msanmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msanmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.msanmove"
 
-def roundupsize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def roundupsize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.roundupsize"
 
-def makeHeadTailIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeHeadTailIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeHeadTailIndex"
 
-def ReadMemStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadMemStats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ReadMemStats"
 
-def readmemstats_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readmemstats_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readmemstats_m"
 
-def readGCStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readGCStats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readGCStats"
 
-def readGCStats_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readGCStats_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readGCStats_m"
 
-def flushmcache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def flushmcache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.flushmcache"
 
-def flushallmcaches [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def flushallmcaches [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.flushallmcaches"
 
-def wbBufFlush [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wbBufFlush [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wbBufFlush"
 
-def wbBufFlush1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wbBufFlush1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wbBufFlush1"
 
-def nonblockingPipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nonblockingPipe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nonblockingPipe"
 
-def poll_runtime_pollServerInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_pollServerInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_pollServerInit"
 
-def netpollGenericInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollGenericInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollGenericInit"
 
-def netpollinited [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollinited [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollinited"
 
-def poll_runtime_isPollServerDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_isPollServerDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_isPollServerDescriptor"
 
-def poll_runtime_pollOpen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_pollOpen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_pollOpen"
 
-def poll_runtime_pollClose [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_pollClose [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_pollClose"
 
-def poll_runtime_pollReset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_pollReset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_pollReset"
 
-def poll_runtime_pollWait [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_pollWait [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_pollWait"
 
-def poll_runtime_pollWaitCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_pollWaitCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_pollWaitCanceled"
 
-def poll_runtime_pollSetDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_pollSetDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_pollSetDeadline"
 
-def poll_runtime_pollUnblock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_pollUnblock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_pollUnblock"
 
-def netpollready [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollready [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollready"
 
-def netpollcheckerr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollcheckerr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollcheckerr"
 
-def netpollblockcommit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollblockcommit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollblockcommit"
 
-def netpollgoready [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollgoready [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollgoready"
 
-def netpollblock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollblock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollblock"
 
-def netpollunblock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollunblock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollunblock"
 
-def netpolldeadlineimpl [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpolldeadlineimpl [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpolldeadlineimpl"
 
-def netpollDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollDeadline"
 
-def netpollReadDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollReadDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollReadDeadline"
 
-def netpollWriteDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollWriteDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollWriteDeadline"
 
-def netpollAnyWaiters [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollAnyWaiters [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollAnyWaiters"
 
-def netpollAdjustWaiters [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollAdjustWaiters [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollAdjustWaiters"
 
-def netpollinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollinit"
 
-def netpollIsPollDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollIsPollDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollIsPollDescriptor"
 
-def netpollopen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollopen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollopen"
 
-def netpollclose [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollclose [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollclose"
 
-def netpollarm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollarm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollarm"
 
-def netpollBreak [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpollBreak [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpollBreak"
 
-def netpoll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def netpoll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.netpoll"
 
-def osRelax [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osRelax [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osRelax"
 
-def enableWER [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def enableWER [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.enableWER"
 
-def futexsleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def futexsleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.futexsleep"
 
-def futexwakeup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def futexwakeup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.futexwakeup"
 
-def getCPUCount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getCPUCount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getCPUCount"
 
-def clone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.clone"
 
-def newosproc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newosproc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newosproc"
 
-def newosproc0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newosproc0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newosproc0"
 
-def mincore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mincore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mincore"
 
-def sysargs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysargs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysargs"
 
-def sysauxv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysauxv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysauxv"
 
-def getHugePageSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getHugePageSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getHugePageSize"
 
-def osinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osinit"
 
-def readRandom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readRandom [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readRandom"
 
-def goenvs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goenvs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goenvs"
 
-def libpreinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def libpreinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.libpreinit"
 
-def mpreinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mpreinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mpreinit"
 
-def gettid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gettid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gettid"
 
-def minit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.minit"
 
-def unminit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unminit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unminit"
 
-def mdestroy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mdestroy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mdestroy"
 
-def sigreturn__sigaction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigreturn__sigaction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigreturn__sigaction"
 
-def sigtramp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigtramp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigtramp"
 
-def cgoSigtramp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoSigtramp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoSigtramp"
 
-def sigaltstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigaltstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigaltstack"
 
-def setitimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setitimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setitimer"
 
-def timer_create [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timer_create [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timer_create"
 
-def timer_delete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timer_delete [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timer_delete"
 
-def rtsigprocmask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rtsigprocmask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rtsigprocmask"
 
-def sigprocmask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigprocmask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigprocmask"
 
-def raise [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raise [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raise"
 
-def raiseproc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raiseproc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raiseproc"
 
-def sched_getaffinity [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sched_getaffinity [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sched_getaffinity"
 
-def osyield [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osyield [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osyield"
 
-def osyield_no_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osyield_no_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osyield_no_g"
 
-def pipe2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pipe2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pipe2"
 
-def fcntl [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fcntl [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fcntl"
 
-def setsig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setsig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setsig"
 
-def setsigstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setsigstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setsigstack"
 
-def getsig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getsig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getsig"
 
-def setSignalstackSP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setSignalstackSP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setSignalstackSP"
 
-def sysSigaction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysSigaction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysSigaction"
 
-def rt_sigaction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rt_sigaction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rt_sigaction"
 
-def fixSigactionForCgo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fixSigactionForCgo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fixSigactionForCgo"
 
-def getpid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getpid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getpid"
 
-def tgkill [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tgkill [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tgkill"
 
-def signalM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signalM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signalM"
 
-def validSIGPROF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validSIGPROF [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.validSIGPROF"
 
-def setProcessCPUProfiler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setProcessCPUProfiler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setProcessCPUProfiler"
 
-def setThreadCPUProfiler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setThreadCPUProfiler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setThreadCPUProfiler"
 
-def syscall_runtime_doAllThreadsSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtime_doAllThreadsSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtime_doAllThreadsSyscall"
 
-def runPerThreadSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runPerThreadSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runPerThreadSyscall"
 
-def mprotect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mprotect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mprotect"
 
-def futex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def futex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.futex"
 
-def timer_settime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timer_settime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timer_settime"
 
-def sigaddset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigaddset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigaddset"
 
-def sigdelset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigdelset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigdelset"
 
-def sigfillset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigfillset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigfillset"
 
-def archauxv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def archauxv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.archauxv"
 
-def osStackAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osStackAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osStackAlloc"
 
-def osStackFree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osStackFree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osStackFree"
 
-def closeonexec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closeonexec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.closeonexec"
 
-def panicCheck1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicCheck1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicCheck1"
 
-def panicCheck2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicCheck2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicCheck2"
 
-def goPanicIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicIndex"
 
-def goPanicIndexU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicIndexU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicIndexU"
 
-def goPanicSliceAlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSliceAlen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSliceAlen"
 
-def goPanicSliceAlenU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSliceAlenU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSliceAlenU"
 
-def goPanicSliceAcap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSliceAcap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSliceAcap"
 
-def goPanicSliceAcapU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSliceAcapU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSliceAcapU"
 
-def goPanicSliceB [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSliceB [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSliceB"
 
-def goPanicSliceBU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSliceBU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSliceBU"
 
-def goPanicSlice3Alen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSlice3Alen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSlice3Alen"
 
-def goPanicSlice3AlenU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSlice3AlenU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSlice3AlenU"
 
-def goPanicSlice3Acap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSlice3Acap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSlice3Acap"
 
-def goPanicSlice3AcapU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSlice3AcapU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSlice3AcapU"
 
-def goPanicSlice3B [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSlice3B [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSlice3B"
 
-def goPanicSlice3BU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSlice3BU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSlice3BU"
 
-def goPanicSlice3C [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSlice3C [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSlice3C"
 
-def goPanicSlice3CU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSlice3CU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSlice3CU"
 
-def goPanicSliceConvert [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goPanicSliceConvert [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goPanicSliceConvert"
 
-def panicBounds [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicBounds [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicBounds"
 
-def panicExtend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicExtend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicExtend"
 
-def panicBounds64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicBounds64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicBounds64"
 
-def panicBounds32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicBounds32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicBounds32"
 
-def panicBounds32X [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicBounds32X [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicBounds32X"
 
-def panicshift [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicshift [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicshift"
 
-def panicdivide [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicdivide [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicdivide"
 
-def panicoverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicoverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicoverflow"
 
-def panicfloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicfloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicfloat"
 
-def panicmem [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicmem [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicmem"
 
-def panicmemAddr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicmemAddr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicmemAddr"
 
-def panicSimdImm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicSimdImm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicSimdImm"
 
-def deferproc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deferproc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deferproc"
 
-def panicrangestate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicrangestate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicrangestate"
 
-def deferrangefunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deferrangefunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deferrangefunc"
 
-def badDefer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badDefer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badDefer"
 
-def deferprocat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deferprocat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deferprocat"
 
-def deferconvert [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deferconvert [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deferconvert"
 
-def deferprocStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deferprocStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deferprocStack"
 
-def newdefer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newdefer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newdefer"
 
-def popDefer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def popDefer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.popDefer"
 
-def deferreturn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deferreturn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.deferreturn"
 
-def Goexit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Goexit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.Goexit"
 
-def preprintpanics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def preprintpanics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.preprintpanics"
 
-def printpanics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printpanics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printpanics"
 
-def readvarintUnsafe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readvarintUnsafe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readvarintUnsafe"
 
-def gopanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gopanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gopanic"
 
-def gorecover [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gorecover [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gorecover"
 
-def sync_throw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_throw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_throw"
 
-def sync_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_fatal"
 
-def rand_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rand_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rand_fatal"
 
-def sysrand_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysrand_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysrand_fatal"
 
-def fips_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fips_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fips_fatal"
 
-def maps_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maps_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maps_fatal"
 
-def internal_sync_throw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_sync_throw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_sync_throw"
 
-def internal_sync_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_sync_fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_sync_fatal"
 
-def cgroup_throw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgroup_throw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgroup_throw"
 
-def throw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def throw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.throw"
 
-def fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fatal"
 
-def printPreFatalDeferPanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printPreFatalDeferPanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printPreFatalDeferPanic"
 
-def recovery [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recovery [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.recovery"
 
-def fatalthrow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fatalthrow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fatalthrow"
 
-def fatalpanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fatalpanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fatalpanic"
 
-def startpanic_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startpanic_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startpanic_m"
 
-def dopanic_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dopanic_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dopanic_m"
 
-def canpanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def canpanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.canpanic"
 
-def shouldPushSigpanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shouldPushSigpanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.shouldPushSigpanic"
 
-def isAbortPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAbortPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isAbortPC"
 
-def pinnerGetPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pinnerGetPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pinnerGetPtr"
 
-def isPinned [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isPinned [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isPinned"
 
-def setPinned [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setPinned [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setPinned"
 
-def pinnerGetPinCounter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pinnerGetPinCounter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pinnerGetPinCounter"
 
-def plugin_lastmoduleinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def plugin_lastmoduleinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.plugin_lastmoduleinit"
 
-def pluginftabverify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pluginftabverify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pluginftabverify"
 
-def inRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inRange"
 
-def suspendG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def suspendG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.suspendG"
 
-def resumeG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def resumeG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.resumeG"
 
-def canPreemptM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def canPreemptM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.canPreemptM"
 
-def asyncPreempt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asyncPreempt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asyncPreempt"
 
-def asyncPreempt2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asyncPreempt2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asyncPreempt2"
 
-def wantAsyncPreempt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wantAsyncPreempt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wantAsyncPreempt"
 
-def isAsyncSafePoint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAsyncSafePoint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isAsyncSafePoint"
 
-def osPreemptExtEnter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osPreemptExtEnter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osPreemptExtEnter"
 
-def osPreemptExtExit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osPreemptExtExit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osPreemptExtExit"
 
-def xRegInitAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xRegInitAlloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.xRegInitAlloc"
 
-def xRegSave [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xRegSave [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.xRegSave"
 
-def xRegRestore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xRegRestore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.xRegRestore"
 
-def bytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bytes"
 
-def recordForPanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recordForPanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.recordForPanic"
 
-def printlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printlock"
 
-def printunlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printunlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printunlock"
 
-def gwrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gwrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gwrite"
 
-def printsp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printsp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printsp"
 
-def printnl [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printnl [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printnl"
 
-def printbool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printbool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printbool"
 
-def printfloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printfloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printfloat64"
 
-def printfloat32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printfloat32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printfloat32"
 
-def printcomplex128 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printcomplex128 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printcomplex128"
 
-def printcomplex64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printcomplex64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printcomplex64"
 
-def printuint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printuint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printuint"
 
-def printint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printint"
 
-def printhexopts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printhexopts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printhexopts"
 
-def printhex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printhex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printhex"
 
-def printquoted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printquoted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printquoted"
 
-def printpointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printpointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printpointer"
 
-def printuintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printuintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printuintptr"
 
-def printstring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printstring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printstring"
 
-def printslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printslice"
 
-def printeface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printeface [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printeface"
 
-def printiface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printiface [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printiface"
 
-def main_main [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def main_main [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.main_main"
 
-def main [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def main [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.main"
 
-def os_beforeExit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def os_beforeExit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.os_beforeExit"
 
-def runExitHooks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runExitHooks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runExitHooks"
 
-def forcegchelper [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forcegchelper [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forcegchelper"
 
-def Gosched [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Gosched [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.Gosched"
 
-def goschedguarded [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goschedguarded [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goschedguarded"
 
-def goschedIfBusy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goschedIfBusy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goschedIfBusy"
 
-def gopark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gopark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gopark"
 
-def goparkunlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goparkunlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goparkunlock"
 
-def goready [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goready [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goready"
 
-def acquireSudog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acquireSudog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.acquireSudog"
 
-def releaseSudog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def releaseSudog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.releaseSudog"
 
-def badmcall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badmcall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badmcall"
 
-def badmcall2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badmcall2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badmcall2"
 
-def badreflectcall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badreflectcall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badreflectcall"
 
-def badmorestackg0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badmorestackg0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badmorestackg0"
 
-def badmorestackgsignal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badmorestackgsignal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badmorestackgsignal"
 
-def badctxt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badctxt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badctxt"
 
-def switchToCrashStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def switchToCrashStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.switchToCrashStack"
 
-def switchToCrashStack0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def switchToCrashStack0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.switchToCrashStack0"
 
-def lockedOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockedOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockedOSThread"
 
-def allgadd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allgadd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allgadd"
 
-def allGsSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allGsSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allGsSnapshot"
 
-def atomicAllG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicAllG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.atomicAllG"
 
-def atomicAllGIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicAllGIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.atomicAllGIndex"
 
-def forEachG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forEachG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forEachG"
 
-def forEachGRace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forEachGRace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forEachGRace"
 
-def cpuinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cpuinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cpuinit"
 
-def getGodebugEarly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getGodebugEarly [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getGodebugEarly"
 
-def schedinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schedinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.schedinit"
 
-def dumpgstatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpgstatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpgstatus"
 
-def checkmcount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkmcount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkmcount"
 
-def mReserveID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mReserveID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mReserveID"
 
-def mcommoninit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mcommoninit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mcommoninit"
 
-def mProfStackInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mProfStackInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mProfStackInit"
 
-def makeProfStackFP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeProfStackFP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeProfStackFP"
 
-def makeProfStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeProfStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeProfStack"
 
-def pprof_makeProfStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_makeProfStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_makeProfStack"
 
-def ready [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ready [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ready"
 
-def freezetheworld [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freezetheworld [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freezetheworld"
 
-def readgstatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readgstatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readgstatus"
 
-def casfrom_Gscanstatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def casfrom_Gscanstatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.casfrom_Gscanstatus"
 
-def castogscanstatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def castogscanstatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.castogscanstatus"
 
-def casgstatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def casgstatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.casgstatus"
 
-def casGToWaiting [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def casGToWaiting [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.casGToWaiting"
 
-def casGToWaitingForSuspendG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def casGToWaitingForSuspendG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.casGToWaitingForSuspendG"
 
-def casGToPreemptScan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def casGToPreemptScan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.casGToPreemptScan"
 
-def casGFromPreempted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def casGFromPreempted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.casGFromPreempted"
 
-def stopTheWorld [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stopTheWorld [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stopTheWorld"
 
-def startTheWorld [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startTheWorld [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startTheWorld"
 
-def stopTheWorldGC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stopTheWorldGC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stopTheWorldGC"
 
-def startTheWorldGC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startTheWorldGC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startTheWorldGC"
 
-def stopTheWorldWithSema [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stopTheWorldWithSema [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stopTheWorldWithSema"
 
-def startTheWorldWithSema [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startTheWorldWithSema [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startTheWorldWithSema"
 
-def usesLibcall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def usesLibcall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.usesLibcall"
 
-def mStackIsSystemAllocated [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mStackIsSystemAllocated [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mStackIsSystemAllocated"
 
-def mstart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mstart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mstart"
 
-def mstart0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mstart0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mstart0"
 
-def mstart1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mstart1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mstart1"
 
-def mstartm0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mstartm0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mstartm0"
 
-def mPark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mPark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mPark"
 
-def mexit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mexit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mexit"
 
-def forEachP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forEachP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forEachP"
 
-def forEachPInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def forEachPInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.forEachPInternal"
 
-def runSafePointFn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runSafePointFn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runSafePointFn"
 
-def allocm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allocm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allocm"
 
-def needm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.needm"
 
-def needAndBindM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needAndBindM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.needAndBindM"
 
-def newextram [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newextram [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newextram"
 
-def oneNewExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def oneNewExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.oneNewExtraM"
 
-def dropm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dropm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dropm"
 
-def cgoBindM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoBindM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoBindM"
 
-def getm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getm"
 
-def lockextra [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockextra [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockextra"
 
-def unlockextra [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unlockextra [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unlockextra"
 
-def getExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getExtraM"
 
-def putExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def putExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.putExtraM"
 
-def addExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addExtraM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addExtraM"
 
-def newm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newm"
 
-def newm1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newm1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newm1"
 
-def startTemplateThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startTemplateThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startTemplateThread"
 
-def templateThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def templateThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.templateThread"
 
-def stopm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stopm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stopm"
 
-def mspinning [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mspinning [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mspinning"
 
-def startm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startm"
 
-def handoffp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def handoffp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.handoffp"
 
-def wakep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wakep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wakep"
 
-def stoplockedm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stoplockedm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stoplockedm"
 
-def startlockedm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startlockedm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startlockedm"
 
-def gcstopm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcstopm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcstopm"
 
-def execute [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def execute [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.execute"
 
-def findRunnable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findRunnable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findRunnable"
 
-def pollWork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pollWork [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pollWork"
 
-def stealWork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stealWork [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stealWork"
 
-def checkRunqsNoP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkRunqsNoP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkRunqsNoP"
 
-def checkTimersNoP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkTimersNoP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkTimersNoP"
 
-def checkIdleGCNoP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkIdleGCNoP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkIdleGCNoP"
 
-def wakeNetPoller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wakeNetPoller [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wakeNetPoller"
 
-def resetspinning [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def resetspinning [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.resetspinning"
 
-def injectglist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def injectglist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.injectglist"
 
-def schedule [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schedule [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.schedule"
 
-def dropg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dropg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dropg"
 
-def parkunlock_c [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parkunlock_c [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.parkunlock_c"
 
-def park_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def park_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.park_m"
 
-def goschedImpl [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goschedImpl [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goschedImpl"
 
-def gosched_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gosched_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gosched_m"
 
-def goschedguarded_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goschedguarded_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goschedguarded_m"
 
-def gopreempt_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gopreempt_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gopreempt_m"
 
-def preemptPark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def preemptPark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.preemptPark"
 
-def goyield [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goyield [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goyield"
 
-def goyield_m [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goyield_m [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goyield_m"
 
-def goexit1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goexit1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goexit1"
 
-def goexit0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goexit0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goexit0"
 
-def gdestroy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gdestroy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gdestroy"
 
-def save [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def save [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.save"
 
-def reentersyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reentersyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reentersyscall"
 
-def entersyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def entersyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.entersyscall"
 
-def entersyscallWakeSysmon [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def entersyscallWakeSysmon [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.entersyscallWakeSysmon"
 
-def entersyscallHandleGCWait [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def entersyscallHandleGCWait [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.entersyscallHandleGCWait"
 
-def entersyscallblock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def entersyscallblock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.entersyscallblock"
 
-def exitsyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def exitsyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.exitsyscall"
 
-def exitsyscallTryGetP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def exitsyscallTryGetP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.exitsyscallTryGetP"
 
-def exitsyscallNoP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def exitsyscallNoP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.exitsyscallNoP"
 
-def addGSyscallNoP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addGSyscallNoP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addGSyscallNoP"
 
-def decGSyscallNoP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decGSyscallNoP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.decGSyscallNoP"
 
-def syscall_runtime_BeforeFork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtime_BeforeFork [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtime_BeforeFork"
 
-def syscall_runtime_AfterFork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtime_AfterFork [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtime_AfterFork"
 
-def syscall_runtime_AfterForkInChild [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtime_AfterForkInChild [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtime_AfterForkInChild"
 
-def syscall_runtime_BeforeExec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtime_BeforeExec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtime_BeforeExec"
 
-def syscall_runtime_AfterExec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtime_AfterExec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtime_AfterExec"
 
-def malg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def malg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.malg"
 
-def newproc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newproc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newproc"
 
-def newproc1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newproc1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newproc1"
 
-def saveAncestors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def saveAncestors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.saveAncestors"
 
-def gfput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gfput [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gfput"
 
-def gfget [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gfget [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gfget"
 
-def gfpurge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gfpurge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gfpurge"
 
-def Breakpoint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Breakpoint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.Breakpoint"
 
-def dolockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dolockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dolockOSThread"
 
-def LockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.LockOSThread"
 
-def lockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockOSThread"
 
-def dounlockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dounlockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dounlockOSThread"
 
-def UnlockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnlockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.UnlockOSThread"
 
-def unlockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unlockOSThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unlockOSThread"
 
-def badunlockosthread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badunlockosthread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badunlockosthread"
 
-def gcount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcount"
 
-def goroutineleakcount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineleakcount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineleakcount"
 
-def mcount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mcount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mcount"
 
-def _System [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _System [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._System"
 
-def _ExternalCode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _ExternalCode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._ExternalCode"
 
-def _LostExternalCode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _LostExternalCode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._LostExternalCode"
 
-def _GC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _GC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._GC"
 
-def _LostSIGPROFDuringAtomic64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _LostSIGPROFDuringAtomic64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._LostSIGPROFDuringAtomic64"
 
-def _LostContendedRuntimeLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _LostContendedRuntimeLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._LostContendedRuntimeLock"
 
-def _VDSO [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _VDSO [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._VDSO"
 
-def sigprof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigprof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigprof"
 
-def setcpuprofilerate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setcpuprofilerate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setcpuprofilerate"
 
-def procresize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def procresize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.procresize"
 
-def acquirep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acquirep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.acquirep"
 
-def acquirepNoTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acquirepNoTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.acquirepNoTrace"
 
-def wirep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wirep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.wirep"
 
-def releasep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def releasep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.releasep"
 
-def releasepNoTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def releasepNoTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.releasepNoTrace"
 
-def incidlelocked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def incidlelocked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.incidlelocked"
 
-def checkdead [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkdead [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkdead"
 
-def sysmon [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysmon [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysmon"
 
-def retake [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retake [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retake"
 
-def setBlockOnExitSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setBlockOnExitSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setBlockOnExitSyscall"
 
-def preemptall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def preemptall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.preemptall"
 
-def preemptone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def preemptone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.preemptone"
 
-def schedtrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schedtrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.schedtrace"
 
-def defaultGOMAXPROCSUpdateEnable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultGOMAXPROCSUpdateEnable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.defaultGOMAXPROCSUpdateEnable"
 
-def updateMaxProcsGoroutine [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def updateMaxProcsGoroutine [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.updateMaxProcsGoroutine"
 
-def sysmonUpdateGOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sysmonUpdateGOMAXPROCS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sysmonUpdateGOMAXPROCS"
 
-def schedEnableUser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schedEnableUser [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.schedEnableUser"
 
-def schedEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schedEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.schedEnabled"
 
-def mput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mput [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mput"
 
-def mget [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mget [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mget"
 
-def mgetSpecific [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mgetSpecific [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mgetSpecific"
 
-def globrunqput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globrunqput [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.globrunqput"
 
-def globrunqputhead [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globrunqputhead [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.globrunqputhead"
 
-def globrunqputbatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globrunqputbatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.globrunqputbatch"
 
-def globrunqget [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globrunqget [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.globrunqget"
 
-def globrunqgetbatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globrunqgetbatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.globrunqgetbatch"
 
-def pidleput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pidleput [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pidleput"
 
-def pidleget [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pidleget [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pidleget"
 
-def pidlegetSpinning [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pidlegetSpinning [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pidlegetSpinning"
 
-def runqempty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runqempty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runqempty"
 
-def runqput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runqput [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runqput"
 
-def runqputslow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runqputslow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runqputslow"
 
-def runqputbatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runqputbatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runqputbatch"
 
-def runqget [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runqget [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runqget"
 
-def runqdrain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runqdrain [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runqdrain"
 
-def runqgrab [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runqgrab [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runqgrab"
 
-def runqsteal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runqsteal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runqsteal"
 
-def setMaxThreads [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setMaxThreads [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setMaxThreads"
 
-def procPin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def procPin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.procPin"
 
-def procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.procUnpin"
 
-def sync_runtime_procPin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_procPin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_procPin"
 
-def sync_runtime_procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_procUnpin"
 
-def sync_atomic_runtime_procPin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_atomic_runtime_procPin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_atomic_runtime_procPin"
 
-def sync_atomic_runtime_procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_atomic_runtime_procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_atomic_runtime_procUnpin"
 
-def internal_sync_runtime_canSpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_sync_runtime_canSpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_sync_runtime_canSpin"
 
-def internal_sync_runtime_doSpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_sync_runtime_doSpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_sync_runtime_doSpin"
 
-def sync_runtime_canSpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_canSpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_canSpin"
 
-def sync_runtime_doSpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_doSpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_doSpin"
 
-def gcd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcd"
 
-def doInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doInit"
 
-def doInit1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doInit1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doInit1"
 
-def countSub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def countSub [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.countSub"
 
-def newProfBuf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newProfBuf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newProfBuf"
 
-def runtime_setProfLabel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_setProfLabel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_setProfLabel"
 
-def runtime_getProfLabel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_getProfLabel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_getProfLabel"
 
-def raceReadObjectPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceReadObjectPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceReadObjectPC"
 
-def raceWriteObjectPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceWriteObjectPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceWriteObjectPC"
 
-def raceinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceinit"
 
-def racefini [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racefini [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racefini"
 
-def raceproccreate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceproccreate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceproccreate"
 
-def raceprocdestroy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceprocdestroy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceprocdestroy"
 
-def racemapshadow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racemapshadow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racemapshadow"
 
-def racewritepc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racewritepc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racewritepc"
 
-def racereadpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racereadpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racereadpc"
 
-def racereadrangepc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racereadrangepc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racereadrangepc"
 
-def racewriterangepc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racewriterangepc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racewriterangepc"
 
-def raceacquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceacquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceacquire"
 
-def raceacquireg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceacquireg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceacquireg"
 
-def raceacquirectx [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raceacquirectx [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raceacquirectx"
 
-def racerelease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racerelease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racerelease"
 
-def racereleaseg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racereleaseg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racereleaseg"
 
-def racereleaseacquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racereleaseacquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racereleaseacquire"
 
-def racereleaseacquireg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racereleaseacquireg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racereleaseacquireg"
 
-def racereleasemerge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racereleasemerge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racereleasemerge"
 
-def racereleasemergeg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racereleasemergeg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racereleasemergeg"
 
-def racefingo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racefingo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racefingo"
 
-def racemalloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racemalloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racemalloc"
 
-def racefree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racefree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racefree"
 
-def racegostart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racegostart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racegostart"
 
-def racegoend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racegoend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racegoend"
 
-def racectxstart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racectxstart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racectxstart"
 
-def racectxend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def racectxend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.racectxend"
 
-def randinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def randinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.randinit"
 
-def readTimeRandom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readTimeRandom [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readTimeRandom"
 
-def allZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.allZero"
 
-def bootstrapRand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapRand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bootstrapRand"
 
-def bootstrapRandReseed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapRandReseed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bootstrapRandReseed"
 
-def rand32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rand32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rand32"
 
-def rand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rand"
 
-def maps_rand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maps_rand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maps_rand"
 
-def mrandinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mrandinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mrandinit"
 
-def randn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def randn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.randn"
 
-def cheaprand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cheaprand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cheaprand"
 
-def cheaprand64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cheaprand64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cheaprand64"
 
-def cheaprandn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cheaprandn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cheaprandn"
 
-def legacy_fastrand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def legacy_fastrand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.legacy_fastrand"
 
-def legacy_fastrandn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def legacy_fastrandn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.legacy_fastrandn"
 
-def legacy_fastrand64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def legacy_fastrand64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.legacy_fastrand64"
 
-def setMaxStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setMaxStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setMaxStack"
 
-def setPanicOnFault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setPanicOnFault [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setPanicOnFault"
 
-def retryOnEAGAIN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retryOnEAGAIN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retryOnEAGAIN"
 
-def ticksPerSecond [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ticksPerSecond [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ticksPerSecond"
 
-def syscall_runtime_envs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtime_envs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtime_envs"
 
-def syscall_Getpagesize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_Getpagesize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_Getpagesize"
 
-def os_runtime_args [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def os_runtime_args [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.os_runtime_args"
 
-def syscall_Exit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_Exit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_Exit"
 
-def godebug_setUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def godebug_setUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.godebug_setUpdate"
 
-def godebug_setNewIncNonDefault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def godebug_setNewIncNonDefault [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.godebug_setNewIncNonDefault"
 
-def godebugNotify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def godebugNotify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.godebugNotify"
 
-def syscall_runtimeSetenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtimeSetenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtimeSetenv"
 
-def syscall_runtimeUnsetenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtimeUnsetenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtimeUnsetenv"
 
-def writeErrStr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeErrStr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.writeErrStr"
 
-def writeErrData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeErrData [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.writeErrData"
 
-def setCrashFD [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setCrashFD [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setCrashFD"
 
-def getAuxv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getAuxv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getAuxv"
 
-def gotraceback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gotraceback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gotraceback"
 
-def argv_index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def argv_index [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.argv_index"
 
-def args [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def args [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.args"
 
-def goargs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goargs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goargs"
 
-def goenvs_unix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goenvs_unix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goenvs_unix"
 
-def environ [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def environ [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.environ"
 
-def testAtomic64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAtomic64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.testAtomic64"
 
-def check [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def check [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.check"
 
-def parseRuntimeDebugVars [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseRuntimeDebugVars [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.parseRuntimeDebugVars"
 
-def finishDebugVarsSetup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def finishDebugVarsSetup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.finishDebugVarsSetup"
 
-def reparsedebugvars [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reparsedebugvars [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reparsedebugvars"
 
-def parsegodebug [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parsegodebug [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.parsegodebug"
 
-def setTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setTraceback"
 
-def acquirem [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acquirem [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.acquirem"
 
-def releasem [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def releasem [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.releasem"
 
-def reflect_typelinks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_typelinks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_typelinks"
 
-def reflect_resolveNameOff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_resolveNameOff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_resolveNameOff"
 
-def reflect_resolveTypeOff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_resolveTypeOff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_resolveTypeOff"
 
-def reflect_resolveTextOff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_resolveTextOff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_resolveTextOff"
 
-def reflectlite_resolveNameOff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectlite_resolveNameOff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectlite_resolveNameOff"
 
-def reflectlite_resolveTypeOff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectlite_resolveTypeOff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectlite_resolveTypeOff"
 
-def reflect_addReflectOff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_addReflectOff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_addReflectOff"
 
-def fips_getIndicator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fips_getIndicator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fips_getIndicator"
 
-def fips_setIndicator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fips_setIndicator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fips_setIndicator"
 
-def efaceOf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def efaceOf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.efaceOf"
 
-def setGNoWB [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setGNoWB [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setGNoWB"
 
-def setMNoWB [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setMNoWB [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setMNoWB"
 
-def newMWeakPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newMWeakPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newMWeakPointer"
 
-def getcallerfp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getcallerfp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getcallerfp"
 
-def boring_runtime_arg0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def boring_runtime_arg0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.boring_runtime_arg0"
 
-def clearenv_c [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clearenv_c [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.clearenv_c"
 
-def syscall_runtimeClearenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_runtimeClearenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syscall_runtimeClearenv"
 
-def secret_count [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secret_count [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secret_count"
 
-def secret_inc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secret_inc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secret_inc"
 
-def secret_dec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secret_dec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secret_dec"
 
-def secret_eraseSecrets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secret_eraseSecrets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secret_eraseSecrets"
 
-def addSecret [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addSecret [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addSecret"
 
-def noopSignal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noopSignal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.noopSignal"
 
-def secret_getStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secret_getStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secret_getStack"
 
-def secret_appendSignalStacks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secret_appendSignalStacks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secret_appendSignalStacks"
 
-def secretEraseRegisters [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secretEraseRegisters [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secretEraseRegisters"
 
-def initSecureMode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initSecureMode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.initSecureMode"
 
-def isSecureMode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSecureMode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isSecureMode"
 
-def secure [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secure [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secure"
 
-def secureEnv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def secureEnv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.secureEnv"
 
-def selectsetpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def selectsetpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.selectsetpc"
 
-def sellock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sellock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sellock"
 
-def selunlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def selunlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.selunlock"
 
-def selparkcommit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def selparkcommit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.selparkcommit"
 
-def block [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def block [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.block"
 
-def selectgo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def selectgo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.selectgo"
 
-def reflect_rselect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_rselect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_rselect"
 
-def sync_runtime_Semacquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_Semacquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_Semacquire"
 
-def poll_runtime_Semacquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_Semacquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_Semacquire"
 
-def sync_runtime_Semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_Semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_Semrelease"
 
-def internal_sync_runtime_SemacquireMutex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_sync_runtime_SemacquireMutex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_sync_runtime_SemacquireMutex"
 
-def sync_runtime_SemacquireRWMutexR [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_SemacquireRWMutexR [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_SemacquireRWMutexR"
 
-def sync_runtime_SemacquireRWMutex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_SemacquireRWMutex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_SemacquireRWMutex"
 
-def sync_runtime_SemacquireWaitGroup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sync_runtime_SemacquireWaitGroup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sync_runtime_SemacquireWaitGroup"
 
-def poll_runtime_Semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poll_runtime_Semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.poll_runtime_Semrelease"
 
-def internal_sync_runtime_Semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_sync_runtime_Semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_sync_runtime_Semrelease"
 
-def readyWithTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readyWithTime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readyWithTime"
 
-def semacquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def semacquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.semacquire"
 
-def semacquire1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def semacquire1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.semacquire1"
 
-def semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.semrelease"
 
-def semrelease1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def semrelease1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.semrelease1"
 
-def cansemacquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cansemacquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cansemacquire"
 
-def less [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def less [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.less"
 
-def notifyListAdd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notifyListAdd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notifyListAdd"
 
-def notifyListWait [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notifyListWait [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notifyListWait"
 
-def notifyListNotifyAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notifyListNotifyAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notifyListNotifyAll"
 
-def notifyListNotifyOne [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notifyListNotifyOne [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notifyListNotifyOne"
 
-def notifyListCheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notifyListCheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.notifyListCheck"
 
-def internal_sync_nanotime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_sync_nanotime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_sync_nanotime"
 
-def setVMANameSupported [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setVMANameSupported [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setVMANameSupported"
 
-def setVMAName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setVMAName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setVMAName"
 
-def dumpregs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpregs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpregs"
 
-def dumpSigStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpSigStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpSigStack"
 
-def os_sigpipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def os_sigpipe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.os_sigpipe"
 
-def signame [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signame [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signame"
 
-def initsig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initsig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.initsig"
 
-def sigInstallGoHandler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigInstallGoHandler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigInstallGoHandler"
 
-def sigenable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigenable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigenable"
 
-def sigdisable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigdisable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigdisable"
 
-def sigignore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigignore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigignore"
 
-def clearSignalHandlers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clearSignalHandlers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.clearSignalHandlers"
 
-def setProcessCPUProfilerTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setProcessCPUProfilerTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setProcessCPUProfilerTimer"
 
-def setThreadCPUProfilerHz [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setThreadCPUProfilerHz [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setThreadCPUProfilerHz"
 
-def sigpipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigpipe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigpipe"
 
-def doSigPreempt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doSigPreempt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.doSigPreempt"
 
-def preemptM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def preemptM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.preemptM"
 
-def sigFetchG [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigFetchG [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigFetchG"
 
-def sigtrampgo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigtrampgo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigtrampgo"
 
-def sigprofNonGo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigprofNonGo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigprofNonGo"
 
-def sigprofNonGoPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigprofNonGoPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigprofNonGoPC"
 
-def adjustSignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustSignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustSignalStack"
 
-def adjustSignalStack2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustSignalStack2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustSignalStack2"
 
-def ignoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ignoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ignoreSIGSYS"
 
-def restoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def restoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.restoreSIGSYS"
 
-def sighandler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sighandler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sighandler"
 
-def fatalsignal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fatalsignal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fatalsignal"
 
-def sigpanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigpanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigpanic"
 
-def dieFromSignal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dieFromSignal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dieFromSignal"
 
-def raisebadsignal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raisebadsignal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.raisebadsignal"
 
-def crash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def crash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.crash"
 
-def ensureSigM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ensureSigM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ensureSigM"
 
-def noSignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noSignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.noSignalStack"
 
-def sigNotOnStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigNotOnStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigNotOnStack"
 
-def signalDuringFork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signalDuringFork [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signalDuringFork"
 
-def badsignal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badsignal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badsignal"
 
-def sigfwd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigfwd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigfwd"
 
-def sigfwdgo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigfwdgo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigfwdgo"
 
-def sigsave [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigsave [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigsave"
 
-def msigrestore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msigrestore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.msigrestore"
 
-def sigblock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigblock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigblock"
 
-def unblocksig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unblocksig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unblocksig"
 
-def minitSignals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minitSignals [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.minitSignals"
 
-def minitSignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minitSignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.minitSignalStack"
 
-def minitSignalMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minitSignalMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.minitSignalMask"
 
-def unminitSignals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unminitSignals [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unminitSignals"
 
-def blockableSig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockableSig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.blockableSig"
 
-def setGsignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setGsignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setGsignalStack"
 
-def restoreGsignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def restoreGsignalStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.restoreGsignalStack"
 
-def signalstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signalstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signalstack"
 
-def setsigsegv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setsigsegv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setsigsegv"
 
-def sigsend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigsend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigsend"
 
-def signal_recv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signal_recv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signal_recv"
 
-def signalWaitUntilIdle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signalWaitUntilIdle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signalWaitUntilIdle"
 
-def signal_enable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signal_enable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signal_enable"
 
-def signal_disable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signal_disable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signal_disable"
 
-def signal_ignore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signal_ignore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signal_ignore"
 
-def sigInitIgnored [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigInitIgnored [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigInitIgnored"
 
-def signal_ignored [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def signal_ignored [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.signal_ignored"
 
-def sigNoteSetup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigNoteSetup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigNoteSetup"
 
-def sigNoteSleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigNoteSleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigNoteSleep"
 
-def sigNoteWakeup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigNoteWakeup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigNoteWakeup"
 
-def panicmakeslicelen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicmakeslicelen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicmakeslicelen"
 
-def panicmakeslicecap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicmakeslicecap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicmakeslicecap"
 
-def makeslicecopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeslicecopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeslicecopy"
 
-def makeslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeslice"
 
-def makeslice64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeslice64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeslice64"
 
-def growslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def growslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.growslice"
 
-def growsliceNoAlias [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def growsliceNoAlias [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.growsliceNoAlias"
 
-def nextslicecap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextslicecap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nextslicecap"
 
-def reflect_growslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_growslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_growslice"
 
-def isPowerOfTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isPowerOfTwo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isPowerOfTwo"
 
-def slicecopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def slicecopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.slicecopy"
 
-def bytealg_MakeNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bytealg_MakeNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bytealg_MakeNoZero"
 
-def moveSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def moveSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.moveSlice"
 
-def moveSliceNoScan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def moveSliceNoScan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.moveSliceNoScan"
 
-def moveSliceNoCap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def moveSliceNoCap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.moveSliceNoCap"
 
-def moveSliceNoCapNoScan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def moveSliceNoCapNoScan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.moveSliceNoCapNoScan"
 
-def growsliceBuf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def growsliceBuf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.growsliceBuf"
 
-def growsliceBufNoAlias [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def growsliceBufNoAlias [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.growsliceBufNoAlias"
 
-def funpack64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funpack64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funpack64"
 
-def funpack32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funpack32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funpack32"
 
-def fpack64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fpack64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fpack64"
 
-def fpack32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fpack32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fpack32"
 
-def fadd64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fadd64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fadd64"
 
-def fsub64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fsub64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fsub64"
 
-def fneg64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fneg64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fneg64"
 
-def fmul64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmul64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmul64"
 
-def fdiv64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fdiv64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fdiv64"
 
-def f64to32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f64to32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f64to32"
 
-def f32to64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f32to64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f32to64"
 
-def fcmp64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fcmp64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fcmp64"
 
-def f64toint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f64toint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f64toint"
 
-def fintto64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fintto64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fintto64"
 
-def fintto32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fintto32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fintto32"
 
-def mullu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mullu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mullu"
 
-def divlu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divlu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.divlu"
 
-def fadd32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fadd32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fadd32"
 
-def fmul32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmul32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fmul32"
 
-def fdiv32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fdiv32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fdiv32"
 
-def feq32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def feq32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.feq32"
 
-def fgt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fgt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fgt32"
 
-def fge32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fge32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fge32"
 
-def feq64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def feq64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.feq64"
 
-def fgt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fgt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fgt64"
 
-def fge64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fge64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fge64"
 
-def fint32to32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fint32to32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fint32to32"
 
-def fint32to64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fint32to64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fint32to64"
 
-def fint64to32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fint64to32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fint64to32"
 
-def fint64to64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fint64to64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fint64to64"
 
-def f32toint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f32toint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f32toint32"
 
-def f32toint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f32toint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f32toint64"
 
-def f64toint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f64toint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f64toint32"
 
-def f64toint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f64toint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f64toint64"
 
-def f64touint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f64touint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f64touint64"
 
-def f32touint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f32touint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.f32touint64"
 
-def fuint64to64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fuint64to64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fuint64to64"
 
-def fuint64to32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fuint64to32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fuint64to32"
 
-def stackinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackinit"
 
-def stacklog2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stacklog2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stacklog2"
 
-def stackpoolalloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackpoolalloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackpoolalloc"
 
-def stackpoolfree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackpoolfree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackpoolfree"
 
-def stackcacherefill [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackcacherefill [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackcacherefill"
 
-def stackcacherelease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackcacherelease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackcacherelease"
 
-def stackcache_clear [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackcache_clear [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackcache_clear"
 
-def stackalloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackalloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackalloc"
 
-def stackfree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackfree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackfree"
 
-def adjustpointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustpointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustpointer"
 
-def adjustpointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustpointers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustpointers"
 
-def adjustframe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustframe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustframe"
 
-def adjustctxt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustctxt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustctxt"
 
-def adjustdefers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustdefers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustdefers"
 
-def adjustpanics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustpanics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustpanics"
 
-def adjustsudogs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adjustsudogs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.adjustsudogs"
 
-def fillstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fillstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fillstack"
 
-def findsghi [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findsghi [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findsghi"
 
-def syncadjustsudogs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syncadjustsudogs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.syncadjustsudogs"
 
-def copystack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copystack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.copystack"
 
-def round2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def round2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.round2"
 
-def newstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newstack"
 
-def nilfunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilfunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nilfunc"
 
-def gostartcallfn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gostartcallfn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gostartcallfn"
 
-def isShrinkStackSafe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isShrinkStackSafe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isShrinkStackSafe"
 
-def shrinkstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shrinkstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.shrinkstack"
 
-def freeStackSpans [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freeStackSpans [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.freeStackSpans"
 
-def morestackc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def morestackc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.morestackc"
 
-def gcComputeStartingStackSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcComputeStartingStackSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcComputeStartingStackSize"
 
-def stkobjinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stkobjinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stkobjinit"
 
-def concatstrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatstrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatstrings"
 
-def concatstring2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatstring2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatstring2"
 
-def concatstring3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatstring3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatstring3"
 
-def concatstring4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatstring4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatstring4"
 
-def concatstring5 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatstring5 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatstring5"
 
-def concatbytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatbytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatbytes"
 
-def concatbyte2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatbyte2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatbyte2"
 
-def concatbyte3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatbyte3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatbyte3"
 
-def concatbyte4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatbyte4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatbyte4"
 
-def concatbyte5 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def concatbyte5 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.concatbyte5"
 
-def slicebytetostring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def slicebytetostring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.slicebytetostring"
 
-def stringDataOnStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringDataOnStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stringDataOnStack"
 
-def rawstringtmp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawstringtmp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rawstringtmp"
 
-def slicebytetostringtmp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def slicebytetostringtmp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.slicebytetostringtmp"
 
-def stringtoslicebyte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringtoslicebyte [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stringtoslicebyte"
 
-def stringtoslicerune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringtoslicerune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stringtoslicerune"
 
-def slicerunetostring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def slicerunetostring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.slicerunetostring"
 
-def stringStructOf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringStructOf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stringStructOf"
 
-def intstring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intstring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.intstring"
 
-def rawstring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawstring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rawstring"
 
-def rawbyteslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawbyteslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rawbyteslice"
 
-def rawruneslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawruneslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rawruneslice"
 
-def gobytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gobytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gobytes"
 
-def gostring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gostring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gostring"
 
-def internal_syscall_gostring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def internal_syscall_gostring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.internal_syscall_gostring"
 
-def gostringn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gostringn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gostringn"
 
-def parseByteCount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseByteCount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.parseByteCount"
 
-def findnull [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findnull [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findnull"
 
-def findnullw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findnullw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findnullw"
 
-def gostringnocopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gostringnocopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gostringnocopy"
 
-def gostringw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gostringw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gostringw"
 
-def add [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def add [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.add"
 
-def getg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getg"
 
-def mcall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mcall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.mcall"
 
-def systemstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def systemstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.systemstack"
 
-def badsystemstack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badsystemstack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badsystemstack"
 
-def memclrNoHeapPointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memclrNoHeapPointers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memclrNoHeapPointers"
 
-def reflect_memclrNoHeapPointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_memclrNoHeapPointers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_memclrNoHeapPointers"
 
-def memmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memmove"
 
-def reflect_memmove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_memmove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_memmove"
 
-def memequal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memequal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memequal"
 
-def noescape [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noescape [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.noescape"
 
-def noEscapePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noEscapePtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.noEscapePtr"
 
-def cgocallback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgocallback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgocallback"
 
-def gogo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gogo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gogo"
 
-def asminit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asminit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asminit"
 
-def setg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.setg"
 
-def breakpoint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def breakpoint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.breakpoint"
 
-def reflectcall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectcall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectcall"
 
-def procyield [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def procyield [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.procyield"
 
-def procyieldAsm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def procyieldAsm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.procyieldAsm"
 
-def goexit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goexit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goexit"
 
-def publicationBarrier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def publicationBarrier [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.publicationBarrier"
 
-def asmcgocall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asmcgocall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asmcgocall"
 
-def morestack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def morestack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.morestack"
 
-def morestack_noctxt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def morestack_noctxt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.morestack_noctxt"
 
-def rt0_go [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rt0_go [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.rt0_go"
 
-def call16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call16"
 
-def call32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call32"
 
-def call64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call64"
 
-def call128 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call128 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call128"
 
-def call256 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call256 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call256"
 
-def call512 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call512 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call512"
 
-def call1024 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call1024 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call1024"
 
-def call2048 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call2048 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call2048"
 
-def call4096 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call4096 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call4096"
 
-def call8192 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call8192 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call8192"
 
-def call16384 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call16384 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call16384"
 
-def call32768 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call32768 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call32768"
 
-def call65536 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call65536 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call65536"
 
-def call131072 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call131072 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call131072"
 
-def call262144 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call262144 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call262144"
 
-def call524288 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call524288 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call524288"
 
-def call1048576 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call1048576 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call1048576"
 
-def call2097152 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call2097152 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call2097152"
 
-def call4194304 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call4194304 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call4194304"
 
-def call8388608 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call8388608 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call8388608"
 
-def call16777216 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call16777216 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call16777216"
 
-def call33554432 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call33554432 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call33554432"
 
-def call67108864 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call67108864 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call67108864"
 
-def call134217728 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call134217728 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call134217728"
 
-def call268435456 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call268435456 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call268435456"
 
-def call536870912 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call536870912 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call536870912"
 
-def call1073741824 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def call1073741824 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.call1073741824"
 
-def systemstack_switch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def systemstack_switch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.systemstack_switch"
 
-def alignUp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def alignUp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.alignUp"
 
-def alignDown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def alignDown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.alignDown"
 
-def divRoundUp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divRoundUp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.divRoundUp"
 
-def checkASM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkASM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.checkASM"
 
-def memequal_varlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memequal_varlen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.memequal_varlen"
 
-def bool2int [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bool2int [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.bool2int"
 
-def abort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def abort [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.abort"
 
-def gcWriteBarrier1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrier1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrier1"
 
-def gcWriteBarrier2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrier2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrier2"
 
-def gcWriteBarrier3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrier3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrier3"
 
-def gcWriteBarrier4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrier4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrier4"
 
-def gcWriteBarrier5 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrier5 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrier5"
 
-def gcWriteBarrier6 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrier6 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrier6"
 
-def gcWriteBarrier7 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrier7 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrier7"
 
-def gcWriteBarrier8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrier8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrier8"
 
-def duffzero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def duffzero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.duffzero"
 
-def duffcopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def duffcopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.duffcopy"
 
-def addmoduledata [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addmoduledata [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.addmoduledata"
 
-def sigpanic0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigpanic0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sigpanic0"
 
-def read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def read [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.read"
 
-def closefd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closefd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.closefd"
 
-def exit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def exit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.exit"
 
-def usleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def usleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.usleep"
 
-def usleep_no_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def usleep_no_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.usleep_no_g"
 
-def write1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def write1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.write1"
 
-def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.open"
 
-def madvise [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def madvise [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.madvise"
 
-def exitThread [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def exitThread [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.exitThread"
 
-def nanotime1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nanotime1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nanotime1"
 
-def gcWriteBarrierCX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrierCX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrierCX"
 
-def gcWriteBarrierDX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrierDX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrierDX"
 
-def gcWriteBarrierBX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrierBX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrierBX"
 
-def gcWriteBarrierBP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrierBP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrierBP"
 
-def gcWriteBarrierSI [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrierSI [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrierSI"
 
-def gcWriteBarrierR8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrierR8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrierR8"
 
-def gcWriteBarrierR9 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcWriteBarrierR9 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcWriteBarrierR9"
 
-def stackcheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackcheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackcheck"
 
-def settls [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def settls [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.settls"
 
-def retpolineAX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineAX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineAX"
 
-def retpolineCX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineCX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineCX"
 
-def retpolineDX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineDX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineDX"
 
-def retpolineBX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineBX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineBX"
 
-def retpolineBP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineBP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineBP"
 
-def retpolineSI [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineSI [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineSI"
 
-def retpolineDI [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineDI [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineDI"
 
-def retpolineR8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineR8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineR8"
 
-def retpolineR9 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineR9 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineR9"
 
-def retpolineR10 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineR10 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineR10"
 
-def retpolineR11 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineR11 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineR11"
 
-def retpolineR12 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineR12 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineR12"
 
-def retpolineR13 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineR13 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineR13"
 
-def retpolineR14 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineR14 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineR14"
 
-def retpolineR15 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def retpolineR15 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.retpolineR15"
 
-def asmcgocall_no_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asmcgocall_no_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asmcgocall_no_g"
 
-def asmcgocall_landingpad [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asmcgocall_landingpad [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.asmcgocall_landingpad"
 
-def spillArgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spillArgs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.spillArgs"
 
-def unspillArgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unspillArgs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unspillArgs"
 
-def getfp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getfp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getfp"
 
-def sbrk0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sbrk0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.sbrk0"
 
-def access [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def access [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.access"
 
-def connect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def connect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.connect"
 
-def socket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def socket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.socket"
 
-def pause [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pause [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pause"
 
-def CallersFrames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CallersFrames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.CallersFrames"
 
-def runtime_FrameStartLine [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_FrameStartLine [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_FrameStartLine"
 
-def runtime_FrameSymbolName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_FrameSymbolName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_FrameSymbolName"
 
-def runtime_expandFinalInlineFrame [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_expandFinalInlineFrame [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.runtime_expandFinalInlineFrame"
 
-def expandCgoFrames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def expandCgoFrames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.expandCgoFrames"
 
-def activeModules [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def activeModules [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.activeModules"
 
-def modulesinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def modulesinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.modulesinit"
 
-def moduledataverify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def moduledataverify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.moduledataverify"
 
-def moduledataverify1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def moduledataverify1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.moduledataverify1"
 
-def FuncForPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FuncForPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.FuncForPC"
 
-def findmoduledatap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findmoduledatap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findmoduledatap"
 
-def badFuncInfoEntry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badFuncInfoEntry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badFuncInfoEntry"
 
-def findfunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findfunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.findfunc"
 
-def badSrcFuncName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badSrcFuncName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badSrcFuncName"
 
-def pcvalueCacheKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pcvalueCacheKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pcvalueCacheKey"
 
-def pcvalue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pcvalue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pcvalue"
 
-def funcname [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcname [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcname"
 
-def funcpkgpath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcpkgpath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcpkgpath"
 
-def funcfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcfile"
 
-def funcline1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcline1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcline1"
 
-def funcline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcline"
 
-def funcspdelta [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcspdelta [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcspdelta"
 
-def funcMaxSPDelta [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcMaxSPDelta [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcMaxSPDelta"
 
-def pcdatastart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pcdatastart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pcdatastart"
 
-def pcdatavalue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pcdatavalue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pcdatavalue"
 
-def pcdatavalue1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pcdatavalue1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pcdatavalue1"
 
-def pcdatavalue2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pcdatavalue2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pcdatavalue2"
 
-def funcdata [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcdata [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcdata"
 
-def step [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def step [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.step"
 
-def readvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readvarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readvarint"
 
-def stackmapdata [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackmapdata [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stackmapdata"
 
-def newInlineUnwinder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newInlineUnwinder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newInlineUnwinder"
 
-def badSrcFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badSrcFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badSrcFunc"
 
-def synctestRun [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctestRun [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctestRun"
 
-def synctestidle_c [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctestidle_c [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctestidle_c"
 
-def synctestWait [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctestWait [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctestWait"
 
-def synctestwait_c [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctestwait_c [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctestwait_c"
 
-def synctest_isInBubble [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctest_isInBubble [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctest_isInBubble"
 
-def synctest_acquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctest_acquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctest_acquire"
 
-def synctest_release [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctest_release [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctest_release"
 
-def synctest_inBubble [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctest_inBubble [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctest_inBubble"
 
-def getOrSetBubbleSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getOrSetBubbleSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getOrSetBubbleSpecial"
 
-def synctest_associate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctest_associate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctest_associate"
 
-def synctest_disassociate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctest_disassociate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctest_disassociate"
 
-def synctest_isAssociated [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def synctest_isAssociated [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.synctest_isAssociated"
 
-def prepGoExitFrame [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prepGoExitFrame [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.prepGoExitFrame"
 
-def gostartcall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gostartcall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gostartcall"
 
-def taggedPointerPack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def taggedPointerPack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.taggedPointerPack"
 
-def testSPWrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSPWrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.testSPWrite"
 
-def time_runtimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def time_runtimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.time_runtimeNow"
 
-def time_runtimeNano [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def time_runtimeNano [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.time_runtimeNano"
 
-def time_runtimeIsBubbled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def time_runtimeIsBubbled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.time_runtimeIsBubbled"
 
-def timeSleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeSleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timeSleep"
 
-def resetForSleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def resetForSleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.resetForSleep"
 
-def newTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newTimer"
 
-def stopTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stopTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.stopTimer"
 
-def resetTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def resetTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.resetTimer"
 
-def goroutineReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineReady"
 
-def timeSleepUntil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeSleepUntil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.timeSleepUntil"
 
-def badTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def badTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.badTimer"
 
-def blockTimerChan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockTimerChan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.blockTimerChan"
 
-def unblockTimerChan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unblockTimerChan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unblockTimerChan"
 
-def nanotime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nanotime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.nanotime"
 
-def write [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def write [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.write"
 
-def time_now [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def time_now [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.time_now"
 
-def osSetupTLS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def osSetupTLS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.osSetupTLS"
 
-def StartTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StartTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.StartTrace"
 
-def StopTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StopTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.StopTrace"
 
-def traceAdvance [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceAdvance [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceAdvance"
 
-def traceNextGen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceNextGen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceNextGen"
 
-def traceRegisterLabelsAndReasons [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceRegisterLabelsAndReasons [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceRegisterLabelsAndReasons"
 
-def ReadTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.ReadTrace"
 
-def readTrace0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readTrace0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.readTrace0"
 
-def traceReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceReader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceReader"
 
-def traceReaderAvailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceReaderAvailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceReaderAvailable"
 
-def newWakeableSleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newWakeableSleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.newWakeableSleep"
 
-def traceSnapshotMemory [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceSnapshotMemory [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceSnapshotMemory"
 
-def traceSpanTypeAndClass [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceSpanTypeAndClass [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceSpanTypeAndClass"
 
-def traceSpanID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceSpanID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceSpanID"
 
-def traceHeapObjectID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceHeapObjectID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceHeapObjectID"
 
-def traceGoroutineStackID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceGoroutineStackID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceGoroutineStackID"
 
-def traceCompressStackSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceCompressStackSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceCompressStackSize"
 
-def tracebackPCs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tracebackPCs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tracebackPCs"
 
-def printArgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printArgs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printArgs"
 
-def funcNamePiecesForPrint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcNamePiecesForPrint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcNamePiecesForPrint"
 
-def funcNameForPrint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def funcNameForPrint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.funcNameForPrint"
 
-def printFuncName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printFuncName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printFuncName"
 
-def printcreatedby [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printcreatedby [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printcreatedby"
 
-def printcreatedby1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printcreatedby1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printcreatedby1"
 
-def traceback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceback"
 
-def tracebacktrap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tracebacktrap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tracebacktrap"
 
-def traceback1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceback1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceback1"
 
-def traceback2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceback2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceback2"
 
-def printAncestorTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printAncestorTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printAncestorTraceback"
 
-def printAncestorTracebackFuncInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printAncestorTracebackFuncInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printAncestorTracebackFuncInfo"
 
-def callers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def callers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.callers"
 
-def gcallers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gcallers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.gcallers"
 
-def showframe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def showframe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.showframe"
 
-def showfuncinfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def showfuncinfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.showfuncinfo"
 
-def isExportedRuntime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isExportedRuntime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isExportedRuntime"
 
-def elideWrapperCalling [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def elideWrapperCalling [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.elideWrapperCalling"
 
-def goroutineheader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutineheader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goroutineheader"
 
-def tracebackothers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tracebackothers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tracebackothers"
 
-def tracebacksomeothers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tracebacksomeothers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tracebacksomeothers"
 
-def tracebackHexdump [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tracebackHexdump [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tracebackHexdump"
 
-def isSystemGoroutine [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSystemGoroutine [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.isSystemGoroutine"
 
-def SetCgoTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetCgoTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.SetCgoTraceback"
 
-def cgoTracebackAvailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoTracebackAvailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoTracebackAvailable"
 
-def cgoSymbolizerAvailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoSymbolizerAvailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoSymbolizerAvailable"
 
-def printCgoTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printCgoTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printCgoTraceback"
 
-def printOneCgoTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def printOneCgoTraceback [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.printOneCgoTraceback"
 
-def callCgoSymbolizer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def callCgoSymbolizer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.callCgoSymbolizer"
 
-def cgoContextPCs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cgoContextPCs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.cgoContextPCs"
 
-def unsafeTraceWriter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeTraceWriter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsafeTraceWriter"
 
-def unsafeTraceExpWriter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeTraceExpWriter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsafeTraceExpWriter"
 
-def traceBufFlush [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceBufFlush [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceBufFlush"
 
-def traceInitReadCPU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceInitReadCPU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceInitReadCPU"
 
-def traceStartReadCPU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceStartReadCPU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceStartReadCPU"
 
-def traceStopReadCPU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceStopReadCPU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceStopReadCPU"
 
-def traceReadCPU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceReadCPU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceReadCPU"
 
-def traceCPUFlush [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceCPUFlush [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceCPUFlush"
 
-def traceCPUSample [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceCPUSample [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceCPUSample"
 
-def traceLockInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceLockInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceLockInit"
 
-def lockRankMayTraceFlush [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lockRankMayTraceFlush [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.lockRankMayTraceFlush"
 
-def traceEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceEnabled"
 
-def traceAllocFreeEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceAllocFreeEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceAllocFreeEnabled"
 
-def traceShuttingDown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceShuttingDown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceShuttingDown"
 
-def traceAcquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceAcquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceAcquire"
 
-def traceAcquireEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceAcquireEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceAcquireEnabled"
 
-def traceRelease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceRelease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceRelease"
 
-def traceExitingSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceExitingSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceExitingSyscall"
 
-def traceExitedSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceExitedSyscall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceExitedSyscall"
 
-def trace_userTaskCreate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trace_userTaskCreate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.trace_userTaskCreate"
 
-def trace_userTaskEnd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trace_userTaskEnd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.trace_userTaskEnd"
 
-def trace_userRegion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trace_userRegion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.trace_userRegion"
 
-def trace_userLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trace_userLog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.trace_userLog"
 
-def traceThreadDestroy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceThreadDestroy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceThreadDestroy"
 
-def traceStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceStack"
 
-def dumpStacksRec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpStacksRec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpStacksRec"
 
-def makeTraceFrames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTraceFrames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeTraceFrames"
 
-def makeTraceFrame [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTraceFrame [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.makeTraceFrame"
 
-def tracefpunwindoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tracefpunwindoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.tracefpunwindoff"
 
-def fpTracebackPCs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fpTracebackPCs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fpTracebackPCs"
 
-def pprof_fpunwindExpand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pprof_fpunwindExpand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pprof_fpunwindExpand"
 
-def fpunwindExpand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fpunwindExpand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.fpunwindExpand"
 
-def startPCForTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startPCForTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.startPCForTrace"
 
-def goStatusToTraceGoStatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goStatusToTraceGoStatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.goStatusToTraceGoStatus"
 
-def traceClockNow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceClockNow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceClockNow"
 
-def traceClockUnitsPerSecond [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceClockUnitsPerSecond [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceClockUnitsPerSecond"
 
-def traceSyncBatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceSyncBatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.traceSyncBatch"
 
-def dumpTypesRec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dumpTypesRec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.dumpTypesRec"
 
-def maps_typeString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maps_typeString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.maps_typeString"
 
-def getGCMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getGCMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getGCMask"
 
-def getGCMaskOnDemand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getGCMaskOnDemand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.getGCMaskOnDemand"
 
-def buildGCMask [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildGCMask [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.buildGCMask"
 
-def reflectOffsLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectOffsLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectOffsLock"
 
-def reflectOffsUnlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflectOffsUnlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflectOffsUnlock"
 
-def resolveNameOff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def resolveNameOff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.resolveNameOff"
 
-def resolveTypeOff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def resolveTypeOff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.resolveTypeOff"
 
-def pkgPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pkgPath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.pkgPath"
 
-def typelinksinit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typelinksinit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typelinksinit"
 
-def toRType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toRType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.toRType"
 
-def typesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.typesEqual"
 
-def unsafestring [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafestring [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsafestring"
 
-def unsafestring64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafestring64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsafestring64"
 
-def unsafestringcheckptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafestringcheckptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsafestringcheckptr"
 
-def panicunsafestringlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicunsafestringlen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicunsafestringlen"
 
-def panicunsafestringnilptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicunsafestringnilptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicunsafestringnilptr"
 
-def unsafeslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsafeslice"
 
-def unsafeslice64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeslice64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsafeslice64"
 
-def unsafeslicecheckptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeslicecheckptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.unsafeslicecheckptr"
 
-def panicunsafeslicelen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicunsafeslicelen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicunsafeslicelen"
 
-def panicunsafeslicelen1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicunsafeslicelen1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicunsafeslicelen1"
 
-def panicunsafeslicenilptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicunsafeslicenilptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicunsafeslicenilptr"
 
-def panicunsafeslicenilptr1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicunsafeslicenilptr1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.panicunsafeslicenilptr1"
 
-def reflect_unsafeslice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reflect_unsafeslice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.reflect_unsafeslice"
 
-def countrunes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def countrunes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.countrunes"
 
-def decoderune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decoderune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.decoderune"
 
-def encoderune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encoderune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.encoderune"
 
-def valgrindRegisterStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindRegisterStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindRegisterStack"
 
-def valgrindDeregisterStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindDeregisterStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindDeregisterStack"
 
-def valgrindChangeStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindChangeStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindChangeStack"
 
-def valgrindMalloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindMalloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindMalloc"
 
-def valgrindFree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindFree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindFree"
 
-def valgrindCreateMempool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindCreateMempool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindCreateMempool"
 
-def valgrindMempoolMalloc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindMempoolMalloc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindMempoolMalloc"
 
-def valgrindMempoolFree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindMempoolFree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindMempoolFree"
 
-def valgrindMakeMemUndefined [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindMakeMemUndefined [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindMakeMemUndefined"
 
-def valgrindMakeMemDefined [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindMakeMemDefined [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindMakeMemDefined"
 
-def valgrindMakeMemNoAccess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valgrindMakeMemNoAccess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.valgrindMakeMemNoAccess"
 
-def _ELF_ST_BIND [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _ELF_ST_BIND [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._ELF_ST_BIND"
 
-def _ELF_ST_TYPE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _ELF_ST_TYPE [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime._ELF_ST_TYPE"
 
-def vdsoInitFromSysinfoEhdr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoInitFromSysinfoEhdr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoInitFromSysinfoEhdr"
 
-def vdsoFindVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoFindVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoFindVersion"
 
-def vdsoParseSymbols [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoParseSymbols [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoParseSymbols"
 
-def vdsoauxv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vdsoauxv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vdsoauxv"
 
-def inVDSOPage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inVDSOPage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.inVDSOPage"
 
-def vgetrandom1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vgetrandom1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vgetrandom1"
 
-def vgetrandomInit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vgetrandomInit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vgetrandomInit"
 
-def vgetrandomGetState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vgetrandomGetState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vgetrandomGetState"
 
-def vgetrandomDestroy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vgetrandomDestroy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vgetrandomDestroy"
 
-def vgetrandom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def vgetrandom [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.vgetrandom"
 
-def writeErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeErr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"runtime.writeErr"
 
 instance info' : PkgInfo pkg_id.runtime where
@@ -11054,7 +11054,7 @@ instance info' : PkgInfo pkg_id.runtime where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.runtime)) (Lam BAnon
   (App (Val exception_do)

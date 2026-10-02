@@ -29,17 +29,17 @@ def EliminationStack [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] EliminationStack
 
-@[reducible] def timeout [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def timeout [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 10000)
 
-def NewLockedStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLockedStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.NewLockedStack"
 
-def NewEliminationStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewEliminationStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.NewEliminationStack"
 
 /-- go: elimination_stack.go:14:6 -/
-def «NewLockedStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewLockedStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -47,7 +47,7 @@ def «NewLockedStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral LockedStack))) (LiteralValue [(KeyedElement (some (KeyField go!"stack")) (ElementExpression (go.type.SliceType go.string) (Var "$v0")))])))))))
 
 /-- go: elimination_stack.go:18:23 -/
-def «LockedStack__Pushⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LockedStack__Pushⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "value"
   (App (Val exception_do)
@@ -70,7 +70,7 @@ def «LockedStack__Pushⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType LockedStack)))) (Var "s")))) (Val #()))))))))))
 
 /-- go: elimination_stack.go:24:23 -/
-def «LockedStack__Popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LockedStack__Popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -114,7 +114,7 @@ def «LockedStack__Popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     using a fresh LockedStack and a small default timeout.
 
     go: elimination_stack.go:47:6 -/
-def «NewEliminationStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewEliminationStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -125,7 +125,7 @@ def «NewEliminationStackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Push first tries one-shot elimination; on timeout, falls back to the locked stack.
 
     go: elimination_stack.go:55:28 -/
-def «EliminationStack__Pushⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «EliminationStack__Pushⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "value"
   (App (Val exception_do)
@@ -151,7 +151,7 @@ def «EliminationStack__Pushⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
 /-- Pop first tries one-shot elimination; on timeout, falls back to the locked stack.
 
     go: elimination_stack.go:67:28 -/
-def «EliminationStack__Popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «EliminationStack__Popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -180,7 +180,7 @@ def «EliminationStack__Popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack where
   pkg_imported_pkgs := [pkg_id.sync, pkg_id.time]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack)) (Lam BAnon
   (App (Val exception_do)

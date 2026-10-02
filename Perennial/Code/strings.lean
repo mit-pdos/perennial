@@ -120,234 +120,234 @@ axiom repeatedEquals [ffi_syntax] [GoGlobalContext] : val
 
 axiom repeatedTabs [ffi_syntax] [GoGlobalContext] : val
 
-def asciiSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asciiSpace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.asciiSpace"
 
 axiom asciiSpace'init [ffi_syntax] [GoGlobalContext] : val
 
-def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Clone"
 
-def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Compare"
 
-def Lines [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lines [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Lines"
 
-def splitSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def splitSeq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.splitSeq"
 
-def SplitSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitSeq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.SplitSeq"
 
-def SplitAfterSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitAfterSeq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.SplitAfterSeq"
 
-def FieldsSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FieldsSeq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.FieldsSeq"
 
-def FieldsFuncSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FieldsFuncSeq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.FieldsFuncSeq"
 
-def NewReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewReader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.NewReader"
 
-def NewReplacer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewReplacer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.NewReplacer"
 
-def makeGenericReplacer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeGenericReplacer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.makeGenericReplacer"
 
-def getStringWriter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getStringWriter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.getStringWriter"
 
-def makeSingleStringReplacer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeSingleStringReplacer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.makeSingleStringReplacer"
 
-def makeStringFinder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStringFinder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.makeStringFinder"
 
-def longestCommonSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def longestCommonSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.longestCommonSuffix"
 
-def explode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def explode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.explode"
 
-def Count [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Count [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Count"
 
-def Contains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Contains [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Contains"
 
-def ContainsAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContainsAny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ContainsAny"
 
-def ContainsRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContainsRune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ContainsRune"
 
-def ContainsFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContainsFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ContainsFunc"
 
-def LastIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LastIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.LastIndex"
 
-def IndexByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexByte [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.IndexByte"
 
-def IndexRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexRune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.IndexRune"
 
-def IndexAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexAny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.IndexAny"
 
-def LastIndexAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LastIndexAny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.LastIndexAny"
 
-def LastIndexByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LastIndexByte [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.LastIndexByte"
 
-def genSplit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def genSplit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.genSplit"
 
-def SplitN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.SplitN"
 
-def SplitAfterN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitAfterN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.SplitAfterN"
 
-def Split [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Split [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Split"
 
-def SplitAfter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitAfter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.SplitAfter"
 
-def Fields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fields [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Fields"
 
-def FieldsFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FieldsFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.FieldsFunc"
 
-def Join [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Join [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Join"
 
-def HasPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HasPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.HasPrefix"
 
-def HasSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HasSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.HasSuffix"
 
-def Map [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Map [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Map"
 
-def Repeat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Repeat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Repeat"
 
-def ToUpper [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToUpper [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ToUpper"
 
-def ToLower [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToLower [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ToLower"
 
-def ToTitle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToTitle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ToTitle"
 
-def ToUpperSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToUpperSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ToUpperSpecial"
 
-def ToLowerSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToLowerSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ToLowerSpecial"
 
-def ToTitleSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToTitleSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ToTitleSpecial"
 
-def ToValidUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToValidUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ToValidUTF8"
 
-def isSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.isSeparator"
 
-def Title [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Title [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Title"
 
-def TrimLeftFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimLeftFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.TrimLeftFunc"
 
-def TrimRightFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimRightFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.TrimRightFunc"
 
-def TrimFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.TrimFunc"
 
-def IndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.IndexFunc"
 
-def LastIndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LastIndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.LastIndexFunc"
 
-def indexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def indexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.indexFunc"
 
-def lastIndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lastIndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.lastIndexFunc"
 
-def makeASCIISet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeASCIISet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.makeASCIISet"
 
-def Trim [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Trim [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Trim"
 
-def TrimLeft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimLeft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.TrimLeft"
 
-def trimLeftByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimLeftByte [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.trimLeftByte"
 
-def trimLeftASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimLeftASCII [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.trimLeftASCII"
 
-def trimLeftUnicode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimLeftUnicode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.trimLeftUnicode"
 
-def TrimRight [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimRight [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.TrimRight"
 
-def trimRightByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimRightByte [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.trimRightByte"
 
-def trimRightASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimRightASCII [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.trimRightASCII"
 
-def trimRightUnicode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimRightUnicode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.trimRightUnicode"
 
-def TrimSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimSpace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.TrimSpace"
 
-def TrimPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.TrimPrefix"
 
-def TrimSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.TrimSuffix"
 
-def Replace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Replace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Replace"
 
-def ReplaceAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReplaceAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.ReplaceAll"
 
-def EqualFold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualFold [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.EqualFold"
 
-def Index' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Index' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Index"
 
-def Cut [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Cut [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.Cut"
 
-def CutPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CutPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.CutPrefix"
 
-def CutSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CutSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"strings.CutSuffix"
 
 instance info' : PkgInfo pkg_id.strings where
@@ -355,7 +355,7 @@ instance info' : PkgInfo pkg_id.strings where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.strings)) (Lam BAnon
   (App (Val exception_do)

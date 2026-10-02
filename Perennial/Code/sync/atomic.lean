@@ -75,139 +75,139 @@ attribute [irreducible] efaceWords
 
 axiom «Uintptrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def firstStoreInProgress [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def firstStoreInProgress [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.firstStoreInProgress"
 
-def SwapInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SwapInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.SwapInt32"
 
-def SwapUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SwapUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.SwapUint32"
 
-def SwapUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SwapUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.SwapUintptr"
 
-def SwapPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SwapPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.SwapPointer"
 
-def CompareAndSwapInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompareAndSwapInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.CompareAndSwapInt32"
 
-def CompareAndSwapUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompareAndSwapUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.CompareAndSwapUint32"
 
-def CompareAndSwapUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompareAndSwapUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.CompareAndSwapUintptr"
 
-def CompareAndSwapPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompareAndSwapPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.CompareAndSwapPointer"
 
-def AddInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AddInt32"
 
-def AddUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AddUint32"
 
-def AddUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AddUintptr"
 
-def AndInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AndInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AndInt32"
 
-def AndUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AndUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AndUint32"
 
-def AndUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AndUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AndUintptr"
 
-def OrInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OrInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.OrInt32"
 
-def OrUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OrUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.OrUint32"
 
-def OrUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OrUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.OrUintptr"
 
-def LoadInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.LoadInt32"
 
-def LoadUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.LoadUint32"
 
-def LoadUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.LoadUintptr"
 
-def LoadPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.LoadPointer"
 
-def StoreInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StoreInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.StoreInt32"
 
-def StoreUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StoreUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.StoreUint32"
 
-def StoreUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StoreUintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.StoreUintptr"
 
-def StorePointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StorePointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.StorePointer"
 
-def SwapInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SwapInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.SwapInt64"
 
-def SwapUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SwapUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.SwapUint64"
 
-def CompareAndSwapInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompareAndSwapInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.CompareAndSwapInt64"
 
-def CompareAndSwapUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompareAndSwapUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.CompareAndSwapUint64"
 
-def AddInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AddInt64"
 
-def AddUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AddUint64"
 
-def AndInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AndInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AndInt64"
 
-def AndUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AndUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.AndUint64"
 
-def OrInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OrInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.OrInt64"
 
-def OrUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OrUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.OrUint64"
 
-def LoadInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.LoadInt64"
 
-def LoadUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.LoadUint64"
 
-def StoreInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StoreInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.StoreInt64"
 
-def StoreUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StoreUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.StoreUint64"
 
-def b32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def b32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.b32"
 
-def runtime_procPin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_procPin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.runtime_procPin"
 
-def runtime_procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.runtime_procUnpin"
 
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:19:16 -/
-def «Bool__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Bool__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exception_do)
@@ -219,7 +219,7 @@ def «Bool__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:22:16 -/
-def «Bool__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Bool__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exception_do)
@@ -237,7 +237,7 @@ def «Bool__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:25:16 -/
-def «Bool__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Bool__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exception_do)
@@ -253,7 +253,7 @@ def «Bool__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
     go: type.go:28:16 -/
-def «Bool__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Bool__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -273,7 +273,7 @@ def «Bool__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- b32 returns a uint32 0 or 1 representing b.
 
     go: type.go:33:6 -/
-def «b32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «b32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
@@ -289,7 +289,7 @@ def «b32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:58:22 -/
-def «Pointer__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Pointer__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exception_do)
@@ -301,7 +301,7 @@ def «Pointer__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : 
 /-- Store atomically stores val into x.
 
     go: type.go:61:22 -/
-def «Pointer__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Pointer__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exception_do)
@@ -318,7 +318,7 @@ def «Pointer__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) :
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:64:22 -/
-def «Pointer__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Pointer__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exception_do)
@@ -333,7 +333,7 @@ def «Pointer__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:67:22 -/
-def «Pointer__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Pointer__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -351,7 +351,7 @@ def «Pointer__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : g
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:80:17 -/
-def «Int32__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int32__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exception_do)
@@ -363,7 +363,7 @@ def «Int32__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:83:17 -/
-def «Int32__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int32__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exception_do)
@@ -380,7 +380,7 @@ def «Int32__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:86:17 -/
-def «Int32__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int32__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exception_do)
@@ -395,7 +395,7 @@ def «Int32__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:89:17 -/
-def «Int32__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int32__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -413,7 +413,7 @@ def «Int32__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:94:17 -/
-def «Int32__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int32__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exception_do)
@@ -429,7 +429,7 @@ def «Int32__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:98:17 -/
-def «Int32__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int32__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exception_do)
@@ -445,7 +445,7 @@ def «Int32__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:102:17 -/
-def «Int32__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int32__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exception_do)
@@ -460,7 +460,7 @@ def «Int32__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:114:17 -/
-def «Int64__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int64__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exception_do)
@@ -472,7 +472,7 @@ def «Int64__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:117:17 -/
-def «Int64__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int64__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exception_do)
@@ -489,7 +489,7 @@ def «Int64__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:120:17 -/
-def «Int64__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int64__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exception_do)
@@ -504,7 +504,7 @@ def «Int64__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:123:17 -/
-def «Int64__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int64__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -522,7 +522,7 @@ def «Int64__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:128:17 -/
-def «Int64__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int64__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exception_do)
@@ -538,7 +538,7 @@ def «Int64__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:132:17 -/
-def «Int64__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int64__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exception_do)
@@ -554,7 +554,7 @@ def «Int64__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:136:17 -/
-def «Int64__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Int64__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exception_do)
@@ -569,7 +569,7 @@ def «Int64__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:147:18 -/
-def «Uint32__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint32__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exception_do)
@@ -581,7 +581,7 @@ def «Uint32__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:150:18 -/
-def «Uint32__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint32__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exception_do)
@@ -598,7 +598,7 @@ def «Uint32__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:153:18 -/
-def «Uint32__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint32__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exception_do)
@@ -613,7 +613,7 @@ def «Uint32__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:156:18 -/
-def «Uint32__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint32__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -631,7 +631,7 @@ def «Uint32__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:161:18 -/
-def «Uint32__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint32__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exception_do)
@@ -647,7 +647,7 @@ def «Uint32__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:165:18 -/
-def «Uint32__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint32__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exception_do)
@@ -663,7 +663,7 @@ def «Uint32__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:169:18 -/
-def «Uint32__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint32__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exception_do)
@@ -678,7 +678,7 @@ def «Uint32__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:181:18 -/
-def «Uint64__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint64__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exception_do)
@@ -690,7 +690,7 @@ def «Uint64__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:184:18 -/
-def «Uint64__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint64__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exception_do)
@@ -707,7 +707,7 @@ def «Uint64__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:187:18 -/
-def «Uint64__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint64__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exception_do)
@@ -722,7 +722,7 @@ def «Uint64__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:190:18 -/
-def «Uint64__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint64__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -740,7 +740,7 @@ def «Uint64__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:195:18 -/
-def «Uint64__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint64__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exception_do)
@@ -756,7 +756,7 @@ def «Uint64__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:199:18 -/
-def «Uint64__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint64__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exception_do)
@@ -772,7 +772,7 @@ def «Uint64__Andⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:203:18 -/
-def «Uint64__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Uint64__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exception_do)
@@ -788,7 +788,7 @@ def «Uint64__Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     It returns nil if there has been no call to Store for this Value.
 
     go: value.go:28:17 -/
-def «Value__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Value__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
   (App (Val exception_do)
@@ -838,7 +838,7 @@ def «Value__Loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Store of an inconsistent type panics, as does Store(nil).
 
     go: value.go:47:17 -/
-def «Value__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Value__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "val"
   (App (Val exception_do)
@@ -934,7 +934,7 @@ def «Value__Storeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     type. Swap of an inconsistent type panics, as does Swap(nil).
 
     go: value.go:90:17 -/
-def «Value__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Value__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "new"
   (App (Val exception_do)
@@ -1038,7 +1038,7 @@ def «Value__Swapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     CompareAndSwap(old, nil).
 
     go: value.go:134:17 -/
-def «Value__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Value__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "old"
   (Lam "new"
@@ -1167,7 +1167,7 @@ def «Value__CompareAndSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.sync.atomic where
   pkg_imported_pkgs := []
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.sync.atomic)) (Lam BAnon
   (App (Val exception_do)

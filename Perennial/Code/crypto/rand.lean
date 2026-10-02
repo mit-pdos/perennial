@@ -19,24 +19,24 @@ namespace crypto.rand
 
 axiom base32alphabet [ffi_syntax] [GoGlobalContext] : val
 
-def Reader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/rand.Reader"
 
 axiom Reader'init [ffi_syntax] [GoGlobalContext] : val
 
-def fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/rand.fatal"
 
-def Read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Read [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/rand.Read"
 
-def Text [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Text [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/rand.Text"
 
-def Prime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Prime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/rand.Prime"
 
-def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/rand.Int"
 
 instance info' : PkgInfo pkg_id.crypto.rand where
@@ -44,7 +44,7 @@ instance info' : PkgInfo pkg_id.crypto.rand where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.rand)) (Lam BAnon
   (App (Val exception_do)

@@ -29,11 +29,11 @@ def shared [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] shared
 
-def wordCount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wordCount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq.wordCount"
 
 /-- go: w.go:19:18 -/
-def «Worker__runⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Worker__runⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "neighbor"
   (Lam "sh"
@@ -119,7 +119,7 @@ def «Worker__runⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))
 
 /-- go: w.go:62:18 -/
-def «Worker__processⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Worker__processⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "doc"
   (Lam "sh"
@@ -145,7 +145,7 @@ def «Worker__processⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.atomic.Int64) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.atomic.Int64)))) (App (Val (GoInstruction (StructFieldRef shared go!"total"))) (Var "sh")))) (Var "$a0")))))))))))))
 
 /-- go: w.go:69:6 -/
-def «wordCountⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «wordCountⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "docs"
   (App (Val exception_do)
   (Let "docs" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.string)))) (Var "docs"))
@@ -239,7 +239,7 @@ def «wordCountⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq where
   pkg_imported_pkgs := [pkg_id.strings, pkg_id.sync.atomic]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq)) (Lam BAnon
   (App (Val exception_do)

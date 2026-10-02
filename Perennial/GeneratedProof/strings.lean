@@ -39,28 +39,32 @@ instance Builder_access_load_addr (l : loc) (v : strings.Builder.t) (dq : DFrac)
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref strings.Builder.t go!"addr" l) v.addr' dq)
       (typed_pointsto (struct_field_ref strings.Builder.t go!"addr" l) v.addr' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Builder_access_store_addr (l : loc) (v : strings.Builder.t) (addr' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref strings.Builder.t go!"addr" l) v.addr' (DFrac.own 1))
       (typed_pointsto (struct_field_ref strings.Builder.t go!"addr" l) addr' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with addr' := addr' } : strings.Builder.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with addr' := addr' } : strings.Builder.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Builder_access_load_buf (l : loc) (v : strings.Builder.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref strings.Builder.t go!"buf" l) v.buf' dq)
       (typed_pointsto (struct_field_ref strings.Builder.t go!"buf" l) v.buf' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Builder_access_store_buf (l : loc) (v : strings.Builder.t) (buf' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref strings.Builder.t go!"buf" l) v.buf' (DFrac.own 1))
       (typed_pointsto (struct_field_ref strings.Builder.t go!"buf" l) buf' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with buf' := buf' } : strings.Builder.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with buf' := buf' } : strings.Builder.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

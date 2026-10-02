@@ -795,67 +795,75 @@ instance OpResponse_typed_pointsto :
     "_" ∷ True)
   typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
   typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := sorry -- Rocq: Admitted
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance OpResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.OpResponse.t go_etcd_io.etcd.client.v3.«OpResponseⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.OpResponse.t go_etcd_io.etcd.client.v3.«OpResponseⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance OpResponse_access_load_put (l : loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"put" l) v.put' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"put" l) v.put' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance OpResponse_access_store_put (l : loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (put' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"put" l) v.put' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"put" l) put' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with put' := put' } : go_etcd_io.etcd.client.v3.OpResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance OpResponse_access_load_get (l : loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"get" l) v.get' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"get" l) v.get' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance OpResponse_access_store_get (l : loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (get' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"get" l) v.get' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"get" l) get' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with get' := get' } : go_etcd_io.etcd.client.v3.OpResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance OpResponse_access_load_del (l : loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"del" l) v.del' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"del" l) v.del' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance OpResponse_access_store_del (l : loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (del' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"del" l) v.del' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"del" l) del' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with del' := del' } : go_etcd_io.etcd.client.v3.OpResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance OpResponse_access_load_txn (l : loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"txn" l) v.txn' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"txn" l) v.txn' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance OpResponse_access_store_txn (l : loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (txn' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"txn" l) v.txn' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.OpResponse.t go!"txn" l) txn' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with txn' := txn' } : go_etcd_io.etcd.client.v3.OpResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 end def_
 end OpResponse
@@ -916,67 +924,75 @@ instance LeaseGrantResponse_typed_pointsto :
     "_" ∷ True)
   typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
   typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := sorry -- Rocq: Admitted
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseGrantResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go_etcd_io.etcd.client.v3.«LeaseGrantResponseⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go_etcd_io.etcd.client.v3.«LeaseGrantResponseⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance LeaseGrantResponse_access_load_ResponseHeader (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"ResponseHeader" l) v.ResponseHeader' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"ResponseHeader" l) v.ResponseHeader' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseGrantResponse_access_store_ResponseHeader (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (ResponseHeader' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"ResponseHeader" l) v.ResponseHeader' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"ResponseHeader" l) ResponseHeader' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ResponseHeader' := ResponseHeader' } : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseGrantResponse_access_load_ID (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"ID" l) v.ID' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"ID" l) v.ID' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseGrantResponse_access_store_ID (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (ID' : go_etcd_io.etcd.client.v3.LeaseID.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"ID" l) v.ID' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"ID" l) ID' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ID' := ID' } : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseGrantResponse_access_load_TTL (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"TTL" l) v.TTL' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"TTL" l) v.TTL' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseGrantResponse_access_store_TTL (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (TTL' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"TTL" l) v.TTL' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"TTL" l) TTL' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with TTL' := TTL' } : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseGrantResponse_access_load_Error (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"Error" l) v.Error' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"Error" l) v.Error' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseGrantResponse_access_store_Error (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (Error' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"Error" l) v.Error' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go!"Error" l) Error' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Error' := Error' } : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 end def_
 end LeaseGrantResponse
@@ -1403,403 +1419,459 @@ instance Op_typed_pointsto :
     "_" ∷ True)
   typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
   typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := sorry -- Rocq: Admitted
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Op_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Op.t go_etcd_io.etcd.client.v3.«Opⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Op.t go_etcd_io.etcd.client.v3.«Opⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance Op_access_load_t (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"t" l) v.t' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"t" l) v.t' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_t (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (t' : go_etcd_io.etcd.client.v3.opType.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"t" l) v.t' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"t" l) t' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with t' := t' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_key (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"key" l) v.key' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"key" l) v.key' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_key (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (key' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"key" l) v.key' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"key" l) key' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with key' := key' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_end (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"end" l) v.end' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"end" l) v.end' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_end (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (end' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"end" l) v.end' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"end" l) end' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with end' := end' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_limit (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"limit" l) v.limit' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"limit" l) v.limit' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_limit (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (limit' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"limit" l) v.limit' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"limit" l) limit' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with limit' := limit' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_sort (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"sort" l) v.sort' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"sort" l) v.sort' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_sort (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (sort' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"sort" l) v.sort' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"sort" l) sort' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sort' := sort' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_serializable (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"serializable" l) v.serializable' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"serializable" l) v.serializable' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_serializable (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (serializable' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"serializable" l) v.serializable' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"serializable" l) serializable' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with serializable' := serializable' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_keysOnly (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"keysOnly" l) v.keysOnly' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"keysOnly" l) v.keysOnly' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_keysOnly (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (keysOnly' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"keysOnly" l) v.keysOnly' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"keysOnly" l) keysOnly' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with keysOnly' := keysOnly' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_countOnly (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"countOnly" l) v.countOnly' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"countOnly" l) v.countOnly' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_countOnly (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (countOnly' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"countOnly" l) v.countOnly' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"countOnly" l) countOnly' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with countOnly' := countOnly' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_minModRev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"minModRev" l) v.minModRev' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"minModRev" l) v.minModRev' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_minModRev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (minModRev' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"minModRev" l) v.minModRev' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"minModRev" l) minModRev' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with minModRev' := minModRev' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_maxModRev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"maxModRev" l) v.maxModRev' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"maxModRev" l) v.maxModRev' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_maxModRev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (maxModRev' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"maxModRev" l) v.maxModRev' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"maxModRev" l) maxModRev' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with maxModRev' := maxModRev' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_minCreateRev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"minCreateRev" l) v.minCreateRev' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"minCreateRev" l) v.minCreateRev' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_minCreateRev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (minCreateRev' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"minCreateRev" l) v.minCreateRev' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"minCreateRev" l) minCreateRev' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with minCreateRev' := minCreateRev' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_maxCreateRev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"maxCreateRev" l) v.maxCreateRev' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"maxCreateRev" l) v.maxCreateRev' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_maxCreateRev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (maxCreateRev' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"maxCreateRev" l) v.maxCreateRev' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"maxCreateRev" l) maxCreateRev' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with maxCreateRev' := maxCreateRev' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_rev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"rev" l) v.rev' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"rev" l) v.rev' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_rev (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (rev' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"rev" l) v.rev' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"rev" l) rev' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with rev' := rev' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_prevKV (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"prevKV" l) v.prevKV' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"prevKV" l) v.prevKV' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_prevKV (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (prevKV' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"prevKV" l) v.prevKV' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"prevKV" l) prevKV' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with prevKV' := prevKV' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_fragment (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"fragment" l) v.fragment' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"fragment" l) v.fragment' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_fragment (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (fragment' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"fragment" l) v.fragment' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"fragment" l) fragment' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fragment' := fragment' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_ignoreValue (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"ignoreValue" l) v.ignoreValue' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"ignoreValue" l) v.ignoreValue' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_ignoreValue (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (ignoreValue' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"ignoreValue" l) v.ignoreValue' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"ignoreValue" l) ignoreValue' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ignoreValue' := ignoreValue' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_ignoreLease (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"ignoreLease" l) v.ignoreLease' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"ignoreLease" l) v.ignoreLease' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_ignoreLease (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (ignoreLease' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"ignoreLease" l) v.ignoreLease' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"ignoreLease" l) ignoreLease' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ignoreLease' := ignoreLease' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_progressNotify (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"progressNotify" l) v.progressNotify' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"progressNotify" l) v.progressNotify' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_progressNotify (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (progressNotify' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"progressNotify" l) v.progressNotify' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"progressNotify" l) progressNotify' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with progressNotify' := progressNotify' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_createdNotify (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"createdNotify" l) v.createdNotify' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"createdNotify" l) v.createdNotify' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_createdNotify (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (createdNotify' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"createdNotify" l) v.createdNotify' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"createdNotify" l) createdNotify' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with createdNotify' := createdNotify' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_filterPut (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"filterPut" l) v.filterPut' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"filterPut" l) v.filterPut' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_filterPut (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (filterPut' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"filterPut" l) v.filterPut' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"filterPut" l) filterPut' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with filterPut' := filterPut' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_filterDelete (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"filterDelete" l) v.filterDelete' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"filterDelete" l) v.filterDelete' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_filterDelete (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (filterDelete' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"filterDelete" l) v.filterDelete' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"filterDelete" l) filterDelete' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with filterDelete' := filterDelete' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_val (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"val" l) v.val' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"val" l) v.val' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_val (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (val' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"val" l) v.val' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"val" l) val' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with val' := val' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_leaseID (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"leaseID" l) v.leaseID' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"leaseID" l) v.leaseID' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_leaseID (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (leaseID' : go_etcd_io.etcd.client.v3.LeaseID.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"leaseID" l) v.leaseID' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"leaseID" l) leaseID' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with leaseID' := leaseID' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_cmps (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"cmps" l) v.cmps' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"cmps" l) v.cmps' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_cmps (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (cmps' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"cmps" l) v.cmps' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"cmps" l) cmps' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cmps' := cmps' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_thenOps (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"thenOps" l) v.thenOps' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"thenOps" l) v.thenOps' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_thenOps (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (thenOps' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"thenOps" l) v.thenOps' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"thenOps" l) thenOps' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with thenOps' := thenOps' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_elseOps (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"elseOps" l) v.elseOps' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"elseOps" l) v.elseOps' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_elseOps (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (elseOps' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"elseOps" l) v.elseOps' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"elseOps" l) elseOps' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with elseOps' := elseOps' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_isOptsWithFromKey (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"isOptsWithFromKey" l) v.isOptsWithFromKey' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"isOptsWithFromKey" l) v.isOptsWithFromKey' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_isOptsWithFromKey (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (isOptsWithFromKey' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"isOptsWithFromKey" l) v.isOptsWithFromKey' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"isOptsWithFromKey" l) isOptsWithFromKey' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with isOptsWithFromKey' := isOptsWithFromKey' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_load_isOptsWithPrefix (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"isOptsWithPrefix" l) v.isOptsWithPrefix' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"isOptsWithPrefix" l) v.isOptsWithPrefix' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance Op_access_store_isOptsWithPrefix (l : loc) (v : go_etcd_io.etcd.client.v3.Op.t) (isOptsWithPrefix' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"isOptsWithPrefix" l) v.isOptsWithPrefix' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.Op.t go!"isOptsWithPrefix" l) isOptsWithPrefix' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with isOptsWithPrefix' := isOptsWithPrefix' } : go_etcd_io.etcd.client.v3.Op.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Op
@@ -1820,39 +1892,43 @@ instance LeaseOp_typed_pointsto :
     "_" ∷ True)
   typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
   typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := sorry -- Rocq: Admitted
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseOp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseOp.t go_etcd_io.etcd.client.v3.«LeaseOpⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseOp.t go_etcd_io.etcd.client.v3.«LeaseOpⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance LeaseOp_access_load_id (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseOp.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseOp.t go!"id" l) v.id' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseOp.t go!"id" l) v.id' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseOp_access_store_id (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseOp.t) (id' : go_etcd_io.etcd.client.v3.LeaseID.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseOp.t go!"id" l) v.id' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseOp.t go!"id" l) id' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with id' := id' } : go_etcd_io.etcd.client.v3.LeaseOp.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseOp_access_load_attachedKeys (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseOp.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseOp.t go!"attachedKeys" l) v.attachedKeys' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseOp.t go!"attachedKeys" l) v.attachedKeys' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance LeaseOp_access_store_attachedKeys (l : loc) (v : go_etcd_io.etcd.client.v3.LeaseOp.t) (attachedKeys' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseOp.t go!"attachedKeys" l) v.attachedKeys' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.LeaseOp.t go!"attachedKeys" l) attachedKeys' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with attachedKeys' := attachedKeys' } : go_etcd_io.etcd.client.v3.LeaseOp.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 end def_
 end LeaseOp
@@ -2063,39 +2139,43 @@ instance SortOption_typed_pointsto :
     "_" ∷ True)
   typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
   typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := sorry -- Rocq: Admitted
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance SortOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.SortOption.t go_etcd_io.etcd.client.v3.«SortOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.SortOption.t go_etcd_io.etcd.client.v3.«SortOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance SortOption_access_load_Target (l : loc) (v : go_etcd_io.etcd.client.v3.SortOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.SortOption.t go!"Target" l) v.Target' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.SortOption.t go!"Target" l) v.Target' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance SortOption_access_store_Target (l : loc) (v : go_etcd_io.etcd.client.v3.SortOption.t) (Target' : go_etcd_io.etcd.client.v3.SortTarget.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.SortOption.t go!"Target" l) v.Target' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.SortOption.t go!"Target" l) Target' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Target' := Target' } : go_etcd_io.etcd.client.v3.SortOption.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance SortOption_access_load_Order (l : loc) (v : go_etcd_io.etcd.client.v3.SortOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.SortOption.t go!"Order" l) v.Order' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.SortOption.t go!"Order" l) v.Order' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance SortOption_access_store_Order (l : loc) (v : go_etcd_io.etcd.client.v3.SortOption.t) (Order' : go_etcd_io.etcd.client.v3.SortOrder.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.SortOption.t go!"Order" l) v.Order' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.SortOption.t go!"Order" l) Order' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Order' := Order' } : go_etcd_io.etcd.client.v3.SortOption.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 end def_
 end SortOption
@@ -2140,109 +2220,123 @@ instance WatchResponse_typed_pointsto :
     "_" ∷ True)
   typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
   typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := sorry -- Rocq: Admitted
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.WatchResponse.t go_etcd_io.etcd.client.v3.«WatchResponseⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.WatchResponse.t go_etcd_io.etcd.client.v3.«WatchResponseⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance WatchResponse_access_load_Header (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Header" l) v.Header' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Header" l) v.Header' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_store_Header (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (Header' : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Header" l) v.Header' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Header" l) Header' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Header' := Header' } : go_etcd_io.etcd.client.v3.WatchResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_load_Events (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Events" l) v.Events' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Events" l) v.Events' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_store_Events (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (Events' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Events" l) v.Events' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Events" l) Events' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Events' := Events' } : go_etcd_io.etcd.client.v3.WatchResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_load_CompactRevision (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"CompactRevision" l) v.CompactRevision' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"CompactRevision" l) v.CompactRevision' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_store_CompactRevision (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (CompactRevision' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"CompactRevision" l) v.CompactRevision' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"CompactRevision" l) CompactRevision' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with CompactRevision' := CompactRevision' } : go_etcd_io.etcd.client.v3.WatchResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_load_Canceled (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Canceled" l) v.Canceled' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Canceled" l) v.Canceled' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_store_Canceled (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (Canceled' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Canceled" l) v.Canceled' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Canceled" l) Canceled' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Canceled' := Canceled' } : go_etcd_io.etcd.client.v3.WatchResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_load_Created (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Created" l) v.Created' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Created" l) v.Created' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_store_Created (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (Created' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Created" l) v.Created' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"Created" l) Created' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Created' := Created' } : go_etcd_io.etcd.client.v3.WatchResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_load_closeErr (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"closeErr" l) v.closeErr' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"closeErr" l) v.closeErr' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_store_closeErr (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (closeErr' : error.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"closeErr" l) v.closeErr' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"closeErr" l) closeErr' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with closeErr' := closeErr' } : go_etcd_io.etcd.client.v3.WatchResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_load_CancelReason (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"CancelReason" l) v.CancelReason' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"CancelReason" l) v.CancelReason' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance WatchResponse_access_store_CancelReason (l : loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (CancelReason' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"CancelReason" l) v.CancelReason' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.WatchResponse.t go!"CancelReason" l) CancelReason' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with CancelReason' := CancelReason' } : go_etcd_io.etcd.client.v3.WatchResponse.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 end def_
 end WatchResponse

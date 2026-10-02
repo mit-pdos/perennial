@@ -78,28 +78,32 @@ instance Timer_access_load_C (l : loc) (v : time.Timer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Timer.t go!"C" l) v.C' dq)
       (typed_pointsto (struct_field_ref time.Timer.t go!"C" l) v.C' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Timer_access_store_C (l : loc) (v : time.Timer.t) (C' : chan.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Timer.t go!"C" l) v.C' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Timer.t go!"C" l) C' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with C' := C' } : time.Timer.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with C' := C' } : time.Timer.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Timer_access_load_initTimer (l : loc) (v : time.Timer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) v.initTimer' dq)
       (typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) v.initTimer' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Timer_access_store_initTimer (l : loc) (v : time.Timer.t) (initTimer' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) v.initTimer' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Timer.t go!"initTimer" l) initTimer' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with initTimer' := initTimer' } : time.Timer.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with initTimer' := initTimer' } : time.Timer.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -151,42 +155,48 @@ instance Time_access_load_wall (l : loc) (v : time.Time.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"wall" l) v.wall' dq)
       (typed_pointsto (struct_field_ref time.Time.t go!"wall" l) v.wall' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Time_access_store_wall (l : loc) (v : time.Time.t) (wall' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"wall" l) v.wall' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Time.t go!"wall" l) wall' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wall' := wall' } : time.Time.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wall' := wall' } : time.Time.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Time_access_load_ext (l : loc) (v : time.Time.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"ext" l) v.ext' dq)
       (typed_pointsto (struct_field_ref time.Time.t go!"ext" l) v.ext' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Time_access_store_ext (l : loc) (v : time.Time.t) (ext' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"ext" l) v.ext' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Time.t go!"ext" l) ext' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ext' := ext' } : time.Time.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ext' := ext' } : time.Time.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Time_access_load_loc (l : loc) (v : time.Time.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"loc" l) v.loc' dq)
       (typed_pointsto (struct_field_ref time.Time.t go!"loc" l) v.loc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Time_access_store_loc (l : loc) (v : time.Time.t) (loc' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref time.Time.t go!"loc" l) v.loc' (DFrac.own 1))
       (typed_pointsto (struct_field_ref time.Time.t go!"loc" l) loc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with loc' := loc' } : time.Time.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with loc' := loc' } : time.Time.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

@@ -69,14 +69,16 @@ instance withInterface_access_load_a (l : loc) (v : github_com.mit_pdos.perennia
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance withInterface_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t) (a' : interface.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -108,14 +110,16 @@ instance diskWrapper_access_load_d (l : loc) (v : github_com.mit_pdos.perennial.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t go!"d" l) v.d' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t go!"d" l) v.d' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance diskWrapper_access_store_d (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t) (d' : github_com.goose_lang.primitive.disk.Disk.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t go!"d" l) v.d' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t go!"d" l) d' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with d' := d' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with d' := d' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -147,14 +151,16 @@ instance embedA_access_load_a (l : loc) (v : github_com.mit_pdos.perennial.goose
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance embedA_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t) (a' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -186,14 +192,16 @@ instance embedB_access_load_embedA (l : loc) (v : github_com.mit_pdos.perennial.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t go!"embedA" l) v.embedA' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t go!"embedA" l) v.embedA' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance embedB_access_store_embedA (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t) (embedA' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t go!"embedA" l) v.embedA' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t go!"embedA" l) embedA' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with embedA' := embedA' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with embedA' := embedA' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -225,14 +233,16 @@ instance embedC_access_load_embedB (l : loc) (v : github_com.mit_pdos.perennial.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t go!"embedB" l) v.embedB' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t go!"embedB" l) v.embedB' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance embedC_access_store_embedB (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t) (embedB' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t go!"embedB" l) v.embedB' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t go!"embedB" l) embedB' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with embedB' := embedB' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with embedB' := embedB' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -264,14 +274,16 @@ instance embedD_access_load_embedC (l : loc) (v : github_com.mit_pdos.perennial.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t go!"embedC" l) v.embedC' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t go!"embedC" l) v.embedC' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance embedD_access_store_embedC (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t) (embedC' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t go!"embedC" l) v.embedC' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t go!"embedC" l) embedC' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with embedC' := embedC' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with embedC' := embedC' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -303,14 +315,16 @@ instance concreteFooer_access_load_a (l : loc) (v : github_com.mit_pdos.perennia
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance concreteFooer_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -342,14 +356,16 @@ instance FooerUser_access_load_f (l : loc) (v : github_com.mit_pdos.perennial.go
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t go!"f" l) v.f' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t go!"f" l) v.f' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance FooerUser_access_store_f (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t) (f' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Fooer.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t go!"f" l) v.f' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t go!"f" l) f' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with f' := f' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with f' := f' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -407,42 +423,48 @@ instance allTheLiterals_access_load_int (l : loc) (v : github_com.mit_pdos.peren
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"int" l) v.int' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"int" l) v.int' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance allTheLiterals_access_store_int (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (int' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"int" l) v.int' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"int" l) int' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with int' := int' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with int' := int' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance allTheLiterals_access_load_s (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"s" l) v.s' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"s" l) v.s' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance allTheLiterals_access_store_s (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (s' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"s" l) v.s' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"s" l) s' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance allTheLiterals_access_load_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"b" l) v.b' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance allTheLiterals_access_store_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (b' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"b" l) v.b' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -474,14 +496,16 @@ instance hasCondVar_access_load_cond (l : loc) (v : github_com.mit_pdos.perennia
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t go!"cond" l) v.cond' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t go!"cond" l) v.cond' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance hasCondVar_access_store_cond (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t) (cond' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t go!"cond" l) v.cond' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t go!"cond" l) cond' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cond' := cond' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cond' := cond' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -514,28 +538,32 @@ instance mapElem_access_load_a (l : loc) (v : github_com.mit_pdos.perennial.goos
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance mapElem_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance mapElem_access_load_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t go!"b" l) v.b' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance mapElem_access_store_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t) (b' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t go!"b" l) v.b' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -567,14 +595,16 @@ instance containsPointer_access_load_s (l : loc) (v : github_com.mit_pdos.perenn
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t go!"s" l) v.s' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t go!"s" l) v.s' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance containsPointer_access_store_s (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t) (s' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t go!"s" l) v.s' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t go!"s" l) s' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -606,14 +636,16 @@ instance wrapExternalStruct_access_load_j (l : loc) (v : github_com.mit_pdos.per
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t go!"j" l) v.j' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t go!"j" l) v.j' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance wrapExternalStruct_access_store_j (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t) (j' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t go!"j" l) v.j' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t go!"j" l) j' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with j' := j' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with j' := j' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -645,14 +677,16 @@ instance typing_access_load_proph (l : loc) (v : github_com.mit_pdos.perennial.g
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t go!"proph" l) v.proph' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t go!"proph" l) v.proph' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance typing_access_store_proph (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t) (proph' : github_com.goose_lang.primitive.ProphId.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t go!"proph" l) v.proph' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t go!"proph" l) proph' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with proph' := proph' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with proph' := proph' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -685,28 +719,32 @@ instance composite_access_load_a (l : loc) (v : github_com.mit_pdos.perennial.go
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance composite_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance composite_access_load_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t go!"b" l) v.b' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance composite_access_store_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t) (b' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t go!"b" l) v.b' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -762,14 +800,16 @@ instance Other_access_load_RecursiveEmbedded (l : loc) (v : github_com.mit_pdos.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t go!"RecursiveEmbedded" l) v.RecursiveEmbedded' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t go!"RecursiveEmbedded" l) v.RecursiveEmbedded' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Other_access_store_RecursiveEmbedded (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t) (RecursiveEmbedded' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t go!"RecursiveEmbedded" l) v.RecursiveEmbedded' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t go!"RecursiveEmbedded" l) RecursiveEmbedded' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with RecursiveEmbedded' := RecursiveEmbedded' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with RecursiveEmbedded' := RecursiveEmbedded' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -801,14 +841,16 @@ instance RecursiveEmbedded_access_load_Other (l : loc) (v : github_com.mit_pdos.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t go!"Other" l) v.Other' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t go!"Other" l) v.Other' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance RecursiveEmbedded_access_store_Other (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t) (Other' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t go!"Other" l) v.Other' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t go!"Other" l) Other' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Other' := Other' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Other' := Other' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -840,14 +882,16 @@ instance Block_access_load_Value (l : loc) (v : github_com.mit_pdos.perennial.go
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t go!"Value" l) v.Value' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t go!"Value" l) v.Value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Block_access_store_Value (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t) (Value' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t go!"Value" l) v.Value' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t go!"Value" l) Value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -879,14 +923,16 @@ instance thing_access_load_x (l : loc) (v : github_com.mit_pdos.perennial.goose.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t go!"x" l) v.x' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t go!"x" l) v.x' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance thing_access_store_x (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t) (x' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t go!"x" l) v.x' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t go!"x" l) x' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -918,14 +964,16 @@ instance sliceOfThings_access_load_things (l : loc) (v : github_com.mit_pdos.per
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t go!"things" l) v.things' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t go!"things" l) v.things' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance sliceOfThings_access_store_things (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t) (things' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t go!"things" l) v.things' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t go!"things" l) things' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with things' := things' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with things' := things' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -958,28 +1006,32 @@ instance Point_access_load_x (l : loc) (v : github_com.mit_pdos.perennial.goose.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t go!"x" l) v.x' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t go!"x" l) v.x' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Point_access_store_x (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t) (x' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t go!"x" l) v.x' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t go!"x" l) x' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Point_access_load_y (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t go!"y" l) v.y' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t go!"y" l) v.y' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Point_access_store_y (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t) (y' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t go!"y" l) v.y' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t go!"y" l) y' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -1012,28 +1064,32 @@ instance TwoInts_access_load_x (l : loc) (v : github_com.mit_pdos.perennial.goos
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t go!"x" l) v.x' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t go!"x" l) v.x' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance TwoInts_access_store_x (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) (x' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t go!"x" l) v.x' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t go!"x" l) x' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance TwoInts_access_load_y (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t go!"y" l) v.y' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t go!"y" l) v.y' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance TwoInts_access_store_y (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) (y' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t go!"y" l) v.y' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t go!"y" l) y' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -1067,42 +1123,48 @@ instance S_access_load_a (l : loc) (v : github_com.mit_pdos.perennial.goose.test
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance S_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance S_access_load_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"b" l) v.b' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance S_access_store_b (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (b' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"b" l) v.b' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance S_access_load_c (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"c" l) v.c' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"c" l) v.c' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance S_access_store_c (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (c' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"c" l) v.c' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t go!"c" l) c' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with c' := c' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with c' := c' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -1134,14 +1196,16 @@ instance B_access_load_a (l : loc) (v : github_com.mit_pdos.perennial.goose.test
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t go!"a" l) v.a' dq)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance B_access_store_a (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t) (a' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t go!"a" l) v.a' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

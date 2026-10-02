@@ -28,253 +28,253 @@ def xorshift [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] xorshift
 
-@[reducible] def unknownHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def unknownHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def increasingHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def increasingHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def decreasingHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def decreasingHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def All [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def All [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.All"
 
-def Backward [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Backward [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Backward"
 
-def Values [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Values [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Values"
 
-def AppendSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendSeq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.AppendSeq"
 
-def Collect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Collect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Collect"
 
-def Sorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sorted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Sorted"
 
-def SortedFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SortedFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.SortedFunc"
 
-def SortedStableFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SortedStableFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.SortedStableFunc"
 
-def Chunk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chunk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Chunk"
 
-def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Equal"
 
-def EqualFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.EqualFunc"
 
-def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Compare"
 
-def CompareFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompareFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.CompareFunc"
 
-def Index' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Index' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Index"
 
-def IndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.IndexFunc"
 
-def Contains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Contains [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Contains"
 
-def ContainsFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContainsFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.ContainsFunc"
 
-def Insert [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Insert [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Insert"
 
-def Delete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Delete [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Delete"
 
-def DeleteFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DeleteFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.DeleteFunc"
 
-def Replace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Replace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Replace"
 
-def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Clone"
 
-def Compact [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compact [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Compact"
 
-def CompactFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompactFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.CompactFunc"
 
-def Grow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Grow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Grow"
 
-def Clip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Clip"
 
-def rotateLeft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rotateLeft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.rotateLeft"
 
-def rotateRight [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rotateRight [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.rotateRight"
 
-def overlaps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def overlaps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.overlaps"
 
-def startIdx [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startIdx [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.startIdx"
 
-def Reverse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reverse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Reverse"
 
-def Concat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Concat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Concat"
 
-def Repeat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Repeat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Repeat"
 
-def «Sort» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «Sort» [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Sort"
 
-def SortFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SortFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.SortFunc"
 
-def SortStableFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SortStableFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.SortStableFunc"
 
-def IsSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsSorted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.IsSorted"
 
-def IsSortedFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsSortedFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.IsSortedFunc"
 
-def Min [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Min [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Min"
 
-def MinFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MinFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.MinFunc"
 
-def Max [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Max [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.Max"
 
-def MaxFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.MaxFunc"
 
-def BinarySearch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BinarySearch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.BinarySearch"
 
-def BinarySearchFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BinarySearchFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.BinarySearchFunc"
 
-def nextPowerOfTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextPowerOfTwo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.nextPowerOfTwo"
 
-def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.isNaN"
 
-def insertionSortCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def insertionSortCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.insertionSortCmpFunc"
 
-def siftDownCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def siftDownCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.siftDownCmpFunc"
 
-def heapSortCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSortCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.heapSortCmpFunc"
 
-def pdqsortCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pdqsortCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.pdqsortCmpFunc"
 
-def partitionCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partitionCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.partitionCmpFunc"
 
-def partitionEqualCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partitionEqualCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.partitionEqualCmpFunc"
 
-def partialInsertionSortCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partialInsertionSortCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.partialInsertionSortCmpFunc"
 
-def breakPatternsCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def breakPatternsCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.breakPatternsCmpFunc"
 
-def choosePivotCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def choosePivotCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.choosePivotCmpFunc"
 
-def order2CmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def order2CmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.order2CmpFunc"
 
-def medianCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def medianCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.medianCmpFunc"
 
-def medianAdjacentCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def medianAdjacentCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.medianAdjacentCmpFunc"
 
-def reverseRangeCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reverseRangeCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.reverseRangeCmpFunc"
 
-def swapRangeCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def swapRangeCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.swapRangeCmpFunc"
 
-def stableCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stableCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.stableCmpFunc"
 
-def symMergeCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symMergeCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.symMergeCmpFunc"
 
-def rotateCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rotateCmpFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.rotateCmpFunc"
 
-def insertionSortOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def insertionSortOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.insertionSortOrdered"
 
-def siftDownOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def siftDownOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.siftDownOrdered"
 
-def heapSortOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSortOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.heapSortOrdered"
 
-def pdqsortOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pdqsortOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.pdqsortOrdered"
 
-def partitionOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partitionOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.partitionOrdered"
 
-def partitionEqualOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partitionEqualOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.partitionEqualOrdered"
 
-def partialInsertionSortOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partialInsertionSortOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.partialInsertionSortOrdered"
 
-def breakPatternsOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def breakPatternsOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.breakPatternsOrdered"
 
-def choosePivotOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def choosePivotOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.choosePivotOrdered"
 
-def order2Ordered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def order2Ordered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.order2Ordered"
 
-def medianOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def medianOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.medianOrdered"
 
-def medianAdjacentOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def medianAdjacentOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.medianAdjacentOrdered"
 
-def reverseRangeOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reverseRangeOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.reverseRangeOrdered"
 
-def swapRangeOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def swapRangeOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.swapRangeOrdered"
 
-def stableOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stableOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.stableOrdered"
 
-def symMergeOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symMergeOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.symMergeOrdered"
 
-def rotateOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rotateOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"slices.rotateOrdered"
 
 /-- SortFunc sorts the slice x in ascending order as determined by the cmp
@@ -288,7 +288,7 @@ def rotateOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
     The function should return 0 for incomparable items.
 
     go: sort.go:30:6 -/
-def «SortFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (S E : go.type) : val :=
+noncomputable def «SortFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (S E : go.type) : val :=
   (LamV "x"
   (Lam "cmp"
   (App (Val exception_do)
@@ -313,7 +313,7 @@ def «SortFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (S E : go.type) : val
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))))))
 
 /-- go: sort.go:181:20 -/
-def «xorshift__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «xorshift__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -333,7 +333,7 @@ def «xorshift__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- insertionSortCmpFunc sorts data[a:b] using insertion sort.
 
     go: zsortanyfunc.go:10:6 -/
-def «insertionSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «insertionSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -380,7 +380,7 @@ def «insertionSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.t
     first is an offset into the array where the root of the heap lies.
 
     go: zsortanyfunc.go:20:6 -/
-def «siftDownCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «siftDownCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "lo"
   (Lam "hi"
@@ -443,7 +443,7 @@ def «siftDownCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) 
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "root") (Var "$r0")))))))))))))))))))
 
 /-- go: zsortanyfunc.go:38:6 -/
-def «heapSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «heapSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -523,7 +523,7 @@ def «heapSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) 
     limit is the number of allowed bad (very unbalanced) pivots before falling back to heapsort.
 
     go: zsortanyfunc.go:61:6 -/
-def «pdqsortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «pdqsortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -741,7 +741,7 @@ def «pdqsortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) :
     On return, data[newpivot] = p
 
     go: zsortanyfunc.go:135:6 -/
-def «partitionCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «partitionCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -875,7 +875,7 @@ def «partitionCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type)
     It assumed that data[a:b] does not contain elements smaller than the data[pivot].
 
     go: zsortanyfunc.go:173:6 -/
-def «partitionEqualCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «partitionEqualCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -953,7 +953,7 @@ def «partitionEqualCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.
 /-- partialInsertionSortCmpFunc partially sorts a slice, returns true if the slice is sorted at the end.
 
     go: zsortanyfunc.go:195:6 -/
-def «partialInsertionSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «partialInsertionSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1072,7 +1072,7 @@ def «partialInsertionSortCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E
     that might cause imbalanced partitions in quicksort.
 
     go: zsortanyfunc.go:240:6 -/
-def «breakPatternsCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «breakPatternsCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1140,7 +1140,7 @@ def «breakPatternsCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.t
     [shortestNinther,∞): uses the Tukey ninther method.
 
     go: zsortanyfunc.go:261:6 -/
-def «choosePivotCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «choosePivotCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1228,7 +1228,7 @@ def «choosePivotCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.typ
 /-- order2CmpFunc returns x,y where data[x] <= data[y], where x,y=a,b or x,y=b,a.
 
     go: zsortanyfunc.go:298:6 -/
-def «order2CmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «order2CmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1257,7 +1257,7 @@ def «order2CmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : 
 /-- medianCmpFunc returns x where data[x] is the median of data[a],data[b],data[c], where x is a, b, or c.
 
     go: zsortanyfunc.go:307:6 -/
-def «medianCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «medianCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1325,7 +1325,7 @@ def «medianCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : 
 /-- medianAdjacentCmpFunc finds the median of data[a - 1], data[a], data[a + 1] and stores the index into a.
 
     go: zsortanyfunc.go:315:6 -/
-def «medianAdjacentCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «medianAdjacentCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "swaps"
@@ -1345,7 +1345,7 @@ def «medianAdjacentCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.
   (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))))))))))))
 
 /-- go: zsortanyfunc.go:319:6 -/
-def «reverseRangeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «reverseRangeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1387,7 +1387,7 @@ def «reverseRangeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.ty
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
 /-- go: zsortanyfunc.go:329:6 -/
-def «swapRangeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «swapRangeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1421,7 +1421,7 @@ def «swapRangeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))))
 
 /-- go: zsortanyfunc.go:335:6 -/
-def «stableCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «stableCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "n"
   (Lam "cmp"
@@ -1543,7 +1543,7 @@ def «stableCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : 
     which improves performance.
 
     go: zsortanyfunc.go:378:6 -/
-def «symMergeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «symMergeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
@@ -1760,7 +1760,7 @@ def «symMergeCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) 
     and it assumes non-degenerate arguments: a < m && m < b.
 
     go: zsortanyfunc.go:464:6 -/
-def «rotateCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «rotateCmpFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
@@ -1824,7 +1824,7 @@ instance info' : PkgInfo pkg_id.slices where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.slices)) (Lam BAnon
   (App (Val exception_do)

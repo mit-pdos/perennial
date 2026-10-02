@@ -38,14 +38,16 @@ instance errorString_access_load_s (l : loc) (v : errors.errorString.t) (dq : DF
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) v.s' dq)
       (typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) v.s' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance errorString_access_store_s (l : loc) (v : errors.errorString.t) (s' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) v.s' (DFrac.own 1))
       (typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) s' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : errors.errorString.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : errors.errorString.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

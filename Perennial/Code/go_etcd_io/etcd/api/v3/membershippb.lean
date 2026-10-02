@@ -59,54 +59,54 @@ axiom «ClusterMemberAttrSetRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
 
 axiom «DowngradeInfoSetRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def xxx_messageInfo_RaftAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_RaftAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.xxx_messageInfo_RaftAttributes"
 
-def xxx_messageInfo_Attributes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Attributes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.xxx_messageInfo_Attributes"
 
-def xxx_messageInfo_Member [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Member [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.xxx_messageInfo_Member"
 
-def xxx_messageInfo_ClusterVersionSetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ClusterVersionSetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.xxx_messageInfo_ClusterVersionSetRequest"
 
-def xxx_messageInfo_ClusterMemberAttrSetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ClusterMemberAttrSetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.xxx_messageInfo_ClusterMemberAttrSetRequest"
 
-def xxx_messageInfo_DowngradeInfoSetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DowngradeInfoSetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.xxx_messageInfo_DowngradeInfoSetRequest"
 
-def fileDescriptor_949fe0d019050ef5 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_949fe0d019050ef5 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.fileDescriptor_949fe0d019050ef5"
 
 axiom fileDescriptor_949fe0d019050ef5'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidLengthMembership [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthMembership [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.ErrInvalidLengthMembership"
 
 axiom ErrInvalidLengthMembership'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrIntOverflowMembership [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowMembership [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.ErrIntOverflowMembership"
 
 axiom ErrIntOverflowMembership'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUnexpectedEndOfGroupMembership [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupMembership [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.ErrUnexpectedEndOfGroupMembership"
 
 axiom ErrUnexpectedEndOfGroupMembership'init [ffi_syntax] [GoGlobalContext] : val
 
-def encodeVarintMembership [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintMembership [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.encodeVarintMembership"
 
-def sovMembership [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovMembership [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.sovMembership"
 
-def sozMembership [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozMembership [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.sozMembership"
 
-def skipMembership [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipMembership [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/membershippb.skipMembership"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.membershippb where
@@ -114,7 +114,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.membershippb where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.api.v3.membershippb)) (Lam BAnon
   (App (Val exception_do)

@@ -21,34 +21,34 @@ namespace google_golang_org.grpc.status
 def Status [ffi_syntax] [GoGlobalContext] : go.type :=
   _root_.Perennial.google_golang_org.genproto.googleapis.rpc.status.Status
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.New"
 
-def Newf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Newf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.Newf"
 
-def Error [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Error [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.Error"
 
-def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.Errorf"
 
-def ErrorProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorProto [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.ErrorProto"
 
-def FromProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FromProto [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.FromProto"
 
-def FromError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FromError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.FromError"
 
-def Convert' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Convert' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.Convert"
 
-def Code [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Code [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.Code"
 
-def FromContextError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FromContextError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/status.FromContextError"
 
 instance info' : PkgInfo pkg_id.google_golang_org.grpc.status where
@@ -56,7 +56,7 @@ instance info' : PkgInfo pkg_id.google_golang_org.grpc.status where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.google_golang_org.grpc.status)) (Lam BAnon
   (App (Val exception_do)

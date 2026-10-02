@@ -310,7 +310,7 @@ axiom DowngradeEnabledPath [ffi_syntax] [GoGlobalContext] : val
 
 axiom memorySnapshotCount [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def maxGapBetweenApplyAndCommitIndex [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def maxGapBetweenApplyAndCommitIndex [ffi_syntax] [GoGlobalContext] : val :=
   #(5000 : Int)
 
 axiom maxNormalGap [ffi_syntax] [GoGlobalContext] : val
@@ -323,318 +323,318 @@ axiom readIndexRetryTime [ffi_syntax] [GoGlobalContext] : val
 
 axiom applyTimeout [ffi_syntax] [GoGlobalContext] : val
 
-def hasLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hasLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.hasLeader"
 
 axiom hasLeader'init [ffi_syntax] [GoGlobalContext] : val
 
-def isLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isLeader"
 
 axiom isLeader'init [ffi_syntax] [GoGlobalContext] : val
 
-def leaderChanges [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leaderChanges [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.leaderChanges"
 
 axiom leaderChanges'init [ffi_syntax] [GoGlobalContext] : val
 
-def learnerPromoteFailed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def learnerPromoteFailed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.learnerPromoteFailed"
 
 axiom learnerPromoteFailed'init [ffi_syntax] [GoGlobalContext] : val
 
-def learnerPromoteSucceed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def learnerPromoteSucceed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.learnerPromoteSucceed"
 
 axiom learnerPromoteSucceed'init [ffi_syntax] [GoGlobalContext] : val
 
-def heartbeatSendFailures [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heartbeatSendFailures [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.heartbeatSendFailures"
 
 axiom heartbeatSendFailures'init [ffi_syntax] [GoGlobalContext] : val
 
-def applySnapshotInProgress [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def applySnapshotInProgress [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.applySnapshotInProgress"
 
 axiom applySnapshotInProgress'init [ffi_syntax] [GoGlobalContext] : val
 
-def proposalsCommitted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def proposalsCommitted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.proposalsCommitted"
 
 axiom proposalsCommitted'init [ffi_syntax] [GoGlobalContext] : val
 
-def proposalsApplied [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def proposalsApplied [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.proposalsApplied"
 
 axiom proposalsApplied'init [ffi_syntax] [GoGlobalContext] : val
 
-def proposalsPending [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def proposalsPending [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.proposalsPending"
 
 axiom proposalsPending'init [ffi_syntax] [GoGlobalContext] : val
 
-def proposalsFailed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def proposalsFailed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.proposalsFailed"
 
 axiom proposalsFailed'init [ffi_syntax] [GoGlobalContext] : val
 
-def slowReadIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def slowReadIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.slowReadIndex"
 
 axiom slowReadIndex'init [ffi_syntax] [GoGlobalContext] : val
 
-def readIndexFailed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readIndexFailed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.readIndexFailed"
 
 axiom readIndexFailed'init [ffi_syntax] [GoGlobalContext] : val
 
-def requestDurationSec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def requestDurationSec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.requestDurationSec"
 
 axiom requestDurationSec'init [ffi_syntax] [GoGlobalContext] : val
 
-def leaseExpired [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leaseExpired [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.leaseExpired"
 
 axiom leaseExpired'init [ffi_syntax] [GoGlobalContext] : val
 
-def currentVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def currentVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.currentVersion"
 
 axiom currentVersion'init [ffi_syntax] [GoGlobalContext] : val
 
-def currentGoVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def currentGoVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.currentGoVersion"
 
 axiom currentGoVersion'init [ffi_syntax] [GoGlobalContext] : val
 
-def serverID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def serverID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.serverID"
 
 axiom serverID'init [ffi_syntax] [GoGlobalContext] : val
 
-def serverFeatureEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def serverFeatureEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.serverFeatureEnabled"
 
 axiom serverFeatureEnabled'init [ffi_syntax] [GoGlobalContext] : val
 
-def fdUsed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fdUsed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.fdUsed"
 
 axiom fdUsed'init [ffi_syntax] [GoGlobalContext] : val
 
-def fdLimit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fdLimit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.fdLimit"
 
 axiom fdLimit'init [ffi_syntax] [GoGlobalContext] : val
 
-def raftStatusMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raftStatusMu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.raftStatusMu"
 
-def raftStatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raftStatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.raftStatus"
 
-def monitorVersionInterval [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def monitorVersionInterval [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.monitorVersionInterval"
 
 axiom monitorVersionInterval'init [ffi_syntax] [GoGlobalContext] : val
 
-def recommendedMaxRequestBytesString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recommendedMaxRequestBytesString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.recommendedMaxRequestBytesString"
 
 axiom recommendedMaxRequestBytesString'init [ffi_syntax] [GoGlobalContext] : val
 
-def NewServerVersionAdapter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewServerVersionAdapter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.NewServerVersionAdapter"
 
-def bootstrap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrap"
 
-def buildConfStateFromV3store [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildConfStateFromV3store [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.buildConfStateFromV3store"
 
-def bootstrapStorage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapStorage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapStorage"
 
-def bootstrapSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapSnapshot"
 
-def bootstrapBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapBackend"
 
-def maybeDefragBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maybeDefragBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.maybeDefragBackend"
 
-def bootstrapCluster [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapCluster [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapCluster"
 
-def bootstrapExistingClusterNoWAL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapExistingClusterNoWAL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapExistingClusterNoWAL"
 
-def bootstrapNewClusterNoWAL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapNewClusterNoWAL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapNewClusterNoWAL"
 
-def bootstrapClusterWithWAL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapClusterWithWAL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapClusterWithWAL"
 
-def recoverSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recoverSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.recoverSnapshot"
 
-def bootstrapRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapRaft"
 
-def bootstrapRaftFromCluster [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapRaftFromCluster [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapRaftFromCluster"
 
-def bootstrapRaftFromWAL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapRaftFromWAL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapRaftFromWAL"
 
-def raftConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def raftConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.raftConfig"
 
-def bootstrapWALFromSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapWALFromSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapWALFromSnapshot"
 
-def openWALFromSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openWALFromSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.openWALFromSnapshot"
 
-def bootstrapNewWAL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bootstrapNewWAL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrapNewWAL"
 
-def isMemberBootstrapped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isMemberBootstrapped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isMemberBootstrapped"
 
-def GetClusterFromRemotePeers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetClusterFromRemotePeers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.GetClusterFromRemotePeers"
 
-def getClusterFromRemotePeers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getClusterFromRemotePeers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.getClusterFromRemotePeers"
 
-def getRemotePeerURLs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getRemotePeerURLs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.getRemotePeerURLs"
 
-def getMembersVersions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMembersVersions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.getMembersVersions"
 
-def allowedVersionRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allowedVersionRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.allowedVersionRange"
 
-def isCompatibleWithCluster [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isCompatibleWithCluster [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isCompatibleWithCluster"
 
-def isCompatibleWithVers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isCompatibleWithVers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isCompatibleWithVers"
 
-def getVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.getVersion"
 
-def promoteMemberHTTP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def promoteMemberHTTP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.promoteMemberHTTP"
 
-def getDowngradeEnabledFromRemotePeers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getDowngradeEnabledFromRemotePeers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.getDowngradeEnabledFromRemotePeers"
 
-def getDowngradeEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getDowngradeEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.getDowngradeEnabled"
 
-def convertToClusterVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convertToClusterVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.convertToClusterVersion"
 
-def GetMembershipInfoInV2Format [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetMembershipInfoInV2Format [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.GetMembershipInfoInV2Format"
 
-def newCorruptionChecker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newCorruptionChecker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.newCorruptionChecker"
 
-def HashByRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HashByRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.HashByRev"
 
-def monitorFileDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def monitorFileDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.monitorFileDescriptor"
 
-def newRaftNode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newRaftNode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.newRaftNode"
 
-def updateCommittedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def updateCommittedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.updateCommittedIndex"
 
-def NewServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.NewServer"
 
-def tickToDur [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tickToDur [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.tickToDur"
 
-def verifySnapshotIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def verifySnapshotIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.verifySnapshotIndex"
 
-def verifyConsistentIndexIsLatest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def verifyConsistentIndexIsLatest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.verifyConsistentIndexIsLatest"
 
-def addFeatureGateMetrics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addFeatureGateMetrics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.addFeatureGateMetrics"
 
-def NewAccessController [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAccessController [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.NewAccessController"
 
-def newSnapshotReaderCloser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSnapshotReaderCloser [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.newSnapshotReaderCloser"
 
-def firstCompareKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def firstCompareKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.firstCompareKey"
 
-def firstOpKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def firstOpKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.firstOpKey"
 
-def firstOpType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def firstOpType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.firstOpType"
 
-def firstOpLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def firstOpLease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.firstOpLease"
 
-def isConnectedToQuorumSince [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isConnectedToQuorumSince [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isConnectedToQuorumSince"
 
-def isConnectedSince [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isConnectedSince [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isConnectedSince"
 
-def isConnectedFullySince [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isConnectedFullySince [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isConnectedFullySince"
 
-def exceedsRequestLimit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def exceedsRequestLimit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.exceedsRequestLimit"
 
-def isPriorityRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isPriorityRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isPriorityRequest"
 
-def numConnectedSince [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def numConnectedSince [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.numConnectedSince"
 
-def longestConnected [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def longestConnected [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.longestConnected"
 
-def newNotifier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newNotifier [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.newNotifier"
 
-def getRequestType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getRequestType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.getRequestType"
 
-def isStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isStopped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.isStopped"
 
-def uint64ToBigEndianBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint64ToBigEndianBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.uint64ToBigEndianBytes"
 
-def NewRaftLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRaftLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.NewRaftLogger"
 
-def NewRaftLoggerZap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRaftLoggerZap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.NewRaftLoggerZap"
 
-def NewRaftLoggerFromZapCore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRaftLoggerFromZapCore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver.NewRaftLoggerFromZapCore"
 
 /-- go: v3_server.go:158:22 -/
-def «EtcdServer__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «EtcdServer__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "ctx"
   (Lam "r"
@@ -704,7 +704,7 @@ def «EtcdServer__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context))) (Pair (Var "ctx") (Var "$r0")))))))))))))))))))
 
 /-- go: v3_server.go:925:22 -/
-def «EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "ctx"
   (Lam "r"
@@ -953,7 +953,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.etcdserver where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.etcdserver)) (Lam BAnon
   (App (Val exception_do)

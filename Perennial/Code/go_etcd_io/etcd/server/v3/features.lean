@@ -35,12 +35,12 @@ axiom FastLeaseKeepAlive [ffi_syntax] [GoGlobalContext] : val
 
 axiom PriorityRequest [ffi_syntax] [GoGlobalContext] : val
 
-def DefaultEtcdServerFeatureGates [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultEtcdServerFeatureGates [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/features.DefaultEtcdServerFeatureGates"
 
 axiom DefaultEtcdServerFeatureGates'init [ffi_syntax] [GoGlobalContext] : val
 
-def NewDefaultServerFeatureGate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDefaultServerFeatureGate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/features.NewDefaultServerFeatureGate"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.features where
@@ -48,7 +48,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.features where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.features)) (Lam BAnon
   (App (Val exception_do)

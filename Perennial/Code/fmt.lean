@@ -198,140 +198,140 @@ axiom intBits [ffi_syntax] [GoGlobalContext] : val
 
 axiom uintptrBits [ffi_syntax] [GoGlobalContext] : val
 
-def ppFree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ppFree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.ppFree"
 
 axiom ppFree'init [ffi_syntax] [GoGlobalContext] : val
 
-def space [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def space [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.space"
 
 axiom space'init [ffi_syntax] [GoGlobalContext] : val
 
-def ssFree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ssFree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.ssFree"
 
 axiom ssFree'init [ffi_syntax] [GoGlobalContext] : val
 
-def errComplex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errComplex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.errComplex"
 
 axiom errComplex'init [ffi_syntax] [GoGlobalContext] : val
 
-def errBool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.errBool"
 
 axiom errBool'init [ffi_syntax] [GoGlobalContext] : val
 
-def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Errorf"
 
-def errorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.errorf"
 
-def FormatString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FormatString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.FormatString"
 
-def newPrinter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newPrinter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.newPrinter"
 
-def Fprintf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fprintf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Fprintf"
 
-def Printf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Printf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Printf"
 
-def Sprintf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sprintf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Sprintf"
 
-def Appendf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Appendf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Appendf"
 
-def Fprint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fprint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Fprint"
 
-def Print [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Print [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Print"
 
-def Sprint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sprint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Sprint"
 
-def Append [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Append [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Append"
 
-def Fprintln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fprintln [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Fprintln"
 
-def Println [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Println [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Println"
 
-def Sprintln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sprintln [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Sprintln"
 
-def Appendln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Appendln [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Appendln"
 
-def getField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getField [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.getField"
 
-def tooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.tooLarge"
 
-def parsenum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parsenum [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.parsenum"
 
-def intFromArg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intFromArg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.intFromArg"
 
-def parseArgNumber [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseArgNumber [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.parseArgNumber"
 
-def Scan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Scan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Scan"
 
-def Scanln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Scanln [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Scanln"
 
-def Scanf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Scanf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Scanf"
 
-def Sscan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sscan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Sscan"
 
-def Sscanln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sscanln [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Sscanln"
 
-def Sscanf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sscanf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Sscanf"
 
-def Fscan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fscan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Fscan"
 
-def Fscanln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fscanln [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Fscanln"
 
-def Fscanf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fscanf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.Fscanf"
 
-def isSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSpace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.isSpace"
 
-def notSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def notSpace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.notSpace"
 
-def newScanState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newScanState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.newScanState"
 
-def indexRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def indexRune [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.indexRune"
 
-def hasX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hasX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.hasX"
 
-def hexDigit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hexDigit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.hexDigit"
 
-def errorHandler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errorHandler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"fmt.errorHandler"
 
 instance info' : PkgInfo pkg_id.fmt where
@@ -339,7 +339,7 @@ instance info' : PkgInfo pkg_id.fmt where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.fmt)) (Lam BAnon
   (App (Val exception_do)

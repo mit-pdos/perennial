@@ -948,732 +948,732 @@ axiom truncateSize [ffi_syntax] [GoGlobalContext] : val
 
 axiom Version [ffi_syntax] [GoGlobalContext] : val
 
-def DefaultBackoffConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultBackoffConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.DefaultBackoffConfig"
 
 axiom DefaultBackoffConfig'init [ffi_syntax] [GoGlobalContext] : val
 
-def noOpRegisterHealthListenerFn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noOpRegisterHealthListenerFn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.noOpRegisterHealthListenerFn"
 
 axiom noOpRegisterHealthListenerFn'init [ffi_syntax] [GoGlobalContext] : val
 
-def unaryStreamDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unaryStreamDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.unaryStreamDesc"
 
 axiom unaryStreamDesc'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrClientConnClosing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClientConnClosing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ErrClientConnClosing"
 
 axiom ErrClientConnClosing'init [ffi_syntax] [GoGlobalContext] : val
 
-def errConnDrain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errConnDrain [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errConnDrain"
 
 axiom errConnDrain'init [ffi_syntax] [GoGlobalContext] : val
 
-def errConnClosing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errConnClosing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errConnClosing"
 
 axiom errConnClosing'init [ffi_syntax] [GoGlobalContext] : val
 
-def errConnIdling [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errConnIdling [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errConnIdling"
 
 axiom errConnIdling'init [ffi_syntax] [GoGlobalContext] : val
 
-def invalidDefaultServiceConfigErrPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def invalidDefaultServiceConfigErrPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.invalidDefaultServiceConfigErrPrefix"
 
 axiom invalidDefaultServiceConfigErrPrefix'init [ffi_syntax] [GoGlobalContext] : val
 
-def PickFirstBalancerName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PickFirstBalancerName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.PickFirstBalancerName"
 
 axiom PickFirstBalancerName'init [ffi_syntax] [GoGlobalContext] : val
 
-def errNoTransportSecurity [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoTransportSecurity [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errNoTransportSecurity"
 
 axiom errNoTransportSecurity'init [ffi_syntax] [GoGlobalContext] : val
 
-def errTransportCredsAndBundle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errTransportCredsAndBundle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errTransportCredsAndBundle"
 
 axiom errTransportCredsAndBundle'init [ffi_syntax] [GoGlobalContext] : val
 
-def errNoTransportCredsInBundle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoTransportCredsInBundle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errNoTransportCredsInBundle"
 
 axiom errNoTransportCredsInBundle'init [ffi_syntax] [GoGlobalContext] : val
 
-def errTransportCredentialsMissing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errTransportCredentialsMissing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errTransportCredentialsMissing"
 
 axiom errTransportCredentialsMissing'init [ffi_syntax] [GoGlobalContext] : val
 
-def disconnectionsMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def disconnectionsMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.disconnectionsMetric"
 
 axiom disconnectionsMetric'init [ffi_syntax] [GoGlobalContext] : val
 
-def connectionAttemptsSucceededMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def connectionAttemptsSucceededMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.connectionAttemptsSucceededMetric"
 
 axiom connectionAttemptsSucceededMetric'init [ffi_syntax] [GoGlobalContext] : val
 
-def connectionAttemptsFailedMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def connectionAttemptsFailedMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.connectionAttemptsFailedMetric"
 
 axiom connectionAttemptsFailedMetric'init [ffi_syntax] [GoGlobalContext] : val
 
-def openConnectionsMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openConnectionsMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.openConnectionsMetric"
 
 axiom openConnectionsMetric'init [ffi_syntax] [GoGlobalContext] : val
 
-def emptyServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.emptyServiceConfig"
 
-def ErrClientConnTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClientConnTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ErrClientConnTimeout"
 
 axiom ErrClientConnTimeout'init [ffi_syntax] [GoGlobalContext] : val
 
-def globalDialOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalDialOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.globalDialOptions"
 
-def globalPerTargetDialOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalPerTargetDialOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.globalPerTargetDialOptions"
 
-def errContextCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errContextCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errContextCanceled"
 
 axiom errContextCanceled'init [ffi_syntax] [GoGlobalContext] : val
 
-def errContextDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errContextDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errContextDeadline"
 
 axiom errContextDeadline'init [ffi_syntax] [GoGlobalContext] : val
 
-def statusOK [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def statusOK [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.statusOK"
 
 axiom statusOK'init [ffi_syntax] [GoGlobalContext] : val
 
-def logger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def logger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.logger"
 
 axiom logger'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultServerOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultServerOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.defaultServerOptions"
 
 axiom defaultServerOptions'init [ffi_syntax] [GoGlobalContext] : val
 
-def globalServerOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalServerOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.globalServerOptions"
 
-def ErrServerStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrServerStopped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ErrServerStopped"
 
 axiom ErrServerStopped'init [ffi_syntax] [GoGlobalContext] : val
 
-def errDuplicatedName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errDuplicatedName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errDuplicatedName"
 
 axiom errDuplicatedName'init [ffi_syntax] [GoGlobalContext] : val
 
-def errEmptyServiceNonEmptyMethod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errEmptyServiceNonEmptyMethod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.errEmptyServiceNonEmptyMethod"
 
 axiom errEmptyServiceNonEmptyMethod'init [ffi_syntax] [GoGlobalContext] : val
 
-def metadataFromOutgoingContextRaw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def metadataFromOutgoingContextRaw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.metadataFromOutgoingContextRaw"
 
 axiom metadataFromOutgoingContextRaw'init [ffi_syntax] [GoGlobalContext] : val
 
-def emptyMethodConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyMethodConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.emptyMethodConfig"
 
 axiom emptyMethodConfig'init [ffi_syntax] [GoGlobalContext] : val
 
-def EnableTracing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EnableTracing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.EnableTracing"
 
-def newCCBalancerWrapper [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newCCBalancerWrapper [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newCCBalancerWrapper"
 
-def newHealthData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newHealthData [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newHealthData"
 
-def combine [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def combine [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.combine"
 
-def Invoke [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Invoke [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Invoke"
 
-def invoke [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def invoke [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.invoke"
 
-def NewClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.NewClient"
 
-def Dial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Dial [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Dial"
 
-def DialContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DialContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.DialContext"
 
-def chainUnaryClientInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chainUnaryClientInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.chainUnaryClientInterceptors"
 
-def getChainUnaryInvoker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getChainUnaryInvoker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.getChainUnaryInvoker"
 
-def chainStreamClientInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chainStreamClientInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.chainStreamClientInterceptors"
 
-def getChainStreamer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getChainStreamer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.getChainStreamer"
 
-def newConnectivityStateManager [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newConnectivityStateManager [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newConnectivityStateManager"
 
-def copyAddresses [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyAddresses [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.copyAddresses"
 
-def equalAddressIgnoringBalAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalAddressIgnoringBalAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.equalAddressIgnoringBalAttributes"
 
-def equalAddressesIgnoringBalAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalAddressesIgnoringBalAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.equalAddressesIgnoringBalAttributes"
 
-def getMethodConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMethodConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.getMethodConfig"
 
-def parseTarget [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseTarget [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.parseTarget"
 
-def encodeAuthority [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeAuthority [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.encodeAuthority"
 
-def getCodec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getCodec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.getCodec"
 
-def newCodecV0Bridge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newCodecV0Bridge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newCodecV0Bridge"
 
-def newCodecV1Bridge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newCodecV1Bridge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newCodecV1Bridge"
 
-def newDisableGlobalDialOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newDisableGlobalDialOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newDisableGlobalDialOptions"
 
-def newFuncDialOption [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newFuncDialOption [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newFuncDialOption"
 
-def newJoinDialOption [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newJoinDialOption [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newJoinDialOption"
 
-def WithSharedWriteBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithSharedWriteBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithSharedWriteBuffer"
 
-def WithWriteBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithWriteBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithWriteBufferSize"
 
-def WithReadBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithReadBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithReadBufferSize"
 
-def WithInitialWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithInitialWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithInitialWindowSize"
 
-def WithInitialConnWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithInitialConnWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithInitialConnWindowSize"
 
-def WithStaticStreamWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithStaticStreamWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithStaticStreamWindowSize"
 
-def WithStaticConnWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithStaticConnWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithStaticConnWindowSize"
 
-def WithMaxMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMaxMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithMaxMsgSize"
 
-def WithDefaultCallOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDefaultCallOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithDefaultCallOptions"
 
-def WithCodec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCodec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithCodec"
 
-def WithCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithCompressor"
 
-def WithDecompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDecompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithDecompressor"
 
-def WithConnectParams [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithConnectParams [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithConnectParams"
 
-def WithBackoffMaxDelay [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithBackoffMaxDelay [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithBackoffMaxDelay"
 
-def WithBackoffConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithBackoffConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithBackoffConfig"
 
-def withBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.withBackoff"
 
-def WithBlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithBlock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithBlock"
 
-def WithReturnConnectionError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithReturnConnectionError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithReturnConnectionError"
 
-def WithInsecure [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithInsecure [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithInsecure"
 
-def WithNoProxy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithNoProxy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithNoProxy"
 
-def WithLocalDNSResolution [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithLocalDNSResolution [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithLocalDNSResolution"
 
-def WithTransportCredentials [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithTransportCredentials [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithTransportCredentials"
 
-def WithPerRPCCredentials [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithPerRPCCredentials [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithPerRPCCredentials"
 
-def WithCredentialsBundle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCredentialsBundle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithCredentialsBundle"
 
-def WithTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithTimeout"
 
-def WithContextDialer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithContextDialer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithContextDialer"
 
-def WithDialer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDialer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithDialer"
 
-def WithStatsHandler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithStatsHandler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithStatsHandler"
 
-def withBinaryLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withBinaryLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.withBinaryLogger"
 
-def FailOnNonTempDialError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FailOnNonTempDialError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.FailOnNonTempDialError"
 
-def WithUserAgent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithUserAgent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithUserAgent"
 
-def WithKeepaliveParams [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithKeepaliveParams [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithKeepaliveParams"
 
-def WithUnaryInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithUnaryInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithUnaryInterceptor"
 
-def WithChainUnaryInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithChainUnaryInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithChainUnaryInterceptor"
 
-def WithStreamInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithStreamInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithStreamInterceptor"
 
-def WithChainStreamInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithChainStreamInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithChainStreamInterceptor"
 
-def WithAuthority [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithAuthority [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithAuthority"
 
-def WithChannelzParentID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithChannelzParentID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithChannelzParentID"
 
-def WithDisableServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDisableServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithDisableServiceConfig"
 
-def WithDefaultServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDefaultServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithDefaultServiceConfig"
 
-def WithDisableRetry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDisableRetry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithDisableRetry"
 
-def WithMaxHeaderListSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMaxHeaderListSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithMaxHeaderListSize"
 
-def WithDisableHealthCheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDisableHealthCheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithDisableHealthCheck"
 
-def defaultDialOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultDialOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.defaultDialOptions"
 
-def withMinConnectDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withMinConnectDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.withMinConnectDeadline"
 
-def withDefaultScheme [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withDefaultScheme [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.withDefaultScheme"
 
-def WithResolvers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithResolvers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithResolvers"
 
-def WithIdleTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithIdleTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithIdleTimeout"
 
-def WithMaxCallAttempts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMaxCallAttempts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WithMaxCallAttempts"
 
-def withBufferPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withBufferPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.withBufferPool"
 
-def newPickerWrapper [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newPickerWrapper [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newPickerWrapper"
 
-def doneChannelzWrapper [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doneChannelzWrapper [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.doneChannelzWrapper"
 
-def newCCResolverWrapper [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newCCResolverWrapper [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newCCResolverWrapper"
 
-def addressesToEndpoints [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addressesToEndpoints [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.addressesToEndpoints"
 
-def NewGZIPCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGZIPCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.NewGZIPCompressor"
 
-def NewGZIPCompressorWithLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGZIPCompressorWithLevel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.NewGZIPCompressorWithLevel"
 
-def NewGZIPDecompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGZIPDecompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.NewGZIPDecompressor"
 
-def acceptedCompressorAllows [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acceptedCompressorAllows [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.acceptedCompressorAllows"
 
-def defaultCallInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultCallInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.defaultCallInfo"
 
-def newAcceptedCompressionConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newAcceptedCompressionConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newAcceptedCompressionConfig"
 
-def StaticMethod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StaticMethod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.StaticMethod"
 
-def Header [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Header [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Header"
 
-def Trailer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Trailer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Trailer"
 
-def Peer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Peer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Peer"
 
-def WaitForReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WaitForReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WaitForReady"
 
-def FailFast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FailFast [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.FailFast"
 
-def OnFinish [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnFinish [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.OnFinish"
 
-def MaxCallRecvMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxCallRecvMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MaxCallRecvMsgSize"
 
-def CallAuthority [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CallAuthority [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.CallAuthority"
 
-def MaxCallSendMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxCallSendMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MaxCallSendMsgSize"
 
-def PerRPCCredentials [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PerRPCCredentials [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.PerRPCCredentials"
 
-def UseCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UseCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.UseCompressor"
 
-def acceptCompressors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acceptCompressors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.acceptCompressors"
 
-def CallContentSubtype [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CallContentSubtype [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.CallContentSubtype"
 
-def ForceCodec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ForceCodec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ForceCodec"
 
-def ForceCodecV2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ForceCodecV2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ForceCodecV2"
 
-def CallCustomCodec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CallCustomCodec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.CallCustomCodec"
 
-def MaxRetryRPCBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxRetryRPCBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MaxRetryRPCBufferSize"
 
-def encode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.encode"
 
-def compress [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compress [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.compress"
 
-def msgHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msgHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.msgHeader"
 
-def outPayload [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def outPayload [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.outPayload"
 
-def checkRecvPayload [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkRecvPayload [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.checkRecvPayload"
 
-def recvAndDecompress [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recvAndDecompress [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.recvAndDecompress"
 
-def decompress [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decompress [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.decompress"
 
-def recv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def recv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.recv"
 
-def newContextWithRPCInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newContextWithRPCInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newContextWithRPCInfo"
 
-def rpcInfoFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rpcInfoFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.rpcInfoFromContext"
 
-def Code [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Code [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Code"
 
-def ErrorDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ErrorDesc"
 
-def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Errorf"
 
-def toRPCErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toRPCErr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.toRPCErr"
 
-def setCallInfoCodec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setCallInfoCodec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.setCallInfoCodec"
 
-def newFuncServerOption [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newFuncServerOption [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newFuncServerOption"
 
-def newJoinServerOption [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newJoinServerOption [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newJoinServerOption"
 
-def SharedWriteBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SharedWriteBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.SharedWriteBuffer"
 
-def WriteBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WriteBufferSize"
 
-def ReadBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ReadBufferSize"
 
-def InitialWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InitialWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.InitialWindowSize"
 
-def InitialConnWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InitialConnWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.InitialConnWindowSize"
 
-def StaticStreamWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StaticStreamWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.StaticStreamWindowSize"
 
-def StaticConnWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StaticConnWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.StaticConnWindowSize"
 
-def KeepaliveParams [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def KeepaliveParams [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.KeepaliveParams"
 
-def KeepaliveEnforcementPolicy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def KeepaliveEnforcementPolicy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.KeepaliveEnforcementPolicy"
 
-def CustomCodec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CustomCodec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.CustomCodec"
 
-def ForceServerCodec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ForceServerCodec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ForceServerCodec"
 
-def ForceServerCodecV2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ForceServerCodecV2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ForceServerCodecV2"
 
-def RPCCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RPCCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.RPCCompressor"
 
-def RPCDecompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RPCDecompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.RPCDecompressor"
 
-def MaxMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MaxMsgSize"
 
-def MaxRecvMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxRecvMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MaxRecvMsgSize"
 
-def MaxSendMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxSendMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MaxSendMsgSize"
 
-def MaxConcurrentStreams [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxConcurrentStreams [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MaxConcurrentStreams"
 
-def Creds [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Creds [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Creds"
 
-def UnaryInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnaryInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.UnaryInterceptor"
 
-def ChainUnaryInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ChainUnaryInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ChainUnaryInterceptor"
 
-def StreamInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StreamInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.StreamInterceptor"
 
-def ChainStreamInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ChainStreamInterceptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ChainStreamInterceptor"
 
-def InTapHandle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InTapHandle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.InTapHandle"
 
-def StatsHandler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StatsHandler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.StatsHandler"
 
-def binaryLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def binaryLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.binaryLogger"
 
-def UnknownServiceHandler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnknownServiceHandler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.UnknownServiceHandler"
 
-def ConnectionTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConnectionTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ConnectionTimeout"
 
-def MaxHeaderListSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MaxHeaderListSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MaxHeaderListSize"
 
-def HeaderTableSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HeaderTableSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.HeaderTableSize"
 
-def NumStreamWorkers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NumStreamWorkers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.NumStreamWorkers"
 
-def WaitForHandlers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WaitForHandlers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.WaitForHandlers"
 
-def bufferPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bufferPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.bufferPool"
 
-def NewServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.NewServer"
 
-def chainUnaryServerInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chainUnaryServerInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.chainUnaryServerInterceptors"
 
-def chainUnaryInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chainUnaryInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.chainUnaryInterceptors"
 
-def getChainUnaryHandler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getChainUnaryHandler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.getChainUnaryHandler"
 
-def chainStreamServerInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chainStreamServerInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.chainStreamServerInterceptors"
 
-def chainStreamInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chainStreamInterceptors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.chainStreamInterceptors"
 
-def getChainStreamHandler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getChainStreamHandler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.getChainStreamHandler"
 
-def NewContextWithServerTransportStream [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewContextWithServerTransportStream [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.NewContextWithServerTransportStream"
 
-def ServerTransportStreamFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ServerTransportStreamFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ServerTransportStreamFromContext"
 
-def serverFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def serverFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.serverFromContext"
 
-def contextWithServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def contextWithServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.contextWithServer"
 
-def SetHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.SetHeader"
 
-def SendHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SendHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.SendHeader"
 
-def SetSendCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetSendCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.SetSendCompressor"
 
-def ClientSupportedCompressors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClientSupportedCompressors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.ClientSupportedCompressors"
 
-def SetTrailer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetTrailer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.SetTrailer"
 
-def Method [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Method [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.Method"
 
-def validateSendCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateSendCompressor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.validateSendCompressor"
 
-def newHandlerQuota [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newHandlerQuota [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newHandlerQuota"
 
-def parseServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.parseServiceConfig"
 
-def isValidRetryPolicy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isValidRetryPolicy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.isValidRetryPolicy"
 
-def convertRetryPolicy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convertRetryPolicy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.convertRetryPolicy"
 
-def minPointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minPointers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.minPointers"
 
-def getMaxSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMaxSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.getMaxSize"
 
-def newInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newInt"
 
-def equalServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalServiceConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.equalServiceConfig"
 
-def NewClientStream [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewClientStream [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.NewClientStream"
 
-def endOfClientStream [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def endOfClientStream [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.endOfClientStream"
 
-def newClientStream [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newClientStream [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newClientStream"
 
-def newClientStreamWithParams [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newClientStreamWithParams [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newClientStreamWithParams"
 
-def newNonRetryClientStream [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newNonRetryClientStream [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newNonRetryClientStream"
 
-def MethodFromServerStream [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MethodFromServerStream [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.MethodFromServerStream"
 
-def prepareMsg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prepareMsg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.prepareMsg"
 
-def methodFamily [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def methodFamily [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.methodFamily"
 
-def truncate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def truncate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.truncate"
 
-def newTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newTrace"
 
-def newTraceContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTraceContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newTraceContext"
 
-def newTraceEventLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTraceEventLog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc.newTraceEventLog"
 
 instance info' : PkgInfo pkg_id.google_golang_org.grpc where
@@ -1681,7 +1681,7 @@ instance info' : PkgInfo pkg_id.google_golang_org.grpc where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.google_golang_org.grpc)) (Lam BAnon
   (App (Val exception_do)

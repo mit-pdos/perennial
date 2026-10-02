@@ -18,14 +18,14 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 
-def worker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def worker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace.worker"
 
-def SearchReplace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SearchReplace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace.SearchReplace"
 
 /-- go: parallel_search_replace.go:13:6 -/
-def «workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "wg"
   (Lam "x"
@@ -86,7 +86,7 @@ def «workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.int)))) (Pair (Var "s") (Var "$r0"))))))))))))))))))))))
 
 /-- go: parallel_search_replace.go:24:6 -/
-def «SearchReplaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SearchReplaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "x"
   (Lam "y"
@@ -188,7 +188,7 @@ def «SearchReplaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace where
   pkg_imported_pkgs := [pkg_id.sync]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace)) (Lam BAnon
   (App (Val exception_do)

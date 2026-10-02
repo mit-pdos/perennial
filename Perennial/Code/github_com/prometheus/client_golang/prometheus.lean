@@ -697,415 +697,415 @@ axiom UntypedValue [ffi_syntax] [GoGlobalContext] : val
 
 axiom ExemplarMaxRunes [ffi_syntax] [GoGlobalContext] : val
 
-def rmNamesForMemStatsMetrics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rmNamesForMemStatsMetrics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.rmNamesForMemStatsMetrics"
 
 axiom rmNamesForMemStatsMetrics'init [ffi_syntax] [GoGlobalContext] : val
 
-def nativeHistogramBounds [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nativeHistogramBounds [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.nativeHistogramBounds"
 
 axiom nativeHistogramBounds'init [ffi_syntax] [GoGlobalContext] : val
 
-def DefBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.DefBuckets"
 
 axiom DefBuckets'init [ffi_syntax] [GoGlobalContext] : val
 
-def errBucketLabelNotAllowed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBucketLabelNotAllowed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.errBucketLabelNotAllowed"
 
 axiom errBucketLabelNotAllowed'init [ffi_syntax] [GoGlobalContext] : val
 
-def errInconsistentCardinality [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInconsistentCardinality [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.errInconsistentCardinality"
 
 axiom errInconsistentCardinality'init [ffi_syntax] [GoGlobalContext] : val
 
-def separatorByteSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def separatorByteSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.separatorByteSlice"
 
 axiom separatorByteSlice'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.defaultRegistry"
 
 axiom defaultRegistry'init [ffi_syntax] [GoGlobalContext] : val
 
-def DefaultRegisterer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultRegisterer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.DefaultRegisterer"
 
 axiom DefaultRegisterer'init [ffi_syntax] [GoGlobalContext] : val
 
-def DefaultGatherer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultGatherer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.DefaultGatherer"
 
 axiom DefaultGatherer'init [ffi_syntax] [GoGlobalContext] : val
 
-def errQuantileLabelNotAllowed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errQuantileLabelNotAllowed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.errQuantileLabelNotAllowed"
 
 axiom errQuantileLabelNotAllowed'init [ffi_syntax] [GoGlobalContext] : val
 
-def CounterMetricTypePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CounterMetricTypePtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.CounterMetricTypePtr"
 
 axiom CounterMetricTypePtr'init [ffi_syntax] [GoGlobalContext] : val
 
-def GaugeMetricTypePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GaugeMetricTypePtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.GaugeMetricTypePtr"
 
 axiom GaugeMetricTypePtr'init [ffi_syntax] [GoGlobalContext] : val
 
-def UntypedMetricTypePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UntypedMetricTypePtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.UntypedMetricTypePtr"
 
 axiom UntypedMetricTypePtr'init [ffi_syntax] [GoGlobalContext] : val
 
-def labelsPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def labelsPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.labelsPool"
 
 axiom labelsPool'init [ffi_syntax] [GoGlobalContext] : val
 
-def V2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def V2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.V2"
 
 axiom V2'init [ffi_syntax] [GoGlobalContext] : val
 
-def NewBuildInfoCollector [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewBuildInfoCollector [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewBuildInfoCollector"
 
-def DescribeByCollect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DescribeByCollect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.DescribeByCollect"
 
-def NewCounter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewCounter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewCounter"
 
-def NewCounterVec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewCounterVec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewCounterVec"
 
-def NewCounterFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewCounterFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewCounterFunc"
 
-def NewDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewDesc"
 
-def NewInvalidDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewInvalidDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewInvalidDesc"
 
-def NewExpvarCollector [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewExpvarCollector [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewExpvarCollector"
 
-def hashNew [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashNew [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.hashNew"
 
-def hashAdd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashAdd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.hashAdd"
 
-def hashAddByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashAddByte [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.hashAddByte"
 
-def NewGauge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGauge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewGauge"
 
-def NewGaugeVec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGaugeVec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewGaugeVec"
 
-def NewGaugeFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGaugeFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewGaugeFunc"
 
-def getPIDFn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getPIDFn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.getPIDFn"
 
-def goRuntimeMemStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goRuntimeMemStats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.goRuntimeMemStats"
 
-def newBaseGoCollector [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newBaseGoCollector [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.newBaseGoCollector"
 
-def memstatNamespace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memstatNamespace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.memstatNamespace"
 
-def bestEffortLookupRM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bestEffortLookupRM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.bestEffortLookupRM"
 
-def matchRuntimeMetricsRules [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchRuntimeMetricsRules [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.matchRuntimeMetricsRules"
 
-def defaultGoCollectorOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultGoCollectorOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.defaultGoCollectorOptions"
 
-def NewGoCollector [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGoCollector [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewGoCollector"
 
-def attachOriginalName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def attachOriginalName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.attachOriginalName"
 
-def unwrapScalarRMValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unwrapScalarRMValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.unwrapScalarRMValue"
 
-def memStatsFromRM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memStatsFromRM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.memStatsFromRM"
 
-def newBatchHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newBatchHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.newBatchHistogram"
 
-def LinearBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LinearBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.LinearBuckets"
 
-def ExponentialBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExponentialBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.ExponentialBuckets"
 
-def ExponentialBucketsRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExponentialBucketsRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.ExponentialBucketsRange"
 
-def NewHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewHistogram"
 
-def newHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.newHistogram"
 
-def NewHistogramVec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewHistogramVec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewHistogramVec"
 
-def NewConstHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConstHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewConstHistogram"
 
-def MustNewConstHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustNewConstHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustNewConstHistogram"
 
-def NewConstHistogramWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConstHistogramWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewConstHistogramWithCreatedTimestamp"
 
-def MustNewConstHistogramWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustNewConstHistogramWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustNewConstHistogramWithCreatedTimestamp"
 
-def pickSchema [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pickSchema [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.pickSchema"
 
-def makeBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.makeBuckets"
 
-def addToBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addToBucket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.addToBucket"
 
-def addAndReset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addAndReset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.addAndReset"
 
-def deleteSyncMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deleteSyncMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.deleteSyncMap"
 
-def findSmallestKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findSmallestKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.findSmallestKey"
 
-def getLe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getLe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.getLe"
 
-def waitForCooldown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitForCooldown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.waitForCooldown"
 
-def atomicAddFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicAddFloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.atomicAddFloat"
 
-def atomicDecUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicDecUint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.atomicDecUint32"
 
-def addAndResetCounts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addAndResetCounts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.addAndResetCounts"
 
-def makeNativeExemplars [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeNativeExemplars [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.makeNativeExemplars"
 
-def validateCount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateCount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.validateCount"
 
-def NewConstNativeHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConstNativeHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewConstNativeHistogram"
 
-def MustNewConstNativeHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustNewConstNativeHistogram [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustNewConstNativeHistogram"
 
-def makeBucketsFromMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeBucketsFromMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.makeBucketsFromMap"
 
-def makeInconsistentCardinalityError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeInconsistentCardinalityError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.makeInconsistentCardinalityError"
 
-def validateValuesInLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateValuesInLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.validateValuesInLabels"
 
-def validateLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.validateLabelValues"
 
-def checkLabelName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkLabelName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.checkLabelName"
 
-def BuildFQName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BuildFQName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.BuildFQName"
 
-def NewInvalidMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewInvalidMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewInvalidMetric"
 
-def NewMetricWithTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMetricWithTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewMetricWithTimestamp"
 
-def NewMetricWithExemplars [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMetricWithExemplars [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewMetricWithExemplars"
 
-def MustNewMetricWithExemplars [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustNewMetricWithExemplars [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustNewMetricWithExemplars"
 
-def getRuntimeNumThreads [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getRuntimeNumThreads [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.getRuntimeNumThreads"
 
-def NewProcessCollector [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProcessCollector [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewProcessCollector"
 
-def NewPidFileFn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewPidFileFn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewPidFileFn"
 
-def canCollectProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def canCollectProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.canCollectProcess"
 
-def NewRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewRegistry"
 
-def NewPedanticRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewPedanticRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewPedanticRegistry"
 
-def Register [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Register [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.Register"
 
-def MustRegister [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustRegister [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustRegister"
 
-def Unregister [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Unregister [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.Unregister"
 
-def WriteToTextfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteToTextfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.WriteToTextfile"
 
-def processMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def processMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.processMetric"
 
-def checkSuffixCollisions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkSuffixCollisions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.checkSuffixCollisions"
 
-def checkMetricConsistency [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkMetricConsistency [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.checkMetricConsistency"
 
-def checkDescConsistency [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkDescConsistency [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.checkDescConsistency"
 
-def NewMultiTRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMultiTRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewMultiTRegistry"
 
-def ToTransactionalGatherer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToTransactionalGatherer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.ToTransactionalGatherer"
 
-def NewSummary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSummary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewSummary"
 
-def newSummary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSummary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.newSummary"
 
-def NewSummaryVec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSummaryVec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewSummaryVec"
 
-def NewConstSummary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConstSummary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewConstSummary"
 
-def MustNewConstSummary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustNewConstSummary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustNewConstSummary"
 
-def NewConstSummaryWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConstSummaryWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewConstSummaryWithCreatedTimestamp"
 
-def MustNewConstSummaryWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustNewConstSummaryWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustNewConstSummaryWithCreatedTimestamp"
 
-def NewTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewTimer"
 
-def NewUntypedFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewUntypedFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewUntypedFunc"
 
-def newValueFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newValueFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.newValueFunc"
 
-def NewConstMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConstMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewConstMetric"
 
-def MustNewConstMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustNewConstMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustNewConstMetric"
 
-def NewConstMetricWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConstMetricWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewConstMetricWithCreatedTimestamp"
 
-def MustNewConstMetricWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustNewConstMetricWithCreatedTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MustNewConstMetricWithCreatedTimestamp"
 
-def populateMetric [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def populateMetric [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.populateMetric"
 
-def MakeLabelPairs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MakeLabelPairs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.MakeLabelPairs"
 
-def newExemplar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newExemplar [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.newExemplar"
 
-def NewMetricVec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMetricVec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.NewMetricVec"
 
-def findMetricWithPartialLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findMetricWithPartialLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.findMetricWithPartialLabels"
 
-def indexOf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def indexOf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.indexOf"
 
-def valueMatchesVariableOrCurriedValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valueMatchesVariableOrCurriedValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.valueMatchesVariableOrCurriedValue"
 
-def matchPartialLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchPartialLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.matchPartialLabels"
 
-def findMetricWithLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findMetricWithLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.findMetricWithLabelValues"
 
-def findMetricWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findMetricWithLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.findMetricWithLabels"
 
-def matchLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.matchLabelValues"
 
-def matchLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.matchLabels"
 
-def extractLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extractLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.extractLabelValues"
 
-def inlineLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inlineLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.inlineLabelValues"
 
-def constrainLabels [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def constrainLabels [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.constrainLabels"
 
-def constrainLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def constrainLabelValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.constrainLabelValues"
 
-def WrapRegistererWith [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WrapRegistererWith [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.WrapRegistererWith"
 
-def WrapRegistererWithPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WrapRegistererWithPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.WrapRegistererWithPrefix"
 
-def WrapCollectorWith [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WrapCollectorWith [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.WrapCollectorWith"
 
-def WrapCollectorWithPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WrapCollectorWithPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.WrapCollectorWithPrefix"
 
-def wrapDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wrapDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/prometheus/client_golang/prometheus.wrapDesc"
 
 instance info' : PkgInfo pkg_id.github_com.prometheus.client_golang.prometheus where
@@ -1113,7 +1113,7 @@ instance info' : PkgInfo pkg_id.github_com.prometheus.client_golang.prometheus w
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.prometheus.client_golang.prometheus)) (Lam BAnon
   (App (Val exception_do)

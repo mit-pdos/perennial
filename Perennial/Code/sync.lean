@@ -142,106 +142,106 @@ axiom dequeueBits [ffi_syntax] [GoGlobalContext] : val
 
 axiom dequeueLimit [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def rwmutexMaxReaders [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def rwmutexMaxReaders [ffi_syntax] [GoGlobalContext] : val :=
   #(1073741824 : Int)
 
-@[reducible] def waitGroupBubbleFlag [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def waitGroupBubbleFlag [ffi_syntax] [GoGlobalContext] : val :=
   #(2147483648 : Int)
 
-def poolRaceHash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poolRaceHash [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.poolRaceHash"
 
-def allPoolsMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allPoolsMu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.allPoolsMu"
 
-def allPools [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allPools [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.allPools"
 
-def oldPools [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def oldPools [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.oldPools"
 
-def NewCond [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewCond [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.NewCond"
 
-def OnceFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnceFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.OnceFunc"
 
-def OnceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnceValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.OnceValue"
 
-def OnceValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnceValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.OnceValues"
 
-def runtime_randn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_randn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_randn"
 
-def poolRaceAddr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poolRaceAddr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.poolRaceAddr"
 
-def poolCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def poolCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.poolCleanup"
 
-def indexLocal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def indexLocal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.indexLocal"
 
-def runtime_registerPoolCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_registerPoolCleanup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_registerPoolCleanup"
 
-def runtime_procPin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_procPin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_procPin"
 
-def runtime_procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_procUnpin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_procUnpin"
 
-def runtime_LoadAcquintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_LoadAcquintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_LoadAcquintptr"
 
-def runtime_StoreReluintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_StoreReluintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_StoreReluintptr"
 
-def runtime_Semacquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_Semacquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_Semacquire"
 
-def runtime_SemacquireWaitGroup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_SemacquireWaitGroup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_SemacquireWaitGroup"
 
-def runtime_SemacquireRWMutexR [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_SemacquireRWMutexR [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_SemacquireRWMutexR"
 
-def runtime_SemacquireRWMutex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_SemacquireRWMutex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_SemacquireRWMutex"
 
-def runtime_Semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_Semrelease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_Semrelease"
 
-def runtime_notifyListAdd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_notifyListAdd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_notifyListAdd"
 
-def runtime_notifyListWait [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_notifyListWait [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_notifyListWait"
 
-def runtime_notifyListNotifyAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_notifyListNotifyAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_notifyListNotifyAll"
 
-def runtime_notifyListNotifyOne [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_notifyListNotifyOne [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_notifyListNotifyOne"
 
-def runtime_notifyListCheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_notifyListCheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.runtime_notifyListCheck"
 
-def throw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def throw [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.throw"
 
-def fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.fatal"
 
-def syscall_hasWaitingReaders [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscall_hasWaitingReaders [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync.syscall_hasWaitingReaders"
 
 /-- NewCond returns a new Cond with Locker l.
 
     go: cond.go:48:6 -/
-def «NewCondⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewCondⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (App (Val exception_do)
   (Let "l" (App (Val (GoInstruction (GoAlloc Locker))) (Var "l"))
@@ -266,7 +266,7 @@ def «NewCondⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     	c.L.Unlock()
 
     go: cond.go:67:16 -/
-def «Cond__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cond__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -303,7 +303,7 @@ def «Cond__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     are attempting to lock c.L, they may be awoken before a "waiting" goroutine.
 
     go: cond.go:82:16 -/
-def «Cond__Signalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cond__Signalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -324,7 +324,7 @@ def «Cond__Signalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     during the call.
 
     go: cond.go:91:16 -/
-def «Cond__Broadcastⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cond__Broadcastⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -361,7 +361,7 @@ def «Cond__Broadcastⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     without calling f.
 
     go: once.go:52:16 -/
-def «Once__Doⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Once__Doⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "o"
   (Lam "f"
   (App (Val exception_do)
@@ -378,7 +378,7 @@ def «Once__Doⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: once.go:73:16 -/
-def «Once__doSlowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Once__doSlowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "o"
   (Lam "f"
   (App (Val wrap_defer)
@@ -419,7 +419,7 @@ def «Once__doSlowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     documentation on the [RWMutex] type.
 
     go: rwmutex.go:67:20 -/
-def «RWMutex__RLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RWMutex__RLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exception_do)
@@ -464,7 +464,7 @@ def «RWMutex__RLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     in a particular use of mutexes.
 
     go: rwmutex.go:87:20 -/
-def «RWMutex__TryRLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RWMutex__TryRLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exception_do)
@@ -524,7 +524,7 @@ def «RWMutex__TryRLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     on entry to RUnlock.
 
     go: rwmutex.go:114:20 -/
-def «RWMutex__RUnlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RWMutex__RUnlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exception_do)
@@ -566,7 +566,7 @@ def «RWMutex__RUnlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: rwmutex.go:129:20 -/
-def «RWMutex__rUnlockSlowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RWMutex__rUnlockSlowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam "r"
   (App (Val exception_do)
@@ -600,7 +600,7 @@ def «RWMutex__rUnlockSlowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Lock blocks until the lock is available.
 
     go: rwmutex.go:144:20 -/
-def «RWMutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RWMutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exception_do)
@@ -658,7 +658,7 @@ def «RWMutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     in a particular use of mutexes.
 
     go: rwmutex.go:169:20 -/
-def «RWMutex__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RWMutex__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exception_do)
@@ -727,7 +727,7 @@ def «RWMutex__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     arrange for another goroutine to [RWMutex.RUnlock] ([RWMutex.Unlock]) it.
 
     go: rwmutex.go:201:20 -/
-def «RWMutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RWMutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exception_do)
@@ -794,7 +794,7 @@ def «RWMutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     the [Locker.Lock] and [Locker.Unlock] methods by calling rw.RLock and rw.RUnlock.
 
     go: rwmutex.go:240:20 -/
-def «RWMutex__RLockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RWMutex__RLockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exception_do)
@@ -819,7 +819,7 @@ def «RWMutex__RLockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     See the WaitGroup example.
 
     go: waitgroup.go:77:22 -/
-def «WaitGroup__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WaitGroup__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam "delta"
   (App (Val wrap_defer)
@@ -976,7 +976,7 @@ def «WaitGroup__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     [the Go memory model]: https://go.dev/ref/mem
 
     go: waitgroup.go:155:22 -/
-def «WaitGroup__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WaitGroup__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam BAnon
   (App (Val exception_do)
@@ -991,7 +991,7 @@ def «WaitGroup__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Wait blocks until the [WaitGroup] task counter is zero.
 
     go: waitgroup.go:160:22 -/
-def «WaitGroup__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WaitGroup__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam BAnon
   (App (Val exception_do)
@@ -1141,7 +1141,7 @@ def «WaitGroup__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     [the Go memory model]: https://go.dev/ref/mem
 
     go: waitgroup.go:236:22 -/
-def «WaitGroup__Goⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WaitGroup__Goⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam "f"
   (App (Val exception_do)
@@ -1196,7 +1196,7 @@ instance info' : PkgInfo pkg_id.sync where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.sync)) (Lam BAnon
   (App (Val exception_do)

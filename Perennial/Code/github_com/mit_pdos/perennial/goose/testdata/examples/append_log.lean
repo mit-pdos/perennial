@@ -26,17 +26,17 @@ def Log [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Log
 
-def Init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Init [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.Init"
 
-def Open [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Open [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.Open"
 
-def writeAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.writeAll"
 
 /-- go: append_log.go:22:17 -/
-def «Log__mkHdrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__mkHdrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exception_do)
@@ -59,7 +59,7 @@ def «Log__mkHdrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.tchajed.marshal.Enc))) (Pair (Var "enc") (Var "$r0")))))))))))
 
 /-- go: append_log.go:29:17 -/
-def «Log__writeHdrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__writeHdrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exception_do)
@@ -73,7 +73,7 @@ def «Log__writeHdrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Write []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: append_log.go:33:6 -/
-def «Initⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Initⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "diskSz"
   (App (Val exception_do)
   (Let "diskSz" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "diskSz"))
@@ -101,7 +101,7 @@ def «Initⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))
 
 /-- go: append_log.go:42:6 -/
-def «Openⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Openⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "hdr" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
@@ -133,7 +133,7 @@ def «Openⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "hdr") (Var "$r0")))))))))
 
 /-- go: append_log.go:50:17 -/
-def «Log__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "i"
   (App (Val exception_do)
@@ -155,7 +155,7 @@ def «Log__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sz") (Var "$r0"))))))))))))
 
 /-- go: append_log.go:58:17 -/
-def «Log__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "i"
   (App (Val exception_do)
@@ -185,7 +185,7 @@ def «Log__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))) (Val #())))))))))
 
 /-- go: append_log.go:65:6 -/
-def «writeAllⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «writeAllⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "bks"
   (Lam "off"
   (App (Val exception_do)
@@ -212,7 +212,7 @@ def «writeAllⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "bk") (Var "$value")))))))))))))))))
 
 /-- go: append_log.go:71:17 -/
-def «Log__appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "bks"
   (App (Val exception_do)
@@ -246,7 +246,7 @@ def «Log__appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sz") (Var "$r0"))))))))))))
 
 /-- go: append_log.go:82:17 -/
-def «Log__Appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "bks"
   (App (Val exception_do)
@@ -268,7 +268,7 @@ def «Log__Appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))) (Val #())))))))))
 
 /-- go: append_log.go:89:17 -/
-def «Log__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exception_do)
@@ -284,7 +284,7 @@ def «Log__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Var "$r0")))))))))))
 
 /-- go: append_log.go:94:17 -/
-def «Log__Resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exception_do)
@@ -304,7 +304,7 @@ def «Log__Resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.append_log where
   pkg_imported_pkgs := [pkg_id.sync, pkg_id.github_com.tchajed.marshal, pkg_id.github_com.goose_lang.primitive.disk]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.append_log)) (Lam BAnon
   (App (Val exception_do)

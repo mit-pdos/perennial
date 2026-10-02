@@ -63,28 +63,32 @@ instance Bool'_access_load__0 (l : loc) (v : sync.atomic.Bool'.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Bool'.t go!"_0" l) v._0' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Bool'.t go!"_0" l) v._0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Bool'_access_store__0 (l : loc) (v : sync.atomic.Bool'.t) (_0' : sync.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Bool'.t go!"_0" l) v._0' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Bool'.t go!"_0" l) _0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Bool'.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Bool'.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Bool'_access_load_v (l : loc) (v : sync.atomic.Bool'.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Bool'.t go!"v" l) v.v' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Bool'.t go!"v" l) v.v' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Bool'_access_store_v (l : loc) (v : sync.atomic.Bool'.t) (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Bool'.t go!"v" l) v.v' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Bool'.t go!"v" l) v' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Bool'.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Bool'.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -117,42 +121,48 @@ instance Pointer_access_load__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : l
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"_0" l) v._0' dq)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"_0" l) v._0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Pointer_access_store__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (sync.atomic.Pointer.t T')) (_0' : (array.t loc 0)) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"_0" l) v._0' (DFrac.own 1))
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"_0" l) _0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : (sync.atomic.Pointer.t T')) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : (sync.atomic.Pointer.t T')) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Pointer_access_load__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (sync.atomic.Pointer.t T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"_1" l) v._1' dq)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"_1" l) v._1' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Pointer_access_store__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (sync.atomic.Pointer.t T')) (_1' : sync.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"_1" l) v._1' (DFrac.own 1))
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"_1" l) _1' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _1' := _1' } : (sync.atomic.Pointer.t T')) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _1' := _1' } : (sync.atomic.Pointer.t T')) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Pointer_access_load_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (sync.atomic.Pointer.t T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"v" l) v.v' dq)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"v" l) v.v' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Pointer_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (sync.atomic.Pointer.t T')) (v' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"v" l) v.v' (DFrac.own 1))
       (typed_pointsto (struct_field_ref (sync.atomic.Pointer.t T') go!"v" l) v' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : (sync.atomic.Pointer.t T')) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : (sync.atomic.Pointer.t T')) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -184,28 +194,32 @@ instance Int32_access_load__0 (l : loc) (v : sync.atomic.Int32.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int32.t go!"_0" l) v._0' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Int32.t go!"_0" l) v._0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Int32_access_store__0 (l : loc) (v : sync.atomic.Int32.t) (_0' : sync.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int32.t go!"_0" l) v._0' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Int32.t go!"_0" l) _0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Int32.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Int32.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Int32_access_load_v (l : loc) (v : sync.atomic.Int32.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int32.t go!"v" l) v.v' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Int32.t go!"v" l) v.v' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Int32_access_store_v (l : loc) (v : sync.atomic.Int32.t) (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int32.t go!"v" l) v.v' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Int32.t go!"v" l) v' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Int32.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Int32.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -261,42 +275,48 @@ instance Int64_access_load__0 (l : loc) (v : sync.atomic.Int64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"_0" l) v._0' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"_0" l) v._0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Int64_access_store__0 (l : loc) (v : sync.atomic.Int64.t) (_0' : sync.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"_0" l) v._0' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"_0" l) _0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Int64.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Int64.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Int64_access_load__1 (l : loc) (v : sync.atomic.Int64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"_1" l) v._1' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"_1" l) v._1' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Int64_access_store__1 (l : loc) (v : sync.atomic.Int64.t) (_1' : sync.atomic.align64.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"_1" l) v._1' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"_1" l) _1' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _1' := _1' } : sync.atomic.Int64.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _1' := _1' } : sync.atomic.Int64.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Int64_access_load_v (l : loc) (v : sync.atomic.Int64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"v" l) v.v' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"v" l) v.v' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Int64_access_store_v (l : loc) (v : sync.atomic.Int64.t) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"v" l) v.v' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Int64.t go!"v" l) v' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Int64.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Int64.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -328,28 +348,32 @@ instance Uint32_access_load__0 (l : loc) (v : sync.atomic.Uint32.t) (dq : DFrac)
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint32.t go!"_0" l) v._0' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Uint32.t go!"_0" l) v._0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Uint32_access_store__0 (l : loc) (v : sync.atomic.Uint32.t) (_0' : sync.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint32.t go!"_0" l) v._0' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Uint32.t go!"_0" l) _0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Uint32.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Uint32.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Uint32_access_load_v (l : loc) (v : sync.atomic.Uint32.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint32.t go!"v" l) v.v' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Uint32.t go!"v" l) v.v' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Uint32_access_store_v (l : loc) (v : sync.atomic.Uint32.t) (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint32.t go!"v" l) v.v' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Uint32.t go!"v" l) v' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Uint32.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Uint32.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -382,42 +406,48 @@ instance Uint64_access_load__0 (l : loc) (v : sync.atomic.Uint64.t) (dq : DFrac)
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"_0" l) v._0' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"_0" l) v._0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Uint64_access_store__0 (l : loc) (v : sync.atomic.Uint64.t) (_0' : sync.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"_0" l) v._0' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"_0" l) _0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Uint64.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : sync.atomic.Uint64.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Uint64_access_load__1 (l : loc) (v : sync.atomic.Uint64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"_1" l) v._1' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"_1" l) v._1' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Uint64_access_store__1 (l : loc) (v : sync.atomic.Uint64.t) (_1' : sync.atomic.align64.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"_1" l) v._1' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"_1" l) _1' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _1' := _1' } : sync.atomic.Uint64.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _1' := _1' } : sync.atomic.Uint64.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Uint64_access_load_v (l : loc) (v : sync.atomic.Uint64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"v" l) v.v' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"v" l) v.v' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Uint64_access_store_v (l : loc) (v : sync.atomic.Uint64.t) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"v" l) v.v' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Uint64.t go!"v" l) v' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Uint64.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Uint64.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -467,14 +497,16 @@ instance Value_access_load_v (l : loc) (v : sync.atomic.Value.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Value.t go!"v" l) v.v' dq)
       (typed_pointsto (struct_field_ref sync.atomic.Value.t go!"v" l) v.v' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Value_access_store_v (l : loc) (v : sync.atomic.Value.t) (v' : interface.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.Value.t go!"v" l) v.v' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.Value.t go!"v" l) v' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Value.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with v' := v' } : sync.atomic.Value.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -506,28 +538,32 @@ instance efaceWords_access_load_typ (l : loc) (v : sync.atomic.efaceWords.t) (dq
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.efaceWords.t go!"typ" l) v.typ' dq)
       (typed_pointsto (struct_field_ref sync.atomic.efaceWords.t go!"typ" l) v.typ' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance efaceWords_access_store_typ (l : loc) (v : sync.atomic.efaceWords.t) (typ' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.efaceWords.t go!"typ" l) v.typ' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.efaceWords.t go!"typ" l) typ' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with typ' := typ' } : sync.atomic.efaceWords.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with typ' := typ' } : sync.atomic.efaceWords.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance efaceWords_access_load_data (l : loc) (v : sync.atomic.efaceWords.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.efaceWords.t go!"data" l) v.data' dq)
       (typed_pointsto (struct_field_ref sync.atomic.efaceWords.t go!"data" l) v.data' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance efaceWords_access_store_data (l : loc) (v : sync.atomic.efaceWords.t) (data' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref sync.atomic.efaceWords.t go!"data" l) v.data' (DFrac.own 1))
       (typed_pointsto (struct_field_ref sync.atomic.efaceWords.t go!"data" l) data' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with data' := data' } : sync.atomic.efaceWords.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with data' := data' } : sync.atomic.efaceWords.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

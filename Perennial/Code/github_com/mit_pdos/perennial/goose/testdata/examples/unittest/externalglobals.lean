@@ -19,11 +19,11 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
 
-def f [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.f"
 
 /-- go: g.go:7:6 -/
-def «fⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -36,7 +36,7 @@ def «fⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals where
   pkg_imported_pkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals)) (Lam BAnon
   (App (Val exception_do)

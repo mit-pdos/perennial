@@ -28,31 +28,31 @@ def ProphId [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] ProphId
 
-def RandomUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RandomUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.RandomUint64"
 
-def UInt64ToString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UInt64ToString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.UInt64ToString"
 
-def Linearize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Linearize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.Linearize"
 
-def Assume [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Assume [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.Assume"
 
-def Assert [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Assert [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.Assert"
 
-def Exit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Exit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.Exit"
 
-def TimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.TimeNow"
 
-def Sleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.Sleep"
 
-def NewProph [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProph [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive.NewProph"
 
 instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive where
@@ -60,7 +60,7 @@ instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.primitive)) (Lam BAnon
   (App (Val exception_do)

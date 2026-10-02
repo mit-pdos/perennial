@@ -50,41 +50,41 @@ def txnLeasing [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] txnLeasing
 
-@[reducible] def revokeBackoff [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def revokeBackoff [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2000000000)
 
-def closedCh [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closedCh [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.closedCh"
 
-def inRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.inRange"
 
-def isBadOp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isBadOp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.isBadOp"
 
-def NewKV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewKV [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.NewKV"
 
-def compareInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compareInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.compareInt64"
 
-def evalCmp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def evalCmp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.evalCmp"
 
-def gatherOps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gatherOps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.gatherOps"
 
-def gatherResponseOps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gatherResponseOps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.gatherResponseOps"
 
-def copyHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.copyHeader"
 
-def closeAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closeAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/leasing.closeAll"
 
 /-- go: cache.go:44:23 -/
-def «leaseCache__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (App (Val wrap_defer)
@@ -116,7 +116,7 @@ def «leaseCache__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leaseCache)))) (Var "lc")))) (Val #()))))))))))
 
 /-- go: cache.go:53:23 -/
-def «leaseCache__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (App (Val wrap_defer)
@@ -152,7 +152,7 @@ def «leaseCache__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leaseCache)))) (Var "lc")))) (Val #()))))))))))
 
 /-- go: cache.go:63:23 -/
-def «leaseCache__LockRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__LockRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "begin"
   (Lam "end"
@@ -205,7 +205,7 @@ def «leaseCache__LockRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leaseCache)))) (Var "lc")))) (Val #())))))))))))))
 
 /-- go: cache.go:75:6 -/
-def «inRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «inRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam "begin"
   (Lam "end"
@@ -233,7 +233,7 @@ def «inRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))
 
 /-- go: cache.go:85:23 -/
-def «leaseCache__LockWriteOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__LockWriteOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "ops"
   (App (Val exception_do)
@@ -332,7 +332,7 @@ def «leaseCache__LockWriteOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.client.v3.Op))) (Pair (Var "op") (Var "$value")))))))))))))))))
 
 /-- go: cache.go:109:23 -/
-def «leaseCache__NotifyOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__NotifyOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "ops"
   (App (Val exception_do)
@@ -380,7 +380,7 @@ def «leaseCache__NotifyOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.client.v3.Op))) (Pair (Var "op") (Var "$value")))))))))))))))))
 
 /-- go: cache.go:120:23 -/
-def «leaseCache__MayAcquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__MayAcquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (App (Val exception_do)
@@ -410,7 +410,7 @@ def «leaseCache__MayAcquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leaseCache)))) (Var "lc")))) (Val #())))))))))
 
 /-- go: cache.go:127:23 -/
-def «leaseCache__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (Lam "resp"
@@ -455,7 +455,7 @@ def «leaseCache__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType leaseKey)))) (Pair (Var "lk") (Var "$r0"))))))))))))))))
 
 /-- go: cache.go:139:23 -/
-def «leaseCache__Updateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__Updateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (Lam "val"
@@ -525,7 +525,7 @@ def «leaseCache__Updateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType leaseKey)))) (Pair (Var "li") (Var "$r0")))))))))))))))))
 
 /-- go: cache.go:161:23 -/
-def «leaseCache__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (Lam "hdr"
@@ -553,7 +553,7 @@ def «leaseCache__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leaseCache)))) (Var "lc")))) (Val #())))))))))))))
 
 /-- go: cache.go:167:23 -/
-def «leaseCache__deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (Lam "hdr"
@@ -582,7 +582,7 @@ def «leaseCache__deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType leaseKey)))) (Pair (Var "li") (Var "$r0")))))))))))))))
 
 /-- go: cache.go:174:23 -/
-def «leaseCache__Evictⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__Evictⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (App (Val wrap_defer)
@@ -625,7 +625,7 @@ def «leaseCache__Evictⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leaseCache)))) (Var "lc")))) (Val #())))))))))))
 
 /-- go: cache.go:185:23 -/
-def «leaseCache__EvictRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__EvictRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (Lam "end"
@@ -671,7 +671,7 @@ def «leaseCache__EvictRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leaseCache)))) (Var "lc")))) (Val #())))))))))))))
 
 /-- go: cache.go:196:6 -/
-def «isBadOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «isBadOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (App (Val exception_do)
   (Let "op" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.etcd.client.v3.Op))) (Var "op"))
@@ -680,7 +680,7 @@ def «isBadOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))))))
 
 /-- go: cache.go:198:23 -/
-def «leaseCache__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "ctx"
   (Lam "op"
@@ -750,7 +750,7 @@ def «leaseCache__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))
 
 /-- go: cache.go:219:21 -/
-def «leaseKey__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseKey__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lk"
   (Lam "op"
   (App (Val exception_do)
@@ -829,7 +829,7 @@ def «leaseKey__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.client.v3.GetResponse))) (Pair (Var "ret") (Var "$r0"))))))))))))
 
 /-- go: cache.go:242:23 -/
-def «leaseCache__notifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__notifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "key"
   (App (Val wrap_defer)
@@ -861,7 +861,7 @@ def «leaseCache__notifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leaseCache)))) (Var "lc")))) (Val #()))))))))))
 
 /-- go: cache.go:251:23 -/
-def «leaseCache__clearOldRevokesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__clearOldRevokesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "ctx"
   (App (Val exception_do)
@@ -910,7 +910,7 @@ def «leaseCache__clearOldRevokesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
   (Val #())))))))))
 
 /-- go: cache.go:268:23 -/
-def «leaseCache__evalCmpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__evalCmpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "cmps"
   (App (Val exception_do)
@@ -959,7 +959,7 @@ def «leaseCache__evalCmpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.client.v3.Cmp))) (Pair (Var "cmp") (Var "$value"))))))))))))))))))
 
 /-- go: cache.go:284:23 -/
-def «leaseCache__evalOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leaseCache__evalOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lc"
   (Lam "ops"
   (App (Val exception_do)
@@ -1025,7 +1025,7 @@ def «leaseCache__evalOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- NewKV wraps a KV instance so that all requests are wired through a leasing protocol.
 
     go: kv.go:57:6 -/
-def «NewKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "cl"
   (Lam "pfx"
   (Lam "opts"
@@ -1109,7 +1109,7 @@ def «NewKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context))) (Pair (Var "cctx") (Var "$r0")))))))))))))))))))
 
 /-- go: kv.go:81:23 -/
-def «leasingKV__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam BAnon
   (App (Val exception_do)
@@ -1124,7 +1124,7 @@ def «leasingKV__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (GoLoad _root_.Perennial.context.CancelFunc))) (App (Val (GoInstruction (StructFieldRef leasingKV go!"cancel"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leasingKV)))) (Var "lkv")))) (Val #())))))))))
 
 /-- go: kv.go:86:23 -/
-def «leasingKV__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "key"
@@ -1145,7 +1145,7 @@ def «leasingKV__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Pair (Var "$ret0") (Var "$ret1")))))))))))))))
 
 /-- go: kv.go:90:23 -/
-def «leasingKV__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "key"
@@ -1169,7 +1169,7 @@ def «leasingKV__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Pair (Var "$ret0") (Var "$ret1")))))))))))))))))
 
 /-- go: kv.go:94:23 -/
-def «leasingKV__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "key"
@@ -1190,7 +1190,7 @@ def «leasingKV__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Pair (Var "$ret0") (Var "$ret1")))))))))))))))
 
 /-- go: kv.go:98:23 -/
-def «leasingKV__Doⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__Doⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "op"
@@ -1299,7 +1299,7 @@ def «leasingKV__Doⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))))))
 
 /-- go: kv.go:117:23 -/
-def «leasingKV__Compactⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__Compactⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "rev"
@@ -1319,7 +1319,7 @@ def «leasingKV__Compactⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Pair (Var "$ret0") (Var "$ret1")))))))))))))))
 
 /-- go: kv.go:121:23 -/
-def «leasingKV__Txnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__Txnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (App (Val exception_do)
@@ -1333,7 +1333,7 @@ def «leasingKV__Txnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral txnLeasing))) (LiteralValue [(KeyedElement (some (KeyField go!"Txn")) (ElementExpression _root_.Perennial.go_etcd_io.etcd.client.v3.Txn (Var "$v0"))), (KeyedElement (some (KeyField go!"lkv")) (ElementExpression (go.type.PointerType leasingKV) (Var "$v1"))), (KeyedElement (some (KeyField go!"ctx")) (ElementExpression _root_.Perennial.context.Context (Var "$v2")))])))))))))))))
 
 /-- go: kv.go:125:23 -/
-def «leasingKV__monitorSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__monitorSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam BAnon
   (App (Val exception_do)
@@ -1409,7 +1409,7 @@ def «leasingKV__monitorSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (Val #()))))))))
 
 /-- go: kv.go:155:23 -/
-def «leasingKV__monitorLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__monitorLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "key"
@@ -1541,7 +1541,7 @@ def «leasingKV__monitorLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
 /-- rescind releases a lease from this client.
 
     go: kv.go:187:23 -/
-def «leasingKV__rescindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__rescindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "key"
@@ -1605,7 +1605,7 @@ def «leasingKV__rescindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))))))))
 
 /-- go: kv.go:200:23 -/
-def «leasingKV__waitRescindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__waitRescindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "key"
@@ -1675,7 +1675,7 @@ def «leasingKV__waitRescindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context))) (Pair (Var "cctx") (Var "$r0"))))))))))))))))))))))
 
 /-- go: kv.go:214:23 -/
-def «leasingKV__tryModifyOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__tryModifyOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "op"
@@ -1761,7 +1761,7 @@ def «leasingKV__tryModifyOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "key") (Var "$r0"))))))))))))))
 
 /-- go: kv.go:236:23 -/
-def «leasingKV__putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "op"
@@ -1871,7 +1871,7 @@ def «leasingKV__putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))))))))))))
 
 /-- go: kv.go:265:23 -/
-def «leasingKV__acquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__acquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "key"
@@ -1993,7 +1993,7 @@ def «leasingKV__acquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))))
 
 /-- go: kv.go:301:23 -/
-def «leasingKV__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "op"
@@ -2160,7 +2160,7 @@ def «leasingKV__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.FunctionType (go.signature.Signature [] false [(go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.GetResponse), go.error]))))) (Pair (Var "do") (Var "$r0"))))))))))))))
 
 /-- go: kv.go:340:23 -/
-def «leasingKV__deleteRangeRPCⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__deleteRangeRPCⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "maxLeaseRev"
@@ -2261,7 +2261,7 @@ def «leasingKV__deleteRangeRPCⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "lkey") (Var "$r0"))))))))))))))))))))
 
 /-- go: kv.go:363:23 -/
-def «leasingKV__deleteRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__deleteRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "op"
@@ -2342,7 +2342,7 @@ def «leasingKV__deleteRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "key") (Var "$r0"))))))))))))))))
 
 /-- go: kv.go:380:23 -/
-def «leasingKV__deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "op"
@@ -2466,7 +2466,7 @@ def «leasingKV__deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))))))))))))
 
 /-- go: kv.go:413:23 -/
-def «leasingKV__revokeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__revokeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "key"
@@ -2528,7 +2528,7 @@ def «leasingKV__revokeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "rev") (Var "$r0"))))))))))))))))
 
 /-- go: kv.go:423:23 -/
-def «leasingKV__revokeRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__revokeRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "begin"
@@ -2589,7 +2589,7 @@ def «leasingKV__revokeRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "lkey") (Var "$r0"))))))))))))))))))
 
 /-- go: kv.go:435:23 -/
-def «leasingKV__revokeLeaseKvsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__revokeLeaseKvsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (Lam "kvs"
@@ -2664,7 +2664,7 @@ def «leasingKV__revokeLeaseKvsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "maxLeaseRev") (Var "$r0"))))))))))))))
 
 /-- go: kv.go:453:23 -/
-def «leasingKV__waitSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__waitSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam "ctx"
   (App (Val exception_do)
@@ -2695,7 +2695,7 @@ def «leasingKV__waitSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (StructFieldRef leasingKV go!"leases"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leasingKV)))) (Var "lkv"))))) (Val #())))))))))
 
 /-- go: kv.go:467:23 -/
-def «leasingKV__readySessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__readySessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -2727,7 +2727,7 @@ def «leasingKV__readySessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (StructFieldRef leasingKV go!"leases"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leasingKV)))) (Var "lkv"))))) (Val #())))))))))
 
 /-- go: kv.go:481:23 -/
-def «leasingKV__leaseIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «leasingKV__leaseIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lkv"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -2747,7 +2747,7 @@ def «leasingKV__leaseIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef leaseCache go!"mu"))) (App (Val (GoInstruction (StructFieldRef leasingKV go!"leases"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType leasingKV)))) (Var "lkv"))))) (Val #())))))))))
 
 /-- go: txn.go:34:24 -/
-def «txnLeasing__Ifⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__Ifⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "cs"
   (App (Val exception_do)
@@ -2768,7 +2768,7 @@ def «txnLeasing__Ifⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Cmp)))) (Pair (App (Val (GoInstruction (StructFieldRef txnLeasing go!"cs"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType txnLeasing)))) (Var "txn"))) (Var "$r0")))))))))))
 
 /-- go: txn.go:40:24 -/
-def «txnLeasing__Thenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__Thenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "ops"
   (App (Val exception_do)
@@ -2789,7 +2789,7 @@ def «txnLeasing__Thenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Op)))) (Pair (App (Val (GoInstruction (StructFieldRef txnLeasing go!"opst"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType txnLeasing)))) (Var "txn"))) (Var "$r0")))))))))))
 
 /-- go: txn.go:46:24 -/
-def «txnLeasing__Elseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__Elseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "ops"
   (App (Val exception_do)
@@ -2810,7 +2810,7 @@ def «txnLeasing__Elseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Op)))) (Pair (App (Val (GoInstruction (StructFieldRef txnLeasing go!"opse"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType txnLeasing)))) (Var "txn"))) (Var "$r0")))))))))))
 
 /-- go: txn.go:52:24 -/
-def «txnLeasing__Commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__Commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam BAnon
   (App (Val exception_do)
@@ -2841,7 +2841,7 @@ def «txnLeasing__Commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.TxnResponse)))) (Pair (Var "resp") (Var "$r0")))))))))))))))))
 
 /-- go: txn.go:59:24 -/
-def «txnLeasing__evalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__evalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -2970,7 +2970,7 @@ def «txnLeasing__evalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     leasing keys for a list of ops.
 
     go: txn.go:93:24 -/
-def «txnLeasing__fallbackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__fallbackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "ops"
   (App (Val exception_do)
@@ -3026,7 +3026,7 @@ def «txnLeasing__fallbackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.client.v3.Op))) (Pair (Var "op") (Var "$value")))))))))))))))))
 
 /-- go: txn.go:107:24 -/
-def «txnLeasing__guardKeysⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__guardKeysⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "ops"
   (App (Val exception_do)
@@ -3085,7 +3085,7 @@ def «txnLeasing__guardKeysⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.MapType go.string go.bool)))) (Pair (Var "seen") (Var "$r0")))))))))))))
 
 /-- go: txn.go:121:24 -/
-def «txnLeasing__guardRangesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__guardRangesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "ops"
   (App (Val exception_do)
@@ -3217,7 +3217,7 @@ def «txnLeasing__guardRangesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.client.v3.Op))) (Pair (Var "op") (Var "$value"))))))))))))))))))
 
 /-- go: txn.go:153:24 -/
-def «txnLeasing__guardⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__guardⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "ops"
   (App (Val exception_do)
@@ -3249,7 +3249,7 @@ def «txnLeasing__guardⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Cmp)))) (Pair (Var "cmps") (Var "$r0"))))))))))))
 
 /-- go: txn.go:159:24 -/
-def «txnLeasing__commitToCacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__commitToCacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "txnResp"
   (Lam "userTxn"
@@ -3333,7 +3333,7 @@ def «txnLeasing__commitToCacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Op)))) (Pair (Var "ops") (Var "$r0")))))))))))))))
 
 /-- go: txn.go:181:24 -/
-def «txnLeasing__revokeFallbackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__revokeFallbackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "fbResps"
   (App (Val exception_do)
@@ -3374,7 +3374,7 @@ def «txnLeasing__revokeFallbackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp)))) (Pair (Var "resp") (Var "$value"))))))))))))))))
 
 /-- go: txn.go:191:24 -/
-def «txnLeasing__serverTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «txnLeasing__serverTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -3520,7 +3520,7 @@ def «txnLeasing__serverTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))))))))
 
 /-- go: util.go:24:6 -/
-def «compareInt64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «compareInt64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
   (App (Val exception_do)
@@ -3537,7 +3537,7 @@ def «compareInt64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #(W64 0)))))))))))
 
 /-- go: util.go:35:6 -/
-def «evalCmpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «evalCmpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "resp"
   (Lam "tcmp"
   (App (Val exception_do)
@@ -3661,7 +3661,7 @@ def «evalCmpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))))
 
 /-- go: util.go:71:6 -/
-def «gatherOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «gatherOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ops"
   (App (Val exception_do)
   (Let "ret" (App (Val (GoInstruction (GoAlloc (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Op)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Op)))) (Val #())))
@@ -3720,7 +3720,7 @@ def «gatherOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.client.v3.Op))) (Pair (Var "op") (Var "$value")))))))))))))))
 
 /-- go: util.go:83:6 -/
-def «gatherResponseOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «gatherResponseOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "resp"
   (Lam "ops"
   (App (Val exception_do)
@@ -3794,7 +3794,7 @@ def «gatherResponseOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.client.v3.Op))) (Pair (Var "op") (Var "$value"))))))))))))))))))
 
 /-- go: util.go:99:6 -/
-def «copyHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «copyHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "hdr"
   (App (Val exception_do)
   (Let "hdr" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader)))) (Var "hdr"))
@@ -3807,7 +3807,7 @@ def «copyHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader))) (Pair (Var "h") (Var "$r0"))))))))))
 
 /-- go: util.go:104:6 -/
-def «closeAllⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «closeAllⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "chs"
   (App (Val exception_do)
   (Let "chs" (App (Val (GoInstruction (GoAlloc (go.type.SliceType (go.type.ChannelType go.chan_dir.sendonly (go.type.StructType [])))))) (Var "chs"))
@@ -3832,7 +3832,7 @@ def «closeAllⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.client.v3.leasing where
   pkg_imported_pkgs := [pkg_id.context, pkg_id.strings, pkg_id.sync, pkg_id.time, pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb, pkg_id.go_etcd_io.etcd.api.v3.mvccpb, pkg_id.go_etcd_io.etcd.client.v3, pkg_id.errors, pkg_id.google_golang_org.grpc.codes, pkg_id.google_golang_org.grpc.status, pkg_id.go_etcd_io.etcd.api.v3.v3rpc.rpctypes, pkg_id.go_etcd_io.etcd.client.v3.concurrency, pkg_id.bytes]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.client.v3.leasing)) (Lam BAnon
   (App (Val exception_do)

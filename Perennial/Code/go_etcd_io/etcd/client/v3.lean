@@ -717,7 +717,7 @@ axiom CompareValue [ffi_syntax] [GoGlobalContext] : val
 
 axiom defaultTTL [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def NoLease [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def NoLease [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 axiom retryConnWait [ffi_syntax] [GoGlobalContext] : val
@@ -728,16 +728,16 @@ axiom DowngradeEnable [ffi_syntax] [GoGlobalContext] : val
 
 axiom DowngradeCancel [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def tRange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def tRange [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def tPut [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def tPut [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] def tDeleteRange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def tDeleteRange [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-@[reducible] def tTxn [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def tTxn [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4)
 
 axiom MaxLeaseTTL [ffi_syntax] [GoGlobalContext] : val
@@ -746,31 +746,31 @@ axiom repeatable [ffi_syntax] [GoGlobalContext] : val
 
 axiom nonRepeatable [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def SortNone [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SortNone [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def SortAscend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SortAscend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def SortDescend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SortDescend [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] def SortByKey [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SortByKey [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def SortByVersion [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SortByVersion [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def SortByCreateRevision [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SortByCreateRevision [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] def SortByModRevision [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SortByModRevision [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-@[reducible] def SortByValue [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SortByValue [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 4)
 
-@[reducible] def EventTypeDelete [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def EventTypeDelete [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
 axiom EventTypePut [ffi_syntax] [GoGlobalContext] : val
@@ -781,404 +781,404 @@ axiom AutoWatchID [ffi_syntax] [GoGlobalContext] : val
 
 axiom InvalidWatchID [ffi_syntax] [GoGlobalContext] : val
 
-def ErrNoAvailableEndpoints [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoAvailableEndpoints [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.ErrNoAvailableEndpoints"
 
 axiom ErrNoAvailableEndpoints'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrOldCluster [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrOldCluster [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.ErrOldCluster"
 
 axiom ErrOldCluster'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrMutuallyExclusiveCfg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMutuallyExclusiveCfg [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.ErrMutuallyExclusiveCfg"
 
 axiom ErrMutuallyExclusiveCfg'init [ffi_syntax] [GoGlobalContext] : val
 
-def LeaseResponseChSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LeaseResponseChSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.LeaseResponseChSize"
 
 axiom LeaseResponseChSize'init [ffi_syntax] [GoGlobalContext] : val
 
-def noPrefixEnd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noPrefixEnd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.noPrefixEnd"
 
 axiom noPrefixEnd'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultWaitForReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultWaitForReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultWaitForReady"
 
 axiom defaultWaitForReady'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultMaxCallSendMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultMaxCallSendMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultMaxCallSendMsgSize"
 
 axiom defaultMaxCallSendMsgSize'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultMaxCallRecvMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultMaxCallRecvMsgSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultMaxCallRecvMsgSize"
 
 axiom defaultMaxCallRecvMsgSize'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultUnaryMaxRetries [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultUnaryMaxRetries [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultUnaryMaxRetries"
 
 axiom defaultUnaryMaxRetries'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultStreamMaxRetries [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultStreamMaxRetries [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultStreamMaxRetries"
 
 axiom defaultStreamMaxRetries'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultBackoffWaitBetween [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultBackoffWaitBetween [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultBackoffWaitBetween"
 
 axiom defaultBackoffWaitBetween'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultBackoffJitterFraction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultBackoffJitterFraction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultBackoffJitterFraction"
 
 axiom defaultBackoffJitterFraction'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultCallOpts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultCallOpts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultCallOpts"
 
 axiom defaultCallOpts'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.defaultOptions"
 
 axiom defaultOptions'init [ffi_syntax] [GoGlobalContext] : val
 
-def valCtxCh [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valCtxCh [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.valCtxCh"
 
 axiom valCtxCh'init [ffi_syntax] [GoGlobalContext] : val
 
-def zeroTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def zeroTime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.zeroTime"
 
 axiom zeroTime'init [ffi_syntax] [GoGlobalContext] : val
 
-def maxBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.maxBackoff"
 
 axiom maxBackoff'init [ffi_syntax] [GoGlobalContext] : val
 
-def NewAuth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAuth [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewAuth"
 
-def NewAuthFromAuthClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAuthFromAuthClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewAuthFromAuthClient"
 
-def StrToPermissionType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StrToPermissionType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.StrToPermissionType"
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.New"
 
-def NewCtxClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewCtxClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewCtxClient"
 
-def NewFromURL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFromURL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewFromURL"
 
-def NewFromURLs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFromURLs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewFromURLs"
 
-def WithZapLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithZapLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithZapLogger"
 
-def waitForConnection [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitForConnection [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.waitForConnection"
 
-def authority [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authority [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.authority"
 
-def newClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.newClient"
 
-def minSupportedVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minSupportedVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.minSupportedVersion"
 
-def isHaltErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isHaltErr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.isHaltErr"
 
-def isUnavailableErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isUnavailableErr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.isUnavailableErr"
 
-def ContextError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContextError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.ContextError"
 
-def canceledByCaller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def canceledByCaller [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.canceledByCaller"
 
-def IsConnCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsConnCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.IsConnCanceled"
 
-def NewCluster [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewCluster [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewCluster"
 
-def NewClusterFromClusterClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewClusterFromClusterClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewClusterFromClusterClient"
 
-def OpCompact [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpCompact [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.OpCompact"
 
-def WithCompactPhysical [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCompactPhysical [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithCompactPhysical"
 
-def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.Compare"
 
-def Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.Value"
 
-def Version [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Version [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.Version"
 
-def CreateRevision [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CreateRevision [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.CreateRevision"
 
-def ModRevision [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ModRevision [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.ModRevision"
 
-def LeaseValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LeaseValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.LeaseValue"
 
-def mustInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mustInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.mustInt64"
 
-def mustInt64orLeaseID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mustInt64orLeaseID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.mustInt64orLeaseID"
 
-def NewClientConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewClientConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewClientConfig"
 
-def newTLSConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTLSConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.newTLSConfig"
 
-def WithRequireLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithRequireLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithRequireLeader"
 
-def withVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.withVersion"
 
-def NewKV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewKV [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewKV"
 
-def NewKVFromKVClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewKVFromKVClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewKVFromKVClient"
 
-def NewLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewLease"
 
-def NewLeaseFromLeaseClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLeaseFromLeaseClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewLeaseFromLeaseClient"
 
-def SetLogger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetLogger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.SetLogger"
 
-def ClientLogLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClientLogLevel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.ClientLogLevel"
 
-def NewMaintenance [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMaintenance [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewMaintenance"
 
-def NewMaintenanceFromMaintenanceClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMaintenanceFromMaintenanceClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewMaintenanceFromMaintenanceClient"
 
-def NewOp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewOp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewOp"
 
-def OpGet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpGet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.OpGet"
 
-def OpDelete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpDelete [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.OpDelete"
 
-def OpPut [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpPut [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.OpPut"
 
-def OpTxn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpTxn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.OpTxn"
 
-def OpWatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpWatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.OpWatch"
 
-def WithLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithLease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithLease"
 
-def WithLimit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithLimit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithLimit"
 
-def WithRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithRev"
 
-def WithSort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithSort [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithSort"
 
-def GetPrefixRangeEnd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetPrefixRangeEnd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.GetPrefixRangeEnd"
 
-def getPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.getPrefix"
 
-def WithPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithPrefix"
 
-def WithRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithRange"
 
-def WithFromKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFromKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithFromKey"
 
-def WithSerializable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithSerializable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithSerializable"
 
-def WithKeysOnly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithKeysOnly [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithKeysOnly"
 
-def WithCountOnly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCountOnly [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithCountOnly"
 
-def WithMinModRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMinModRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithMinModRev"
 
-def WithMaxModRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMaxModRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithMaxModRev"
 
-def WithMinCreateRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMinCreateRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithMinCreateRev"
 
-def WithMaxCreateRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMaxCreateRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithMaxCreateRev"
 
-def WithFirstCreate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFirstCreate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithFirstCreate"
 
-def WithLastCreate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithLastCreate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithLastCreate"
 
-def WithFirstKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFirstKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithFirstKey"
 
-def WithLastKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithLastKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithLastKey"
 
-def WithFirstRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFirstRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithFirstRev"
 
-def WithLastRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithLastRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithLastRev"
 
-def withTop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withTop [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.withTop"
 
-def WithProgressNotify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithProgressNotify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithProgressNotify"
 
-def WithCreatedNotify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCreatedNotify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithCreatedNotify"
 
-def WithFilterPut [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFilterPut [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithFilterPut"
 
-def WithFilterDelete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFilterDelete [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithFilterDelete"
 
-def WithPrevKV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithPrevKV [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithPrevKV"
 
-def WithFragment [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFragment [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithFragment"
 
-def WithIgnoreValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithIgnoreValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithIgnoreValue"
 
-def WithIgnoreLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithIgnoreLease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithIgnoreLease"
 
-def WithAttachedKeys [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithAttachedKeys [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.WithAttachedKeys"
 
-def toLeaseTimeToLiveRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toLeaseTimeToLiveRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.toLeaseTimeToLiveRequest"
 
-def IsOptsWithPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsOptsWithPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.IsOptsWithPrefix"
 
-def IsOptsWithFromKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsOptsWithFromKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.IsOptsWithFromKey"
 
-def isSafeRetryImmutableRPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSafeRetryImmutableRPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.isSafeRetryImmutableRPC"
 
-def isSafeRetryMutableRPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSafeRetryMutableRPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.isSafeRetryMutableRPC"
 
-def RetryKVClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RetryKVClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.RetryKVClient"
 
-def RetryLeaseClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RetryLeaseClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.RetryLeaseClient"
 
-def RetryClusterClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RetryClusterClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.RetryClusterClient"
 
-def RetryMaintenanceClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RetryMaintenanceClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.RetryMaintenanceClient"
 
-def RetryAuthClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RetryAuthClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.RetryAuthClient"
 
-def waitRetryBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitRetryBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.waitRetryBackoff"
 
-def isSafeRetry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSafeRetry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.isSafeRetry"
 
-def isContextError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isContextError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.isContextError"
 
-def contextErrToGRPCErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def contextErrToGRPCErr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.contextErrToGRPCErr"
 
-def withRepeatablePolicy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withRepeatablePolicy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.withRepeatablePolicy"
 
-def withMax [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withMax [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.withMax"
 
-def withBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.withBackoff"
 
-def reuseOrNewWithCallOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reuseOrNewWithCallOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.reuseOrNewWithCallOptions"
 
-def filterCallOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def filterCallOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.filterCallOptions"
 
-def backoffLinearWithJitter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backoffLinearWithJitter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.backoffLinearWithJitter"
 
-def jitterUp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def jitterUp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.jitterUp"
 
-def NewWatcher [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewWatcher [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewWatcher"
 
-def NewWatchFromWatchClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewWatchFromWatchClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.NewWatchFromWatchClient"
 
-def streamKeyFromCtx [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def streamKeyFromCtx [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3.streamKeyFromCtx"
 
 /-- WithZapLogger is a NewCtxClient option that overrides the logger
 
     go: client.go:124:6 -/
-def «WithZapLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithZapLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lg"
   (App (Val exception_do)
   (Let "lg" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.go_uber_org.zap.Logger)))) (Var "lg"))
@@ -1196,7 +1196,7 @@ def «WithZapLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsTxn returns true if the "Op" type is transaction.
 
     go: op.go:88:14 -/
-def «Op__IsTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1207,7 +1207,7 @@ def «Op__IsTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Txn returns the comparison(if) operations, "then" operations, and "else" operations.
 
     go: op.go:93:14 -/
-def «Op__Txnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__Txnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1218,7 +1218,7 @@ def «Op__Txnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- KeyBytes returns the byte slice holding the Op's key.
 
     go: op.go:98:14 -/
-def «Op__KeyBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__KeyBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1229,7 +1229,7 @@ def «Op__KeyBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithKeyBytes sets the byte slice for the Op's key.
 
     go: op.go:101:15 -/
-def «Op__WithKeyBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__WithKeyBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam "key"
   (App (Val exception_do)
@@ -1245,7 +1245,7 @@ def «Op__WithKeyBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- RangeBytes returns the byte slice holding with the Op's range end, if any.
 
     go: op.go:104:14 -/
-def «Op__RangeBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__RangeBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1256,7 +1256,7 @@ def «Op__RangeBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Rev returns the requested revision, if any.
 
     go: op.go:107:14 -/
-def «Op__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1267,7 +1267,7 @@ def «Op__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Limit returns limit of the result, if any.
 
     go: op.go:110:14 -/
-def «Op__Limitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__Limitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1278,7 +1278,7 @@ def «Op__Limitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsPut returns true iff the operation is a Put.
 
     go: op.go:113:14 -/
-def «Op__IsPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1289,7 +1289,7 @@ def «Op__IsPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsGet returns true iff the operation is a Get.
 
     go: op.go:116:14 -/
-def «Op__IsGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1300,7 +1300,7 @@ def «Op__IsGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsDelete returns true iff the operation is a Delete.
 
     go: op.go:119:14 -/
-def «Op__IsDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1311,7 +1311,7 @@ def «Op__IsDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsSerializable returns true if the serializable field is true.
 
     go: op.go:122:14 -/
-def «Op__IsSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1322,7 +1322,7 @@ def «Op__IsSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsKeysOnly returns whether keysOnly is set.
 
     go: op.go:125:14 -/
-def «Op__IsKeysOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsKeysOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1333,7 +1333,7 @@ def «Op__IsKeysOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsCountOnly returns whether countOnly is set.
 
     go: op.go:128:14 -/
-def «Op__IsCountOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsCountOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1344,7 +1344,7 @@ def «Op__IsCountOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsSortSet returns true if WithSort is set.
 
     go: op.go:131:14 -/
-def «Op__IsSortSetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsSortSetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1353,7 +1353,7 @@ def «Op__IsSortSetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType SortOption)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType SortOption)))) (App (Val (GoInstruction (StructFieldRef Op go!"sort"))) (Var "op"))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType SortOption)))) (Val UntypedNil))))))))))
 
 /-- go: op.go:133:14 -/
-def «Op__IsOptsWithFromKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsOptsWithFromKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1362,7 +1362,7 @@ def «Op__IsOptsWithFromKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef Op go!"isOptsWithFromKey"))) (Var "op"))))))))
 
 /-- go: op.go:135:14 -/
-def «Op__IsOptsWithPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsOptsWithPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1373,7 +1373,7 @@ def «Op__IsOptsWithPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsPrevKV returns whether WithPrevKV() is set.
 
     go: op.go:138:14 -/
-def «Op__IsPrevKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsPrevKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1384,7 +1384,7 @@ def «Op__IsPrevKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsFragment returns whether WithFragment() is set.
 
     go: op.go:141:14 -/
-def «Op__IsFragmentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsFragmentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1395,7 +1395,7 @@ def «Op__IsFragmentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsProgressNotify returns whether WithProgressNotify() is set.
 
     go: op.go:144:14 -/
-def «Op__IsProgressNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsProgressNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1406,7 +1406,7 @@ def «Op__IsProgressNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsCreatedNotify returns whether WithCreatedNotify() is set.
 
     go: op.go:147:14 -/
-def «Op__IsCreatedNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsCreatedNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1417,7 +1417,7 @@ def «Op__IsCreatedNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsFilterPut returns whether WithFilterPut() is set.
 
     go: op.go:150:14 -/
-def «Op__IsFilterPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsFilterPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1428,7 +1428,7 @@ def «Op__IsFilterPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- IsFilterDelete returns whether WithFilterDelete() is set.
 
     go: op.go:153:14 -/
-def «Op__IsFilterDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsFilterDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1439,7 +1439,7 @@ def «Op__IsFilterDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- MinModRev returns the operation's minimum modify revision.
 
     go: op.go:156:14 -/
-def «Op__MinModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__MinModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1450,7 +1450,7 @@ def «Op__MinModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- MaxModRev returns the operation's maximum modify revision.
 
     go: op.go:159:14 -/
-def «Op__MaxModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__MaxModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1461,7 +1461,7 @@ def «Op__MaxModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- MinCreateRev returns the operation's minimum create revision.
 
     go: op.go:162:14 -/
-def «Op__MinCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__MinCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1472,7 +1472,7 @@ def «Op__MinCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- MaxCreateRev returns the operation's maximum create revision.
 
     go: op.go:165:14 -/
-def «Op__MaxCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__MaxCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1483,7 +1483,7 @@ def «Op__MaxCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithRangeBytes sets the byte slice for the Op's range end.
 
     go: op.go:168:15 -/
-def «Op__WithRangeBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__WithRangeBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam "end"
   (App (Val exception_do)
@@ -1499,7 +1499,7 @@ def «Op__WithRangeBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- ValueBytes returns the byte slice holding the Op's value, if any.
 
     go: op.go:171:14 -/
-def «Op__ValueBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__ValueBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1510,7 +1510,7 @@ def «Op__ValueBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithValueBytes sets the byte slice for the Op's value.
 
     go: op.go:174:15 -/
-def «Op__WithValueBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__WithValueBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam "v"
   (App (Val exception_do)
@@ -1524,7 +1524,7 @@ def «Op__WithValueBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (StructFieldRef Op go!"val"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Op)))) (Var "op"))) (Var "$r0")))))))))))
 
 /-- go: op.go:176:14 -/
-def «Op__toRangeRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__toRangeRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1567,7 +1567,7 @@ def «Op__toRangeRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))
 
 /-- go: op.go:200:14 -/
-def «Op__toTxnRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__toTxnRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1641,7 +1641,7 @@ def «Op__toTxnRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp))))) (Pair (Var "thenOps") (Var "$r0")))))))))))
 
 /-- go: op.go:216:14 -/
-def «Op__toRequestOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__toRequestOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1691,7 +1691,7 @@ def «Op__toRequestOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))))))))
 
 /-- go: op.go:233:14 -/
-def «Op__isWriteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__isWriteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -1742,7 +1742,7 @@ def «Op__isWriteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- OpGet returns "get" operation based on given key and operation options.
 
     go: op.go:255:6 -/
-def «OpGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OpGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "key"
   (Lam "opts"
   (App (Val exception_do)
@@ -1774,7 +1774,7 @@ def «OpGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- OpDelete returns "delete" operation based on given key and operation options.
 
     go: op.go:266:6 -/
-def «OpDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OpDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "key"
   (Lam "opts"
   (App (Val exception_do)
@@ -1850,7 +1850,7 @@ def «OpDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- OpPut returns "put" operation based on given key-value and operation options.
 
     go: op.go:299:6 -/
-def «OpPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OpPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "key"
   (Lam "val"
   (Lam "opts"
@@ -1920,7 +1920,7 @@ def «OpPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- OpTxn returns "txn" operation based on given transaction conditions.
 
     go: op.go:328:6 -/
-def «OpTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OpTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "cmps"
   (Lam "thenOps"
   (Lam "elseOps"
@@ -1936,7 +1936,7 @@ def «OpTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral Op))) (LiteralValue [(KeyedElement (some (KeyField go!"t")) (ElementExpression opType (Var "$v0"))), (KeyedElement (some (KeyField go!"cmps")) (ElementExpression (go.type.SliceType Cmp) (Var "$v1"))), (KeyedElement (some (KeyField go!"thenOps")) (ElementExpression (go.type.SliceType Op) (Var "$v2"))), (KeyedElement (some (KeyField go!"elseOps")) (ElementExpression (go.type.SliceType Op) (Var "$v3")))]))))))))))))))
 
 /-- go: op.go:354:15 -/
-def «Op__applyOptsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__applyOptsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam "opts"
   (App (Val exception_do)
@@ -1963,7 +1963,7 @@ def «Op__applyOptsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithLease attaches a lease ID to a key in 'Put' request.
 
     go: op.go:364:6 -/
-def «WithLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "leaseID"
   (App (Val exception_do)
   (Let "leaseID" (App (Val (GoInstruction (GoAlloc LeaseID))) (Var "leaseID"))
@@ -1982,7 +1982,7 @@ def «WithLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     If WithLimit is given a 0 limit, it is treated as no limit.
 
     go: op.go:370:6 -/
-def «WithLimitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithLimitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (App (Val exception_do)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "n"))
@@ -2001,7 +2001,7 @@ def «WithLimitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Or the start revision of 'Watch' request.
 
     go: op.go:374:6 -/
-def «WithRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rev"
   (App (Val exception_do)
   (Let "rev" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "rev"))
@@ -2022,7 +2022,7 @@ def «WithRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     'order' can be either 'SortNone', 'SortAscend', 'SortDescend'.
 
     go: op.go:380:6 -/
-def «WithSortⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithSortⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "target"
   (Lam "order"
   (App (Val exception_do)
@@ -2053,7 +2053,7 @@ def «WithSortⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     can return 'foo1', 'foo2', and so on.
 
     go: op.go:418:6 -/
-def «WithPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2095,7 +2095,7 @@ def «WithPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     endKey must be lexicographically greater than start key.
 
     go: op.go:433:6 -/
-def «WithRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "endKey"
   (App (Val exception_do)
   (Let "endKey" (App (Val (GoInstruction (GoAlloc go.string))) (Var "endKey"))
@@ -2114,7 +2114,7 @@ def «WithRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     to be equal or greater than the key in the argument.
 
     go: op.go:439:6 -/
-def «WithFromKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithFromKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2152,7 +2152,7 @@ def «WithFromKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     started.
 
     go: op.go:458:6 -/
-def «WithSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2170,7 +2170,7 @@ def «WithSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     values will be omitted.
 
     go: op.go:464:6 -/
-def «WithKeysOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithKeysOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2187,7 +2187,7 @@ def «WithKeysOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithCountOnly makes the 'Get' request return only the count of keys.
 
     go: op.go:469:6 -/
-def «WithCountOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithCountOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2204,7 +2204,7 @@ def «WithCountOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithMinModRev filters out keys for Get with modification revisions less than the given revision.
 
     go: op.go:474:6 -/
-def «WithMinModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithMinModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rev"
   (App (Val exception_do)
   (Let "rev" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "rev"))
@@ -2222,7 +2222,7 @@ def «WithMinModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithMaxModRev filters out keys for Get with modification revisions greater than the given revision.
 
     go: op.go:477:6 -/
-def «WithMaxModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithMaxModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rev"
   (App (Val exception_do)
   (Let "rev" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "rev"))
@@ -2240,7 +2240,7 @@ def «WithMaxModRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithMinCreateRev filters out keys for Get with creation revisions less than the given revision.
 
     go: op.go:480:6 -/
-def «WithMinCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithMinCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rev"
   (App (Val exception_do)
   (Let "rev" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "rev"))
@@ -2258,7 +2258,7 @@ def «WithMinCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithMaxCreateRev filters out keys for Get with creation revisions greater than the given revision.
 
     go: op.go:483:6 -/
-def «WithMaxCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithMaxCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rev"
   (App (Val exception_do)
   (Let "rev" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "rev"))
@@ -2276,7 +2276,7 @@ def «WithMaxCreateRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithFirstCreate gets the key with the oldest creation revision in the request range.
 
     go: op.go:486:6 -/
-def «WithFirstCreateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithFirstCreateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2287,7 +2287,7 @@ def «WithFirstCreateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithLastCreate gets the key with the latest creation revision in the request range.
 
     go: op.go:489:6 -/
-def «WithLastCreateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithLastCreateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2298,7 +2298,7 @@ def «WithLastCreateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithFirstKey gets the lexically first key in the request range.
 
     go: op.go:492:6 -/
-def «WithFirstKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithFirstKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2309,7 +2309,7 @@ def «WithFirstKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithLastKey gets the lexically last key in the request range.
 
     go: op.go:495:6 -/
-def «WithLastKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithLastKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2320,7 +2320,7 @@ def «WithLastKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithFirstRev gets the key with the oldest modification revision in the request range.
 
     go: op.go:498:6 -/
-def «WithFirstRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithFirstRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2331,7 +2331,7 @@ def «WithFirstRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithLastRev gets the key with the latest modification revision in the request range.
 
     go: op.go:501:6 -/
-def «WithLastRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithLastRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2344,7 +2344,7 @@ def «WithLastRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Progress updates have zero events in WatchResponse.
 
     go: op.go:511:6 -/
-def «WithProgressNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithProgressNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2361,7 +2361,7 @@ def «WithProgressNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithCreatedNotify makes watch server sends the created event.
 
     go: op.go:518:6 -/
-def «WithCreatedNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithCreatedNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2378,7 +2378,7 @@ def «WithCreatedNotifyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithFilterPut discards PUT events from the watcher.
 
     go: op.go:525:6 -/
-def «WithFilterPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithFilterPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2395,7 +2395,7 @@ def «WithFilterPutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithFilterDelete discards DELETE events from the watcher.
 
     go: op.go:530:6 -/
-def «WithFilterDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithFilterDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2413,7 +2413,7 @@ def «WithFilterDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     nothing will be returned.
 
     go: op.go:536:6 -/
-def «WithPrevKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithPrevKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2436,7 +2436,7 @@ def «WithPrevKVⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     See "etcdserver/api/v3rpc/watch.go" for more details.
 
     go: op.go:549:6 -/
-def «WithFragmentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithFragmentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2455,7 +2455,7 @@ def «WithFragmentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Returns an error if the key does not exist.
 
     go: op.go:556:6 -/
-def «WithIgnoreValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithIgnoreValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2474,7 +2474,7 @@ def «WithIgnoreValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Returns an error if the key does not exist.
 
     go: op.go:565:6 -/
-def «WithIgnoreLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithIgnoreLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2491,7 +2491,7 @@ def «WithIgnoreLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithAttachedKeys makes TimeToLive list the keys attached to the given lease ID.
 
     go: op.go:589:6 -/
-def «WithAttachedKeysⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithAttachedKeysⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -2506,7 +2506,7 @@ def «WithAttachedKeysⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef LeaseOp go!"attachedKeys"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType LeaseOp)))) (Var "op"))) (Var "$r0"))))))))))))
 
 /-- go: op.go:619:14 -/
-def «Op__IsSortOptionValidⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Op__IsSortOptionValidⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "op"
   (Lam BAnon
   (App (Val exception_do)
@@ -2568,7 +2568,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.client.v3 where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.client.v3)) (Lam BAnon
   (App (Val exception_do)

@@ -29,401 +29,401 @@ def TokenFieldNameGRPCKey [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] TokenFieldNameGRPCKey
 
-def ErrGRPCEmptyKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCEmptyKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCEmptyKey"
 
-def ErrGRPCKeyNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCKeyNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCKeyNotFound"
 
-def ErrGRPCValueProvided [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCValueProvided [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCValueProvided"
 
-def ErrGRPCLeaseProvided [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCLeaseProvided [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCLeaseProvided"
 
-def ErrGRPCTooManyOps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCTooManyOps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCTooManyOps"
 
-def ErrGRPCDuplicateKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCDuplicateKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCDuplicateKey"
 
-def ErrGRPCInvalidClientAPIVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCInvalidClientAPIVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCInvalidClientAPIVersion"
 
-def ErrGRPCInvalidSortOption [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCInvalidSortOption [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCInvalidSortOption"
 
-def ErrGRPCCompacted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCCompacted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCCompacted"
 
-def ErrGRPCFutureRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCFutureRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCFutureRev"
 
-def ErrGRPCNoSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCNoSpace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCNoSpace"
 
-def ErrGRPCLeaseNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCLeaseNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCLeaseNotFound"
 
-def ErrGRPCLeaseExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCLeaseExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCLeaseExist"
 
-def ErrGRPCLeaseTTLTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCLeaseTTLTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCLeaseTTLTooLarge"
 
-def ErrGRPCWatchCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCWatchCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCWatchCanceled"
 
-def ErrGRPCMemberExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCMemberExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCMemberExist"
 
-def ErrGRPCPeerURLExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCPeerURLExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCPeerURLExist"
 
-def ErrGRPCMemberNotEnoughStarted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCMemberNotEnoughStarted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCMemberNotEnoughStarted"
 
-def ErrGRPCMemberBadURLs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCMemberBadURLs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCMemberBadURLs"
 
-def ErrGRPCMemberNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCMemberNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCMemberNotFound"
 
-def ErrGRPCMemberNotLearner [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCMemberNotLearner [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCMemberNotLearner"
 
-def ErrGRPCLearnerNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCLearnerNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCLearnerNotReady"
 
-def ErrGRPCTooManyLearners [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCTooManyLearners [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCTooManyLearners"
 
-def ErrGRPCClusterIDMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCClusterIDMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCClusterIDMismatch"
 
-def ErrGRPCClusterIdMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCClusterIdMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCClusterIdMismatch"
 
-def ErrGRPCRequestTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCRequestTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCRequestTooLarge"
 
-def ErrGRPCRequestTooManyRequests [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCRequestTooManyRequests [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCRequestTooManyRequests"
 
-def ErrGRPCRootUserNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCRootUserNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCRootUserNotExist"
 
-def ErrGRPCRootRoleNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCRootRoleNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCRootRoleNotExist"
 
-def ErrGRPCUserAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCUserAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCUserAlreadyExist"
 
-def ErrGRPCUserEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCUserEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCUserEmpty"
 
-def ErrGRPCUserNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCUserNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCUserNotFound"
 
-def ErrGRPCRoleAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCRoleAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCRoleAlreadyExist"
 
-def ErrGRPCRoleNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCRoleNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCRoleNotFound"
 
-def ErrGRPCRoleEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCRoleEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCRoleEmpty"
 
-def ErrGRPCAuthFailed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCAuthFailed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCAuthFailed"
 
-def ErrGRPCPermissionNotGiven [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCPermissionNotGiven [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCPermissionNotGiven"
 
-def ErrGRPCPermissionDenied [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCPermissionDenied [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCPermissionDenied"
 
-def ErrGRPCRoleNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCRoleNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCRoleNotGranted"
 
-def ErrGRPCPermissionNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCPermissionNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCPermissionNotGranted"
 
-def ErrGRPCAuthNotEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCAuthNotEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCAuthNotEnabled"
 
-def ErrGRPCInvalidAuthToken [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCInvalidAuthToken [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCInvalidAuthToken"
 
-def ErrGRPCInvalidAuthMgmt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCInvalidAuthMgmt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCInvalidAuthMgmt"
 
-def ErrGRPCAuthOldRevision [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCAuthOldRevision [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCAuthOldRevision"
 
-def ErrGRPCNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCNoLeader"
 
-def ErrGRPCNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCNotLeader"
 
-def ErrGRPCLeaderChanged [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCLeaderChanged [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCLeaderChanged"
 
-def ErrGRPCNotCapable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCNotCapable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCNotCapable"
 
-def ErrGRPCStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCStopped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCStopped"
 
-def ErrGRPCTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCTimeout"
 
-def ErrGRPCTimeoutDueToLeaderFail [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCTimeoutDueToLeaderFail [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCTimeoutDueToLeaderFail"
 
-def ErrGRPCTimeoutDueToConnectionLost [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCTimeoutDueToConnectionLost [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCTimeoutDueToConnectionLost"
 
-def ErrGRPCTimeoutWaitAppliedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCTimeoutWaitAppliedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCTimeoutWaitAppliedIndex"
 
-def ErrGRPCUnhealthy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCUnhealthy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCUnhealthy"
 
-def ErrGRPCCorrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCCorrupt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCCorrupt"
 
-def ErrGRPCNotSupportedForLearner [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCNotSupportedForLearner [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCNotSupportedForLearner"
 
-def ErrGRPCBadLeaderTransferee [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCBadLeaderTransferee [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCBadLeaderTransferee"
 
-def ErrGRPCWrongDowngradeVersionFormat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCWrongDowngradeVersionFormat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCWrongDowngradeVersionFormat"
 
-def ErrGRPCInvalidDowngradeTargetVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCInvalidDowngradeTargetVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCInvalidDowngradeTargetVersion"
 
-def ErrGRPCClusterVersionUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCClusterVersionUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCClusterVersionUnavailable"
 
-def ErrGRPCDowngradeInProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCDowngradeInProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCDowngradeInProcess"
 
-def ErrGRPCNoInflightDowngrade [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCNoInflightDowngrade [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCNoInflightDowngrade"
 
-def ErrGRPCCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCCanceled"
 
-def ErrGRPCDeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrGRPCDeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCDeadlineExceeded"
 
-def errStringToError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errStringToError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.errStringToError"
 
-def ErrEmptyKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrEmptyKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrEmptyKey"
 
-def ErrKeyNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrKeyNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrKeyNotFound"
 
-def ErrValueProvided [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrValueProvided [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrValueProvided"
 
-def ErrLeaseProvided [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLeaseProvided [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrLeaseProvided"
 
-def ErrTooManyOps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTooManyOps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrTooManyOps"
 
-def ErrDuplicateKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrDuplicateKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrDuplicateKey"
 
-def ErrInvalidSortOption [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidSortOption [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrInvalidSortOption"
 
-def ErrCompacted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrCompacted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrCompacted"
 
-def ErrFutureRev [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrFutureRev [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrFutureRev"
 
-def ErrNoSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoSpace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrNoSpace"
 
-def ErrLeaseNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLeaseNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrLeaseNotFound"
 
-def ErrLeaseExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLeaseExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrLeaseExist"
 
-def ErrLeaseTTLTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLeaseTTLTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrLeaseTTLTooLarge"
 
-def ErrMemberExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMemberExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrMemberExist"
 
-def ErrPeerURLExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrPeerURLExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrPeerURLExist"
 
-def ErrMemberNotEnoughStarted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMemberNotEnoughStarted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrMemberNotEnoughStarted"
 
-def ErrMemberBadURLs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMemberBadURLs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrMemberBadURLs"
 
-def ErrMemberNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMemberNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrMemberNotFound"
 
-def ErrMemberNotLearner [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMemberNotLearner [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrMemberNotLearner"
 
-def ErrMemberLearnerNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMemberLearnerNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrMemberLearnerNotReady"
 
-def ErrTooManyLearners [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTooManyLearners [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrTooManyLearners"
 
-def ErrRequestTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRequestTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrRequestTooLarge"
 
-def ErrTooManyRequests [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTooManyRequests [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrTooManyRequests"
 
-def ErrRootUserNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRootUserNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrRootUserNotExist"
 
-def ErrRootRoleNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRootRoleNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrRootRoleNotExist"
 
-def ErrUserAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUserAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrUserAlreadyExist"
 
-def ErrUserEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUserEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrUserEmpty"
 
-def ErrUserNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUserNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrUserNotFound"
 
-def ErrRoleAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRoleAlreadyExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrRoleAlreadyExist"
 
-def ErrRoleNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRoleNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrRoleNotFound"
 
-def ErrRoleEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRoleEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrRoleEmpty"
 
-def ErrAuthFailed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrAuthFailed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrAuthFailed"
 
-def ErrPermissionDenied [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrPermissionDenied [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrPermissionDenied"
 
-def ErrRoleNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRoleNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrRoleNotGranted"
 
-def ErrPermissionNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrPermissionNotGranted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrPermissionNotGranted"
 
-def ErrAuthNotEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrAuthNotEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrAuthNotEnabled"
 
-def ErrInvalidAuthToken [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidAuthToken [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrInvalidAuthToken"
 
-def ErrAuthOldRevision [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrAuthOldRevision [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrAuthOldRevision"
 
-def ErrInvalidAuthMgmt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidAuthMgmt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrInvalidAuthMgmt"
 
-def ErrClusterIDMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClusterIDMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrClusterIDMismatch"
 
-def ErrClusterIdMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClusterIdMismatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrClusterIdMismatch"
 
-def ErrNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrNoLeader"
 
-def ErrNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrNotLeader"
 
-def ErrLeaderChanged [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLeaderChanged [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrLeaderChanged"
 
-def ErrNotCapable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotCapable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrNotCapable"
 
-def ErrStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrStopped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrStopped"
 
-def ErrTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrTimeout"
 
-def ErrTimeoutDueToLeaderFail [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutDueToLeaderFail [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrTimeoutDueToLeaderFail"
 
-def ErrTimeoutDueToConnectionLost [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutDueToConnectionLost [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrTimeoutDueToConnectionLost"
 
-def ErrTimeoutWaitAppliedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutWaitAppliedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrTimeoutWaitAppliedIndex"
 
-def ErrUnhealthy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnhealthy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrUnhealthy"
 
-def ErrCorrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrCorrupt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrCorrupt"
 
-def ErrBadLeaderTransferee [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrBadLeaderTransferee [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrBadLeaderTransferee"
 
-def ErrClusterVersionUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClusterVersionUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrClusterVersionUnavailable"
 
-def ErrWrongDowngradeVersionFormat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrWrongDowngradeVersionFormat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrWrongDowngradeVersionFormat"
 
-def ErrInvalidDowngradeTargetVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidDowngradeTargetVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrInvalidDowngradeTargetVersion"
 
-def ErrDowngradeInProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrDowngradeInProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrDowngradeInProcess"
 
-def ErrNoInflightDowngrade [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoInflightDowngrade [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrNoInflightDowngrade"
 
-def MetadataRequireLeaderKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetadataRequireLeaderKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.MetadataRequireLeaderKey"
 
-def MetadataHasLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetadataHasLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.MetadataHasLeader"
 
-def MetadataClientAPIVersionKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetadataClientAPIVersionKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.MetadataClientAPIVersionKey"
 
-def TokenFieldNameGRPC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TokenFieldNameGRPC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.TokenFieldNameGRPC"
 
-def TokenFieldNameSwagger [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TokenFieldNameSwagger [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.TokenFieldNameSwagger"
 
-def Error [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Error [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.Error"
 
-def ErrorDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrorDesc"
 
 /-- Code returns grpc/codes.Code.
     TODO: define clientv3/codes.Code.
 
     go: error.go:248:20 -/
-def «EtcdError__Codeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «EtcdError__Codeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exception_do)
@@ -432,7 +432,7 @@ def «EtcdError__Codeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad _root_.Perennial.google_golang_org.grpc.codes.Code))) (App (Val (GoInstruction (StructFieldRef EtcdError go!"code"))) (Var "e"))))))))
 
 /-- go: error.go:252:20 -/
-def «EtcdError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «EtcdError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exception_do)
@@ -441,7 +441,7 @@ def «EtcdError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef EtcdError go!"desc"))) (Var "e"))))))))
 
 /-- go: error.go:256:6 -/
-def «Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "err"
   (App (Val exception_do)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -499,7 +499,7 @@ def «Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))
 
 /-- go: error.go:274:6 -/
-def «ErrorDescⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ErrorDescⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "err"
   (App (Val exception_do)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -529,7 +529,7 @@ def «ErrorDescⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.v3rpc.rpctypes where
   pkg_imported_pkgs := [pkg_id.google_golang_org.grpc.codes, pkg_id.google_golang_org.grpc.status]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.api.v3.v3rpc.rpctypes)) (Lam BAnon
   (App (Val exception_do)

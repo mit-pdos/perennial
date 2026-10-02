@@ -82,88 +82,88 @@ axiom MaxVarintLen32 [ffi_syntax] [GoGlobalContext] : val
 
 axiom MaxVarintLen64 [ffi_syntax] [GoGlobalContext] : val
 
-def errBufferTooSmall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBufferTooSmall [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.errBufferTooSmall"
 
-def LittleEndian [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LittleEndian [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.LittleEndian"
 
-def BigEndian [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BigEndian [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.BigEndian"
 
-def structSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def structSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.structSize"
 
-def NativeEndian [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NativeEndian [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.NativeEndian"
 
-def errOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.errOverflow"
 
-def Read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Read [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.Read"
 
-def Decode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Decode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.Decode"
 
-def decodeFast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodeFast [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.decodeFast"
 
-def Write [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Write [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.Write"
 
-def Encode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Encode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.Encode"
 
-def Append [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Append [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.Append"
 
-def encodeFast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeFast [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.encodeFast"
 
-def Size [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Size [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.Size"
 
-def dataSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dataSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.dataSize"
 
-def sizeof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.sizeof"
 
-def intDataSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intDataSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.intDataSize"
 
-def ensure [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ensure [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.ensure"
 
-def AppendUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.AppendUvarint"
 
-def PutUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PutUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.PutUvarint"
 
-def Uvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uvarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.Uvarint"
 
-def AppendVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.AppendVarint"
 
-def PutVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PutVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.PutVarint"
 
-def Varint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Varint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.Varint"
 
-def ReadUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.ReadUvarint"
 
-def ReadVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"encoding/binary.ReadVarint"
 
 /-- Uint16 returns the uint16 representation of b[0:2].
 
     go: binary.go:69:21 -/
-def «littleEndian__Uint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__Uint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exception_do)
@@ -178,7 +178,7 @@ def «littleEndian__Uint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- PutUint16 stores v into b[0:2].
 
     go: binary.go:75:21 -/
-def «littleEndian__PutUint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__PutUint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -203,7 +203,7 @@ def «littleEndian__PutUint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
 /-- AppendUint16 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:82:21 -/
-def «littleEndian__AppendUint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__AppendUint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -220,7 +220,7 @@ def «littleEndian__AppendUint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
 /-- Uint32 returns the uint32 representation of b[0:4].
 
     go: binary.go:90:21 -/
-def «littleEndian__Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exception_do)
@@ -235,7 +235,7 @@ def «littleEndian__Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- PutUint32 stores v into b[0:4].
 
     go: binary.go:96:21 -/
-def «littleEndian__PutUint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__PutUint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -268,7 +268,7 @@ def «littleEndian__PutUint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
 /-- AppendUint32 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:105:21 -/
-def «littleEndian__AppendUint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__AppendUint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -287,7 +287,7 @@ def «littleEndian__AppendUint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
 /-- Uint64 returns the uint64 representation of b[0:8].
 
     go: binary.go:115:21 -/
-def «littleEndian__Uint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__Uint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exception_do)
@@ -302,7 +302,7 @@ def «littleEndian__Uint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- PutUint64 stores v into b[0:8].
 
     go: binary.go:122:21 -/
-def «littleEndian__PutUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__PutUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -351,7 +351,7 @@ def «littleEndian__PutUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
 /-- AppendUint64 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:135:21 -/
-def «littleEndian__AppendUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__AppendUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -372,7 +372,7 @@ def «littleEndian__AppendUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: binary.go:148:21 -/
-def «littleEndian__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -380,7 +380,7 @@ def «littleEndian__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #(go!"LittleEndian"))))))
 
 /-- go: binary.go:150:21 -/
-def «littleEndian__GoStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__GoStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -392,7 +392,7 @@ instance info' : PkgInfo pkg_id.encoding.binary where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.encoding.binary)) (Lam BAnon
   (App (Val exception_do)

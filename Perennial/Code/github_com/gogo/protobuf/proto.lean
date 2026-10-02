@@ -582,1652 +582,1652 @@ axiom minValidSeconds [ffi_syntax] [GoGlobalContext] : val
 
 axiom maxValidSeconds [ffi_syntax] [GoGlobalContext] : val
 
-def customType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def customType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.customType"
 
 axiom customType'init [ffi_syntax] [GoGlobalContext] : val
 
-def errOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.errOverflow"
 
 axiom errOverflow'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInternalBadWireType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInternalBadWireType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.ErrInternalBadWireType"
 
 axiom ErrInternalBadWireType'init [ffi_syntax] [GoGlobalContext] : val
 
-def discardInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def discardInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.discardInfoMap"
 
 axiom discardInfoMap'init [ffi_syntax] [GoGlobalContext] : val
 
-def discardInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def discardInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.discardInfoLock"
 
-def durationType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def durationType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.durationType"
 
 axiom durationType'init [ffi_syntax] [GoGlobalContext] : val
 
-def errRepeatedHasNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errRepeatedHasNil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.errRepeatedHasNil"
 
 axiom errRepeatedHasNil'init [ffi_syntax] [GoGlobalContext] : val
 
-def errOneofHasNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errOneofHasNil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.errOneofHasNil"
 
 axiom errOneofHasNil'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.ErrNil"
 
 axiom ErrNil'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.ErrTooLarge"
 
 axiom ErrTooLarge'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrMissingExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMissingExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.ErrMissingExtension"
 
 axiom ErrMissingExtension'init [ffi_syntax] [GoGlobalContext] : val
 
-def errNotExtendable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNotExtendable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.errNotExtendable"
 
 axiom errNotExtendable'init [ffi_syntax] [GoGlobalContext] : val
 
-def extProp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extProp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.extProp"
 
 axiom extProp'init [ffi_syntax] [GoGlobalContext] : val
 
-def extensionMaps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extensionMaps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.extensionMaps"
 
 axiom extensionMaps'init [ffi_syntax] [GoGlobalContext] : val
 
-def errInvalidUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInvalidUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.errInvalidUTF8"
 
 axiom errInvalidUTF8'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultMu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.defaultMu"
 
-def defaults [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaults [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.defaults"
 
 axiom defaults'init [ffi_syntax] [GoGlobalContext] : val
 
-def int32PtrType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int32PtrType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.int32PtrType"
 
 axiom int32PtrType'init [ffi_syntax] [GoGlobalContext] : val
 
-def errNoMessageTypeID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoMessageTypeID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.errNoMessageTypeID"
 
 axiom errNoMessageTypeID'init [ffi_syntax] [GoGlobalContext] : val
 
-def ptrSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ptrSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.ptrSize"
 
 axiom ptrSize'init [ffi_syntax] [GoGlobalContext] : val
 
-def protoMessageType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protoMessageType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.protoMessageType"
 
 axiom protoMessageType'init [ffi_syntax] [GoGlobalContext] : val
 
-def marshalerType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def marshalerType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.marshalerType"
 
 axiom marshalerType'init [ffi_syntax] [GoGlobalContext] : val
 
-def propertiesMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def propertiesMu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.propertiesMu"
 
-def propertiesMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def propertiesMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.propertiesMap"
 
 axiom propertiesMap'init [ffi_syntax] [GoGlobalContext] : val
 
-def enumValueMaps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def enumValueMaps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.enumValueMaps"
 
 axiom enumValueMaps'init [ffi_syntax] [GoGlobalContext] : val
 
-def enumStringMaps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def enumStringMaps [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.enumStringMaps"
 
 axiom enumStringMaps'init [ffi_syntax] [GoGlobalContext] : val
 
-def protoTypedNils [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protoTypedNils [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.protoTypedNils"
 
 axiom protoTypedNils'init [ffi_syntax] [GoGlobalContext] : val
 
-def protoMapTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protoMapTypes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.protoMapTypes"
 
 axiom protoMapTypes'init [ffi_syntax] [GoGlobalContext] : val
 
-def revProtoTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def revProtoTypes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.revProtoTypes"
 
 axiom revProtoTypes'init [ffi_syntax] [GoGlobalContext] : val
 
-def protoFiles [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protoFiles [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.protoFiles"
 
 axiom protoFiles'init [ffi_syntax] [GoGlobalContext] : val
 
-def sizerType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizerType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizerType"
 
 axiom sizerType'init [ffi_syntax] [GoGlobalContext] : val
 
-def protosizerType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protosizerType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.protosizerType"
 
 axiom protosizerType'init [ffi_syntax] [GoGlobalContext] : val
 
-def marshalInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def marshalInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.marshalInfoMap"
 
 axiom marshalInfoMap'init [ffi_syntax] [GoGlobalContext] : val
 
-def marshalInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def marshalInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.marshalInfoLock"
 
-def uint8SliceType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint8SliceType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.uint8SliceType"
 
 axiom uint8SliceType'init [ffi_syntax] [GoGlobalContext] : val
 
-def mergeInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.mergeInfoMap"
 
 axiom mergeInfoMap'init [ffi_syntax] [GoGlobalContext] : val
 
-def mergeInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.mergeInfoLock"
 
-def unmarshalInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalInfoMap"
 
 axiom unmarshalInfoMap'init [ffi_syntax] [GoGlobalContext] : val
 
-def unmarshalInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalInfoLock"
 
-def emptyBuf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyBuf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.emptyBuf"
 
-def errInternalBadWireType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInternalBadWireType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.errInternalBadWireType"
 
 axiom errInternalBadWireType'init [ffi_syntax] [GoGlobalContext] : val
 
-def newline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.newline"
 
 axiom newline'init [ffi_syntax] [GoGlobalContext] : val
 
-def spaces [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spaces [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.spaces"
 
 axiom spaces'init [ffi_syntax] [GoGlobalContext] : val
 
-def endBraceNewline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def endBraceNewline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.endBraceNewline"
 
 axiom endBraceNewline'init [ffi_syntax] [GoGlobalContext] : val
 
-def backslashN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.backslashN"
 
 axiom backslashN'init [ffi_syntax] [GoGlobalContext] : val
 
-def backslashR [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashR [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.backslashR"
 
 axiom backslashR'init [ffi_syntax] [GoGlobalContext] : val
 
-def backslashT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.backslashT"
 
 axiom backslashT'init [ffi_syntax] [GoGlobalContext] : val
 
-def backslashDQ [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashDQ [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.backslashDQ"
 
 axiom backslashDQ'init [ffi_syntax] [GoGlobalContext] : val
 
-def backslashBS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashBS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.backslashBS"
 
 axiom backslashBS'init [ffi_syntax] [GoGlobalContext] : val
 
-def posInf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def posInf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.posInf"
 
 axiom posInf'init [ffi_syntax] [GoGlobalContext] : val
 
-def negInf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def negInf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.negInf"
 
 axiom negInf'init [ffi_syntax] [GoGlobalContext] : val
 
-def nan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.nan"
 
 axiom nan'init [ffi_syntax] [GoGlobalContext] : val
 
-def textMarshalerType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def textMarshalerType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.textMarshalerType"
 
 axiom textMarshalerType'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultTextMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultTextMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.defaultTextMarshaler"
 
 axiom defaultTextMarshaler'init [ffi_syntax] [GoGlobalContext] : val
 
-def compactTextMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compactTextMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.compactTextMarshaler"
 
 axiom compactTextMarshaler'init [ffi_syntax] [GoGlobalContext] : val
 
-def errBadUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBadUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.errBadUTF8"
 
 axiom errBadUTF8'init [ffi_syntax] [GoGlobalContext] : val
 
-def timeType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.timeType"
 
 axiom timeType'init [ffi_syntax] [GoGlobalContext] : val
 
-def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Clone"
 
-def Merge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Merge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Merge"
 
-def mergeStruct [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeStruct [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.mergeStruct"
 
-def mergeAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeAny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.mergeAny"
 
-def mergeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.mergeExtension"
 
-def DecodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DecodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.DecodeVarint"
 
-def Unmarshal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Unmarshal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Unmarshal"
 
-def UnmarshalMerge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalMerge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.UnmarshalMerge"
 
-def GetStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetStats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.GetStats"
 
-def MarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.MarshalMessageSet"
 
-def UnmarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.UnmarshalMessageSet"
 
-def MarshalMessageSetJSON [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalMessageSetJSON [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.MarshalMessageSetJSON"
 
-def UnmarshalMessageSetJSON [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalMessageSetJSON [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.UnmarshalMessageSetJSON"
 
-def RegisterMessageSetType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterMessageSetType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.RegisterMessageSetType"
 
-def DiscardUnknown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DiscardUnknown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.DiscardUnknown"
 
-def getDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.getDiscardInfo"
 
-def discardLegacy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def discardLegacy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.discardLegacy"
 
-def validateDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateDuration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.validateDuration"
 
-def durationFromProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def durationFromProto [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.durationFromProto"
 
-def durationProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def durationProto [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.durationProto"
 
-def EncodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.EncodeVarint"
 
-def SizeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SizeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.SizeVarint"
 
-def isNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isNil"
 
-def NewRequiredNotSetError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRequiredNotSetError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.NewRequiredNotSetError"
 
-def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Equal"
 
-def equalStruct [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalStruct [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.equalStruct"
 
-def equalAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalAny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.equalAny"
 
-def equalExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.equalExtensions"
 
-def equalExtMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalExtMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.equalExtMap"
 
-def extendable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extendable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.extendable"
 
-def isNilPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNilPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isNilPtr"
 
-def SetRawExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetRawExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.SetRawExtension"
 
-def isExtensionField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isExtensionField [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isExtensionField"
 
-def checkExtensionTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkExtensionTypes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.checkExtensionTypes"
 
-def extensionProperties [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extensionProperties [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.extensionProperties"
 
-def HasExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HasExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.HasExtension"
 
-def ClearExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClearExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.ClearExtension"
 
-def clearExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clearExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.clearExtension"
 
-def GetExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.GetExtension"
 
-def defaultExtensionValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultExtensionValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.defaultExtensionValue"
 
-def decodeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.decodeExtension"
 
-def GetExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.GetExtensions"
 
-def ExtensionDescs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExtensionDescs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.ExtensionDescs"
 
-def SetExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.SetExtension"
 
-def ClearAllExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClearAllExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.ClearAllExtensions"
 
-def RegisterExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.RegisterExtension"
 
-def RegisteredExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisteredExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.RegisteredExtensions"
 
-def GetBoolExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetBoolExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.GetBoolExtension"
 
-def SizeOfInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SizeOfInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.SizeOfInternalExtension"
 
-def newSortableExtensionsFromMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSortableExtensionsFromMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.newSortableExtensionsFromMap"
 
-def StringFromInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringFromInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.StringFromInternalExtension"
 
-def StringFromExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringFromExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.StringFromExtensionsMap"
 
-def StringFromExtensionsBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringFromExtensionsBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.StringFromExtensionsBytes"
 
-def EncodeInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.EncodeInternalExtension"
 
-def EncodeInternalExtensionBackwards [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeInternalExtensionBackwards [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.EncodeInternalExtensionBackwards"
 
-def EncodeExtensionMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeExtensionMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.EncodeExtensionMap"
 
-def EncodeExtensionMapBackwards [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeExtensionMapBackwards [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.EncodeExtensionMapBackwards"
 
-def GetRawExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetRawExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.GetRawExtension"
 
-def size [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def size [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.size"
 
-def BytesToExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BytesToExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.BytesToExtensionsMap"
 
-def NewExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.NewExtension"
 
-def AppendExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.AppendExtension"
 
-def encodeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.encodeExtension"
 
-def decodeExtensionFromBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodeExtensionFromBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.decodeExtensionFromBytes"
 
-def SetUnsafeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetUnsafeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.SetUnsafeExtension"
 
-def GetUnsafeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetUnsafeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.GetUnsafeExtension"
 
-def NewUnsafeXXX_InternalExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewUnsafeXXX_InternalExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.NewUnsafeXXX_InternalExtensions"
 
-def GetUnsafeExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetUnsafeExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.GetUnsafeExtensionsMap"
 
-def deleteExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deleteExtension [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.deleteExtension"
 
-def isNonFatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNonFatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isNonFatal"
 
-def NewBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.NewBuffer"
 
-def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Bool"
 
-def Int32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Int32"
 
-def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Int"
 
-def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Int64"
 
-def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Float32"
 
-def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Float64"
 
-def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Uint32"
 
-def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Uint64"
 
-def String [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def String [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.String"
 
-def EnumName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EnumName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.EnumName"
 
-def UnmarshalJSONEnum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalJSONEnum [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.UnmarshalJSONEnum"
 
-def SetDefaults [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetDefaults [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.SetDefaults"
 
-def setDefaults [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setDefaults [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.setDefaults"
 
-def buildDefaultMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildDefaultMessage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.buildDefaultMessage"
 
-def fieldDefault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fieldDefault [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.fieldDefault"
 
-def mapKeys [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapKeys [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.mapKeys"
 
-def isProto3Zero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isProto3Zero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isProto3Zero"
 
-def MarshalJSONEnum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalJSONEnum [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.MarshalJSONEnum"
 
-def skipVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.skipVarint"
 
-def unmarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalMessageSet"
 
-def toField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toField [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.toField"
 
-def toPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.toPointer"
 
-def toAddrPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toAddrPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.toAddrPointer"
 
-def valToPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valToPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.valToPointer"
 
-def atomicLoadUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicLoadUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.atomicLoadUnmarshalInfo"
 
-def atomicStoreUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicStoreUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.atomicStoreUnmarshalInfo"
 
-def atomicLoadMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicLoadMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.atomicLoadMarshalInfo"
 
-def atomicStoreMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicStoreMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.atomicStoreMarshalInfo"
 
-def atomicLoadMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicLoadMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.atomicLoadMergeInfo"
 
-def atomicStoreMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicStoreMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.atomicStoreMergeInfo"
 
-def atomicLoadDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicLoadDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.atomicLoadDiscardInfo"
 
-def atomicStoreDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicStoreDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.atomicStoreDiscardInfo"
 
-def GetProperties [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetProperties [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.GetProperties"
 
-def getPropertiesLocked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getPropertiesLocked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.getPropertiesLocked"
 
-def RegisterEnum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterEnum [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.RegisterEnum"
 
-def EnumValueMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EnumValueMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.EnumValueMap"
 
-def RegisterType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.RegisterType"
 
-def RegisterMapType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterMapType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.RegisterMapType"
 
-def MessageName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MessageName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.MessageName"
 
-def MessageType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MessageType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.MessageType"
 
-def RegisterFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.RegisterFile"
 
-def FileDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FileDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.FileDescriptor"
 
-def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Skip"
 
-def getMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.getMarshalInfo"
 
-def getMessageMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMessageMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.getMessageMarshalInfo"
 
-def wiretype [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wiretype [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.wiretype"
 
-def typeMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.typeMarshaler"
 
-def sizeFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32Value"
 
-def sizeFixed32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32ValueNoZero"
 
-def sizeFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32Ptr"
 
-def sizeFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32Slice"
 
-def sizeFixed32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32PackedSlice"
 
-def sizeFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32Value"
 
-def sizeFixedS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32ValueNoZero"
 
-def sizeFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32Ptr"
 
-def sizeFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32Slice"
 
-def sizeFixedS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32PackedSlice"
 
-def sizeFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32Value"
 
-def sizeFloat32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32ValueNoZero"
 
-def sizeFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32Ptr"
 
-def sizeFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32Slice"
 
-def sizeFloat32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32PackedSlice"
 
-def sizeFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64Value"
 
-def sizeFixed64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64ValueNoZero"
 
-def sizeFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64Ptr"
 
-def sizeFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64Slice"
 
-def sizeFixed64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64PackedSlice"
 
-def sizeFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64Value"
 
-def sizeFixedS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64ValueNoZero"
 
-def sizeFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64Ptr"
 
-def sizeFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64Slice"
 
-def sizeFixedS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64PackedSlice"
 
-def sizeFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64Value"
 
-def sizeFloat64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64ValueNoZero"
 
-def sizeFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64Ptr"
 
-def sizeFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64Slice"
 
-def sizeFloat64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64PackedSlice"
 
-def sizeVarint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32Value"
 
-def sizeVarint32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32ValueNoZero"
 
-def sizeVarint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32Ptr"
 
-def sizeVarint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32Slice"
 
-def sizeVarint32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32PackedSlice"
 
-def sizeVarintS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32Value"
 
-def sizeVarintS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32ValueNoZero"
 
-def sizeVarintS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32Ptr"
 
-def sizeVarintS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32Slice"
 
-def sizeVarintS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32PackedSlice"
 
-def sizeVarint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64Value"
 
-def sizeVarint64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64ValueNoZero"
 
-def sizeVarint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64Ptr"
 
-def sizeVarint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64Slice"
 
-def sizeVarint64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64PackedSlice"
 
-def sizeVarintS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64Value"
 
-def sizeVarintS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64ValueNoZero"
 
-def sizeVarintS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64Ptr"
 
-def sizeVarintS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64Slice"
 
-def sizeVarintS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64PackedSlice"
 
-def sizeZigzag32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32Value"
 
-def sizeZigzag32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32ValueNoZero"
 
-def sizeZigzag32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32Ptr"
 
-def sizeZigzag32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32Slice"
 
-def sizeZigzag32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32PackedSlice"
 
-def sizeZigzag64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64Value"
 
-def sizeZigzag64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64ValueNoZero"
 
-def sizeZigzag64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64Ptr"
 
-def sizeZigzag64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64Slice"
 
-def sizeZigzag64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64PackedSlice"
 
-def sizeBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBoolValue"
 
-def sizeBoolValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBoolValueNoZero"
 
-def sizeBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBoolPtr"
 
-def sizeBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBoolSlice"
 
-def sizeBoolPackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolPackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBoolPackedSlice"
 
-def sizeStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeStringValue"
 
-def sizeStringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeStringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeStringValueNoZero"
 
-def sizeStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeStringPtr"
 
-def sizeStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeStringSlice"
 
-def sizeBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBytes"
 
-def sizeBytes3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBytes3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBytes3"
 
-def sizeBytesOneof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBytesOneof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBytesOneof"
 
-def sizeBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.sizeBytesSlice"
 
-def appendFixed32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed32"
 
-def appendFixed64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed64"
 
-def appendVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint"
 
-def appendFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed32Value"
 
-def appendFixed32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed32ValueNoZero"
 
-def appendFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed32Ptr"
 
-def appendFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed32Slice"
 
-def appendFixed32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed32PackedSlice"
 
-def appendFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32Value"
 
-def appendFixedS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32ValueNoZero"
 
-def appendFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32Ptr"
 
-def appendFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32Slice"
 
-def appendFixedS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32PackedSlice"
 
-def appendFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat32Value"
 
-def appendFloat32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat32ValueNoZero"
 
-def appendFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat32Ptr"
 
-def appendFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat32Slice"
 
-def appendFloat32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat32PackedSlice"
 
-def appendFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed64Value"
 
-def appendFixed64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed64ValueNoZero"
 
-def appendFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed64Ptr"
 
-def appendFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed64Slice"
 
-def appendFixed64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixed64PackedSlice"
 
-def appendFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64Value"
 
-def appendFixedS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64ValueNoZero"
 
-def appendFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64Ptr"
 
-def appendFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64Slice"
 
-def appendFixedS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64PackedSlice"
 
-def appendFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat64Value"
 
-def appendFloat64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat64ValueNoZero"
 
-def appendFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat64Ptr"
 
-def appendFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat64Slice"
 
-def appendFloat64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendFloat64PackedSlice"
 
-def appendVarint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint32Value"
 
-def appendVarint32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint32ValueNoZero"
 
-def appendVarint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint32Ptr"
 
-def appendVarint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint32Slice"
 
-def appendVarint32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint32PackedSlice"
 
-def appendVarintS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32Value"
 
-def appendVarintS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32ValueNoZero"
 
-def appendVarintS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32Ptr"
 
-def appendVarintS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32Slice"
 
-def appendVarintS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32PackedSlice"
 
-def appendVarint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint64Value"
 
-def appendVarint64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint64ValueNoZero"
 
-def appendVarint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint64Ptr"
 
-def appendVarint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint64Slice"
 
-def appendVarint64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarint64PackedSlice"
 
-def appendVarintS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64Value"
 
-def appendVarintS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64ValueNoZero"
 
-def appendVarintS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64Ptr"
 
-def appendVarintS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64Slice"
 
-def appendVarintS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64PackedSlice"
 
-def appendZigzag32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32Value"
 
-def appendZigzag32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32ValueNoZero"
 
-def appendZigzag32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32Ptr"
 
-def appendZigzag32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32Slice"
 
-def appendZigzag32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32PackedSlice"
 
-def appendZigzag64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64Value"
 
-def appendZigzag64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64ValueNoZero"
 
-def appendZigzag64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64Ptr"
 
-def appendZigzag64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64Slice"
 
-def appendZigzag64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64PackedSlice"
 
-def appendBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBoolValue"
 
-def appendBoolValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBoolValueNoZero"
 
-def appendBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBoolPtr"
 
-def appendBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBoolSlice"
 
-def appendBoolPackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolPackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBoolPackedSlice"
 
-def appendStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendStringValue"
 
-def appendStringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendStringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendStringValueNoZero"
 
-def appendStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendStringPtr"
 
-def appendStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendStringSlice"
 
-def appendUTF8StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendUTF8StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendUTF8StringValue"
 
-def appendUTF8StringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendUTF8StringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendUTF8StringValueNoZero"
 
-def appendUTF8StringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendUTF8StringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendUTF8StringPtr"
 
-def appendUTF8StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendUTF8StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendUTF8StringSlice"
 
-def appendBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBytes"
 
-def appendBytes3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBytes3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBytes3"
 
-def appendBytesOneof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBytesOneof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBytesOneof"
 
-def appendBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.appendBytesSlice"
 
-def makeGroupMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeGroupMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeGroupMarshaler"
 
-def makeGroupSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeGroupSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeGroupSliceMarshaler"
 
-def makeMessageMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMessageMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeMessageMarshaler"
 
-def makeMessageSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMessageSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeMessageSliceMarshaler"
 
-def makeMapMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMapMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeMapMarshaler"
 
-def makeOneOfMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeOneOfMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeOneOfMarshaler"
 
-def Size [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Size [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Size"
 
-def Marshal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Marshal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.Marshal"
 
-def makeMessageRefMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMessageRefMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeMessageRefMarshaler"
 
-def makeMessageRefSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMessageRefSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeMessageRefSliceMarshaler"
 
-def makeCustomPtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeCustomPtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeCustomPtrMarshaler"
 
-def makeCustomMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeCustomMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeCustomMarshaler"
 
-def makeTimeMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTimeMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeTimeMarshaler"
 
-def makeTimePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTimePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeTimePtrMarshaler"
 
-def makeTimeSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTimeSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeTimeSliceMarshaler"
 
-def makeTimePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTimePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeTimePtrSliceMarshaler"
 
-def makeDurationMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeDurationMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeDurationMarshaler"
 
-def makeDurationPtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeDurationPtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeDurationPtrMarshaler"
 
-def makeDurationSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeDurationSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeDurationSliceMarshaler"
 
-def makeDurationPtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeDurationPtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeDurationPtrSliceMarshaler"
 
-def getMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.getMergeInfo"
 
-def getUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.getUnmarshalInfo"
 
-def fieldUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fieldUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.fieldUnmarshaler"
 
-def typeUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.typeUnmarshaler"
 
-def unmarshalInt64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt64Value"
 
-def unmarshalInt64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt64Ptr"
 
-def unmarshalInt64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt64Slice"
 
-def unmarshalSint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint64Value"
 
-def unmarshalSint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint64Ptr"
 
-def unmarshalSint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint64Slice"
 
-def unmarshalUint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint64Value"
 
-def unmarshalUint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint64Ptr"
 
-def unmarshalUint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint64Slice"
 
-def unmarshalInt32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt32Value"
 
-def unmarshalInt32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt32Ptr"
 
-def unmarshalInt32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt32Slice"
 
-def unmarshalSint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint32Value"
 
-def unmarshalSint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint32Ptr"
 
-def unmarshalSint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint32Slice"
 
-def unmarshalUint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint32Value"
 
-def unmarshalUint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint32Ptr"
 
-def unmarshalUint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint32Slice"
 
-def unmarshalFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed64Value"
 
-def unmarshalFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed64Ptr"
 
-def unmarshalFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed64Slice"
 
-def unmarshalFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS64Value"
 
-def unmarshalFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS64Ptr"
 
-def unmarshalFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS64Slice"
 
-def unmarshalFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed32Value"
 
-def unmarshalFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed32Ptr"
 
-def unmarshalFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed32Slice"
 
-def unmarshalFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS32Value"
 
-def unmarshalFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS32Ptr"
 
-def unmarshalFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS32Slice"
 
-def unmarshalBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalBoolValue"
 
-def unmarshalBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalBoolPtr"
 
-def unmarshalBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalBoolSlice"
 
-def unmarshalFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat64Value"
 
-def unmarshalFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat64Ptr"
 
-def unmarshalFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat64Slice"
 
-def unmarshalFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat32Value"
 
-def unmarshalFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat32Ptr"
 
-def unmarshalFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat32Slice"
 
-def unmarshalStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalStringValue"
 
-def unmarshalStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalStringPtr"
 
-def unmarshalStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalStringSlice"
 
-def unmarshalUTF8StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUTF8StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUTF8StringValue"
 
-def unmarshalUTF8StringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUTF8StringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUTF8StringPtr"
 
-def unmarshalUTF8StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUTF8StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalUTF8StringSlice"
 
-def unmarshalBytesValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBytesValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalBytesValue"
 
-def unmarshalBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unmarshalBytesSlice"
 
-def makeUnmarshalMessagePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMessagePtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMessagePtr"
 
-def makeUnmarshalMessageSlicePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMessageSlicePtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMessageSlicePtr"
 
-def makeUnmarshalGroupPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalGroupPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalGroupPtr"
 
-def makeUnmarshalGroupSlicePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalGroupSlicePtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalGroupSlicePtr"
 
-def makeUnmarshalMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMap"
 
-def makeUnmarshalOneof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalOneof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalOneof"
 
-def skipField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipField [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.skipField"
 
-def findEndGroup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findEndGroup [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.findEndGroup"
 
-def encodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.encodeVarint"
 
-def decodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.decodeVarint"
 
-def makeUnmarshalMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMessage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMessage"
 
-def makeUnmarshalMessageSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMessageSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMessageSlice"
 
-def makeUnmarshalCustomPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalCustomPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalCustomPtr"
 
-def makeUnmarshalCustomSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalCustomSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalCustomSlice"
 
-def makeUnmarshalCustom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalCustom [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalCustom"
 
-def makeUnmarshalTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalTime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalTime"
 
-def makeUnmarshalTimePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalTimePtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalTimePtr"
 
-def makeUnmarshalTimePtrSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalTimePtrSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalTimePtrSlice"
 
-def makeUnmarshalTimeSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalTimeSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalTimeSlice"
 
-def makeUnmarshalDurationPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalDurationPtr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalDurationPtr"
 
-def makeUnmarshalDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalDuration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalDuration"
 
-def makeUnmarshalDurationPtrSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalDurationPtrSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalDurationPtrSlice"
 
-def makeUnmarshalDurationSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalDurationSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalDurationSlice"
 
-def writeName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.writeName"
 
-def requiresQuotes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def requiresQuotes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.requiresQuotes"
 
-def isAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAny [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isAny"
 
-def isprint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isprint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isprint"
 
-def writeString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.writeString"
 
-def writeUnknownStruct [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeUnknownStruct [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.writeUnknownStruct"
 
-def writeUnknownInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeUnknownInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.writeUnknownInt"
 
-def MarshalText [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalText [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.MarshalText"
 
-def MarshalTextString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalTextString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.MarshalTextString"
 
-def CompactText [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompactText [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.CompactText"
 
-def CompactTextString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompactTextString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.CompactTextString"
 
-def newTextParser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTextParser [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.newTextParser"
 
-def isIdentOrNumberChar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isIdentOrNumberChar [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isIdentOrNumberChar"
 
-def isWhitespace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isWhitespace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isWhitespace"
 
-def isQuote [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isQuote [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.isQuote"
 
-def unquoteC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unquoteC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unquoteC"
 
-def unescape [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unescape [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.unescape"
 
-def structFieldByName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def structFieldByName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.structFieldByName"
 
-def UnmarshalText [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalText [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.UnmarshalText"
 
-def validateTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.validateTimestamp"
 
-def timestampFromProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timestampFromProto [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.timestampFromProto"
 
-def timestampProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timestampProto [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.timestampProto"
 
-def makeStdDoubleValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValueMarshaler"
 
-def makeStdDoubleValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValuePtrMarshaler"
 
-def makeStdDoubleValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValueSliceMarshaler"
 
-def makeStdDoubleValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValuePtrSliceMarshaler"
 
-def makeStdDoubleValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValueUnmarshaler"
 
-def makeStdDoubleValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValuePtrUnmarshaler"
 
-def makeStdDoubleValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValuePtrSliceUnmarshaler"
 
-def makeStdDoubleValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValueSliceUnmarshaler"
 
-def makeStdFloatValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValueMarshaler"
 
-def makeStdFloatValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValuePtrMarshaler"
 
-def makeStdFloatValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValueSliceMarshaler"
 
-def makeStdFloatValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValuePtrSliceMarshaler"
 
-def makeStdFloatValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValueUnmarshaler"
 
-def makeStdFloatValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValuePtrUnmarshaler"
 
-def makeStdFloatValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValuePtrSliceUnmarshaler"
 
-def makeStdFloatValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValueSliceUnmarshaler"
 
-def makeStdInt64ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValueMarshaler"
 
-def makeStdInt64ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValuePtrMarshaler"
 
-def makeStdInt64ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValueSliceMarshaler"
 
-def makeStdInt64ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValuePtrSliceMarshaler"
 
-def makeStdInt64ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValueUnmarshaler"
 
-def makeStdInt64ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValuePtrUnmarshaler"
 
-def makeStdInt64ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValuePtrSliceUnmarshaler"
 
-def makeStdInt64ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValueSliceUnmarshaler"
 
-def makeStdUInt64ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValueMarshaler"
 
-def makeStdUInt64ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValuePtrMarshaler"
 
-def makeStdUInt64ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValueSliceMarshaler"
 
-def makeStdUInt64ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValuePtrSliceMarshaler"
 
-def makeStdUInt64ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValueUnmarshaler"
 
-def makeStdUInt64ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValuePtrUnmarshaler"
 
-def makeStdUInt64ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValuePtrSliceUnmarshaler"
 
-def makeStdUInt64ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValueSliceUnmarshaler"
 
-def makeStdInt32ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValueMarshaler"
 
-def makeStdInt32ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValuePtrMarshaler"
 
-def makeStdInt32ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValueSliceMarshaler"
 
-def makeStdInt32ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValuePtrSliceMarshaler"
 
-def makeStdInt32ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValueUnmarshaler"
 
-def makeStdInt32ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValuePtrUnmarshaler"
 
-def makeStdInt32ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValuePtrSliceUnmarshaler"
 
-def makeStdInt32ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValueSliceUnmarshaler"
 
-def makeStdUInt32ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValueMarshaler"
 
-def makeStdUInt32ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValuePtrMarshaler"
 
-def makeStdUInt32ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValueSliceMarshaler"
 
-def makeStdUInt32ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValuePtrSliceMarshaler"
 
-def makeStdUInt32ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValueUnmarshaler"
 
-def makeStdUInt32ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValuePtrUnmarshaler"
 
-def makeStdUInt32ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValuePtrSliceUnmarshaler"
 
-def makeStdUInt32ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValueSliceUnmarshaler"
 
-def makeStdBoolValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValueMarshaler"
 
-def makeStdBoolValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValuePtrMarshaler"
 
-def makeStdBoolValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValueSliceMarshaler"
 
-def makeStdBoolValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValuePtrSliceMarshaler"
 
-def makeStdBoolValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValueUnmarshaler"
 
-def makeStdBoolValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValuePtrUnmarshaler"
 
-def makeStdBoolValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValuePtrSliceUnmarshaler"
 
-def makeStdBoolValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValueSliceUnmarshaler"
 
-def makeStdStringValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValueMarshaler"
 
-def makeStdStringValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValuePtrMarshaler"
 
-def makeStdStringValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValueSliceMarshaler"
 
-def makeStdStringValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValuePtrSliceMarshaler"
 
-def makeStdStringValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValueUnmarshaler"
 
-def makeStdStringValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValuePtrUnmarshaler"
 
-def makeStdStringValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValuePtrSliceUnmarshaler"
 
-def makeStdStringValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValueSliceUnmarshaler"
 
-def makeStdBytesValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValueMarshaler"
 
-def makeStdBytesValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValuePtrMarshaler"
 
-def makeStdBytesValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValueSliceMarshaler"
 
-def makeStdBytesValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValuePtrSliceMarshaler"
 
-def makeStdBytesValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValueUnmarshaler"
 
-def makeStdBytesValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValuePtrUnmarshaler"
 
-def makeStdBytesValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValuePtrSliceUnmarshaler"
 
-def makeStdBytesValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValueSliceUnmarshaler"
 
 instance info' : PkgInfo pkg_id.github_com.gogo.protobuf.proto where
@@ -2235,7 +2235,7 @@ instance info' : PkgInfo pkg_id.github_com.gogo.protobuf.proto where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.gogo.protobuf.proto)) (Lam BAnon
   (App (Val exception_do)

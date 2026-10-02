@@ -217,132 +217,132 @@ axiom bucketBufferInitialSize [ffi_syntax] [GoGlobalContext] : val
 
 axiom EnvVerifyValueLock [ffi_syntax] [GoGlobalContext] : val
 
-def defaultBatchLimit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultBatchLimit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.defaultBatchLimit"
 
 axiom defaultBatchLimit'init [ffi_syntax] [GoGlobalContext] : val
 
-def defaultBatchInterval [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultBatchInterval [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.defaultBatchInterval"
 
 axiom defaultBatchInterval'init [ffi_syntax] [GoGlobalContext] : val
 
-def defragLimit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defragLimit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.defragLimit"
 
 axiom defragLimit'init [ffi_syntax] [GoGlobalContext] : val
 
-def InitialMmapSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InitialMmapSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.InitialMmapSize"
 
 axiom InitialMmapSize'init [ffi_syntax] [GoGlobalContext] : val
 
-def minSnapshotWarningTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minSnapshotWarningTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.minSnapshotWarningTimeout"
 
 axiom minSnapshotWarningTimeout'init [ffi_syntax] [GoGlobalContext] : val
 
-def boltOpenOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def boltOpenOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.boltOpenOptions"
 
 axiom boltOpenOptions'init [ffi_syntax] [GoGlobalContext] : val
 
-def commitSec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def commitSec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.commitSec"
 
 axiom commitSec'init [ffi_syntax] [GoGlobalContext] : val
 
-def rebalanceSec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rebalanceSec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.rebalanceSec"
 
 axiom rebalanceSec'init [ffi_syntax] [GoGlobalContext] : val
 
-def spillSec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spillSec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.spillSec"
 
 axiom spillSec'init [ffi_syntax] [GoGlobalContext] : val
 
-def writeSec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeSec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.writeSec"
 
 axiom writeSec'init [ffi_syntax] [GoGlobalContext] : val
 
-def defragSec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defragSec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.defragSec"
 
 axiom defragSec'init [ffi_syntax] [GoGlobalContext] : val
 
-def snapshotTransferSec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def snapshotTransferSec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.snapshotTransferSec"
 
 axiom snapshotTransferSec'init [ffi_syntax] [GoGlobalContext] : val
 
-def isDefragActive [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isDefragActive [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.isDefragActive"
 
 axiom isDefragActive'init [ffi_syntax] [GoGlobalContext] : val
 
-def DefaultBackendConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultBackendConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.DefaultBackendConfig"
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.New"
 
-def WithMmapSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMmapSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.WithMmapSize"
 
-def WithTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.WithTimeout"
 
-def NewDefaultBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDefaultBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.NewDefaultBackend"
 
-def newBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.newBackend"
 
-def defragdb [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defragdb [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.defragdb"
 
-def newBoltLoggerZap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newBoltLoggerZap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.newBoltLoggerZap"
 
-def unsafeRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.unsafeRange"
 
-def unsafeForEach [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeForEach [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.unsafeForEach"
 
-def newBatchTxBuffered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newBatchTxBuffered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.newBatchTxBuffered"
 
-def NewHooks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewHooks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.NewHooks"
 
-def newBucketBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newBucketBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.newBucketBuffer"
 
-def ValidateCalledInsideApply [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ValidateCalledInsideApply [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.ValidateCalledInsideApply"
 
-def ValidateCalledOutSideApply [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ValidateCalledOutSideApply [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.ValidateCalledOutSideApply"
 
-def ValidateCalledInsideUnittest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ValidateCalledInsideUnittest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.ValidateCalledInsideUnittest"
 
-def verifyLockEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def verifyLockEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.verifyLockEnabled"
 
-def insideApply [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def insideApply [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.insideApply"
 
-def insideUnittest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def insideUnittest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.insideUnittest"
 
-def VerifyBackendConsistency [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def VerifyBackendConsistency [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.VerifyBackendConsistency"
 
-def unsafeVerifyTxConsistency [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeVerifyTxConsistency [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/backend.unsafeVerifyTxConsistency"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.storage.backend where
@@ -350,7 +350,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.storage.backend where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.storage.backend)) (Lam BAnon
   (App (Val exception_do)

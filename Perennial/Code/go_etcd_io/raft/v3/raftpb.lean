@@ -89,85 +89,85 @@ attribute [irreducible] ConfChangeV2
 
 axiom «ConfChangeSingleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-@[reducible] def EntryNormal [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def EntryNormal [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] def EntryConfChange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def EntryConfChange [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] def EntryConfChangeV2 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def EntryConfChangeV2 [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] def MsgHup [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgHup [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] def MsgBeat [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgBeat [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] def MsgProp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgProp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] def MsgApp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgApp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-@[reducible] def MsgAppResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgAppResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 4)
 
-@[reducible] def MsgVote [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgVote [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 5)
 
-@[reducible] def MsgVoteResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgVoteResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 6)
 
-@[reducible] def MsgSnap [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgSnap [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 7)
 
-@[reducible] def MsgHeartbeat [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgHeartbeat [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 8)
 
-@[reducible] def MsgHeartbeatResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgHeartbeatResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 9)
 
-@[reducible] def MsgUnreachable [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgUnreachable [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 10)
 
-@[reducible] def MsgSnapStatus [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgSnapStatus [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 11)
 
-@[reducible] def MsgCheckQuorum [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgCheckQuorum [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 12)
 
-@[reducible] def MsgTransferLeader [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgTransferLeader [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 13)
 
-@[reducible] def MsgTimeoutNow [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgTimeoutNow [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 14)
 
-@[reducible] def MsgReadIndex [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgReadIndex [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 15)
 
-@[reducible] def MsgReadIndexResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgReadIndexResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 16)
 
-@[reducible] def MsgPreVote [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgPreVote [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 17)
 
-@[reducible] def MsgPreVoteResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgPreVoteResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 18)
 
-@[reducible] def MsgStorageAppend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgStorageAppend [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 19)
 
-@[reducible] def MsgStorageAppendResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgStorageAppendResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 20)
 
-@[reducible] def MsgStorageApply [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgStorageApply [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 21)
 
-@[reducible] def MsgStorageApplyResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgStorageApplyResp [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 22)
 
-@[reducible] def MsgForgetLeader [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgForgetLeader [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 23)
 
 axiom ConfChangeTransitionAuto [ffi_syntax] [GoGlobalContext] : val
@@ -176,124 +176,124 @@ axiom ConfChangeTransitionJointImplicit [ffi_syntax] [GoGlobalContext] : val
 
 axiom ConfChangeTransitionJointExplicit [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def ConfChangeAddNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ConfChangeAddNode [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] def ConfChangeRemoveNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ConfChangeRemoveNode [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] def ConfChangeUpdateNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ConfChangeUpdateNode [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] def ConfChangeAddLearnerNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ConfChangeAddLearnerNode [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-def EntryType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EntryType_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.EntryType_name"
 
 axiom EntryType_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def EntryType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EntryType_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.EntryType_value"
 
 axiom EntryType_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def MessageType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MessageType_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.MessageType_name"
 
 axiom MessageType_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def MessageType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MessageType_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.MessageType_value"
 
 axiom MessageType_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def ConfChangeTransition_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangeTransition_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangeTransition_name"
 
 axiom ConfChangeTransition_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def ConfChangeTransition_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangeTransition_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangeTransition_value"
 
 axiom ConfChangeTransition_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def ConfChangeType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangeType_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangeType_name"
 
 axiom ConfChangeType_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def ConfChangeType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangeType_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangeType_value"
 
 axiom ConfChangeType_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def xxx_messageInfo_Entry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Entry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Entry"
 
-def xxx_messageInfo_SnapshotMetadata [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_SnapshotMetadata [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_SnapshotMetadata"
 
-def xxx_messageInfo_Snapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Snapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Snapshot"
 
-def xxx_messageInfo_Message [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Message [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Message"
 
-def xxx_messageInfo_HardState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_HardState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_HardState"
 
-def xxx_messageInfo_ConfState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ConfState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfState"
 
-def xxx_messageInfo_ConfChange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ConfChange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChange"
 
-def xxx_messageInfo_ConfChangeSingle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ConfChangeSingle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeSingle"
 
-def xxx_messageInfo_ConfChangeV2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ConfChangeV2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeV2"
 
-def fileDescriptor_b042552c306ae59b [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_b042552c306ae59b [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.fileDescriptor_b042552c306ae59b"
 
 axiom fileDescriptor_b042552c306ae59b'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidLengthRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ErrInvalidLengthRaft"
 
 axiom ErrInvalidLengthRaft'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrIntOverflowRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ErrIntOverflowRaft"
 
 axiom ErrIntOverflowRaft'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUnexpectedEndOfGroupRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ErrUnexpectedEndOfGroupRaft"
 
 axiom ErrUnexpectedEndOfGroupRaft'init [ffi_syntax] [GoGlobalContext] : val
 
-def MarshalConfChange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalConfChange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.MarshalConfChange"
 
-def ConfChangesFromString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangesFromString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangesFromString"
 
-def ConfChangesToString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangesToString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangesToString"
 
-def encodeVarintRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.encodeVarintRaft"
 
-def sovRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.sovRaft"
 
-def sozRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.sozRaft"
 
-def skipRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipRaft [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/raftpb.skipRaft"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.raftpb where
@@ -301,7 +301,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.raftpb where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.raft.v3.raftpb)) (Lam BAnon
   (App (Val exception_do)

@@ -41,20 +41,20 @@ def fakeConsistentIndex [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] fakeConsistentIndex
 
-def NewConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/cindex.NewConsistentIndex"
 
-def NewFakeConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFakeConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/cindex.NewFakeConsistentIndex"
 
-def UpdateConsistentIndexForce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UpdateConsistentIndexForce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/cindex.UpdateConsistentIndexForce"
 
 /-- NewConsistentIndex creates a new consistent index.
     If `be` is nil, it must be set (SetBackend) before first access using `ConsistentIndex()`.
 
     go: cindex.go:86:6 -/
-def «NewConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "be"
   (App (Val exception_do)
   (Let "be" (App (Val (GoInstruction (GoAlloc Backend))) (Var "be"))
@@ -63,7 +63,7 @@ def «NewConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral consistentIndex))) (LiteralValue [(KeyedElement (some (KeyField go!"be")) (ElementExpression Backend (Var "$v0")))])))))))))
 
 /-- go: cindex.go:90:28 -/
-def «consistentIndex__ConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «consistentIndex__ConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ci"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -114,7 +114,7 @@ def «consistentIndex__ConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "index") (Var "$r0")))))))))))))
 
 /-- go: cindex.go:102:28 -/
-def «consistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «consistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ci"
   (Lam BAnon
   (App (Val exception_do)
@@ -154,7 +154,7 @@ def «consistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobal
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "index") (Var "$r0"))))))))))))
 
 /-- go: cindex.go:112:28 -/
-def «consistentIndex__SetConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «consistentIndex__SetConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ci"
   (Lam "v"
   (Lam "term"
@@ -176,7 +176,7 @@ def «consistentIndex__SetConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCon
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.StoreUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))))
 
 /-- go: cindex.go:117:28 -/
-def «consistentIndex__UnsafeSaveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «consistentIndex__UnsafeSaveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ci"
   (Lam "tx"
   (App (Val exception_do)
@@ -204,7 +204,7 @@ def «consistentIndex__UnsafeSaveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "index") (Var "$r0")))))))))))))
 
 /-- go: cindex.go:123:28 -/
-def «consistentIndex__SetBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «consistentIndex__SetBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ci"
   (Lam "be"
   (App (Val wrap_defer)
@@ -234,7 +234,7 @@ def «consistentIndex__SetBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef consistentIndex go!"mutex"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType consistentIndex)))) (Var "ci")))) (Val #())))))))))))
 
 /-- go: cindex.go:131:28 -/
-def «consistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «consistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ci"
   (Lam BAnon
   (App (Val exception_do)
@@ -245,7 +245,7 @@ def «consistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlob
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint64 []))) (Val #())) (Var "$a0")))))))))
 
 /-- go: cindex.go:135:28 -/
-def «consistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «consistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ci"
   (Lam "v"
   (Lam "term"
@@ -267,7 +267,7 @@ def «consistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoG
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.StoreUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))))
 
 /-- go: cindex.go:140:6 -/
-def «NewFakeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewFakeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "index"
   (App (Val exception_do)
   (Let "index" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "index"))
@@ -276,7 +276,7 @@ def «NewFakeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (CompositeLiteral fakeConsistentIndex))) (LiteralValue [(KeyedElement (some (KeyField go!"index")) (ElementExpression go.uint64 (Var "$v0")))])))))))))
 
 /-- go: cindex.go:149:31 -/
-def «fakeConsistentIndex__ConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fakeConsistentIndex__ConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
   (App (Val exception_do)
@@ -286,7 +286,7 @@ def «fakeConsistentIndex__ConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint64 []))) (Val #())) (Var "$a0"))))))))
 
 /-- go: cindex.go:153:31 -/
-def «fakeConsistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fakeConsistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
   (App (Val exception_do)
@@ -297,7 +297,7 @@ def «fakeConsistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [Go
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint64 []))) (Val #())) (Var "$a0")))))))))
 
 /-- go: cindex.go:157:31 -/
-def «fakeConsistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fakeConsistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
   (App (Val exception_do)
@@ -307,7 +307,7 @@ def «fakeConsistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGl
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint64 []))) (Val #())) (Var "$a0"))))))))
 
 /-- go: cindex.go:161:31 -/
-def «fakeConsistentIndex__SetConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fakeConsistentIndex__SetConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "index"
   (Lam "term"
@@ -329,7 +329,7 @@ def «fakeConsistentIndex__SetConsistentIndexⁱᵐᵖˡ» [ffi_syntax] [GoGloba
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.StoreUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))))
 
 /-- go: cindex.go:166:31 -/
-def «fakeConsistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fakeConsistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "index"
   (Lam "term"
@@ -351,7 +351,7 @@ def «fakeConsistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ» [ffi_syntax] 
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.StoreUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))))
 
 /-- go: cindex.go:171:31 -/
-def «fakeConsistentIndex__UnsafeSaveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fakeConsistentIndex__UnsafeSaveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
   (App (Val exception_do)
@@ -360,7 +360,7 @@ def «fakeConsistentIndex__UnsafeSaveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
   (Val #()))))))
 
 /-- go: cindex.go:172:31 -/
-def «fakeConsistentIndex__SetBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fakeConsistentIndex__SetBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
   (App (Val exception_do)
@@ -369,7 +369,7 @@ def «fakeConsistentIndex__SetBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
   (Val #()))))))
 
 /-- go: cindex.go:174:6 -/
-def «UpdateConsistentIndexForceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «UpdateConsistentIndexForceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "tx"
   (Lam "index"
   (Lam "term"
@@ -400,7 +400,7 @@ def «UpdateConsistentIndexForceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.etcdserver.cindex where
   pkg_imported_pkgs := [pkg_id.sync, pkg_id.sync.atomic, pkg_id.go_etcd_io.etcd.server.v3.storage.backend, pkg_id.go_etcd_io.etcd.server.v3.storage.schema]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.etcdserver.cindex)) (Lam BAnon
   (App (Val exception_do)

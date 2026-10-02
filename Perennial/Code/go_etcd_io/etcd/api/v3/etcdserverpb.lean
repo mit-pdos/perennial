@@ -1124,55 +1124,55 @@ axiom AlarmType_NOSPACE [ffi_syntax] [GoGlobalContext] : val
 
 axiom AlarmType_CORRUPT [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def RangeRequest_NONE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RangeRequest_NONE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] def RangeRequest_ASCEND [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RangeRequest_ASCEND [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] def RangeRequest_DESCEND [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RangeRequest_DESCEND [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] def RangeRequest_KEY [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RangeRequest_KEY [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] def RangeRequest_VERSION [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RangeRequest_VERSION [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] def RangeRequest_CREATE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RangeRequest_CREATE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] def RangeRequest_MOD [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RangeRequest_MOD [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-@[reducible] def RangeRequest_VALUE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RangeRequest_VALUE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 4)
 
-@[reducible] def Compare_EQUAL [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_EQUAL [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] def Compare_GREATER [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_GREATER [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] def Compare_LESS [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_LESS [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] def Compare_NOT_EQUAL [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_NOT_EQUAL [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-@[reducible] def Compare_VERSION [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_VERSION [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] def Compare_CREATE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_CREATE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] def Compare_MOD [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_MOD [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] def Compare_VALUE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_VALUE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-@[reducible] def Compare_LEASE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Compare_LEASE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 4)
 
 axiom WatchCreateRequest_NOPUT [ffi_syntax] [GoGlobalContext] : val
@@ -1273,675 +1273,675 @@ axiom Auth_RoleGrantPermission_FullMethodName [ffi_syntax] [GoGlobalContext] : v
 
 axiom Auth_RoleRevokePermission_FullMethodName [ffi_syntax] [GoGlobalContext] : val
 
-def xxx_messageInfo_Metadata [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Metadata [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Metadata"
 
-def fileDescriptor_09ffbeb3bebbce7e [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_09ffbeb3bebbce7e [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.fileDescriptor_09ffbeb3bebbce7e"
 
 axiom fileDescriptor_09ffbeb3bebbce7e'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidLengthEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrInvalidLengthEtcdserver"
 
 axiom ErrInvalidLengthEtcdserver'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrIntOverflowEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrIntOverflowEtcdserver"
 
 axiom ErrIntOverflowEtcdserver'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUnexpectedEndOfGroupEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrUnexpectedEndOfGroupEtcdserver"
 
 axiom ErrUnexpectedEndOfGroupEtcdserver'init [ffi_syntax] [GoGlobalContext] : val
 
-def xxx_messageInfo_RequestHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_RequestHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RequestHeader"
 
-def xxx_messageInfo_InternalRaftRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_InternalRaftRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_InternalRaftRequest"
 
-def xxx_messageInfo_EmptyResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_EmptyResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_EmptyResponse"
 
-def xxx_messageInfo_InternalAuthenticateRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_InternalAuthenticateRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_InternalAuthenticateRequest"
 
-def fileDescriptor_b4c9a9be0cfca103 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_b4c9a9be0cfca103 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.fileDescriptor_b4c9a9be0cfca103"
 
 axiom fileDescriptor_b4c9a9be0cfca103'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidLengthRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrInvalidLengthRaftInternal"
 
 axiom ErrInvalidLengthRaftInternal'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrIntOverflowRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrIntOverflowRaftInternal"
 
 axiom ErrIntOverflowRaftInternal'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUnexpectedEndOfGroupRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrUnexpectedEndOfGroupRaftInternal"
 
 axiom ErrUnexpectedEndOfGroupRaftInternal'init [ffi_syntax] [GoGlobalContext] : val
 
-def AlarmType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AlarmType_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.AlarmType_name"
 
 axiom AlarmType_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def AlarmType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AlarmType_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.AlarmType_value"
 
 axiom AlarmType_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def RangeRequest_SortOrder_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RangeRequest_SortOrder_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortOrder_name"
 
-def RangeRequest_SortOrder_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RangeRequest_SortOrder_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortOrder_value"
 
-def RangeRequest_SortTarget_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RangeRequest_SortTarget_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortTarget_name"
 
-def RangeRequest_SortTarget_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RangeRequest_SortTarget_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortTarget_value"
 
-def Compare_CompareResult_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare_CompareResult_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareResult_name"
 
-def Compare_CompareResult_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare_CompareResult_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareResult_value"
 
-def Compare_CompareTarget_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare_CompareTarget_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareTarget_name"
 
-def Compare_CompareTarget_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare_CompareTarget_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareTarget_value"
 
-def WatchCreateRequest_FilterType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WatchCreateRequest_FilterType_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest_FilterType_name"
 
 axiom WatchCreateRequest_FilterType_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def WatchCreateRequest_FilterType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WatchCreateRequest_FilterType_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest_FilterType_value"
 
 axiom WatchCreateRequest_FilterType_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def AlarmRequest_AlarmAction_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AlarmRequest_AlarmAction_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction_name"
 
 axiom AlarmRequest_AlarmAction_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def AlarmRequest_AlarmAction_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AlarmRequest_AlarmAction_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction_value"
 
 axiom AlarmRequest_AlarmAction_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def DowngradeRequest_DowngradeAction_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DowngradeRequest_DowngradeAction_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest_DowngradeAction_name"
 
 axiom DowngradeRequest_DowngradeAction_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def DowngradeRequest_DowngradeAction_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DowngradeRequest_DowngradeAction_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest_DowngradeAction_value"
 
 axiom DowngradeRequest_DowngradeAction_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def xxx_messageInfo_ResponseHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ResponseHeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_ResponseHeader"
 
-def xxx_messageInfo_RangeRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_RangeRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RangeRequest"
 
-def xxx_messageInfo_RangeResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_RangeResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RangeResponse"
 
-def xxx_messageInfo_PutRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_PutRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_PutRequest"
 
-def xxx_messageInfo_PutResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_PutResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_PutResponse"
 
-def xxx_messageInfo_DeleteRangeRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DeleteRangeRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DeleteRangeRequest"
 
-def xxx_messageInfo_DeleteRangeResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DeleteRangeResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DeleteRangeResponse"
 
-def xxx_messageInfo_RequestOp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_RequestOp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RequestOp"
 
-def xxx_messageInfo_ResponseOp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ResponseOp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_ResponseOp"
 
-def xxx_messageInfo_Compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Compare [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Compare"
 
-def xxx_messageInfo_TxnRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_TxnRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_TxnRequest"
 
-def xxx_messageInfo_TxnResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_TxnResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_TxnResponse"
 
-def xxx_messageInfo_CompactionRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_CompactionRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_CompactionRequest"
 
-def xxx_messageInfo_CompactionResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_CompactionResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_CompactionResponse"
 
-def xxx_messageInfo_HashRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_HashRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashRequest"
 
-def xxx_messageInfo_HashKVRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_HashKVRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashKVRequest"
 
-def xxx_messageInfo_HashKVResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_HashKVResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashKVResponse"
 
-def xxx_messageInfo_HashResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_HashResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashResponse"
 
-def xxx_messageInfo_SnapshotRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_SnapshotRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_SnapshotRequest"
 
-def xxx_messageInfo_SnapshotResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_SnapshotResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_SnapshotResponse"
 
-def xxx_messageInfo_WatchRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_WatchRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchRequest"
 
-def xxx_messageInfo_WatchCreateRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_WatchCreateRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchCreateRequest"
 
-def xxx_messageInfo_WatchCancelRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_WatchCancelRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchCancelRequest"
 
-def xxx_messageInfo_WatchProgressRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_WatchProgressRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchProgressRequest"
 
-def xxx_messageInfo_WatchResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_WatchResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchResponse"
 
-def xxx_messageInfo_LeaseGrantRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseGrantRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseGrantRequest"
 
-def xxx_messageInfo_LeaseGrantResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseGrantResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseGrantResponse"
 
-def xxx_messageInfo_LeaseRevokeRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseRevokeRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseRevokeRequest"
 
-def xxx_messageInfo_LeaseRevokeResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseRevokeResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseRevokeResponse"
 
-def xxx_messageInfo_LeaseCheckpoint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseCheckpoint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpoint"
 
-def xxx_messageInfo_LeaseCheckpointRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseCheckpointRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpointRequest"
 
-def xxx_messageInfo_LeaseCheckpointResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseCheckpointResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpointResponse"
 
-def xxx_messageInfo_LeaseKeepAliveRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseKeepAliveRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseKeepAliveRequest"
 
-def xxx_messageInfo_LeaseKeepAliveResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseKeepAliveResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseKeepAliveResponse"
 
-def xxx_messageInfo_LeaseTimeToLiveRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseTimeToLiveRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseTimeToLiveRequest"
 
-def xxx_messageInfo_LeaseTimeToLiveResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseTimeToLiveResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseTimeToLiveResponse"
 
-def xxx_messageInfo_LeaseLeasesRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseLeasesRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseLeasesRequest"
 
-def xxx_messageInfo_LeaseStatus [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseStatus [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseStatus"
 
-def xxx_messageInfo_LeaseLeasesResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_LeaseLeasesResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseLeasesResponse"
 
-def xxx_messageInfo_Member [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Member [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Member"
 
-def xxx_messageInfo_MemberAddRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberAddRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberAddRequest"
 
-def xxx_messageInfo_MemberAddResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberAddResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberAddResponse"
 
-def xxx_messageInfo_MemberRemoveRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberRemoveRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberRemoveRequest"
 
-def xxx_messageInfo_MemberRemoveResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberRemoveResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberRemoveResponse"
 
-def xxx_messageInfo_MemberUpdateRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberUpdateRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberUpdateRequest"
 
-def xxx_messageInfo_MemberUpdateResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberUpdateResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberUpdateResponse"
 
-def xxx_messageInfo_MemberListRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberListRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberListRequest"
 
-def xxx_messageInfo_MemberListResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberListResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberListResponse"
 
-def xxx_messageInfo_MemberPromoteRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberPromoteRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberPromoteRequest"
 
-def xxx_messageInfo_MemberPromoteResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MemberPromoteResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberPromoteResponse"
 
-def xxx_messageInfo_DefragmentRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DefragmentRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DefragmentRequest"
 
-def xxx_messageInfo_DefragmentResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DefragmentResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DefragmentResponse"
 
-def xxx_messageInfo_MoveLeaderRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MoveLeaderRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MoveLeaderRequest"
 
-def xxx_messageInfo_MoveLeaderResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_MoveLeaderResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MoveLeaderResponse"
 
-def xxx_messageInfo_AlarmRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AlarmRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmRequest"
 
-def xxx_messageInfo_AlarmMember [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AlarmMember [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmMember"
 
-def xxx_messageInfo_AlarmResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AlarmResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmResponse"
 
-def xxx_messageInfo_DowngradeRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DowngradeRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DowngradeRequest"
 
-def xxx_messageInfo_DowngradeResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DowngradeResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DowngradeResponse"
 
-def xxx_messageInfo_DowngradeVersionTestRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DowngradeVersionTestRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DowngradeVersionTestRequest"
 
-def xxx_messageInfo_StatusRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_StatusRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_StatusRequest"
 
-def xxx_messageInfo_StatusResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_StatusResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_StatusResponse"
 
-def xxx_messageInfo_DowngradeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_DowngradeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DowngradeInfo"
 
-def xxx_messageInfo_AuthEnableRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthEnableRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthEnableRequest"
 
-def xxx_messageInfo_AuthDisableRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthDisableRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthDisableRequest"
 
-def xxx_messageInfo_AuthStatusRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthStatusRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthStatusRequest"
 
-def xxx_messageInfo_AuthenticateRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthenticateRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthenticateRequest"
 
-def xxx_messageInfo_AuthUserAddRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserAddRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserAddRequest"
 
-def xxx_messageInfo_AuthUserGetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserGetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGetRequest"
 
-def xxx_messageInfo_AuthUserDeleteRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserDeleteRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserDeleteRequest"
 
-def xxx_messageInfo_AuthUserChangePasswordRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserChangePasswordRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserChangePasswordRequest"
 
-def xxx_messageInfo_AuthUserGrantRoleRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserGrantRoleRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGrantRoleRequest"
 
-def xxx_messageInfo_AuthUserRevokeRoleRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserRevokeRoleRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserRevokeRoleRequest"
 
-def xxx_messageInfo_AuthRoleAddRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleAddRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleAddRequest"
 
-def xxx_messageInfo_AuthRoleGetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleGetRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGetRequest"
 
-def xxx_messageInfo_AuthUserListRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserListRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserListRequest"
 
-def xxx_messageInfo_AuthRoleListRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleListRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleListRequest"
 
-def xxx_messageInfo_AuthRoleDeleteRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleDeleteRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleDeleteRequest"
 
-def xxx_messageInfo_AuthRoleGrantPermissionRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleGrantPermissionRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGrantPermissionRequest"
 
-def xxx_messageInfo_AuthRoleRevokePermissionRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleRevokePermissionRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleRevokePermissionRequest"
 
-def xxx_messageInfo_AuthEnableResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthEnableResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthEnableResponse"
 
-def xxx_messageInfo_AuthDisableResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthDisableResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthDisableResponse"
 
-def xxx_messageInfo_AuthStatusResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthStatusResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthStatusResponse"
 
-def xxx_messageInfo_AuthenticateResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthenticateResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthenticateResponse"
 
-def xxx_messageInfo_AuthUserAddResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserAddResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserAddResponse"
 
-def xxx_messageInfo_AuthUserGetResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserGetResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGetResponse"
 
-def xxx_messageInfo_AuthUserDeleteResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserDeleteResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserDeleteResponse"
 
-def xxx_messageInfo_AuthUserChangePasswordResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserChangePasswordResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserChangePasswordResponse"
 
-def xxx_messageInfo_AuthUserGrantRoleResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserGrantRoleResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGrantRoleResponse"
 
-def xxx_messageInfo_AuthUserRevokeRoleResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserRevokeRoleResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserRevokeRoleResponse"
 
-def xxx_messageInfo_AuthRoleAddResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleAddResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleAddResponse"
 
-def xxx_messageInfo_AuthRoleGetResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleGetResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGetResponse"
 
-def xxx_messageInfo_AuthRoleListResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleListResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleListResponse"
 
-def xxx_messageInfo_AuthUserListResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthUserListResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserListResponse"
 
-def xxx_messageInfo_AuthRoleDeleteResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleDeleteResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleDeleteResponse"
 
-def xxx_messageInfo_AuthRoleGrantPermissionResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleGrantPermissionResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGrantPermissionResponse"
 
-def xxx_messageInfo_AuthRoleRevokePermissionResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_AuthRoleRevokePermissionResponse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleRevokePermissionResponse"
 
-def fileDescriptor_77a6da22d6a3feb1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_77a6da22d6a3feb1 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.fileDescriptor_77a6da22d6a3feb1"
 
 axiom fileDescriptor_77a6da22d6a3feb1'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidLengthRpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthRpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrInvalidLengthRpc"
 
 axiom ErrInvalidLengthRpc'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrIntOverflowRpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowRpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrIntOverflowRpc"
 
 axiom ErrIntOverflowRpc'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUnexpectedEndOfGroupRpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupRpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.ErrUnexpectedEndOfGroupRpc"
 
 axiom ErrUnexpectedEndOfGroupRpc'init [ffi_syntax] [GoGlobalContext] : val
 
-def KV_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def KV_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.KV_ServiceDesc"
 
 axiom KV_ServiceDesc'init [ffi_syntax] [GoGlobalContext] : val
 
-def Watch_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Watch_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Watch_ServiceDesc"
 
 axiom Watch_ServiceDesc'init [ffi_syntax] [GoGlobalContext] : val
 
-def Lease_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lease_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Lease_ServiceDesc"
 
 axiom Lease_ServiceDesc'init [ffi_syntax] [GoGlobalContext] : val
 
-def Cluster_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Cluster_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Cluster_ServiceDesc"
 
 axiom Cluster_ServiceDesc'init [ffi_syntax] [GoGlobalContext] : val
 
-def Maintenance_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Maintenance_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Maintenance_ServiceDesc"
 
 axiom Maintenance_ServiceDesc'init [ffi_syntax] [GoGlobalContext] : val
 
-def Auth_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Auth_ServiceDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.Auth_ServiceDesc"
 
 axiom Auth_ServiceDesc'init [ffi_syntax] [GoGlobalContext] : val
 
-def encodeVarintEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.encodeVarintEtcdserver"
 
-def sovEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.sovEtcdserver"
 
-def sozEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.sozEtcdserver"
 
-def skipEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipEtcdserver [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.skipEtcdserver"
 
-def encodeVarintRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.encodeVarintRaftInternal"
 
-def sovRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.sovRaftInternal"
 
-def sozRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.sozRaftInternal"
 
-def skipRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipRaftInternal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.skipRaftInternal"
 
-def NewLoggableTxnRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLoggableTxnRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.NewLoggableTxnRequest"
 
-def newLoggableRequestOp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newLoggableRequestOp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.newLoggableRequestOp"
 
-def newLoggableValueCompare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newLoggableValueCompare [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.newLoggableValueCompare"
 
-def NewLoggablePutRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLoggablePutRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.NewLoggablePutRequest"
 
-def encodeVarintRpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintRpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.encodeVarintRpc"
 
-def sovRpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovRpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.sovRpc"
 
-def sozRpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozRpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.sozRpc"
 
-def skipRpc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipRpc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.skipRpc"
 
-def NewKVClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewKVClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.NewKVClient"
 
-def RegisterKVServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterKVServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RegisterKVServer"
 
-def _KV_Range_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _KV_Range_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._KV_Range_Handler"
 
-def _KV_Put_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _KV_Put_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._KV_Put_Handler"
 
-def _KV_DeleteRange_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _KV_DeleteRange_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._KV_DeleteRange_Handler"
 
-def _KV_Txn_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _KV_Txn_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._KV_Txn_Handler"
 
-def _KV_Compact_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _KV_Compact_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._KV_Compact_Handler"
 
-def NewWatchClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewWatchClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.NewWatchClient"
 
-def RegisterWatchServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterWatchServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RegisterWatchServer"
 
-def _Watch_Watch_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Watch_Watch_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Watch_Watch_Handler"
 
-def NewLeaseClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLeaseClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.NewLeaseClient"
 
-def RegisterLeaseServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterLeaseServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RegisterLeaseServer"
 
-def _Lease_LeaseGrant_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Lease_LeaseGrant_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseGrant_Handler"
 
-def _Lease_LeaseRevoke_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Lease_LeaseRevoke_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseRevoke_Handler"
 
-def _Lease_LeaseKeepAlive_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Lease_LeaseKeepAlive_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseKeepAlive_Handler"
 
-def _Lease_LeaseTimeToLive_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Lease_LeaseTimeToLive_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseTimeToLive_Handler"
 
-def _Lease_LeaseLeases_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Lease_LeaseLeases_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseLeases_Handler"
 
-def NewClusterClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewClusterClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.NewClusterClient"
 
-def RegisterClusterServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterClusterServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RegisterClusterServer"
 
-def _Cluster_MemberAdd_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Cluster_MemberAdd_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Cluster_MemberAdd_Handler"
 
-def _Cluster_MemberRemove_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Cluster_MemberRemove_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Cluster_MemberRemove_Handler"
 
-def _Cluster_MemberUpdate_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Cluster_MemberUpdate_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Cluster_MemberUpdate_Handler"
 
-def _Cluster_MemberList_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Cluster_MemberList_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Cluster_MemberList_Handler"
 
-def _Cluster_MemberPromote_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Cluster_MemberPromote_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Cluster_MemberPromote_Handler"
 
-def NewMaintenanceClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMaintenanceClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.NewMaintenanceClient"
 
-def RegisterMaintenanceServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterMaintenanceServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RegisterMaintenanceServer"
 
-def _Maintenance_Alarm_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Maintenance_Alarm_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Alarm_Handler"
 
-def _Maintenance_Status_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Maintenance_Status_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Status_Handler"
 
-def _Maintenance_Defragment_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Maintenance_Defragment_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Defragment_Handler"
 
-def _Maintenance_Hash_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Maintenance_Hash_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Hash_Handler"
 
-def _Maintenance_HashKV_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Maintenance_HashKV_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_HashKV_Handler"
 
-def _Maintenance_Snapshot_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Maintenance_Snapshot_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Snapshot_Handler"
 
-def _Maintenance_MoveLeader_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Maintenance_MoveLeader_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_MoveLeader_Handler"
 
-def _Maintenance_Downgrade_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Maintenance_Downgrade_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Downgrade_Handler"
 
-def NewAuthClient [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAuthClient [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.NewAuthClient"
 
-def RegisterAuthServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterAuthServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb.RegisterAuthServer"
 
-def _Auth_AuthEnable_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_AuthEnable_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_AuthEnable_Handler"
 
-def _Auth_AuthDisable_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_AuthDisable_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_AuthDisable_Handler"
 
-def _Auth_AuthStatus_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_AuthStatus_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_AuthStatus_Handler"
 
-def _Auth_Authenticate_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_Authenticate_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_Authenticate_Handler"
 
-def _Auth_UserAdd_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_UserAdd_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_UserAdd_Handler"
 
-def _Auth_UserGet_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_UserGet_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_UserGet_Handler"
 
-def _Auth_UserList_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_UserList_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_UserList_Handler"
 
-def _Auth_UserDelete_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_UserDelete_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_UserDelete_Handler"
 
-def _Auth_UserChangePassword_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_UserChangePassword_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_UserChangePassword_Handler"
 
-def _Auth_UserGrantRole_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_UserGrantRole_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_UserGrantRole_Handler"
 
-def _Auth_UserRevokeRole_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_UserRevokeRole_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_UserRevokeRole_Handler"
 
-def _Auth_RoleAdd_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_RoleAdd_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_RoleAdd_Handler"
 
-def _Auth_RoleGet_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_RoleGet_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_RoleGet_Handler"
 
-def _Auth_RoleList_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_RoleList_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_RoleList_Handler"
 
-def _Auth_RoleDelete_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_RoleDelete_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_RoleDelete_Handler"
 
-def _Auth_RoleGrantPermission_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_RoleGrantPermission_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_RoleGrantPermission_Handler"
 
-def _Auth_RoleRevokePermission_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Auth_RoleRevokePermission_Handler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/etcdserverpb._Auth_RoleRevokePermission_Handler"
 
 /-- go: rpc.pb.go:83:31 -/
-def «RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1951,7 +1951,7 @@ def «RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobal
   (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.int)))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1")))])))))))))
 
 /-- go: rpc.pb.go:117:32 -/
-def «RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1961,7 +1961,7 @@ def «RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGloba
   (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.int)))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1")))])))))))))
 
 /-- go: rpc.pb.go:148:30 -/
-def «Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1971,7 +1971,7 @@ def «Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalC
   (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.int)))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1")))])))))))))
 
 /-- go: rpc.pb.go:182:30 -/
-def «Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1981,7 +1981,7 @@ def «Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalC
   (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.int)))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1")))])))))))))
 
 /-- go: rpc.pb.go:952:32 -/
-def «RequestOp_RequestRange__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestRange__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1989,7 +1989,7 @@ def «RequestOp_RequestRange__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoG
   (Val #())))))
 
 /-- go: rpc.pb.go:953:30 -/
-def «RequestOp_RequestPut__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestPut__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1997,7 +1997,7 @@ def «RequestOp_RequestPut__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlo
   (Val #())))))
 
 /-- go: rpc.pb.go:954:38 -/
-def «RequestOp_RequestDeleteRange__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestDeleteRange__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2005,7 +2005,7 @@ def «RequestOp_RequestDeleteRange__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax
   (Val #())))))
 
 /-- go: rpc.pb.go:955:30 -/
-def «RequestOp_RequestTxn__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestTxn__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2013,7 +2013,7 @@ def «RequestOp_RequestTxn__isRequestOp_Requestⁱᵐᵖˡ» [ffi_syntax] [GoGlo
   (Val #())))))
 
 /-- go: rpc.pb.go:1068:34 -/
-def «ResponseOp_ResponseRange__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseRange__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2021,7 +2021,7 @@ def «ResponseOp_ResponseRange__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] 
   (Val #())))))
 
 /-- go: rpc.pb.go:1069:32 -/
-def «ResponseOp_ResponsePut__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponsePut__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2029,7 +2029,7 @@ def «ResponseOp_ResponsePut__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [G
   (Val #())))))
 
 /-- go: rpc.pb.go:1070:40 -/
-def «ResponseOp_ResponseDeleteRange__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseDeleteRange__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2037,7 +2037,7 @@ def «ResponseOp_ResponseDeleteRange__isResponseOp_Responseⁱᵐᵖˡ» [ffi_sy
   (Val #())))))
 
 /-- go: rpc.pb.go:1071:32 -/
-def «ResponseOp_ResponseTxn__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseTxn__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2045,7 +2045,7 @@ def «ResponseOp_ResponseTxn__isResponseOp_Responseⁱᵐᵖˡ» [ffi_syntax] [G
   (Val #())))))
 
 /-- go: rpc.pb.go:1195:25 -/
-def «Compare_Version__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Version__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2053,7 +2053,7 @@ def «Compare_Version__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobal
   (Val #())))))
 
 /-- go: rpc.pb.go:1196:32 -/
-def «Compare_CreateRevision__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_CreateRevision__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2061,7 +2061,7 @@ def «Compare_CreateRevision__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [G
   (Val #())))))
 
 /-- go: rpc.pb.go:1197:29 -/
-def «Compare_ModRevision__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_ModRevision__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2069,7 +2069,7 @@ def «Compare_ModRevision__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGl
   (Val #())))))
 
 /-- go: rpc.pb.go:1198:23 -/
-def «Compare_Value__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Value__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2077,7 +2077,7 @@ def «Compare_Value__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
   (Val #())))))
 
 /-- go: rpc.pb.go:1199:23 -/
-def «Compare_Lease__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Lease__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -2085,7 +2085,7 @@ def «Compare_Lease__isCompare_TargetUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
   (Val #())))))
 
 /-- go: rpc.pb.go:7102:34 -/
-def «RequestOp_RequestRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2105,7 +2105,7 @@ def «RequestOp_RequestRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7107:34 -/
-def «RequestOp_RequestRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2163,7 +2163,7 @@ def «RequestOp_RequestRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [Go
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7123:32 -/
-def «RequestOp_RequestPut__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestPut__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2183,7 +2183,7 @@ def «RequestOp_RequestPut__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7128:32 -/
-def «RequestOp_RequestPut__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestPut__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2241,7 +2241,7 @@ def «RequestOp_RequestPut__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGl
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7144:40 -/
-def «RequestOp_RequestDeleteRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestDeleteRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2261,7 +2261,7 @@ def «RequestOp_RequestDeleteRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGloba
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7149:40 -/
-def «RequestOp_RequestDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2319,7 +2319,7 @@ def «RequestOp_RequestDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_synta
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7165:32 -/
-def «RequestOp_RequestTxn__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestTxn__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2339,7 +2339,7 @@ def «RequestOp_RequestTxn__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7170:32 -/
-def «RequestOp_RequestTxn__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestTxn__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2397,7 +2397,7 @@ def «RequestOp_RequestTxn__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGl
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7222:36 -/
-def «ResponseOp_ResponseRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2417,7 +2417,7 @@ def «ResponseOp_ResponseRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCon
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7227:36 -/
-def «ResponseOp_ResponseRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2475,7 +2475,7 @@ def «ResponseOp_ResponseRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7243:34 -/
-def «ResponseOp_ResponsePut__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponsePut__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2495,7 +2495,7 @@ def «ResponseOp_ResponsePut__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7248:34 -/
-def «ResponseOp_ResponsePut__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponsePut__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2553,7 +2553,7 @@ def «ResponseOp_ResponsePut__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [Go
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7264:42 -/
-def «ResponseOp_ResponseDeleteRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseDeleteRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2573,7 +2573,7 @@ def «ResponseOp_ResponseDeleteRange__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlo
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7269:42 -/
-def «ResponseOp_ResponseDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2631,7 +2631,7 @@ def «ResponseOp_ResponseDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syn
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7285:34 -/
-def «ResponseOp_ResponseTxn__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseTxn__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2651,7 +2651,7 @@ def «ResponseOp_ResponseTxn__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7290:34 -/
-def «ResponseOp_ResponseTxn__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseTxn__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2709,7 +2709,7 @@ def «ResponseOp_ResponseTxn__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [Go
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7368:27 -/
-def «Compare_Version__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Version__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2729,7 +2729,7 @@ def «Compare_Version__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7373:27 -/
-def «Compare_Version__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Version__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2760,7 +2760,7 @@ def «Compare_Version__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalC
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7380:34 -/
-def «Compare_CreateRevision__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_CreateRevision__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2780,7 +2780,7 @@ def «Compare_CreateRevision__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7385:34 -/
-def «Compare_CreateRevision__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_CreateRevision__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2811,7 +2811,7 @@ def «Compare_CreateRevision__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [Go
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7392:31 -/
-def «Compare_ModRevision__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_ModRevision__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2831,7 +2831,7 @@ def «Compare_ModRevision__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7397:31 -/
-def «Compare_ModRevision__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_ModRevision__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2862,7 +2862,7 @@ def «Compare_ModRevision__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlo
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7404:25 -/
-def «Compare_Value__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Value__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2882,7 +2882,7 @@ def «Compare_Value__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7409:25 -/
-def «Compare_Value__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Value__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2927,7 +2927,7 @@ def «Compare_Value__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCon
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7420:25 -/
-def «Compare_Lease__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Lease__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2947,7 +2947,7 @@ def «Compare_Lease__MarshalToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:7425:25 -/
-def «Compare_Lease__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Lease__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "dAtA"
   (App (Val exception_do)
@@ -2978,7 +2978,7 @@ def «Compare_Lease__MarshalToSizedBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCon
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: rpc.pb.go:11520:34 -/
-def «RequestOp_RequestRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3010,7 +3010,7 @@ def «RequestOp_RequestRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11532:32 -/
-def «RequestOp_RequestPut__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestPut__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3042,7 +3042,7 @@ def «RequestOp_RequestPut__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11544:40 -/
-def «RequestOp_RequestDeleteRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestDeleteRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3074,7 +3074,7 @@ def «RequestOp_RequestDeleteRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCont
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11556:32 -/
-def «RequestOp_RequestTxn__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RequestOp_RequestTxn__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3106,7 +3106,7 @@ def «RequestOp_RequestTxn__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11583:36 -/
-def «ResponseOp_ResponseRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3138,7 +3138,7 @@ def «ResponseOp_ResponseRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11595:34 -/
-def «ResponseOp_ResponsePut__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponsePut__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3170,7 +3170,7 @@ def «ResponseOp_ResponsePut__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11607:42 -/
-def «ResponseOp_ResponseDeleteRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseDeleteRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3202,7 +3202,7 @@ def «ResponseOp_ResponseDeleteRange__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11619:34 -/
-def «ResponseOp_ResponseTxn__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResponseOp_ResponseTxn__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3234,7 +3234,7 @@ def «ResponseOp_ResponseTxn__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11660:27 -/
-def «Compare_Version__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Version__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3259,7 +3259,7 @@ def «Compare_Version__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11669:34 -/
-def «Compare_CreateRevision__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_CreateRevision__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3284,7 +3284,7 @@ def «Compare_CreateRevision__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11678:31 -/
-def «Compare_ModRevision__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_ModRevision__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3309,7 +3309,7 @@ def «Compare_ModRevision__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11687:25 -/
-def «Compare_Value__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Value__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3342,7 +3342,7 @@ def «Compare_Value__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: rpc.pb.go:11699:25 -/
-def «Compare_Lease__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Compare_Lease__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -3371,7 +3371,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb)) (Lam BAnon
   (App (Val exception_do)

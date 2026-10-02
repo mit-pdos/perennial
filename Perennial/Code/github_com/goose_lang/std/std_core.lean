@@ -19,28 +19,28 @@ end pkg_id
 
 namespace github_com.goose_lang.std.std_core
 
-def SumNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SumNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std/std_core.SumNoOverflow"
 
-def SumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std/std_core.SumAssumeNoOverflow"
 
-def MulNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MulNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std/std_core.MulNoOverflow"
 
-def MulAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MulAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std/std_core.MulAssumeNoOverflow"
 
-def Shuffle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Shuffle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std/std_core.Shuffle"
 
-def Permutation [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Permutation [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/std/std_core.Permutation"
 
 /-- Returns true if x + y does not overflow
 
     go: std_core.go:11:6 -/
-def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -54,7 +54,7 @@ def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     *Use with care* - if the assumption is violated this function will panic.
 
     go: std_core.go:18:6 -/
-def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -72,7 +72,7 @@ def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- MulNoOverflow returns true if x * y does not overflow
 
     go: std_core.go:24:6 -/
-def «MulNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MulNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -92,7 +92,7 @@ def «MulNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     *Use with care* - if the assumption is violated this function will panic.
 
     go: std_core.go:34:6 -/
-def «MulAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MulAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -110,7 +110,7 @@ def «MulAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
 
     go: std_core.go:40:6 -/
-def «Shuffleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Shuffleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "xs"
   (App (Val exception_do)
   (Let "xs" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (Var "xs"))
@@ -157,7 +157,7 @@ def «Shuffleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Fisher-Yates shuffle.
 
     go: std_core.go:54:6 -/
-def «Permutationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Permutationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (App (Val exception_do)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "n"))
@@ -190,7 +190,7 @@ def «Permutationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.goose_lang.std.std_core where
   pkg_imported_pkgs := [pkg_id.github_com.goose_lang.primitive]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.std.std_core)) (Lam BAnon
   (App (Val exception_do)

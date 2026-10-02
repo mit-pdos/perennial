@@ -62,22 +62,22 @@ def matchAckIndexer [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] matchAckIndexer
 
-@[reducible] def StateProbe [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def StateProbe [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def StateReplicate [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def StateReplicate [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def StateSnapshot [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def StateSnapshot [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def prstmap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prstmap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/tracker.prstmap"
 
-def NewInflights [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewInflights [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/tracker.NewInflights"
 
-def MakeProgressTracker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MakeProgressTracker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/raft/v3/tracker.MakeProgressTracker"
 
 /-- NewInflights sets up an Inflights that allows up to size inflight messages,
@@ -86,7 +86,7 @@ def MakeProgressTracker [ffi_syntax] [GoGlobalContext] : go_string :=
     that brings it from size < maxBytes to size >= maxBytes.
 
     go: inflights.go:46:6 -/
-def «NewInflightsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewInflightsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "size"
   (Lam "maxBytes"
   (App (Val exception_do)
@@ -101,7 +101,7 @@ def «NewInflightsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     the receiver.
 
     go: inflights.go:55:22 -/
-def «Inflights__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Inflights__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exception_do)
@@ -126,7 +126,7 @@ def «Inflights__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     provide a monotonic sequence of indexes.
 
     go: inflights.go:65:22 -/
-def «Inflights__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Inflights__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam "index"
   (Lam "bytes"
@@ -184,7 +184,7 @@ def «Inflights__Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     thousands of Raft groups per process.
 
     go: inflights.go:85:22 -/
-def «Inflights__growⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Inflights__growⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exception_do)
@@ -226,7 +226,7 @@ def «Inflights__growⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- FreeLE frees the inflights smaller or equal to the given `to` flight.
 
     go: inflights.go:98:22 -/
-def «Inflights__FreeLEⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Inflights__FreeLEⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam "to"
   (App (Val exception_do)
@@ -299,7 +299,7 @@ def «Inflights__FreeLEⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Full returns true if no more messages can be sent at the moment.
 
     go: inflights.go:131:22 -/
-def «Inflights__Fullⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Inflights__Fullⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exception_do)
@@ -310,7 +310,7 @@ def «Inflights__Fullⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Count returns the number of inflight messages.
 
     go: inflights.go:136:22 -/
-def «Inflights__Countⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Inflights__Countⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exception_do)
@@ -321,7 +321,7 @@ def «Inflights__Countⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- reset frees all inflights.
 
     go: inflights.go:139:22 -/
-def «Inflights__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Inflights__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exception_do)
@@ -345,7 +345,7 @@ def «Inflights__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     PendingSnapshot, and Inflights.
 
     go: progress.go:121:21 -/
-def «Progress__ResetStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__ResetStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "state"
   (App (Val exception_do)
@@ -373,7 +373,7 @@ def «Progress__ResetStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     optionally and if larger, the index of the pending snapshot.
 
     go: progress.go:130:21 -/
-def «Progress__BecomeProbeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__BecomeProbeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam BAnon
   (App (Val exception_do)
@@ -413,7 +413,7 @@ def «Progress__BecomeProbeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- BecomeReplicate transitions into StateReplicate, resetting Next to Match+1.
 
     go: progress.go:146:21 -/
-def «Progress__BecomeReplicateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__BecomeReplicateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam BAnon
   (App (Val exception_do)
@@ -433,7 +433,7 @@ def «Progress__BecomeReplicateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
     snapshot index.
 
     go: progress.go:153:21 -/
-def «Progress__BecomeSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__BecomeSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "snapshoti"
   (App (Val exception_do)
@@ -465,7 +465,7 @@ def «Progress__BecomeSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
     Must be used with StateProbe or StateReplicate.
 
     go: progress.go:165:21 -/
-def «Progress__SentEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__SentEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "entries"
   (Lam "bytes"
@@ -510,7 +510,7 @@ def «Progress__SentEntriesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     advance the follower's commit index.
 
     go: progress.go:189:21 -/
-def «Progress__CanBumpCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__CanBumpCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "index"
   (App (Val exception_do)
@@ -522,7 +522,7 @@ def «Progress__CanBumpCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
 /-- SentCommit updates the sentCommit.
 
     go: progress.go:198:21 -/
-def «Progress__SentCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__SentCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "commit"
   (App (Val exception_do)
@@ -540,7 +540,7 @@ def «Progress__SentCommitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     an outdated message. Otherwise it updates the progress and returns true.
 
     go: progress.go:205:21 -/
-def «Progress__MaybeUpdateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__MaybeUpdateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "n"
   (App (Val exception_do)
@@ -582,7 +582,7 @@ def «Progress__MaybeUpdateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     cleared for sending log entries.
 
     go: progress.go:226:21 -/
-def «Progress__MaybeDecrToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__MaybeDecrToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "rejected"
   (Lam "matchHint"
@@ -647,7 +647,7 @@ def «Progress__MaybeDecrToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     log entries again.
 
     go: progress.go:262:21 -/
-def «Progress__IsPausedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__IsPausedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam BAnon
   (App (Val exception_do)
@@ -667,7 +667,7 @@ def «Progress__IsPausedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))))))
 
 /-- go: progress.go:275:21 -/
-def «Progress__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Progress__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam BAnon
   (App (Val exception_do)
@@ -749,7 +749,7 @@ def «Progress__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- String prints the ProgressMap in sorted key order, one Progress per line.
 
     go: progress.go:303:22 -/
-def «ProgressMap__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressMap__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -803,7 +803,7 @@ def «ProgressMap__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "ids") (Var "$r0")))))))))))
 
 /-- go: state.go:42:21 -/
-def «StateType__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «StateType__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "st"
   (Lam BAnon
   (App (Val exception_do)
@@ -812,7 +812,7 @@ def «StateType__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 3 go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 3 go.string)))) (App (Val (GoInstruction (GlobalVarAddr prstmap))) (Val #()))) (App (Val (GoInstruction (Convert StateType go.int))) (App (Val (GoInstruction (GoLoad StateType))) (Var "st")))))))))))
 
 /-- go: tracker.go:80:17 -/
-def «Config__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Config__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -860,7 +860,7 @@ def «Config__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Clone returns a copy of the Config that shares no memory with the original.
 
     go: tracker.go:96:18 -/
-def «Config__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Config__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -913,7 +913,7 @@ def «Config__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- MakeProgressTracker initializes a ProgressTracker.
 
     go: tracker.go:129:6 -/
-def «MakeProgressTrackerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MakeProgressTrackerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "maxInflight"
   (Lam "maxBytes"
   (App (Val exception_do)
@@ -940,7 +940,7 @@ def «MakeProgressTrackerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- ConfState returns a ConfState representing the active configuration.
 
     go: tracker.go:148:27 -/
-def «ProgressTracker__ConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__ConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exception_do)
@@ -957,7 +957,7 @@ def «ProgressTracker__ConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     (i.e. the leader) in the current configuration.
 
     go: tracker.go:160:27 -/
-def «ProgressTracker__IsSingletonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__IsSingletonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exception_do)
@@ -970,7 +970,7 @@ def «ProgressTracker__IsSingletonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
 /-- AckedIndex implements IndexLookuper.
 
     go: tracker.go:169:26 -/
-def «matchAckIndexer__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «matchAckIndexer__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "id"
   (App (Val exception_do)
@@ -1002,7 +1002,7 @@ def «matchAckIndexer__AckedIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     the voting members of the group have acknowledged.
 
     go: tracker.go:179:27 -/
-def «ProgressTracker__Committedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__Committedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exception_do)
@@ -1014,7 +1014,7 @@ def «ProgressTracker__Committedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
 /-- Visit invokes the supplied closure for all tracked progresses in stable order.
 
     go: tracker.go:184:27 -/
-def «ProgressTracker__Visitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__Visitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "f"
   (App (Val exception_do)
@@ -1079,7 +1079,7 @@ def «ProgressTracker__Visitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
     raft state machine. Otherwise, it returns false.
 
     go: tracker.go:208:27 -/
-def «ProgressTracker__QuorumActiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__QuorumActiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exception_do)
@@ -1116,7 +1116,7 @@ def «ProgressTracker__QuorumActiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
 /-- VoterNodes returns a sorted slice of voters.
 
     go: tracker.go:221:27 -/
-def «ProgressTracker__VoterNodesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__VoterNodesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exception_do)
@@ -1157,7 +1157,7 @@ def «ProgressTracker__VoterNodesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
 /-- LearnerNodes returns a sorted slice of learners.
 
     go: tracker.go:232:27 -/
-def «ProgressTracker__LearnerNodesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__LearnerNodesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exception_do)
@@ -1200,7 +1200,7 @@ def «ProgressTracker__LearnerNodesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
 /-- ResetVotes prepares for a new round of vote counting via recordVote.
 
     go: tracker.go:245:27 -/
-def «ProgressTracker__ResetVotesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__ResetVotesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exception_do)
@@ -1216,7 +1216,7 @@ def «ProgressTracker__ResetVotesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     instance if v == true (and declined it otherwise).
 
     go: tracker.go:251:27 -/
-def «ProgressTracker__RecordVoteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__RecordVoteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "id"
   (Lam "v"
@@ -1250,7 +1250,7 @@ def «ProgressTracker__RecordVoteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     election outcome is known.
 
     go: tracker.go:260:27 -/
-def «ProgressTracker__TallyVotesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ProgressTracker__TallyVotesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exception_do)
@@ -1311,7 +1311,7 @@ def «ProgressTracker__TallyVotesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
 instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.tracker where
   pkg_imported_pkgs := [pkg_id.fmt, pkg_id.slices, pkg_id.strings, pkg_id.go_etcd_io.raft.v3.quorum, pkg_id.go_etcd_io.raft.v3.raftpb]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.raft.v3.tracker)) (Lam BAnon
   (App (Val exception_do)

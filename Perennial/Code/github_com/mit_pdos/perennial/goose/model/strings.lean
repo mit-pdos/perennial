@@ -19,14 +19,14 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.model.strings
 
-def StringToByteSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringToByteSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/model/strings.StringToByteSlice"
 
-def ByteSliceToString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ByteSliceToString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/model/strings.ByteSliceToString"
 
 /-- go: convert.go:3:6 -/
-def «StringToByteSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «StringToByteSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exception_do)
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
@@ -53,7 +53,7 @@ def «StringToByteSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: convert.go:11:6 -/
-def «ByteSliceToStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ByteSliceToStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "a"
   (App (Val exception_do)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -79,7 +79,7 @@ def «ByteSliceToStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.strings where
   pkg_imported_pkgs := []
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.model.strings)) (Lam BAnon
   (App (Val exception_do)

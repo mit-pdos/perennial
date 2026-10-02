@@ -42,31 +42,31 @@ axiom «FileDiskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «MemDiskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def implicitDisk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def implicitDisk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.implicitDisk"
 
-def Init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Init [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.Init"
 
-def Get [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Get [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.Get"
 
-def Read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Read [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.Read"
 
-def Write [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Write [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.Write"
 
-def Size [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Size [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.Size"
 
-def Barrier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Barrier [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.Barrier"
 
-def NewFileDisk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFileDisk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.NewFileDisk"
 
-def NewMemDisk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMemDisk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/goose-lang/primitive/disk.NewMemDisk"
 
 instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive.disk where
@@ -74,7 +74,7 @@ instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive.disk where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.primitive.disk)) (Lam BAnon
   (App (Val exception_do)

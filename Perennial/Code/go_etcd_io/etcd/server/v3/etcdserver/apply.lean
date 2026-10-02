@@ -108,42 +108,42 @@ axiom «UberApplierⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «uberApplierⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def alarms [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def alarms [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.alarms"
 
 axiom alarms'init [ffi_syntax] [GoGlobalContext] : val
 
-def Apply [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Apply [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.Apply"
 
-def noSideEffect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noSideEffect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.noSideEffect"
 
-def removeNeedlessRangeReqs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeNeedlessRangeReqs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.removeNeedlessRangeReqs"
 
-def newAuthApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newAuthApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newAuthApplierV3"
 
-def needAdminPermission [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needAdminPermission [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.needAdminPermission"
 
-def newApplierV3Backend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newApplierV3Backend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newApplierV3Backend"
 
-def newApplierV3Capped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newApplierV3Capped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newApplierV3Capped"
 
-def newApplierV3Corrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newApplierV3Corrupt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newApplierV3Corrupt"
 
-def newQuotaApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newQuotaApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newQuotaApplierV3"
 
-def NewUberApplier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewUberApplier [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.NewUberApplier"
 
-def newApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newApplierV3"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.etcdserver.apply where
@@ -151,7 +151,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.etcdserver.apply where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.etcdserver.apply)) (Lam BAnon
   (App (Val exception_do)

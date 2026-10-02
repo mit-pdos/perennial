@@ -24,57 +24,57 @@ attribute [irreducible] Code
 
 axiom OK [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def Canceled [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Canceled [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
 axiom Unknown [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def InvalidArgument [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def InvalidArgument [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-@[reducible] def DeadlineExceeded [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def DeadlineExceeded [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 4)
 
-@[reducible] def NotFound [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def NotFound [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 5)
 
 axiom AlreadyExists [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def PermissionDenied [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def PermissionDenied [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 7)
 
-@[reducible] def ResourceExhausted [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ResourceExhausted [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 8)
 
-@[reducible] def FailedPrecondition [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def FailedPrecondition [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 9)
 
 axiom Aborted [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def OutOfRange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def OutOfRange [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 11)
 
 axiom Unimplemented [ffi_syntax] [GoGlobalContext] : val
 
 axiom Internal [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def Unavailable [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Unavailable [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 14)
 
-@[reducible] def DataLoss [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def DataLoss [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 15)
 
-@[reducible] def Unauthenticated [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Unauthenticated [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 16)
 
 axiom _maxCode [ffi_syntax] [GoGlobalContext] : val
 
-def strToCode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def strToCode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/codes.strToCode"
 
 axiom strToCode'init [ffi_syntax] [GoGlobalContext] : val
 
-def canonicalString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def canonicalString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/grpc/codes.canonicalString"
 
 instance info' : PkgInfo pkg_id.google_golang_org.grpc.codes where
@@ -82,7 +82,7 @@ instance info' : PkgInfo pkg_id.google_golang_org.grpc.codes where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.google_golang_org.grpc.codes)) (Lam BAnon
   (App (Val exception_do)

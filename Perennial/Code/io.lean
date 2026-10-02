@@ -261,93 +261,93 @@ axiom SeekCurrent [ffi_syntax] [GoGlobalContext] : val
 
 axiom SeekEnd [ffi_syntax] [GoGlobalContext] : val
 
-def ErrShortWrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrShortWrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ErrShortWrite"
 
-def errInvalidWrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInvalidWrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.errInvalidWrite"
 
-def ErrShortBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrShortBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ErrShortBuffer"
 
-def EOF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EOF [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.EOF"
 
-def ErrUnexpectedEOF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEOF [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ErrUnexpectedEOF"
 
-def ErrNoProgress [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoProgress [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ErrNoProgress"
 
-def errWhence [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errWhence [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.errWhence"
 
-def errOffset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errOffset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.errOffset"
 
-def Discard [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Discard [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.Discard"
 
-def blackHolePool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blackHolePool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.blackHolePool"
 
 axiom blackHolePool'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrClosedPipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClosedPipe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ErrClosedPipe"
 
-def WriteString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.WriteString"
 
-def ReadAtLeast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadAtLeast [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ReadAtLeast"
 
-def ReadFull [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadFull [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ReadFull"
 
-def CopyN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CopyN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.CopyN"
 
-def Copy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Copy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.Copy"
 
-def CopyBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CopyBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.CopyBuffer"
 
-def copyBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.copyBuffer"
 
-def LimitReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LimitReader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.LimitReader"
 
-def NewSectionReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSectionReader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.NewSectionReader"
 
-def NewOffsetWriter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewOffsetWriter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.NewOffsetWriter"
 
-def TeeReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TeeReader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.TeeReader"
 
-def NopCloser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NopCloser [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.NopCloser"
 
-def ReadAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ReadAll"
 
-def MultiReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MultiReader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.MultiReader"
 
-def MultiWriter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MultiWriter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.MultiWriter"
 
-def Pipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Pipe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.Pipe"
 
 instance info' : PkgInfo pkg_id.io where
   pkg_imported_pkgs := [pkg_id.errors, pkg_id.sync]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.io)) (Lam BAnon
   (App (Val exception_do)

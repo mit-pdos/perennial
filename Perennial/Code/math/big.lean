@@ -166,312 +166,312 @@ axiom ratGobVersion [ffi_syntax] [GoGlobalContext] : val
 
 axiom _RoundingMode_name [ffi_syntax] [GoGlobalContext] : val
 
-def _Accuracy_index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Accuracy_index [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big._Accuracy_index"
 
 axiom _Accuracy_index'init [ffi_syntax] [GoGlobalContext] : val
 
-def hasADX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hasADX [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.hasADX"
 
 axiom hasADX'init [ffi_syntax] [GoGlobalContext] : val
 
-def floatZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def floatZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.floatZero"
 
-def pow5tab [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pow5tab [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.pow5tab"
 
 axiom pow5tab'init [ffi_syntax] [GoGlobalContext] : val
 
-def intOne [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intOne [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.intOne"
 
 axiom intOne'init [ffi_syntax] [GoGlobalContext] : val
 
-def natOne [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def natOne [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.natOne"
 
 axiom natOne'init [ffi_syntax] [GoGlobalContext] : val
 
-def natTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def natTwo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.natTwo"
 
 axiom natTwo'init [ffi_syntax] [GoGlobalContext] : val
 
-def natFive [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def natFive [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.natFive"
 
 axiom natFive'init [ffi_syntax] [GoGlobalContext] : val
 
-def natTen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def natTen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.natTen"
 
 axiom natTen'init [ffi_syntax] [GoGlobalContext] : val
 
-def stackPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.stackPool"
 
-def errNoDigits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoDigits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.errNoDigits"
 
 axiom errNoDigits'init [ffi_syntax] [GoGlobalContext] : val
 
-def errInvalSep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInvalSep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.errInvalSep"
 
 axiom errInvalSep'init [ffi_syntax] [GoGlobalContext] : val
 
-def leafSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leafSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.leafSize"
 
 axiom leafSize'init [ffi_syntax] [GoGlobalContext] : val
 
-def cacheBase10 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cacheBase10 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.cacheBase10"
 
-def divRecursiveThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divRecursiveThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.divRecursiveThreshold"
 
 axiom divRecursiveThreshold'init [ffi_syntax] [GoGlobalContext] : val
 
-def karatsubaThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def karatsubaThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.karatsubaThreshold"
 
 axiom karatsubaThreshold'init [ffi_syntax] [GoGlobalContext] : val
 
-def basicSqrThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def basicSqrThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.basicSqrThreshold"
 
 axiom basicSqrThreshold'init [ffi_syntax] [GoGlobalContext] : val
 
-def karatsubaSqrThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def karatsubaSqrThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.karatsubaSqrThreshold"
 
 axiom karatsubaSqrThreshold'init [ffi_syntax] [GoGlobalContext] : val
 
-def ratZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ratZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.ratZero"
 
-def _RoundingMode_index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _RoundingMode_index [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big._RoundingMode_index"
 
 axiom _RoundingMode_index'init [ffi_syntax] [GoGlobalContext] : val
 
-def threeOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def threeOnce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.threeOnce"
 
-def mulWW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulWW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.mulWW"
 
-def mulAddWWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulAddWWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.mulAddWWW_g"
 
-def nlz [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nlz [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.nlz"
 
-def addVV_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addVV_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.addVV_g"
 
-def subVV_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subVV_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.subVV_g"
 
-def addVW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addVW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.addVW"
 
-def addVW_ref [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addVW_ref [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.addVW_ref"
 
-def subVW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subVW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.subVW"
 
-def subVW_ref [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subVW_ref [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.subVW_ref"
 
-def lshVU_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lshVU_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.lshVU_g"
 
-def rshVU_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rshVU_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.rshVU_g"
 
-def mulAddVWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulAddVWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.mulAddVWW_g"
 
-def addMulVVWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addMulVVWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.addMulVVWW_g"
 
-def divWW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divWW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.divWW"
 
-def reciprocalWord [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reciprocalWord [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.reciprocalWord"
 
-def addVV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addVV [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.addVV"
 
-def subVV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subVV [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.subVV"
 
-def shlVU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shlVU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.shlVU"
 
-def lshVU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lshVU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.lshVU"
 
-def rshVU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rshVU [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.rshVU"
 
-def mulAddVWW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulAddVWW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.mulAddVWW"
 
-def addMulVVW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addMulVVW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.addMulVVW"
 
-def addMulVVWW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addMulVVWW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.addMulVVWW"
 
-def rsh [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rsh [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.rsh"
 
-def appendZeros [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZeros [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.appendZeros"
 
-def shouldRoundUp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shouldRoundUp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.shouldRoundUp"
 
-def trim [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trim [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.trim"
 
-def NewFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.NewFloat"
 
-def makeAcc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeAcc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.makeAcc"
 
-def fnorm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fnorm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.fnorm"
 
-def msb32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msb32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.msb32"
 
-def msb64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msb64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.msb64"
 
-def validateBinaryOperands [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateBinaryOperands [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.validateBinaryOperands"
 
-def ParseFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseFloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.ParseFloat"
 
-def roundShortest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def roundShortest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.roundShortest"
 
-def fmtE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmtE [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.fmtE"
 
-def fmtF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmtF [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.fmtF"
 
-def NewInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.NewInt"
 
-def low32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def low32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.low32"
 
-def low64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def low64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.low64"
 
-def lehmerSimulate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lehmerSimulate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.lehmerSimulate"
 
-def lehmerUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lehmerUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.lehmerUpdate"
 
-def mulW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.mulW"
 
-def euclidUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def euclidUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.euclidUpdate"
 
-def Jacobi [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Jacobi [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.Jacobi"
 
-def writeMultiple [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeMultiple [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.writeMultiple"
 
-def scanSign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanSign [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.scanSign"
 
-def «alias» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «alias» [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.alias"
 
-def addTo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addTo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.addTo"
 
-def getStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getStack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.getStack"
 
-def same [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def same [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.same"
 
-def bigEndianWord [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bigEndianWord [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.bigEndianWord"
 
-def maxPow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxPow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.maxPow"
 
-def pow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.pow"
 
-def divisors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divisors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.divisors"
 
-def divWVW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divWVW [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.divWVW"
 
-def greaterThan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def greaterThan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.greaterThan"
 
-def basicSqr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def basicSqr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.basicSqr"
 
-def basicMul [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def basicMul [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.basicMul"
 
-def karatsuba [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def karatsuba [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.karatsuba"
 
-def karatsubaSqr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def karatsubaSqr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.karatsubaSqr"
 
-def ifmt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ifmt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.ifmt"
 
-def trace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.trace"
 
-def NewRat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.NewRat"
 
-def quotToFloat32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def quotToFloat32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.quotToFloat32"
 
-def quotToFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def quotToFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.quotToFloat64"
 
-def mulDenom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulDenom [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.mulDenom"
 
-def ratTok [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ratTok [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.ratTok"
 
-def scanExponent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanExponent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.scanExponent"
 
-def three [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def three [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.three"
 
-def newFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newFloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/big.newFloat"
 
 instance info' : PkgInfo pkg_id.math.big where
@@ -479,7 +479,7 @@ instance info' : PkgInfo pkg_id.math.big where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.math.big)) (Lam BAnon
   (App (Val exception_do)

@@ -172,115 +172,115 @@ axiom «kvItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «watcherⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def ErrUnsupportedRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnsupportedRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.ErrUnsupportedRequest"
 
 axiom ErrUnsupportedRequest'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrKeyRangeInvalid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrKeyRangeInvalid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.ErrKeyRangeInvalid"
 
 axiom ErrKeyRangeInvalid'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrCacheTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrCacheTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.ErrCacheTimeout"
 
 axiom ErrCacheTimeout'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.ErrNotReady"
 
 axiom ErrNotReady'init [ffi_syntax] [GoGlobalContext] : val
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.New"
 
-def defaultConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.defaultConfig"
 
-def WithPerWatcherBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithPerWatcherBufferSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithPerWatcherBufferSize"
 
-def WithHistoryWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithHistoryWindowSize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithHistoryWindowSize"
 
-def WithResyncInterval [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithResyncInterval [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithResyncInterval"
 
-def WithInitialBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithInitialBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithInitialBackoff"
 
-def WithMaxBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithMaxBackoff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithMaxBackoff"
 
-def WithGetTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithGetTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithGetTimeout"
 
-def WithBTreeDegree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithBTreeDegree [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithBTreeDegree"
 
-def WithProgressRequestInterval [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithProgressRequestInterval [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithProgressRequestInterval"
 
-def WithWaitTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithWaitTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.WithWaitTimeout"
 
-def NewDemux [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDemux [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.NewDemux"
 
-def newDemux [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newDemux [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newDemux"
 
-def newNotifier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newNotifier [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newNotifier"
 
-def ExactKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExactKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.ExactKey"
 
-def FromKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FromKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.FromKey"
 
-def Range [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Range [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.Range"
 
-def KeyPredForRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def KeyPredForRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.KeyPredForRange"
 
-def newConditionalProgressRequestor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newConditionalProgressRequestor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newConditionalProgressRequestor"
 
-def newReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newReady"
 
-def newRingBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newRingBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newRingBuffer"
 
-def newClonedSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newClonedSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newClonedSnapshot"
 
-def isPrefixScan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isPrefixScan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.isPrefixScan"
 
-def probeItemFromKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def probeItemFromKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.probeItemFromKey"
 
-def newStore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newStore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newStore"
 
-def newKVItem [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newKVItem [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newKVItem"
 
-def kvItemLess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def kvItemLess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.kvItemLess"
 
-def validateRevisions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateRevisions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.validateRevisions"
 
-def newWatcher [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newWatcher [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.newWatcher"
 
 /-- go: cache.go:163:17 -/
-def «Cache__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cache__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "ctx"
   (Lam "key"
@@ -425,7 +425,7 @@ def «Cache__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))))
 
 /-- go: snapshot.go:29:6 -/
-def «newClonedSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newClonedSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rev"
   (Lam "t"
   (App (Val exception_do)
@@ -437,7 +437,7 @@ def «newClonedSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral snapshot))) (LiteralValue [(KeyedElement (some (KeyField go!"rev")) (ElementExpression go.int64 (Var "$v0"))), (KeyedElement (some (KeyField go!"tree")) (ElementExpression (go.type.PointerType (_root_.Perennial.k8s_io.utils.third_party.forked.golang.btree.BTree (go.type.PointerType kvItem))) (Var "$v1")))])))))))))))
 
 /-- go: store.go:74:17 -/
-def «store__getSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «store__getSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "rev"
   (App (Val wrap_defer)
@@ -508,7 +508,7 @@ def «store__getSnapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef store go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType store)))) (Var "s")))) (Val #()))))))))))
 
 /-- go: store.go:172:17 -/
-def «store__LatestRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «store__LatestRevⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -532,7 +532,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.cache.v3 where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.cache.v3)) (Lam BAnon
   (App (Val exception_do)

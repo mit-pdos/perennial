@@ -32,62 +32,62 @@ def Event [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Event
 
-@[reducible] def PUT [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def PUT [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] def DELETE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def DELETE [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 1)
 
 axiom Event_PUT [ffi_syntax] [GoGlobalContext] : val
 
 axiom Event_DELETE [ffi_syntax] [GoGlobalContext] : val
 
-def Event_EventType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Event_EventType_name [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_name"
 
 axiom Event_EventType_name'init [ffi_syntax] [GoGlobalContext] : val
 
-def Event_EventType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Event_EventType_value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_value"
 
 axiom Event_EventType_value'init [ffi_syntax] [GoGlobalContext] : val
 
-def xxx_messageInfo_KeyValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_KeyValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_KeyValue"
 
-def xxx_messageInfo_Event [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Event [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_Event"
 
-def fileDescriptor_2216fe83c9c12408 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_2216fe83c9c12408 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.fileDescriptor_2216fe83c9c12408"
 
 axiom fileDescriptor_2216fe83c9c12408'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalidLengthKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthKv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrInvalidLengthKv"
 
 axiom ErrInvalidLengthKv'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrIntOverflowKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowKv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrIntOverflowKv"
 
 axiom ErrIntOverflowKv'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrUnexpectedEndOfGroupKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupKv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrUnexpectedEndOfGroupKv"
 
 axiom ErrUnexpectedEndOfGroupKv'init [ffi_syntax] [GoGlobalContext] : val
 
-def encodeVarintKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintKv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.encodeVarintKv"
 
-def sovKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovKv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.sovKv"
 
-def sozKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozKv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.sozKv"
 
-def skipKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipKv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.skipKv"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.mvccpb where
@@ -95,7 +95,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.mvccpb where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.api.v3.mvccpb)) (Lam BAnon
   (App (Val exception_do)

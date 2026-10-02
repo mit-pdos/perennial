@@ -113,672 +113,672 @@ axiom compareEqual [ffi_syntax] [GoGlobalContext] : val
 
 axiom compareGreater [ffi_syntax] [GoGlobalContext] : val
 
-def intType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.intType"
 
 axiom intType'init [ffi_syntax] [GoGlobalContext] : val
 
-def int8Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int8Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.int8Type"
 
 axiom int8Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def int16Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int16Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.int16Type"
 
 axiom int16Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def int32Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int32Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.int32Type"
 
 axiom int32Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def int64Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int64Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.int64Type"
 
 axiom int64Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def uintType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uintType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.uintType"
 
 axiom uintType'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint8Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint8Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.uint8Type"
 
 axiom uint8Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint16Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint16Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.uint16Type"
 
 axiom uint16Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint32Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint32Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.uint32Type"
 
 axiom uint32Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def uint64Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint64Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.uint64Type"
 
 axiom uint64Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def uintptrType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uintptrType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.uintptrType"
 
 axiom uintptrType'init [ffi_syntax] [GoGlobalContext] : val
 
-def float32Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float32Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.float32Type"
 
 axiom float32Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def float64Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float64Type [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.float64Type"
 
 axiom float64Type'init [ffi_syntax] [GoGlobalContext] : val
 
-def stringType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.stringType"
 
 axiom stringType'init [ffi_syntax] [GoGlobalContext] : val
 
-def timeType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.timeType"
 
 axiom timeType'init [ffi_syntax] [GoGlobalContext] : val
 
-def bytesType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bytesType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.bytesType"
 
 axiom bytesType'init [ffi_syntax] [GoGlobalContext] : val
 
-def spewConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spewConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.spewConfig"
 
 axiom spewConfig'init [ffi_syntax] [GoGlobalContext] : val
 
-def spewConfigStringerEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spewConfigStringerEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.spewConfigStringerEnabled"
 
 axiom spewConfigStringerEnabled'init [ffi_syntax] [GoGlobalContext] : val
 
-def AnError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AnError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.AnError"
 
 axiom AnError'init [ffi_syntax] [GoGlobalContext] : val
 
-def compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compare [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.compare"
 
-def Greater [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Greater [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Greater"
 
-def GreaterOrEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GreaterOrEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.GreaterOrEqual"
 
-def Less [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Less [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Less"
 
-def LessOrEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LessOrEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.LessOrEqual"
 
-def Positive [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Positive [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Positive"
 
-def Negative [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Negative [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Negative"
 
-def compareTwoValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compareTwoValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.compareTwoValues"
 
-def containsValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def containsValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.containsValue"
 
-def Conditionf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Conditionf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Conditionf"
 
-def Containsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Containsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Containsf"
 
-def DirExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DirExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.DirExistsf"
 
-def ElementsMatchf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ElementsMatchf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ElementsMatchf"
 
-def Emptyf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Emptyf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Emptyf"
 
-def Equalf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Equalf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Equalf"
 
-def EqualErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.EqualErrorf"
 
-def EqualExportedValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualExportedValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.EqualExportedValuesf"
 
-def EqualValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.EqualValuesf"
 
-def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Errorf"
 
-def ErrorAsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorAsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ErrorAsf"
 
-def ErrorContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ErrorContainsf"
 
-def ErrorIsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorIsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ErrorIsf"
 
-def Eventuallyf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Eventuallyf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Eventuallyf"
 
-def EventuallyWithTf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EventuallyWithTf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.EventuallyWithTf"
 
-def Exactlyf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Exactlyf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Exactlyf"
 
-def Failf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Failf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Failf"
 
-def FailNowf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FailNowf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.FailNowf"
 
-def Falsef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Falsef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Falsef"
 
-def FileExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FileExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.FileExistsf"
 
-def Greaterf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Greaterf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Greaterf"
 
-def GreaterOrEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GreaterOrEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.GreaterOrEqualf"
 
-def HTTPBodyContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBodyContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPBodyContainsf"
 
-def HTTPBodyNotContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBodyNotContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPBodyNotContainsf"
 
-def HTTPErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPErrorf"
 
-def HTTPRedirectf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPRedirectf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPRedirectf"
 
-def HTTPStatusCodef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPStatusCodef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPStatusCodef"
 
-def HTTPSuccessf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPSuccessf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPSuccessf"
 
-def Implementsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Implementsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Implementsf"
 
-def InDeltaf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InDeltaf"
 
-def InDeltaMapValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaMapValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InDeltaMapValuesf"
 
-def InDeltaSlicef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaSlicef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InDeltaSlicef"
 
-def InEpsilonf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InEpsilonf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InEpsilonf"
 
-def InEpsilonSlicef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InEpsilonSlicef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InEpsilonSlicef"
 
-def IsDecreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsDecreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsDecreasingf"
 
-def IsIncreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsIncreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsIncreasingf"
 
-def IsNonDecreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNonDecreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsNonDecreasingf"
 
-def IsNonIncreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNonIncreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsNonIncreasingf"
 
-def IsNotTypef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNotTypef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsNotTypef"
 
-def IsTypef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsTypef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsTypef"
 
-def JSONEqf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def JSONEqf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.JSONEqf"
 
-def Lenf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lenf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Lenf"
 
-def Lessf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lessf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Lessf"
 
-def LessOrEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LessOrEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.LessOrEqualf"
 
-def Negativef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Negativef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Negativef"
 
-def Neverf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Neverf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Neverf"
 
-def Nilf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Nilf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Nilf"
 
-def NoDirExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoDirExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NoDirExistsf"
 
-def NoErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NoErrorf"
 
-def NoFileExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoFileExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NoFileExistsf"
 
-def NotContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotContainsf"
 
-def NotElementsMatchf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotElementsMatchf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotElementsMatchf"
 
-def NotEmptyf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEmptyf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotEmptyf"
 
-def NotEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotEqualf"
 
-def NotEqualValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEqualValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotEqualValuesf"
 
-def NotErrorAsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotErrorAsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotErrorAsf"
 
-def NotErrorIsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotErrorIsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotErrorIsf"
 
-def NotImplementsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotImplementsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotImplementsf"
 
-def NotNilf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotNilf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotNilf"
 
-def NotPanicsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotPanicsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotPanicsf"
 
-def NotRegexpf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotRegexpf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotRegexpf"
 
-def NotSamef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotSamef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotSamef"
 
-def NotSubsetf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotSubsetf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotSubsetf"
 
-def NotZerof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotZerof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotZerof"
 
-def Panicsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Panicsf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Panicsf"
 
-def PanicsWithErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PanicsWithErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.PanicsWithErrorf"
 
-def PanicsWithValuef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PanicsWithValuef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.PanicsWithValuef"
 
-def Positivef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Positivef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Positivef"
 
-def Regexpf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Regexpf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Regexpf"
 
-def Samef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Samef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Samef"
 
-def Subsetf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Subsetf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Subsetf"
 
-def Truef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Truef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Truef"
 
-def WithinDurationf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithinDurationf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.WithinDurationf"
 
-def WithinRangef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithinRangef [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.WithinRangef"
 
-def YAMLEqf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def YAMLEqf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.YAMLEqf"
 
-def Zerof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Zerof [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Zerof"
 
-def isOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isOrdered"
 
-def IsIncreasing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsIncreasing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsIncreasing"
 
-def IsNonIncreasing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNonIncreasing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsNonIncreasing"
 
-def IsDecreasing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsDecreasing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsDecreasing"
 
-def IsNonDecreasing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNonDecreasing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsNonDecreasing"
 
-def ObjectsAreEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ObjectsAreEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ObjectsAreEqual"
 
-def copyExportedFields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyExportedFields [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.copyExportedFields"
 
-def ObjectsExportedFieldsAreEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ObjectsExportedFieldsAreEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ObjectsExportedFieldsAreEqual"
 
-def ObjectsAreEqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ObjectsAreEqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ObjectsAreEqualValues"
 
-def isNumericType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNumericType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isNumericType"
 
-def CallerInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CallerInfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.CallerInfo"
 
-def isTest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isTest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isTest"
 
-def messageFromMsgAndArgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def messageFromMsgAndArgs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.messageFromMsgAndArgs"
 
-def indentMessageLines [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def indentMessageLines [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.indentMessageLines"
 
-def FailNow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FailNow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.FailNow"
 
-def Fail [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fail [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Fail"
 
-def labeledOutput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def labeledOutput [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.labeledOutput"
 
-def Implements [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Implements [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Implements"
 
-def NotImplements [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotImplements [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotImplements"
 
-def isType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isType"
 
-def IsType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsType"
 
-def IsNotType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNotType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.IsNotType"
 
-def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Equal"
 
-def validateEqualArgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateEqualArgs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.validateEqualArgs"
 
-def Same [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Same [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Same"
 
-def NotSame [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotSame [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotSame"
 
-def samePointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def samePointers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.samePointers"
 
-def formatUnequalValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def formatUnequalValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.formatUnequalValues"
 
-def truncatingFormat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def truncatingFormat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.truncatingFormat"
 
-def EqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.EqualValues"
 
-def EqualExportedValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualExportedValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.EqualExportedValues"
 
-def Exactly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Exactly [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Exactly"
 
-def NotNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotNil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotNil"
 
-def isNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isNil"
 
-def Nil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Nil [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Nil"
 
-def isEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isEmpty"
 
-def isEmptyValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isEmptyValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isEmptyValue"
 
-def Empty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Empty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Empty"
 
-def NotEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotEmpty"
 
-def getLen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getLen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.getLen"
 
-def Len [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Len [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Len"
 
-def True' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def True' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.True"
 
-def False' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def False' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.False"
 
-def NotEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotEqual"
 
-def NotEqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotEqualValues"
 
-def containsElement [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def containsElement [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.containsElement"
 
-def Contains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Contains [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Contains"
 
-def NotContains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotContains [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotContains"
 
-def Subset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Subset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Subset"
 
-def NotSubset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotSubset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotSubset"
 
-def ElementsMatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ElementsMatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ElementsMatch"
 
-def isList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isList"
 
-def diffLists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def diffLists [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.diffLists"
 
-def formatListDiff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def formatListDiff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.formatListDiff"
 
-def NotElementsMatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotElementsMatch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotElementsMatch"
 
-def Condition [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Condition [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Condition"
 
-def didPanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def didPanic [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.didPanic"
 
-def Panics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Panics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Panics"
 
-def PanicsWithValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PanicsWithValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.PanicsWithValue"
 
-def PanicsWithError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PanicsWithError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.PanicsWithError"
 
-def NotPanics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotPanics [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotPanics"
 
-def WithinDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithinDuration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.WithinDuration"
 
-def WithinRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithinRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.WithinRange"
 
-def toFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toFloat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.toFloat"
 
-def InDelta [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDelta [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InDelta"
 
-def InDeltaSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InDeltaSlice"
 
-def InDeltaMapValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaMapValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InDeltaMapValues"
 
-def calcRelativeError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def calcRelativeError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.calcRelativeError"
 
-def InEpsilon [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InEpsilon [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InEpsilon"
 
-def InEpsilonSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InEpsilonSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.InEpsilonSlice"
 
-def NoError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NoError"
 
-def Error [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Error [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Error"
 
-def EqualError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.EqualError"
 
-def ErrorContains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorContains [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ErrorContains"
 
-def matchRegexp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchRegexp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.matchRegexp"
 
-def Regexp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Regexp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Regexp"
 
-def NotRegexp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotRegexp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotRegexp"
 
-def Zero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Zero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Zero"
 
-def NotZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotZero"
 
-def FileExists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FileExists [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.FileExists"
 
-def NoFileExists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoFileExists [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NoFileExists"
 
-def DirExists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DirExists [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.DirExists"
 
-def NoDirExists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoDirExists [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NoDirExists"
 
-def JSONEq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def JSONEq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.JSONEq"
 
-def YAMLEq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def YAMLEq [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.YAMLEq"
 
-def typeAndKind [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeAndKind [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.typeAndKind"
 
-def diff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def diff [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.diff"
 
-def isFunction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isFunction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.isFunction"
 
-def Eventually [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Eventually [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Eventually"
 
-def EventuallyWithT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EventuallyWithT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.EventuallyWithT"
 
-def Never [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Never [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.Never"
 
-def ErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ErrorIs"
 
-def NotErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotErrorIs"
 
-def ErrorAs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorAs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.ErrorAs"
 
-def NotErrorAs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotErrorAs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.NotErrorAs"
 
-def unwrapAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unwrapAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.unwrapAll"
 
-def buildErrorChainString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildErrorChainString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.buildErrorChainString"
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.New"
 
-def httpCode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def httpCode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.httpCode"
 
-def HTTPSuccess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPSuccess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPSuccess"
 
-def HTTPRedirect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPRedirect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPRedirect"
 
-def HTTPError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPError"
 
-def HTTPStatusCode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPStatusCode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPStatusCode"
 
-def HTTPBody [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBody [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPBody"
 
-def HTTPBodyContains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBodyContains [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPBodyContains"
 
-def HTTPBodyNotContains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBodyNotContains [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/stretchr/testify/assert.HTTPBodyNotContains"
 
 instance info' : PkgInfo pkg_id.github_com.stretchr.testify.assert where
@@ -786,7 +786,7 @@ instance info' : PkgInfo pkg_id.github_com.stretchr.testify.assert where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.stretchr.testify.assert)) (Lam BAnon
   (App (Val exception_do)

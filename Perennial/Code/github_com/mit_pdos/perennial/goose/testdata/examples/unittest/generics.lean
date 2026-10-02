@@ -58,47 +58,47 @@ def useNonStructGeneric [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :
 
 attribute [irreducible] useNonStructGeneric
 
-def UnderlyingSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnderlyingSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.UnderlyingSlice"
 
-def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.Clone"
 
-def BoxGet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BoxGet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.BoxGet"
 
-def BoxGet2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BoxGet2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.BoxGet2"
 
-def makeGenericBox [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeGenericBox [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.makeGenericBox"
 
-def makeBox [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeBox [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.makeBox"
 
-def useBoxGet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def useBoxGet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.useBoxGet"
 
-def useContainer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def useContainer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.useContainer"
 
-def useMultiParam [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def useMultiParam [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.useMultiParam"
 
-def swapMultiParam [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def swapMultiParam [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.swapMultiParam"
 
-def multiParamFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def multiParamFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.multiParamFunc"
 
-def useMultiParamFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def useMultiParamFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.useMultiParamFunc"
 
-def useAnyPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def useAnyPointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.useAnyPointer"
 
 /-- go: constraints.go:3:6 -/
-def «UnderlyingSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «UnderlyingSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "s"
   (App (Val exception_do)
   (Let "s" (App (Val (GoInstruction (GoAlloc T))) (Var "s"))
@@ -111,7 +111,7 @@ def «UnderlyingSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) 
     Slightly simplified from [slices.Clone].
 
     go: constraints.go:10:6 -/
-def «Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (S E : go.type) : val :=
+noncomputable def «Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (S E : go.type) : val :=
   (LamV "s"
   (App (Val exception_do)
   (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
@@ -123,7 +123,7 @@ def «Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (S E : go.type) : val :=
 /-- BoxGet is a function getter (rather than a method)
 
     go: generics.go:13:6 -/
-def «BoxGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BoxGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc (Box T)))) (Var "b"))
@@ -131,7 +131,7 @@ def «BoxGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box T) go!"Value"))) (Var "b")))))))
 
 /-- go: generics.go:17:6 -/
-def «BoxGet2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «BoxGet2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc (Box go.uint64)))) (Var "b"))
@@ -139,7 +139,7 @@ def «BoxGet2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef (Box go.uint64) go!"Value"))) (Var "b")))))))
 
 /-- go: generics.go:21:17 -/
-def «Box__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Box__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "b"
   (Lam BAnon
   (App (Val exception_do)
@@ -148,7 +148,7 @@ def «Box__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :
   (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box T) go!"Value"))) (Var "b"))))))))
 
 /-- go: generics.go:25:6 -/
-def «makeGenericBoxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «makeGenericBoxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "value"
   (App (Val exception_do)
   (Let "value" (App (Val (GoInstruction (GoAlloc T))) (Var "value"))
@@ -157,7 +157,7 @@ def «makeGenericBoxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) :
   (App (Val (GoInstruction (CompositeLiteral (Box T)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression T (Var "$v0")))])))))))
 
 /-- go: generics.go:29:6 -/
-def «makeBoxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «makeBoxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -165,7 +165,7 @@ def «makeBoxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral (Box go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression go.uint64 (Var "$v0")))]))))))
 
 /-- go: generics.go:34:6 -/
-def «useBoxGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «useBoxGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "x" (App (Val (GoInstruction (GoAlloc (Box go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Box go.uint64)))) (Val #())))
@@ -178,7 +178,7 @@ def «useBoxGetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (Box go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: generics.go:47:6 -/
-def «useContainerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «useContainerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -212,7 +212,7 @@ def «useContainerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (Container go.uint64)))) (Pair (Var "container") (Var "$r0"))))))))))
 
 /-- go: generics.go:80:6 -/
-def «useMultiParamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «useMultiParamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -230,7 +230,7 @@ def «useMultiParamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (MultiParam go.uint64 go.bool)))) (Pair (Var "mp") (Var "$r0"))))))))))
 
 /-- go: generics.go:85:6 -/
-def «swapMultiParamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) : val :=
+noncomputable def «swapMultiParamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) : val :=
   (LamV "p"
   (App (Val exception_do)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (MultiParam A A))))) (Var "p"))
@@ -251,7 +251,7 @@ def «swapMultiParamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) :
   (App (Val (GoInstruction (GoStore A))) (Pair (Var "temp") (Var "$r0")))))))))))
 
 /-- go: generics.go:91:6 -/
-def «multiParamFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A B : go.type) : val :=
+noncomputable def «multiParamFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A B : go.type) : val :=
   (LamV "x"
   (Lam "b"
   (App (Val exception_do)
@@ -262,7 +262,7 @@ def «multiParamFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A B : go.type)
   (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType B)))) (LiteralValue [(KeyedElement none (ElementExpression B (Var "$v0")))])))))))))
 
 /-- go: generics.go:95:6 -/
-def «useMultiParamFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «useMultiParamFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -277,7 +277,7 @@ def «useMultiParamFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve multiParamFunc [go.uint64, go.bool]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))
 
 /-- go: generics.go:101:6 -/
-def «useAnyPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «useAnyPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -291,7 +291,7 @@ def «useAnyPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics where
   pkg_imported_pkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics)) (Lam BAnon
   (App (Val exception_do)

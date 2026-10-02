@@ -29,77 +29,77 @@ def Dec [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Dec
 
-def NewEncFromSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewEncFromSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.NewEncFromSlice"
 
-def NewEnc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewEnc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.NewEnc"
 
-def bool2byte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bool2byte [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.bool2byte"
 
-def NewDec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDec [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.NewDec"
 
-def compute_new_cap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compute_new_cap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.compute_new_cap"
 
-def reserve [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reserve [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.reserve"
 
-def ReadInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadInt"
 
-def ReadInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadInt32"
 
-def ReadInts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadInts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadInts"
 
-def ReadBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadBytes"
 
-def ReadBytesCopy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadBytesCopy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadBytesCopy"
 
-def ReadBool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadBool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadBool"
 
-def ReadLenPrefixedBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadLenPrefixedBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadLenPrefixedBytes"
 
-def WriteInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.WriteInt"
 
-def WriteInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.WriteInt32"
 
-def WriteBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.WriteBytes"
 
-def WriteInts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteInts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.WriteInts"
 
-def WriteBool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteBool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.WriteBool"
 
-def WriteLenPrefixedBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteLenPrefixedBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.WriteLenPrefixedBytes"
 
-def ReadSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadSlice"
 
-def ReadSliceLenPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadSliceLenPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.ReadSliceLenPrefix"
 
-def WriteSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteSlice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.WriteSlice"
 
-def WriteSliceLenPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteSliceLenPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/tchajed/marshal.WriteSliceLenPrefix"
 
 /-- go: stateless.go:8:6 -/
-def «compute_new_capⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «compute_new_capⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "old_cap"
   (Lam "min_cap"
   (App (Val exception_do)
@@ -124,7 +124,7 @@ def «compute_new_capⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Runtime-check against overflow.
 
     go: stateless.go:19:6 -/
-def «reserveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «reserveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "additional"
   (App (Val exception_do)
@@ -165,7 +165,7 @@ def «reserveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "min_cap") (Var "$r0"))))))))))))
 
 /-- go: stateless.go:40:6 -/
-def «ReadIntⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReadIntⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
@@ -180,7 +180,7 @@ def «ReadIntⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
 
 /-- go: stateless.go:45:6 -/
-def «ReadInt32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReadInt32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
@@ -197,7 +197,7 @@ def «ReadInt32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- ReadBytes reads `l` bytes from b and returns (bs, rest)
 
     go: stateless.go:62:6 -/
-def «ReadBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReadBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "l"
   (App (Val exception_do)
@@ -216,7 +216,7 @@ def «ReadBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Like ReadBytes, but avoids keeping the source slice [b] alive.
 
     go: stateless.go:68:6 -/
-def «ReadBytesCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReadBytesCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "l"
   (App (Val exception_do)
@@ -238,7 +238,7 @@ def «ReadBytesCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "s") (Var "$r0"))))))))))))
 
 /-- go: stateless.go:74:6 -/
-def «ReadBoolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReadBoolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
@@ -252,7 +252,7 @@ def «ReadBoolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: stateless.go:79:6 -/
-def «ReadLenPrefixedBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReadLenPrefixedBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exception_do)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
@@ -291,7 +291,7 @@ def «ReadLenPrefixedBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WriteInt appends i in little-endian format to b, returning the new slice.
 
     go: stateless.go:88:6 -/
-def «WriteIntⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WriteIntⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "i"
   (App (Val exception_do)
@@ -328,7 +328,7 @@ def «WriteIntⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WriteInt32 appends 32-bit integer i in little-endian format to b, returning the new slice.
 
     go: stateless.go:98:6 -/
-def «WriteInt32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WriteInt32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "i"
   (App (Val exception_do)
@@ -365,7 +365,7 @@ def «WriteInt32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Append data to b, returning the new slice.
 
     go: stateless.go:107:6 -/
-def «WriteBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WriteBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "data"
   (App (Val exception_do)
@@ -377,7 +377,7 @@ def «WriteBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: stateless.go:119:6 -/
-def «WriteBoolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WriteBoolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "x"
   (App (Val exception_do)
@@ -396,7 +396,7 @@ def «WriteBoolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: stateless.go:127:6 -/
-def «WriteLenPrefixedBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WriteLenPrefixedBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "bs"
   (App (Val exception_do)
@@ -416,7 +416,7 @@ def «WriteLenPrefixedBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))
 
 /-- go: stateless_slice.go:3:6 -/
-def «ReadSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «ReadSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "b"
   (Lam "count"
   (Lam "readOne"
@@ -473,7 +473,7 @@ def «ReadSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val 
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))))
 
 /-- go: stateless_slice.go:14:6 -/
-def «ReadSliceLenPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «ReadSliceLenPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "b"
   (Lam "readOne"
   (App (Val exception_do)
@@ -503,7 +503,7 @@ def «ReadSliceLenPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.typ
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "count") (Var "$r0")))))))))))))))))
 
 /-- go: stateless_slice.go:19:6 -/
-def «WriteSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «WriteSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "b"
   (Lam "xs"
   (Lam "writeOne"
@@ -537,7 +537,7 @@ def «WriteSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))))
 
 /-- go: stateless_slice.go:27:6 -/
-def «WriteSliceLenPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «WriteSliceLenPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "b"
   (Lam "xs"
   (Lam "writeOne"
@@ -569,7 +569,7 @@ instance info' : PkgInfo pkg_id.github_com.tchajed.marshal where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.tchajed.marshal)) (Lam BAnon
   (App (Val exception_do)

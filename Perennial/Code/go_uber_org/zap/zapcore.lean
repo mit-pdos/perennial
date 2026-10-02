@@ -481,215 +481,215 @@ axiom LogDropped [ffi_syntax] [GoGlobalContext] : val
 
 axiom LogSampled [ffi_syntax] [GoGlobalContext] : val
 
-def DefaultClock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultClock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.DefaultClock"
 
 axiom DefaultClock'init [ffi_syntax] [GoGlobalContext] : val
 
-def _sliceEncoderPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _sliceEncoderPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore._sliceEncoderPool"
 
 axiom _sliceEncoderPool'init [ffi_syntax] [GoGlobalContext] : val
 
-def _cePool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _cePool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore._cePool"
 
 axiom _cePool'init [ffi_syntax] [GoGlobalContext] : val
 
-def _errArrayElemPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _errArrayElemPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore._errArrayElemPool"
 
 axiom _errArrayElemPool'init [ffi_syntax] [GoGlobalContext] : val
 
-def _jsonPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _jsonPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore._jsonPool"
 
 axiom _jsonPool'init [ffi_syntax] [GoGlobalContext] : val
 
-def nullLiteralBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nullLiteralBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.nullLiteralBytes"
 
 axiom nullLiteralBytes'init [ffi_syntax] [GoGlobalContext] : val
 
-def errUnmarshalNilLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errUnmarshalNilLevel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.errUnmarshalNilLevel"
 
 axiom errUnmarshalNilLevel'init [ffi_syntax] [GoGlobalContext] : val
 
-def _levelToColor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _levelToColor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore._levelToColor"
 
 axiom _levelToColor'init [ffi_syntax] [GoGlobalContext] : val
 
-def _unknownLevelColor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _unknownLevelColor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore._unknownLevelColor"
 
 axiom _unknownLevelColor'init [ffi_syntax] [GoGlobalContext] : val
 
-def _levelToLowercaseColorString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _levelToLowercaseColorString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore._levelToLowercaseColorString"
 
 axiom _levelToLowercaseColorString'init [ffi_syntax] [GoGlobalContext] : val
 
-def _levelToCapitalColorString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _levelToCapitalColorString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore._levelToCapitalColorString"
 
 axiom _levelToCapitalColorString'init [ffi_syntax] [GoGlobalContext] : val
 
-def getSliceEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getSliceEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.getSliceEncoder"
 
-def putSliceEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def putSliceEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.putSliceEncoder"
 
-def NewConsoleEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewConsoleEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewConsoleEncoder"
 
-def NewNopCore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewNopCore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewNopCore"
 
-def NewCore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewCore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewCore"
 
-def LowercaseLevelEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LowercaseLevelEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.LowercaseLevelEncoder"
 
-def LowercaseColorLevelEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LowercaseColorLevelEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.LowercaseColorLevelEncoder"
 
-def CapitalLevelEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CapitalLevelEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.CapitalLevelEncoder"
 
-def CapitalColorLevelEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CapitalColorLevelEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.CapitalColorLevelEncoder"
 
-def EpochTimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EpochTimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.EpochTimeEncoder"
 
-def EpochMillisTimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EpochMillisTimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.EpochMillisTimeEncoder"
 
-def EpochNanosTimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EpochNanosTimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.EpochNanosTimeEncoder"
 
-def encodeTimeLayout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeTimeLayout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.encodeTimeLayout"
 
-def ISO8601TimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ISO8601TimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.ISO8601TimeEncoder"
 
-def RFC3339TimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RFC3339TimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.RFC3339TimeEncoder"
 
-def RFC3339NanoTimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RFC3339NanoTimeEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.RFC3339NanoTimeEncoder"
 
-def TimeEncoderOfLayout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TimeEncoderOfLayout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.TimeEncoderOfLayout"
 
-def SecondsDurationEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SecondsDurationEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.SecondsDurationEncoder"
 
-def NanosDurationEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NanosDurationEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NanosDurationEncoder"
 
-def MillisDurationEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MillisDurationEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.MillisDurationEncoder"
 
-def StringDurationEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringDurationEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.StringDurationEncoder"
 
-def FullCallerEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FullCallerEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.FullCallerEncoder"
 
-def ShortCallerEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ShortCallerEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.ShortCallerEncoder"
 
-def FullNameEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FullNameEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.FullNameEncoder"
 
-def getCheckedEntry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getCheckedEntry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.getCheckedEntry"
 
-def putCheckedEntry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def putCheckedEntry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.putCheckedEntry"
 
-def NewEntryCaller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewEntryCaller [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewEntryCaller"
 
-def encodeError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.encodeError"
 
-def newErrArrayElem [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newErrArrayElem [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.newErrArrayElem"
 
-def addFields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addFields [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.addFields"
 
-def encodeStringer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeStringer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.encodeStringer"
 
-def RegisterHooks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterHooks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.RegisterHooks"
 
-def NewIncreaseLevelCore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewIncreaseLevelCore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewIncreaseLevelCore"
 
-def putJSONEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def putJSONEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.putJSONEncoder"
 
-def NewJSONEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewJSONEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewJSONEncoder"
 
-def newJSONEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newJSONEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.newJSONEncoder"
 
-def safeAppendStringLike [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def safeAppendStringLike [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.safeAppendStringLike"
 
-def NewLazyWith [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLazyWith [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewLazyWith"
 
-def ParseLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseLevel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.ParseLevel"
 
-def LevelOf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LevelOf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.LevelOf"
 
-def NewMapObjectEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMapObjectEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewMapObjectEncoder"
 
-def defaultReflectedEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultReflectedEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.defaultReflectedEncoder"
 
-def newCounters [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newCounters [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.newCounters"
 
-def fnv32a [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fnv32a [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.fnv32a"
 
-def nopSamplingHook [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nopSamplingHook [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.nopSamplingHook"
 
-def SamplerHook [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SamplerHook [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.SamplerHook"
 
-def NewSamplerWithOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSamplerWithOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewSamplerWithOptions"
 
-def NewSampler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSampler [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewSampler"
 
-def NewTee [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewTee [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewTee"
 
-def AddSync [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddSync [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.AddSync"
 
-def Lock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.Lock"
 
-def NewMultiWriteSyncer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMultiWriteSyncer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap/zapcore.NewMultiWriteSyncer"
 
 instance info' : PkgInfo pkg_id.go_uber_org.zap.zapcore where
@@ -697,7 +697,7 @@ instance info' : PkgInfo pkg_id.go_uber_org.zap.zapcore where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_uber_org.zap.zapcore)) (Lam BAnon
   (App (Val exception_do)

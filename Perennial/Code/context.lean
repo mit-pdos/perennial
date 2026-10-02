@@ -101,77 +101,77 @@ def valueCtx [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] valueCtx
 
-def Canceled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Canceled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.Canceled"
 
-def DeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.DeadlineExceeded"
 
-def goroutines [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goroutines [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.goroutines"
 
-def cancelCtxKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cancelCtxKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.cancelCtxKey"
 
-def closedchan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closedchan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.closedchan"
 
-def Background [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Background [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.Background"
 
-def TODO [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TODO [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.TODO"
 
-def WithCancel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCancel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.WithCancel"
 
-def WithCancelCause [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCancelCause [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.WithCancelCause"
 
-def withCancel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def withCancel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.withCancel"
 
-def Cause [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Cause [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.Cause"
 
-def AfterFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AfterFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.AfterFunc"
 
-def parentCancelCtx [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parentCancelCtx [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.parentCancelCtx"
 
-def removeChild [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeChild [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.removeChild"
 
-def contextName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def contextName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.contextName"
 
-def WithoutCancel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithoutCancel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.WithoutCancel"
 
-def WithDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.WithDeadline"
 
-def WithDeadlineCause [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithDeadlineCause [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.WithDeadlineCause"
 
-def WithTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.WithTimeout"
 
-def WithTimeoutCause [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithTimeoutCause [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.WithTimeoutCause"
 
-def WithValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.WithValue"
 
-def stringify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.stringify"
 
-def value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def value [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"context.value"
 
 /-- go: context.go:175:30 -/
-def «deadlineExceededError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «deadlineExceededError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -179,7 +179,7 @@ def «deadlineExceededError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
   (Val #(go!"context deadline exceeded"))))))
 
 /-- go: context.go:176:30 -/
-def «deadlineExceededError__Timeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «deadlineExceededError__Timeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -187,7 +187,7 @@ def «deadlineExceededError__Timeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
   (Val #true)))))
 
 /-- go: context.go:177:30 -/
-def «deadlineExceededError__Temporaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «deadlineExceededError__Temporaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -195,7 +195,7 @@ def «deadlineExceededError__Temporaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContex
   (Val #true)))))
 
 /-- go: context.go:183:17 -/
-def «emptyCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «emptyCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -205,7 +205,7 @@ def «emptyCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time))) (Var "deadline")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))))))
 
 /-- go: context.go:187:17 -/
-def «emptyCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «emptyCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -213,7 +213,7 @@ def «emptyCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert go.untyped_nil (go.type.ChannelType go.chan_dir.recvonly (go.type.StructType []))))) (Val UntypedNil))))))
 
 /-- go: context.go:191:17 -/
-def «emptyCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «emptyCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -221,7 +221,7 @@ def «emptyCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert go.untyped_nil go.error))) (Val UntypedNil))))))
 
 /-- go: context.go:195:17 -/
-def «emptyCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «emptyCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "key"
   (App (Val exception_do)
@@ -230,7 +230,7 @@ def «emptyCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert go.untyped_nil go.any))) (Val UntypedNil)))))))
 
 /-- go: context.go:201:22 -/
-def «backgroundCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «backgroundCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -238,7 +238,7 @@ def «backgroundCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #(go!"context.Background"))))))
 
 /-- go: context.go:207:16 -/
-def «todoCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «todoCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -251,7 +251,7 @@ def «todoCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     requests.
 
     go: context.go:215:6 -/
-def «Backgroundⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Backgroundⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -263,7 +263,7 @@ def «Backgroundⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     parameter).
 
     go: context.go:223:6 -/
-def «TODOⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «TODOⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -278,7 +278,7 @@ def «TODOⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     call cancel as soon as the operations running in this [Context] complete.
 
     go: context.go:240:6 -/
-def «WithCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exception_do)
   (Let "cancel" (App (Val (GoInstruction (GoAlloc CancelFunc))) (App (Val (GoInstruction (GoZeroVal CancelFunc))) (Val #())))
@@ -315,7 +315,7 @@ def «WithCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     	context.Cause(ctx) // returns myError
 
     go: context.go:268:6 -/
-def «WithCancelCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithCancelCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exception_do)
   (Let "cancel" (App (Val (GoInstruction (GoAlloc CancelCauseFunc))) (App (Val (GoInstruction (GoZeroVal CancelCauseFunc))) (Val #())))
@@ -341,7 +341,7 @@ def «WithCancelCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType cancelCtx)))) (Pair (Var "c") (Var "$r0"))))))))))))
 
 /-- go: context.go:273:6 -/
-def «withCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «withCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exception_do)
   (Let "parent" (App (Val (GoInstruction (GoAlloc Context))) (Var "parent"))
@@ -373,7 +373,7 @@ def «withCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Cause returns nil if c has not been canceled yet.
 
     go: context.go:288:6 -/
-def «Causeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Causeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exception_do)
   (Let "c" (App (Val (GoInstruction (GoAlloc Context))) (Var "c"))
@@ -444,7 +444,7 @@ def «Causeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     AfterFunc will use it to schedule the call.
 
     go: context.go:325:6 -/
-def «AfterFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «AfterFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Lam "f"
   (App (Val exception_do)
@@ -494,7 +494,7 @@ def «AfterFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType afterFuncCtx)))) (Pair (Var "a") (Var "$r0")))))))))))))
 
 /-- go: context.go:352:24 -/
-def «afterFuncCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «afterFuncCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "removeFromParent"
   (Lam "err"
@@ -541,7 +541,7 @@ def «afterFuncCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     different done channel, in which case we should not bypass it.)
 
     go: context.go:382:6 -/
-def «parentCancelCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «parentCancelCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exception_do)
   (Let "parent" (App (Val (GoInstruction (GoAlloc Context))) (Var "parent"))
@@ -600,7 +600,7 @@ def «parentCancelCtxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- removeChild removes a context from its parent.
 
     go: context.go:399:6 -/
-def «removeChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «removeChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "child"
   (App (Val exception_do)
@@ -666,7 +666,7 @@ def «removeChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stopCtx))) (Pair (Var "s") (Var "$r0")))))))))))))))))))
 
 /-- go: context.go:441:21 -/
-def «cancelCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «cancelCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "key"
   (App (Val exception_do)
@@ -684,7 +684,7 @@ def «cancelCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: context.go:448:21 -/
-def «cancelCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «cancelCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val wrap_defer)
@@ -730,7 +730,7 @@ def «cancelCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "d") (Var "$r0"))))))))))))
 
 /-- go: context.go:463:21 -/
-def «cancelCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «cancelCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -756,7 +756,7 @@ def «cancelCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     It sets the parent context of cancelCtx.
 
     go: context.go:475:21 -/
-def «cancelCtx__propagateCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «cancelCtx__propagateCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "parent"
   (Lam "child"
@@ -916,7 +916,7 @@ def «cancelCtx__propagateCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore Context))) (Pair (App (Val (GoInstruction (StructFieldRef cancelCtx go!"Context"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType cancelCtx)))) (Var "c"))) (Var "$r0"))))))))))))))
 
 /-- go: context.go:542:21 -/
-def «cancelCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «cancelCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -930,7 +930,7 @@ def «cancelCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     cancel sets c.cause to cause if this is the first time c is canceled.
 
     go: context.go:549:21 -/
-def «cancelCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «cancelCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "removeFromParent"
   (Lam "err"
@@ -1032,7 +1032,7 @@ def «cancelCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Calling [Cause] on the returned context returns nil.
 
     go: context.go:585:6 -/
-def «WithoutCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithoutCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exception_do)
   (Let "parent" (App (Val (GoInstruction (GoAlloc Context))) (Var "parent"))
@@ -1048,7 +1048,7 @@ def «WithoutCancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))
 
 /-- go: context.go:596:25 -/
-def «withoutCancelCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «withoutCancelCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1058,7 +1058,7 @@ def «withoutCancelCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
   (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time))) (Var "deadline")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))))))
 
 /-- go: context.go:600:25 -/
-def «withoutCancelCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «withoutCancelCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1066,7 +1066,7 @@ def «withoutCancelCtx__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (Convert go.untyped_nil (go.type.ChannelType go.chan_dir.recvonly (go.type.StructType []))))) (Val UntypedNil))))))
 
 /-- go: context.go:604:25 -/
-def «withoutCancelCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «withoutCancelCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exception_do)
@@ -1074,7 +1074,7 @@ def «withoutCancelCtx__Errⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert go.untyped_nil go.error))) (Val UntypedNil))))))
 
 /-- go: context.go:608:27 -/
-def «withoutCancelCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «withoutCancelCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "key"
   (App (Val exception_do)
@@ -1086,7 +1086,7 @@ def «withoutCancelCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (App (App (App (Val (GoInstruction (FuncResolve value []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: context.go:612:27 -/
-def «withoutCancelCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «withoutCancelCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -1106,7 +1106,7 @@ def «withoutCancelCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
     call cancel as soon as the operations running in this [Context] complete.
 
     go: context.go:625:6 -/
-def «WithDeadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithDeadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "d"
   (App (Val exception_do)
@@ -1126,7 +1126,7 @@ def «WithDeadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     not set the cause.
 
     go: context.go:632:6 -/
-def «WithDeadlineCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithDeadlineCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "d"
   (Lam "cause"
@@ -1245,7 +1245,7 @@ def «WithDeadlineCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))))))))
 
 /-- go: context.go:669:20 -/
-def «timerCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «timerCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -1256,7 +1256,7 @@ def «timerCtx__Deadlineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time))) (App (Val (GoInstruction (StructFieldRef timerCtx go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timerCtx)))) (Var "c")))) (Val #true)))))))))
 
 /-- go: context.go:673:20 -/
-def «timerCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «timerCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -1267,7 +1267,7 @@ def «timerCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Until []))) (Val #())) (Var "$a0")))) (Val #())))) (Val #(go!"])")))))))))
 
 /-- go: context.go:679:20 -/
-def «timerCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «timerCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "removeFromParent"
   (Lam "err"
@@ -1322,7 +1322,7 @@ def «timerCtx__cancelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     	}
 
     go: context.go:703:6 -/
-def «WithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "timeout"
   (App (Val exception_do)
@@ -1342,7 +1342,7 @@ def «WithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     not set the cause.
 
     go: context.go:710:6 -/
-def «WithTimeoutCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithTimeoutCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "timeout"
   (Lam "cause"
@@ -1361,7 +1361,7 @@ def «WithTimeoutCauseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Pair (Var "$ret0") (Var "$ret1")))))))))))))
 
 /-- go: context.go:762:20 -/
-def «valueCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «valueCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -1373,7 +1373,7 @@ def «valueCtx__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve stringify []))) (Val #())) (Var "$a0"))))) (Val #(go!")")))))))))
 
 /-- go: context.go:768:20 -/
-def «valueCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «valueCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "key"
   (App (Val exception_do)
@@ -1391,7 +1391,7 @@ def «valueCtx__Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: context.go:775:6 -/
-def «valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "key"
   (App (Val exception_do)
@@ -1471,7 +1471,7 @@ def «valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.context where
   pkg_imported_pkgs := [pkg_id.errors, pkg_id.sync, pkg_id.sync.atomic, pkg_id.time]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.context)) (Lam BAnon
   (App (Val exception_do)

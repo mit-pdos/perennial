@@ -45,42 +45,48 @@ instance JoinHandle_access_load_mu (l : loc) (v : github_com.goose_lang.std.Join
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) v.mu' dq)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) v.mu' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance JoinHandle_access_store_mu (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (mu' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) v.mu' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"mu" l) mu' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance JoinHandle_access_load_done (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) v.done' dq)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) v.done' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance JoinHandle_access_store_done (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (done' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) v.done' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"done" l) done' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance JoinHandle_access_load_cond (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) v.cond' dq)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) v.cond' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance JoinHandle_access_store_cond (l : loc) (v : github_com.goose_lang.std.JoinHandle.t) (cond' : loc) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) v.cond' (DFrac.own 1))
       (typed_pointsto (struct_field_ref github_com.goose_lang.std.JoinHandle.t go!"cond" l) cond' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cond' := cond' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cond' := cond' } : github_com.goose_lang.std.JoinHandle.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

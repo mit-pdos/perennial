@@ -153,28 +153,32 @@ instance AuthInfo_access_load_Username (l : loc) (v : go_etcd_io.etcd.server.v3.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.auth.AuthInfo.t go!"Username" l) v.Username' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.auth.AuthInfo.t go!"Username" l) v.Username' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance AuthInfo_access_store_Username (l : loc) (v : go_etcd_io.etcd.server.v3.auth.AuthInfo.t) (Username' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.auth.AuthInfo.t go!"Username" l) v.Username' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.auth.AuthInfo.t go!"Username" l) Username' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Username' := Username' } : go_etcd_io.etcd.server.v3.auth.AuthInfo.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Username' := Username' } : go_etcd_io.etcd.server.v3.auth.AuthInfo.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance AuthInfo_access_load_Revision (l : loc) (v : go_etcd_io.etcd.server.v3.auth.AuthInfo.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.auth.AuthInfo.t go!"Revision" l) v.Revision' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.auth.AuthInfo.t go!"Revision" l) v.Revision' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance AuthInfo_access_store_Revision (l : loc) (v : go_etcd_io.etcd.server.v3.auth.AuthInfo.t) (Revision' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.auth.AuthInfo.t go!"Revision" l) v.Revision' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.auth.AuthInfo.t go!"Revision" l) Revision' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Revision' := Revision' } : go_etcd_io.etcd.server.v3.auth.AuthInfo.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Revision' := Revision' } : go_etcd_io.etcd.server.v3.auth.AuthInfo.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

@@ -29,46 +29,46 @@ attribute [irreducible] joinError
 
 axiom «joinErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def ErrUnsupported [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnsupported [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.ErrUnsupported"
 
-def errorType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errorType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.errorType"
 
 axiom errorType'init [ffi_syntax] [GoGlobalContext] : val
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.New"
 
-def Join [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Join [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.Join"
 
-def Unwrap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Unwrap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.Unwrap"
 
-def Is [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Is [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.Is"
 
-def is' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def is' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.is"
 
-def As [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def As [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.As"
 
-def as' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def as' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.as"
 
-def AsType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AsType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.AsType"
 
-def asType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.asType"
 
 /-- New returns an error that formats as the given text.
     Each call to New returns a distinct error value even if the text is identical.
 
     go: errors.go:64:6 -/
-def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "text"
   (App (Val exception_do)
   (Let "text" (App (Val (GoInstruction (GoAlloc go.string))) (Var "text"))
@@ -77,7 +77,7 @@ def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral errorString))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0")))])))))))))
 
 /-- go: errors.go:73:23 -/
-def «errorString__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «errorString__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exception_do)
@@ -93,7 +93,7 @@ def «errorString__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     In particular Unwrap does not unwrap errors returned by [Join].
 
     go: wrap.go:17:6 -/
-def «Unwrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Unwrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "err"
   (App (Val exception_do)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -134,7 +134,7 @@ def «Unwrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     method is responsible for setting target.
 
     go: wrap.go:167:6 -/
-def «AsTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «AsTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "err"
   (App (Val exception_do)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -155,7 +155,7 @@ def «AsTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (Val #())))))))
 
 /-- go: wrap.go:176:6 -/
-def «asTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
+noncomputable def «asTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (E : go.type) : val :=
   (LamV "err"
   (Lam "ppe"
   (App (Val exception_do)
@@ -283,7 +283,7 @@ instance info' : PkgInfo pkg_id.errors where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.errors)) (Lam BAnon
   (App (Val exception_do)

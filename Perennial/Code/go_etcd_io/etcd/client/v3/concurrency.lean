@@ -113,103 +113,103 @@ def stmSerializable [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] stmSerializable
 
-@[reducible] def defaultSessionTTL [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def defaultSessionTTL [ffi_syntax] [GoGlobalContext] : val :=
   #(60 : Int)
 
-@[reducible] def SerializableSnapshot [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SerializableSnapshot [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def Serializable [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Serializable [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def RepeatableReads [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def RepeatableReads [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] def ReadCommitted [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ReadCommitted [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-def ErrElectionNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrElectionNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.ErrElectionNotLeader"
 
-def ErrElectionNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrElectionNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.ErrElectionNoLeader"
 
-def ErrLocked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLocked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.ErrLocked"
 
-def ErrSessionExpired [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrSessionExpired [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.ErrSessionExpired"
 
-def ErrLockReleased [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLockReleased [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.ErrLockReleased"
 
-def NewElection [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewElection [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.NewElection"
 
-def ResumeElection [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ResumeElection [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.ResumeElection"
 
-def waitDelete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitDelete [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.waitDelete"
 
-def waitDeletes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitDeletes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.waitDeletes"
 
-def NewMutex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMutex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.NewMutex"
 
-def NewLocker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLocker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.NewLocker"
 
-def NewSession [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSession [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.NewSession"
 
-def WithTTL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithTTL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.WithTTL"
 
-def WithLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithLease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.WithLease"
 
-def WithContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.WithContext"
 
-def WithIsolation [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithIsolation [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.WithIsolation"
 
-def WithAbortContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithAbortContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.WithAbortContext"
 
-def WithPrefetch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithPrefetch [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.WithPrefetch"
 
-def NewSTM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSTM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.NewSTM"
 
-def mkSTM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mkSTM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.mkSTM"
 
-def runSTM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runSTM [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.runSTM"
 
-def isKeyCurrent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isKeyCurrent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.isKeyCurrent"
 
-def respToValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def respToValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.respToValue"
 
-def NewSTMRepeatable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSTMRepeatable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.NewSTMRepeatable"
 
-def NewSTMSerializable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSTMSerializable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.NewSTMSerializable"
 
-def NewSTMReadCommitted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSTMReadCommitted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/client/v3/concurrency.NewSTMReadCommitted"
 
 /-- NewElection returns a new election on a given key prefix.
 
     go: election.go:44:6 -/
-def «NewElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "pfx"
   (App (Val exception_do)
@@ -223,7 +223,7 @@ def «NewElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- ResumeElection initializes an election with a known leader.
 
     go: election.go:49:6 -/
-def «ResumeElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ResumeElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "pfx"
   (Lam "leaderKey"
@@ -253,7 +253,7 @@ def «ResumeElectionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     continue to be blocked until it becomes the leader.
 
     go: election.go:69:20 -/
-def «Election__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "ctx"
   (Lam "val"
@@ -405,7 +405,7 @@ def «Election__Campaignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Proclaim lets the leader announce a new value without another election.
 
     go: election.go:110:20 -/
-def «Election__Proclaimⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__Proclaimⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "ctx"
   (Lam "val"
@@ -491,7 +491,7 @@ def «Election__Proclaimⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Resign lets a leader start a new election.
 
     go: election.go:132:20 -/
-def «Election__Resignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__Resignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "ctx"
   (App (Val exception_do)
@@ -558,7 +558,7 @@ def «Election__Resignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Leader returns the leader value for the current election.
 
     go: election.go:148:20 -/
-def «Election__Leaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__Leaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "ctx"
   (App (Val exception_do)
@@ -607,7 +607,7 @@ def «Election__Leaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     is otherwise disrupted.
 
     go: election.go:167:20 -/
-def «Election__Observeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__Observeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "ctx"
   (App (Val exception_do)
@@ -629,7 +629,7 @@ def «Election__Observeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv _root_.Perennial.go_etcd_io.etcd.client.v3.GetResponse)))) (Pair (Var "retc") (Var "$r0"))))))))))))
 
 /-- go: election.go:173:20 -/
-def «Election__observeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__observeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "ctx"
   (Lam "ch"
@@ -892,7 +892,7 @@ def «Election__observeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Key returns the leader key if elected, empty string otherwise.
 
     go: election.go:248:20 -/
-def «Election__Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exception_do)
@@ -903,7 +903,7 @@ def «Election__Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Rev returns the leader key's creation revision, if elected.
 
     go: election.go:251:20 -/
-def «Election__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exception_do)
@@ -914,7 +914,7 @@ def «Election__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Header is the response header from the last successful election proposal.
 
     go: election.go:254:20 -/
-def «Election__Headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Election__Headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exception_do)
@@ -923,7 +923,7 @@ def «Election__Headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader)))) (App (Val (GoInstruction (StructFieldRef Election go!"hdr"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Election)))) (Var "e")))))))))
 
 /-- go: key.go:25:6 -/
-def «waitDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Lam "client"
   (Lam "key"
@@ -1019,7 +1019,7 @@ def «waitDeleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     than the create revision are deleted.
 
     go: key.go:49:6 -/
-def «waitDeletesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitDeletesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Lam "client"
   (Lam "pfx"
@@ -1091,7 +1091,7 @@ def «waitDeletesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.OpOption)))) (Pair (Var "getOpts") (Var "$r0"))))))))))))))))
 
 /-- go: mutex.go:45:6 -/
-def «NewMutexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewMutexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "pfx"
   (App (Val exception_do)
@@ -1110,7 +1110,7 @@ def «NewMutexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     The ctx argument is used for the sending/receiving Txn RPC.
 
     go: mutex.go:52:17 -/
-def «Mutex__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mutex__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "ctx"
   (App (Val exception_do)
@@ -1193,7 +1193,7 @@ def «Mutex__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     while trying to acquire the lock, the mutex tries to clean its stale lock entry.
 
     go: mutex.go:75:17 -/
-def «Mutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "ctx"
   (App (Val exception_do)
@@ -1299,7 +1299,7 @@ def «Mutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.TxnResponse)))) (Pair (Var "resp") (Var "$r0")))))))))))))))))
 
 /-- go: mutex.go:111:17 -/
-def «Mutex__tryAcquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mutex__tryAcquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "ctx"
   (App (Val exception_do)
@@ -1399,7 +1399,7 @@ def «Mutex__tryAcquireⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType Session)))) (Pair (Var "s") (Var "$r0"))))))))))))
 
 /-- go: mutex.go:134:17 -/
-def «Mutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "ctx"
   (App (Val exception_do)
@@ -1461,7 +1461,7 @@ def «Mutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: mutex.go:152:17 -/
-def «Mutex__IsOwnerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mutex__IsOwnerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -1474,7 +1474,7 @@ def «Mutex__IsOwnerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.go_etcd_io.etcd.client.v3.Compare []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))
 
 /-- go: mutex.go:156:17 -/
-def «Mutex__Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mutex__Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -1485,7 +1485,7 @@ def «Mutex__Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Header is the response header received from etcd on acquiring the lock.
 
     go: mutex.go:159:17 -/
-def «Mutex__Headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mutex__Headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exception_do)
@@ -1494,7 +1494,7 @@ def «Mutex__Headerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader)))) (App (Val (GoInstruction (StructFieldRef Mutex go!"hdr"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Mutex)))) (Var "m")))))))))
 
 /-- go: mutex.go:163:24 -/
-def «lockerMutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «lockerMutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lm"
   (Lam BAnon
   (App (Val exception_do)
@@ -1521,7 +1521,7 @@ def «lockerMutex__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.Client)))) (Pair (Var "client") (Var "$r0"))))))))))))
 
 /-- go: mutex.go:170:24 -/
-def «lockerMutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «lockerMutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lm"
   (Lam BAnon
   (App (Val exception_do)
@@ -1550,7 +1550,7 @@ def «lockerMutex__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- NewLocker creates a sync.Locker backed by an etcd mutex.
 
     go: mutex.go:178:6 -/
-def «NewLockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewLockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "pfx"
   (App (Val exception_do)
@@ -1565,7 +1565,7 @@ def «NewLockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- NewSession gets the leased session for a client.
 
     go: session.go:41:6 -/
-def «NewSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "client"
   (Lam "opts"
   (App (Val exception_do)
@@ -1724,7 +1724,7 @@ def «NewSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Client is the etcd client that is attached to the session.
 
     go: session.go:82:19 -/
-def «Session__Clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Session__Clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -1735,7 +1735,7 @@ def «Session__Clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Lease is the lease ID for keys bound to the session.
 
     go: session.go:87:19 -/
-def «Session__Leaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Session__Leaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -1747,7 +1747,7 @@ def «Session__Leaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     is otherwise no longer being refreshed.
 
     go: session.go:91:19 -/
-def «Session__Ctxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Session__Ctxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -1759,7 +1759,7 @@ def «Session__Ctxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     is otherwise no longer being refreshed.
 
     go: session.go:97:19 -/
-def «Session__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Session__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -1772,7 +1772,7 @@ def «Session__Doneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     would fail) or when transferring lease ownership.
 
     go: session.go:102:19 -/
-def «Session__Orphanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Session__Orphanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -1789,7 +1789,7 @@ def «Session__Orphanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Close orphans the session and revokes the session lease.
 
     go: session.go:108:19 -/
-def «Session__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Session__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -1836,7 +1836,7 @@ def «Session__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     If TTL is <= 0, the default 60 seconds TTL will be used.
 
     go: session.go:128:6 -/
-def «WithTTLⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithTTLⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ttl"
   (App (Val exception_do)
   (Let "ttl" (App (Val (GoInstruction (GoAlloc go.int))) (Var "ttl"))
@@ -1866,7 +1866,7 @@ def «WithTTLⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     leadership from an election prior to restart.
 
     go: session.go:141:6 -/
-def «WithLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "leaseID"
   (App (Val exception_do)
   (Let "leaseID" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.etcd.client.v3.LeaseID))) (Var "leaseID"))
@@ -1889,7 +1889,7 @@ def «WithLeaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     abandoned and left to expire instead of being revoked.
 
     go: session.go:152:6 -/
-def «WithContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (App (Val exception_do)
   (Let "ctx" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.Context))) (Var "ctx"))
@@ -1908,7 +1908,7 @@ def «WithContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithIsolation specifies the transaction isolation level.
 
     go: stm.go:71:6 -/
-def «WithIsolationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithIsolationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "lvl"
   (App (Val exception_do)
   (Let "lvl" (App (Val (GoInstruction (GoAlloc Isolation))) (Var "lvl"))
@@ -1926,7 +1926,7 @@ def «WithIsolationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- WithAbortContext specifies the context for permanently aborting the transaction.
 
     go: stm.go:76:6 -/
-def «WithAbortContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithAbortContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (App (Val exception_do)
   (Let "ctx" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.Context))) (Var "ctx"))
@@ -1947,7 +1947,7 @@ def «WithAbortContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     with Get().
 
     go: stm.go:84:6 -/
-def «WithPrefetchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WithPrefetchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "keys"
   (App (Val exception_do)
   (Let "keys" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.string)))) (Var "keys"))
@@ -1967,7 +1967,7 @@ def «WithPrefetchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- NewSTM initiates a new STM instance, using serializable snapshot isolation by default.
 
     go: stm.go:89:6 -/
-def «NewSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "apply"
   (Lam "so"
@@ -2029,7 +2029,7 @@ def «NewSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType stmOptions)))) (Pair (Var "opts") (Var "$r0"))))))))))))))
 
 /-- go: stm.go:104:6 -/
-def «mkSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «mkSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "opts"
   (App (Val exception_do)
@@ -2120,7 +2120,7 @@ def «mkSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))))))))
 
 /-- go: stm.go:140:6 -/
-def «runSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «runSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "apply"
   (App (Val exception_do)
@@ -2226,7 +2226,7 @@ def «runSTMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv stmResponse)))) (Pair (Var "outc") (Var "$r0"))))))))))))
 
 /-- go: stm.go:190:19 -/
-def «readSet__addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «readSet__addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rs"
   (Lam "keys"
   (Lam "txnresp"
@@ -2256,7 +2256,7 @@ def «readSet__addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- first returns the store revision from the first fetch
 
     go: stm.go:197:19 -/
-def «readSet__firstⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «readSet__firstⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rs"
   (Lam BAnon
   (App (Val exception_do)
@@ -2295,7 +2295,7 @@ def «readSet__firstⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- cmps guards the txn from updates to read set
 
     go: stm.go:208:19 -/
-def «readSet__cmpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «readSet__cmpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "rs"
   (Lam BAnon
   (App (Val exception_do)
@@ -2331,7 +2331,7 @@ def «readSet__cmpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Cmp)))) (Pair (Var "cmps") (Var "$r0")))))))))))
 
 /-- go: stm.go:218:20 -/
-def «writeSet__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «writeSet__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ws"
   (Lam "keys"
   (App (Val exception_do)
@@ -2373,7 +2373,7 @@ def «writeSet__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- cmps returns a cmp list testing no writes have happened past rev
 
     go: stm.go:228:20 -/
-def «writeSet__cmpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «writeSet__cmpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ws"
   (Lam "rev"
   (App (Val exception_do)
@@ -2410,7 +2410,7 @@ def «writeSet__cmpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- puts is the list of ops for all pending writes
 
     go: stm.go:237:20 -/
-def «writeSet__putsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «writeSet__putsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ws"
   (Lam BAnon
   (App (Val exception_do)
@@ -2443,7 +2443,7 @@ def «writeSet__putsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.Op)))) (Pair (Var "puts") (Var "$r0")))))))))))
 
 /-- go: stm.go:245:15 -/
-def «stm__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stm__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "keys"
   (App (Val exception_do)
@@ -2467,7 +2467,7 @@ def «stm__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType stmPut)))) (Pair (Var "wv") (Var "$r0")))))))))))))
 
 /-- go: stm.go:252:15 -/
-def «stm__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stm__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "key"
   (Lam "val"
@@ -2490,7 +2490,7 @@ def «stm__Putⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (map.insert go.string)) (App (Val (GoInstruction (GoLoad writeSet))) (App (Val (GoInstruction (StructFieldRef stm go!"wset"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType stm)))) (Var "s"))))) (App (Val (GoInstruction (GoLoad go.string))) (Var "key"))) (Var "$r0"))))))))))))))
 
 /-- go: stm.go:256:15 -/
-def «stm__Delⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stm__Delⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "key"
   (App (Val exception_do)
@@ -2508,7 +2508,7 @@ def «stm__Delⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (map.insert go.string)) (App (Val (GoInstruction (GoLoad writeSet))) (App (Val (GoInstruction (StructFieldRef stm go!"wset"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType stm)))) (Var "s"))))) (App (Val (GoInstruction (GoLoad go.string))) (Var "key"))) (Var "$r0"))))))))))
 
 /-- go: stm.go:258:15 -/
-def «stm__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stm__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "key"
   (App (Val exception_do)
@@ -2532,7 +2532,7 @@ def «stm__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.GetResponse)))) (Pair (Var "resp") (Var "$r0")))))))))))))
 
 /-- go: stm.go:265:15 -/
-def «stm__commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stm__commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -2571,7 +2571,7 @@ def «stm__commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.TxnResponse)))) (Pair (Var "txnresp") (Var "$r0"))))))))))))))))
 
 /-- go: stm.go:276:15 -/
-def «stm__fetchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stm__fetchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "keys"
   (App (Val exception_do)
@@ -2659,7 +2659,7 @@ def «stm__fetchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: stm.go:295:15 -/
-def «stm__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stm__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -2676,7 +2676,7 @@ def «stm__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore readSet))) (Pair (App (Val (GoInstruction (StructFieldRef stm go!"rset"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType stm)))) (Var "s"))) (Var "$r0")))))))))))
 
 /-- go: stm.go:305:27 -/
-def «stmSerializable__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stmSerializable__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "keys"
   (App (Val exception_do)
@@ -2764,7 +2764,7 @@ def «stmSerializable__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: stm.go:331:27 -/
-def «stmSerializable__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stmSerializable__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "key"
   (App (Val exception_do)
@@ -2780,7 +2780,7 @@ def «stmSerializable__Revⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType stmSerializable) go!"Get"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType stmSerializable)))) (Var "s"))) (Var "$a0"))))))))))
 
 /-- go: stm.go:336:27 -/
-def «stmSerializable__getsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stmSerializable__getsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -2825,7 +2825,7 @@ def «stmSerializable__getsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.string)))) (Pair (Var "keys") (Var "$r0")))))))))))
 
 /-- go: stm.go:346:27 -/
-def «stmSerializable__commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stmSerializable__commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exception_do)
@@ -2896,7 +2896,7 @@ def «stmSerializable__commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore (go.type.SliceType go.string)))) (Pair (Var "keys") (Var "$r0"))))))))))))))))
 
 /-- go: stm.go:364:6 -/
-def «isKeyCurrentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «isKeyCurrentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam "r"
   (App (Val exception_do)
@@ -2921,7 +2921,7 @@ def «isKeyCurrentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: stm.go:371:6 -/
-def «respToValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «respToValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "resp"
   (App (Val exception_do)
   (Let "resp" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.GetResponse)))) (Var "resp"))
@@ -2938,7 +2938,7 @@ def «respToValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- NewSTMRepeatable is deprecated.
 
     go: stm.go:379:6 -/
-def «NewSTMRepeatableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewSTMRepeatableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Lam "c"
   (Lam "apply"
@@ -2962,7 +2962,7 @@ def «NewSTMRepeatableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- NewSTMSerializable is deprecated.
 
     go: stm.go:384:6 -/
-def «NewSTMSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewSTMSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Lam "c"
   (Lam "apply"
@@ -2986,7 +2986,7 @@ def «NewSTMSerializableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- NewSTMReadCommitted is deprecated.
 
     go: stm.go:389:6 -/
-def «NewSTMReadCommittedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewSTMReadCommittedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Lam "c"
   (Lam "apply"
@@ -3010,7 +3010,7 @@ def «NewSTMReadCommittedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.client.v3.concurrency where
   pkg_imported_pkgs := [pkg_id.context, pkg_id.errors, pkg_id.fmt, pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb, pkg_id.go_etcd_io.etcd.api.v3.mvccpb, pkg_id.go_etcd_io.etcd.client.v3, pkg_id.strings, pkg_id.sync, pkg_id.time, pkg_id.go_uber_org.zap, pkg_id.math]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.client.v3.concurrency)) (Lam BAnon
   (App (Val exception_do)

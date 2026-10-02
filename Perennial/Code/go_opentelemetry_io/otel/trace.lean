@@ -331,184 +331,184 @@ axiom errMemberNumber [ffi_syntax] [GoGlobalContext] : val
 
 axiom errDuplicate [ffi_syntax] [GoGlobalContext] : val
 
-def tracerProviderInstance [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tracerProviderInstance [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.tracerProviderInstance"
 
 axiom tracerProviderInstance'init [ffi_syntax] [GoGlobalContext] : val
 
-def start [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def start [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.start"
 
 axiom start'init [ffi_syntax] [GoGlobalContext] : val
 
-def ended [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ended [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.ended"
 
 axiom ended'init [ffi_syntax] [GoGlobalContext] : val
 
-def maxSpan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxSpan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.maxSpan"
 
 axiom maxSpan'init [ffi_syntax] [GoGlobalContext] : val
 
-def noopSpanInstance [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noopSpanInstance [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.noopSpanInstance"
 
 axiom noopSpanInstance'init [ffi_syntax] [GoGlobalContext] : val
 
-def autoInstEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def autoInstEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.autoInstEnabled"
 
 axiom autoInstEnabled'init [ffi_syntax] [GoGlobalContext] : val
 
-def nilTraceID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilTraceID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.nilTraceID"
 
-def nilSpanID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilSpanID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.nilSpanID"
 
-def newAutoTracerProvider [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newAutoTracerProvider [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.newAutoTracerProvider"
 
-def spanKind [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spanKind [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.spanKind"
 
-def convCappedAttrs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convCappedAttrs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.convCappedAttrs"
 
-def convAttrs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convAttrs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.convAttrs"
 
-def convAttrValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convAttrValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.convAttrValue"
 
-def truncate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def truncate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.truncate"
 
-def typeStr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeStr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.typeStr"
 
-def convLinks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convLinks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.convLinks"
 
-def convLink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convLink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.convLink"
 
-def newSpanLimits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSpanLimits [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.newSpanLimits"
 
-def firstEnv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def firstEnv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.firstEnv"
 
-def NewTracerConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewTracerConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.NewTracerConfig"
 
-def NewSpanStartConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSpanStartConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.NewSpanStartConfig"
 
-def NewSpanEndConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSpanEndConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.NewSpanEndConfig"
 
-def NewEventConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewEventConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.NewEventConfig"
 
-def WithAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithAttributes"
 
-def WithTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithTimestamp"
 
-def WithStackTrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithStackTrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithStackTrace"
 
-def WithLinks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithLinks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithLinks"
 
-def WithNewRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithNewRoot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithNewRoot"
 
-def WithSpanKind [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithSpanKind [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithSpanKind"
 
-def WithInstrumentationVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithInstrumentationVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithInstrumentationVersion"
 
-def mergeSets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeSets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.mergeSets"
 
-def WithInstrumentationAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithInstrumentationAttributes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithInstrumentationAttributes"
 
-def WithInstrumentationAttributeSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithInstrumentationAttributeSet [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithInstrumentationAttributeSet"
 
-def WithSchemaURL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithSchemaURL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.WithSchemaURL"
 
-def ContextWithSpan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContextWithSpan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.ContextWithSpan"
 
-def ContextWithSpanContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContextWithSpanContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.ContextWithSpanContext"
 
-def ContextWithRemoteSpanContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContextWithRemoteSpanContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.ContextWithRemoteSpanContext"
 
-def SpanFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SpanFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.SpanFromContext"
 
-def SpanContextFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SpanContextFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.SpanContextFromContext"
 
-def NewNoopTracerProvider [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewNoopTracerProvider [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.NewNoopTracerProvider"
 
-def LinkFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LinkFromContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.LinkFromContext"
 
-def ValidateSpanKind [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ValidateSpanKind [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.ValidateSpanKind"
 
-def TraceIDFromHex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TraceIDFromHex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.TraceIDFromHex"
 
-def SpanIDFromHex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SpanIDFromHex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.SpanIDFromHex"
 
-def NewSpanContext [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSpanContext [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.NewSpanContext"
 
-def checkValueChar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkValueChar [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.checkValueChar"
 
-def checkValueLast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkValueLast [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.checkValueLast"
 
-def checkValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkValue [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.checkValue"
 
-def checkKeyRemain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkKeyRemain [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.checkKeyRemain"
 
-def checkKeyPart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkKeyPart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.checkKeyPart"
 
-def isAlphaNumASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAlphaNumASCII [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.isAlphaNumASCII"
 
-def checkKeyTenant [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkKeyTenant [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.checkKeyTenant"
 
-def checkKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.checkKey"
 
-def newMember [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newMember [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.newMember"
 
-def parseMember [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseMember [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.parseMember"
 
-def ParseTraceState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseTraceState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.opentelemetry.io/otel/trace.ParseTraceState"
 
 instance info' : PkgInfo pkg_id.go_opentelemetry_io.otel.trace where
@@ -516,7 +516,7 @@ instance info' : PkgInfo pkg_id.go_opentelemetry_io.otel.trace where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_opentelemetry_io.otel.trace)) (Lam BAnon
   (App (Val exception_do)

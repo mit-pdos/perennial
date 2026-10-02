@@ -22,16 +22,16 @@ def Ordered [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Ordered
 
-def Less [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Less [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"cmp.Less"
 
-def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"cmp.Compare"
 
-def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"cmp.isNaN"
 
-def Or [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Or [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"cmp.Or"
 
 /-- Less reports whether x is less than y.
@@ -39,7 +39,7 @@ def Or [ffi_syntax] [GoGlobalContext] : go_string :=
     and -0.0 is not less than (is equal to) 0.0.
 
     go: cmp.go:28:6 -/
-def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -60,7 +60,7 @@ def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
     a NaN is considered equal to a NaN, and -0.0 is equal to 0.0.
 
     go: cmp.go:40:6 -/
-def «Compareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Compareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exception_do)
@@ -115,7 +115,7 @@ def «Compareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
     This will always return false if T is not floating-point.
 
     go: cmp.go:63:6 -/
-def «isNaNⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «isNaNⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "x"
   (App (Val exception_do)
   (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
@@ -126,7 +126,7 @@ def «isNaNⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
     If no argument is non-zero, it returns the zero value.
 
     go: cmp.go:69:6 -/
-def «Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
   (LamV "vals"
   (App (Val exception_do)
   (Let "vals" (App (Val (GoInstruction (GoAlloc (go.type.SliceType T)))) (Var "vals"))
@@ -154,7 +154,7 @@ def «Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
 instance info' : PkgInfo pkg_id.cmp where
   pkg_imported_pkgs := []
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.cmp)) (Lam BAnon
   (App (Val exception_do)

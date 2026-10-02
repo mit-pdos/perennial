@@ -24,41 +24,41 @@ attribute [irreducible] Status
 
 axiom «Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-def File_google_rpc_status_proto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def File_google_rpc_status_proto [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.File_google_rpc_status_proto"
 
-def file_google_rpc_status_proto_rawDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_rawDesc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDesc"
 
 axiom file_google_rpc_status_proto_rawDesc'init [ffi_syntax] [GoGlobalContext] : val
 
-def file_google_rpc_status_proto_rawDescOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_rawDescOnce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDescOnce"
 
-def file_google_rpc_status_proto_rawDescData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_rawDescData [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDescData"
 
 axiom file_google_rpc_status_proto_rawDescData'init [ffi_syntax] [GoGlobalContext] : val
 
-def file_google_rpc_status_proto_msgTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_msgTypes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_msgTypes"
 
 axiom file_google_rpc_status_proto_msgTypes'init [ffi_syntax] [GoGlobalContext] : val
 
-def file_google_rpc_status_proto_goTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_goTypes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_goTypes"
 
 axiom file_google_rpc_status_proto_goTypes'init [ffi_syntax] [GoGlobalContext] : val
 
-def file_google_rpc_status_proto_depIdxs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_depIdxs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_depIdxs"
 
 axiom file_google_rpc_status_proto_depIdxs'init [ffi_syntax] [GoGlobalContext] : val
 
-def file_google_rpc_status_proto_rawDescGZIP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_rawDescGZIP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDescGZIP"
 
-def file_google_rpc_status_proto_init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_init [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_init"
 
 instance info' : PkgInfo pkg_id.google_golang_org.genproto.googleapis.rpc.status where
@@ -66,7 +66,7 @@ instance info' : PkgInfo pkg_id.google_golang_org.genproto.googleapis.rpc.status
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.google_golang_org.genproto.googleapis.rpc.status)) (Lam BAnon
   (App (Val exception_do)

@@ -24,74 +24,74 @@ def DiscoveryError [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] DiscoveryError
 
-def ErrUnknownMethod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnknownMethod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrUnknownMethod"
 
-def ErrStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrStopped [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrStopped"
 
-def ErrCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrCanceled"
 
-def ErrTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeout"
 
-def ErrTimeoutDueToLeaderFail [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutDueToLeaderFail [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeoutDueToLeaderFail"
 
-def ErrTimeoutDueToConnectionLost [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutDueToConnectionLost [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeoutDueToConnectionLost"
 
-def ErrTimeoutLeaderTransfer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutLeaderTransfer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeoutLeaderTransfer"
 
-def ErrTimeoutWaitAppliedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutWaitAppliedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeoutWaitAppliedIndex"
 
-def ErrLeaderChanged [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLeaderChanged [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrLeaderChanged"
 
-def ErrNotEnoughStartedMembers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotEnoughStartedMembers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrNotEnoughStartedMembers"
 
-def ErrLearnerNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLearnerNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrLearnerNotReady"
 
-def ErrNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrNoLeader"
 
-def ErrNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrNotLeader"
 
-def ErrRequestTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRequestTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrRequestTooLarge"
 
-def ErrNoSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoSpace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrNoSpace"
 
-def ErrTooManyRequests [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTooManyRequests [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTooManyRequests"
 
-def ErrUnhealthy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnhealthy [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrUnhealthy"
 
-def ErrCorrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrCorrupt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrCorrupt"
 
-def ErrBadLeaderTransferee [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrBadLeaderTransferee [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrBadLeaderTransferee"
 
-def ErrClusterVersionUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClusterVersionUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrClusterVersionUnavailable"
 
-def ErrWrongDowngradeVersionFormat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrWrongDowngradeVersionFormat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrWrongDowngradeVersionFormat"
 
-def ErrKeyNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrKeyNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrKeyNotFound"
 
 /-- go: errors.go:53:25 -/
-def «DiscoveryError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DiscoveryError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exception_do)
@@ -106,7 +106,7 @@ def «DiscoveryError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.etcdserver.errors where
   pkg_imported_pkgs := [pkg_id.errors, pkg_id.fmt]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.etcdserver.errors)) (Lam BAnon
   (App (Val exception_do)

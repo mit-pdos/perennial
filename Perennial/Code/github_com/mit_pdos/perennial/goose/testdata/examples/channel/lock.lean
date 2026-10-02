@@ -23,13 +23,13 @@ def Lock [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Lock
 
-def NewLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock.NewLock"
 
 /-- NewLock returns a new Lock backed by a buffered channel of size 1.
 
     go: lock.go:15:6 -/
-def «NewLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -37,7 +37,7 @@ def «NewLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral Lock))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) (Var "$v0")))]))))))
 
 /-- go: lock.go:21:15 -/
-def «Lock__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lock__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -54,7 +54,7 @@ def «Lock__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This will block if the lock is not currently held.
 
     go: lock.go:27:15 -/
-def «Lock__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lock__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -69,7 +69,7 @@ def «Lock__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Returns true on success, false if already held.
 
     go: lock.go:33:15 -/
-def «Lock__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lock__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exception_do)
@@ -84,7 +84,7 @@ def «Lock__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Returns true if acquired, false if timed out.
 
     go: lock.go:44:15 -/
-def «Lock__LockWithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lock__LockWithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "d"
   (App (Val exception_do)
@@ -103,7 +103,7 @@ def «Lock__LockWithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock where
   pkg_imported_pkgs := [pkg_id.time]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock)) (Lam BAnon
   (App (Val exception_do)

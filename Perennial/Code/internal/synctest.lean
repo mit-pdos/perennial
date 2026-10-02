@@ -38,43 +38,43 @@ axiom CurrentBubble [ffi_syntax] [GoGlobalContext] : val
 
 axiom OtherBubble [ffi_syntax] [GoGlobalContext] : val
 
-def Run [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Run [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.Run"
 
-def Wait [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Wait [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.Wait"
 
-def IsInBubble [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsInBubble [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.IsInBubble"
 
-def Associate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Associate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.Associate"
 
-def associate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def associate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.associate"
 
-def Disassociate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Disassociate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.Disassociate"
 
-def disassociate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def disassociate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.disassociate"
 
-def IsAssociated [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsAssociated [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.IsAssociated"
 
-def isAssociated [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAssociated [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.isAssociated"
 
-def acquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.acquire"
 
-def release [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def release [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.release"
 
-def inBubble [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inBubble [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.inBubble"
 
-def Acquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Acquire [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"internal/synctest.Acquire"
 
 instance info' : PkgInfo pkg_id.internal.synctest where
@@ -82,7 +82,7 @@ instance info' : PkgInfo pkg_id.internal.synctest where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.internal.synctest)) (Lam BAnon
   (App (Val exception_do)

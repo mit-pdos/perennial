@@ -128,330 +128,330 @@ axiom MemberAttributesSuffix [ffi_syntax] [GoGlobalContext] : val
 
 axiom MemberRaftAttributesSuffix [ffi_syntax] [GoGlobalContext] : val
 
-def authEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authEnabled"
 
 axiom authEnabled'init [ffi_syntax] [GoGlobalContext] : val
 
-def authDisabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authDisabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authDisabled"
 
 axiom authDisabled'init [ffi_syntax] [GoGlobalContext] : val
 
-def keyBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def keyBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.keyBucketName"
 
 axiom keyBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def metaBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def metaBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.metaBucketName"
 
 axiom metaBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def leaseBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leaseBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.leaseBucketName"
 
 axiom leaseBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def alarmBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def alarmBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.alarmBucketName"
 
 axiom alarmBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def clusterBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clusterBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.clusterBucketName"
 
 axiom clusterBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def membersBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def membersBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.membersBucketName"
 
 axiom membersBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def membersRemovedBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def membersRemovedBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.membersRemovedBucketName"
 
 axiom membersRemovedBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def authBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authBucketName"
 
 axiom authBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def authUsersBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authUsersBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authUsersBucketName"
 
 axiom authUsersBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def authRolesBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authRolesBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authRolesBucketName"
 
 axiom authRolesBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def testBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.testBucketName"
 
 axiom testBucketName'init [ffi_syntax] [GoGlobalContext] : val
 
-def Key [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Key [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Key"
 
 axiom Key'init [ffi_syntax] [GoGlobalContext] : val
 
-def Meta [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Meta [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Meta"
 
 axiom Meta'init [ffi_syntax] [GoGlobalContext] : val
 
-def Lease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Lease"
 
 axiom Lease'init [ffi_syntax] [GoGlobalContext] : val
 
-def Alarm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Alarm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Alarm"
 
 axiom Alarm'init [ffi_syntax] [GoGlobalContext] : val
 
-def Cluster [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Cluster [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Cluster"
 
 axiom Cluster'init [ffi_syntax] [GoGlobalContext] : val
 
-def Members [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Members [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Members"
 
 axiom Members'init [ffi_syntax] [GoGlobalContext] : val
 
-def MembersRemoved [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MembersRemoved [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MembersRemoved"
 
 axiom MembersRemoved'init [ffi_syntax] [GoGlobalContext] : val
 
-def Auth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Auth [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Auth"
 
 axiom Auth'init [ffi_syntax] [GoGlobalContext] : val
 
-def AuthUsers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AuthUsers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AuthUsers"
 
 axiom AuthUsers'init [ffi_syntax] [GoGlobalContext] : val
 
-def AuthRoles [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AuthRoles [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AuthRoles"
 
 axiom AuthRoles'init [ffi_syntax] [GoGlobalContext] : val
 
-def Test [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Test [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Test"
 
 axiom Test'init [ffi_syntax] [GoGlobalContext] : val
 
-def AllBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AllBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AllBuckets"
 
 axiom AllBuckets'init [ffi_syntax] [GoGlobalContext] : val
 
-def ScheduledCompactKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ScheduledCompactKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ScheduledCompactKeyName"
 
 axiom ScheduledCompactKeyName'init [ffi_syntax] [GoGlobalContext] : val
 
-def FinishedCompactKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FinishedCompactKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.FinishedCompactKeyName"
 
 axiom FinishedCompactKeyName'init [ffi_syntax] [GoGlobalContext] : val
 
-def MetaConsistentIndexKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetaConsistentIndexKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MetaConsistentIndexKeyName"
 
 axiom MetaConsistentIndexKeyName'init [ffi_syntax] [GoGlobalContext] : val
 
-def AuthEnabledKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AuthEnabledKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AuthEnabledKeyName"
 
 axiom AuthEnabledKeyName'init [ffi_syntax] [GoGlobalContext] : val
 
-def AuthRevisionKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AuthRevisionKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AuthRevisionKeyName"
 
 axiom AuthRevisionKeyName'init [ffi_syntax] [GoGlobalContext] : val
 
-def MetaTermKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetaTermKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MetaTermKeyName"
 
 axiom MetaTermKeyName'init [ffi_syntax] [GoGlobalContext] : val
 
-def MetaConfStateName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetaConfStateName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MetaConfStateName"
 
 axiom MetaConfStateName'init [ffi_syntax] [GoGlobalContext] : val
 
-def ClusterClusterVersionKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClusterClusterVersionKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ClusterClusterVersionKeyName"
 
 axiom ClusterClusterVersionKeyName'init [ffi_syntax] [GoGlobalContext] : val
 
-def ClusterDowngradeKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClusterDowngradeKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ClusterDowngradeKeyName"
 
 axiom ClusterDowngradeKeyName'init [ffi_syntax] [GoGlobalContext] : val
 
-def MetaStorageVersionName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetaStorageVersionName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MetaStorageVersionName"
 
 axiom MetaStorageVersionName'init [ffi_syntax] [GoGlobalContext] : val
 
-def schemaChanges [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schemaChanges [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.schemaChanges"
 
 axiom schemaChanges'init [ffi_syntax] [GoGlobalContext] : val
 
-def emptyStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.emptyStorageVersion"
 
 axiom emptyStorageVersion'init [ffi_syntax] [GoGlobalContext] : val
 
-def restoreFieldValueAction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def restoreFieldValueAction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.restoreFieldValueAction"
 
-def NewAlarmBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAlarmBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.NewAlarmBackend"
 
-def NewAuthBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAuthBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.NewAuthBackend"
 
-def unsafeReadAuthEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeReadAuthEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeReadAuthEnabled"
 
-def unsafeReadAuthRevision [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeReadAuthRevision [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeReadAuthRevision"
 
-def UnsafeCreateAuthRolesBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeCreateAuthRolesBucket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeCreateAuthRolesBucket"
 
-def unsafeGetRole [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeGetRole [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeGetRole"
 
-def unsafeGetAllRoles [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeGetAllRoles [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeGetAllRoles"
 
-def unsafeGetUser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeGetUser [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeGetUser"
 
-def unsafeGetAllUsers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeGetAllUsers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeGetAllUsers"
 
-def DefaultIgnores [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultIgnores [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.DefaultIgnores"
 
-def BackendMemberKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BackendMemberKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.BackendMemberKey"
 
-def addNewField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addNewField [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.addNewField"
 
-def UnsafeCreateMetaBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeCreateMetaBucket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeCreateMetaBucket"
 
-def CreateMetaBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CreateMetaBucket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.CreateMetaBucket"
 
-def UnsafeReadConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeReadConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeReadConsistentIndex"
 
-def ReadConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ReadConsistentIndex"
 
-def UnsafeUpdateConsistentIndexForce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeUpdateConsistentIndexForce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeUpdateConsistentIndexForce"
 
-def UnsafeUpdateConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeUpdateConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeUpdateConsistentIndex"
 
-def unsafeUpdateConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeUpdateConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeUpdateConsistentIndex"
 
-def MustUnsafeSaveConfStateToBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustUnsafeSaveConfStateToBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MustUnsafeSaveConfStateToBackend"
 
-def UnsafeConfStateFromBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeConfStateFromBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeConfStateFromBackend"
 
-def UnsafeCreateLeaseBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeCreateLeaseBucket [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeCreateLeaseBucket"
 
-def MustUnsafeGetAllLeases [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustUnsafeGetAllLeases [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MustUnsafeGetAllLeases"
 
-def MustUnsafePutLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustUnsafePutLease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MustUnsafePutLease"
 
-def UnsafeDeleteLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeDeleteLease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeDeleteLease"
 
-def MustUnsafeGetLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustUnsafeGetLease [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MustUnsafeGetLease"
 
-def leaseIDToBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leaseIDToBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.leaseIDToBytes"
 
-def bytesToLeaseID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bytesToLeaseID [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.bytesToLeaseID"
 
-def NewMembershipBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMembershipBackend [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.NewMembershipBackend"
 
-def mustParseMemberIDFromBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mustParseMemberIDFromBytes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.mustParseMemberIDFromBytes"
 
-def newPlan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newPlan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.newPlan"
 
-def newMigrationStep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newMigrationStep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.newMigrationStep"
 
-def trimToMinor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimToMinor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.trimToMinor"
 
-def Validate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Validate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Validate"
 
-def unsafeValidate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeValidate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeValidate"
 
-def localBinaryVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def localBinaryVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.localBinaryVersion"
 
-def Migrate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Migrate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Migrate"
 
-def UnsafeMigrate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeMigrate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeMigrate"
 
-def DetectSchemaVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DetectSchemaVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.DetectSchemaVersion"
 
-def UnsafeDetectSchemaVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeDetectSchemaVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeDetectSchemaVersion"
 
-def schemaChangesForVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schemaChangesForVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.schemaChangesForVersion"
 
-def ReadStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ReadStorageVersion"
 
-def UnsafeReadStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeReadStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeReadStorageVersion"
 
-def ReadStorageVersionFromSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadStorageVersionFromSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ReadStorageVersionFromSnapshot"
 
-def UnsafeSetStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeSetStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeSetStorageVersion"
 
-def UnsafeClearStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeClearStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeClearStorageVersion"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.storage.schema where
@@ -459,7 +459,7 @@ instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.storage.schema where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.storage.schema)) (Lam BAnon
   (App (Val exception_do)

@@ -283,347 +283,347 @@ axiom recoverAndReturnPanic [ffi_syntax] [GoGlobalContext] : val
 
 axiom parallelConflict [ffi_syntax] [GoGlobalContext] : val
 
-def matchBenchmarks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchBenchmarks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.matchBenchmarks"
 
-def benchmarkMemory [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def benchmarkMemory [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.benchmarkMemory"
 
-def benchTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def benchTime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.benchTime"
 
 axiom benchTime'init [ffi_syntax] [GoGlobalContext] : val
 
-def benchmarkLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def benchmarkLock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.benchmarkLock"
 
-def memStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memStats [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.memStats"
 
-def labelsOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def labelsOnce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.labelsOnce"
 
-def hideStdoutForTesting [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hideStdoutForTesting [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.hideStdoutForTesting"
 
 axiom hideStdoutForTesting'init [ffi_syntax] [GoGlobalContext] : val
 
-def matchFuzz [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchFuzz [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.matchFuzz"
 
-def fuzzDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fuzzDuration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.fuzzDuration"
 
-def minimizeDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def minimizeDuration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.minimizeDuration"
 
 axiom minimizeDuration'init [ffi_syntax] [GoGlobalContext] : val
 
-def fuzzCacheDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fuzzCacheDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.fuzzCacheDir"
 
-def isFuzzWorker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isFuzzWorker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.isFuzzWorker"
 
-def corpusDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def corpusDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.corpusDir"
 
 axiom corpusDir'init [ffi_syntax] [GoGlobalContext] : val
 
-def supportedTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def supportedTypes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.supportedTypes"
 
 axiom supportedTypes'init [ffi_syntax] [GoGlobalContext] : val
 
-def matchMutex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchMutex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.matchMutex"
 
-def cover [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cover [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.cover"
 
-def initRan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initRan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.initRan"
 
-def parallelStart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parallelStart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.parallelStart"
 
-def parallelStop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parallelStop [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.parallelStop"
 
-def short [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def short [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.short"
 
-def failFast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def failFast [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.failFast"
 
-def outputDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def outputDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.outputDir"
 
-def artifacts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def artifacts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.artifacts"
 
-def chatty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chatty [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.chatty"
 
-def count [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def count [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.count"
 
-def coverProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def coverProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.coverProfile"
 
-def gocoverdir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gocoverdir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.gocoverdir"
 
-def matchList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.matchList"
 
-def match' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def match' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.match"
 
-def skip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.skip"
 
-def memProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.memProfile"
 
-def memProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def memProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.memProfileRate"
 
-def cpuProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cpuProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.cpuProfile"
 
-def blockProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.blockProfile"
 
-def blockProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockProfileRate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.blockProfileRate"
 
-def mutexProfile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexProfile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.mutexProfile"
 
-def mutexProfileFraction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mutexProfileFraction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.mutexProfileFraction"
 
-def panicOnExit0 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicOnExit0 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.panicOnExit0"
 
-def traceFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def traceFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.traceFile"
 
-def timeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.timeout"
 
-def cpuListStr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cpuListStr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.cpuListStr"
 
-def parallel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parallel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.parallel"
 
-def shuffle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shuffle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.shuffle"
 
-def testlog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testlog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.testlog"
 
-def fullPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fullPath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.fullPath"
 
-def haveExamples [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def haveExamples [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.haveExamples"
 
-def cpuList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cpuList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.cpuList"
 
-def testlogFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testlogFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.testlogFile"
 
-def artifactDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def artifactDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.artifactDir"
 
-def numFailed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def numFailed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.numFailed"
 
-def running [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def running [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.running"
 
-def testBinary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBinary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.testBinary"
 
 axiom testBinary'init [ffi_syntax] [GoGlobalContext] : val
 
-def errNilPanicOrGoexit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNilPanicOrGoexit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.errNilPanicOrGoexit"
 
 axiom errNilPanicOrGoexit'init [ffi_syntax] [GoGlobalContext] : val
 
-def errMain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errMain [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.errMain"
 
 axiom errMain'init [ffi_syntax] [GoGlobalContext] : val
 
-def testingTesting [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testingTesting [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.testingTesting"
 
-def realStderr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def realStderr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.realStderr"
 
-def AllocsPerRun [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AllocsPerRun [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.AllocsPerRun"
 
-def initBenchmarkFlags [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initBenchmarkFlags [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.initBenchmarkFlags"
 
-def predictN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def predictN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.predictN"
 
-def prettyPrint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prettyPrint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.prettyPrint"
 
-def benchmarkName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def benchmarkName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.benchmarkName"
 
-def RunBenchmarks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RunBenchmarks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.RunBenchmarks"
 
-def runBenchmarks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runBenchmarks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.runBenchmarks"
 
-def Benchmark [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Benchmark [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.Benchmark"
 
-def RegisterCover [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterCover [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.RegisterCover"
 
-def RunExamples [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RunExamples [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.RunExamples"
 
-def runExamples [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runExamples [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.runExamples"
 
-def initFuzzFlags [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initFuzzFlags [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.initFuzzFlags"
 
-def runFuzzTests [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runFuzzTests [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.runFuzzTests"
 
-def runFuzzing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runFuzzing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.runFuzzing"
 
-def fRunner [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fRunner [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.fRunner"
 
-def allMatcher [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allMatcher [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.allMatcher"
 
-def newMatcher [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newMatcher [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.newMatcher"
 
-def splitRegexp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def splitRegexp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.splitRegexp"
 
-def parseSubtestNumber [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseSubtestNumber [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.parseSubtestNumber"
 
-def rewrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rewrite [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.rewrite"
 
-def isSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSpace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.isSpace"
 
-def registerCover [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def registerCover [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.registerCover"
 
-def coverReport [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def coverReport [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.coverReport"
 
-def Coverage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Coverage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.Coverage"
 
-def runExample [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runExample [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.runExample"
 
-def Init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Init [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.Init"
 
-def newChattyPrinter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newChattyPrinter [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.newChattyPrinter"
 
-def Short [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Short [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.Short"
 
-def Testing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Testing [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.Testing"
 
-def CoverMode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CoverMode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.CoverMode"
 
-def Verbose [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Verbose [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.Verbose"
 
-def fmtDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmtDuration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.fmtDuration"
 
-def hashString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.hashString"
 
-def removeSymbolsExcept [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeSymbolsExcept [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.removeSymbolsExcept"
 
-def removeAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.removeAll"
 
-def callerName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def callerName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.callerName"
 
-def pcToName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pcToName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.pcToName"
 
-def checkParallel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkParallel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.checkParallel"
 
-def tRunner [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tRunner [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.tRunner"
 
-def testingSynctestTest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testingSynctestTest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.testingSynctestTest"
 
-def newTestState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTestState [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.newTestState"
 
-def Main [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Main [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.Main"
 
-def MainStart [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MainStart [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.MainStart"
 
-def listTests [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def listTests [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.listTests"
 
-def RunTests [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RunTests [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.RunTests"
 
-def runTests [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runTests [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.runTests"
 
-def toOutputDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toOutputDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.toOutputDir"
 
-def runningList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runningList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.runningList"
 
-def parseCpuList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseCpuList [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.parseCpuList"
 
-def shouldFailFast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shouldFailFast [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.shouldFailFast"
 
-def isWindowsRetryable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isWindowsRetryable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.isWindowsRetryable"
 
-def highPrecisionTimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def highPrecisionTimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.highPrecisionTimeNow"
 
-def highPrecisionTimeSince [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def highPrecisionTimeSince [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"testing.highPrecisionTimeSince"
 
 instance info' : PkgInfo pkg_id.testing where
@@ -631,7 +631,7 @@ instance info' : PkgInfo pkg_id.testing where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.testing)) (Lam BAnon
   (App (Val exception_do)

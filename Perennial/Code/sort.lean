@@ -69,175 +69,175 @@ axiom «Float64Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «StringSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-@[reducible] def unknownHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def unknownHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] def increasingHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def increasingHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def decreasingHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def decreasingHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-def Search [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Search [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Search"
 
-def Find [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Find [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Find"
 
-def SearchInts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SearchInts [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.SearchInts"
 
-def SearchFloat64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SearchFloat64s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.SearchFloat64s"
 
-def SearchStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SearchStrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.SearchStrings"
 
-def Slice' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Slice' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Slice"
 
-def SliceStable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SliceStable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.SliceStable"
 
-def SliceIsSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SliceIsSorted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.SliceIsSorted"
 
-def «Sort» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «Sort» [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Sort"
 
-def nextPowerOfTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextPowerOfTwo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.nextPowerOfTwo"
 
-def Reverse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reverse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Reverse"
 
-def IsSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsSorted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.IsSorted"
 
-def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.isNaN"
 
-def Ints [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Ints [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Ints"
 
-def Float64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Float64s"
 
-def Strings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Strings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Strings"
 
-def IntsAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IntsAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.IntsAreSorted"
 
-def Float64sAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64sAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Float64sAreSorted"
 
-def StringsAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringsAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.StringsAreSorted"
 
-def Stable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.Stable"
 
-def insertionSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def insertionSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.insertionSort_func"
 
-def siftDown_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def siftDown_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.siftDown_func"
 
-def heapSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.heapSort_func"
 
-def pdqsort_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pdqsort_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.pdqsort_func"
 
-def partition_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partition_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.partition_func"
 
-def partitionEqual_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partitionEqual_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.partitionEqual_func"
 
-def partialInsertionSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partialInsertionSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.partialInsertionSort_func"
 
-def breakPatterns_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def breakPatterns_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.breakPatterns_func"
 
-def choosePivot_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def choosePivot_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.choosePivot_func"
 
-def order2_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def order2_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.order2_func"
 
-def median_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def median_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.median_func"
 
-def medianAdjacent_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def medianAdjacent_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.medianAdjacent_func"
 
-def reverseRange_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reverseRange_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.reverseRange_func"
 
-def swapRange_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def swapRange_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.swapRange_func"
 
-def stable_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stable_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.stable_func"
 
-def symMerge_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symMerge_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.symMerge_func"
 
-def rotate_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rotate_func [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.rotate_func"
 
-def insertionSort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def insertionSort [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.insertionSort"
 
-def siftDown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def siftDown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.siftDown"
 
-def heapSort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSort [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.heapSort"
 
-def pdqsort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pdqsort [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.pdqsort"
 
-def partition [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partition [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.partition"
 
-def partitionEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partitionEqual [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.partitionEqual"
 
-def partialInsertionSort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partialInsertionSort [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.partialInsertionSort"
 
-def breakPatterns [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def breakPatterns [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.breakPatterns"
 
-def choosePivot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def choosePivot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.choosePivot"
 
-def order2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def order2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.order2"
 
-def median [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def median [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.median"
 
-def medianAdjacent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def medianAdjacent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.medianAdjacent"
 
-def reverseRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reverseRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.reverseRange"
 
-def swapRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def swapRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.swapRange"
 
-def stable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.stable"
 
-def symMerge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symMerge [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.symMerge"
 
-def rotate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rotate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sort.rotate"
 
 /-- Search uses binary search to find and return the smallest index i
@@ -291,7 +291,7 @@ def rotate [ffi_syntax] [GoGlobalContext] : go_string :=
     	}
 
     go: search.go:58:6 -/
-def «Searchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Searchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "f"
   (App (Val exception_do)
@@ -354,7 +354,7 @@ def «Searchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     	}
 
     go: search.go:99:6 -/
-def «Findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "cmp"
   (App (Val exception_do)
@@ -399,7 +399,7 @@ def «Findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     The slice must be sorted in ascending order.
 
     go: search.go:123:6 -/
-def «SearchIntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SearchIntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "x"
   (App (Val exception_do)
@@ -416,7 +416,7 @@ def «SearchIntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve Search []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: sort.go:70:20 -/
-def «xorshift__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «xorshift__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exception_do)
@@ -438,7 +438,7 @@ instance info' : PkgInfo pkg_id.sort where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.sort)) (Lam BAnon
   (App (Val exception_do)

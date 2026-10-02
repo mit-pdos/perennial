@@ -44,33 +44,33 @@ axiom SignatureSize [ffi_syntax] [GoGlobalContext] : val
 
 axiom SeedSize [ffi_syntax] [GoGlobalContext] : val
 
-def privateKeyCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def privateKeyCache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.privateKeyCache"
 
-def cryptocustomrand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cryptocustomrand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.cryptocustomrand"
 
 axiom cryptocustomrand'init [ffi_syntax] [GoGlobalContext] : val
 
-def GenerateKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GenerateKey [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.GenerateKey"
 
-def NewKeyFromSeed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewKeyFromSeed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.NewKeyFromSeed"
 
-def newKeyFromSeed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newKeyFromSeed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.newKeyFromSeed"
 
-def Sign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sign [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.Sign"
 
-def sign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sign [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.sign"
 
-def Verify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Verify [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.Verify"
 
-def VerifyWithOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def VerifyWithOptions [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"crypto/ed25519.VerifyWithOptions"
 
 instance info' : PkgInfo pkg_id.crypto.ed25519 where
@@ -78,7 +78,7 @@ instance info' : PkgInfo pkg_id.crypto.ed25519 where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.ed25519)) (Lam BAnon
   (App (Val exception_do)

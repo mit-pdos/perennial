@@ -519,14 +519,16 @@ instance multiReader_access_load_readers (l : loc) (v : io.multiReader.t) (dq : 
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) v.readers' dq)
       (typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) v.readers' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance multiReader_access_store_readers (l : loc) (v : io.multiReader.t) (readers' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) v.readers' (DFrac.own 1))
       (typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) readers' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readers' := readers' } : io.multiReader.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readers' := readers' } : io.multiReader.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_
@@ -557,14 +559,16 @@ instance multiWriter_access_load_writers (l : loc) (v : io.multiWriter.t) (dq : 
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) v.writers' dq)
       (typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) v.writers' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance multiWriter_access_store_writers (l : loc) (v : io.multiWriter.t) (writers' : slice.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) v.writers' (DFrac.own 1))
       (typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) writers' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with writers' := writers' } : io.multiWriter.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with writers' := writers' } : io.multiWriter.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

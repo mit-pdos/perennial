@@ -47,12 +47,12 @@ instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "LeanTypedPo
     "_" ∷ True)
   typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
   typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := {{ if $.TrustProofGen }}sorry -- Rocq: Admitted{{ else }}by solve_typed_pointsto_agree{{ end }}
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 {{- end }}
 
 instance {{leanq (print $t.RawName "_into_val_typed")}} {{ template "LeanIntoValParams" $t.TypeParams }}:
     IntoValTypedUnderlying (GF := GF) {{template "LeanGallinaType" $t}} {{ template "LeanGoTypeImpl" $t}} :=
-{{- if or $t.Axiomatize $.TrustProofGen }}
+{{- if $t.Axiomatize }}
   sorry -- Rocq: Admitted
 {{- else }} by
   solve_into_val_typed_struct
@@ -63,18 +63,16 @@ instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ template "LeanT
       (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
       (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-{{- if $.TrustProofGen }}
-  sorry -- Rocq: Admitted{{ else }} by
-  solve_pointsto_access_struct{{ end }}
+ by
+  solve_pointsto_access_struct
 
 instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : loc) (v : {{ template "LeanGallinaType" $t}}) ({{$f.Proj}} : {{$f.Type}}) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} (DFrac.own 1))
       (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) {{$f.Proj}} (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with {{$f.Proj}} := {{$f.Proj}} } : {{ template "LeanGallinaType" $t}}) (DFrac.own 1)) :=
-{{- if $.TrustProofGen }}
-  sorry -- Rocq: Admitted{{ else }} by
-  solve_pointsto_access_struct{{ end }}
+ by
+  solve_pointsto_access_struct
 {{ end }}
 end def_
 end {{$t.Name}}

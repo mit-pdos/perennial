@@ -21,31 +21,31 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session
 
-def sessionc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sessionc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.sessionc"
 
-def mu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.mu"
 
-def newSession [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSession [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.newSession"
 
-def waitForSessionExpiration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitForSessionExpiration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.waitForSessionExpiration"
 
-def monitorSession [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def monitorSession [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.monitorSession"
 
-def waitSession [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitSession [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.waitSession"
 
-def sessionMain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sessionMain [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.sessionMain"
 
 /-- Mock something that might take a while, and can fail
 
     go: e.go:15:6 -/
-def «newSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -61,14 +61,14 @@ def «newSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Mock something that might take a while.
 
     go: e.go:23:6 -/
-def «waitForSessionExpirationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitForSessionExpirationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_execute)
   (Val #()))))
 
 /-- go: e.go:26:6 -/
-def «monitorSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «monitorSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -115,7 +115,7 @@ def «monitorSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))
 
 /-- go: e.go:49:6 -/
-def «waitSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) : val :=
+noncomputable def «waitSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) : val :=
   (LamV "cancel"
   (App (Val exception_do)
   (Let "cancel" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.recvonly A)))) (Var "cancel"))
@@ -141,7 +141,7 @@ def «waitSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) : va
   (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #())))))))
 
 /-- go: e.go:61:6 -/
-def «sessionMainⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «sessionMainⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -160,7 +160,7 @@ def «sessionMainⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session where
   pkg_imported_pkgs := [pkg_id.errors, pkg_id.sync, pkg_id.time, pkg_id.github_com.goose_lang.primitive]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session)) (Lam BAnon
   (App (Val exception_do)

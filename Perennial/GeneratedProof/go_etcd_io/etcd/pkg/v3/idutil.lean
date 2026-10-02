@@ -42,28 +42,32 @@ instance Generator_access_load_prefix (l : loc) (v : go_etcd_io.etcd.pkg.v3.idut
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) v.prefix' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) v.prefix' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Generator_access_store_prefix (l : loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (prefix' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) v.prefix' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) prefix' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with prefix' := prefix' } : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with prefix' := prefix' } : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Generator_access_load_suffix (l : loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) v.suffix' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) v.suffix' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Generator_access_store_suffix (l : loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (suffix' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) v.suffix' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) suffix' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with suffix' := suffix' } : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with suffix' := suffix' } : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

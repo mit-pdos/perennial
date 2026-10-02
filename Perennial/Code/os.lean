@@ -311,667 +311,667 @@ axiom ModeType [ffi_syntax] [GoGlobalContext] : val
 
 axiom ModePerm [ffi_syntax] [GoGlobalContext] : val
 
-def dirBufPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dirBufPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.dirBufPool"
 
 axiom dirBufPool'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrInvalid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrInvalid"
 
 axiom ErrInvalid'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrPermission [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrPermission [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrPermission"
 
 axiom ErrPermission'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrExist"
 
 axiom ErrExist'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrNotExist"
 
 axiom ErrNotExist'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrClosed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClosed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrClosed"
 
 axiom ErrClosed'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrNoDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrNoDeadline"
 
 axiom ErrNoDeadline'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrDeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrDeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrDeadlineExceeded"
 
 axiom ErrDeadlineExceeded'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrProcessDone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrProcessDone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrProcessDone"
 
 axiom ErrProcessDone'init [ffi_syntax] [GoGlobalContext] : val
 
-def errProcessReleased [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errProcessReleased [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.errProcessReleased"
 
 axiom errProcessReleased'init [ffi_syntax] [GoGlobalContext] : val
 
-def ErrNoHandle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoHandle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ErrNoHandle"
 
 axiom ErrNoHandle'init [ffi_syntax] [GoGlobalContext] : val
 
-def Interrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Interrupt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Interrupt"
 
 axiom Interrupt'init [ffi_syntax] [GoGlobalContext] : val
 
-def Kill [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Kill [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Kill"
 
 axiom Kill'init [ffi_syntax] [GoGlobalContext] : val
 
-def Stdin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stdin [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Stdin"
 
 axiom Stdin'init [ffi_syntax] [GoGlobalContext] : val
 
-def Stdout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stdout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Stdout"
 
 axiom Stdout'init [ffi_syntax] [GoGlobalContext] : val
 
-def Stderr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stderr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Stderr"
 
 axiom Stderr'init [ffi_syntax] [GoGlobalContext] : val
 
-def errWriteAtInAppendMode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errWriteAtInAppendMode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.errWriteAtInAppendMode"
 
 axiom errWriteAtInAppendMode'init [ffi_syntax] [GoGlobalContext] : val
 
-def errPathEscapes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errPathEscapes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.errPathEscapes"
 
 axiom errPathEscapes'init [ffi_syntax] [GoGlobalContext] : val
 
-def lstat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lstat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.lstat"
 
 axiom lstat'init [ffi_syntax] [GoGlobalContext] : val
 
-def checkWrapErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkWrapErr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.checkWrapErr"
 
 axiom checkWrapErr'init [ffi_syntax] [GoGlobalContext] : val
 
-def getwdCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getwdCache [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.getwdCache"
 
-def checkPidfdOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkPidfdOnce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.checkPidfdOnce"
 
 axiom checkPidfdOnce'init [ffi_syntax] [GoGlobalContext] : val
 
-def Args [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Args [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Args"
 
-def errPatternHasSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errPatternHasSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.errPatternHasSeparator"
 
 axiom errPatternHasSeparator'init [ffi_syntax] [GoGlobalContext] : val
 
-def pollCopyFileRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pollCopyFileRange [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.pollCopyFileRange"
 
 axiom pollCopyFileRange'init [ffi_syntax] [GoGlobalContext] : val
 
-def pollSplice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pollSplice [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.pollSplice"
 
 axiom pollSplice'init [ffi_syntax] [GoGlobalContext] : val
 
-def ReadDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ReadDir"
 
-def CopyFS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CopyFS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.CopyFS"
 
-def readInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.readInt"
 
-def readIntBE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readIntBE [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.readIntBE"
 
-def readIntLE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readIntLE [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.readIntLE"
 
-def direntIno [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def direntIno [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.direntIno"
 
-def direntReclen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def direntReclen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.direntReclen"
 
-def direntNamlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def direntNamlen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.direntNamlen"
 
-def direntType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def direntType [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.direntType"
 
-def isNoFollowErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNoFollowErr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.isNoFollowErr"
 
-def Expand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Expand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Expand"
 
-def ExpandEnv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExpandEnv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ExpandEnv"
 
-def isShellSpecialVar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isShellSpecialVar [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.isShellSpecialVar"
 
-def isAlphaNum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAlphaNum [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.isAlphaNum"
 
-def getShellName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getShellName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.getShellName"
 
-def Getenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getenv"
 
-def LookupEnv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LookupEnv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.LookupEnv"
 
-def Setenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Setenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Setenv"
 
-def Unsetenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Unsetenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Unsetenv"
 
-def Clearenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clearenv [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Clearenv"
 
-def Environ [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Environ [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Environ"
 
-def errNoDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.errNoDeadline"
 
-def errDeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errDeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.errDeadlineExceeded"
 
-def NewSyscallError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSyscallError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.NewSyscallError"
 
-def IsExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.IsExist"
 
-def IsNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.IsNotExist"
 
-def IsPermission [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsPermission [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.IsPermission"
 
-def IsTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.IsTimeout"
 
-def underlyingErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def underlyingErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.underlyingErrorIs"
 
-def underlyingError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def underlyingError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.underlyingError"
 
-def newPIDProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newPIDProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newPIDProcess"
 
-def newHandleProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newHandleProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newHandleProcess"
 
-def newDoneProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newDoneProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newDoneProcess"
 
-def Getpid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getpid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getpid"
 
-def Getppid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getppid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getppid"
 
-def FindProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FindProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.FindProcess"
 
-def StartProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StartProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.StartProcess"
 
-def startProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.startProcess"
 
-def convertESRCH [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convertESRCH [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.convertESRCH"
 
-def findProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findProcess [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.findProcess"
 
-def Executable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Executable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Executable"
 
-def executable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def executable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.executable"
 
-def NewFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.NewFile"
 
-def genericReadFrom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def genericReadFrom [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.genericReadFrom"
 
-def genericWriteTo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def genericWriteTo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.genericWriteTo"
 
-def Mkdir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Mkdir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Mkdir"
 
-def setStickyBit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setStickyBit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.setStickyBit"
 
-def Chdir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chdir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Chdir"
 
-def Open [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Open [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Open"
 
-def Create [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Create [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Create"
 
-def OpenFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpenFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.OpenFile"
 
-def openDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.openDir"
 
-def Rename [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Rename [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Rename"
 
-def Readlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Readlink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Readlink"
 
-def fixCount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fixCount [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.fixCount"
 
-def TempDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TempDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.TempDir"
 
-def UserCacheDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UserCacheDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.UserCacheDir"
 
-def UserConfigDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UserConfigDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.UserConfigDir"
 
-def UserHomeDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UserHomeDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.UserHomeDir"
 
-def Chmod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chmod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Chmod"
 
-def DirFS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DirFS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.DirFS"
 
-def ReadFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ReadFile"
 
-def statOrZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def statOrZero [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.statOrZero"
 
-def readFileContents [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readFileContents [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.readFileContents"
 
-def WriteFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.WriteFile"
 
-def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.open"
 
-def syscallMode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscallMode [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.syscallMode"
 
-def chmod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chmod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.chmod"
 
-def Chown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Chown"
 
-def Lchown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lchown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Lchown"
 
-def Chtimes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chtimes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Chtimes"
 
-def chtimesUtimes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chtimesUtimes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.chtimesUtimes"
 
-def ignoringEINTR [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ignoringEINTR [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ignoringEINTR"
 
-def ignoringEINTR2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ignoringEINTR2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ignoringEINTR2"
 
-def fixLongPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fixLongPath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.fixLongPath"
 
-def rename [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rename [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rename"
 
-def newFileFromNewFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newFileFromNewFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newFileFromNewFile"
 
-def net_newUnixFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def net_newUnixFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.net_newUnixFile"
 
-def newFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newFile"
 
-def sigpipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigpipe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.sigpipe"
 
-def epipecheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def epipecheck [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.epipecheck"
 
-def openFileNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openFileNolog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.openFileNolog"
 
-def openDirNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openDirNolog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.openDirNolog"
 
-def Truncate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Truncate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Truncate"
 
-def Remove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Remove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Remove"
 
-def tempDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tempDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.tempDir"
 
-def Link [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Link [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Link"
 
-def Symlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Symlink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Symlink"
 
-def readlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readlink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.readlink"
 
-def newUnixDirent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newUnixDirent [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newUnixDirent"
 
-def Getwd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getwd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getwd"
 
-def MkdirAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MkdirAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.MkdirAll"
 
-def RemoveAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RemoveAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.RemoveAll"
 
-def endsWithDot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def endsWithDot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.endsWithDot"
 
-def IsPathSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsPathSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.IsPathSeparator"
 
-def splitPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def splitPath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.splitPath"
 
-def ensurePidfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ensurePidfd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ensurePidfd"
 
-def getPidfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getPidfd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.getPidfd"
 
-def pidfdFind [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pidfdFind [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.pidfdFind"
 
-def pidfdWorks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pidfdWorks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.pidfdWorks"
 
-def checkPidfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkPidfd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.checkPidfd"
 
-def checkClonePidfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkClonePidfd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.checkClonePidfd"
 
-def ignoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ignoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.ignoreSIGSYS"
 
-def restoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def restoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.restoreSIGSYS"
 
-def Pipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Pipe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Pipe"
 
-def runtime_args [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_args [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.runtime_args"
 
-def Getuid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getuid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getuid"
 
-def Geteuid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Geteuid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Geteuid"
 
-def Getgid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getgid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getgid"
 
-def Getegid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getegid [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getegid"
 
-def Getgroups [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getgroups [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getgroups"
 
-def Exit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Exit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Exit"
 
-def runtime_beforeExit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_beforeExit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.runtime_beforeExit"
 
-def newRawConn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newRawConn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newRawConn"
 
-def removeAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.removeAll"
 
-def removeAllFrom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeAllFrom [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.removeAllFrom"
 
-def openDirAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openDirAt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.openDirAt"
 
-def isErrNoFollow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isErrNoFollow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.isErrNoFollow"
 
-def newDirFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newDirFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newDirFile"
 
-def OpenInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpenInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.OpenInRoot"
 
-def OpenRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpenRoot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.OpenRoot"
 
-def splitPathInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def splitPathInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.splitPathInRoot"
 
-def isValidRootFSPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isValidRootFSPath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.isValidRootFSPath"
 
-def rootCleanPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootCleanPath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootCleanPath"
 
-def rootChmod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootChmod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootChmod"
 
-def rootChown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootChown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootChown"
 
-def rootLchown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootLchown [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootLchown"
 
-def rootChtimes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootChtimes [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootChtimes"
 
-def rootMkdir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootMkdir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootMkdir"
 
-def rootMkdirAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootMkdirAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootMkdirAll"
 
-def rootReadlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootReadlink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootReadlink"
 
-def rootRemove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootRemove [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootRemove"
 
-def rootRemoveAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootRemoveAll [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootRemoveAll"
 
-def rootRename [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootRename [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootRename"
 
-def rootLink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootLink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootLink"
 
-def doInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.doInRoot"
 
-def openRootNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openRootNolog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.openRootNolog"
 
-def newRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newRoot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.newRoot"
 
-def openRootInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openRootInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.openRootInRoot"
 
-def rootOpenFileNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootOpenFileNolog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootOpenFileNolog"
 
-def rootOpenDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootOpenDir [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootOpenDir"
 
-def rootStat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootStat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootStat"
 
-def rootSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.rootSymlink"
 
-def afterResolvingSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def afterResolvingSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.afterResolvingSymlink"
 
-def chmodat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chmodat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.chmodat"
 
-def chownat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chownat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.chownat"
 
-def lchownat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lchownat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.lchownat"
 
-def chtimesat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chtimesat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.chtimesat"
 
-def mkdirat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mkdirat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.mkdirat"
 
-def removeat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.removeat"
 
-def removefileat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removefileat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.removefileat"
 
-def removedirat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removedirat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.removedirat"
 
-def renameat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def renameat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.renameat"
 
-def linkat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def linkat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.linkat"
 
-def symlinkat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symlinkat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.symlinkat"
 
-def modeAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def modeAt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.modeAt"
 
-def checkSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.checkSymlink"
 
-def readlinkat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readlinkat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.readlinkat"
 
-def Stat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Stat"
 
-def Lstat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lstat [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Lstat"
 
-def fillFileStatFromSys [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fillFileStatFromSys [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.fillFileStatFromSys"
 
-def atime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.atime"
 
-def statNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def statNolog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.statNolog"
 
-def lstatNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lstatNolog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.lstatNolog"
 
-def Hostname [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Hostname [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Hostname"
 
-def hostname [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hostname [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.hostname"
 
-def runtime_rand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_rand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.runtime_rand"
 
-def nextRandom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextRandom [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.nextRandom"
 
-def CreateTemp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CreateTemp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.CreateTemp"
 
-def prefixAndSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prefixAndSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.prefixAndSuffix"
 
-def MkdirTemp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MkdirTemp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.MkdirTemp"
 
-def joinPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def joinPath [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.joinPath"
 
-def Getpagesize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getpagesize [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.Getpagesize"
 
-def SameFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SameFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.SameFile"
 
-def sameFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sameFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.sameFile"
 
-def getPollFDAndNetwork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getPollFDAndNetwork [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.getPollFDAndNetwork"
 
-def isUnixOrTCP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isUnixOrTCP [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.isUnixOrTCP"
 
-def wrapSyscallError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wrapSyscallError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.wrapSyscallError"
 
-def tryLimitedReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tryLimitedReader [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"os.tryLimitedReader"
 
 instance info' : PkgInfo pkg_id.os where
@@ -979,7 +979,7 @@ instance info' : PkgInfo pkg_id.os where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.os)) (Lam BAnon
   (App (Val exception_do)

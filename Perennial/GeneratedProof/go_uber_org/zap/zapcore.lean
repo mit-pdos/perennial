@@ -517,70 +517,80 @@ instance Field_access_load_Key (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) v.Key' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) v.Key' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_store_Key (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (Key' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) v.Key' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Key" l) Key' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Key' := Key' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Key' := Key' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_load_Type (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) v.Type' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) v.Type' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_store_Type (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (Type' : go_uber_org.zap.zapcore.FieldType.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) v.Type' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Type" l) Type' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Type' := Type' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Type' := Type' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_load_Integer (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) v.Integer' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) v.Integer' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_store_Integer (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (Integer' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) v.Integer' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Integer" l) Integer' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Integer' := Integer' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Integer' := Integer' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_load_String (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) v.String' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) v.String' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_store_String (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (String' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) v.String' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"String" l) String' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with String' := String' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with String' := String' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_load_Interface (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) v.Interface' dq)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) v.Interface' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance Field_access_store_Interface (l : loc) (v : go_uber_org.zap.zapcore.Field.t) (Interface' : interface.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) v.Interface' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.Field.t go!"Interface" l) Interface' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Interface' := Interface' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Interface' := Interface' } : go_uber_org.zap.zapcore.Field.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

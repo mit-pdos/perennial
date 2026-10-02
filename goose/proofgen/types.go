@@ -54,7 +54,7 @@ func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Stru
 				GoString: glang.LeanStringLit(fieldName),
 				// iNamed needs the name to parse as an identifier
 				HypName: leanHypName(fieldName),
-				Type:     tr.toLeanType(s.Field(i).Type()),
+				Type:    tr.toLeanType(s.Field(i).Type()),
 			})
 		}
 	}

@@ -41,28 +41,32 @@ instance DiscoveryError_access_load_Op (l : loc) (v : go_etcd_io.etcd.server.v3.
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance DiscoveryError_access_store_Op (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (Op' : go_string) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) Op' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Op' := Op' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Op' := Op' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 instance DiscoveryError_access_load_Err (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
   solve_pointsto_access_struct
 
 instance DiscoveryError_access_store_Err (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (Err' : error.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) Err' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Err' := Err' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) := by
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Err' := Err' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) :=
+ by
   solve_pointsto_access_struct
 
 end def_

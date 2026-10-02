@@ -1000,6 +1000,11 @@ func (d StructType) Lean(m LeanMode) string {
 
 // ---- Decls ----
 
+// GooseLang function bodies and constants are emitted `noncomputable`: nothing runs GooseLang code, and
+// compiling these definitions (which `noncomputable section` alone does not
+// prevent) was the bulk of elaboration time for large packages. So are the
+// go_string constants naming functions and globals. go.type definitions stay
+// computable since Golang/Defn uses some of them in computable definitions.
 const leanDeclParams = "[ffi_syntax] [GoGlobalContext]"
 
 func leanTypeParams(names []GallinaIdent) string {
@@ -1025,7 +1030,7 @@ func (d FuncDecl) LeanDecl() string {
 		names = append(names, "_")
 	}
 	return leanComment(d.Comment) +
-		fmt.Sprintf("def %s %s%s : val :=\n  %s", LeanIdent(d.Name), leanDeclParams,
+		fmt.Sprintf("noncomputable def %s %s%s : val :=\n  %s", LeanIdent(d.Name), leanDeclParams,
 			leanTypeParams(d.TypeArgs), indent(2, vLam(names, d.Body.Lean(LeanExpr))))
 }
 
@@ -1036,8 +1041,9 @@ func (d ConstDecl) LeanDecl() string {
 		// the wp automation
 		attr = "@[reducible] "
 	}
+	nc := "noncomputable "
 	return leanComment(d.Comment) + attr +
-		fmt.Sprintf("def %s %s : %s :=\n  %s", LeanIdent(d.Name), leanDeclParams,
+		fmt.Sprintf("%sdef %s %s : %s :=\n  %s", nc, LeanIdent(d.Name), leanDeclParams,
 			d.Type.Lean(LeanTerm), indent(2, d.Val.Lean(LeanTerm)))
 }
 

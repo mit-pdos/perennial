@@ -37,67 +37,75 @@ instance tup_typed_pointsto :
     "_" ∷ True)
   typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
   typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := sorry -- Rocq: Admitted
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance tup_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.quorum.tup.t go_etcd_io.raft.v3.quorum.«tupⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.quorum.tup.t go_etcd_io.raft.v3.quorum.«tupⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 instance tup_access_load_id (l : loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance tup_access_store_id (l : loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (id' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"id" l) id' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with id' := id' } : go_etcd_io.raft.v3.quorum.tup.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance tup_access_load_idx (l : loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance tup_access_store_idx (l : loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (idx' : go_etcd_io.raft.v3.quorum.Index'.t) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) idx' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with idx' := idx' } : go_etcd_io.raft.v3.quorum.tup.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance tup_access_load_ok (l : loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance tup_access_store_ok (l : loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (ok' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) ok' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ok' := ok' } : go_etcd_io.raft.v3.quorum.tup.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance tup_access_load_bar (l : loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' dq)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' dq)
       (typed_pointsto l v dq) (typed_pointsto l v dq) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 instance tup_access_store_bar (l : loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (bar' : w64) :
     AccessStrict (PROP := IProp GF)
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' (DFrac.own 1))
       (typed_pointsto (struct_field_ref go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) bar' (DFrac.own 1))
       (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with bar' := bar' } : go_etcd_io.raft.v3.quorum.tup.t) (DFrac.own 1)) :=
-  sorry -- Rocq: Admitted
+ by
+  solve_pointsto_access_struct
 
 end def_
 end tup

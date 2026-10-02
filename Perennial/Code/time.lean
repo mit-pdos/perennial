@@ -299,14 +299,14 @@ axiom runeSelf [ffi_syntax] [GoGlobalContext] : val
 
 axiom runeError [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def hasMonotonic [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def hasMonotonic [ffi_syntax] [GoGlobalContext] : val :=
   #(9223372036854775808 : Int)
 
 axiom maxWall [ffi_syntax] [GoGlobalContext] : val
 
 axiom minWall [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def nsecMask [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def nsecMask [ffi_syntax] [GoGlobalContext] : val :=
   #(1073741823 : Int)
 
 axiom nsecShift [ffi_syntax] [GoGlobalContext] : val
@@ -371,30 +371,30 @@ axiom internalToAbsolute [ffi_syntax] [GoGlobalContext] : val
 
 axiom unixToInternal [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def internalToUnix [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def internalToUnix [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 (-62135596800))
 
 axiom absoluteToUnix [ffi_syntax] [GoGlobalContext] : val
 
 axiom unixToAbsolute [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def wallToInternal [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def wallToInternal [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 59453308800)
 
 axiom minDuration [ffi_syntax] [GoGlobalContext] : val
 
 axiom maxDuration [ffi_syntax] [GoGlobalContext] : val
 
-@[reducible] def Nanosecond [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Nanosecond [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] def Microsecond [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Microsecond [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1000)
 
-@[reducible] def Millisecond [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Millisecond [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1000000)
 
-@[reducible] def Second [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Second [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 1000000000)
 
 axiom Minute [ffi_syntax] [GoGlobalContext] : val
@@ -423,407 +423,407 @@ axiom seekCurrent [ffi_syntax] [GoGlobalContext] : val
 
 axiom seekEnd [ffi_syntax] [GoGlobalContext] : val
 
-def std0x [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def std0x [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.std0x"
 
 axiom std0x'init [ffi_syntax] [GoGlobalContext] : val
 
-def longDayNames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def longDayNames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.longDayNames"
 
 axiom longDayNames'init [ffi_syntax] [GoGlobalContext] : val
 
-def shortDayNames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shortDayNames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.shortDayNames"
 
 axiom shortDayNames'init [ffi_syntax] [GoGlobalContext] : val
 
-def shortMonthNames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shortMonthNames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.shortMonthNames"
 
 axiom shortMonthNames'init [ffi_syntax] [GoGlobalContext] : val
 
-def longMonthNames [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def longMonthNames [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.longMonthNames"
 
 axiom longMonthNames'init [ffi_syntax] [GoGlobalContext] : val
 
-def errAtoi [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errAtoi [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.errAtoi"
 
 axiom errAtoi'init [ffi_syntax] [GoGlobalContext] : val
 
-def errBad [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBad [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.errBad"
 
 axiom errBad'init [ffi_syntax] [GoGlobalContext] : val
 
-def errLeadingInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errLeadingInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.errLeadingInt"
 
 axiom errLeadingInt'init [ffi_syntax] [GoGlobalContext] : val
 
-def unitMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unitMap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.unitMap"
 
 axiom unitMap'init [ffi_syntax] [GoGlobalContext] : val
 
-def asynctimerchan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asynctimerchan [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.asynctimerchan"
 
 axiom asynctimerchan'init [ffi_syntax] [GoGlobalContext] : val
 
-def startNano [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startNano [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.startNano"
 
 axiom startNano'init [ffi_syntax] [GoGlobalContext] : val
 
-def UTC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UTC [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.UTC"
 
 axiom UTC'init [ffi_syntax] [GoGlobalContext] : val
 
-def utcLoc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def utcLoc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.utcLoc"
 
 axiom utcLoc'init [ffi_syntax] [GoGlobalContext] : val
 
-def Local [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Local [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Local"
 
 axiom Local'init [ffi_syntax] [GoGlobalContext] : val
 
-def localLoc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def localLoc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.localLoc"
 
-def localOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def localOnce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.localOnce"
 
-def unnamedFixedZones [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unnamedFixedZones [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.unnamedFixedZones"
 
-def unnamedFixedZonesOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unnamedFixedZonesOnce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.unnamedFixedZonesOnce"
 
-def errLocation [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errLocation [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.errLocation"
 
 axiom errLocation'init [ffi_syntax] [GoGlobalContext] : val
 
-def zoneinfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def zoneinfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.zoneinfo"
 
-def zoneinfoOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def zoneinfoOnce [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.zoneinfoOnce"
 
-def loadFromEmbeddedTZData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loadFromEmbeddedTZData [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.loadFromEmbeddedTZData"
 
-def errBadData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBadData [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.errBadData"
 
 axiom errBadData'init [ffi_syntax] [GoGlobalContext] : val
 
-def loadTzinfoFromTzdata [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loadTzinfoFromTzdata [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.loadTzinfoFromTzdata"
 
-def platformZoneSources [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def platformZoneSources [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.platformZoneSources"
 
 axiom platformZoneSources'init [ffi_syntax] [GoGlobalContext] : val
 
-def startsWithLowerCase [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startsWithLowerCase [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.startsWithLowerCase"
 
-def nextStdChunk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextStdChunk [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.nextStdChunk"
 
-def match' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def match' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.match"
 
-def lookup' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lookup' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.lookup"
 
-def appendInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.appendInt"
 
-def atoi [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atoi [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.atoi"
 
-def stdFracSecond [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stdFracSecond [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.stdFracSecond"
 
-def digitsLen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def digitsLen [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.digitsLen"
 
-def separator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def separator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.separator"
 
-def appendNano [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendNano [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.appendNano"
 
-def newParseError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newParseError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.newParseError"
 
-def quote [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def quote [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.quote"
 
-def isDigit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isDigit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.isDigit"
 
-def getnum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getnum [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.getnum"
 
-def getnum3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getnum3 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.getnum3"
 
-def cutspace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cutspace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.cutspace"
 
-def skip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.skip"
 
-def Parse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Parse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Parse"
 
-def ParseInLocation [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseInLocation [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.ParseInLocation"
 
-def parse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parse [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.parse"
 
-def parseTimeZone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseTimeZone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.parseTimeZone"
 
-def parseGMT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseGMT [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.parseGMT"
 
-def parseSignedOffset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseSignedOffset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.parseSignedOffset"
 
-def commaOrPeriod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def commaOrPeriod [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.commaOrPeriod"
 
-def parseNanoseconds [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseNanoseconds [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.parseNanoseconds"
 
-def leadingInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leadingInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.leadingInt"
 
-def leadingFraction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leadingFraction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.leadingFraction"
 
-def ParseDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseDuration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.ParseDuration"
 
-def parseRFC3339 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseRFC3339 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.parseRFC3339"
 
-def parseStrictRFC3339 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def parseStrictRFC3339 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.parseStrictRFC3339"
 
-def Sleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sleep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Sleep"
 
-def syncTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syncTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.syncTimer"
 
-def when [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def when [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.when"
 
-def newTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.newTimer"
 
-def stopTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stopTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.stopTimer"
 
-def resetTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def resetTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.resetTimer"
 
-def NewTimer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewTimer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.NewTimer"
 
-def sendTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sendTime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.sendTime"
 
-def After [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def After [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.After"
 
-def AfterFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AfterFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.AfterFunc"
 
-def goFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.goFunc"
 
-def interrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def interrupt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.interrupt"
 
-def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.open"
 
-def read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def read [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.read"
 
-def closefd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closefd [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.closefd"
 
-def preadn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def preadn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.preadn"
 
-def NewTicker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewTicker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.NewTicker"
 
-def Tick [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Tick [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Tick"
 
-def dateToAbsDays [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dateToAbsDays [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.dateToAbsDays"
 
-def fmtFrac [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmtFrac [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.fmtFrac"
 
-def fmtInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmtInt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.fmtInt"
 
-def lessThanHalf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lessThanHalf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.lessThanHalf"
 
-def subMono [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subMono [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.subMono"
 
-def Since [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Since [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Since"
 
-def Until [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Until [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Until"
 
-def daysBefore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def daysBefore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.daysBefore"
 
-def daysIn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def daysIn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.daysIn"
 
-def now [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def now [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.now"
 
-def runtimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.runtimeNow"
 
-def runtimeNano [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtimeNano [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.runtimeNano"
 
-def runtimeIsBubbled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtimeIsBubbled [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.runtimeIsBubbled"
 
-def Now [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Now [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Now"
 
-def unixTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unixTime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.unixTime"
 
-def Unix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Unix [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Unix"
 
-def UnixMilli [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnixMilli [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.UnixMilli"
 
-def UnixMicro [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnixMicro [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.UnixMicro"
 
-def isLeap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isLeap [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.isLeap"
 
-def norm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def norm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.norm"
 
-def Date [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Date [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.Date"
 
-def div [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def div [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.div"
 
-def legacyTimeTimeAbs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def legacyTimeTimeAbs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.legacyTimeTimeAbs"
 
-def legacyAbsClock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def legacyAbsClock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.legacyAbsClock"
 
-def legacyAbsDate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def legacyAbsDate [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.legacyAbsDate"
 
-def FixedZone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FixedZone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.FixedZone"
 
-def fixedZone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fixedZone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.fixedZone"
 
-def tzset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tzset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.tzset"
 
-def tzsetName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tzsetName [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.tzsetName"
 
-def tzsetOffset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tzsetOffset [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.tzsetOffset"
 
-def tzsetRule [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tzsetRule [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.tzsetRule"
 
-def tzsetNum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tzsetNum [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.tzsetNum"
 
-def tzruleTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tzruleTime [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.tzruleTime"
 
-def LoadLocation [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadLocation [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.LoadLocation"
 
-def containsDotDot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def containsDotDot [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.containsDotDot"
 
-def gorootZoneSource [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def gorootZoneSource [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.gorootZoneSource"
 
-def registerLoadFromEmbeddedTZData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def registerLoadFromEmbeddedTZData [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.registerLoadFromEmbeddedTZData"
 
-def byteString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def byteString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.byteString"
 
-def LoadLocationFromTZData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadLocationFromTZData [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.LoadLocationFromTZData"
 
-def findZone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findZone [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.findZone"
 
-def loadTzinfoFromDirOrZip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loadTzinfoFromDirOrZip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.loadTzinfoFromDirOrZip"
 
-def get4 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def get4 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.get4"
 
-def get2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def get2 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.get2"
 
-def loadTzinfoFromZip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loadTzinfoFromZip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.loadTzinfoFromZip"
 
-def loadTzinfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loadTzinfo [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.loadTzinfo"
 
-def loadLocation [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def loadLocation [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.loadLocation"
 
-def readFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readFile [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.readFile"
 
-def initLocal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def initLocal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"time.initLocal"
 
 /-- nsec returns the time's nanoseconds.
 
     go: time.go:176:16 -/
-def «Time__nsecⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Time__nsecⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -834,7 +834,7 @@ def «Time__nsecⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- sec returns the time's seconds since Jan 1 year 1.
 
     go: time.go:181:16 -/
-def «Time__secⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Time__secⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -851,7 +851,7 @@ def «Time__secⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- unixSec returns the time's seconds since Jan 1 1970 (Unix time).
 
     go: time.go:189:16 -/
-def «Time__unixSecⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Time__unixSecⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -867,7 +867,7 @@ def «Time__unixSecⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     location associated with t.
 
     go: time.go:1460:15 -/
-def «Time__UnixNanoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Time__UnixNanoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exception_do)
@@ -880,7 +880,7 @@ instance info' : PkgInfo pkg_id.time where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.time)) (Lam BAnon
   (App (Val exception_do)

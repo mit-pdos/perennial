@@ -45,136 +45,136 @@ def streamold [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] streamold
 
-def DSPExample [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DSPExample [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.DSPExample"
 
-def NewCond [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewCond [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.NewCond"
 
-def sys_hello_world [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sys_hello_world [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.sys_hello_world"
 
-def HelloWorldAsync [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HelloWorldAsync [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HelloWorldAsync"
 
-def HelloWorldSync [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HelloWorldSync [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HelloWorldSync"
 
-def HelloWorldCancellable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HelloWorldCancellable [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HelloWorldCancellable"
 
-def HelloWorldWithTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HelloWorldWithTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HelloWorldWithTimeout"
 
-def simple_join [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def simple_join [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.simple_join"
 
-def simple_multi_join [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def simple_multi_join [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.simple_multi_join"
 
-def exchangePointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def exchangePointer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.exchangePointer"
 
-def BroadcastExample [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BroadcastExample [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.BroadcastExample"
 
-def fibonacci [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fibonacci [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.fibonacci"
 
-def fib_consumer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fib_consumer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.fib_consumer"
 
-def Web [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Web [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Web"
 
-def Image [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Image [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Image"
 
-def Video [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Video [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Video"
 
-def Google [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Google [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Google"
 
-def GetPrimary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetPrimary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.GetPrimary"
 
-def GetSecondary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetSecondary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.GetSecondary"
 
-def CancellableHedgedRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CancellableHedgedRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.CancellableHedgedRequest"
 
-def mkRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mkRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.mkRequest"
 
-def ho_worker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ho_worker [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.ho_worker"
 
-def HigherOrderExample [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HigherOrderExample [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HigherOrderExample"
 
-def load [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def load [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.load"
 
-def process [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def process [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.process"
 
-def client [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def client [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.client"
 
-def server [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def server [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.server"
 
-def LeakyBufferPipeline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LeakyBufferPipeline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.LeakyBufferPipeline"
 
-def mkStream [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mkStream [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.mkStream"
 
-def Async [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Async [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Async"
 
-def Serve [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Serve [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Serve"
 
-def appWrld [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appWrld [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.appWrld"
 
-def Client [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Client [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Client"
 
-def MapServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MapServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.MapServer"
 
-def ClientOld [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClientOld [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.ClientOld"
 
-def Muxer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Muxer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Muxer"
 
-def makeGreeting [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeGreeting [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.makeGreeting"
 
-def CancellableMapServer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CancellableMapServer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.CancellableMapServer"
 
-def CancellableMuxer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CancellableMuxer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.CancellableMuxer"
 
-def select_nb_not_ready [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def select_nb_not_ready [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.select_nb_not_ready"
 
-def select_nb_guaranteed_ready [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def select_nb_guaranteed_ready [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.select_nb_guaranteed_ready"
 
-def select_nb_full_buffer_not_ready [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def select_nb_full_buffer_not_ready [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.select_nb_full_buffer_not_ready"
 
 /-- prog3 from Actris 2.0 intro: https://arxiv.org/pdf/2010.15030
 
     go: actris_example.go:4:6 -/
-def «DSPExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DSPExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "signal" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Val #())))
@@ -226,7 +226,7 @@ def «DSPExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Pair (Var "c") (Var "$r0")))))))))))
 
 /-- go: cv_unverified.go:14:6 -/
-def «NewCondⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewCondⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "L"
   (App (Val exception_do)
   (Let "L" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock))) (Var "L"))
@@ -237,7 +237,7 @@ def «NewCondⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Wait blocks until signaled. Caller must hold c.L; will hold c.L on return.
 
     go: cv_unverified.go:19:16 -/
-def «Cond__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cond__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -269,7 +269,7 @@ def «Cond__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Signal wakes one waiter (FIFO). Caller must hold c.L.
 
     go: cv_unverified.go:29:16 -/
-def «Cond__Signalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cond__Signalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -309,7 +309,7 @@ def «Cond__Signalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Broadcast wakes all waiters. Caller must hold c.L.
 
     go: cv_unverified.go:40:16 -/
-def «Cond__Broadcastⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cond__Broadcastⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exception_do)
@@ -337,7 +337,7 @@ def «Cond__Broadcastⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "ch") (Var "$value"))))))))))))))))
 
 /-- go: cv_unverified.go:47:16 -/
-def «Cond__WaitForⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cond__WaitForⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "d"
   (App (Val exception_do)
@@ -443,7 +443,7 @@ def «Cond__WaitForⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: cv_unverified.go:92:16 -/
-def «Cond__WaitUntilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cond__WaitUntilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "deadline"
   (App (Val exception_do)
@@ -457,14 +457,14 @@ def «Cond__WaitUntilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Fake syscall for demonstration.
 
     go: examples.go:8:6 -/
-def «sys_hello_worldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «sys_hello_worldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
   (Val #(go!"Hello, World!")))))
 
 /-- go: examples.go:12:6 -/
-def «HelloWorldAsyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «HelloWorldAsyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv go.string)))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv go.string)))) (Val #())))
@@ -489,7 +489,7 @@ def «HelloWorldAsyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv go.string)))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:20:6 -/
-def «HelloWorldSyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «HelloWorldSyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (Val do_return)
@@ -498,7 +498,7 @@ def «HelloWorldSyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Simulates the error/done channel components of Context
 
     go: examples.go:25:6 -/
-def «HelloWorldCancellableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «HelloWorldCancellableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "done"
   (Lam "err"
   (App (Val exception_do)
@@ -526,7 +526,7 @@ def «HelloWorldCancellableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Uses cancellation as a timeout mechanism.
 
     go: examples.go:36:6 -/
-def «HelloWorldWithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «HelloWorldWithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "done" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Val #())))
@@ -565,7 +565,7 @@ def «HelloWorldWithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "done") (Var "$r0")))))))))
 
 /-- go: examples.go:50:6 -/
-def «simple_joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «simple_joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Val #())))
@@ -598,7 +598,7 @@ def «simple_joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:63:6 -/
-def «simple_multi_joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «simple_multi_joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Val #())))
@@ -652,7 +652,7 @@ def «simple_multi_joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:81:6 -/
-def «exchangePointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «exchangePointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -712,7 +712,7 @@ def «exchangePointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: examples.go:101:6 -/
-def «BroadcastExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «BroadcastExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -811,7 +811,7 @@ def «BroadcastExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- https://go.dev/tour/concurrency/4
 
     go: fibonacci.go:4:6 -/
-def «fibonacciⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fibonacciⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "c"
   (App (Val exception_do)
@@ -858,7 +858,7 @@ def «fibonacciⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0")))))))))))))))
 
 /-- go: fibonacci.go:13:6 -/
-def «fib_consumerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fib_consumerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv go.int)))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv go.int)))) (Val #())))
@@ -897,7 +897,7 @@ def «fib_consumerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv go.int)))) (Pair (Var "c") (Var "$r0")))))))))
 
 /-- go: google_search.go:3:6 -/
-def «Webⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Webⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exception_do)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -905,7 +905,7 @@ def «Webⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!".html"))))))))
 
 /-- go: google_search.go:7:6 -/
-def «Imageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Imageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exception_do)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -913,7 +913,7 @@ def «Imageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!".png"))))))))
 
 /-- go: google_search.go:11:6 -/
-def «Videoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Videoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exception_do)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -923,7 +923,7 @@ def «Videoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- https://go.dev/talks/2012/concurrency.slide#46
 
     go: google_search.go:16:6 -/
-def «Googleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Googleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exception_do)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1007,7 +1007,7 @@ def «Googleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Toy functions that resemble search query servers.
 
     go: hedged.go:13:6 -/
-def «GetPrimaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «GetPrimaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exception_do)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1015,7 +1015,7 @@ def «GetPrimaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!"_primary.html"))))))))
 
 /-- go: hedged.go:17:6 -/
-def «GetSecondaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «GetSecondaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exception_do)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1032,7 +1032,7 @@ def «GetSecondaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     https://www.barroso.org/publications/TheTailAtScale.pdf page 7 for discussion on hedging.
 
     go: hedged.go:29:6 -/
-def «CancellableHedgedRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «CancellableHedgedRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "query"
   (Lam "threshold"
   (Lam "errStr"
@@ -1118,7 +1118,7 @@ def «CancellableHedgedRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv Result)))) (Pair (Var "c") (Var "$r0"))))))))))))))))
 
 /-- go: higher_order.go:8:6 -/
-def «mkRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «mkRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exception_do)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f"))
@@ -1128,7 +1128,7 @@ def «mkRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral request))) (LiteralValue [(KeyedElement (some (KeyField go!"f")) (ElementExpression (go.type.FunctionType (go.signature.Signature [] false [go.string])) (Var "$v0"))), (KeyedElement (some (KeyField go!"result")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv go.string) (Var "$v1")))]))))))))
 
 /-- go: higher_order.go:12:6 -/
-def «ho_workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ho_workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exception_do)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv request)))) (Var "c"))
@@ -1148,7 +1148,7 @@ def «ho_workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore request))) (Pair (Var "r") (Var "$key")))))))))))))
 
 /-- go: higher_order.go:18:6 -/
-def «HigherOrderExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «HigherOrderExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv request)))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv request)))) (Val #())))
@@ -1224,7 +1224,7 @@ def «HigherOrderExampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- load writes the next letter into the buffer.
 
     go: leaky_buffer_unverified.go:9:6 -/
-def «loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "letter"
   (App (Val exception_do)
@@ -1240,7 +1240,7 @@ def «loadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- process consumes the buffer and appends it to the output.
 
     go: leaky_buffer_unverified.go:14:6 -/
-def «processⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «processⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "output"
   (App (Val exception_do)
@@ -1254,7 +1254,7 @@ def «processⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.strings.ToUpper []))) (Val #())) (Var "$a0"))))))))))))))
 
 /-- go: leaky_buffer_unverified.go:18:6 -/
-def «clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "input"
   (Lam "freeList"
   (Lam "serverChan"
@@ -1304,7 +1304,7 @@ def «clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "letter") (Var "$value")))))))))))))))))))
 
 /-- go: leaky_buffer_unverified.go:39:6 -/
-def «serverⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «serverⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "output"
   (Lam "freeList"
   (Lam "serverChan"
@@ -1357,7 +1357,7 @@ def «serverⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))))))))
 
 /-- go: leaky_buffer_unverified.go:61:6 -/
-def «LeakyBufferPipelineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LeakyBufferPipelineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -1421,7 +1421,7 @@ def «LeakyBufferPipelineⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.byte))))) (Pair (Var "freeList") (Var "$r0"))))))))))
 
 /-- go: muxer.go:14:6 -/
-def «mkStreamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «mkStreamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exception_do)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [go.string] false [go.string]))))) (Var "f"))
@@ -1432,7 +1432,7 @@ def «mkStreamⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral streamold))) (LiteralValue [(KeyedElement none (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv go.string) (Var "$v0"))), (KeyedElement none (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv go.string) (Var "$v1"))), (KeyedElement none (ElementExpression (go.type.FunctionType (go.signature.Signature [go.string] false [go.string])) (Var "$v2")))])))))))))
 
 /-- go: muxer.go:18:6 -/
-def «Asyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Asyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exception_do)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f"))
@@ -1458,7 +1458,7 @@ def «Asyncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv go.string)))) (Pair (Var "ch") (Var "$r0"))))))))))
 
 /-- go: muxer.go:26:6 -/
-def «Serveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Serveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exception_do)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [go.string] false [go.string]))))) (Var "f"))
@@ -1491,7 +1491,7 @@ def «Serveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stream))) (Pair (Var "s") (Var "$r0"))))))))))
 
 /-- go: muxer.go:39:6 -/
-def «appWrldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «appWrldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exception_do)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
@@ -1499,7 +1499,7 @@ def «appWrldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(go!", World!"))))))))
 
 /-- go: muxer.go:43:6 -/
-def «Clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "hw" (App (Val (GoInstruction (GoAlloc stream))) (App (Val (GoInstruction (GoZeroVal stream))) (Val #())))
@@ -1517,7 +1517,7 @@ def «Clientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stream))) (Pair (Var "hw") (Var "$r0")))))))))
 
 /-- go: muxer.go:49:6 -/
-def «MapServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MapServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exception_do)
   (Let "s" (App (Val (GoInstruction (GoAlloc streamold))) (Var "s"))
@@ -1540,7 +1540,7 @@ def «MapServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Val #())))))))
 
 /-- go: muxer.go:56:6 -/
-def «ClientOldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ClientOldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "comma" (App (Val (GoInstruction (GoAlloc streamold))) (App (Val (GoInstruction (GoZeroVal streamold))) (Val #())))
@@ -1589,7 +1589,7 @@ def «ClientOldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore streamold))) (Pair (Var "comma") (Var "$r0")))))))))
 
 /-- go: muxer.go:71:6 -/
-def «Muxerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Muxerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exception_do)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv streamold)))) (Var "c"))
@@ -1610,7 +1610,7 @@ def «Muxerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore streamold))) (Pair (Var "s") (Var "$key")))))))))))))
 
 /-- go: muxer.go:77:6 -/
-def «makeGreetingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «makeGreetingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (Let "mux" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv streamold)))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv streamold)))) (Val #())))
@@ -1668,7 +1668,7 @@ def «makeGreetingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv streamold)))) (Pair (Var "mux") (Var "$r0")))))))))
 
 /-- go: muxer_unverified.go:3:6 -/
-def «CancellableMapServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «CancellableMapServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "done"
   (App (Val exception_do)
@@ -1715,7 +1715,7 @@ def «CancellableMapServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- 4. CancellableMuxer - muxer with cancellation
 
     go: muxer_unverified.go:18:6 -/
-def «CancellableMuxerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «CancellableMuxerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "done"
   (Lam "errMsg"
@@ -1762,7 +1762,7 @@ def «CancellableMuxerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Example with 2 nonblocking ops that should not match.
 
     go: select_tricky_examples.go:4:6 -/
-def «select_nb_not_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «select_nb_not_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -1796,7 +1796,7 @@ def «select_nb_not_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "ch") (Var "$r0"))))))))))
 
 /-- go: select_tricky_examples.go:21:6 -/
-def «select_nb_guaranteed_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «select_nb_guaranteed_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -1821,7 +1821,7 @@ def «select_nb_guaranteed_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
 /-- Non-blocking send cannot send on a full buffer
 
     go: select_tricky_examples.go:34:6 -/
-def «select_nb_full_buffer_not_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «select_nb_full_buffer_not_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exception_do)
   (App (App (Val exception_seq) (Lam BAnon
@@ -1847,7 +1847,7 @@ def «select_nb_full_buffer_not_readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel where
   pkg_imported_pkgs := [pkg_id.time, pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock, pkg_id.strings]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel)) (Lam BAnon
   (App (Val exception_do)

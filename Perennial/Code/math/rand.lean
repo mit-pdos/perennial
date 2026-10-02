@@ -80,127 +80,127 @@ axiom rngMask [ffi_syntax] [GoGlobalContext] : val
 
 axiom int32max [ffi_syntax] [GoGlobalContext] : val
 
-def ke [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ke [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.ke"
 
 axiom ke'init [ffi_syntax] [GoGlobalContext] : val
 
-def we [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def we [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.we"
 
 axiom we'init [ffi_syntax] [GoGlobalContext] : val
 
-def fe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.fe"
 
 axiom fe'init [ffi_syntax] [GoGlobalContext] : val
 
-def kn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def kn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.kn"
 
 axiom kn'init [ffi_syntax] [GoGlobalContext] : val
 
-def wn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.wn"
 
 axiom wn'init [ffi_syntax] [GoGlobalContext] : val
 
-def fn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.fn"
 
 axiom fn'init [ffi_syntax] [GoGlobalContext] : val
 
-def globalRandGenerator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalRandGenerator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.globalRandGenerator"
 
-def randautoseed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def randautoseed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.randautoseed"
 
 axiom randautoseed'init [ffi_syntax] [GoGlobalContext] : val
 
-def randseednop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def randseednop [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.randseednop"
 
 axiom randseednop'init [ffi_syntax] [GoGlobalContext] : val
 
-def rngCooked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rngCooked [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.rngCooked"
 
 axiom rngCooked'init [ffi_syntax] [GoGlobalContext] : val
 
-def absInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def absInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.absInt32"
 
-def NewSource [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSource [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.NewSource"
 
-def newSource [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSource [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.newSource"
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.New"
 
-def read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def read [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.read"
 
-def globalRand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalRand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.globalRand"
 
-def runtime_rand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_rand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.runtime_rand"
 
-def Seed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Seed [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Seed"
 
-def Int63 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int63 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Int63"
 
-def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Uint32"
 
-def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Uint64"
 
-def Int31 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int31 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Int31"
 
-def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Int"
 
-def Int63n [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int63n [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Int63n"
 
-def Int31n [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int31n [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Int31n"
 
-def Intn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Intn [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Intn"
 
-def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Float64"
 
-def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Float32"
 
-def Perm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Perm [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Perm"
 
-def Shuffle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Shuffle [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Shuffle"
 
-def Read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Read [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.Read"
 
-def NormFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NormFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.NormFloat64"
 
-def ExpFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExpFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.ExpFloat64"
 
-def seedrand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def seedrand [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.seedrand"
 
-def NewZipf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewZipf [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"math/rand.NewZipf"
 
 instance info' : PkgInfo pkg_id.math.rand where
@@ -208,7 +208,7 @@ instance info' : PkgInfo pkg_id.math.rand where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.math.rand)) (Lam BAnon
   (App (Val exception_do)

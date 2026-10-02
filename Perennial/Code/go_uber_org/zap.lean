@@ -349,446 +349,446 @@ axiom _nonStringKeyErrMsg [ffi_syntax] [GoGlobalContext] : val
 
 axiom _multipleErrMsg [ffi_syntax] [GoGlobalContext] : val
 
-def errNoEncoderNameSpecified [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoEncoderNameSpecified [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.errNoEncoderNameSpecified"
 
 axiom errNoEncoderNameSpecified'init [ffi_syntax] [GoGlobalContext] : val
 
-def _encoderNameToConstructor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _encoderNameToConstructor [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._encoderNameToConstructor"
 
 axiom _encoderNameToConstructor'init [ffi_syntax] [GoGlobalContext] : val
 
-def _encoderMutex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _encoderMutex [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._encoderMutex"
 
-def _errArrayElemPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _errArrayElemPool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._errArrayElemPool"
 
 axiom _errArrayElemPool'init [ffi_syntax] [GoGlobalContext] : val
 
-def _minTimeInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _minTimeInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._minTimeInt64"
 
 axiom _minTimeInt64'init [ffi_syntax] [GoGlobalContext] : val
 
-def _maxTimeInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _maxTimeInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._maxTimeInt64"
 
 axiom _maxTimeInt64'init [ffi_syntax] [GoGlobalContext] : val
 
-def _globalMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _globalMu [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._globalMu"
 
-def _globalL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _globalL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._globalL"
 
 axiom _globalL'init [ffi_syntax] [GoGlobalContext] : val
 
-def _globalS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _globalS [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._globalS"
 
 axiom _globalS'init [ffi_syntax] [GoGlobalContext] : val
 
-def _sinkRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _sinkRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap._sinkRegistry"
 
 axiom _sinkRegistry'init [ffi_syntax] [GoGlobalContext] : val
 
-def Array [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Array [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Array"
 
-def Bools [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Bools [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Bools"
 
-def ByteStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ByteStrings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.ByteStrings"
 
-def Complex128s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex128s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Complex128s"
 
-def Complex64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex64s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Complex64s"
 
-def Durations [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Durations [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Durations"
 
-def Float64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Float64s"
 
-def Float32s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Float32s"
 
-def Ints [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Ints [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Ints"
 
-def Int64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int64s"
 
-def Int32s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int32s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int32s"
 
-def Int16s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int16s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int16s"
 
-def Int8s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int8s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int8s"
 
-def Objects [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Objects [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Objects"
 
-def ObjectValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ObjectValues [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.ObjectValues"
 
-def Strings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Strings [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Strings"
 
-def Stringers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stringers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Stringers"
 
-def Times [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Times [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Times"
 
-def Uints [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uints [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uints"
 
-def Uint64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint64s"
 
-def Uint32s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint32s"
 
-def Uint16s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint16s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint16s"
 
-def Uint8s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint8s [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint8s"
 
-def Uintptrs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uintptrs [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uintptrs"
 
-def Errors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Errors [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Errors"
 
-def NewProductionEncoderConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProductionEncoderConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewProductionEncoderConfig"
 
-def NewProductionConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProductionConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewProductionConfig"
 
-def NewDevelopmentEncoderConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDevelopmentEncoderConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewDevelopmentEncoderConfig"
 
-def NewDevelopmentConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDevelopmentConfig [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewDevelopmentConfig"
 
-def RegisterEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.RegisterEncoder"
 
-def newEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.newEncoder"
 
-def Error [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Error [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Error"
 
-def NamedError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NamedError [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NamedError"
 
-def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Skip"
 
-def nilField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilField [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.nilField"
 
-def Binary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Binary [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Binary"
 
-def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Bool"
 
-def Boolp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Boolp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Boolp"
 
-def ByteString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ByteString [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.ByteString"
 
-def Complex128 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex128 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Complex128"
 
-def Complex128p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex128p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Complex128p"
 
-def Complex64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Complex64"
 
-def Complex64p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex64p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Complex64p"
 
-def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Float64"
 
-def Float64p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Float64p"
 
-def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Float32"
 
-def Float32p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Float32p"
 
-def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int"
 
-def Intp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Intp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Intp"
 
-def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int64"
 
-def Int64p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int64p"
 
-def Int32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int32"
 
-def Int32p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int32p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int32p"
 
-def Int16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int16"
 
-def Int16p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int16p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int16p"
 
-def Int8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int8"
 
-def Int8p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int8p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Int8p"
 
-def String [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def String [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.String"
 
-def Stringp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stringp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Stringp"
 
-def Uint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint"
 
-def Uintp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uintp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uintp"
 
-def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint64"
 
-def Uint64p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint64p"
 
-def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint32"
 
-def Uint32p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint32p"
 
-def Uint16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint16 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint16"
 
-def Uint16p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint16p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint16p"
 
-def Uint8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint8 [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint8"
 
-def Uint8p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint8p [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uint8p"
 
-def Uintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uintptr [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uintptr"
 
-def Uintptrp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uintptrp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Uintptrp"
 
-def Reflect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reflect [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Reflect"
 
-def Namespace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Namespace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Namespace"
 
-def Stringer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stringer [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Stringer"
 
-def Time [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Time [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Time"
 
-def Timep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Timep [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Timep"
 
-def Stack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stack [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Stack"
 
-def StackSkip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StackSkip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.StackSkip"
 
-def Duration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Duration [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Duration"
 
-def Durationp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Durationp [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Durationp"
 
-def Object [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Object [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Object"
 
-def Inline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Inline [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Inline"
 
-def Dict [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Dict [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Dict"
 
-def dictField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dictField [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.dictField"
 
-def DictObject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DictObject [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.DictObject"
 
-def Any [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Any [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Any"
 
-def LevelFlag [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LevelFlag [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.LevelFlag"
 
-def L [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def L [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.L"
 
-def S [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def S [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.S"
 
-def ReplaceGlobals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReplaceGlobals [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.ReplaceGlobals"
 
-def NewStdLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewStdLog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewStdLog"
 
-def NewStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewStdLogAt"
 
-def RedirectStdLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RedirectStdLog [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.RedirectStdLog"
 
-def RedirectStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RedirectStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.RedirectStdLogAt"
 
-def redirectStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def redirectStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.redirectStdLogAt"
 
-def levelToFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def levelToFunc [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.levelToFunc"
 
-def decodePutRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodePutRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.decodePutRequest"
 
-def decodePutURL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodePutURL [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.decodePutURL"
 
-def decodePutJSON [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodePutJSON [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.decodePutJSON"
 
-def NewAtomicLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAtomicLevel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewAtomicLevel"
 
-def NewAtomicLevelAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAtomicLevelAt [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewAtomicLevelAt"
 
-def ParseAtomicLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseAtomicLevel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.ParseAtomicLevel"
 
-def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.New"
 
-def NewNop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewNop [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewNop"
 
-def NewProduction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProduction [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewProduction"
 
-def NewDevelopment [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDevelopment [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewDevelopment"
 
-def Must [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Must [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Must"
 
-def NewExample [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewExample [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.NewExample"
 
-def terminalHookOverride [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def terminalHookOverride [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.terminalHookOverride"
 
-def WrapCore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WrapCore [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.WrapCore"
 
-def Hooks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Hooks [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Hooks"
 
-def Fields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fields [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Fields"
 
-def ErrorOutput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorOutput [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.ErrorOutput"
 
-def Development [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Development [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Development"
 
-def AddCaller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddCaller [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.AddCaller"
 
-def WithCaller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCaller [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.WithCaller"
 
-def AddCallerSkip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddCallerSkip [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.AddCallerSkip"
 
-def AddStacktrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddStacktrace [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.AddStacktrace"
 
-def IncreaseLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IncreaseLevel [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.IncreaseLevel"
 
-def WithPanicHook [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithPanicHook [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.WithPanicHook"
 
-def OnFatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnFatal [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.OnFatal"
 
-def WithFatalHook [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFatalHook [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.WithFatalHook"
 
-def WithClock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithClock [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.WithClock"
 
-def newSinkRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSinkRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.newSinkRegistry"
 
-def RegisterSink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterSink [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.RegisterSink"
 
-def normalizeScheme [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def normalizeScheme [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.normalizeScheme"
 
-def getMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMessage [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.getMessage"
 
-def getMessageln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMessageln [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.getMessageln"
 
-def timeToMillis [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeToMillis [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.timeToMillis"
 
-def Open [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Open [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.Open"
 
-def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.open"
 
-def CombineWriteSyncers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CombineWriteSyncers [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.uber.org/zap.CombineWriteSyncers"
 
 instance info' : PkgInfo pkg_id.go_uber_org.zap where
@@ -796,7 +796,7 @@ instance info' : PkgInfo pkg_id.go_uber_org.zap where
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_uber_org.zap)) (Lam BAnon
   (App (Val exception_do)

@@ -25,23 +25,23 @@ def Generator [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Generator
 
-@[reducible] def tsLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def tsLen [ffi_syntax] [GoGlobalContext] : val :=
   #(40 : Int)
 
-@[reducible] def cntLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def cntLen [ffi_syntax] [GoGlobalContext] : val :=
   #(8 : Int)
 
-@[reducible] def suffixLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def suffixLen [ffi_syntax] [GoGlobalContext] : val :=
   #(48 : Int)
 
-def NewGenerator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGenerator [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/idutil.NewGenerator"
 
-def lowbit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lowbit [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/pkg/v3/idutil.lowbit"
 
 /-- go: id.go:56:6 -/
-def «NewGeneratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewGeneratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "memberID"
   (Lam "now"
   (App (Val exception_do)
@@ -72,7 +72,7 @@ def «NewGeneratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 /-- Next generates a id that is unique.
 
     go: id.go:67:21 -/
-def «Generator__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Generator__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "g"
   (Lam BAnon
   (App (Val exception_do)
@@ -95,7 +95,7 @@ def «Generator__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "suffix") (Var "$r0")))))))))))
 
 /-- go: id.go:73:6 -/
-def «lowbitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «lowbitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "n"
   (App (Val exception_do)
@@ -107,7 +107,7 @@ def «lowbitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.pkg.v3.idutil where
   pkg_imported_pkgs := [pkg_id.math, pkg_id.sync.atomic, pkg_id.time]
 
-def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.pkg.v3.idutil)) (Lam BAnon
   (App (Val exception_do)
