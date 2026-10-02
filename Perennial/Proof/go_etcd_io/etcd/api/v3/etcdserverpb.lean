@@ -45,7 +45,7 @@ axiom own_InternalRaftRequest_new_header
     hdr_ptr ↦ hdr -∗
     ∃ req_abs', own_InternalRaftRequest ({ req with Header' := hdr_ptr }) req_abs'
 
-axiom wp_InternalRaftRequest__Marshal (m_ptr : loc) (m : etcdserverpb.InternalRaftRequest.t)
+axiom wp_InternalRaftRequest__Marshal [package_sem : etcdserverpb.Assumptions] (m_ptr : loc) (m : etcdserverpb.InternalRaftRequest.t)
     (msg : InternalRaftRequestC) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb ∗
        m_ptr ↦ m ∗ own_InternalRaftRequest m msg }}

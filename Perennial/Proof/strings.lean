@@ -94,7 +94,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
 /-- FIXME (from Rocq): this is wrong (unsound) for strings with non-ASCII
 runes. Simplest solution might be to add a precondition for the string to be
 all ASCII. (`own_slice_cap w8` is also as in Rocq.) -/
-axiom wp_Fields (s : go_string) :
+axiom wp_Fields [package_sem : strings.Assumptions] (s : go_string) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.strings }}
       (App (Val (@! Fields)) (Val #s))
     {{ (sl : slice.t), RET #sl;

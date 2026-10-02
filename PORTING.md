@@ -52,7 +52,7 @@ reasoning, `program_proof/`) is out of scope.
 
 ## Status
 
-See `PORTING_STATUS.md`.
+Run `etc/lean-port-status.py --rocq <master checkout>` for per-area file, line and sorry counts. See also `etc/fidelity-review.md`.
 
 ## Conventions for porters
 

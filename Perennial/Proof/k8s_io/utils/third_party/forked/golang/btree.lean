@@ -52,7 +52,7 @@ axiom own_BTree_dfractional (t : loc) {T' : Type} [ZeroVal T'] [TypedPointsto (G
     DFractional (own_BTree t is_item less items)
 attribute [instance] own_BTree_dfractional
 
-axiom wp_BTree__Clone {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.type}
+axiom wp_BTree__Clone [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.type}
     [IntoValTyped (GF := GF) T' T] {V : Type}
     (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V) (t : loc) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.k8s_io.utils.third_party.forked.golang.btree ∗
@@ -62,7 +62,7 @@ axiom wp_BTree__Clone {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T 
        own_BTree t is_item less items (DFrac.own 1) ∗
        own_BTree t' is_item less items (DFrac.own 1) }}
 
-axiom wp_BTree__Get {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.type}
+axiom wp_BTree__Get [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.type}
     [IntoValTyped (GF := GF) T' T] {V : Type}
     (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V)
     (t : loc) (key_item : T') (key : V) (dq : DFrac) :
@@ -77,7 +77,7 @@ axiom wp_BTree__Get {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : 
 
 /-- TODO (from Rocq): this is a conservative but weak spec; it does not
 constrain the final tree state. -/
-axiom wp_BTree__ReplaceOrInsert {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
+axiom wp_BTree__ReplaceOrInsert [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
     {T : go.type} [IntoValTyped (GF := GF) T' T] {V : Type}
     (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V)
     (t : loc) (item : T') (itv : V) :
