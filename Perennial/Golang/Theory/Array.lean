@@ -21,6 +21,15 @@ instance (priority := high) index_ref_array' [ffi_syntax] [GoLocalContext] [GoGl
       (if sint.Z i < n then #(array_index_ref V (sint.Z i) l) else Panic "index out of range") :=
   go.index_ref_array n elem_type i l
 
+instance (priority := high) slice_array_step' [ffi_syntax] [GoLocalContext] [GoGlobalContext]
+    [GoSemanticsFunctions] [go.PreSemantics] (n : Int) (elem_type : go.type) (p : loc)
+    (low high : w64) {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
+    ⟦Slice (go.ArrayType n elem_type), (#p, #low, #high)⟧ ⤳
+       (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ n then
+          #(slice.mk (array_index_ref V (sint.Z low) p) (high - low) (W64 n - low))
+        else Panic "slice bounds out of range") :=
+  go.slice_array_step n elem_type p low high
+
 section lemmas
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
@@ -127,6 +136,55 @@ theorem array_acc (p : loc) (i : Int) (dq : DFrac) (n : Int) (a : array.t V n) (
   isplit
   · ipureintro; simp [Hlen]
   · iexact Harr
+
+include preSem in
+theorem array_elems_app (l : loc) (vs1 vs2 : List V) (dq : DFrac) :
+    array_elems (GF := GF) l (vs1 ++ vs2) dq ⊣⊢
+      iprop(array_elems l vs1 dq ∗
+        array_elems (array_index_ref V (vs1.length : Int) l) vs2 dq) := by
+  unfold array_elems
+  refine bigSepL_append.trans ?_
+  have h : ∀ k : Nat, array_index_ref V ((k + vs1.length : Nat) : Int) l =
+      array_index_ref V (k : Int) (array_index_ref V (vs1.length : Int) l) := by
+    intro k
+    rw [← go.array_index_ref_add]; congr 1; omega
+  simp only [h]
+  exact .rfl
+
+include preSem in
+theorem array_split (k : w64) (l : loc) (dq : DFrac) (n : Int) (a : array.t V n)
+    (hk : 0 ≤ sint.Z k ∧ sint.Z k ≤ n) :
+    typed_pointsto (GF := GF) l a dq ⊣⊢
+      iprop(typed_pointsto l (array.mk (sint.Z k) (a.arr.take (sint.nat k))) dq ∗
+        typed_pointsto (array_index_ref V (sint.Z k) l)
+          (array.mk (n - sint.Z k) (a.arr.drop (sint.nat k))) dq) := by
+  obtain ⟨arr⟩ := a
+  have hk' : ((sint.nat k : Nat) : Int) = sint.Z k := by word
+  have e := array_elems_app (GF := GF) l (arr.take (sint.nat k)) (arr.drop (sint.nat k)) dq
+  rw [List.take_append_drop] at e
+  rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+  simp only [TypedPointsto.typed_pointsto_def]
+  constructor
+  · iintro ⟨⟨%Hlen, H⟩, %Hnn⟩
+    have Hl : (arr.take (sint.nat k)).length = sint.nat k := by
+      simp only [List.length_take]; omega
+    rw [Hl, hk'] at e
+    icases e.1 $$ H with ⟨H1, H2⟩
+    iframe H1 H2
+    have Hnn' : array_index_ref V (sint.Z k) l ≠ null :=
+      fun h => Hnn (go.array_index_ref_null_inv _ _ _ h)
+    repeat' (first | (ipureintro; first | exact Hnn | exact Hnn' | (simp at Hlen ⊢; omega)) | isplit)
+  · iintro ⟨⟨⟨%Hlen1, H1⟩, %Hnn⟩, ⟨⟨%Hlen2, H2⟩, _⟩⟩
+    simp only [List.length_take, List.length_drop] at Hlen1 Hlen2 ⊢
+    have Hl : (arr.take (sint.nat k)).length = sint.nat k := by
+      simp only [List.length_take]; omega
+    rw [Hl, hk'] at e
+    ihave H := e.2 $$ [H1 H2]
+    · iframe H1 H2
+    iframe H
+    isplit
+    · ipureintro; omega
+    · ipureintro; exact Hnn
 
 end lemmas
 

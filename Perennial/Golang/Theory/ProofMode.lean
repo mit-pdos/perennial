@@ -222,6 +222,9 @@ attribute [goose_wp_simp] ne_eq not_false_eq_true not_true_eq_false binder.BName
   _root_.and_self _root_.and_true _root_.true_and _root_.and_false _root_.false_and ite_true ite_false if_true if_false
   Bool.false_eq_true
 
+-- Boolean negation of literals (from `GoUnOp GoNot` on a literal).
+attribute [goose_wp_simp] Bool.not_true Bool.not_false
+
 /-! ## Meta-level helpers -/
 
 section tactics

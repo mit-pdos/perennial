@@ -197,19 +197,29 @@ partial def pkgInitChain (target P : Expr) (fuel : Nat := 200) : MetaM (Option E
   if fuel == 0 then return none
   let P ← instantiateMVars P
   if ← withReducible (isDefEq P target) then
-    return some (← mkAppM ``BIBase.Entails.rfl #[])
+    return some (← mkAppOptM ``BIBase.Entails.rfl #[none, none, some P])
   let P' ← whnfR P
   if P'.isAppOfArity ``is_pkg_init 4 then
-    let deps ← mkAppM ``is_pkg_init_deps #[P'.getArg! 2]
-    let deps ← withTransparency .instances <| whnf deps
+    -- unfold the instance (e.g. built by `define_is_pkg_init`) to `IsPkgInit.mk`
+    -- and take its dependency field (`whnf` would also unfold the BI operations)
+    let rec instFields (inst : Expr) (fuel : Nat) : MetaM (Option Expr) := do
+      let inst := (← instantiateMVars inst).headBeta
+      if inst.isAppOfArity ``IsPkgInit.mk 5 then return some (inst.getArg! 3)
+      if fuel == 0 then return none
+      match ← unfoldDefinition? inst with
+      | some i => instFields i (fuel - 1)
+      | none => return none
+    let some deps ← instFields (P'.getArg! 3) 20 | return none
     let some c ← pkgInitChain target deps (fuel - 1) | return none
     let pf1 ← mkAppOptM ``is_pkg_init_unfold_deps #[none, none, some (P'.getArg! 2), some (P'.getArg! 3)]
     return some (← mkAppM ``BIBase.Entails.trans #[pf1, c])
   if P'.isAppOfArity ``BIBase.sep 4 then
     if let some c ← pkgInitChain target (P'.getArg! 2) (fuel - 1) then
-      return some (← mkAppM ``pkg_init_sep_l #[c])
+      return some (← mkAppOptM ``pkg_init_sep_l
+        #[none, none, none, some (P'.getArg! 2), some (P'.getArg! 3), none, some c])
     if let some c ← pkgInitChain target (P'.getArg! 3) (fuel - 1) then
-      return some (← mkAppM ``pkg_init_sep_r #[c])
+      return some (← mkAppOptM ``pkg_init_sep_r
+        #[none, none, none, some (P'.getArg! 2), some (P'.getArg! 3), none, some c])
     return none
   if P'.isAppOfArity ``BIBase.intuitionistically 3 then
     if let some c ← pkgInitChain target (P'.getArg! 2) (fuel - 1) then
@@ -227,7 +237,8 @@ elab "solve_pkg_init" : tactic => do
       unless isTrue p do continue
       if let some c ← pkgInitChain target P then
         let r := hyps.remove true ivar
-        mvar.assign (← mkAppM ``pkg_init_from_hyp #[r.pf, c])
+        mvar.assign (← mkAppOptM ``pkg_init_from_hyp
+          #[none, none, none, none, some r.e', some r.out', none, some r.p, some r.pf, some c])
         return
     throwIPMError "could not prove {goal} from the intuitionistic context"
 

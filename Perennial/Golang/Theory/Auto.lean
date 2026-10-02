@@ -64,6 +64,43 @@ partial def destructPkgInit (h : Name) : TacticM Bool := do
     return false
   return true
 
+/-- The fields `(is_pkg_init_deps, is_pkg_init_def)` of an `IsPkgInit`
+instance, obtained by unfolding the instance constant (e.g. one built with
+`define_is_pkg_init`) to an `IsPkgInit.mk` application. -/
+partial def pkgInitInstFields (inst : Expr) (fuel : Nat := 20) : MetaM (Option (Expr × Expr)) := do
+  let inst := (← instantiateMVars inst).headBeta
+  if inst.isAppOfArity ``IsPkgInit.mk 5 then return some (inst.getArg! 3, inst.getArg! 4)
+  if fuel == 0 then return none
+  match ← unfoldDefinition? inst with
+  | some i => pkgInitInstFields i (fuel - 1)
+  | none => return none
+
+/-- Rocq `iEval (rewrite is_pkg_init_unfold /=)`: in the conclusion of the
+Iris goal, unfold `is_pkg_init pkg` into
+`□ deps ∗ □ P`, where `deps`/`P` are the fields of the
+`IsPkgInit` instance (so the dependencies appear as `is_pkg_init dep ∗ ... ∗ True`).
+The change is definitional (checked by the kernel). -/
+elab "is_pkg_init_unfold" : tactic => do
+  let g ← getMainGoal
+  let t ← instantiateMVars (← g.getType)
+  let some #[prop, bi, P, Q] := t.consumeMData.appM? ``Entails'
+    | throwError "is_pkg_init_unfold: not an Iris goal"
+  let Q' ← Meta.transform Q (pre := fun e => do
+    if e.isAppOfArity ``is_pkg_init 4 then
+      let some (deps, d) ← pkgInitInstFields (e.getArg! 3) | return .continue
+      let pkg := e.getArg! 2
+      let body ← mkAppOptM ``is_pkg_init_wrap #[e.getArg! 0, e.getArg! 1, pkg, e.getArg! 3]
+      let some body ← unfoldDefinition? body | return .continue
+      let body ← Meta.transform body (pre := fun x => do
+        if x.isAppOfArity ``IsPkgInit.is_pkg_init_deps 4 && x.getArg! 2 == pkg then return .done deps
+        if x.isAppOfArity ``IsPkgInit.is_pkg_init_def 4 && x.getArg! 2 == pkg then return .done d
+        if x.isAppOfArity ``named 3 then return .visit (x.getArg! 2)
+        return .continue)
+      return .done body
+    return .continue)
+  let t' := mkApp4 t.consumeMData.getAppFn prop bi P Q'
+  replaceMainGoal [← g.replaceTargetDefEq t']
+
 end tactics
 
 /-- Rocq `wp_start_folded as pat`: introduce `Φ`, the precondition `Hpre` and
@@ -86,14 +123,24 @@ elab_rules : tactic
 /-- Rocq `wp_start as pat`: `wp_start_folded as pat`, then unfold the function
 (`wp_func_call`) or method (`wp_method_call`) being called and take the call
 steps (`wp_call`). `wp_start` keeps the precondition as `Hpre`. -/
-macro "wp_start" pat:(" as " icasesPat)? : tactic => do
-  let pre ← match pat with
-    | some p =>
-      let q : Lean.TSyntax `icasesPat := ⟨p.raw[1]⟩
-      `(tactic| wp_start_folded as $q)
-    | none => `(tactic| wp_start_folded)
-  let pre : Lean.TSyntax `tactic := ⟨pre.raw⟩
-  `(tactic| ($pre; (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)))
+syntax "wp_start" (" as " icasesPat)? : tactic
+
+macro_rules
+  | `(tactic| wp_start as $p:icasesPat) =>
+    `(tactic| (wp_start_folded as $p; (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)))
+  | `(tactic| wp_start) =>
+    `(tactic| (wp_start_folded; (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)))
+
+/-- Finish the proof of a package's `wp_initialize'` (Rocq
+`iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".`): unfold `is_pkg_init`
+in the goal (`is_pkg_init_unfold`) and frame the dependencies' `is_pkg_init`
+facts from the intuitionistic context. -/
+macro "is_pkg_init_finish" : tactic => `(tactic| (
+  is_pkg_init_unfold
+  (try imodintro)
+  (try iframe #)
+  (try (imodintro; itrivial))
+  (try itrivial)))
 
 /-! ## `wp_auto` -/
 
@@ -320,10 +367,11 @@ def findIfCond (e : Expr) : MetaM (Option (Sum Expr Expr)) := do
 
 end if_destruct
 
+set_option hygiene false in
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Rocq `wp_if_destruct`: case split on the first `decide P` (or Boolean
 variable `#b`) in the WP expression, then `wp_pures`, `cleanup_bool_decide` and
-`wp_auto`. The case hypothesis is `Hif`. -/
+`wp_auto`. The case hypothesis is `Hif` (accessible: the tactic is unhygienic). -/
 elab "wp_if_destruct" : tactic => do
   let some g := parseIrisGoal? (← instantiateMVars (← getMainTarget))
     | throwError "wp_if_destruct: not in the Iris proof mode"
@@ -371,39 +419,52 @@ macro "solve_into_val_typed_struct" : tactic => `(tactic| (
     wp_apply wp_GoPrealloc as %l %Hnotnull
     repeat (wp_if_destruct; (rotate_left; wp_apply_core wp_AngelicExit))
     iapply HΦ
-    simp only [TypedPointsto.typed_pointsto_def, named]
+    try simp only [TypedPointsto.typed_pointsto_def, named]
     iframe
-    ipureintro; exact Hnotnull
+    ipureintro; (try simp only [and_self]); exact Hnotnull
   · intro s E t _ l dq v
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, %Hnn⟩
-    simp only [TypedPointsto.typed_pointsto_def]
+    try simp only [TypedPointsto.typed_pointsto_def]
     iNamed Hl
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
-    wp_auto
+    try wp_auto
     cases v
-    simp only
+    try simp only
     iapply HΦ
-    simp only [TypedPointsto.typed_pointsto_def, named]
+    try simp only [TypedPointsto.typed_pointsto_def, named]
     iframe
-    ipureintro; exact Hnn
+    ipureintro; (try simp only [and_self]); exact Hnn
   · intro s E t _ l v w
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, %Hnn⟩
-    simp only [TypedPointsto.typed_pointsto_def]
+    try simp only [TypedPointsto.typed_pointsto_def]
     iNamed Hl
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
-    wp_auto
+    try wp_auto
     cases w
     iapply HΦ
-    simp only [TypedPointsto.typed_pointsto_def, named]
+    try simp only [TypedPointsto.typed_pointsto_def, named]
     iframe
-    ipureintro; exact Hnn
+    ipureintro; (try simp only [and_self]); exact Hnn
   · infer_instance))
+
+instance equals_unfold_nil (A : Type) : EqualsUnfold (@List.nil A) (@List.nil A) := ⟨rfl⟩
+
+section into_val_typed_unit
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+instance into_val_typed_unit : IntoValTypedUnderlying (GF := GF) Unit (go.StructType []) := by
+  solve_into_val_typed_struct
+
+end into_val_typed_unit
 
 /-! ## Loops -/
 
@@ -430,6 +491,10 @@ macro "wp_end" : tactic => `(tactic| (
   (first
   | iapply HΦ
   | iapply HPost);
-  (try (iframe; done))))
+  (try (first
+    | (iframe; done)
+    | itrivial
+    | (ipureintro; trivial)
+    | (iframe; ipureintro; trivial)))))
 
 end Perennial

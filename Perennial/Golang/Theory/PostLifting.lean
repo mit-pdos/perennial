@@ -635,7 +635,7 @@ macro "solve_typed_pointsto_agree" : tactic => `(tactic| (
   iintro H1 H2
   repeat (icases H1 with ⟨Hf, H1⟩; icases H2 with ⟨Hf', H2⟩; icombine Hf Hf' gives %Heq;
           subst Heq)
-  ipureintro; rfl))
+  ipureintro; first | rfl | trivial))
 
 /-- Rocq `solve_pointsto_access_struct`: prove an `AccessStrict` instance for a
 struct field. -/

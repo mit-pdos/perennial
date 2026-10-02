@@ -15,3 +15,5 @@ import Perennial.Golang.Theory.Pkg
 import Perennial.Golang.Theory.Auto
 import Perennial.Golang.Theory.Defer
 import Perennial.Golang.Theory.Array
+import Perennial.Golang.Theory.Slice
+import Perennial.Golang.Theory.Map

@@ -23,10 +23,12 @@ Rocq tactic names are kept. Intro/cases patterns are iris-lean's
 | `iPkgInit`, `solve_pkg_init` | Pkg | `is_pkg_init` goals |
 | `iNamed H`, `iNamed 1`, `iNamedAccu`, `iNamedPrefix/Suffix`, `iFrameNamed`, `iExactEq H` | Helpers/NamedProps | named propositions `"H" ∷ P` |
 | `iCombineNamed "H*" as Hout` | Experiments/Glob | glob over hypothesis names |
+| `s ↦*{dq} vs`, `own_slice_cap V s dq`, `mref ↦${dq} m` | Slice, Map | slice and map points-to (specs `wp_slice_*`, `wp_map_*`) |
 | `iStructNamed H`, `solve_into_val_typed_struct`, `solve_pointsto_access_struct`, `solve_typed_pointsto_agree` | PostLifting, Auto | struct points-to |
 
 See `Perennial/Golang/Theory/Test.lean` for worked examples.
 -/
 import Perennial.Golang.Defn
 import Perennial.Golang.Theory.Pre
+import Perennial.Golang.Theory.String
 import Perennial.Ghost

@@ -78,7 +78,7 @@ def real : go_string := go!"real"
 def recover : go_string := go!"recover"
 
 /-! Types from https://go.dev/ref/spec#Predeclared_identifiers -/
-def any : go.type := go.InterfaceType []
+@[reducible] def any : go.type := go.InterfaceType []
 --  bool is declared in PreLang.
 --  byte is aliased below
 --  comparable is omitted: it's only used in type constraints and does not
