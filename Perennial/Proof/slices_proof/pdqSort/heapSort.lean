@@ -395,7 +395,7 @@ variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.type}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop) [StrictWeakOrder R]
 
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 500000 in
 theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t) (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
@@ -515,7 +515,7 @@ theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func
   iapply HΦ
   iframe
 
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 500000 in
 theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗

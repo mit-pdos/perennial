@@ -39,7 +39,6 @@ local instance error_is_underlying : go.error ↓u go.InterfaceType error_elems 
 local instance error_underlying_eq : go.error ≤u go.InterfaceType error_elems := by
   unfold go.error; exact underlying_eq _
 
-set_option maxRecDepth 100000 in
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
     (Hinit : get_is_pkg_init_prop pkg_id.math.bits get_is_pkg_init) :
     {{ own_initializing get_is_pkg_init }}

@@ -63,11 +63,11 @@ attribute [list_simp] List.getElem?_append_left List.getElem?_append_right
   Nat.add_sub_cancel_left Nat.sub_zero Nat.zero_add Nat.add_zero
 
 /-- Discharger for `list_simplifier`: arithmetic on (simplified) lengths. -/
-macro "list_disch" : tactic => `(tactic| first | omega | (simp only [len] at *; omega))
+macro "list_disch" : tactic => `(tactic| first | omega | (word_filter iris; simp only [len] at *; omega))
 
 /-- stdpp `list_simplifier` (see the module docstring). -/
 macro "list_simplifier" : tactic => `(tactic|
-  (simp (disch := list_disch) only [list_simp, len] at *))
+  simp_pure simp (disch := list_disch) only [list_simp, len])
 
 open Lean Elab Tactic Term Meta in
 /-- Rocq `find_list_hyps`: for each hypothesis `l₁ = l₂` (lists) or `l₁ <+: l₂`,

@@ -33,39 +33,6 @@ instance countable_wlock_state : Pos.Countable wlock_state :=
     (by rintro (a|a|_|_) (b|b|_|_) h <;> have h := Pos.encode_inj h <;> simp_all)
 
 
-/-! Local copy of the (original) `word` preprocessing, so that this file does not
-depend on changes to `word`'s heuristics: everything to `Nat`/`Int` arithmetic,
-with the signed-value case split for every `sint.Z` term, then `omega`. -/
-section rw_word
-open Lean Elab Tactic Meta in
-elab "rw_sint_facts" : tactic => withMainContext do
-  let mut ts : Array Expr := #[]
-  for h in ← getLCtx do
-    unless h.isImplementationDetail do
-      ts := word.collectToInt (← instantiateMVars h.type) ts
-  ts := word.collectToInt (← instantiateMVars (← getMainTarget)) ts
-  for t in ts do
-    let pf ← mkAppM ``sint_Z_cases #[t.appArg!]
-    let ty ← inferType pf
-    liftMetaTactic fun g => do
-      let (_, g) ← (← g.assert `hsint ty pf).intro1P
-      return [g]
-end rw_word
-
-macro "rw_word" : tactic => `(tactic| (
-  (try simp only [true_and, and_true, or_true, true_or] at *)
-  (try simp only [uint.Z, uint.nat, sint.Z, sint.nat, W64, W32, W16, W8, word_unfold] at *)
-  all_goals (
-    rw_sint_facts
-    (try simp -implicitDefEqProofs only [BitVec.toNat_ofNat, BitVec.toNat_ofFin,
-        BitVec.toNat_setWidth, BitVec.toNat_neg, BitVec.ofNat_eq_ofNat, BitVec.toNat_eq,
-        BitVec.toNat_ne, BitVec.toNat_ofInt, BitVec.toNat_not, BitVec.toNat_shiftLeft,
-        BitVec.toNat_ushiftRight, BitVec.toNat_add, BitVec.toNat_sub, BitVec.toNat_mul,
-        BitVec.le_def, BitVec.lt_def, BitVec.toNat_udiv, BitVec.toNat_umod, BitVec.toNat_twoPow,
-        BitVec.toNat_cast, BitVec.toNat_ofNatLT, BitVec.toNat_ofBool,
-        Int.toNat_natCast, Int.natCast_pow] at *)
-    all_goals omega)))
-
 namespace sync
 
 /- Rocq's `rwmutex.v` is used qualified (`rwmutex.own_RWMutex`), since
@@ -174,12 +141,12 @@ instance own_RWMutex_invariant_timeless γ a b c d e :
     Timeless (own_RWMutex_invariant (GF := GF) γ a b c d e) := by
   rw [own_RWMutex_invariant_unseal]; unfold own_RWMutex_invariant_def named; infer_instance
 
--- Close a goal made of (named) pure facts about the counters with `rw_word`.
+-- Close a goal made of (named) pure facts about the counters with `word`.
 local macro "rw_pure_finish" : tactic => `(tactic| (
   (try simp only [named])
   ipureintro
   (try simp only [rwmutexMaxReaders_Z, actualMaxReaders_unseal] at *)
-  and_intros <;> (try subst_vars) <;> rw_word))
+  and_intros <;> (try subst_vars) <;> word))
 
 -- Case on `state` and `wl` and reduce the invariant's `match`es
 -- (Rocq: `destruct state, wl; iNamed "Hinv"`).
@@ -214,12 +181,12 @@ theorem step_RLock_readerCount_Add (γ : RWMutex_protocol_names) (ws rs rc rwt :
   icombine Hrlock_overflow Hrlocks gives %Hoverflow
   rw [actualMaxReaders_unseal] at Hoverflow
   have e : Int.toNat (sint.Z (pos + W32 1)) = 1 + Int.toNat (sint.Z pos) := by
-    simp only [rwmutexMaxReaders_Z] at *; rw_word
+    simp only [rwmutexMaxReaders_Z] at *; word
   rw [← e]
   rw_unfold_cases
   · rename_i n r
     iNamed Hreaders; iNamed Hmain
-    rw [if_pos (by subst Hreader_count; simp only [rwmutexMaxReaders_Z] at *; rw_word)]
+    rw [if_pos (by subst Hreader_count; simp only [rwmutexMaxReaders_Z] at *; word)]
     iexists n
     isplitr
     · ipureintro; rfl
@@ -229,14 +196,14 @@ theorem step_RLock_readerCount_Add (γ : RWMutex_protocol_names) (ws rs rc rwt :
     rw_pure_finish
   · rename_i n r
     iNamed Hreaders; iNamed Hmain
-    rw [if_neg (by subst Hreader_count; simp only [rwmutexMaxReaders_Z] at *; rw_word)]
+    rw [if_neg (by subst Hreader_count; simp only [rwmutexMaxReaders_Z] at *; word)]
     iexists (.SignalingReaders r), pos + W32 1, o
     simp only [rw_inv_readers, rw_inv_outstanding, rw_inv_writer, rw_inv_main, rw_reader_count_rel]
     iframe
     rw_pure_finish
   · rename_i n
     iNamed Hreaders; iNamed Hmain
-    rw [if_neg (by subst Hreader_count; simp only [rwmutexMaxReaders_Z] at *; rw_word)]
+    rw [if_neg (by subst Hreader_count; simp only [rwmutexMaxReaders_Z] at *; word)]
     iexists .WaitingForReaders, pos + W32 1, o
     simp only [rw_inv_readers, rw_inv_outstanding, rw_inv_writer, rw_inv_main, rw_reader_count_rel]
     iframe
@@ -248,7 +215,7 @@ theorem step_RLock_readerCount_Add (γ : RWMutex_protocol_names) (ws rs rc rwt :
   · iexfalso; iexact Hmain
   · iexfalso; iexact Hmain
   · iNamed Hmain
-    rw [if_neg (by subst Hreader_count; simp only [rwmutexMaxReaders_Z] at *; rw_word)]
+    rw [if_neg (by subst Hreader_count; simp only [rwmutexMaxReaders_Z] at *; word)]
     iexists .IsLocked, pos + W32 1, o
     simp only [rw_inv_readers, rw_inv_outstanding, rw_inv_writer, rw_inv_main, rw_reader_count_rel]
     iframe
@@ -284,7 +251,7 @@ theorem step_RLock_readerSem_Semacquire (γ : RWMutex_protocol_names) (ws rs rc 
   · iexfalso; iexact Hmain
   · iexfalso; iexact Hmain
   · iNamed Hmain
-    exfalso; obtain ⟨_, _, h⟩ := Hlocked; subst h; rw_word
+    exfalso; obtain ⟨_, _, h⟩ := Hlocked; subst h; word
 
 theorem step_TryRLock_readerCount_CompareAndSwap (γ : RWMutex_protocol_names) (ws rs rc rwt : w32)
     (state : rwmutex) (Hpos : 0 ≤ sint.Z rc) :
@@ -299,7 +266,7 @@ theorem step_TryRLock_readerCount_CompareAndSwap (γ : RWMutex_protocol_names) (
   icombine Hrlock_overflow Hrlocks gives %Hoverflow
   rw [actualMaxReaders_unseal] at Hoverflow
   have e : Int.toNat (sint.Z (pos + W32 1)) = 1 + Int.toNat (sint.Z pos) := by
-    simp only [rwmutexMaxReaders_Z] at *; rw_word
+    simp only [rwmutexMaxReaders_Z] at *; word
   rw [← e]
   rw_unfold_cases
   · rename_i n r
@@ -309,11 +276,11 @@ theorem step_TryRLock_readerCount_CompareAndSwap (γ : RWMutex_protocol_names) (
     rw_reestablish (.NotLocked r) (pos + W32 1) o
   all_goals first
     | (iexfalso; iexact Hmain)
-    | (exfalso; subst_vars; simp only [rwmutexMaxReaders_Z] at *; rw_word)
+    | (exfalso; subst_vars; simp only [rwmutexMaxReaders_Z] at *; word)
 
 theorem rw_neg_after_sub (pos : w32) (h : 0 ≤ sint.Z pos ∧ sint.Z pos < rwmutexMaxReaders_Z) :
     sint.Z (pos - W32 rwmutexMaxReaders_Z + W32 (-1)) < 0 := by
-  simp only [rwmutexMaxReaders_Z] at *; rw_word
+  simp only [rwmutexMaxReaders_Z] at *; word
 
 theorem step_RUnlock_readerCount_Add (γ : RWMutex_protocol_names) (ws rs rc rwt : w32)
     (num_readers : Nat) :
@@ -330,14 +297,14 @@ theorem step_RUnlock_readerCount_Add (γ : RWMutex_protocol_names) (ws rs rc rwt
   simp only [rw_inv_readers]
   iNamed Hreaders
   have e : Int.toNat (sint.Z pos) = 1 + Int.toNat (sint.Z (pos - W32 1)) := by
-    simp only [rwmutexMaxReaders_Z] at *; rw_word
+    simp only [rwmutexMaxReaders_Z] at *; word
   rw [e]
   icases (own_toks_add _ 1 _).1 $$ Hrlocks with ⟨Hr, Hrlocks⟩
   cases wl
   · rename_i r
     simp only [rw_inv_outstanding, rw_inv_writer, rw_inv_main, rw_reader_count_rel] at *
     iNamed Hmain
-    rw [if_neg (by subst_vars; simp only [rwmutexMaxReaders_Z] at *; rw_word)]
+    rw [if_neg (by subst_vars; simp only [rwmutexMaxReaders_Z] at *; word)]
     imodintro
     iframe Hr
     isplitl
@@ -382,7 +349,7 @@ theorem step_rUnlockSlow_readerWait_Add (γ : RWMutex_protocol_names) (ws rs rc 
     iNamed Hreaders; iNamed Hmain
     obtain ⟨o', rfl⟩ : ∃ o', o = o' + 1 := ⟨o - 1, by omega⟩
     imod own_tok_auth_delete_S γ.read_wait_gn o' $$ Houtstanding Hwait_tok with Houtstanding
-    rw [if_neg (by simp only [rwmutexMaxReaders_Z] at *; rw_word)]
+    rw [if_neg (by simp only [rwmutexMaxReaders_Z] at *; word)]
     imodintro
     isplitl
     · rw_reestablish (.SignalingReaders r) pos o'
@@ -401,7 +368,7 @@ theorem step_rUnlockSlow_readerWait_Add (γ : RWMutex_protocol_names) (ws rs rc 
         ihave Hwriter : iprop(ghost_var γ.writer_sem_tok_gn 1 () ∨
             (ghost_var γ.writer_sem_tok_gn (1 : Qp).half () ∗
               ⌜ws = W32 0 ∧ rwt + W32 (-1) = W32 0⌝)) $$ [Hw1]
-        · iright; iframe Hw1; ipureintro; simp only [rwmutexMaxReaders_Z] at *; and_intros <;> rw_word
+        · iright; iframe Hw1; ipureintro; simp only [rwmutexMaxReaders_Z] at *; and_intros <;> word
         isplitr [Hw2]
         · rw_reestablish .WaitingForReaders pos o'
         · iframe Hw2
@@ -410,7 +377,7 @@ theorem step_rUnlockSlow_readerWait_Add (γ : RWMutex_protocol_names) (ws rs rc 
         isplitl
         · rw_reestablish .WaitingForReaders pos o'
         · itrivial
-    · exfalso; obtain ⟨_, h⟩ := Hbad; subst h; simp only [rwmutexMaxReaders_Z] at *; rw_word
+    · exfalso; obtain ⟨_, h⟩ := Hbad; subst h; simp only [rwmutexMaxReaders_Z] at *; word
   · iexfalso; iexact Hmain
   · iexfalso; iexact Hmain
   · iexfalso; iexact Hmain
@@ -472,7 +439,7 @@ theorem step_Lock_readerCount_Add (γ : RWMutex_protocol_names) (ws rs rc rwt : 
     by_cases hz : rc = W32 0
     · rw [if_pos hz]
       imod ghost_var_update_halves wlock_state.IsLocked γ.wlock_gn _ _ $$ Hwl Hwl_in with ⟨Hwl, Hwl_in⟩
-      have hn : n = 0 := by subst_vars; simp only [rwmutexMaxReaders_Z] at *; rw_word
+      have hn : n = 0 := by subst_vars; simp only [rwmutexMaxReaders_Z] at *; word
       subst hn
       imodintro
       isplitr
@@ -514,7 +481,7 @@ theorem step_Lock_readerWait_Add (γ : RWMutex_protocol_names) (r ws rs rc rwt :
     by_cases hz : sint.Z (rwt + r) = 0
     · rw [if_pos hz]
       imod ghost_var_update_halves wlock_state.IsLocked γ.wlock_gn _ _ $$ Hwl Hwl_in with ⟨Hwl, Hwl_in⟩
-      have hn : n = 0 ∧ o = 0 := by simp only [rwmutexMaxReaders_Z] at *; constructor <;> rw_word
+      have hn : n = 0 ∧ o = 0 := by simp only [rwmutexMaxReaders_Z] at *; constructor <;> word
       obtain ⟨rfl, rfl⟩ := hn
       imodintro
       isplitr
@@ -552,7 +519,7 @@ theorem step_Lock_writerSem_Semacquire (γ : RWMutex_protocol_names) (ws rs rc r
       rw_reader_count_rel] at *
     iNamed Hreaders; iNamed Hmain
     imod ghost_var_update_halves wlock_state.IsLocked γ.wlock_gn _ _ $$ Hwl Hwl_in with ⟨Hwl, Hwl_in⟩
-    have hn : n = 0 ∧ o = 0 := by simp only [rwmutexMaxReaders_Z] at *; constructor <;> rw_word
+    have hn : n = 0 ∧ o = 0 := by simp only [rwmutexMaxReaders_Z] at *; constructor <;> word
     obtain ⟨rfl, rfl⟩ := hn
     icases Hwriter with (Hwriter_unused | ⟨_, %Hbad⟩)
     · imodintro
@@ -560,7 +527,7 @@ theorem step_Lock_writerSem_Semacquire (γ : RWMutex_protocol_names) (ws rs rc r
       · ipureintro; rfl
       iframe Hwl_in
       rw_reestablish wlock_state.IsLocked pos 0
-    · exfalso; obtain ⟨h, _⟩ := Hbad; subst h; simp only [rwmutexMaxReaders_Z] at *; rw_word
+    · exfalso; obtain ⟨h, _⟩ := Hbad; subst h; simp only [rwmutexMaxReaders_Z] at *; word
   · simp only [rw_inv_main]
     iexfalso; iexact Hmain
 
@@ -582,7 +549,7 @@ theorem step_TryLock_readerCount_CompareAndSwap (γ : RWMutex_protocol_names) (w
       rw_reader_count_rel] at *
     iNamed Hreaders; iNamed Hmain
     imod ghost_var_update_halves wlock_state.IsLocked γ.wlock_gn _ _ $$ Hwl Hwl_in with ⟨Hwl, Hwl_in⟩
-    have hn : n = 0 := by subst_vars; simp only [rwmutexMaxReaders_Z] at *; rw_word
+    have hn : n = 0 := by subst_vars; simp only [rwmutexMaxReaders_Z] at *; word
     subst hn
     imodintro
     isplitr
@@ -784,7 +751,7 @@ theorem wp_RWMutex__RLock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
       iframe
     imodintro
     wp_auto
-    have h' : ¬ (sint.Z (rc + W32 1) < sint.Z (W32 0)) := by rw_word
+    have h' : ¬ (sint.Z (rc + W32 1) < sint.Z (W32 0)) := by word
     simp only [h', decide_false]
     wp_auto
     iexact HΦ
@@ -797,7 +764,7 @@ theorem wp_RWMutex__RLock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
       iframe
     imodintro
     wp_auto
-    have h' : sint.Z (rc + W32 1) < sint.Z (W32 0) := by rw_word
+    have h' : sint.Z (rc + W32 1) < sint.Z (W32 0) := by word
     simp only [h', decide_true]
     wp_auto
     wp_apply_core wp_runtime_SemacquireRWMutexR (RW_readerSem rw) γ.reader_sem_gn (N.@"sema")
@@ -886,7 +853,7 @@ theorem wp_RWMutex__TryRLock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
     · subst hc
       simp only [↓reduceIte, decide_true]
       imod step_TryRLock_readerCount_CompareAndSwap γ.prot_gn ws rs rc' rwt state
-        (by rw_word) $$ [Htok Hprot] with ⟨%n, %Hst, Hprot⟩
+        (by word) $$ [Htok Hprot] with ⟨%n, %Hst, Hprot⟩
       · iframe
       subst Hst
       imod Hmask with _
@@ -965,18 +932,18 @@ theorem wp_RWMutex__RUnlock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
       iframe
     imodintro
     wp_auto
-    have h' : sint.Z (rc + W32 (-1)) < sint.Z (W32 0) := by rw_word
+    have h' : sint.Z (rc + W32 (-1)) < sint.Z (W32 0) := by word
     simp only [h', decide_true]
     wp_auto
     wp_method_call
     unfold «RWMutex__rUnlockSlowⁱᵐᵖˡ»
     wp_auto
     have hA : ¬ (rc + W32 (-1) + W32 1 = W32 0) := by
-      intro h; apply H1; simp only [rwmutexMaxReaders_Z] at *; rw_word
+      intro h; apply H1; simp only [rwmutexMaxReaders_Z] at *; word
     simp only [hA, decide_false, sync.rwmutexMaxReaders]
     wp_auto
     have hB : ¬ (rc + W32 (-1) + W32 1 = W32 (-1073741824)) := by
-      intro h; apply H2; simp only [rwmutexMaxReaders_Z] at *; rw_word
+      intro h; apply H2; simp only [rwmutexMaxReaders_Z] at *; word
     simp only [hB, decide_false]
     wp_auto
     wp_apply_core sync.atomic.wp_Int32__Add $$ [] [-]
@@ -1050,7 +1017,7 @@ theorem wp_RWMutex__RUnlock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
       iframe
     imodintro
     wp_auto
-    have h' : ¬ (sint.Z (rc + W32 (-1)) < sint.Z (W32 0)) := by rw_word
+    have h' : ¬ (sint.Z (rc + W32 (-1)) < sint.Z (W32 0)) := by word
     simp only [h', decide_false]
     wp_auto
     iexact HΦ
@@ -1116,10 +1083,10 @@ theorem wp_RWMutex__Lock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
       iframe
     imodintro
     have hz' : ¬ (rc + W32 (-1073741824) + W32 1073741824 = W32 0) := by
-      intro h; apply hz; rw_word
+      intro h; apply hz; word
     wp_auto
     wp_if_destruct
-    · exfalso; apply hz; rw_word
+    · exfalso; apply hz; word
     wp_apply_core sync.atomic.wp_Int32__Add $$ [] [-]
     · iPkgInit
     clear hz hz' Hif
@@ -1158,7 +1125,7 @@ theorem wp_RWMutex__Lock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
         iframe
       imodintro
       have hz2' : rwt + (rc + W32 (-rwmutexMaxReaders_Z) + W32 rwmutexMaxReaders_Z) = W32 0 := by
-        rw_word
+        word
       clear hz2
       wp_auto
       wp_if_destruct
@@ -1267,7 +1234,7 @@ theorem wp_RWMutex__TryLock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
       · ipureintro; rfl
       imod Hmask with _
       have e : W32 0 + W32 (-rwmutexMaxReaders_Z) = (W32 (-1073741824) : w32) := by
-        simp only [rwmutexMaxReaders_Z]; rw_word
+        simp only [rwmutexMaxReaders_Z]; word
       rw [e]
       imod Hclose $$ [Hstate HreaderSem HwriterSem HreaderCount HreaderWait Hprot Hmtx Hwl_inv] with _
       · inext
@@ -1336,14 +1303,14 @@ theorem wp_RWMutex__Unlock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
   imodintro
   wp_auto
   wp_if_destruct
-  · exfalso; simp only [rwmutexMaxReaders_Z] at *; rw_word
+  · exfalso; simp only [rwmutexMaxReaders_Z] at *; word
   ihave HI : iprop(∃ (i : w64) (r2 : w32), "i" ∷ i_ptr ↦ i ∗
       "Hwl" ∷ ghost_var γ.prot_gn.wlock_gn (1 : Qp).half (wlock_state.NotLocked r2) ∗
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z (rc + W32 rwmutexMaxReaders_Z)⌝ ∗
       "%Hrr" ∷ ⌜sint.Z r2 = sint.Z (rc + W32 rwmutexMaxReaders_Z) - sint.Z i⌝) $$ [i Hwl]
   · iexists (W64 0), (rc + W32 rwmutexMaxReaders_Z)
     iframe
-    ipureintro; simp only [rwmutexMaxReaders_Z] at *; and_intros <;> rw_word
+    ipureintro; simp only [rwmutexMaxReaders_Z] at *; and_intros <;> word
   wp_for HI
   split
   · rename_i hlt
@@ -1352,10 +1319,10 @@ theorem wp_RWMutex__Unlock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
     wp_apply_core wp_runtime_Semrelease (RW_readerSem rw) γ.reader_sem_gn (N.@"sema")
       false (W64 0) $$ [] [-]
     · iframe #
-    have hpos : 0 < sint.Z r2 := by simp only [rwmutexMaxReaders_Z] at *; rw_word
+    have hpos : 0 < sint.Z r2 := by simp only [rwmutexMaxReaders_Z] at *; word
     have hfin : (0 ≤ sint.Z (i + W64 1) ∧ sint.Z (i + W64 1) ≤ sint.Z (rc + W32 rwmutexMaxReaders_Z)) ∧
         sint.Z (r2 - W32 1) = sint.Z (rc + W32 rwmutexMaxReaders_Z) - sint.Z (i + W64 1) := by
-      simp only [rwmutexMaxReaders_Z] at *; and_intros <;> rw_word
+      simp only [rwmutexMaxReaders_Z] at *; and_intros <;> word
     clear Hif hlt Hr1 Hr2 Hi Hrr
     iinv Hinv with >Hi2 Hclose <;> try exact ⟨mask_inv_sema N, trivial⟩
     icases Hi2 with ⟨%ws, %rs, %rc', %rwt, %state, Hi2⟩
@@ -1382,7 +1349,7 @@ theorem wp_RWMutex__Unlock (γ : RWMutex_names) (rw : loc) (N : Namespace) :
     ipureintro; exact hfin
   · rename_i hlt
     simp only [decide_eq_true_eq, sext_32_64] at hlt
-    have hr0 : r2 = W32 0 := by simp only [rwmutexMaxReaders_Z] at *; rw_word
+    have hr0 : r2 = W32 0 := by simp only [rwmutexMaxReaders_Z] at *; word
     subst hr0
     wp_auto
     wp_apply wp_Mutex__Unlock (RW_w rw)
@@ -1444,7 +1411,7 @@ theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : loc) :
     simp only [named]
     ipureintro
     simp only [rwmutexMaxReaders_Z]
-    and_intros <;> rw_word
+    and_intros <;> word
   imod inv_alloc (N.@"inv") E (rw_inv rw γ) $$ [Hst_inv Hrs_own Hws_own readerCount readerWait
       Hprot] with #Hinv
   · inext

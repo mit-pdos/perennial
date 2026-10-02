@@ -41,12 +41,21 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
                  ArraySet ("array_so_far", ("n" -⟨go.int⟩ #(W64 1), "elem_val"))
          ) #(W64 n)))
 
-  store_array (n : Int) (elem_type : go.type) (l v : val) :
-    ⟦GoStore (go.ArrayType n elem_type), (l, v)⟧ ⤳[internal_under]
-    (List.foldl (fun str_so_far j =>
+  /-- Deviates from Rocq, whose version is unusable (and whose `into_val_typed_array`
+  is `Admitted`): Rocq stores `Index (v, #(W64 n))` (out of range, so it panics)
+  instead of `Index (v, #(W64 j))`; and it has no guard, so a value `#v` whose
+  length is not `n` (possible, `array.t V n` does not enforce it) or an `n` past
+  the `w64` index range cannot satisfy `l ↦ v`. Here those cases are
+  `AngelicExit`, as in `load_array`, and the value is a typed `#v`. -/
+  store_array (n : Int) (elem_type : go.type) (l : val) {V : Type} (v : array.t V n) :
+    ⟦GoStore (go.ArrayType n elem_type), (l, #v)⟧ ⤳[internal_under]
+    (if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
+      gl(AngelicExit #())
+    else
+    List.foldl (fun str_so_far j =>
                 gl(str_so_far ;;
                 (let elem_addr := gl(IndexRef (go.ArrayType n elem_type) (l, #(W64 j)))
-                 let elem_val := gl(Index (go.ArrayType n elem_type) (v, #(W64 n)))
+                 let elem_val := gl(Index (go.ArrayType n elem_type) (#v, #(W64 j)))
                  gl(GoStore elem_type (elem_addr, elem_val)))))
              (#() : expr) ((List.range n.toNat).map (fun (i : Nat) => (i : Int)))) -- Rocq: seqZ 0 n
 

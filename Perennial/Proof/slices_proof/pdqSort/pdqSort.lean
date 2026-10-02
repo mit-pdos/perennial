@@ -256,7 +256,6 @@ theorem wp_reverseRangeCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) 
     ipureintro
     exact ⟨HPerm1, Houtside1⟩
 
-set_option maxHeartbeats 4000000 in
 theorem wp_pdqsortCmpFunc (data : slice.t) (a b limit : w64) (cmp_code : func.t) (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗

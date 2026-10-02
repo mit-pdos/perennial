@@ -289,6 +289,36 @@ theorem subst_pf_newproph : subst x v (NewProph : expr) = NewProph := rfl
 theorem subst_pf_resolve {a b a' b' : expr} (ha : subst x v a = a') (hb : subst x v b = b') :
     subst x v (ResolveProph a b) = ResolveProph a' b' := by simp only [subst, ha, hb]
 
+-- composite literals (`LiteralValue`): without these the kernel would evaluate
+-- `subst` on the element list, deciding the `String` equality of every variable
+theorem subst_pf_litval {l l' : List keyed_element} (h : subst_keyed_elements x v l = l') :
+    subst x v (LiteralValue l) = LiteralValue l' := by simp only [subst, h]
+theorem subst_pf_kes_nil : subst_keyed_elements x v [] = [] := by simp only [subst_keyed_elements]
+theorem subst_pf_kes_cons {ke ke' : keyed_element} {l l' : List keyed_element}
+    (h1 : subst_keyed_element x v ke = ke') (h2 : subst_keyed_elements x v l = l') :
+    subst_keyed_elements x v (ke :: l) = ke' :: l' := by simp only [subst_keyed_elements, h1, h2]
+theorem subst_pf_ke {k k' : Option key} {el el' : element} (h1 : subst_opt_key x v k = k')
+    (h2 : subst_element x v el = el') :
+    subst_keyed_element x v (KeyedElement k el) = KeyedElement k' el' := by
+  simp only [subst_keyed_element, h1, h2]
+theorem subst_pf_okey_none : subst_opt_key x v none = none := by simp only [subst_opt_key]
+theorem subst_pf_okey_field (f : go_string) :
+    subst_opt_key x v (some (KeyField f)) = some (KeyField f) := by simp only [subst_opt_key]
+theorem subst_pf_okey_int (i : Int) :
+    subst_opt_key x v (some (KeyInteger i)) = some (KeyInteger i) := by simp only [subst_opt_key]
+theorem subst_pf_okey_expr (t : go.type) {e e' : expr} (h : subst x v e = e') :
+    subst_opt_key x v (some (KeyExpression t e)) = some (KeyExpression t e') := by
+  simp only [subst_opt_key, h]
+theorem subst_pf_okey_lv {l l' : List keyed_element} (h : subst_keyed_elements x v l = l') :
+    subst_opt_key x v (some (KeyLiteralValue l)) = some (KeyLiteralValue l') := by
+  simp only [subst_opt_key, h]
+theorem subst_pf_el_expr (t : go.type) {e e' : expr} (h : subst x v e = e') :
+    subst_element x v (ElementExpression t e) = ElementExpression t e' := by
+  simp only [subst_element, h]
+theorem subst_pf_el_lv {l l' : List keyed_element} (h : subst_keyed_elements x v l = l') :
+    subst_element x v (ElementLiteralValue l) = ElementLiteralValue l' := by
+  simp only [subst_element, h]
+
 theorem subst'_pf_anon {e e' : expr} (h : e = e') : subst' BAnon v e = e' := h
 theorem subst'_pf_named {e e1 e' : expr} (h1 : e = e1) (h2 : subst x v e1 = e') :
     subst' (BNamed x) v e = e' := by rw [h1]; exact h2
@@ -819,6 +849,8 @@ def binderNeProof (ext : Expr) (x : String) (xe : Expr) (b : Option String) (be 
     let ye := (be.getArg! 0)
     mkApp4 (mkConst ``binder_named_ne_named) ext xe ye (strNeProof x y xe ye)
 
+mutual
+
 /-- `subst x v e` with a proof `subst x v e = e'` built from per-constructor lemmas
 (non-constructor subterms are left as `subst x v _`, proved by `rfl`). -/
 partial def substPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (e : Expr) :
@@ -886,7 +918,70 @@ partial def substPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool
   | some ``Perennial.expr.ResolveProph, #[_, a, b] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b
     return (mk ``Perennial.expr.ResolveProph #[a', b'], lem ``subst_pf_resolve #[a, b, a', b', pa, pb])
+  | some ``Perennial.expr.LiteralValue, #[_, l] =>
+    match ← substKEsPf ext x xe v dirty l with
+    | some (l', pl) =>
+      return (mk ``Perennial.expr.LiteralValue #[l'], lem ``subst_pf_litval #[l, l', pl])
+    | none => fallback
   | _, _ => fallback
+
+/-- `subst_keyed_elements x v l` with a proof, for a list `l` built from constructors
+(`none` otherwise). -/
+partial def substKEsPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (l : Expr) :
+    MetaM (Option (Expr × Expr)) := do
+  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
+  let l ← whnfR l
+  if l.isAppOfArity ``List.nil 1 then return some (l, lem ``subst_pf_kes_nil #[])
+  unless l.isAppOfArity ``List.cons 3 do return none
+  let ke := l.getArg! 1; let tl := l.getArg! 2
+  let some (ke', p1) ← substKEPf ext x xe v dirty ke | return none
+  let some (tl', p2) ← substKEsPf ext x xe v dirty tl | return none
+  return some (mkApp3 (mkConst ``List.cons [0]) (l.getArg! 0) ke' tl',
+    lem ``subst_pf_kes_cons #[ke, ke', tl, tl', p1, p2])
+
+/-- `subst_keyed_element x v ke` with a proof (see `substKEsPf`). -/
+partial def substKEPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (ke : Expr) :
+    MetaM (Option (Expr × Expr)) := do
+  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
+  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
+  let ke ← whnfR ke
+  unless ke.isAppOfArity ``Perennial.keyed_element.KeyedElement 3 do return none
+  let k ← whnfR (ke.getArg! 1)
+  let el ← whnfR (ke.getArg! 2)
+  let key? : MetaM (Option (Expr × Expr)) := do
+    if k.isAppOfArity ``Option.none 1 then return some (k, lem ``subst_pf_okey_none #[])
+    unless k.isAppOfArity ``Option.some 2 do return none
+    let kk ← whnfR (k.getArg! 1)
+    let some' (e : Expr) := mkApp2 (mkConst ``Option.some [0]) (k.getArg! 0) e
+    match kk.getAppFn.constName?, kk.getAppArgs with
+    | some ``Perennial.key.KeyField, #[_, f] => return some (k, lem ``subst_pf_okey_field #[f])
+    | some ``Perennial.key.KeyInteger, #[_, i] => return some (k, lem ``subst_pf_okey_int #[i])
+    | some ``Perennial.key.KeyExpression, #[_, t, e] =>
+      let (e', pe) ← substPf ext x xe v dirty e
+      return some (some' (mk ``Perennial.key.KeyExpression #[t, e']),
+        lem ``subst_pf_okey_expr #[t, e, e', pe])
+    | some ``Perennial.key.KeyLiteralValue, #[_, l] =>
+      let some (l', pl) ← substKEsPf ext x xe v dirty l | return none
+      return some (some' (mk ``Perennial.key.KeyLiteralValue #[l']),
+        lem ``subst_pf_okey_lv #[l, l', pl])
+    | _, _ => return none
+  let elem? : MetaM (Option (Expr × Expr)) := do
+    match el.getAppFn.constName?, el.getAppArgs with
+    | some ``Perennial.element.ElementExpression, #[_, t, e] =>
+      let (e', pe) ← substPf ext x xe v dirty e
+      return some (mk ``Perennial.element.ElementExpression #[t, e'],
+        lem ``subst_pf_el_expr #[t, e, e', pe])
+    | some ``Perennial.element.ElementLiteralValue, #[_, l] =>
+      let some (l', pl) ← substKEsPf ext x xe v dirty l | return none
+      return some (mk ``Perennial.element.ElementLiteralValue #[l'],
+        lem ``subst_pf_el_lv #[l, l', pl])
+    | _, _ => return none
+  let some (k', p1) ← key? | return none
+  let some (el', p2) ← elem? | return none
+  return some (mk ``Perennial.keyed_element.KeyedElement #[k', el'],
+    lem ``subst_pf_ke #[k, k', el, el', p1, p2])
+
+end
 
 /-- Evaluate the `subst'`/`subst` applications at the head of `e`, with a proof
 (`none`: unchanged). `vals` collects the substituted values; `dirty` is set if

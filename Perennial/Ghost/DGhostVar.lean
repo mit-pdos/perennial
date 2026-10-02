@@ -23,6 +23,10 @@ instance dghost_var_timeless (γ : GName) (dq : DFrac) (a : A) :
     Timeless (dghost_var (GF := GF) γ dq a) := by
   unfold dghost_var; infer_instance
 
+instance dghost_var_persistent (γ : GName) (a : A) :
+    Persistent (dghost_var (GF := GF) γ .discard a) := by
+  unfold dghost_var; infer_instance
+
 instance dghost_var_dfractional (γ : GName) (a : A) :
     DFractional (fun dq => dghost_var (GF := GF) γ dq a) where
   dfractional p q := by unfold dghost_var; rw [mk_op]; exact own_op γ _ _

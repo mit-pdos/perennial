@@ -12,10 +12,11 @@ import Perennial.Std.Word.Automation
 namespace Perennial
 
 open Lean Elab Tactic Meta in
-/-- Internal: `simp only [len, uint.nat, uint.Z]` at the hypotheses and the goal that
-do not mention Iris entailments (so that `len` stays cheap inside large Iris proof
-mode goals). Does not fail. -/
-elab "len_simp" : tactic => withMainContext do
+/-- `simp_pure (simp ...)`: run the given `simp` call (without location) at the
+hypotheses and the goal that do not mention Iris entailments, so that it stays
+cheap inside large Iris proof mode goals. Fails if nothing changes (like
+`simp at *`). -/
+elab "simp_pure " s:tactic : tactic => withMainContext do
   let mut fvars := #[]
   for h in ← getLCtx do
     if h.isImplementationDetail then continue
@@ -25,15 +26,20 @@ elab "len_simp" : tactic => withMainContext do
     fvars := fvars.push h.fvarId
   let tgt ← instantiateMVars (← getMainTarget)
   let simpTgt := !word.mentionsEntailment tgt
-  let stx ← `(tactic| simp only [len, uint.nat, uint.Z])
-  let { ctx, simprocs, .. } ← mkSimpContext stx (eraseLocal := false)
-  try
-    let (result?, _) ← simpGoal (← getMainGoal) ctx (simprocs := simprocs)
+  let { ctx, simprocs, dischargeWrapper, .. } ← mkSimpContext s (eraseLocal := false)
+  let g ← getMainGoal
+  let (result?, _) ← dischargeWrapper.with fun discharge? =>
+    simpGoal g ctx (simprocs := simprocs) (discharge? := discharge?)
       (simplifyTarget := simpTgt) (fvarIdsToSimp := fvars)
-    match result? with
-    | none => replaceMainGoal []
-    | some (_, m) => replaceMainGoal [m]
-  catch _ => pure ()
+  match result? with
+  | none => replaceMainGoal []
+  | some (_, m) =>
+    if m == g then throwError "simp_pure: simp made no progress"
+    replaceMainGoal [m]
+
+/-- Internal: `simp only [len, uint.nat, uint.Z]` at the hypotheses and the goal that
+do not mention Iris entailments. Does not fail. -/
+macro "len_simp" : tactic => `(tactic| try simp_pure simp only [len, uint.nat, uint.Z])
 
 open Lean Elab Tactic Meta in
 /-- Internal: is the main goal free of Iris entailments? -/

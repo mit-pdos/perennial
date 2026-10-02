@@ -60,7 +60,6 @@ theorem wp_sys_hello_world :
       (App (Val (@! sys_hello_world)) (Val #()))
     {{ RET #(go!"Hello, World!"); True }} := by
   wp_start
-  wp_auto
   wp_end
 
 theorem wp_HelloWorldAsync :
@@ -73,10 +72,9 @@ theorem wp_HelloWorldAsync :
   wp_auto
   wp_apply chan.wp_make2 (V := go_string) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
-  rw [if_neg (by decide)]
+  simp only [show (W64 1 = W64 0) = False by decide, ↓reduceIte]
   imod start_bag (fun (v : go_string) => iprop(⌜v = go!"Hello, World!"⌝)) _ ch γ trivial $$ Hch Hoc
     with #Hbag
-  wp_auto
   ipersist ch
   wp_apply wp_fork $$ []
   · wp_auto
@@ -84,7 +82,6 @@ theorem wp_HelloWorldAsync :
     wp_apply wp_bag_send γ ch _ _ $$ [$Hbag]
     · ipureintro; rfl
     itrivial
-  wp_auto
   iapply HΦ
   iframe #
 
@@ -108,17 +105,16 @@ theorem wp_simple_join :
   wp_auto
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
-  rw [if_neg (by decide)]
-  wp_auto
-  imod start_future (V := Unit) (t := go.type.StructType []) ch γ _ (.inr rfl) $$ Hch Hoc
+  simp only [show (W64 1 = W64 0) = False by decide, ↓reduceIte]
+  imod start_future (V := Unit) ch γ _ (.inr rfl) $$ Hch Hoc
     with ⟨%γfut, #Hfut, HAwait⟩
-  imod future_alloc_promise (V := Unit) (t := go.type.StructType []) γfut ch
+  imod future_alloc_promise (V := Unit) γfut ch
     (fun _ => iprop(message_ptr ↦ go!"Hello, World!")) [] $$ Hfut HAwait with ⟨Hpromise, HAwait⟩
   ipersist ch
   wp_apply wp_fork $$ [Hpromise message]
   · wp_auto
     wp_apply wp_future_fulfill (t := go.type.StructType []) γfut ch () $$ [$Hfut Hpromise message]
-    · unfold Fulfilled; iexists _; iframe
+    · unfold Fulfilled; iexists _; iframe; iassumption
     itrivial
   wp_apply wp_future_await (t := go.type.StructType []) γfut ch _ $$ [$Hfut $HAwait]
     as %v %P %pre %post ⟨%Hsplit, HP, -⟩
@@ -137,37 +133,37 @@ theorem wp_simple_multi_join :
   wp_auto
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
-  rw [if_neg (by decide)]
-  wp_auto
-  imod start_future (V := Unit) (t := go.type.StructType []) ch γ _ (.inr rfl) $$ Hch Hoc
+  simp only [show (W64 2 = W64 0) = False by decide, ↓reduceIte]
+  imod start_future (V := Unit) ch γ _ (.inr rfl) $$ Hch Hoc
     with ⟨%γfut, #Hfut, HAwait⟩
-  imod future_alloc_promise (V := Unit) (t := go.type.StructType []) γfut ch
+  imod future_alloc_promise (V := Unit) γfut ch
     (fun _ => iprop(hello_ptr ↦ go!"Hello")) [] $$ Hfut HAwait with ⟨Hpromise1, HAwait⟩
-  imod future_alloc_promise (V := Unit) (t := go.type.StructType []) γfut ch
+  imod future_alloc_promise (V := Unit) γfut ch
     (fun _ => iprop(world_ptr ↦ go!"World")) _ $$ Hfut HAwait with ⟨Hpromise2, HAwait⟩
   ipersist ch
   wp_apply wp_fork $$ [Hpromise1 hello]
   · wp_auto
     wp_apply wp_future_fulfill (t := go.type.StructType []) γfut ch () $$ [$Hfut Hpromise1 hello]
-    · unfold Fulfilled; iexists _; iframe
+    · unfold Fulfilled; iexists _; iframe; iassumption
     itrivial
   wp_apply wp_fork $$ [Hpromise2 world]
   · wp_auto
     wp_apply wp_future_fulfill (t := go.type.StructType []) γfut ch () $$ [$Hfut Hpromise2 world]
-    · unfold Fulfilled; iexists _; iframe
+    · unfold Fulfilled; iexists _; iframe; iassumption
     itrivial
   wp_apply wp_future_await (t := go.type.StructType []) γfut ch _ $$ [$Hfut $HAwait]
     as %v1 %P1 %pre1 %post1 ⟨%Hsplit1, HP1, HAwait⟩
   -- which contract was fulfilled first
   rcases pre1 with _ | ⟨_, _ | ⟨_, pre1⟩⟩
-  · simp only [List.nil_append, List.cons.injEq] at Hsplit1
+  · simp only [List.nil_append] at Hsplit1
     obtain ⟨rfl, rfl⟩ := Hsplit1
     wp_apply wp_future_await (t := go.type.StructType []) γfut ch _ $$ [$Hfut $HAwait]
       as %v2 %P2 %pre2 %post2 ⟨%Hsplit2, HP2, -⟩
     rcases pre2 with _ | ⟨_, pre2⟩
-    · simp only [List.nil_append, List.cons.injEq] at Hsplit2
+    · simp only [List.nil_append] at Hsplit2
       obtain ⟨rfl, -⟩ := Hsplit2
       wp_auto
+      simp only [List.cons_append, List.nil_append]
       wp_end
     · simp at Hsplit2
   · simp only [List.cons_append, List.nil_append, List.cons.injEq] at Hsplit1
@@ -175,9 +171,10 @@ theorem wp_simple_multi_join :
     wp_apply wp_future_await (t := go.type.StructType []) γfut ch _ $$ [$Hfut $HAwait]
       as %v2 %P2 %pre2 %post2 ⟨%Hsplit2, HP2, -⟩
     rcases pre2 with _ | ⟨_, pre2⟩
-    · simp only [List.nil_append, List.cons.injEq] at Hsplit2
+    · simp only [List.nil_append] at Hsplit2
       obtain ⟨rfl, -⟩ := Hsplit2
       wp_auto
+      simp only [List.cons_append, List.nil_append]
       wp_end
     · simp at Hsplit2
   · simp at Hsplit1
@@ -191,8 +188,7 @@ theorem wp_exchangePointer :
   wp_start
   wp_auto
   wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#Hch, -, Hoc⟩
-  wp_auto
-  imod start_handshake (V := Unit) (t := go.type.StructType []) ch (fun _ => iprop(x_ptr ↦ W64 1))
+  imod start_handshake (V := Unit) ch (fun _ => iprop(x_ptr ↦ W64 1))
     iprop(y_ptr ↦ W64 2) γ $$ Hch Hoc with #H
   ipersist ch
   wp_apply wp_fork $$ [x]
@@ -211,11 +207,8 @@ theorem wp_BroadcastExample :
   wp_start
   wp_auto
   wp_apply chan.wp_make1 (V := Unit) as %done_ch %γdone ⟨#Hdone_ch, -, Hdone_own⟩
-  wp_auto
   wp_apply chan.wp_make1 (V := w64) as %result1_ch %γr1 ⟨#Hr1_ch, -, Hr1_own⟩
-  wp_auto
   wp_apply chan.wp_make1 (V := w64) as %result2_ch %γr2 ⟨#Hr2_ch, -, Hr2_own⟩
-  wp_auto
   imod start_bag (fun (v : w64) => iprop(⌜v = W64 6⌝)) _ result1_ch γr1 trivial $$ Hr1_ch Hr1_own
     with #Hbag1
   imod start_bag (fun (v : w64) => iprop(⌜v = W64 10⌝)) _ result2_ch γr2 trivial $$ Hr2_ch Hr2_own
@@ -255,6 +248,207 @@ theorem wp_BroadcastExample :
   subst Hv2
   wp_auto
   wp_end
+
+/-! ### Cancellation -/
+
+theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : go_string)
+    (γdone : chan_names) :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+        own_broadcast_chan done_ch γdone iprop(err_ptr1 ↦□ err_msg) .Unknown }}
+      (App (App (Val (@! HelloWorldCancellable)) (Val #done_ch)) (Val #err_ptr1))
+    {{ (result : go_string), RET #result;
+        ⌜result = err_msg ∨ result = go!"Hello, World!"⌝ }} := by
+  wp_start as #Hdone_bc
+  ihave #Hdone_chan := own_broadcast_chan_is_chan _ _ _ _ $$ Hdone_bc
+  wp_pures
+  wp_alloc l as Hl
+  wp_pures
+  wp_alloc d as Hd
+  wp_auto
+  wp_apply wp_HelloWorldAsync --no-auto
+  iintro %ch %γfut ⟨#Hch, #Hfut⟩
+  wp_auto_lc 2
+  wp_apply_core chan.wp_select_blocking
+  iapply BigAndL.bigAndL_cons.2
+  isplit
+  · dsimp only [chan.blocking_clause_pre]
+    iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, ch, γfut
+    isplitr
+    · ipureintro; rfl
+    iframe Hch
+    iapply bag_recv_au $$ [$Hlc1 $Hlc2] Hfut
+    inext
+    iintro %v %Hv
+    subst Hv
+    wp_auto
+    iapply HΦ
+    ipureintro; exact .inr rfl
+  iapply BigAndL.bigAndL_cons.2
+  isplit
+  · dsimp only [chan.blocking_clause_pre]
+    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, done_ch, γdone
+    isplitr
+    · ipureintro; rfl
+    iframe Hdone_chan
+    iapply broadcast_chan_receive _ _ _ _ _ $$ Hdone_bc
+    iintro ⟨#Herr, -⟩
+    wp_auto
+    iapply HΦ
+    ipureintro; exact .inl rfl
+  · iapply BigAndL.bigAndL_nil.2
+    itrivial
+
+theorem wp_HelloWorldWithTimeout :
+    {{ is_pkg_init (PROP := IProp GF) pkg }}
+      (App (Val (@! HelloWorldWithTimeout)) (Val #()))
+    {{ (result : go_string), RET #result;
+        ⌜result = go!"Hello, World!" ∨ result = go!"operation timed out"⌝ }} := by
+  wp_start
+  wp_pures
+  wp_alloc done_ptr as done
+  wp_auto
+  wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#Hchan, -, Hoc⟩
+  imod alloc_broadcast_chan (E := ⊤) iprop(errMsg_ptr ↦□ go!"operation timed out") γ ch
+    $$ Hchan Hoc with Hown
+  ihave #Hdone_bc := own_broadcast_chan_Unknown _ _ _ _ $$ Hown
+  ipersist done
+  wp_apply wp_fork $$ [Hown errMsg]
+  · wp_auto
+    wp_apply time.wp_Sleep
+    ipersist errMsg
+    wp_apply wp_broadcast_chan_close (ty := go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))
+      ch γ _ $$ [$Hown $errMsg] as -
+    itrivial
+  wp_apply wp_HelloWorldCancellable $$ [$Hdone_bc] as %result %Hres
+  iapply HΦ
+  ipureintro
+  rcases Hres with h | h <;> simp [h]
+
+theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.Duration.t)
+    (errStr_ptr' : loc) (done_ch : chan.t) (γdone : chan_names) :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+        own_broadcast_chan done_ch γdone iprop(True) .Unknown ∗
+        errStr_ptr' ↦ go!"" }}
+      (App (App (App (App (Val (@! CancellableHedgedRequest)) (Val #query)) (Val #hedgeThreshold))
+        (Val #errStr_ptr')) (Val #done_ch))
+    {{ (v : go_string) (b : Bool), RET #(Result.t.mk v b);
+        -- primary won, or the hedged request won
+        iprop(⌜(v = query ++ go!"_primary.html" ∧ b = true) ∨
+          (v = query ++ go!"_secondary.html" ∧ b = false)⌝) ∨
+        -- `done` was closed before any result arrived: the caller wrote "cancelled"
+        -- into `errStr_ptr'` and the zero `Result` is returned
+        iprop(errStr_ptr' ↦ go!"cancelled" ∗ ⌜v = go!"" ∧ b = false⌝) }} := by
+  wp_start as ⟨#Hdone_bc, HerrStr⟩
+  ihave #Hdone_chan := own_broadcast_chan_is_chan _ _ _ _ $$ Hdone_bc
+  wp_pures
+  wp_alloc done_ptr as done
+  wp_pures
+  wp_alloc errStr_ptr as errStr
+  wp_auto
+  wp_apply chan.wp_make2 (V := Result.t) $$ [] as %c %γc ⟨#Hc_chan, -, Hc_own⟩
+  · ipureintro; decide
+  simp only [show (W64 2 = W64 0) = False by decide, ↓reduceIte]
+  imod start_bag (fun (v : Result.t) => iprop(⌜v = Result.t.mk (query ++ go!"_primary.html") true ∨
+      v = Result.t.mk (query ++ go!"_secondary.html") false⌝)) _ c γc trivial $$ Hc_chan Hc_own
+    with #Hch
+  ipersist query
+  ipersist c
+  -- the primary request is always launched immediately
+  wp_apply wp_fork $$ []
+  · wp_auto
+    wp_apply wp_GetPrimary
+    wp_apply wp_bag_send γc c _ _ $$ [$Hch]
+    · ipureintro; exact .inl rfl
+    itrivial
+  -- `time.After` gives a channel that fires after the hedge threshold
+  wp_apply time.wp_After --no-auto
+  iintro %hedge_ch %γhedge #Hhedge
+  wp_auto_lc 4
+  -- first select: result on `c` | hedge threshold fires | `done` closes
+  wp_apply_core chan.wp_select_blocking
+  iapply BigAndL.bigAndL_cons.2
+  isplit
+  · -- the primary responded before the hedge threshold
+    dsimp only [chan.blocking_clause_pre]
+    iexists Result.t, inferInstance, inferInstance, inferInstance, inferInstance, c, γc
+    isplitr
+    · ipureintro; rfl
+    iframe Hc_chan
+    iapply bag_recv_au $$ [$Hlc1 $Hlc2] Hch
+    inext
+    iintro %v %Hres
+    wp_auto
+    rcases Hres with rfl | rfl
+    · iapply HΦ; ileft; ipureintro; exact .inl ⟨rfl, rfl⟩
+    · iapply HΦ; ileft; ipureintro; exact .inr ⟨rfl, rfl⟩
+  iapply BigAndL.bigAndL_cons.2
+  isplit
+  · -- the hedge threshold fired: launch the secondary and wait again
+    dsimp only [chan.blocking_clause_pre]
+    ihave #Hhedge_chan := is_bag_is_chan _ _ _ $$ Hhedge
+    iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, hedge_ch, γhedge
+    isplitr
+    · ipureintro; rfl
+    iframe Hhedge_chan
+    iapply bag_recv_au $$ [$Hlc1 $Hlc2] Hhedge
+    inext
+    iintro %v -
+    wp_auto
+    wp_apply wp_fork $$ []
+    · wp_auto
+      wp_apply wp_GetSecondary
+      wp_apply wp_bag_send γc c _ _ $$ [$Hch]
+      · ipureintro; exact .inr rfl
+      itrivial
+    -- second select: result on `c` | `done` closes
+    wp_apply_core chan.wp_select_blocking
+    iapply BigAndL.bigAndL_cons.2
+    isplit
+    · dsimp only [chan.blocking_clause_pre]
+      iexists Result.t, inferInstance, inferInstance, inferInstance, inferInstance, c, γc
+      isplitr
+      · ipureintro; rfl
+      iframe Hc_chan
+      iapply bag_recv_au $$ [$Hlc3 $Hlc4] Hch
+      inext
+      iintro %v %Hres
+      wp_auto
+      rcases Hres with rfl | rfl
+      · iapply HΦ; ileft; ipureintro; exact .inl ⟨rfl, rfl⟩
+      · iapply HΦ; ileft; ipureintro; exact .inr ⟨rfl, rfl⟩
+    iapply BigAndL.bigAndL_cons.2
+    isplit
+    · dsimp only [chan.blocking_clause_pre]
+      iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, done_ch, γdone
+      isplitr
+      · ipureintro; rfl
+      iframe Hdone_chan
+      iapply broadcast_chan_receive _ _ _ _ _ $$ Hdone_bc
+      iintro ⟨-, -⟩
+      wp_auto
+      iapply HΦ
+      iright
+      iframe
+      ipureintro; exact ⟨rfl, rfl⟩
+    · iapply BigAndL.bigAndL_nil.2
+      itrivial
+  iapply BigAndL.bigAndL_cons.2
+  isplit
+  · -- `done` was closed first
+    dsimp only [chan.blocking_clause_pre]
+    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, done_ch, γdone
+    isplitr
+    · ipureintro; rfl
+    iframe Hdone_chan
+    iapply broadcast_chan_receive _ _ _ _ _ $$ Hdone_bc
+    iintro ⟨-, -⟩
+    wp_auto
+    iapply HΦ
+    iright
+    iframe
+    ipureintro; exact ⟨rfl, rfl⟩
+  · iapply BigAndL.bigAndL_nil.2
+    itrivial
 
 end proof
 

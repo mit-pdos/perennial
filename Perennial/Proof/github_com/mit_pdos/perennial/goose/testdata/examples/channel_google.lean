@@ -116,7 +116,7 @@ theorem mem_map_contract_of (q : go_string) (remk : List kind) (P : go_string �
   obtain ⟨k, Hk, rfl⟩ := List.mem_map.1 HP
   exact ⟨k, Hk, rfl⟩
 
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 400000 in
 theorem wp_Google (q : go_string) :
     {{ is_pkg_init (PROP := IProp GF) pkg }}
       (App (Val (@! Google)) (Val #q))
@@ -126,14 +126,14 @@ theorem wp_Google (q : go_string) :
   wp_auto
   wp_apply chan.wp_make2 (V := go_string) (W64 3) $$ [] as %c %γch ⟨#Hchan, %Hcap3, Hown⟩
   · ipureintro; decide
-  rw [if_neg (by decide)]
-  imod start_future (V := go_string) (t := go.string) c γch (.Buffered []) (.inr rfl) $$ Hchan Hown
+  rw [ite_eq_right (by decide)]
+  imod start_future (V := go_string) c γch (.Buffered []) (.inr rfl) $$ Hchan Hown
     with ⟨%γmf, #Hmf, HAwait⟩
-  imod future_alloc_promise (t := go.string) γmf c (contract_of q KWeb) [] $$ Hmf HAwait
+  imod future_alloc_promise γmf c (contract_of q KWeb) [] $$ Hmf HAwait
     with ⟨Hprom_web, HAwait⟩
-  imod future_alloc_promise (t := go.string) γmf c (contract_of q KImg) _ $$ Hmf HAwait
+  imod future_alloc_promise γmf c (contract_of q KImg) _ $$ Hmf HAwait
     with ⟨Hprom_img, HAwait⟩
-  imod future_alloc_promise (t := go.string) γmf c (contract_of q KVid) _ $$ Hmf HAwait
+  imod future_alloc_promise γmf c (contract_of q KVid) _ $$ Hmf HAwait
     with ⟨Hprom_vid, HAwait⟩
   rw [show (([] ++ [contract_of q KWeb]) ++ [contract_of q KImg]) ++ [contract_of q KVid] =
       pendingk.map (contract_of (GF := GF) q) from rfl]
@@ -147,7 +147,9 @@ theorem wp_Google (q : go_string) :
       unfold Fulfilled
       iexists _
       iframe Hprom_web
+      unfold contract_of pure_contract_of
       ipureintro; rfl
+    itrivial
   wp_apply wp_fork $$ [Hprom_img]
   · wp_auto
     wp_apply wp_Image q
@@ -156,7 +158,9 @@ theorem wp_Google (q : go_string) :
       unfold Fulfilled
       iexists _
       iframe Hprom_img
+      unfold contract_of pure_contract_of
       ipureintro; rfl
+    itrivial
   wp_apply wp_fork $$ [Hprom_vid]
   · wp_auto
     wp_apply wp_Video q
@@ -165,7 +169,9 @@ theorem wp_Google (q : go_string) :
       unfold Fulfilled
       iexists _
       iframe Hprom_vid
+      unfold contract_of pure_contract_of
       ipureintro; rfl
+    itrivial
   wp_apply wp_slice_make3 (V := go_string) (W64 0) (W64 3) (by decide) as %sl ⟨Hsl, Hcap_sl, %Hcap⟩
   rw [show List.replicate (sint.nat (W64 0)) (zero_val go_string) = [] from rfl]
   ihave HI : (∃ (xs : List go_string) (donek remk : List kind) (sl0 : slice.t),
@@ -202,7 +208,7 @@ theorem wp_Google (q : go_string) :
     iframe
     iexists xs ++ [value_of q k], donek ++ [k], remk1 ++ remk3, sl'
     rw [show (W64 (xs ++ [value_of q k]).length : w64) = W64 xs.length + W64 1 by
-      simp only [List.length_append, List.length_singleton]; word]
+      simp [BitVec.ofInt_add]]
     rw [List.map_append]
     iframe
     ipureintro
@@ -215,7 +221,6 @@ theorem wp_Google (q : go_string) :
   · have Hlen : xs.length = 3 := by word
     have Hremk : remk = [] := List.eq_nil_of_length_eq_zero (by omega)
     subst Hremk
-    wp_auto
     iapply HΦ
     iexists xs
     iframe

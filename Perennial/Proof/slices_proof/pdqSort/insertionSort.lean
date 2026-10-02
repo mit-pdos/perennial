@@ -248,7 +248,7 @@ theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs 
     ipureintro
     exact ⟨HPerm1, is_sorted_seg_mono R _ _ _ _ (by word) Hsorted, Houtside1⟩
 
-set_option maxHeartbeats 4000000 in
+set_option maxHeartbeats 1000000 in
 theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
     (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗

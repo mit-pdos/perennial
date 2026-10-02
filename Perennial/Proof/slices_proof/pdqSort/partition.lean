@@ -488,7 +488,7 @@ macro "part_swap" : tactic => `(tactic| (
     · exact outside_same_trans _ _ _ _ _ Houtside1
         (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))))
 
-set_option maxHeartbeats 2000000 in
+set_option maxHeartbeats 600000 in
 theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
     (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
@@ -725,7 +725,7 @@ def peq_inv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : l
     "%HBr2" ∷ ⌜br2 = true → sint.Z i_val > sint.Z j_val ∨
                  ∀ xj, xs1[sint.nat j_val]? = some xj → ¬ R xp xj⌝)
 
-set_option maxHeartbeats 2000000 in
+set_option maxHeartbeats 600000 in
 theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
     (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗

@@ -22,6 +22,7 @@ import Perennial.Golang.Theory.Chan.Idioms.Broadcast
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSectionVars false
+set_option goose.wp.extras true
 
 noncomputable section
 
@@ -85,8 +86,80 @@ theorem wp_NewSession (client : loc) (γetcd : clientv3_names) :
         else iprop(True) }} := by
   wp_start as #His_client
   wp_auto
-  trace_state
-  sorry
+  wp_apply wp_Client__GetLogger $$ [$His_client] as %lg -
+  wp_apply wp_Client__Ctx $$ [$His_client] as %ctx %ctx_desc #Hcontext
+  wp_for
+  rw [show (zero_val sessionOptions.t).leaseID' = W64 0 from rfl]
+  wp_auto
+  wp_apply wp_Client__Grant $$ [$His_client] as %resp_ptr %resp %err ⟨Hresp, Hl⟩
+  cases err with
+  | ok err =>
+    -- got an error; early return
+    wp_auto
+    iapply HΦ
+    simp only [reduceCtorEq, ↓reduceIte]
+    itrivial
+  | nil =>
+  -- no error from Grant() call
+  wp_auto
+  simp only [↓reduceIte]
+  icases Hl with #Hlease0
+  wp_apply context.wp_WithCancel iprop(True) $$ [] as %ctx' %done' %cancel ⟨#Hcancel, #Hctx⟩
+  · iframe #
+  wp_auto
+  wp_apply wp_Client__KeepAlive $$ [$His_client $Hlease0] as %kch %err Hkch
+  cases err with
+  | ok err =>
+    -- error
+    wp_auto
+    wp_apply Hcancel
+    iapply HΦ
+    simp only [reduceCtorEq, ↓reduceIte]
+    itrivial
+  | nil =>
+  simp only [↓reduceIte]
+  icases Hkch with ⟨%γkch, #Hkch, #Hkrecv⟩
+  wp_auto
+  wp_if_destruct
+  · -- NOTE (Rocq): if `clientv3.lessor.KeepAlive` returns `nil` for its error, it is
+    -- guaranteed to return a non-nil chan, so this case is impossible.
+    ihave %hbad := is_chan_not_null $$ Hkch
+    exact absurd rfl hbad
+  wp_apply chan.wp_make1 (V := Unit) as %donec %γdonec ⟨#Hdonec_is, %_, Hdonec⟩
+  ipersist cancel
+  ipersist donec
+  ipersist keepAlive
+  imod alloc_broadcast_chan iprop(True) γdonec donec $$ Hdonec_is Hdonec with Hdonec_open
+  ihave #Hdonec_unk := own_broadcast_chan_Unknown _ _ _ _ $$ Hdonec_open
+  iStructNamed «$r0»
+  ipersist client
+  ipersist id
+  ipersist donec
+  wp_apply wp_fork $$ [Hdonec_open]
+  · wp_auto
+    wp_apply wp_with_defer as %defer defer
+    wp_for
+    wp_apply chan.wp_receive kch γkch $$ Hkch
+    iintro -
+    iapply Hkrecv
+    iintro %v %ok
+    wp_auto
+    -- (`wp_if_destruct` fails here with "unknown free variable")
+    cases ok
+    · wp_auto
+      wp_for_post
+      wp_apply wp_broadcast_chan_close $$ [$Hdonec_open] as -
+      · iframe #; imodintro; itrivial
+      wp_apply Hcancel
+      itrivial
+    · wp_auto
+      wp_for_post
+      iframe
+  iapply HΦ
+  simp only [↓reduceIte]
+  iexists resp.ID'
+  rw [is_Session_unseal]; unfold is_Session_def
+  iframe #
 
 theorem wp_Session__Lease (s : loc) (γ : clientv3_names) (lease : v3.LeaseID.t) :
     {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_Session s γ lease }}

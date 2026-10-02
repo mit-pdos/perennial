@@ -46,8 +46,9 @@ abbrev is_inv : IProp GF :=
 instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg := define_is_pkg_init is_inv
 instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg := build_get_is_pkg_init_wf
 
-theorem is_inv_access : is_pkg_init (PROP := IProp GF) pkg ⊢ is_inv :=
-  is_pkg_init_access (PROP := IProp GF) pkg
+theorem is_inv_access :
+    is_pkg_init (PROP := IProp GF) pkg ⊢ sync.is_Mutex (global_addr mu) mu_inv := by
+  with_unfolding_all exact is_pkg_init_access (PROP := IProp GF) pkg
 
 omit [allG GF] in
 theorem pointsto_halves {V : Type} [TypedPointsto (GF := GF) V] (l : loc) (v : V) :
@@ -70,7 +71,23 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  sorry -- TODO(port)
+  wp_apply wp_GlobalAlloc (V := sync.Mutex.t) mu sync.Mutex as Hmu
+  wp_apply wp_GlobalAlloc (V := chan.t) sessionc
+    (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) as Hsc
+  wp_apply github_com.goose_lang.primitive.wp_initialize' _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩
+  wp_apply time.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #H2⟩
+  wp_apply sync.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #H3⟩
+  wp_apply errors.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #H4⟩
+  iapply wp_fupd
+  wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#Hch, %_, Hoc⟩
+  imod alloc_broadcast_chan (E := ⊤) iprop(True) γ ch $$ Hch Hoc with Hbc
+  ihave #Hbcu := own_broadcast_chan_Unknown _ _ _ _ $$ Hbc
+  icases (pointsto_halves _ _).1 $$ Hsc with ⟨Hsc1, Hsc2⟩
+  imod sync.init_Mutex mu_inv ⊤ (global_addr mu) $$ Hmu [Hsc1] with #HisMu
+  · inext; iexists ch, γ; iframe; iframe #
+  imodintro
+  iframe Hown
+  is_pkg_init_finish
 
 theorem wp_newSession :
     {{ (True : IProp GF) }}
@@ -109,8 +126,7 @@ theorem wp_monitorSession (ch : chan.t) (γch : chan_names) :
   wp_start as ⟨sessionc, Hsessionc, #Hsessionc_is⟩
   ihave #Hpkg : is_pkg_init (PROP := IProp GF) pkg $$ []
   · iPkgInit
-  ihave #Hinv := is_inv_access $$ Hpkg
-  iNamed Hinv
+  ihave #Hmu := is_inv_access $$ Hpkg
   ihave HH : (∃ (ch : chan.t) (γch : chan_names) (cst : broadcast.t),
       "sessionc" ∷ typed_pointsto (global_addr sessionc) ch (DFrac.own (1 : Qp).half) ∗
       "Hsessionc" ∷ own_broadcast_chan ch γch iprop(True) cst ∗
@@ -129,7 +145,92 @@ theorem wp_monitorSession (ch : chan.t) (γch : chan_names) :
   subst Heq
   ihave sessionc := (pointsto_halves _ _).2 $$ [sessionc sessionc_inv]
   · iframe
-  sorry -- TODO(port)
+  wp_bind (App (Val (GoInstruction SelectStmt)) _)
+  iapply wp_wand (Φ := monitor_select_post) $$ [sessionc Hsessionc] [-]
+  · iapply chan.wp_select_nonblocking_alt [iprop(⌜cst = broadcast.t.Pending⌝)]
+      iprop(typed_pointsto (global_addr sessionc) ch (DFrac.own 1) ∗
+        own_broadcast_chan ch γch iprop(True) cst) $$ [] [sessionc Hsessionc] []
+    · iapply BigSepL2.bigSepL2_cons.2
+      isplitl
+      · iintro ⟨sessionc, Hsessionc⟩
+        simp only [chan.nonblocking_alt_clause_pre]
+        iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ch, γch
+        isplit
+        · ipureintro; rfl
+        isplit
+        · iexact Hsessionc_is
+        iapply own_broadcast_chan_nonblocking_receive _ _ _ _ _ cst $$ Hsessionc
+        cases cst
+        · dsimp only
+          isplit
+          · itrivial
+          · iintro Hsessionc
+            iframe
+            ipureintro; rfl
+        · dsimp only
+          isplit
+          · iintro #Hdone
+            wp_auto
+            iapply wp_fupd
+            wp_apply chan.wp_make1 (V := Unit) as %ch2 %γ2 ⟨#Hch2, %_, Hoc⟩
+            imod alloc_broadcast_chan (E := ⊤) iprop(True) γ2 ch2 $$ Hch2 Hoc with Hbc
+            imodintro
+            isplit
+            · ipureintro; rfl
+            iexists ch2, γ2
+            iframe
+            iframe #
+          · itrivial
+        · exact absurd rfl Hcst
+      · iapply BigSepL2.bigSepL2_nil.2
+        iempintro
+    · iframe
+    · iintro ⟨sessionc, Hsessionc⟩ Hnrs
+      icases BigSepL.bigSepL_cons.1 $$ Hnrs with ⟨%Hp, -⟩
+      subst Hp
+      wp_auto
+      isplit
+      · ipureintro; rfl
+      iexists ch, γch
+      iframe
+      iframe #
+  iintro %v ⟨%Hv, %ch2, %γ2, sessionc, Hsessionc, #Hsessionc_is2⟩
+  subst Hv
+  wp_auto
+  icases (pointsto_halves _ _).1 $$ sessionc with ⟨sessionc, sessionc_inv⟩
+  -- (Rocq:) subtlety here: because we are deriving a persistent
+  -- own_broadcast_chan(ch, broadcast.Pending), the function can retain Hsessionc
+  -- asserting that the channel is specifically Pending; this is needed after the
+  -- Unlock to safely close.
+  ihave #Hunk := own_broadcast_chan_Unknown _ _ _ _ $$ Hsessionc
+  wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked sessionc_inv]
+  · inext; iexists ch2, γ2; iframe; iframe #
+  wp_apply wp_newSession as %err _
+  cases err with
+  | nil =>
+    wp_auto
+    wp_apply sync.wp_Mutex__Lock $$ [$Hmu] as ⟨Hlocked, Hown⟩
+    icases Hown with ⟨%ch3, %γ3, sessionc_inv, #Hsessionc_inv3, #Hsessionc_is_inv3⟩
+    icombine sessionc sessionc_inv gives %Heq
+    subst Heq
+    wp_apply wp_broadcast_chan_close ch2 γ2 iprop(True) $$ [$Hsessionc] as #Hdone
+    · imodintro; itrivial
+    wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked sessionc_inv]
+    · inext; iexists ch2, γ3; iframe; iframe #
+    wp_for_post
+    iframe
+    iexists ch2, γ2, broadcast.t.Done
+    iframe
+    iframe #
+    ipureintro; simp
+  | ok e =>
+    wp_auto
+    wp_for_post
+    iframe
+    iexists ch2, γ2, broadcast.t.Pending
+    iframe
+    iframe #
+    ipureintro; simp
 
 set_option maxHeartbeats 800000 in
 /-- Rocq `waitSession` (renamed: the Lean name `waitSession` is the function). -/
@@ -145,16 +246,46 @@ theorem wp_waitSession {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [P
   wp_start as #Hcancel
   ihave #Hpkg : is_pkg_init (PROP := IProp GF) pkg $$ []
   · iPkgInit
-  ihave #Hinv := is_inv_access $$ Hpkg
-  iNamed Hinv
-  wp_auto
+  ihave #Hmu := is_inv_access $$ Hpkg
+  wp_pures
+  wp_alloc cancel_ptr as Hcancel_ptr
+  wp_auto_lc 2
   wp_apply sync.wp_Mutex__Lock $$ [$Hmu] as ⟨Hlocked, Hown⟩
   icases Hown with ⟨%ch, %γch, sessionc, #Hsessionc, #Hsessionc_is⟩
   wp_auto
   wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked sessionc]
   · inext; iexists ch, γch; iframe; iframe #
-  wp_auto_lc 2
-  sorry -- TODO(port)
+  wp_apply_core chan.wp_select_blocking
+  iapply BigAndL.bigAndL_cons.2
+  isplit
+  · simp only [chan.blocking_clause_pre]
+    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ch, γch
+    isplit
+    · ipureintro; rfl
+    isplit
+    · iexact Hsessionc_is
+    iapply broadcast_chan_receive _ _ _ _ _ $$ Hsessionc
+    iintro ⟨_, _⟩
+    wp_auto
+    wp_end
+  iapply BigAndL.bigAndL_cons.2
+  isplit
+  · simp only [chan.blocking_clause_pre]
+    iexists A', inferInstance, inferInstance, inferInstance, inferInstance, cancel, γcancel
+    isplit
+    · ipureintro; rfl
+    isplit
+    · iapply is_bag_is_chan $$ Hcancel
+    iapply bag_recv_au _ _ _ _ $$ [$Hlc1 $Hlc2] Hcancel
+    inext
+    iintro %v Hv
+    wp_auto
+    wp_apply errors.wp_New as %e _
+    wp_end
+    iexists v
+    iexact Hv
+  · iapply BigAndL.bigAndL_nil.2
+    itrivial
 
 end wps
 

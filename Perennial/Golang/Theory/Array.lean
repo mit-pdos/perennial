@@ -3,7 +3,8 @@ Port of `new/golang/theory/array.v`: the typed points-to for arrays
 (`l ↦{dq} (a : array.t V n)` is the points-to of every element at
 `array_index_ref V i l`), and lemmas to access and split it.
 
-`into_val_typed_array` is `Admitted` in Rocq and is `sorry` here.
+`into_val_typed_array` is `Admitted` in Rocq. It is proved here, against the
+corrected `go.store_array` of `Perennial/Golang/Defn/Array.lean` (see there).
 -/
 import Perennial.Golang.Theory.Auto
 import Perennial.Golang.Defn.Array
@@ -195,9 +196,215 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
+theorem list_take_drop_set {A : Type} (vs R : List A) (k : Nat) (ve : A)
+    (hve : vs[k]? = some ve) (hR : k < R.length) :
+    (vs.take k ++ R.drop k).set k ve = vs.take (k + 1) ++ R.drop (k + 1) := by
+  have hk : k < vs.length := by
+    rcases Nat.lt_or_ge k vs.length with h | h
+    · exact h
+    · simp [List.getElem?_eq_none h] at hve
+  have hlt : (vs.take k).length = k := by simp; omega
+  rw [List.set_append_right _ _ (by omega), hlt, Nat.sub_self]
+  rw [List.drop_eq_getElem_cons hR, List.set_cons_zero]
+  rw [List.take_add_one, hve]
+  simp
+
+theorem list_set_getElem?_self {A : Type} (vs : List A) (k : Nat) (ve : A)
+    (hve : vs[k]? = some ve) : vs.set k ve = vs := by
+  apply List.ext_getElem?
+  intro i
+  rw [List.getElem?_set]
+  split
+  · subst_vars
+    obtain ⟨h1, h2⟩ := List.getElem?_eq_some_iff.1 hve
+    simp [h1, h2]
+  · rfl
+
+/-- The body of the recursive loop of `go.load_array`. -/
+abbrev load_array_body (n : Int) (elem_type : go.type) (l : val) : expr :=
+  gl(if: "n" =⟨go.int⟩ #(W64 0) then GoZeroVal (go.ArrayType n elem_type) #()
+            else let: "array_so_far" := "recur" ("n" -⟨go.int⟩ #(W64 1)) in
+                 let: "elem_addr" := IndexRef (go.ArrayType n elem_type) (l, "n" -⟨go.int⟩ #(W64 1)) in
+                 let: "elem_val" := GoLoad elem_type "elem_addr" in
+                 ArraySet ("array_so_far", ("n" -⟨go.int⟩ #(W64 1), "elem_val")))
+
+theorem wp_load_array_loop (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int)
+    {s : Stuckness} {E : CoPset} (l : loc) (dq : DFrac) (vs : List V)
+    (hlen : (vs.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63-1) (m : Nat) (hm : (m : Int) ≤ n) :
+    {{ array_elems (GF := GF) l vs dq }}
+      (App (Val (RecV "recur" "n" (load_array_body n t #l))) (Val #(W64 m))) @ s; E
+    {{ RET #(array.mk n (vs.take m ++ (List.replicate n.toNat (zero_val V)).drop m));
+       array_elems l vs dq }} := by
+  induction m with
+  | zero =>
+    iintro %Φ Hl HΦ
+    wp_pures
+    simp only [List.take_zero, List.drop_zero, List.nil_append]
+    iapply HΦ
+    iexact Hl
+  | succ k ih =>
+    iintro %Φ Hl HΦ
+    wp_pures
+    have hne : (W64 ((k + 1 : Nat) : Int) = W64 0) = False := by
+      apply propext; constructor
+      · intro h; have := congrArg BitVec.toNat h; simp at this; omega
+      · intro h; exact h.elim
+    simp only [hne, decide_false]
+    wp_pure
+    wp_pure
+    wp_pure
+    have hsub : W64 ((k + 1 : Nat) : Int) - W64 1 = W64 (k : Int) := by
+      apply BitVec.eq_of_toNat_eq; simp; omega
+    simp only [hsub]
+    wp_apply_core ih (by omega) $$ Hl
+    iintro Hl
+    wp_pures
+    have hk : sint.Z (W64 (k : Int)) = (k : Int) := by word
+    simp only [hsub, hk]
+    simp only [show ((k : Int) < n) = True from eq_true (by omega), ↓reduceIte]
+    obtain ⟨ve, hve⟩ : ∃ ve, vs[k]? = some ve :=
+      ⟨vs[k]'(by omega), List.getElem?_eq_getElem (by omega)⟩
+    unfold array_elems
+    icases bigSepL_insert_acc (Φ := fun (j : Nat) (x : V) =>
+        typed_pointsto (GF := GF) (array_index_ref V (j : Int) l) x dq) hve $$ Hl
+      with ⟨Hx, Hl⟩
+    wp_pures
+    wp_apply_core IntoValTyped.wp_load (t := t) _ _ _ $$ Hx
+    iintro Hx
+    ihave Hl := Hl $$ %ve [Hx]
+    · iexact Hx
+    wp_pures
+    have hk' : sint.nat (W64 (k : Int)) = k := by word
+    simp only [hsub, hk']
+    rw [list_take_drop_set vs _ k ve hve (by simp; omega), list_set_getElem?_self _ _ _ hve]
+    iapply HΦ
+    iexact Hl
+
+/-- One step of the loop of `go.store_array`. -/
+abbrev store_array_step (n : Int) (elem_type : go.type) (l v : val) (str_so_far : expr) (j : Int) :
+    expr :=
+  gl(str_so_far ;;
+    (let elem_addr := gl(IndexRef (go.ArrayType n elem_type) (l, #(W64 j)))
+     let elem_val := gl(Index (go.ArrayType n elem_type) (v, #(W64 j)))
+     gl(GoStore elem_type (elem_addr, elem_val))))
+
+theorem wp_store_array_loop (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int)
+    {s : Stuckness} {E : CoPset} (l : loc) (vs : List V) (w : array.t V n)
+    (hlen : (vs.length : Int) = n) (hwlen : (w.arr.length : Int) = n)
+    (hn : 0 ≤ n ∧ n < 2^63-1) (k : Nat) (hk : (k : Int) ≤ n) :
+    ⊢ ∀ Φ, array_elems (GF := GF) l vs (DFrac.own 1) -∗
+      (array_elems l (w.arr.take k ++ vs.drop k) (DFrac.own 1) -∗ Φ #()) -∗
+      WP (List.foldl (store_array_step n t #l #w) (#() : expr)
+        ((List.range k).map (fun (i : Nat) => (i : Int)))) @ s; E {{ Φ }} := by
+  induction k with
+  | zero =>
+    iintro %Φ Hl HΦ
+    simp only [List.range_zero, List.map_nil, List.foldl_nil, List.take_zero, List.drop_zero,
+      List.nil_append]
+    wp_pures
+    iapply HΦ
+    iexact Hl
+  | succ k ih =>
+    iintro %Φ Hl HΦ
+    simp only [List.range_succ, List.map_append, List.map_cons, List.map_nil, List.foldl_append,
+      List.foldl_cons, List.foldl_nil]
+    wp_apply_core ih (by omega) $$ Hl
+    iintro Hl
+    wp_pures
+    have hk' : sint.Z (W64 (k : Int)) = (k : Int) := by word
+    have hk'' : sint.nat (W64 (k : Int)) = k := by word
+    simp only [hk', show ((k : Int) < n) = True from eq_true (by omega), ↓reduceIte]
+    obtain ⟨we, hwe⟩ : ∃ we, w.arr[k]? = some we :=
+      ⟨w.arr[k]'(by omega), List.getElem?_eq_getElem (by omega)⟩
+    obtain ⟨ve, hve⟩ : ∃ ve, (w.arr.take k ++ vs.drop k)[k]? = some ve :=
+      ⟨_, List.getElem?_eq_getElem (by simp; omega)⟩
+    unfold array_elems
+    icases bigSepL_insert_acc (Φ := fun (j : Nat) (x : V) =>
+        typed_pointsto (GF := GF) (array_index_ref V (j : Int) l) x (DFrac.own 1)) hve $$ Hl
+      with ⟨Hx, Hl⟩
+    wp_pures
+    simp only [hk'', hwe]
+    wp_pures
+    wp_apply_core wp_store _ _ _ $$ Hx
+    iintro Hx
+    ihave Hl := Hl $$ %we [Hx]
+    · iexact Hx
+    rw [list_take_drop_set w.arr vs k we hwe (by omega)]
+    iapply HΦ
+    iexact Hl
+
 instance into_val_typed_array (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int) :
-    IntoValTypedUnderlying (GF := GF) (array.t V n) (go.ArrayType n t) :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) (array.t V n) (go.ArrayType n t) := by
+  constructor
+  · intro s E t' _ v
+    iintro %Φ _ HΦ
+    have _tagged := @go.tagged_internal_inst
+    wp_pure
+    clear _tagged
+    iapply wp_AngelicExit
+  · intro s E t' _ l dq v
+    iintro %Φ Hl HΦ
+    have _tagged := @go.tagged_internal_inst
+    wp_pure
+    clear _tagged
+    by_cases hn : 0 ≤ n ∧ n < 2^63-1
+    case neg =>
+      simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = True from eq_true hn, ↓reduceIte]
+      iapply wp_AngelicExit
+    simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = False from eq_false (fun h => h hn), ↓reduceIte]
+    obtain ⟨vs⟩ := v
+    icases typed_pointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
+    icases typed_pointsto_split _ _ _ $$ Hl with Hl
+    simp only [TypedPointsto.typed_pointsto_def]
+    icases Hl with ⟨%Hlen, Hl⟩
+    have hW : W64 n = W64 ((n.toNat : Nat) : Int) := by rw [Int.toNat_of_nonneg hn.1]
+    rw [hW]
+    wp_pure
+    wp_apply_core wp_load_array_loop t n l dq vs Hlen hn n.toNat (by omega) $$ Hl
+    iintro Hl
+    have hvs : vs.take n.toNat ++ (List.replicate n.toNat (zero_val V)).drop n.toNat = vs := by
+      rw [List.take_of_length_le (by omega), List.drop_of_length_le (by simp)]; simp
+    rw [hvs]
+    iapply HΦ
+    iapply typed_pointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typed_pointsto_def]
+    isplit
+    · ipureintro; exact Hlen
+    · iexact Hl
+  · intro s E t' _ l v w
+    iintro %Φ Hl HΦ
+    have _tagged := @go.tagged_internal_inst
+    wp_pure
+    clear _tagged
+    by_cases hn : 0 ≤ n ∧ n < 2^63-1
+    case neg =>
+      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+        eq_true (fun h => hn ⟨h.1, h.2.1⟩), ↓reduceIte]
+      iapply wp_AngelicExit
+    by_cases hwlen : (w.arr.length : Int) = n
+    case neg =>
+      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+        eq_true (fun h => hwlen h.2.2), ↓reduceIte]
+      iapply wp_AngelicExit
+    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
+        eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
+    obtain ⟨vs⟩ := v
+    icases typed_pointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
+    icases typed_pointsto_split _ _ _ $$ Hl with Hl
+    simp only [TypedPointsto.typed_pointsto_def]
+    icases Hl with ⟨%Hlen, Hl⟩
+    iapply wp_store_array_loop t n l vs w Hlen hwlen hn n.toNat (by omega) $$ Hl
+    iintro Hl
+    have hws : w.arr.take n.toNat ++ vs.drop n.toNat = w.arr := by
+      rw [List.take_of_length_le (by omega), List.drop_of_length_le (by omega)]; simp
+    rw [hws]
+    iapply HΦ
+    iapply typed_pointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typed_pointsto_def]
+    isplit
+    · ipureintro; exact hwlen
+    · iexact Hl
+  · exact go.type_repr_array t V n
 
 end into_val
 
