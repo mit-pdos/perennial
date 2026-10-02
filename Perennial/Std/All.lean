@@ -3,6 +3,8 @@ import Perennial.Std.Attrs
 import Perennial.Std.Word
 import Perennial.Std.ByteString
 import Perennial.Std.GMap
+import Perennial.Std.Countable
+import Perennial.Std.Namespaces
 import Perennial.Std.GSet
 import Perennial.Std.Map
 import Perennial.Std.ListBasics

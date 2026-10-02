@@ -15,6 +15,7 @@ Differences from Rocq:
 import Perennial.Proof.DiskPrelude
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.TacticWorkarounds
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
+import Perennial.Golang.Theory.IfJoin
 
 set_option linter.iris.style.nameCheck false
 
@@ -460,6 +461,39 @@ theorem wp_ifJoinDemo (arg1 arg2 : Bool) :
     cases arg2
     · wp_auto; wp_end
     · wp_auto; wp_append_lit; wp_end
+
+/-- The Rocq proof of `wp_ifJoinDemo`, which joins the branches of the first
+`if` with `wp_if_join` instead of case-splitting the rest of the function. -/
+theorem wp_ifJoinDemo_join (arg1 arg2 : Bool) :
+    {{ is_pkg_init (PROP := IProp GF) pkg }}
+      (App (App (Val (@! ifJoinDemo)) (Val #arg1)) (Val #arg2))
+    {{ RET #(); True }} := by
+  wp_start
+  wp_auto
+  wp_apply wp_slice_literal
+  isplitr
+  · ipureintro; rfl
+  iintro %sl ⟨Hz, Hzcap⟩
+  wp_auto
+  wp_if_join (fun v => (iprop(⌜v = execute_val⌝ ∗
+      ∃ (sl : slice.t) (xs : List w64),
+        arr_ptr ↦ sl ∗ sl ↦* xs ∗ own_slice_cap w64 sl (DFrac.own 1)) : IProp GF))
+    with [arr Hz Hzcap]
+  · -- `arg1 = false`
+    isplitr
+    · ipureintro; trivial
+    iexists _; iexists _; iframe
+  · -- `arg1 = true`
+    wp_append_lit
+    isplitr
+    · ipureintro; trivial
+    iexists _; iexists _; iframe
+  · iintro %v ⟨%Hv, %sl1, %xs, arr, Hz, Hzcap⟩
+    subst Hv
+    wp_auto
+    wp_if_destruct
+    · wp_end
+    · wp_append_lit; wp_end
 
 end no_slice_literal_step
 

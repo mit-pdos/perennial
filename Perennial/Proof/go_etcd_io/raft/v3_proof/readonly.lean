@@ -18,8 +18,6 @@ Lean notes:
   found through a persistent ghost map: `node_id ↪[term_gn]□ γn ∗
   mono_nat_auth_own γn 1 n` (resp. `mono_nat_lb_own γn n`). Neither is used
   in any lemma of this file except as an opaque persistent witness.
-* `Pos.Countable (gset w64)` (for `dghost_var` over sets of node ids) is
-  derived from `gmap.toList`.
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.protocol
 import Perennial.Ghost.MonoList
@@ -40,27 +38,6 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 open scoped gmap
 
 namespace go_etcd_io.raft.v3_proof.readonly
-
-/-- `Pos.Countable` for finite maps, through the (canonical) `toList`. -/
-instance gmap_countable {K V : Type} [DecidableEq K] [Pos.Countable K] [Pos.Countable V] :
-    Pos.Countable (gmap K V) :=
-  .ofInjective (fun m => Pos.Countable.encode m.toList)
-    (fun m1 m2 h => by
-      have h : m1.toList = m2.toList := Pos.encode_inj h
-      apply gmap.map_eq
-      intro k
-      cases h1 : m1 !! k with
-      | none =>
-        cases h2 : m2 !! k with
-        | none => rfl
-        | some v =>
-          have := (gmap.mem_toList m2 k v).mpr h2
-          rw [← h, gmap.mem_toList, h1] at this
-          cases this
-      | some v =>
-        have := (gmap.mem_toList m1 k v).mpr h1
-        rw [h, gmap.mem_toList] at this
-        exact this.symm)
 
 /-- Rocq `raft_names`. -/
 structure raft_names where
@@ -376,11 +353,6 @@ theorem is_in_reads_to_valid (γ : raft_names) (i j : w64) (Φ : List (List w8) 
   ihave Hiff := internalEq_iff _ _ $$ HΦ'
   icases Hiff with ⟨-, Hiff⟩
   iapply Hiff $$ Hwit
-
-theorem mask_diff_ndot (N : Namespace) (x : String) : (⊤ \ ↑N : CoPset) ⊆ ⊤ \ ↑(N.@x) := by
-  intro p hp
-  rw [LawfulSet.mem_diff] at hp ⊢
-  exact ⟨hp.1, fun h => hp.2 (nclose_subseteq N x p h)⟩
 
 theorem mask_diff_Ncommit : (⊤ \ ↑N : CoPset) ⊆ ⊤ \ ↑Ncommit := mask_diff_ndot N "commit"
 

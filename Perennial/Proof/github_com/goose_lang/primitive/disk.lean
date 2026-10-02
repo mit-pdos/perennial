@@ -2,12 +2,16 @@
 Port of `new/proof/github_com/goose_lang/primitive/disk.v`: specs for the disk
 FFI wrappers `disk.Read`, `disk.Write` and `disk.Barrier`.
 
-The logically atomic versions (`wp_Write_atomic`, `wp_Read_atomic`) and the
-`|NC={..}=>`-based `wp_Write_triple`/`wp_Read_triple` need `atomic_fupd` and
-non-crash fancy updates, which are not ported; the ordinary triples are proved
-directly from the disk FFI lifting lemmas `wp_ReadOp`/`wp_WriteOp`.
+The logically atomic specs `wp_Write_atomic`/`wp_Read_atomic` use the
+`atomic_fupd` notation (`Perennial.ProgramLogic.AtomicFupd`). Rocq's non-crash
+fancy updates `|NC={..}=>` (in those specs and in `wp_Write_triple`/
+`wp_Read_triple`) are plain fancy updates here, since the port has no crash
+logic. The ordinary triples `wp_Write`/`wp_Read` are proved directly from the
+disk FFI lifting lemmas `wp_ReadOp`/`wp_WriteOp` rather than derived from the
+atomic specs as in Rocq.
 -/
 import Perennial.Proof.DiskPrelude
+import Perennial.ProgramLogic.AtomicFupd
 import Perennial.Code.github_com.goose_lang.primitive.disk
 import Perennial.GeneratedProof.github_com.goose_lang.primitive.disk
 
@@ -143,6 +147,84 @@ theorem slice_to_block (s : slice.t) (dq : DFrac) (bs : List w8) (Hsz : s.len = 
   rw [block_to_list_to_block]
   iapply slice_to_block_array $$ Hs
 
+/-! Atomicity of the disk FFI operations (Rocq proves these inline with
+`solve_atomic`). -/
+
+open EctxLanguage in
+instance ReadOp_atomic (at' : Language.Atomicity) (v : val) :
+    Language.Atomic at' (ExternalOp DiskOp.ReadOp (Val v)) :=
+  goose_atomic at'
+    (fun _ _ _ _ _ h => by
+      cases h with
+      | ExternalOpS _ _ _ _ _ H =>
+        obtain ⟨_, _, _, _, _, _, rfl, _⟩ := disk_ffi_step_ReadOp_inv H; rfl)
+    (by intro Ki e' h; cases Ki <;> simp only [fill_item] at h <;> cases h <;> rfl)
+
+open EctxLanguage in
+instance WriteOp_atomic (at' : Language.Atomicity) (v : val) :
+    Language.Atomic at' (ExternalOp DiskOp.WriteOp (Val v)) :=
+  goose_atomic at'
+    (fun _ _ _ _ _ h => by
+      cases h with
+      | ExternalOpS _ _ _ _ _ H =>
+        obtain ⟨_, _, _, _, _, _, _, rfl, _⟩ := disk_ffi_step_WriteOp_inv H; rfl)
+    (by intro Ki e' h; cases Ki <;> simp only [fill_item] at h <;> cases h <;> rfl)
+
+theorem wp_Write_atomic (a : w64) (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Block) :
+    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
+        s ↦*{dq} b.toList }}
+    <<{ ∀∀ b0, uint.Z a d↦ b0 }>>
+      (App (App (Val (@! Write)) (Val #a)) (Val #s)) @@ ∅
+    <<{ uint.Z a d↦ b }>>
+    {{ RET #(); s ↦*{dq} b.toList }} := by
+  wp_start as Hs
+  ihave %Hlen := own_slice_len _ _ _ $$ Hs
+  ihave %Hwf := own_slice_wf _ _ _ $$ Hs
+  have hpos : sint.Z (W64 0) < sint.Z s.len := by
+    rw [Vector.length_toList] at Hlen
+    simp only [sint.nat, sint.Z, block_bytes] at *; simp; omega
+  rw [ite_eq_left_of_eq_true _ _ (eq_true ⟨by decide, hpos⟩)]
+  simp only [slice_index_ref, show sint.Z (W64 0) = 0 from rfl, go.array_index_ref_0]
+  wp_pures
+  iapply wp_atomic (E2 := ∅)
+  rw [Iris.Std.LawfulSet.diff_empty]
+  imod HΦ with ⟨%b0, Hda, Hupd⟩
+  imodintro
+  wp_apply_core wp_WriteOp a b dq s.ptr $$ [Hda Hs]
+  · isplitl [Hda]
+    · iexists b0; iexact Hda
+    iapply slice_to_block_array $$ Hs
+  iintro ⟨Hda, Hl⟩
+  imod Hupd $$ Hda with HQ
+  imodintro
+  iapply HQ
+  iapply block_array_to_slice s dq b (by simp only [sint.nat] at *; omega) Hwf $$ Hl
+
+theorem wp_Write_triple (E' : CoPset) (Q : IProp GF) (a : w64) (s : slice.t) (dq : DFrac)
+    (b : _root_.Perennial.Block) :
+    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
+        s ↦*{dq} b.toList ∗
+        (|={⊤,E'}=> ∃ b0, uint.Z a d↦ b0 ∗ (uint.Z a d↦ b -∗ |={E',⊤}=> Q)) }}
+      (App (App (Val (@! Write)) (Val #a)) (Val #s))
+    {{ RET #(); s ↦*{dq} b.toList ∗ Q }} := by
+  iintro %Φ ⟨#Hpkg, Hs, Hupd⟩ HΦ
+  iapply wp_Write_atomic a s dq b $$ [Hs]
+  · iframe Hpkg; iexact Hs
+  inext
+  rw [Iris.Std.LawfulSet.diff_empty]
+  imod Hupd with ⟨%b0, Hda, Hclose⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro HcloseE
+  iexists b0
+  iframe Hda
+  iintro Hda
+  imod HcloseE
+  imod Hclose $$ Hda with HQ
+  imodintro
+  iintro Hs
+  iapply HΦ
+  iframe
+
 theorem wp_Write (a : w64) (s : slice.t) (q : DFrac) (b : _root_.Perennial.Block) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
         ∃ b0, uint.Z a d↦ b0 ∗ s ↦*{q} b.toList }}
@@ -177,6 +259,56 @@ theorem wp_Write' (z : Int) (a : w64) (s : slice.t) (q : DFrac) (b : _root_.Pere
   iapply wp_Write a s q b $$ [Hda Hs] HΦ
   iframe Hpkg
   iexists b0
+  iframe
+
+theorem wp_Read_atomic (a : w64) (q : DFrac) :
+    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk }}
+    <<{ ∀∀ b, uint.Z a d↦{q} b }>>
+      (App (Val (@! Read)) (Val #a)) @@ ∅
+    <<{ uint.Z a d↦{q} b }>>
+    {{ (s : slice.t), RET #s; is_block_full s b }} := by
+  wp_start
+  wp_bind (ExternalOp _ _)
+  iapply wp_atomic (E2 := ∅)
+  rw [Iris.Std.LawfulSet.diff_empty]
+  imod HΦ with ⟨%b, Hda, Hupd⟩
+  imodintro
+  wp_apply_core wp_ReadOp a q b $$ [Hda]
+  · iexact Hda
+  iintro %l ⟨Hda, Hl⟩
+  imod Hupd $$ Hda with HQ
+  imodintro
+  wp_auto
+  rw [ite_eq_left_of_eq_true _ _ (eq_true (by decide))]
+  simp only [show sint.Z (W64 0) = 0 from rfl, go.array_index_ref_0,
+    show (W64 4096 - W64 0 : w64) = W64 4096 from rfl]
+  wp_pures
+  iapply HQ
+  unfold is_block_full
+  iapply block_array_to_slice (slice.mk l (W64 4096) (W64 4096)) (DFrac.own 1) b
+    (by rw [Vector.length_toList]; rfl) ⟨(by decide : (0 : Int) ≤ sint.Z (W64 4096)), Int.le_refl _⟩ $$ Hl
+
+theorem wp_Read_triple (E' : CoPset) (Q : _root_.Perennial.Block → IProp GF) (a : w64) (q : DFrac) :
+    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
+        |={⊤,E'}=> ∃ b, uint.Z a d↦{q} b ∗ (uint.Z a d↦{q} b -∗ |={E',⊤}=> Q b) }}
+      (App (Val (@! Read)) (Val #a))
+    {{ (s : slice.t) (b : _root_.Perennial.Block), RET #s; Q b ∗ is_block_full s b }} := by
+  iintro %Φ ⟨#Hpkg, Hupd⟩ HΦ
+  iapply wp_Read_atomic a q $$ []
+  · iexact Hpkg
+  inext
+  rw [Iris.Std.LawfulSet.diff_empty]
+  imod Hupd with ⟨%b0, Hda, Hclose⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro HcloseE
+  iexists b0
+  iframe Hda
+  iintro Hda
+  imod HcloseE
+  imod Hclose $$ Hda with HQ
+  imodintro
+  iintro %s Hs
+  iapply HΦ
   iframe
 
 theorem wp_Read (a : w64) (q : DFrac) (b : _root_.Perennial.Block) :

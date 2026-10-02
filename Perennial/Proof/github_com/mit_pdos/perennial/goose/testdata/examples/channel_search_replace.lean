@@ -37,13 +37,6 @@ instance get_is_pkg_init_wf_inst :
 
 end init
 
-/-- Ghost state over channels of slices needs `Pos.Countable slice.t` (Rocq derives it). -/
-instance slice_countable : Pos.Countable slice.t :=
-  .ofInjective (fun s => Pos.Countable.encode (s.ptr.loc_car, s.ptr.loc_off, s.len, s.cap))
-    (by
-      rintro ⟨⟨a1, a2⟩, b, c⟩ ⟨⟨d1, d2⟩, e, f⟩ h
-      have h := Pos.encode_inj h; simp_all)
-
 structure SearchReplace_names where
   wg : sync.WaitGroup_names
   wg_added : GName

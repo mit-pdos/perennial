@@ -40,6 +40,30 @@ deriving DecidableEq
 
 export GroveVal (ListenSocketV ConnectionSocketV BadSocketV)
 
+instance : Pos.Countable GroveOp where
+  encode o := Pos.Countable.encode (match o with
+      | .ListenOp => (0 : Nat) | .ConnectOp => 1 | .AcceptOp => 2 | .SendOp => 3 | .RecvOp => 4
+      | .FileReadOp => 5 | .FileWriteOp => 6 | .FileAppendOp => 7 | .GetTscOp => 8
+      | .GetTimeRangeOp => 9)
+  decode p := match (Pos.Countable.decode p : Option Nat) with
+    | some 0 => some .ListenOp | some 1 => some .ConnectOp | some 2 => some .AcceptOp
+    | some 3 => some .SendOp | some 4 => some .RecvOp | some 5 => some .FileReadOp
+    | some 6 => some .FileWriteOp | some 7 => some .FileAppendOp | some 8 => some .GetTscOp
+    | some 9 => some .GetTimeRangeOp | _ => none
+  decode_encode o := by cases o <;> simp [Pos.Countable.decode_encode]
+
+instance : Pos.Countable GroveVal where
+  encode v := Pos.Countable.encode (match v with
+      | .ListenSocketV c => [c.toNat]
+      | .ConnectionSocketV c_l c_r => [c_l.toNat, c_r.toNat]
+      | .BadSocketV => [])
+  decode p := match (Pos.Countable.decode p : Option (List Nat)) with
+    | some [c] => some (.ListenSocketV (BitVec.ofNat 64 c))
+    | some [c_l, c_r] => some (.ConnectionSocketV (BitVec.ofNat 64 c_l) (BitVec.ofNat 64 c_r))
+    | some [] => some .BadSocketV
+    | _ => none
+  decode_encode v := by cases v <;> simp [Pos.Countable.decode_encode]
+
 @[reducible] def grove_op : ffi_syntax where
   ffi_opcode := GroveOp
   ffi_val := GroveVal

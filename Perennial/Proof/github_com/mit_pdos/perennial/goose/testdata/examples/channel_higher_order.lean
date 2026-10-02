@@ -4,12 +4,8 @@ worker goroutines run closures received over a channel and send the result back
 over a per-request future channel.
 
 Lean notes:
-* The channel ghost state needs `Pos.Countable` of the element type. A
-  `request.t` contains a `func.t` (GooseLang syntax, which mentions the
-  arbitrary `ffi_val`), and the Lean `ffi_syntax` does not provide countability
-  of `ffi_val`/`ffi_opcode` (Rocq's does), so `Pos.Countable request.t` cannot be
-  proved here; the lemmas about the request channel take it as an instance
-  argument `[Pos.Countable request.t]`.
+* The channel ghost state needs `Pos.Countable request.t`; it is derived here
+  from the countability of `func.t` and `loc` (`Perennial/GooseLang/Countable.lean`).
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
 import Perennial.Golang.Theory.Chan
@@ -26,6 +22,10 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
+
+instance request_countable [ffi_syntax] : Pos.Countable request.t :=
+  countableOfLeftInverse (fun r : request.t => (r.f', r.result')) (fun p => ⟨p.1, p.2⟩)
+    (fun _ => rfl)
 
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
@@ -86,7 +86,6 @@ theorem wp_get_response (r : request.t) (γfut : future_names) (Q : go_string �
     have := congrArg List.length Hsplit
     simp at this
 
-variable [Pos.Countable request.t]
 
 def is_request_chan (γ : chan_names) (ch : loc) : IProp GF :=
   is_chan_bag (V := request.t) γ ch (fun r => iprop(∃ γfut Q, do_request r γfut Q))

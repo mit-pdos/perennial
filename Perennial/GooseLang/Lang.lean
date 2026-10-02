@@ -17,6 +17,7 @@ Differences from the Rocq version:
 import Iris.ProgramLogic.EctxiLanguage
 import Iris.ProgramLogic.Language
 import Perennial.Std.GMap
+import Perennial.Std.Countable
 import Perennial.GooseLang.Locations
 import Perennial.Golang.Defn.PreLang
 
@@ -41,10 +42,13 @@ instance : Coe String binder := ⟨BNamed⟩
 class ffi_syntax where
   ffi_opcode : Type
   [ffi_opcode_eq_dec : DecidableEq ffi_opcode]
+  [ffi_opcode_countable : Pos.Countable ffi_opcode]
   ffi_val : Type
   [ffi_val_eq_dec : DecidableEq ffi_val]
+  [ffi_val_countable : Pos.Countable ffi_val]
 
 attribute [instance] ffi_syntax.ffi_opcode_eq_dec ffi_syntax.ffi_val_eq_dec
+  ffi_syntax.ffi_opcode_countable ffi_syntax.ffi_val_countable
 export ffi_syntax (ffi_opcode ffi_val)
 
 class ffi_model where

@@ -9,8 +9,6 @@ Lean notes:
 * `wp_EtcdServer__Put` ends in `Abort` in Rocq and is not ported;
   `wp_EtcdServer__processInternalRaftRequestOnce` is `Admitted` (its Rocq
   proof script is almost entirely commented out).
-* The channel theory (via `wait` and `raft`) needs `[Pos.Countable val]`, taken
-  as an explicit assumption as in `pkg/v3/wait.lean`.
 -/
 import Perennial.Code.go_etcd_io.etcd.server.v3.etcdserver
 import Perennial.GeneratedProof.go_etcd_io.etcd.server.v3.etcdserver
@@ -108,7 +106,7 @@ axiom is_EtcdServer_internal {GF : BundledGFunctors} (s : loc) (γ : EtcdServer_
 axiom own_EtcdServer_access [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
     [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
     [hG : heapGS HasLC.hasLC GF] [allG GF] [sem : go.Semantics]
-    [package_sem : etcdserver.Assumptions] [val_countable : Pos.Countable val]
+    [package_sem : etcdserver.Assumptions]
     (s : loc) (γ : EtcdServer_names) :
   ⊢ own_EtcdServer (GF := GF) s γ -∗
     ∃ (reqIDGen : loc) (MaxRequestBytes : w64) (w : interface.t_ok) (γw : wait_params GF)
@@ -190,7 +188,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
 variable [sem : go.Semantics]
 variable [package_sem : etcdserver.Assumptions]
-variable [val_countable : Pos.Countable val]
 
 theorem wp_optional (R : IProp GF) (e : expr) :
     ⊢ ∀ Φ : val → IProp GF, R -∗

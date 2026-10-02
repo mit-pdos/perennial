@@ -45,12 +45,6 @@ theorem drop_succ {A : Type} (l : List A) (x : A) (l' : List A) (n : Nat)
     (_Helem : l[n]? = some x) (Hd : l.drop n = x :: l') : l.drop (n + 1) = l' := by
   rw [← List.drop_drop, Hd]; rfl
 
-theorem u64_le_length (x : w64) : (u64_le x).length = 8 := by
-  simp [u64_le, u64_le_def, LittleEndian.length_split]
-
-theorem u32_le_length (x : w32) : (u32_le x).length = 4 := by
-  simp [u32_le, u32_le_def, LittleEndian.length_split]
-
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]

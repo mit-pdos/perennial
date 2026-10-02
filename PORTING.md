@@ -77,4 +77,8 @@ Run `etc/lean-port-status.py --rocq <master checkout>` for per-area file, line a
   offset.
 * Equality on GooseLang syntax and `go.type` is decided classically
   (`noncomputable instance`), as Rocq admits these instances.
+* As in Rocq, `ffi_syntax` requires `Pos.Countable` of `ffi_opcode`/`ffi_val`, and
+  `loc`, `slice.t`, `val`, `expr`, `func.t`, `interface.t`, `go.type`, ... are
+  `Pos.Countable` (`Perennial/GooseLang/Countable.lean`, via an injection into
+  `GenTree`), so ghost state can store values containing code.
 * Check a file with `lake build Perennial.Path.To.Module` (from the repo root).

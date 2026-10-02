@@ -25,7 +25,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
-variable [val_countable : Pos.Countable val]
 
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 

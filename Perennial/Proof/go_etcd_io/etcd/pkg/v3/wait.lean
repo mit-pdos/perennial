@@ -4,9 +4,6 @@ Port of `new/proof/go_etcd_io/etcd/pkg/v3/wait.v`.
 Lean notes:
 * Rocq's nested Texan triples inside `own_Wait` (iProps) are written out as
   `□ ∀ Φ, P -∗ ▷ (∀ x, Q -∗ Φ v) -∗ WP e {{ Φ }}`.
-* The channel ghost state needs `Pos.Countable interface.t`; as in
-  `channel_dsp.lean`, it is derived from an explicit `[Pos.Countable val]`
-  assumption (Rocq gets `Countable val` from `ffi_syntax`).
 * Rocq's `recv_au γch any.t Φ` is `recv_au γch interface.t Φ` (`any.t` is an
   abbreviation of `interface.t`).
 -/
@@ -29,21 +26,10 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 namespace go_etcd_io.etcd.pkg.v3.wait
 
-section countable
-variable [ext : ffi_syntax]
-
-instance interface_countable [val_countable : Pos.Countable val] : Pos.Countable interface.t :=
-  .ofInjective (fun
-      | .ok i => Pos.Countable.encode (val.InterfaceV (some (i.ty, i.v)))
-      | .nil => Pos.Countable.encode (val.InterfaceV none))
-    (by
-      rintro (⟨⟨a, b⟩⟩ | _) (⟨⟨c, d⟩⟩ | _) h <;> have h := Pos.encode_inj h <;> simp_all)
-
 /-- Rocq `interface_call i m`. -/
-abbrev interface_call [GoGlobalContext] [GoSemanticsFunctions] (i : interface.t_ok) (m : go_string) : val :=
+abbrev interface_call [ffi_syntax] [GoGlobalContext] [GoSemanticsFunctions] (i : interface.t_ok)
+    (m : go_string) : val :=
   #(methods i.ty m i.v)
-
-end countable
 
 section init
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
@@ -69,7 +55,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
 variable [sem : go.Semantics]
 variable [package_sem : wait.Assumptions]
-variable [val_countable : Pos.Countable val]
 
 local notation "pkg" => pkg_id.go_etcd_io.etcd.pkg.v3.wait
 

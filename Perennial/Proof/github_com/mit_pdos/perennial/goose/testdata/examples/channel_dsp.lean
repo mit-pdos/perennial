@@ -3,21 +3,12 @@ Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel
 examples of dependent separation protocols (DSP) over Go channels, and an MPMC muxer.
 
 Lean notes / deviations:
-* Countability. The channel ghost state needs `Pos.Countable V` for the element type.
-  Rocq gets `Countable val`/`Countable func.t` from `ffi_syntax`, which requires
-  `Countable ffi_val`; the Lean `ffi_syntax` has no such field and the port has no
-  `Countable val` instance. The lemmas whose channels carry `interface.t` or `streamold.t`
-  (which contains a `func.t`) therefore take `[Pos.Countable val]` as an explicit
-  assumption, from which the instances for `func.t`, `interface.t` and `streamold.t` are
-  derived.
-* The Rocq `wp_send`/`wp_recv` tactics are not ported (`DspProofmode.lean` has the Texan
-  triples `tac_wp_send`/`tac_wp_recv`). Below, `wp_dsp_send0/1/2`, `wp_dsp_recv0/1/2` are
-  wrappers for messages with 0, 1 or 2 binders, whose messages are found by protocol
-  normalization (`ProtoNormalize`).
-* `solve_proto_contractive` is not ported; contractiveness is proved by hand, and
-  `ProtoUnfold` instances are replaced by explicit unfolding equations (`*_unfold`), applied
-  to an endpoint with `dsp_endpoint_eq`. The `*_aux` protocol bodies are `abbrev`s so that
-  `ProtoNormalize` sees through them.
+* DSP sends/receives use the `wp_send`/`wp_recv` tactics of `DspProofmode.lean` (Lean syntax:
+  `wp_recv (x y) as pat`, `wp_send with [$H]`). As in Rocq they do not run `wp_auto`
+  afterwards; `wp_recv (?) as "->"` is written `wp_recv (_) as %rfl`.
+* `ProtoUnfold` is a separate class (`*_proto_unfold` instances, from the equations
+  `*_unfold`), used by `wp_send`/`wp_recv` only to unfold the head of a protocol. The `*_aux`
+  protocol bodies are `abbrev`s so that `ProtoNormalize` sees through them.
 * `wp_Serve`: the Go closure shares the local struct `s`; its fields are read from
   persistent field points-tos (`iStructNamed` of a persistent copy), since the memory tactics
   do not load a struct field from a persistent whole-struct points-to.
@@ -41,126 +32,13 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 /-! ## Countability -/
 
 section countable
-variable [ext : ffi_syntax] [val_countable : Pos.Countable val]
-
-instance func_countable : Pos.Countable func.t :=
-  .ofInjective (fun f => Pos.Countable.encode (val.RecV f.f f.x f.e))
-    (by rintro ⟨a, b, c⟩ ⟨d, e, f⟩ h; have h := Pos.encode_inj h; simp_all)
-
-instance interface_countable : Pos.Countable interface.t :=
-  .ofInjective (fun
-      | .ok i => Pos.Countable.encode (val.InterfaceV (some (i.ty, i.v)))
-      | .nil => Pos.Countable.encode (val.InterfaceV none))
-    (by
-      rintro (⟨⟨a, b⟩⟩ | _) (⟨⟨c, d⟩⟩ | _) h <;> have h := Pos.encode_inj h <;> simp_all)
+variable [ext : ffi_syntax]
 
 instance streamold_countable : Pos.Countable streamold.t :=
   .ofInjective (fun x => Pos.Countable.encode (x.req', x.res', x.f'))
     (by rintro ⟨a, b, c⟩ ⟨d, e, f⟩ h; have h := Pos.encode_inj h; simp_all)
 
 end countable
-
-/-! ## DSP send/receive wrappers -/
-
-section dsp_wrappers
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
-variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
-variable [sem : go.Semantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
-  [IntoValTyped (GF := GF) V t]
-
-theorem wp_dsp_recv0 (γ : dsp_names) (lr_chan rl_chan : loc) (p0 : iProto GF V) (v : V)
-    (P : IProp GF) (p : iProto GF V) [ProtoNormalize false p0 [] (<?> iMsg_base v P p)] :
-    {{ (lr_chan, rl_chan) ↣{γ} p0 }}
-      (App (Val (chan.receive t)) (Val #rl_chan))
-    {{ RET (PairV #v #true); ((lr_chan, rl_chan) ↣{γ} p) ∗ P }} := by
-  have h := tac_wp_recv (t := t) (TT := Tele.nil.{0}) γ lr_chan rl_chan p0 _ (ULift.up v)
-    (ULift.up P) (ULift.up p) (hm := ⟨rfl⟩)
-  simp only [Tele.app] at h
-  iintro %Φ Hc HΦ
-  wp_apply h $$ Hc as %x H
-  iapply HΦ $$ H
-
-theorem wp_dsp_recv1 {A : Type} (γ : dsp_names) (lr_chan rl_chan : loc) (p0 : iProto GF V)
-    (v : A → V) (P : A → IProp GF) (p : A → iProto GF V)
-    [ProtoNormalize false p0 [] (<?> iMsg_exist fun a => iMsg_base (v a) (P a) (p a))] :
-    {{ (lr_chan, rl_chan) ↣{γ} p0 }}
-      (App (Val (chan.receive t)) (Val #rl_chan))
-    {{ (a : A), RET (PairV #(v a) #true); ((lr_chan, rl_chan) ↣{γ} p a) ∗ P a }} := by
-  have h := tac_wp_recv (t := t) (TT := Tele.cons fun (_ : A) => Tele.nil) γ lr_chan rl_chan p0 _
-    (fun a => ULift.up (v a)) (fun a => ULift.up (P a)) (fun a => ULift.up (p a)) (hm := ⟨rfl⟩)
-  iintro %Φ Hc HΦ
-  wp_apply h $$ Hc as %x H
-  obtain ⟨a, ⟨⟩⟩ := x
-  simp only [Tele.app]
-  iapply HΦ $$ %a H
-
-theorem wp_dsp_recv2 {A B : Type} (γ : dsp_names) (lr_chan rl_chan : loc) (p0 : iProto GF V)
-    (v : A → B → V) (P : A → B → IProp GF) (p : A → B → iProto GF V)
-    [ProtoNormalize false p0 []
-      (<?> iMsg_exist fun a => iMsg_exist fun b => iMsg_base (v a b) (P a b) (p a b))] :
-    {{ (lr_chan, rl_chan) ↣{γ} p0 }}
-      (App (Val (chan.receive t)) (Val #rl_chan))
-    {{ (a : A) (b : B), RET (PairV #(v a b) #true); ((lr_chan, rl_chan) ↣{γ} p a b) ∗ P a b }} := by
-  have h := tac_wp_recv (t := t) (TT := Tele.cons fun (_ : A) => Tele.cons fun (_ : B) => Tele.nil)
-    γ lr_chan rl_chan p0 _
-    (fun a b => ULift.up (v a b)) (fun a b => ULift.up (P a b)) (fun a b => ULift.up (p a b))
-    (hm := ⟨rfl⟩)
-  iintro %Φ Hc HΦ
-  wp_apply h $$ Hc as %x H
-  obtain ⟨a, b, ⟨⟩⟩ := x
-  simp only [Tele.app]
-  iapply HΦ $$ %a %b H
-
-theorem wp_dsp_send0 (γ : dsp_names) (lr_chan rl_chan : loc) (p0 : iProto GF V) (v : V)
-    (P : IProp GF) (p : iProto GF V) [ProtoNormalize false p0 [] (<!> iMsg_base v P p)] :
-    ⊢ ∀ Φ : val → IProp GF, ((lr_chan, rl_chan) ↣{γ} p0) -∗ P -∗
-      ▷ (((lr_chan, rl_chan) ↣{γ} p) -∗ Φ #()) -∗
-      WP (App (App (Val (chan.send t)) (Val #lr_chan)) (Val #v)) {{ Φ }} := by
-  have h := tac_wp_send (t := t) (TT := Tele.nil.{0}) Tele.Arg.nil γ lr_chan rl_chan p0 _
-    (ULift.up v) (ULift.up P) (ULift.up p) (hm := ⟨rfl⟩)
-  simp only [Tele.app] at h
-  iintro %Φ Hc HP HΦ
-  wp_apply h $$ [$Hc $HP] as H
-  iapply HΦ $$ H
-
-theorem wp_dsp_send1 {A : Type} (a : A) (γ : dsp_names) (lr_chan rl_chan : loc)
-    (p0 : iProto GF V) (v : A → V) (P : A → IProp GF) (p : A → iProto GF V)
-    [ProtoNormalize false p0 [] (<!> iMsg_exist fun a => iMsg_base (v a) (P a) (p a))] :
-    ⊢ ∀ Φ : val → IProp GF, ((lr_chan, rl_chan) ↣{γ} p0) -∗ P a -∗
-      ▷ (((lr_chan, rl_chan) ↣{γ} p a) -∗ Φ #()) -∗
-      WP (App (App (Val (chan.send t)) (Val #lr_chan)) (Val #(v a))) {{ Φ }} := by
-  have h := tac_wp_send (t := t) (TT := Tele.cons fun (_ : A) => Tele.nil)
-    (Tele.Arg.cons a Tele.Arg.nil) γ lr_chan rl_chan p0 _
-    (fun a => ULift.up (v a)) (fun a => ULift.up (P a)) (fun a => ULift.up (p a)) (hm := ⟨rfl⟩)
-  simp only [Tele.app] at h
-  iintro %Φ Hc HP HΦ
-  wp_apply h $$ [$Hc $HP] as H
-  iapply HΦ $$ H
-
-theorem wp_dsp_send2 {A B : Type} (a : A) (b : B) (γ : dsp_names) (lr_chan rl_chan : loc)
-    (p0 : iProto GF V) (v : A → B → V) (P : A → B → IProp GF) (p : A → B → iProto GF V)
-    [ProtoNormalize false p0 []
-      (<!> iMsg_exist fun a => iMsg_exist fun b => iMsg_base (v a b) (P a b) (p a b))] :
-    ⊢ ∀ Φ : val → IProp GF, ((lr_chan, rl_chan) ↣{γ} p0) -∗ P a b -∗
-      ▷ (((lr_chan, rl_chan) ↣{γ} p a b) -∗ Φ #()) -∗
-      WP (App (App (Val (chan.send t)) (Val #lr_chan)) (Val #(v a b))) {{ Φ }} := by
-  have h := tac_wp_send (t := t) (TT := Tele.cons fun (_ : A) => Tele.cons fun (_ : B) => Tele.nil)
-    (Tele.Arg.cons a (Tele.Arg.cons b Tele.Arg.nil)) γ lr_chan rl_chan p0 _
-    (fun a b => ULift.up (v a b)) (fun a b => ULift.up (P a b)) (fun a b => ULift.up (p a b))
-    (hm := ⟨rfl⟩)
-  simp only [Tele.app] at h
-  iintro %Φ Hc HP HΦ
-  wp_apply h $$ [$Hc $HP] as H
-  iapply HΦ $$ H
-
-omit [IntoValTyped (GF := GF) V t] in
-/-- Rewrite the protocol of an endpoint (used to unfold recursive protocols). -/
-theorem dsp_endpoint_eq {γ : dsp_names} {c : chan.t × chan.t} {p q : iProto GF V} (h : p = q) :
-    (c ↣{γ} p) ⊢ (c ↣{γ} q) := h ▸ .rfl
-
-end dsp_wrappers
 
 /-! ## Examples -/
 
@@ -175,7 +53,6 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 set_option goose.wp.extras true
 
 section dsp_examples
-variable [val_countable : Pos.Countable val]
 
 abbrev ref_prot : iProto GF interface.t :=
   <!> iMsg_exist fun (l : loc) => iMsg_exist fun (x : Int) =>
@@ -205,14 +82,16 @@ theorem wp_DSPExample :
   ipersist Hsig
   wp_apply wp_fork $$ [Hcsignal]
   · wp_auto
-    wp_apply wp_dsp_recv2 (t := go.any) γdsp2 signal c _ _ _ _ $$ Hcsignal as %l %x ⟨Hcsignal, Hl⟩
-    wp_apply wp_dsp_send0 (t := go.any) γdsp2 signal c _ _ _ _ $$ Hcsignal Hl as -
+    wp_recv (l x) as Hl
+    wp_auto
+    wp_send with [$Hl]
+    wp_auto
     itrivial
   irename «$r0» => H40
-  wp_apply wp_dsp_send2 (t := go.any) «$r0_ptr» (40 : Int) γdsp1 c signal ref_prot _ _ _ $$ Hcp [H40]
-    as Hcp
-  · iexact H40
-  wp_apply wp_dsp_recv0 (t := go.any) γdsp1 c signal _ _ _ _ $$ Hcp as ⟨-, Hl⟩
+  wp_send with [$H40]
+  wp_auto
+  wp_recv as Hl
+  wp_auto
   rw [show W64 40 + W64 2 = W64 42 from rfl]
   wp_end
 
@@ -226,20 +105,22 @@ abbrev service_prot_aux (Φpre : go_string → IProp GF) (Φpost : go_string →
     (<?> iMsg_exist fun (res : go_string) => iMsg_base res (Φpost req res) r)
 
 instance service_prot_contractive (Φpre : go_string → IProp GF)
-    (Φpost : go_string → go_string → IProp GF) : Contractive (service_prot_aux Φpre Φpost) where
-  distLater_dist h :=
-    (iProto_message_ne Send).ne (iMsg_exist_ne fun req => iMsg_contractive req .rfl
-      (fun m hm => (iProto_message_ne Recv).ne (iMsg_exist_ne fun res => iMsg_ne res .rfl (h m hm))))
+    (Φpost : go_string → go_string → IProp GF) : Contractive (service_prot_aux Φpre Φpost) := by
+  solve_proto_contractive
 
 def service_prot (Φpre : go_string → IProp GF) (Φpost : go_string → go_string → IProp GF) :
     iProto GF go_string :=
   fixpoint (service_prot_aux Φpre Φpost)
 
-/-- (Rocq: the `ProtoUnfold` instance `service_prot_unfold`.) -/
 theorem service_prot_unfold (Φpre : go_string → IProp GF)
     (Φpost : go_string → go_string → IProp GF) :
     service_prot Φpre Φpost = service_prot_aux Φpre Φpost (service_prot Φpre Φpost) :=
   fixpoint_unfold (service_prot_aux Φpre Φpost).toContractiveHom
+
+instance service_prot_proto_unfold (Φpre : go_string → IProp GF)
+    (Φpost : go_string → go_string → IProp GF) :
+    ProtoUnfold (service_prot Φpre Φpost) (service_prot_aux Φpre Φpost (service_prot Φpre Φpost)) :=
+  ⟨service_prot_unfold Φpre Φpost⟩
 
 theorem wp_Serve (f : func.t) (Φpre : go_string → IProp GF)
     (Φpost : go_string → go_string → IProp GF) :
@@ -265,17 +146,15 @@ theorem wp_Serve (f : func.t) (Φpre : go_string → IProp GF)
       $$ [Hserver]
     · iexact Hserver
     wp_for HI
-    icases dsp_endpoint_eq (congrArg iProto_dual (service_prot_unfold Φpre Φpost)) $$ Hprot
-      with Hprot
-    wp_apply wp_dsp_recv1 (t := go.string) γdsp2 res_ch req_ch _ _ _ _ $$ Hprot as %req ⟨Hprot, Hpre⟩
+    wp_recv (req) as Hpre
+    wp_auto
     wp_bind (App (Val #f) _)
     iapply wp_wand $$ (Hf_spec $$ %req Hpre)
     iintro %v ⟨%s', %Heq, HQ⟩
     subst Heq
     wp_auto
-    wp_apply wp_dsp_send1 (t := go.string) s' γdsp2 res_ch req_ch _ (fun x => x) _ _ $$ Hprot [HQ]
-      as Hprot
-    · iexact HQ
+    wp_send with [$HQ]
+    wp_auto
     wp_for_post
     iframe
   wp_end
@@ -302,11 +181,10 @@ theorem wp_Client :
     iexists _
     iframe
     ipureintro; trivial
-  icases dsp_endpoint_eq (service_prot_unfold _ _) $$ Hc with Hc
-  wp_apply wp_dsp_send1 (t := go.string) go!"Hello" γ hw.req' hw.res' _ (fun x => x) _ _ $$ Hc []
-    as Hc
-  wp_apply wp_dsp_recv1 (t := go.string) γ hw.req' hw.res' _ _ _ _ $$ Hc as %res ⟨-, %Hres⟩
-  subst Hres
+  wp_send with [//]
+  wp_auto
+  wp_recv (_) as %rfl
+  wp_auto
   rw [show go!"Hello" ++ go!", World!" = go!"Hello, World!" from rfl]
   wp_end
 
@@ -321,21 +199,23 @@ abbrev mapper_service_prot_aux (Φpre : go_string → IProp GF)
 
 instance mapper_service_prot_contractive (Φpre : go_string → IProp GF)
     (Φpost : go_string → go_string → IProp GF) :
-    Contractive (mapper_service_prot_aux Φpre Φpost) where
-  distLater_dist h :=
-    (iProto_message_ne Send).ne (iMsg_exist_ne fun req => iMsg_contractive req .rfl
-      (fun m hm => (iProto_message_ne Recv).ne (iMsg_exist_ne fun res => iMsg_ne res .rfl (h m hm))))
+    Contractive (mapper_service_prot_aux Φpre Φpost) := by
+  solve_proto_contractive
 
 def mapper_service_prot (Φpre : go_string → IProp GF) (Φpost : go_string → go_string → IProp GF) :
     iProto GF go_string :=
   fixpoint (mapper_service_prot_aux Φpre Φpost)
 
-/-- (Rocq: the `ProtoUnfold` instance `mapper_service_prot_unfold`.) -/
 theorem mapper_service_prot_unfold (Φpre : go_string → IProp GF)
     (Φpost : go_string → go_string → IProp GF) :
     mapper_service_prot Φpre Φpost =
       mapper_service_prot_aux Φpre Φpost (mapper_service_prot Φpre Φpost) :=
   fixpoint_unfold (mapper_service_prot_aux Φpre Φpost).toContractiveHom
+
+instance mapper_service_prot_proto_unfold (Φpre : go_string → IProp GF)
+    (Φpost : go_string → go_string → IProp GF) :
+    ProtoUnfold (mapper_service_prot Φpre Φpost) (mapper_service_prot_aux Φpre Φpost (mapper_service_prot Φpre Φpost)) :=
+  ⟨mapper_service_prot_unfold Φpre Φpost⟩
 
 def is_mapper_stream (strm : streamold.t) : IProp GF :=
   iprop(∃ (γ : dsp_names) (req_ch res_ch : loc) (f : func.t) (Φpre : go_string → IProp GF)
@@ -381,16 +261,15 @@ theorem wp_MapServer (my_stream : streamold.t) :
   subst Heq
   wp_auto
   wp_for
-  icases dsp_endpoint_eq (congrArg iProto_dual (mapper_service_prot_unfold Φpre Φpost)) $$ Hprot
-    with Hprot
-  wp_apply wp_dsp_recv1 (t := go.string) γ res_ch req_ch _ _ _ _ $$ Hprot as %req ⟨Hprot, Hpre⟩
+  wp_recv (req) as Hpre
+  wp_auto
   wp_bind (App (Val _) (Val #req))
   iapply wp_wand $$ (Hf_spec $$ %req Hpre)
   iintro %v ⟨%s', %Heq, HQ⟩
   subst Heq
   wp_auto
-  wp_apply wp_dsp_send1 (t := go.string) s' γ res_ch req_ch _ (fun x => x) _ _ $$ Hprot HQ
-    as Hprot
+  wp_send with [$HQ]
+  wp_auto
   wp_for_post
   iframe
 
@@ -426,20 +305,18 @@ theorem wp_MapClient (my_stream : streamold.t) :
   wp_apply wp_fork $$ [Hmapper']
   · wp_apply wp_MapServer $$ [$Hmapper']
     itrivial
-  icases dsp_endpoint_eq (mapper_service_prot_unfold _ _) $$ Hstr with Hstr
-  icases dsp_endpoint_eq (mapper_service_prot_unfold _ _) $$ Hstr' with Hstr'
-  wp_apply wp_dsp_send1 (t := go.string) go!"Hello" γ strm.req' strm.res' _ (fun x => x) _ _
-    $$ Hstr [] as Hstr
-  wp_apply wp_dsp_send1 (t := go.string) go!"World" γ' strm'.req' strm'.res' _ (fun x => x) _ _
-    $$ Hstr' [] as Hstr'
-  wp_apply wp_dsp_recv1 (t := go.string) γ strm.req' strm.res' _ _ _ _ $$ Hstr as %r1 ⟨-, %Hr1⟩
-  wp_apply wp_dsp_recv1 (t := go.string) γ' strm'.req' strm'.res' _ _ _ _ $$ Hstr' as %r2 ⟨-, %Hr2⟩
-  subst Hr1 Hr2
+  wp_send with [//]
+  wp_auto
+  wp_send with [//]
+  wp_auto
+  wp_recv (_) as %rfl
+  wp_auto
+  wp_recv (_) as %rfl
+  wp_auto
   rw [show go!"Hello" ++ go!"," ++ go!" " ++ (go!"World" ++ go!"!") = go!"Hello, World!" from rfl]
   wp_end
 
 section mpmc
-variable [val_countable : Pos.Countable val]
 
 theorem wp_Muxer (c : loc) (γmpmc : mpmc_names) (n_prod n_cons : Nat) :
     {{ is_pkg_init (PROP := IProp GF) pkg ∗
@@ -514,15 +391,14 @@ theorem wp_makeGreeting :
     _ stream1 $$ [$Hmpmc $Hprod $Hstream1] as Hprod
   wp_apply wp_mpmc_send (t := streamold) γmpmc c 1 1 is_mapper_stream (fun _ => iprop(True))
     _ stream2 $$ [$Hmpmc $Hprod $Hstream2] as Hprod
-  icases dsp_endpoint_eq (mapper_service_prot_unfold _ _) $$ Hc1 with Hc1
-  icases dsp_endpoint_eq (mapper_service_prot_unfold _ _) $$ Hc2 with Hc2
-  wp_apply wp_dsp_send1 (t := go.string) go!"Hello" γ1 stream1.req' stream1.res' _ (fun x => x) _ _
-    $$ Hc1 [] as Hc1
-  wp_apply wp_dsp_send1 (t := go.string) go!"World" γ2 stream2.req' stream2.res' _ (fun x => x) _ _
-    $$ Hc2 [] as Hc2
-  wp_apply wp_dsp_recv1 (t := go.string) γ1 stream1.req' stream1.res' _ _ _ _ $$ Hc1 as %r1 ⟨-, %Hr1⟩
-  wp_apply wp_dsp_recv1 (t := go.string) γ2 stream2.req' stream2.res' _ _ _ _ $$ Hc2 as %r2 ⟨-, %Hr2⟩
-  subst Hr1 Hr2
+  wp_send with [//]
+  wp_auto
+  wp_send with [//]
+  wp_auto
+  wp_recv (_) as %rfl
+  wp_auto
+  wp_recv (_) as %rfl
+  wp_auto
   rw [show go!"Hello" ++ go!"," ++ go!" " ++ (go!"World" ++ go!"!") = go!"Hello, World!" from rfl]
   wp_end
 

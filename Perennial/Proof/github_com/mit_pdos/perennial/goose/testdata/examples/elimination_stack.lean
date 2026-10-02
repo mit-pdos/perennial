@@ -7,7 +7,7 @@ Lean notes:
 * Rocq's ghost names `Hs●`/`Hs◯` are `Hsa`/`Hsf` (auth/frag halves), similarly
   `Hra`/`Hrf`.
 * There is no `solve_ndisj`; the mask side conditions are proved with the
-  local lemmas `mask_diff_ndot` and `mask_ndot_ne'`.
+  lemmas `mask_diff_ndot` and `mask_ndot_ne'` (`Perennial/Std/Namespaces.lean`).
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Golang.Theory.Chan
@@ -29,16 +29,6 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
 
-theorem mask_diff_ndot (N : Namespace) (x : String) : (⊤ \ ↑N : CoPset) ⊆ ⊤ \ ↑(N.@x) := by
-  intro p hp
-  rw [LawfulSet.mem_diff] at hp ⊢
-  exact ⟨hp.1, fun h => hp.2 (nclose_subseteq N x p h)⟩
-
-theorem mask_ndot_ne' (N : Namespace) (x y : String) (h : x ≠ y) :
-    (↑(N.@x) : CoPset) ⊆ ⊤ \ ↑(N.@y) := by
-  intro p hp
-  rw [LawfulSet.mem_diff]
-  exact ⟨CoPset.mem_full, fun h' => ndot_ne_disjoint N h p ⟨hp, h'⟩⟩
 
 section init
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]

@@ -198,12 +198,6 @@ variable [sem : go.Semantics]
 variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
   [IntoValTyped (GF := GF) V t]
 
-omit [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V t] in
-/-- (Missing from `Perennial/Ghost/DGhostVar.lean`.) -/
-instance dghost_var_discard_persistent {A : Type} [Pos.Countable A] (γ : GName) (a : A) :
-    Persistent (dghost_var (GF := GF) γ DFrac.discard a) := by
-  unfold dghost_var; infer_instance
-
 def is_closed (γ : mpmc_names) : IProp GF :=
   dghost_var γ.mpmc_closed_name DFrac.discard true
 

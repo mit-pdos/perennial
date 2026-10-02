@@ -34,10 +34,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
 variable [sem : go.Semantics]
 
-instance dghost_var_discard_persistent {A : Type} [Pos.Countable A] (γ : GName) (a : A) :
-    Persistent (dghost_var (GF := GF) γ .discard a) := by
-  unfold dghost_var; infer_instance
-
 /-- The broadcast invariant. -/
 def broadcast_inv (γ : chan_names) (γch : broadcast_internal_names) (Q : IProp GF) : IProp GF :=
   iprop(∃ (st : chanstate.t Unit),

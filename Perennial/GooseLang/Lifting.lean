@@ -27,6 +27,7 @@ import Iris.Instances.Lib.GhostVar
 import Iris.Std.GenSets
 import Perennial.Algebra.NaHeap
 import Perennial.GooseLang.Lang
+import Perennial.GooseLang.Countable
 
 noncomputable section
 

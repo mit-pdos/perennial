@@ -27,18 +27,6 @@ instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.math.bits :=
 instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.math.bits :=
   build_get_is_pkg_init_wf
 
-/-! `go.error` is a `def` in Lean, so its underlying-type instances are not
-found by unification with `go.InterfaceType _` (same workaround as in
-`Perennial/Proof/errors.lean`). -/
-abbrev error_elems : List go.interface_elem :=
-  [go.MethodElem go!"Error" (go.Signature [] false [go.string])]
-
-local instance error_is_underlying : go.error ↓u go.InterfaceType error_elems := by
-  unfold go.error; infer_instance
-
-local instance error_underlying_eq : go.error ≤u go.InterfaceType error_elems := by
-  unfold go.error; exact underlying_eq _
-
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
     (Hinit : get_is_pkg_init_prop pkg_id.math.bits get_is_pkg_init) :
     {{ own_initializing get_is_pkg_init }}

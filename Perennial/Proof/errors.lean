@@ -25,19 +25,6 @@ instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.errors :=
 instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.errors :=
   build_get_is_pkg_init_wf
 
-/-! `go.error` is a `def` in Lean (a notation-like constant in Rocq), so the
-underlying-type instances for it are not found by unification with
-`go.InterfaceType _`. Provide them locally.
-TODO(port): these belong in `Perennial/Golang/Theory`. -/
-abbrev error_elems : List go.interface_elem :=
-  [go.MethodElem go!"Error" (go.Signature [] false [go.string])]
-
-local instance error_is_underlying : go.error ↓u go.InterfaceType error_elems := by
-  unfold go.error; infer_instance
-
-local instance error_underlying_eq : go.error ≤u go.InterfaceType error_elems := by
-  unfold go.error; exact underlying_eq _
-
 /-- Proven first because it is used during package initialization (to create
 global error variables). -/
 theorem wp_New (msg : go_string) :

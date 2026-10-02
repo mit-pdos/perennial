@@ -60,12 +60,6 @@ def pendingk : List kind := [KWeb, KImg, KVid]
 
 theorem pendingk_nodup : pendingk.Nodup := by decide
 
-theorem delete_middle {A : Type} (l1 : List A) (x : A) (l2 : List A) :
-    (l1 ++ x :: l2).eraseIdx l1.length = l1 ++ l2 := by
-  induction l1 with
-  | nil => rfl
-  | cons a l1 ih => simp [ih]
-
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]

@@ -9,9 +9,6 @@ Lean notes:
   the generated `go_etcd_io.raft.v3.node`, so they are `v3_proof.node.t` and
   `v3_proof.message.t`. Generated raft names are written `v3.node`, ...
 * The broadcast and bag idioms fix `hlc := HasLC.hasLC` and need `[allG GF]`.
-  The bag over `error.t = interface.t` needs `Pos.Countable interface.t`, which
-  (as in `channel_dsp.lean`, `etcd/pkg/v3/wait.lean`) is derived from an
-  explicit `[Pos.Countable val]` assumption.
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.base
 import Perennial.Golang.Theory.Chan.Idioms.Broadcast
@@ -67,25 +64,12 @@ instance is_raft_log_pers_inst {GF : BundledGFunctors} (γ : raft_names) (log : 
     Persistent (is_raft_log (GF := GF) γ log) :=
   is_raft_log_pers γ log
 
-section countable
-variable [ext : ffi_syntax] [val_countable : Pos.Countable val]
-
-instance interface_countable : Pos.Countable interface.t :=
-  .ofInjective (fun
-      | .ok i => Pos.Countable.encode (val.InterfaceV (some (i.ty, i.v)))
-      | .nil => Pos.Countable.encode (val.InterfaceV none))
-    (by
-      rintro (⟨⟨a, b⟩⟩ | _) (⟨⟨c, d⟩⟩ | _) h <;> have h := Pos.encode_inj h <;> simp_all)
-
-end countable
-
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
-variable [val_countable : Pos.Countable val]
 
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 

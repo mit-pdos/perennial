@@ -614,22 +614,11 @@ structure RWMutex_names where
   reader_sem_gn : GName
   writer_sem_gn : GName
 
-theorem mask_diff_ndot (N : Namespace) (x : String) : (⊤ \ ↑N : CoPset) ⊆ ⊤ \ ↑(N.@x) := by
-  intro p hp
-  rw [LawfulSet.mem_diff] at *
-  exact ⟨hp.1, fun h => hp.2 (nclose_subseteq N x p h)⟩
-
 theorem mask_inv_sema (N : Namespace) : (↑(N.@"inv") : CoPset) ⊆ ⊤ \ ↑(N.@"sema") := by
   intro p hp
   rw [LawfulSet.mem_diff]
   exact ⟨CoPset.mem_full, fun h => ndot_ne_disjoint N (by decide : "inv" ≠ "sema") p ⟨hp, h⟩⟩
 
-theorem mask_diff_ndot2 (N : Namespace) (x y : String) :
-    (⊤ \ ↑N : CoPset) ⊆ (⊤ \ ↑(N.@x)) \ ↑(N.@y) := by
-  intro p hp
-  rw [LawfulSet.mem_diff] at *
-  rw [LawfulSet.mem_diff]
-  exact ⟨⟨hp.1, fun h => hp.2 (nclose_subseteq N x p h)⟩, fun h => hp.2 (nclose_subseteq N y p h)⟩
 
 
 

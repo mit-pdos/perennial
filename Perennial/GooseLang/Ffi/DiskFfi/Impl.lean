@@ -18,6 +18,12 @@ inductive DiskOp where
   | ReadOp | WriteOp | SizeOp
 deriving DecidableEq, Inhabited
 
+instance : Pos.Countable DiskOp where
+  encode o := Pos.Countable.encode (match o with | .ReadOp => (0 : Nat) | .WriteOp => 1 | .SizeOp => 2)
+  decode p := match (Pos.Countable.decode p : Option Nat) with
+    | some 0 => some .ReadOp | some 1 => some .WriteOp | some 2 => some .SizeOp | _ => none
+  decode_encode o := by cases o <;> simp [Pos.Countable.decode_encode]
+
 @[reducible] def disk_op : ffi_syntax where
   ffi_opcode := DiskOp
   ffi_val := Unit

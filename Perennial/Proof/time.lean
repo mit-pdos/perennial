@@ -24,10 +24,6 @@ namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
-instance loc_countable : Pos.Countable loc :=
-  .ofInjective (fun l => Pos.Countable.encode (l.loc_car, l.loc_off))
-    (by rintro ⟨a, b⟩ ⟨c, d⟩ h; have h := Pos.encode_inj h; simp_all)
-
 namespace time
 
 instance Time.countable [ffi_syntax] : Pos.Countable time.Time.t :=

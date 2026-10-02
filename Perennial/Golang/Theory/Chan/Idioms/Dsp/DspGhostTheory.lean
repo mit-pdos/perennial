@@ -1220,20 +1220,36 @@ theorem iMsg_texist_exist {TT : Iris.Std.Tele} (w : V) (lp : Later (iProto GF V)
     rw [iMsg_exist_car]
     exact exists_congr fun x => ih x _
 
-/-- Rocq `MsgTele`: `m` is (equal to) the telescopic message `∃.. x, MSG tv x {{ tP x }}; tp x`. -/
-class MsgTele {TT : Iris.Std.Tele} (m : iMsg GF V) (tv : TT -t> V) (tP : TT -t> IProp GF)
-    (tp : TT -t> iProto GF V) : Prop where
+/-- Rocq `MsgTele`: `m` is (equal to) the telescopic message `∃.. x, MSG tv x {{ tP x }}; tp x`.
+The telescope `TT` and `tv`, `tP`, `tp` are `outParam`s (Rocq: `Hint Mode MsgTele ! ! - ! - - -`),
+computed from `m` by the instances `msg_tele_base` and `msg_tele_exist`. -/
+class MsgTele {TT : outParam Iris.Std.Tele} (m : iMsg GF V) (tv : outParam (TT -t> V))
+    (tP : outParam (TT -t> IProp GF)) (tp : outParam (TT -t> iProto GF V)) : Prop where
   msg_tele : m = iMsg_texist fun x =>
     iMsg_base (Iris.Std.Tele.app tv x) (Iris.Std.Tele.app tP x) (Iris.Std.Tele.app tp x)
 
+universe u in
+/-- `ULift.up v` as a telescopic function on the empty telescope. Its type is syntactically
+`Tele.nil -t> T`, so that type class resolution (at `instances` transparency, which does not
+unfold `Tele.Fun`) can assign it to an `outParam` of `MsgTele`. -/
+abbrev tele_fun_nil {T : Type _} (v : T) : Iris.Std.Tele.nil.{u} -t> T := ULift.up v
+
+/-- A function into telescopic functions as a telescopic function on `Tele.cons TT` (see
+`tele_fun_nil`). -/
+abbrev tele_fun_cons {A : Type _} {TT : A → Iris.Std.Tele} {T : Type _}
+    (f : (x : A) → (TT x -t> T)) : Iris.Std.Tele.cons TT -t> T := f
+
+universe u in
 instance msg_tele_base (v : V) (P : IProp GF) (p : iProto GF V) :
-    MsgTele (TT := Iris.Std.Tele.nil) (iMsg_base v P p) (ULift.up v) (ULift.up P) (ULift.up p) := ⟨rfl⟩
+    MsgTele (TT := Iris.Std.Tele.nil.{u}) (iMsg_base v P p) (tele_fun_nil v) (tele_fun_nil P)
+      (tele_fun_nil p) := ⟨rfl⟩
 
 instance msg_tele_exist {A : Type _} {TT : A → Iris.Std.Tele} (m : A → iMsg GF V)
-    (tv : (Iris.Std.Tele.cons TT) -t> V) (tP : (Iris.Std.Tele.cons TT) -t> IProp GF)
-    (tp : (Iris.Std.Tele.cons TT) -t> iProto GF V)
+    (tv : (x : A) → (TT x -t> V)) (tP : (x : A) → (TT x -t> IProp GF))
+    (tp : (x : A) → (TT x -t> iProto GF V))
     [H : ∀ x, MsgTele (TT := TT x) (m x) (tv x) (tP x) (tp x)] :
-    MsgTele (TT := .cons TT) (iMsg_exist m) tv tP tp where
+    MsgTele (TT := .cons TT) (iMsg_exist m) (tele_fun_cons tv) (tele_fun_cons tP)
+      (tele_fun_cons tp) where
   msg_tele := by
     show iMsg_exist m = iMsg_exist fun x => iMsg_texist _
     congr 1; funext x; exact (H x).msg_tele
