@@ -649,32 +649,53 @@ a fancy update: `imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with H
 ### Time receipts
 
 Time receipts (Mével, Jourdan, Pottier, "Time credits and time receipts in
-Iris", ESOP 2019) let a proof assume that a program runs for fewer than
-`N = receipt_bound = 2^48` steps, e.g. to show that a 64-bit counter that is
-incremented once per call never overflows. Files:
+Iris", ESOP 2019) let a proof assume that a program runs for fewer than `N`
+steps, for a bound `N` that the proof does not fix, e.g. to show that a 64-bit
+counter that is incremented once per call never overflows (given the premise
+`N ≤ 2^64`). Files:
 `Perennial/GooseLang/BoundedLang.lean` (semantics),
 `Perennial/GooseLang/Receipts.lean` (ghost state and laws),
 `Perennial/GooseLang/Lifting.lean` (`wp_GoInstruction_receipt`),
 `Perennial/GooseLang/Adequacy.lean` (adequacy),
 `Perennial/ProgramLogic/TimeReceiptsTest.lean` (laws and the paper's clock).
 
+**The bound `N`.** `N` is the field `receipt_bound GF : Nat` of the receipt
+ghost state (with `receipt_bound_pos : 0 < receipt_bound GF`):
+
+```
+class receiptGS (GF : BundledGFunctors) where
+  receipt_inG : ElemG GF receiptF
+  receipt_name : GName
+  receipt_bound : Nat
+  receipt_bound_pos : 0 < receipt_bound
+```
+
+`receiptGS` is a field of `gooseGlobalGS`, hence available from `heapGS`, so a
+proof can write `receipt_bound GF` without new section variables. Nothing else
+depends on `N`: the language instance, `PureExec`/`Atomic` instances and the
+receipt camera (`receiptGpreS`, `gooseGpreS`) are the same for every `N`. A
+proof that needs `N` to be small states it as a premise, e.g.
+`(Hbound : receipt_bound GF ≤ 2 ^ 48)`, and every caller passes the premise on;
+the client discharges it when it picks `N` at adequacy time (below).
+
 **Semantics.** The trusted `base_step` is unchanged. The registered language
 instance `goose_ectxi_lang` is a layer on top of it whose state is
-`cfg_state × Nat`; the number counts the *Go instruction* steps
+`cfg_state × Nat`; the number is a *fuel* for *Go instruction* steps
 (`App (Val (GoInstruction op)) (Val v)`: function/method resolution, typed
-loads, stores and allocations, struct operations, ...). Below the bound a Go
-instruction takes its real step and increments the counter; once
-`counter + 1 = N` it *stutters* (expression and state unchanged), the paper's
-"`tick` diverges at the limit". All other steps are real steps that leave the
-counter alone. Only Go instructions are counted because a step that can stutter
-is neither pure (`PureExec`) nor atomic (`Language.Atomic`), and the heap
-primitives must stay atomic for invariant opening; Go instructions have a
-single lifting lemma (`wp_GoInstruction`) that handles the stutter by Löb
-induction.
+loads, stores and allocations, struct operations, ...). With fuel `f + 1` a Go
+instruction takes its real step and leaves fuel `f`; with fuel `0` it
+*stutters* (expression and state unchanged), the paper's "`tick` diverges at
+the limit". All other steps are real steps that leave the fuel alone. The
+adequacy theorems start with fuel `N - 1`, and the state interpretation owns
+`receipt_fuel f`, the authoritative receipt counter `receipt_auth (N - (f + 1))`.
+Only Go instructions are counted because a step that can stutter is neither
+pure (`PureExec`) nor atomic (`Language.Atomic`), and the heap primitives must
+stay atomic for invariant opening; Go instructions have a single lifting lemma
+(`wp_GoInstruction`) that handles the stutter by Löb induction.
 
 **Assertions and laws.** `⧗ n` (`receipt n`): `n` exclusive receipts; `⧖ n`
-(`preceipt n`): persistent, "at least `n` counted steps happened". The state
-interpretation owns the authoritative counter (`receipt_auth`).
+(`preceipt n`): persistent, "at least `n` counted steps happened". Below,
+`N = receipt_bound GF`.
 
 | law | lemma |
 |-----|-------|
@@ -683,11 +704,11 @@ interpretation owns the authoritative counter (`receipt_auth`).
 | `⧖ n` persistent, `⧖ (max m n) ⊣⊢ ⧖ m ∗ ⧖ n`, `⧖ n ⊢ ⧖ m` (`m ≤ n`), `⊢ \|==> ⧖ 0` | `preceipt_persistent`, `preceipt_max`, `preceipt_mono`, `preceipt_zero` |
 | `⧗ n ⊢ \|==> (⧗ n ∗ ⧖ n)` (snapshot) | `receipt_snapshot` |
 | `⧗ N ⊢ False`, `⧖ N ⊢ False` (hence `\|={E}=> False` for any `E`) | `receipt_bound_elim`, `preceipt_bound_elim`, `receipt_bound_fupd` |
-| `⧗ n ⊢ ⌜n < N⌝`, `⧗ 1 ∗ ⧗ n ⊢ ⌜n + 1 < N⌝ ∗ ⧗ (n + 1)` | `receipt_lt`, `receipt_add_one_lt` |
+| `⧗ n ⊢ ⌜n < N⌝`, `⧖ n ⊢ ⌜n < N⌝`, `⧗ 1 ∗ ⧗ n ⊢ ⌜n + 1 < N⌝ ∗ ⧗ (n + 1)` | `receipt_lt`, `preceipt_lt`, `receipt_add_one_lt` |
 
 `⧗ N ⊢ False` holds without any invariant or mask (the paper needs
-`TRInv` and its namespace): a fragment of the receipt camera is only valid
-below the bound. `receipt_bound_eq : receipt_bound = 2 ^ 48`.
+`TRInv` and its namespace): a receipt fragment records `N` and is only valid
+below it.
 
 **Getting receipts.** Every Go instruction step yields `⧗ 1` (and turns a
 `⧖ m` into `⧖ (m + 1)`):
@@ -709,40 +730,75 @@ produce receipts (they must stay atomic); every Go-level operation reaches them
 through at least one Go instruction (a call or a typed access), whose receipt
 can be used instead.
 
-**Adequacy.** `goose_adequacy` (and `grove_ffi_single_node_adequacy`,
-`disk_adequacy`) is stated for the real semantics, with the step bound as a
-hypothesis:
+**Adequacy: picking `N`.** `goose_adequacy` (and
+`grove_ffi_single_node_adequacy`, `disk_adequacy`, `goose_invariance`) is
+stated for the real semantics and every bound `N`: the WP premise `Hwp` is
+proved under the hypothesis `receipt_bound GF = N`, and the conclusion is about
+executions of fewer than `N` steps:
 
 ```
-theorem goose_adequacy [hPre : gooseGpreS ffi GF] (e σ g φ) (Hinitg) (Hinit) (Hwp : ...)
+theorem goose_adequacy [hPre : gooseGpreS ffi GF] (N : Nat)
+    (e : expr) (σ : state) (g : global_state) (φ : val → Prop)
+    (Hinitg : ffi_initgP g.global_world) (Hinit : ffi_initP σ.world g.global_world)
+    (Hwp : ∀ [hG : heapGS .hasLC GF],
+      receipt_bound GF = N →
+      hG.goose_localGS.goose_go_local_context = σ.go_state.go_lctx →
+      ⊢ ffi_global_start (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g.global_world -∗
+        ffi_local_start (goose_ffiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        own_go_state σ.go_state.package_state ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
     (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2))
-    (Hbound : n < receipt_bound) :
+    (Hbound : n < N) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2)
 ```
 
-`real_nsteps`/`real_not_stuck` are iris-lean's `Language.NSteps`/`NotStuck` for
-`goose_real_ectxi_lang`. The proof applies iris-lean adequacy to the bounded
-language (`goose_adequacy_blang`) and the simulation `bounded_nsteps_of_real`
-(a real execution of fewer than `N` steps is a bounded one; no Go instruction
-stutters) and `real_not_stuck_of_bounded` (every bounded step is backed by a
-real one). `goose_invariance` is analogous.
+A client chooses `N` and discharges the premises its proof makes about it from
+`HN : receipt_bound GF = N`. For a program that calls `idutil.Generator.Next`,
+`N = 2^48` (or anything smaller) works:
+
+```
+  goose_adequacy (2 ^ 48) e σ g φ Hinitg Hinit
+    (@fun hG HN Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
+```
+
+where `Hwp` is the client's WP proof under the premise `receipt_bound GF ≤ 2 ^ 48`
+(it calls `wp_Generator__Next Hbound`); `TimeReceiptsTest.lean` has this
+instantiation for `N = 2 ^ 64`. The result holds for executions of fewer than
+`2^48` steps. Since there is
+nothing to gain from a smaller `N`, a client takes the largest `N` that all the
+premises allow. `real_nsteps`/`real_not_stuck` are iris-lean's
+`Language.NSteps`/`NotStuck` for `goose_real_ectxi_lang`. The proof applies
+iris-lean adequacy to the bounded language started with fuel `N - 1`
+(`goose_adequacy_blang N hN`) and the simulation `bounded_nsteps_of_real` (a
+real execution of at most `f` steps is a bounded one from fuel `f`; no Go
+instruction stutters) and `real_not_stuck_of_bounded` (every bounded step is
+backed by a real one).
 
 **Example: `idutil.Generator.Next`** (`Perennial/Proof/go_etcd_io/etcd/pkg/v3/idutil.lean`).
 The invariant of `is_Generator g R` owns one receipt per completed call,
 `⧗ num_used`, next to the `2^48 - num_used` remaining `R` tokens. `Next` takes a
 receipt from an early Go instruction and adds it to the invariant when the
-atomic increment opens it; `receipt_add_one_lt` gives `num_used + 1 < 2^48`, so
-a token is left. The specs are Rocq's, with no ticket:
+atomic increment opens it; `receipt_add_one_lt` gives
+`num_used + 1 < receipt_bound GF`, and the premise `receipt_bound GF ≤ 2^48`
+gives `num_used + 1 < 2^48`, so a token is left. The specs are Rocq's, with no
+ticket, plus the premise on `N`:
 
 ```
-theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
+theorem wp_Generator__Next (Hbound : receipt_bound GF ≤ 2 ^ 48) (g : loc) (R : w64 → IProp GF) :
     {{ is_pkg_init pkg ∗ is_Generator g R }}
       (App (Val (g @!! go.type.PointerType Generator @!! go!"Next")) (Val #()))
     {{ (i : w64), RET #i; R i }}
+
+theorem wp_NewGenerator (Hbound : receipt_bound GF ≤ 2 ^ 48) (R : w64 → IProp GF)
+    (memberID : w16) (now : time.Time.t) :
+    {{ is_pkg_init pkg ∗ ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
+      (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
+    {{ (g : loc), RET #g; is_Generator g R }}
 ```
 
-The proof starts with
+Callers take the same premise (`etcdserver.own_EtcdServer_access`,
+`wp_EtcdServer__processInternalRaftRequestOnce`). The proof starts with
 
 ```
   wp_start as H
@@ -758,9 +814,10 @@ The proof starts with
 ```
 
 and later, inside the atomic update of `AddUint64`,
-`icases receipt_add_one_lt _ $$ [Htk Hused] with ⟨%Hbound, Hused⟩`.
+`icases receipt_add_one_lt _ $$ [Htk Hused] with ⟨%Hlt, Hused⟩` and
+`have Hlt48 : num_used.toNat + 1 < 2 ^ 48 := Nat.lt_of_lt_of_le Hlt Hbound`.
 `TimeReceiptsTest.lean` has the same pattern for the paper's clock
-(`wp_clock_incr`).
+(`wp_clock_incr`, premise `receipt_bound GF ≤ 2 ^ 64`).
 
 ### Package initialization
 

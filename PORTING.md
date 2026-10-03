@@ -22,13 +22,21 @@ reasoning, `program_proof/`) is out of scope.
   (and its iris-lean language `goose_real_ectxi_lang`, `GooseLang/Lang.lean`)
   is unchanged, but the language instance used by the program logic is a
   separate step-bounded layer (`GooseLang/BoundedLang.lean`): its state adds a
-  counter of Go-instruction steps, and once the counter reaches
-  `receipt_bound - 1` (`receipt_bound = 2^48`) Go instructions stutter instead
-  of stepping. This supports *time receipts* (Mével, Jourdan, Pottier, ESOP
-  2019; `GooseLang/Receipts.lean`): `⧗ n`/`⧖ n`, with `⧗ receipt_bound ⊢ False`.
-  Consequently the adequacy theorems (`goose_adequacy`, `goose_invariance`,
-  and the grove/disk ones) are about real executions of *fewer than
-  `receipt_bound` steps*, an explicit hypothesis. See
+  *fuel* of Go-instruction steps, and once the fuel is exhausted Go
+  instructions stutter instead of stepping. This supports *time receipts*
+  (Mével, Jourdan, Pottier, ESOP 2019; `GooseLang/Receipts.lean`): `⧗ n`/`⧖ n`,
+  with `⧗ N ⊢ False` for the bound `N = receipt_bound GF`.
+  The bound is an *unspecified parameter*, not a constant: it is a field of the
+  receipt ghost state `receiptGS GF` (part of `gooseGlobalGS`, hence of
+  `heapGS`), so downstream files, whose sections already assume `heapGS`, need
+  no new argument, and the language instance and its `PureExec`/`Atomic`
+  instances do not depend on it. A proof that needs `N` to be small takes a
+  premise (`idutil.wp_Generator__Next` takes `receipt_bound GF ≤ 2 ^ 48`). The
+  adequacy theorems (`goose_adequacy N`, `goose_invariance N`, and the
+  grove/disk ones) hold for every `N`: they allocate the receipt ghost state
+  with `receipt_bound GF = N` (a hypothesis of the WP premise `Hwp`, from which
+  the client discharges the proof's premises about `N`) and are about real
+  executions of *fewer than `N` steps*, an explicit hypothesis. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts".
 * **Iris/stdpp substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. stdpp-style helpers that iris-lean lacks

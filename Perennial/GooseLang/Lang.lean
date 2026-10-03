@@ -14,7 +14,7 @@ Differences from the Rocq version:
   (`cfg_state`). It is a `def`, not an instance: the registered language
   instance (used by the program logic) is the step-bounded layer
   `goose_ectxi_lang` of `Perennial/GooseLang/BoundedLang.lean`, which adds a
-  step counter on top of `base_step` for time receipts. The adequacy theorems
+  step fuel on top of `base_step` for time receipts. The adequacy theorems
   are transferred back to `goose_real_ectxi_lang` (`goose_adequacy`).
 * Equality on the syntax is decided classically. Rocq proves it with an
   encoding into trees; nothing downstream computes with it.

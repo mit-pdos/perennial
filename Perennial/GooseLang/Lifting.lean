@@ -13,9 +13,11 @@ Differences from the Rocq version:
 * `numLatersPerStep` is `0` (Rocq: `3^(n+1)`). Every step still yields one
   later credit (`£ 1`).
 * (Lean addition) The language instance is the step-bounded layer of
-  `BoundedLang.lean`, whose state is `bcfg_state = cfg_state × Nat`; the state
-  interpretation (`goose_bstate_interp`) adds the authoritative counter of time
-  receipts (`receipt_auth`, `Receipts.lean`) to `goose_state_interp`. The
+  `BoundedLang.lean`, whose state is `bcfg_state = cfg_state × Nat` (the `Nat`
+  is the fuel `f`); the state interpretation (`goose_bstate_interp`) adds the
+  authoritative counter of time receipts for that fuel (`receipt_fuel f`, i.e.
+  `receipt_auth (N - (f + 1))` for the bound `N = receipt_bound GF` of the
+  receipt ghost state, `Receipts.lean`) to `goose_state_interp`. The
   lifting lemmas `goose_wp_lift_*` restate iris-lean's for the real `base_step`
   and `goose_state_interp` (as `goose_cfg_interp`); Go instructions, the only
   counted steps, have their own lemma `wp_GoInstruction_receipt`, which handles
@@ -305,7 +307,8 @@ class gooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   goose_invGS : InvGS_gen hlc GF
   goose_prophGS : prophMapGS proph_id val GF (gmap proph_id)
   goose_ffiGlobalGS : @ffiGlobalGS ffi _ GF
-  /-- (Lean addition) time receipts, tied to the step counter of the bounded semantics -/
+  /-- (Lean addition) time receipts, tied to the step fuel of the bounded semantics;
+  carries the time-receipt bound `receipt_bound GF` -/
   goose_receiptGS : receiptGS GF
 
 /-- Per-generation ("local") ghost state. -/
@@ -352,10 +355,11 @@ def goose_state_interp [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
     prophMapInterp κs σ.2.used_proph_id)
 
 /-- The state interpretation of the bounded language: `goose_state_interp` of
-the real configuration and the authoritative receipt counter (Lean addition). -/
+the real configuration and the authoritative receipt counter for the fuel
+(Lean addition). -/
 def goose_bstate_interp [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
     (σ : bcfg_state) (κs : List observation) : IProp GF :=
-  iprop(goose_state_interp σ.1 κs ∗ receipt_auth σ.2)
+  iprop(goose_state_interp σ.1 κs ∗ receipt_fuel σ.2)
 
 instance goose_stateInterp [gooseGlobalGS hlc GF] [gooseLocalGS GF] :
     StateInterp bcfg_state observation GF where
@@ -388,7 +392,7 @@ theorem goose_atomic {e : expr} (a : Language.Atomicity)
     Language.Atomic a e :=
   Language.stronglyAtomic_atomic
     (Atomic.ofBaseAtomic _ (fun σ obs e' σ' efs hs => by
-        obtain ⟨_, _, hs⟩ := (bounded_base_step_uncounted (σ := σ.1) (c := σ.2) hnc).1 hs
+        obtain ⟨_, _, hs⟩ := (bounded_base_step_uncounted (σ := σ.1) (f := σ.2) hnc).1 hs
         exact h _ obs e' _ efs hs)
       (EctxItemLanguage.subredexes_are_values hsub))
 
@@ -460,9 +464,9 @@ theorem pureExec_of_base_step {φ : Prop} {e₁ e₂ : expr}
     Language.PureExec φ 1 e₁ e₂ where
   pureExec hφ := by
     refine .tail e₁ (.rfl _) (purePrimStep_of_pureBaseStep
-      ⟨fun σ => ⟨_, _, _, bounded_base_step.step (c := σ.2) hnc (Hsafe hφ σ.1)⟩, ?_⟩)
+      ⟨fun σ => ⟨_, _, _, bounded_base_step.step (f := σ.2) hnc (Hsafe hφ σ.1)⟩, ?_⟩)
     intro σ₁ σ₂ obs e₂' eₜ h
-    obtain ⟨σ', rfl, h'⟩ := (bounded_base_step_uncounted (σ := σ₁.1) (c := σ₁.2) hnc).1 h
+    obtain ⟨σ', rfl, h'⟩ := (bounded_base_step_uncounted (σ := σ₁.1) (f := σ₁.2) hnc).1 h
     obtain ⟨h1, h2, h3, h4⟩ := Hdet hφ _ _ _ _ _ h'
     subst h2
     exact ⟨h1, rfl, h3.symm, h4⟩
@@ -641,7 +645,7 @@ theorem goose_stateInterp_eq (σ : cfg_state) (ns : Nat) (κs : List observation
 theorem goose_bstateInterp_eq (σ : cfg_state) (c : Nat) (ns : Nat) (κs : List observation)
     (nt : Nat) :
     stateInterp (GF := GF) ((σ, c) : bcfg_state) ns κs nt ⊣⊢
-      iprop(goose_cfg_interp σ ns κs nt ∗ receipt_auth c) := .rfl
+      iprop(goose_cfg_interp σ ns κs nt ∗ receipt_fuel c) := .rfl
 
 theorem goose_baseReducible_of {e : expr} {σ : cfg_state} {c : Nat} (hnc : is_counted e = false)
     (h : goose_base_reducible e σ) : BaseStep.Reducible (e, ((σ, c) : bcfg_state)) := by
@@ -1219,9 +1223,9 @@ theorem wp_GoInstruction_preceipt (K : List ectx_item) (op : go_instruction) (ar
   obtain ⟨e', s', h⟩ := Hok σ₁.1.go_state.package_state
   have Hreal := base_step.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h)
   have Hred : BaseStep.Reducible (App (Val (GoInstruction op)) (Val arg), ((σ₁, c) : bcfg_state)) := by
-    by_cases hc : c + 1 < receipt_bound
-    · exact ⟨[], e', (_, c + 1), [], .tick rfl hc Hreal⟩
-    · exact ⟨[], _, (σ₁, c), [], .stutter rfl (by omega) Hreal⟩
+    cases c with
+    | zero => exact ⟨[], _, (σ₁, 0), [], .stutter rfl Hreal⟩
+    | succ c => exact ⟨[], e', (_, c), [], .tick rfl Hreal⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
@@ -1234,11 +1238,11 @@ theorem wp_GoInstruction_preceipt (K : List ectx_item) (op : go_instruction) (ar
     exists_baseStep_of_primStep_fill_of_redex_baseStep_reducible Hred Hstep
   cases Hbs with
   | step hnc _ => cases hnc
-  | tick _ hc Hbs =>
+  | tick _ Hbs =>
     obtain ⟨s', Hgo, rfl, rfl, rfl⟩ := base_step_GoInstruction_inv Hbs
     rw [Hlctx] at Hgo
     imod Hclose
-    imod receipt_auth_tick' c m hc $$ [Hc] with ⟨Hc, Hr, Hm'⟩
+    imod receipt_fuel_tick _ m $$ [Hc] with ⟨Hc, Hr, Hm'⟩
     · iframe Hc; iexact Hm
     imod HΦ $$ %e₂' %_ %s' %Hgo Hcred Hr Hm' Hgs with ⟨Hgs, Hwp⟩
     imodintro
@@ -1252,7 +1256,7 @@ theorem wp_GoInstruction_preceipt (K : List ectx_item) (op : go_instruction) (ar
     iframe Hwp
     iapply BigSepL.bigSepL_nil.2
     itrivial
-  | stutter _ _ _ =>
+  | stutter _ _ =>
     imod Hclose
     imodintro
     isplitl [Hheap Hffi Hgs Hgffi Hproph Hc]

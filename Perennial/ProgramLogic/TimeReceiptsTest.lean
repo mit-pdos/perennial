@@ -3,11 +3,14 @@ Time receipts: laws and an example (Lean addition, regression test).
 
 The example is the paper's "clock" (Mével, Jourdan, Pottier, ESOP 2019, §2): a
 64-bit counter that is incremented with `atomic.AddUint64` and whose value is
-matched by as many exclusive time receipts. Since `receipt_bound = 2^48`
-receipts are contradictory, the counter stays below `2^48` and the 64-bit
-addition never wraps around, without any precondition on the callers.
+matched by as many exclusive time receipts. Since `receipt_bound GF = N`
+receipts are contradictory, the counter stays below `N`; under the premise
+`N ≤ 2^64` on the (otherwise unspecified) bound, the 64-bit addition never
+wraps around, without any precondition on the callers. A client discharges the
+premise when it instantiates `N` in `goose_adequacy`.
 -/
 import Perennial.Proof.sync.atomic
+import Perennial.GooseLang.Adequacy
 
 set_option linter.iris.style.nameCheck false
 
@@ -30,9 +33,10 @@ example (n : Nat) : Persistent (⧖ n : IProp GF) := inferInstance
 example (m n : Nat) : ⧖ (max m n) ⊣⊢@{IProp GF} ⧖ m ∗ ⧖ n := preceipt_max m n
 example (m n : Nat) (h : m ≤ n) : ⧖ n ⊢@{IProp GF} ⧖ m := preceipt_mono h
 example (n : Nat) : ⧗ n ⊢@{IProp GF} |==> (⧗ n ∗ ⧖ n) := receipt_snapshot n
-example : ⧗ receipt_bound ⊢@{IProp GF} False := receipt_bound_elim
-example : ⧖ receipt_bound ⊢@{IProp GF} False := preceipt_bound_elim
-example : receipt_bound = 2 ^ 48 := receipt_bound_eq
+example : ⧗ (receipt_bound GF) ⊢@{IProp GF} False := receipt_bound_elim
+example : ⧖ (receipt_bound GF) ⊢@{IProp GF} False := preceipt_bound_elim
+example (n : Nat) : ⧗ n ⊢@{IProp GF} ⌜n < receipt_bound GF⌝ := receipt_lt n
+example : 0 < receipt_bound GF := receipt_bound_pos
 
 end laws
 
@@ -61,12 +65,13 @@ theorem clock_alloc (l : loc) :
   iframe
 
 /-- Incrementing the clock (`atomic.AddUint64(l, 1)`, as emitted by goose)
-returns `n + 1` for some `n + 1 < 2^48`: the counter never wraps around. -/
-theorem wp_clock_incr (l : loc) :
+returns `n + 1` for some `n + 1 < 2^64`: the counter never wraps around,
+provided the time-receipt bound is at most `2^64`. -/
+theorem wp_clock_incr (Hbound : receipt_bound GF ≤ 2 ^ 64) (l : loc) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic ∗ inv clockN (clock_inv l) }}
       (App (App (App (Val (GoInstruction (FuncResolve sync.atomic.AddUint64 []))) (Val #()))
         (Val #l)) (Val #(W64 1)))
-    {{ (n : Nat), RET #(W64 (n + 1)); ⌜n + 1 < 2 ^ 48⌝ }} := by
+    {{ (n : Nat), RET #(W64 (n + 1)); ⌜n + 1 < 2 ^ 64⌝ }} := by
   iintro %Φ ⟨#Hpkg, #Hinv⟩ HΦ
   iapply sync.atomic.wp_AddUint64_receipt l (W64 1) $$ %_ Hpkg
   iintro Hr
@@ -79,7 +84,6 @@ theorem wp_clock_incr (l : loc) :
   -- the fresh receipt and the `n` receipts of the invariant bound `n + 1`
   icases receipt_add_one_lt n $$ [Hr Hn] with ⟨%Hlt, Hn⟩
   · iframe
-  rw [receipt_bound_eq] at Hlt
   iexists (W64 n)
   iframe Hl
   iintro Hl
@@ -92,9 +96,36 @@ theorem wp_clock_incr (l : loc) :
   imodintro
   rw [show W64 n + W64 1 = W64 ((n : Int) + 1) by word]
   iapply HΦ $$ %n
-  ipureintro; exact Hlt
+  ipureintro; omega
 
 end clock
+
+/-! ## Picking the bound at adequacy time
+
+A client whose WP proof assumes `receipt_bound GF ≤ 2 ^ 64` (e.g. through
+`wp_clock_incr`) instantiates `goose_adequacy` with `N = 2 ^ 64` and gets
+safety for executions of fewer than `2 ^ 64` steps. -/
+
+section adequacy
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_interp_adequacy ffi]
+variable [ffi_semantics ext ffi] [GoGlobalContext] {GF : BundledGFunctors}
+
+example [gooseGpreS ffi GF] (e : expr) (σ : state) (g : global_state) (φ : val → Prop)
+    (Hinitg : ffi_initgP g.global_world) (Hinit : ffi_initP σ.world g.global_world)
+    (Hwp : ∀ [hG : heapGS .hasLC GF],
+      receipt_bound GF ≤ 2 ^ 64 →
+      hG.goose_localGS.goose_go_local_context = σ.go_state.go_lctx →
+      ⊢ ffi_global_start (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g.global_world -∗
+        ffi_local_start (goose_ffiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        own_go_state σ.go_state.package_state ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
+    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2)) (Hn : n < 2 ^ 64) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2) :=
+  goose_adequacy (2 ^ 64) e σ g φ Hinitg Hinit
+    (@fun hG HN Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
+
+end adequacy
 
 end TimeReceiptsTest
 

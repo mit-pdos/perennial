@@ -2,15 +2,18 @@
 Port of `new/proof/go_etcd_io/etcd/pkg/v3/idutil.v`.
 
 The specs are Rocq's (`is_Generator g R`, `wp_Generator__Next` without
-precondition, `wp_NewGenerator`). Deviation from Rocq: `wp_Generator__Next`,
-admitted in Rocq (after `2^48` calls the IDs wrap around and the invariant has
-no `R` tokens left), is proved using *time receipts*
-(`Perennial/GooseLang/Receipts.lean`): every call of `Next` collects one
-exclusive receipt `⧗ 1` (from its first Go instruction) into the invariant of
-`is_Generator`, so the invariant owns `⧗ num_used`, and `⧗ (num_used + 1)`
-bounds `num_used + 1 < receipt_bound = 2^48`. The adequacy theorems of the
-program logic assume executions of fewer than `2^48` steps
-(`goose_adequacy`), so this is sound for such executions.
+precondition, `wp_NewGenerator`), except for one premise on the time-receipt
+bound. Deviation from Rocq: `wp_Generator__Next`, admitted in Rocq (after
+`2^48` calls the IDs wrap around and the invariant has no `R` tokens left), is
+proved using *time receipts* (`Perennial/GooseLang/Receipts.lean`): every call
+of `Next` collects one exclusive receipt `⧗ 1` (from its first Go instruction)
+into the invariant of `is_Generator`, so the invariant owns `⧗ num_used`, and
+`⧗ (num_used + 1)` bounds `num_used + 1 < receipt_bound GF`. The bound is an
+unspecified parameter `N` of the program logic, so `wp_Generator__Next` (and
+`wp_NewGenerator`) take the premise `receipt_bound GF ≤ 2^48`. A client of
+the adequacy theorem (`goose_adequacy N ...`) discharges it by choosing some
+`N ≤ 2^48`, and the conclusion is then about executions of fewer than `N`
+steps.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.go_etcd_io.etcd.pkg.v3.idutil
@@ -93,9 +96,9 @@ instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg :=
 
 Rocq's `is_Generator g R` lets any number of callers run `Next`, but its
 invariant owns only `2^48` of the `R` tokens. Here the invariant also owns one
-time receipt per call made so far; since `receipt_bound = 2^48` receipts are
-contradictory, fewer than `2^48 - 1` calls have completed when a new one
-starts. -/
+time receipt per call made so far; since `receipt_bound GF` receipts are
+contradictory, under the premise `receipt_bound GF ≤ 2^48` fewer than
+`2^48 - 1` calls have completed when a new one starts. -/
 
 /-- (Rocq FIXME:) id.go says that the overflowing of cnt into timestamp is
 intentional "to extend the event window to 2^56". However, there are only 48
@@ -184,9 +187,10 @@ theorem or_prefix (p : Int) (x : Int) :
     omega
   rw [e1, e2, e3, Nat.two_pow_add_eq_or_of_lt (by omega)]
 
-/-- Lean deviation: proved (Rocq: admitted) using time receipts; see the
-module docstring. -/
-theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
+/-- Lean deviation: proved (Rocq: admitted) using time receipts, under the
+premise `receipt_bound GF ≤ 2^48` on the time-receipt bound; see the module
+docstring. -/
+theorem wp_Generator__Next (Hbound : receipt_bound GF ≤ 2 ^ 48) (g : loc) (R : w64 → IProp GF) :
     {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_Generator g R }}
       (App (Val (g @!! go.type.PointerType Generator @!! go!"Next")) (Val #()))
     {{ (i : w64), RET #i; R i }} := by
@@ -209,9 +213,9 @@ theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
   iintro Hmask
   inext
   icases Hi with ⟨%init, %num_used, suffix', %Hnum_used, Hused, HR⟩
-  icases receipt_add_one_lt _ $$ [Htk Hused] with ⟨%Hbound, Hused⟩
+  icases receipt_add_one_lt _ $$ [Htk Hused] with ⟨%Hlt, Hused⟩
   · iframe
-  rw [receipt_bound_eq] at Hbound
+  have Hlt48 : num_used.toNat + 1 < 2 ^ 48 := Nat.lt_of_lt_of_le Hlt Hbound
   iexists _
   iframe suffix'
   iintro suffix'
@@ -275,8 +279,8 @@ theorem is_Generator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 
   iframe #
 
 /-- `wp_NewGenerator` with the list `seqZ 0 (2^64)` abstracted as `L`. -/
-theorem wp_NewGenerator' (R : w64 → IProp GF) (memberID : w16) (now : time.Time.t) (L : List Int)
-    (hL : L = seqZ 0 (2^64)) :
+theorem wp_NewGenerator' (_Hbound : receipt_bound GF ≤ 2 ^ 48) (R : w64 → IProp GF)
+    (memberID : w16) (now : time.Time.t) (L : List Int) (hL : L = seqZ 0 (2^64)) :
     {{ is_pkg_init (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ L, R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
@@ -300,13 +304,17 @@ theorem wp_NewGenerator' (R : w64 → IProp GF) (memberID : w16) (now : time.Tim
 
 /-- (Rocq TODO:) this is overly conservative. Really should only demand `R` for
 the range of IDs with future timestamps, since the old ones might've been used
-before a crash+restart. -/
-theorem wp_NewGenerator (R : w64 → IProp GF) (memberID : w16) (now : time.Time.t) :
+before a crash+restart.
+
+Lean: the premise `receipt_bound GF ≤ 2^48` is the one of `wp_Generator__Next`
+(the allocation itself does not need it). -/
+theorem wp_NewGenerator (Hbound : receipt_bound GF ≤ 2 ^ 48) (R : w64 → IProp GF)
+    (memberID : w16) (now : time.Time.t) :
     {{ is_pkg_init (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
     {{ (g : loc), RET #g; is_Generator g R }} :=
-  wp_NewGenerator' R memberID now _ rfl
+  wp_NewGenerator' Hbound R memberID now _ rfl
 
 end wps
 
