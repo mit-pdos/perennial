@@ -280,6 +280,11 @@ example (v : w64) (P : List w64 → IProp GF) : P [v] ⊢ P ([] ++ [v]) := by
   iintro H
   iframe
 
+/-- `iframe` matches `W64 7` and `7#64` (e.g. after a bare `simp`). -/
+example (l : loc) (x : w64) : (l ↦ (x + 1#64) : IProp GF) ⊢ l ↦ (x + W64 1) := by
+  iintro H
+  iframe
+
 /-- `iframe` uses a spatial persistent hypothesis for several conjuncts. -/
 example (P : IProp GF) [Persistent P] : P ⊢ P ∗ P := by
   iintro HP

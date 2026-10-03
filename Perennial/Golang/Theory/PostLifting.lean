@@ -637,17 +637,6 @@ macro "solve_typed_pointsto_agree" : tactic => `(tactic| (
           subst Heq)
   ipureintro; first | rfl | trivial))
 
-/-- Rocq `solve_pointsto_access_struct`: prove an `AccessStrict` instance for a
-struct field. -/
-macro "solve_pointsto_access_struct" : tactic => `(tactic| (
-  constructor
-  iintro H
-  icases typed_pointsto_not_null_dup _ _ _ $$ H with ⟨H, %Hnn⟩
-  iStructNamed H
-  iframe
-  iintro Hnew
-  iapply typed_pointsto_combine _ _ _ Hnn
-  simp only [TypedPointsto.typed_pointsto_def, named]
-  iframe))
+
 
 end Perennial

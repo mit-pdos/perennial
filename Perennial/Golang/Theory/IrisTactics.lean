@@ -245,6 +245,12 @@ Bounded; errors count as no match. -/
 def matchesByDefEq (P Q : Expr) : MetaM Bool := do
   if Q.hasMVar || P.hasMVar then return false
   if P.getAppFn != Q.getAppFn then return false
+  -- cheap filter: at most one argument may differ syntactically (e.g.
+  -- `P [v]` and `P ([] ++ [v])`), so that the points-to facts of different
+  -- locations are not compared by (expensive) unfolding
+  let pa := P.getAppArgs; let qa := Q.getAppArgs
+  if pa.size != qa.size then return false
+  if ((pa.zip qa).filter fun (a, b) => a != b).size > 1 then return false
   tryCatchRuntimeEx (Core.withCurrHeartbeats <|
     withTheReader Core.Context (fun c => { c with maxHeartbeats := 20000 * 1000 }) <|
     withNewMCtxDepth <| withTransparency .default <| isDefEq P Q) fun _ => return false

@@ -513,4 +513,108 @@ elab "wp_alloc_anon" : tactic =>
     let H ← mkFreshUserName `H
     mvar.assign (← iWpAllocStep g.hyps wp false (some (l, H)) fun hyps' wp' => iWpFinish hyps' wp')
 
+section access_struct
+variable [ffi_syntax] {GF : BundledGFunctors} {V : Type} [TypedPointsto (GF := GF) V]
+open ProofMode
+
+/-- Focusing on a conjunct of a right-nested `∗`-chain: here. -/
+theorem sep_focus_here {X T : IProp GF} : iprop(X ∗ T) ⊣⊢ iprop(X ∗ T) := .rfl
+/-- Focusing on a conjunct of a right-nested `∗`-chain: further right. -/
+theorem sep_focus_there {F T X R : IProp GF} (h : T ⊣⊢ iprop(X ∗ R)) :
+    iprop(F ∗ T) ⊣⊢ iprop(X ∗ (F ∗ R)) :=
+  (sep_congr_right h).trans sep_left_comm
+/-- Focusing on the last conjunct of a `∗`-chain. -/
+theorem sep_focus_last {F X : IProp GF} : iprop(F ∗ X) ⊣⊢ iprop(X ∗ F) := sep_comm
+
+/-- An `AccessStrict` instance for a struct field from the focusing of the field
+in the struct's points-to before and after the update (with the same rest `R`). -/
+theorem access_struct_field {l : loc} {v v' : V} {dq : DFrac} {A A' R : IProp GF}
+    (hP : typed_pointsto_def l v dq ⊣⊢ iprop(A ∗ R))
+    (hP' : typed_pointsto_def l v' dq ⊣⊢ iprop(A' ∗ R)) :
+    AccessStrict A A' (typed_pointsto l v dq) (typed_pointsto l v' dq) where
+  access_strict := by
+    rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+    iintro ⟨H, %Hnn⟩
+    icases hP.1 $$ H with ⟨HA, HR⟩
+    iframe HA
+    iintro HA'
+    isplitl [HA' HR]
+    · iapply hP'.2; iframe
+    · ipureintro; exact Hnn
+
+end access_struct
+
+section access_struct_tac
+open Lean Elab Tactic Meta
+
+/-- The conjuncts of a right-nested `∗`-chain (`named` wrappers are kept). -/
+partial def sepChain (e : Expr) : MetaM (Array Expr) := do
+  let e ← whnfR e
+  if e.isAppOfArity ``Iris.BI.BIBase.sep 4 then
+    return #[e.getArg! 2] ++ (← sepChain (e.getArg! 3))
+  return #[e]
+
+/-- A proof of `chain ⊣⊢ X ∗ R` (and `R`) focusing on the conjunct number `k` of
+the chain `P` (`P` itself as an expression). -/
+partial def focusPf (P : Expr) (k : Nat) : MetaM (Expr × Expr) := do
+  let P' ← whnfR P
+  unless P'.isAppOfArity ``Iris.BI.BIBase.sep 4 do throwError "focusPf: not a ∗"
+  let F := P'.getArg! 2; let T := P'.getArg! 3
+  if k == 0 then
+    return (← mkAppOptM ``sep_focus_here #[none, none, F, T], T)
+  -- the last conjunct of the chain
+  if k == 1 && !(← whnfR T).isAppOfArity ``Iris.BI.BIBase.sep 4 then
+    return (← mkAppOptM ``sep_focus_last #[none, none, F, T], F)
+  let (h, R) ← focusPf T (k - 1)
+  let ty ← instantiateMVars (← inferType h)
+  unless ty.isAppOf ``Iris.BI.BIBase.BiEntails do throwError "focusPf: {ty}"
+  let rhs ← whnfR ty.getAppArgs.back!
+  let X := rhs.getArg! 2
+  let FR ← mkAppOptM ``Iris.BI.BIBase.sep #[none, none, F, R]
+  return (← mkAppOptM ``sep_focus_there #[none, none, F, T, X, R, h], FR)
+
+/-- Rocq `solve_pointsto_access_struct`: prove an `AccessStrict` instance for a
+struct field (`AccessStrict A A' (l ↦{dq} v) (l ↦{dq} v')`, with `v'` the struct
+with the field updated). Linear in the number of fields: the field is focused in
+the unfolded struct points-to by `sep_focus_*` lemmas (no framing). -/
+elab "solve_pointsto_access_struct" : tactic => withMainContext do
+  let g ← getMainGoal
+  let ty ← instantiateMVars (← g.getType)
+  let ty ← whnfR ty
+  unless ty.isAppOf ``AccessStrict do throwError "solve_pointsto_access_struct: not an AccessStrict goal"
+  let args := ty.getAppArgs
+  let A := args[args.size - 4]!; let A' := args[args.size - 3]!
+  let P := args[args.size - 2]!; let P' := args[args.size - 1]!
+  -- `P = typed_pointsto l v dq`
+  let P ← instantiateMVars P; let P' ← instantiateMVars P'
+  let defOf (Q : Expr) : MetaM (Expr × Expr) := do
+    unless Q.isAppOf ``typed_pointsto do throwError "solve_pointsto_access_struct: {Q} is not a typed points-to"
+    let a := Q.getAppArgs
+    -- `typed_pointsto_def l v dq` (same implicit arguments)
+    let d ← mkAppOptM ``TypedPointsto.typed_pointsto_def
+      #[none, a[a.size - 5]!, a[a.size - 4]!, a[a.size - 3]!, a[a.size - 2]!, a[a.size - 1]!]
+    -- unfold the instance to the chain of fields
+    let some d' ← unfoldProjInst? d | throwError "solve_pointsto_access_struct: cannot unfold {d}"
+    return ((d, d'.headBeta) : Expr × Expr)
+  let (d, chain) ← defOf P
+  let (d', chain') ← defOf P'
+  let cs ← sepChain chain
+  -- the field: the conjunct (up to `named`) that is `A`
+  let unNamed (e : Expr) : Expr := if e.isAppOfArity ``named 3 then e.getArg! 2 else e
+  let mut k? := none
+  for h : i in [:cs.size] do
+    if ← withReducible (isDefEq (unNamed cs[i]) A) then k? := some i; break
+  let some k := k? | throwError "solve_pointsto_access_struct: field {A} not found in{indentExpr chain}"
+  let (h1, R) ← focusPf chain k
+  let (h2, _) ← focusPf chain' k
+  -- `d ⊣⊢ A ∗ R` and `d' ⊣⊢ A' ∗ R` (definitionally)
+  let ty1 ← mkAppM ``Iris.BI.BIBase.BiEntails #[d, ← mkAppM ``Iris.BI.BIBase.sep #[A, R]]
+  let ty2 ← mkAppM ``Iris.BI.BIBase.BiEntails #[d', ← mkAppM ``Iris.BI.BIBase.sep #[A', R]]
+  let pf ← mkAppM ``access_struct_field #[← mkExpectedTypeHint h1 ty1, ← mkExpectedTypeHint h2 ty2]
+  let pf ← mkExpectedTypeHint pf (← g.getType)
+  g.assign pf
+  replaceMainGoal []
+
+end access_struct_tac
+
 end Perennial

@@ -584,13 +584,13 @@ elab "word_sdiv_facts" : tactic => withMainContext do
 (the unit of `maxHeartbeats`; 1000 is roughly 0.1s); running out is an ordinary
 (catchable) failure. -/
 elab "word_bounded " n:num t:tactic : tactic => do
-  try
-    withTheReader Core.Context (fun ctx => { ctx with maxHeartbeats := n.getNat * 1000 }) <|
-      withCurrHeartbeats <| tryCatchRuntimeEx (evalTactic t) fun ex => do
-        if ex.isRuntime then
-          throwError "word: gave up (heartbeat limit {n.getNat})"
-        throw ex
-  catch ex => throw ex
+  -- without error recovery: a failing step must be an error, not a logged error
+  -- plus an admitted goal (the log would be lost when the exception is caught)
+  withTheReader Core.Context (fun ctx => { ctx with maxHeartbeats := n.getNat * 1000 }) <|
+    withCurrHeartbeats <| tryCatchRuntimeEx (withoutRecover (evalTactic t)) fun ex => do
+      if ex.isRuntime then
+        throwError "word: gave up (heartbeat limit {n.getNat})"
+      throw ex
 
 end word
 
@@ -610,15 +610,32 @@ macro "word_fast" : tactic => `(tactic| (
            | (word_drop_cases; omega)
            | omega))))
 
-/-- Solve word-arithmetic goals (Rocq `word`). See the module docstring. -/
-syntax "word" : tactic
-macro_rules
-  | `(tactic| word) => `(tactic| first
+open Lean Elab Tactic in
+/-- `no_sorry tac`: run `tac` without error recovery (so that a failure inside
+`all_goals`/`<;>` is an error rather than an admitted goal), and fail if it closed
+the goal with a proof containing a (synthetic) `sorry`. -/
+elab "no_sorry " tac:tactic : tactic => do
+  let g ← getMainGoal
+  let hadSorry := (← instantiateMVars (← g.getType)).hasSorry ||
+    (← g.withContext getLCtx).any (fun d => d.type.hasSorry)
+  withoutRecover (evalTactic tac)
+  unless hadSorry do
+    if (← instantiateMVars (mkMVar g)).hasSorry then
+      throwError "{tac}: the proof would contain `sorry`"
+
+/-- Internal: the alternatives of `word`. -/
+macro "word_core" : tactic => `(tactic| first
       | word_fast
       | word_bounded 50000 (word_filter iris; word_prep; omega)
       | word_bounded 50000 (word_filter iris; word_prep; word_lit_reduce; (try omega); done)
       | word_bounded 20000 omega
       | word_bounded 50000 (bv_normalize; done))
+
+/-- Solve word-arithmetic goals (Rocq `word`). See the module docstring. Closes
+the goal or fails (never admits it). -/
+syntax "word" : tactic
+macro_rules
+  | `(tactic| word) => `(tactic| no_sorry word_core)
 
 /-! ## Rewriting lemmas for `uint.Z` / `sint.Z` of operations
 
@@ -718,6 +735,14 @@ macro "nat_cleanup" : tactic => `(tactic|
   (try simp only [Int.toNat_natCast, Int.toNat_of_nonneg, uint.Z, uint.nat]))
 
 section tests
+/-- `word` fails instead of leaving an admitted goal (it used to close this
+unprovable-by-`word` goal with `sorry` via the error recovery of `all_goals`). -/
+example (x : w8) (n : w64)
+    (h1 : [x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x].length = sint.nat n)
+    (h2 : 0 ≤ sint.Z n) : sint.Z n = 20 ∨ True := by
+  fail_if_success (left; word)
+  right; trivial
+
 
 example (x y : w64) (h : uint.Z x + uint.Z y < 2^64) : uint.Z (x + y) = uint.Z x + uint.Z y := by
   word

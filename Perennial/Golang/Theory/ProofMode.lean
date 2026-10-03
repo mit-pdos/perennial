@@ -345,6 +345,120 @@ theorem subst_pf_cong {e e1 e' : expr} (h1 : e = e1) (h2 : subst x v e1 = e') :
 
 end subst_pf
 
+/-! ## Closedness annotations
+
+`wp_auto` annotates the continuations of a long function with the set of
+variables they may mention (`fvClosed S e`, definitionally `e`), so that a
+substitution of a variable `x ∉ S` (typically a `let:`-bound temporary used only
+in the next statement) is proved in constant size from a closedness proof of `e`
+that is built once (and shared), instead of by a proof of the size of the rest of
+the function at every `let:`. The annotations are removed before the goal is
+returned. -/
+
+/-- `e`, annotated with a set `S` of variables containing its free variables. -/
+@[reducible] def fvClosed [ffi_syntax] (_S : List String) (e : expr) : expr := e
+
+section closed
+variable [ext : ffi_syntax]
+
+/-- Substituting any variable not in `S` does not change `e`. -/
+def ClosedUnder (S : List String) (e : expr) : Prop := ∀ x v, x ∉ S → subst x v e = e
+def ClosedKEs (S : List String) (l : List keyed_element) : Prop :=
+  ∀ x v, x ∉ S → subst_keyed_elements x v l = l
+def ClosedKE (S : List String) (ke : keyed_element) : Prop :=
+  ∀ x v, x ∉ S → subst_keyed_element x v ke = ke
+def ClosedOKey (S : List String) (k : Option key) : Prop :=
+  ∀ x v, x ∉ S → subst_opt_key x v k = k
+def ClosedElem (S : List String) (el : element) : Prop :=
+  ∀ x v, x ∉ S → subst_element x v el = el
+
+/-- The variable names bound by binders `f`, `y`. -/
+def bnames : binder → List String
+  | BAnon => []
+  | BNamed s => [s]
+
+variable {S : List String}
+
+theorem closed_val (w : val) : ClosedUnder S (Val w) := fun _ _ _ => rfl
+theorem closed_var {y : String} (h : y ∈ S) : ClosedUnder S (Var y) := by
+  intro x v hx; simp only [subst]; rw [if_neg]; intro e; subst e; exact hx h
+theorem closed_rec {f y : binder} {e : expr} (h : ClosedUnder (bnames f ++ bnames y ++ S) e) :
+    ClosedUnder S (Rec f y e) := by
+  intro x v hx; simp only [subst]
+  split
+  · rename_i hb
+    rw [h x v]
+    intro hm
+    simp only [List.mem_append] at hm
+    rcases hm with (hm | hm) | hm
+    · cases f <;> simp [bnames] at hm; subst hm; exact hb.1 rfl
+    · cases y <;> simp [bnames] at hm; subst hm; exact hb.2 rfl
+    · exact hx hm
+  · rfl
+theorem closed_app {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+    ClosedUnder S (App a b) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx]
+theorem closed_if {a b c : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) (hc : ClosedUnder S c) :
+    ClosedUnder S (If a b c) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx, hc x v hx]
+theorem closed_pair {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+    ClosedUnder S (Pair a b) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx]
+theorem closed_fst {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Fst a) := by
+  intro x v hx; simp only [subst, ha x v hx]
+theorem closed_snd {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Snd a) := by
+  intro x v hx; simp only [subst, ha x v hx]
+theorem closed_fork {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Fork a) := by
+  intro x v hx; simp only [subst, ha x v hx]
+theorem closed_prim0 (op : prim_op0) : ClosedUnder S (Primitive0 op) := fun _ _ _ => rfl
+theorem closed_prim1 (op : prim_op1) {a : expr} (ha : ClosedUnder S a) :
+    ClosedUnder S (Primitive1 op a) := by intro x v hx; simp only [subst, ha x v hx]
+theorem closed_prim2 (op : prim_op2) {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+    ClosedUnder S (Primitive2 op a b) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx]
+theorem closed_extop (op : ffi_opcode) {a : expr} (ha : ClosedUnder S a) :
+    ClosedUnder S (ExternalOp op a) := by intro x v hx; simp only [subst, ha x v hx]
+theorem closed_cmpxchg {a b c : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b)
+    (hc : ClosedUnder S c) : ClosedUnder S (CmpXchg a b c) := by
+  intro x v hx; simp only [subst, ha x v hx, hb x v hx, hc x v hx]
+theorem closed_newproph : ClosedUnder S (NewProph : expr) := fun _ _ _ => rfl
+theorem closed_resolve {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+    ClosedUnder S (ResolveProph a b) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx]
+theorem closed_litval {l : List keyed_element} (h : ClosedKEs S l) : ClosedUnder S (LiteralValue l) := by
+  intro x v hx; simp only [subst, h x v hx]
+theorem closed_kes_nil : ClosedKEs S [] := by intro x v _; simp only [subst_keyed_elements]
+theorem closed_kes_cons {ke : keyed_element} {l : List keyed_element} (h1 : ClosedKE S ke)
+    (h2 : ClosedKEs S l) : ClosedKEs S (ke :: l) := by
+  intro x v hx; simp only [subst_keyed_elements, h1 x v hx, h2 x v hx]
+theorem closed_ke {k : Option key} {el : element} (h1 : ClosedOKey S k) (h2 : ClosedElem S el) :
+    ClosedKE S (KeyedElement k el) := by
+  intro x v hx; simp only [subst_keyed_element, h1 x v hx, h2 x v hx]
+theorem closed_okey_none : ClosedOKey S none := by intro x v _; simp only [subst_opt_key]
+theorem closed_okey_field (f : go_string) : ClosedOKey S (some (KeyField f)) := by
+  intro x v _; simp only [subst_opt_key]
+theorem closed_okey_int (i : Int) : ClosedOKey S (some (KeyInteger i)) := by
+  intro x v _; simp only [subst_opt_key]
+theorem closed_okey_expr (t : go.type) {e : expr} (h : ClosedUnder S e) :
+    ClosedOKey S (some (KeyExpression t e)) := by intro x v hx; simp only [subst_opt_key, h x v hx]
+theorem closed_okey_lv {l : List keyed_element} (h : ClosedKEs S l) :
+    ClosedOKey S (some (KeyLiteralValue l)) := by intro x v hx; simp only [subst_opt_key, h x v hx]
+theorem closed_el_expr (t : go.type) {e : expr} (h : ClosedUnder S e) :
+    ClosedElem S (ElementExpression t e) := by intro x v hx; simp only [subst_element, h x v hx]
+theorem closed_el_lv {l : List keyed_element} (h : ClosedKEs S l) :
+    ClosedElem S (ElementLiteralValue l) := by intro x v hx; simp only [subst_element, h x v hx]
+/-- A nested annotation with a smaller set. -/
+theorem closed_fv {T : List String} {e : expr} (h : ClosedUnder T e) (hsub : ∀ s ∈ T, s ∈ S) :
+    ClosedUnder S (fvClosed T e) := fun x v hx => h x v (fun hm => hx (hsub x hm))
+theorem subset_nil : ∀ s ∈ ([] : List String), s ∈ S := by simp
+theorem subset_cons {a : String} {T : List String} (h1 : a ∈ S) (h2 : ∀ s ∈ T, s ∈ S) :
+    ∀ s ∈ a :: T, s ∈ S := by
+  intro s hs; simp only [List.mem_cons] at hs; rcases hs with rfl | hs; exact h1; exact h2 s hs
+theorem not_mem_nil' {x : String} : x ∉ ([] : List String) := by simp
+theorem not_mem_cons' {x a : String} {l : List String} (h1 : x ≠ a) (h2 : x ∉ l) : x ∉ a :: l := by
+  simp only [List.mem_cons, not_or]; exact ⟨h1, h2⟩
+
+/-- The substitution of a variable `x ∉ S` into an annotated term. -/
+theorem subst_pf_fvClosed {x : String} {v : val} {e : expr} (h : ClosedUnder S e) (hx : x ∉ S) :
+    subst x v (fvClosed S e) = fvClosed S e := h x v hx
+
+end closed
+
 register_option goose.wp.extras : Bool := {
   defValue := true
   descr := "enable the extra automation of `wp_pures`/`wp_auto` (on by default): \
@@ -464,6 +578,16 @@ def parseGooseWp? (goal : Expr) : MetaM (Option GooseWpGoal) := do
   return some { wpHead := mkAppN goal.getAppFn args[:5], ι, ext,
                 s := args[5]!, E := args[6]!, e, Φ := args[8]!, tail }
 
+/-- Caches of `needsGooseSimp` (cleared by `wp_auto`/`wp_pures` at the start):
+the simp heads, the result per (shared) subterm, and per constant. -/
+initialize needsHeadsCache : IO.Ref (Option (Option NameSet)) ← IO.mkRef none
+initialize needsCache : IO.Ref (Std.HashMap Expr Bool) ← IO.mkRef {}
+initialize needsConstCache : IO.Ref (Std.HashMap Name Bool) ← IO.mkRef {}
+
+/-- Clear the caches of `needsGooseSimp`. -/
+def clearNeedsCaches : BaseIO Unit := do
+  needsHeadsCache.set none; needsCache.set {}; needsConstCache.set {}
+
 /-- Run the tactic `k` on the main goal with elaboration errors raised as
 exceptions (`Term.withoutErrToSorry`, no error recovery), and fail if the proof
 it produces contains a (synthetic) `sorry` that was not already in the goal.
@@ -483,6 +607,7 @@ def withNoSorry {α} (tacName : Name) (k : TacticM α) : TacticM α := do
 def runTacticGooseWp {α} (tacName : Name)
     (k : MVarId → IrisGoal → GooseWpGoal → ProofModeM α) : TacticM α :=
   withNoSorry tacName <| ProofModeM.runTactic tacName fun mvar g => do
+    clearNeedsCaches
     let some wp ← parseGooseWp? g.goal
       | throwIPMError "the goal {g.goal} is not a GooseLang WP"
     k mvar g wp
@@ -716,39 +841,62 @@ matcher/recursor, a projection of a constructor, a `let`, or a beta-redex), so
 that the (expensive) simp call over the whole expression is skipped when it
 would do nothing. -/
 def needsGooseSimp (e : Expr) : MetaM Bool := do
-  let some heads ← gooseSimpHeads | return true
+  let heads? ← match ← needsHeadsCache.get with
+    | some h => pure h
+    | none => do let h ← gooseSimpHeads; needsHeadsCache.set (some h); pure h
+  let some heads := heads? | return true
   let env ← getEnv
   let extras := goose.wp.extras.get (← getOptions)
-  -- reducible definitions (`sint.Z`, `W64`, ...) are seen through by simp's
-  -- discrimination trees: check the head of their unfolding
-  if extras then
-    for n in e.getUsedConstants do
-      if heads.contains n then return true
-      if (← getReducibilityStatus n) == .reducible then
-        if let some v := (env.find? n).bind (·.value?) then
+  -- a constant some rule applies to; for a reducible definition (`sint.Z`, `W64`,
+  -- seen through by simp's discrimination trees), the head of its unfolding
+  let constNeeds (n : Name) : MetaM Bool := do
+    if let some b := (← needsConstCache.get)[n]? then return b
+    let b ← do
+      if (heads.contains n).or ((isMatcherCore env n).or ((isAuxRecursor env n).or (isRecCore env n))) then
+        pure true
+      else if extras.and ((← getReducibilityStatus n) == .reducible) then
+        match (env.find? n).bind (·.value?) with
+        | some v =>
           let rec body : Expr → Expr
             | .lam _ _ b _ => body b
             | b => b
-          if let some h := (body v).getAppFn.constName? then
-            if heads.contains h then return true
-  return (e.find? fun s =>
+          pure ((body v).getAppFn.constName?.any heads.contains)
+        | none => pure false
+      else pure false
+    needsConstCache.modify (·.insert n b)
+    return b
+  let localNeeds (s : Expr) : MetaM Bool := do
     match s with
-    | .const n _ => (heads.contains n).or ((isMatcherCore env n).or
-        ((isAuxRecursor env n).or (isRecCore env n)))
-    | .proj .. | .letE .. => true
-    | .app .. => s.isHeadBetaTarget.or (match s.getAppFn with
-        | .const n _ => match env.getProjectionFnInfo? n with
-          | some info =>
-            let args := s.getAppArgs
-            if h : info.numParams < args.size then
-              match args[info.numParams].getAppFn with
-              | .const c _ => (extras.and ((!info.fromClass).or (n == ``ZeroVal.zero_val_def))).or
-                  ((env.find? c).any (·.isCtor))
-              | _ => false
-            else false
-          | none => false
-        | _ => false)
-    | _ => false).isSome
+    | .const n _ => constNeeds n
+    | .proj .. | .letE .. => return true
+    | .app .. =>
+      if s.isHeadBetaTarget then return true
+      match s.getAppFn with
+      | .const n _ => match env.getProjectionFnInfo? n with
+        | some info =>
+          let args := s.getAppArgs
+          if h : info.numParams < args.size then
+            match args[info.numParams].getAppFn with
+            | .const c _ =>
+              let b1 := extras.and ((!info.fromClass).or (n == ``ZeroVal.zero_val_def))
+              return b1.or ((env.find? c).any (·.isCtor))
+            | _ => return false
+          else return false
+        | none => return false
+      | _ => return false
+    | _ => return false
+  let rec go (s : Expr) : MetaM Bool := do
+    if let some b := (← needsCache.get)[s]? then return b
+    let b ← do
+      if ← localNeeds s then pure true
+      else match s with
+        | .app f a => do if ← go f then pure true else go a
+        | .lam _ t b _ | .forallE _ t b _ => do if ← go t then pure true else go b
+        | .mdata _ b => go b
+        | _ => pure false
+    needsCache.modify (·.insert s b)
+    return b
+  go e
 
 /-- Instance arguments `ext ffi interp sem gctx hlc GF G L` of a `goose_irisGS`
 instance. -/
@@ -916,12 +1064,275 @@ def binderNeProof (ext : Expr) (x : String) (xe : Expr) (b : Option String) (be 
     let ye := (be.getArg! 0)
     mkApp4 (mkConst ``binder_named_ne_named) ext xe ye (strNeProof x y xe ye)
 
+/-- Whether `wp_auto` takes `if: #(decide P) then e else AngelicExit #()` steps
+(introducing `P` as an inaccessible hypothesis); set by
+`solve_into_val_typed_struct` (`Auto.lean`). -/
+initialize autoAngelicIf : IO.Ref Bool ← IO.mkRef false
+
+register_option goose.wp.fvAnnot : Bool := {
+  defValue := true
+  descr := "let `wp_auto` annotate continuations with their free variables, so that \
+    substitutions into the rest of a long function are proved in constant size"
+}
+
+/-! ### Closedness annotations (meta level) -/
+
+/-- Whether `substPf` uses closedness annotations (`fvClosed`), and the caches of
+free-variable sets and closedness proofs (set up by `wp_auto`). -/
+initialize fvAnnotMode : IO.Ref Bool ← IO.mkRef false
+initialize fvCache : IO.Ref (Std.HashMap Expr (Option (List String))) ← IO.mkRef {}
+initialize closedCache : IO.Ref (Std.HashMap (Expr × Expr) (Option Expr)) ← IO.mkRef {}
+
+/-- A literal `List String` expression. -/
+def strListExpr (l : List String) : Expr :=
+  let ty := mkConst ``String
+  l.foldr (fun s acc => mkApp3 (mkConst ``List.cons [0]) ty (mkStrLit s) acc)
+    (mkApp (mkConst ``List.nil [0]) ty)
+
+/-- Parse a literal `List String` expression. -/
+partial def strList? (e : Expr) : MetaM (Option (List String)) := do
+  let e ← whnfR e
+  if e.isAppOfArity ``List.nil 1 then return some []
+  unless e.isAppOfArity ``List.cons 3 do return none
+  let some s ← strLit? (e.getArg! 1) | return none
+  let some t ← strList? (e.getArg! 2) | return none
+  return some (s :: t)
+
+/-- A proof of `s ∈ l` for a literal list `l` (as `le`) containing `s`. -/
+def memPf (s : String) (l : List String) (le : Expr) : MetaM (Option Expr) := do
+  match l with
+  | [] => return none
+  | a :: t =>
+    let le ← whnfR le
+    let tl := le.getArg! 2
+    if a == s then
+      return some (mkApp3 (mkConst ``List.Mem.head [0]) (mkConst ``String) (mkStrLit s) tl)
+    let some p ← memPf s t tl | return none
+    return some (mkApp5 (mkConst ``List.Mem.tail [0]) (mkConst ``String) (mkStrLit s) (mkStrLit a) tl p)
+
+/-- A proof of `x ∉ l` for a literal list `l` not containing `x`. -/
+def notMemPf (ext : Expr) (x : String) (xe : Expr) (l : List String) : Expr :=
+  match l with
+  | [] => mkApp2 (mkConst ``not_mem_nil') ext xe
+  | a :: t =>
+    let ae := mkStrLit a
+    mkApp6 (mkConst ``not_mem_cons') ext xe ae (strListExpr t) (strNeProof x a xe ae)
+      (notMemPf ext x xe t)
+
+/-- The free variables of an `expr` built from constructors (`none` if some part
+is not), using the annotations `fvClosed S e` (whose set is `S`). -/
+partial def fvOf (e : Expr) : MetaM (Option (List String)) := do
+  if let some r := (← fvCache.get)[e]? then return r
+  let union (a b : List String) : List String := a ++ b.filter (!a.contains ·)
+  let r ← do
+    if e.isAppOfArity ``fvClosed 3 then strList? (e.getArg! 1) else
+    let e ← whnfR e
+    let args := e.getAppArgs
+    let all (xs : List Expr) : MetaM (Option (List String)) := do
+      let mut acc := []
+      for x in xs do
+        let some f ← fvOf x | return none
+        acc := union acc f
+      return some acc
+    match e.getAppFn.constName? with
+    | some ``Perennial.expr.Val => pure (some [])
+    | some ``Perennial.expr.Var => pure ((← strLit? args[1]!).map ([·]))
+    | some ``Perennial.expr.Rec =>
+      match ← binderLit? args[1]!, ← binderLit? args[2]!, ← fvOf args[3]! with
+      | some f, some y, some b => pure (some (b.filter fun s => some s != f && some s != y))
+      | _, _, _ => pure none
+    | some ``Perennial.expr.App => all [args[1]!, args[2]!]
+    | some ``Perennial.expr.If => all [args[1]!, args[2]!, args[3]!]
+    | some ``Perennial.expr.Pair => all [args[1]!, args[2]!]
+    | some ``Perennial.expr.Fst => all [args[1]!]
+    | some ``Perennial.expr.Snd => all [args[1]!]
+    | some ``Perennial.expr.Fork => all [args[1]!]
+    | some ``Perennial.expr.Primitive0 => pure (some [])
+    | some ``Perennial.expr.Primitive1 => all [args[2]!]
+    | some ``Perennial.expr.Primitive2 => all [args[2]!, args[3]!]
+    | some ``Perennial.expr.ExternalOp => all [args[2]!]
+    | some ``Perennial.expr.CmpXchg => all [args[1]!, args[2]!, args[3]!]
+    | some ``Perennial.expr.NewProph => pure (some [])
+    | some ``Perennial.expr.ResolveProph => all [args[1]!, args[2]!]
+    -- composite literals (possibly long, e.g. lookup tables) are not annotated
+    | some ``Perennial.expr.LiteralValue => pure none
+    | _ => pure none
+  fvCache.modify (·.insert e r)
+  return r
+where
+  fvKEs (l : Expr) : MetaM (Option (List String)) := do
+    let l ← whnfR l
+    if l.isAppOfArity ``List.nil 1 then return some []
+    unless l.isAppOfArity ``List.cons 3 do return none
+    let ke ← whnfR (l.getArg! 1)
+    unless ke.isAppOfArity ``Perennial.keyed_element.KeyedElement 3 do return none
+    let some a ← fvKey (ke.getArg! 1) | return none
+    let some b ← fvElem (ke.getArg! 2) | return none
+    let some c ← fvKEs (l.getArg! 2) | return none
+    return some (a ++ b ++ c)
+  fvKey (k : Expr) : MetaM (Option (List String)) := do
+    let k ← whnfR k
+    if k.isAppOfArity ``Option.none 1 then return some []
+    unless k.isAppOfArity ``Option.some 2 do return none
+    let kk ← whnfR (k.getArg! 1)
+    match kk.getAppFn.constName? with
+    | some ``Perennial.key.KeyField => return some []
+    | some ``Perennial.key.KeyInteger => return some []
+    | some ``Perennial.key.KeyExpression => fvOf (kk.getArg! 2)
+    | some ``Perennial.key.KeyLiteralValue => fvKEs (kk.getArg! 1)
+    | _ => return none
+  fvElem (el : Expr) : MetaM (Option (List String)) := do
+    let el ← whnfR el
+    match el.getAppFn.constName? with
+    | some ``Perennial.element.ElementExpression => fvOf (el.getArg! 2)
+    | some ``Perennial.element.ElementLiteralValue => fvKEs (el.getArg! 1)
+    | _ => return none
+
+/-- A proof of `ClosedUnder S e` (`S` given as the literal `Se`), built from the
+constructors of `e`; `none` if it cannot be built. Cached on `(Se, e)`. -/
+partial def closedPf (ext : Expr) (S : List String) (Se : Expr) (e : Expr) : MetaM (Option Expr) := do
+  if let some r := (← closedCache.get)[(Se, e)]? then return r
+  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
+  let r ← do
+    if e.isAppOfArity ``fvClosed 3 then
+      -- a nested annotation: its own proof, and the inclusion of its set
+      let Te := e.getArg! 1; let b := e.getArg! 2
+      let some T ← strList? Te | pure none
+      let some hb ← closedPf ext T Te b | pure none
+      let some hsub ← subsetPf T Te | pure none
+      pure (some (lem ``closed_fv #[Te, b, hb, hsub]))
+    else
+    let e ← whnfR e
+    let args := e.getAppArgs
+    let rec' (x : Expr) := closedPf ext S Se x
+    match e.getAppFn.constName? with
+    | some ``Perennial.expr.Val => pure (some (lem ``closed_val #[args[1]!]))
+    | some ``Perennial.expr.Var =>
+      match ← strLit? args[1]! with
+      | some y => match ← memPf y S Se with
+        | some h => pure (some (lem ``closed_var #[args[1]!, h]))
+        | none => pure none
+      | none => pure none
+    | some ``Perennial.expr.Rec =>
+      let f ← whnfR args[1]!; let y ← whnfR args[2]!
+      match ← binderLit? f, ← binderLit? y with
+      | some fb, some yb =>
+        let T := fb.toList ++ yb.toList ++ S
+        let Te := strListExpr T
+        match ← closedPf ext T Te args[3]! with
+        | some hb =>
+          -- `ClosedUnder (bnames f ++ bnames y ++ S) b` is `ClosedUnder T b` by `rfl`
+          let ty ← mkAppM ``ClosedUnder #[← mkAppM ``HAppend.hAppend
+            #[← mkAppM ``HAppend.hAppend #[mkApp (mkConst ``bnames) f, mkApp (mkConst ``bnames) y], Se],
+            args[3]!]
+          pure (some (lem ``closed_rec #[f, y, args[3]!, ← mkExpectedTypeHint hb ty]))
+        | none => pure none
+      | _, _ => pure none
+    | some ``Perennial.expr.App =>
+      match ← rec' args[1]!, ← rec' args[2]! with
+      | some ha, some hb => pure (some (lem ``closed_app #[args[1]!, args[2]!, ha, hb]))
+      | _, _ => pure none
+    | some ``Perennial.expr.If =>
+      match ← rec' args[1]!, ← rec' args[2]!, ← rec' args[3]! with
+      | some ha, some hb, some hc =>
+        pure (some (lem ``closed_if #[args[1]!, args[2]!, args[3]!, ha, hb, hc]))
+      | _, _, _ => pure none
+    | some ``Perennial.expr.Pair =>
+      match ← rec' args[1]!, ← rec' args[2]! with
+      | some ha, some hb => pure (some (lem ``closed_pair #[args[1]!, args[2]!, ha, hb]))
+      | _, _ => pure none
+    | some ``Perennial.expr.Fst => return (← rec' args[1]!).map (lem ``closed_fst #[args[1]!, ·])
+    | some ``Perennial.expr.Snd => return (← rec' args[1]!).map (lem ``closed_snd #[args[1]!, ·])
+    | some ``Perennial.expr.Fork => return (← rec' args[1]!).map (lem ``closed_fork #[args[1]!, ·])
+    | some ``Perennial.expr.Primitive0 => pure (some (lem ``closed_prim0 #[args[1]!]))
+    | some ``Perennial.expr.Primitive1 =>
+      return (← rec' args[2]!).map (lem ``closed_prim1 #[args[1]!, args[2]!, ·])
+    | some ``Perennial.expr.Primitive2 =>
+      match ← rec' args[2]!, ← rec' args[3]! with
+      | some ha, some hb => pure (some (lem ``closed_prim2 #[args[1]!, args[2]!, args[3]!, ha, hb]))
+      | _, _ => pure none
+    | some ``Perennial.expr.ExternalOp =>
+      return (← rec' args[2]!).map (lem ``closed_extop #[args[1]!, args[2]!, ·])
+    | some ``Perennial.expr.CmpXchg =>
+      match ← rec' args[1]!, ← rec' args[2]!, ← rec' args[3]! with
+      | some ha, some hb, some hc =>
+        pure (some (lem ``closed_cmpxchg #[args[1]!, args[2]!, args[3]!, ha, hb, hc]))
+      | _, _, _ => pure none
+    | some ``Perennial.expr.NewProph => pure (some (lem ``closed_newproph #[]))
+    | some ``Perennial.expr.ResolveProph =>
+      match ← rec' args[1]!, ← rec' args[2]! with
+      | some ha, some hb => pure (some (lem ``closed_resolve #[args[1]!, args[2]!, ha, hb]))
+      | _, _ => pure none
+    | some ``Perennial.expr.LiteralValue =>
+      return (← closedKEs args[1]!).map (lem ``closed_litval #[args[1]!, ·])
+    | _ => pure none
+  closedCache.modify (·.insert (Se, e) r)
+  return r
+where
+  subsetPf (T : List String) (Te : Expr) : MetaM (Option Expr) := do
+    match T with
+    | [] => return some (mkApp2 (mkConst ``subset_nil) ext Se)
+    | a :: t =>
+      let Te' ← whnfR Te
+      let tl := Te'.getArg! 2
+      let some h1 ← memPf a S Se | return none
+      let some h2 ← subsetPf t tl | return none
+      return some (mkAppN (mkConst ``subset_cons) #[ext, Se, mkStrLit a, tl, h1, h2])
+  closedKEs (l : Expr) : MetaM (Option Expr) := do
+    let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
+    let l ← whnfR l
+    if l.isAppOfArity ``List.nil 1 then return some (lem ``closed_kes_nil #[])
+    unless l.isAppOfArity ``List.cons 3 do return none
+    let ke ← whnfR (l.getArg! 1)
+    unless ke.isAppOfArity ``Perennial.keyed_element.KeyedElement 3 do return none
+    let k := ke.getArg! 1; let el := ke.getArg! 2
+    let some hk ← closedKey k | return none
+    let some he ← closedElem el | return none
+    let some ht ← closedKEs (l.getArg! 2) | return none
+    let hke := lem ``closed_ke #[k, el, hk, he]
+    return some (lem ``closed_kes_cons #[ke, l.getArg! 2, hke, ht])
+  closedKey (k : Expr) : MetaM (Option Expr) := do
+    let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
+    let k ← whnfR k
+    if k.isAppOfArity ``Option.none 1 then return some (lem ``closed_okey_none #[])
+    unless k.isAppOfArity ``Option.some 2 do return none
+    let kk ← whnfR (k.getArg! 1)
+    match kk.getAppFn.constName? with
+    | some ``Perennial.key.KeyField => return some (lem ``closed_okey_field #[kk.getArg! 1])
+    | some ``Perennial.key.KeyInteger => return some (lem ``closed_okey_int #[kk.getArg! 1])
+    | some ``Perennial.key.KeyExpression =>
+      return (← closedPf ext S Se (kk.getArg! 2)).map (lem ``closed_okey_expr #[kk.getArg! 1, kk.getArg! 2, ·])
+    | some ``Perennial.key.KeyLiteralValue =>
+      return (← closedKEs (kk.getArg! 1)).map (lem ``closed_okey_lv #[kk.getArg! 1, ·])
+    | _ => return none
+  closedElem (el : Expr) : MetaM (Option Expr) := do
+    let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
+    let el ← whnfR el
+    match el.getAppFn.constName? with
+    | some ``Perennial.element.ElementExpression =>
+      return (← closedPf ext S Se (el.getArg! 2)).map (lem ``closed_el_expr #[el.getArg! 1, el.getArg! 2, ·])
+    | some ``Perennial.element.ElementLiteralValue =>
+      return (← closedKEs (el.getArg! 1)).map (lem ``closed_el_lv #[el.getArg! 1, ·])
+    | _ => return none
+
 mutual
 
 /-- `subst x v e` with a proof `subst x v e = e'` built from per-constructor lemmas
 (non-constructor subterms are left as `subst x v _`, proved by `rfl`). -/
 partial def substPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (e : Expr) :
     MetaM (Expr × Expr) := do
+  -- a closedness annotation `fvClosed S b`
+  if e.isAppOfArity ``fvClosed 3 then
+    let Se := e.getArg! 1; let b := e.getArg! 2
+    if let some S ← strList? Se then
+      if !S.contains x then
+        if let some h ← closedPf ext S Se b then
+          return (e, mkAppN (mkConst ``subst_pf_fvClosed) #[ext, Se, xe, v, b, h, notMemPf ext x xe S])
+      -- `x` may occur: substitute into the body (definitionally the same), keeping
+      -- the annotation with `x` removed
+      let (b', pb) ← substPf ext x xe v dirty b
+      let S' := S.filter (· != x)
+      return (mkApp3 (mkConst ``fvClosed) ext (strListExpr S') b', pb)
   let e ← whnfR e
   let substE (e : Expr) := mkApp4 (mkConst ``Perennial.subst) ext xe v e
   let fallback : MetaM (Expr × Expr) := do
@@ -1050,6 +1461,68 @@ partial def substKEPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bo
 
 end
 
+/-- Annotate the continuations (bodies of `let:`/`;;` lambdas and of the
+`exception_seq` continuation) of a large expression with their free variables
+(`fvClosed`); the result is definitionally equal to `e`. -/
+partial def annotateFv (ext : Expr) (e : Expr) : MetaM Expr := do
+  let cache ← IO.mkRef ({} : Std.HashMap Expr Expr)
+  go cache e
+where
+  wrapRec (cache : IO.Ref (Std.HashMap Expr Expr)) (r : Expr) : MetaM Expr := do
+    let r' ← whnfR r
+    let_expr Perennial.expr.Rec _ f y body := r' | go cache r
+    let body' ← go cache body
+    -- small bodies are not worth it, and very deep ones (e.g. long composite
+    -- literals) would make the closedness proofs too deep
+    if decide (body'.approxDepth.toNat < 6) then
+      return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y body'
+    match ← fvOf body' with
+    | some S =>
+      return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y
+        (mkApp3 (mkConst ``fvClosed) ext (strListExpr S) body')
+    | none => return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y body'
+  go (cache : IO.Ref (Std.HashMap Expr Expr)) (e : Expr) : MetaM Expr := do
+    if let some r := (← cache.get)[e]? then return r
+    let e' ← whnfR e
+    let r ← match_expr e' with
+      | Perennial.expr.App _ a b => do
+        let a' ← whnfR a
+        let isSeq := match_expr a' with
+          | Perennial.expr.Val _ c => c.getAppFn.isConstOf ``exception_seq
+          | _ => false
+        let isRec := a'.isAppOf ``Perennial.expr.Rec
+        let na ← if isRec then wrapRec cache a else go cache a
+        let nb ← if isSeq && (← whnfR b).isAppOf ``Perennial.expr.Rec then wrapRec cache b
+          else go cache b
+        pure (mkApp3 (mkConst ``Perennial.expr.App) ext na nb)
+      | Perennial.expr.If _ a b c => do
+        pure (mkApp4 (mkConst ``Perennial.expr.If) ext (← go cache a) (← go cache b) (← go cache c))
+      | Perennial.expr.Pair _ a b => do
+        pure (mkApp3 (mkConst ``Perennial.expr.Pair) ext (← go cache a) (← go cache b))
+      | _ => pure e
+    cache.modify (·.insert e r)
+    return r
+
+/-- Remove the closedness annotations (definitionally). -/
+partial def stripFvCore (e : Expr) : Expr :=
+  e.replace fun s => if s.isAppOfArity ``fvClosed 3 then some (stripFvCore (s.getArg! 2)) else none
+
+def stripFv (e : Expr) : Expr :=
+  if (e.find? (·.isConstOf ``fvClosed)).isNone then e else stripFvCore e
+
+theorem tac_goal_defeq {PROP : Type _} [BI PROP] {Δ P Q : PROP} (h : Δ ⊢ Q) (heq : P = Q) : Δ ⊢ P :=
+  heq ▸ h
+
+/-- Add the goal `hyps ⊢ goal` with the closedness annotations removed. -/
+def addBIGoalStripped {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+    (hyps : Hyps bi ehyps) (goal : Q($prop)) (k : Q($prop) → ProofModeM Expr := addBIGoal hyps) :
+    ProofModeM Expr := do
+  let goal' := stripFv goal
+  if goal' == goal then return ← k goal
+  let h ← k goal'
+  let heq ← mkExpectedTypeHint (← mkEqRefl goal) (← mkEq goal goal')
+  mkAppNamed ``tac_goal_defeq [("Δ", ehyps), ("P", goal), ("Q", goal'), ("!h", h), ("!heq", heq)]
+
 /-- Evaluate the `subst'`/`subst` applications at the head of `e`, with a proof
 (`none`: unchanged). `vals` collects the substituted values; `dirty` is set if
 some `subst` could not be evaluated. -/
@@ -1168,6 +1641,19 @@ def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
     (!goose.wp.extras.get (← getOptions))
   let some (st, _, _) ← findEctx wp.e (fun K e1 => do
       unless ← pred e1 do throwError "skip"
+      -- a head redex has values in its evaluation positions (all `PureWp`
+      -- instances are of this form): skip the (costly) instance search otherwise
+      -- (instances may match curried applications `App (App (Val f) (Val v1)) (Val v2)`)
+      if let some (_, hole) ← extractEctxItem e1 then
+        let rec valApp (fuel : Nat) (h : Expr) : MetaM Bool := do
+          if (← isGooseVal? h).isSome then return true
+          match fuel with
+          | 0 => return false
+          | fuel + 1 =>
+            let h ← whnfR h
+            let_expr Perennial.expr.App _ f a := h | return false
+            return (← valApp fuel a) && (← valApp fuel f)
+        unless ← valApp 8 hole do throwError "skip"
       let some (φ, e2, inst) ← synthPureWp gs e1 | throwError "no PureWp instance"
       -- `wp_pures`/`wp_auto` stop at slice composite literals (as in Rocq, where
       -- `go.composite_literal_slice` is not an instance): use `wp_slice_literal`

@@ -191,8 +191,7 @@ simproc [goose_wp_simp_extra] goose_sintNatLit (sint.nat _) := fun e => word.eva
 simproc [goose_wp_simp_extra] goose_uintNatLit (uint.nat _) := fun e => word.evalWordLitConv e
 
 attribute [goose_wp_simp_extra] Option.getD_some Option.getD_none
-attribute [goose_wp_simp_extra] Int.reduceToNat List.replicate_succ List.replicate_zero
-  List.set_cons_zero List.set_cons_succ List.set_nil
+attribute [goose_wp_simp_extra] Int.reduceToNat List.set_cons_zero List.set_cons_succ List.set_nil
 
 @[goose_wp_simp_extra] theorem zero_val_interface_nil [ffi_syntax] [GoLocalContext] :
     (zero_val interface.t) = interface.nil := rfl

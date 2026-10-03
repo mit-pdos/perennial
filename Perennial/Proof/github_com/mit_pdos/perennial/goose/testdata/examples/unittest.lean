@@ -314,6 +314,7 @@ theorem wp_testU32NewtypeLen :
   have h : sint.Z sl.len = 20 := by
     have h1 := Hlen.1
     have h2 := Hlen.2
+    simp only [List.length_replicate] at h1
     word
   rw [decide_eq_true (by rw [h])]
   iapply HΦ

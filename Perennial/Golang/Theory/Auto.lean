@@ -238,6 +238,9 @@ set_option hygiene false in
 elab_rules : tactic
   | `(tactic| wp_start_folded $[as $pat?]?) => do
     evalTactic (← `(tactic| try imodintro))
+    -- (Rocq) an old `Φ` (e.g. of an enclosing proof) is cleared rather than
+    -- shadowed, if it is not used
+    evalTactic (← `(tactic| try clear Φ))
     evalTactic (← `(tactic| iintro %Φ Hpre HΦ))
     let present ← destructPkgInit `Hpre
     if present then
@@ -265,6 +268,69 @@ macro "is_pkg_init_finish" : tactic => `(tactic| (
   (try iframe #)
   (try (imodintro; itrivial))
   (try itrivial)))
+
+/-! ## `if:` with an angelic `else` branch -/
+
+section if_angelic
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+/-- `if: #(decide P) then e else AngelicExit #()`: the `else` branch proves
+anything, so it suffices to prove the `then` branch assuming `P`. -/
+theorem tac_wp_if_angelic {P : Prop} [Decidable P] {K : List ectx_item} {e : expr}
+    {Δ : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    (h : Δ ⊢ iprop(⌜P⌝ -∗ WP (fill K e) @ s; E {{ Φ }})) :
+    Δ ⊢ WP (fill K (If (Val #(decide P)) e (App (Val (GoInstruction AngelicExit)) (Val #()))))
+      @ s; E {{ Φ }} := by
+  by_cases hP : P
+  · rw [decide_eq_true hP]
+    iintro HΔ
+    wp_pure
+    iapply h $$ HΔ
+    ipureintro; exact hP
+  · rw [decide_eq_false hP]
+    iintro -
+    wp_pure
+    wp_bind (App (Val (GoInstruction AngelicExit)) (Val #()))
+    iapply wp_AngelicExit
+
+/-- `tac_wp_if_angelic` with the hypothesis in the Lean context. -/
+theorem tac_wp_if_angelic' {P : Prop} [Decidable P] {K : List ectx_item} {e : expr}
+    {Δ : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    (h : P → Δ ⊢ WP (fill K e) @ s; E {{ Φ }}) :
+    Δ ⊢ WP (fill K (If (Val #(decide P)) e (App (Val (GoInstruction AngelicExit)) (Val #()))))
+      @ s; E {{ Φ }} :=
+  tac_wp_if_angelic (by iintro HΔ %hp; iapply (h hp); iexact HΔ)
+
+end if_angelic
+
+section if_angelic_find
+open Lean Meta Iris.ProofMode
+
+/-- The head `if: #(decide P) then e else AngelicExit #()` of a WP expression:
+`(P, e)` and its evaluation context. -/
+def findAngelicIf (e : Expr) : ProofModeM (Option ((Expr × Expr) × List Expr × Expr)) :=
+  findEctx e (fun _ e => do
+    let e ← whnfR e
+    let_expr Perennial.expr.If _ c e1 e2 := e | throwError "no"
+    let some cv ← isGooseVal? c | throwError "no"
+    let cv := (← instantiateMVars cv).consumeMData
+    unless cv.isAppOfArity ``GoGlobalContext.into_val 4 do throwError "no"
+    let d ← whnfR (cv.getArg! 3)
+    unless d.isAppOfArity ``Decidable.decide 2 do throwError "no"
+    let e2 ← whnfR e2
+    let_expr Perennial.expr.App _ f a := e2 | throwError "no"
+    let some fv ← isGooseVal? f | throwError "no"
+    let fv ← whnfR fv
+    unless fv.isAppOf ``Perennial.val.GoInstruction do throwError "no"
+    unless (fv.getArg! 1).isAppOf ``go_instruction.AngelicExit do throwError "no"
+    let some _ ← isGooseVal? a | throwError "no"
+    return (d.getArg! 0, e1))
+
+
+end if_angelic_find
 
 /-! ## `wp_auto` -/
 
@@ -313,7 +379,11 @@ theorem tac_clear_hyp {PROP : Type _} [BI PROP] [BIAffine PROP] {Δ Δ' P Q : PR
 /-- Add the final goal `hyps ⊢ goal`, after clearing the points-to facts of
 dead local variables. -/
 def addGoalCleaning {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (goal : Expr) : ProofModeM Expr := do
+    (hyps : Hyps bi ehyps) (goal : Expr) : ProofModeM Expr :=
+  -- remove the closedness annotations of `wp_auto` first
+  addBIGoalStripped hyps goal (addGoalCleaningCore hyps)
+where addGoalCleaningCore {ehyps : Q($prop)} (hyps : Hyps bi ehyps) (goal : Expr) :
+    ProofModeM Expr := do
   let unused ← unusedPointsto hyps goal
   if unused.isEmpty then return ← addBIGoal hyps goal
   -- remove the hypotheses one by one, building the proof
@@ -425,6 +495,17 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
    if let some (e', k) ← iWpUnfoldValConst? wp ehyps then
     let (pf', lc', _) ← iWpAuto hyps { wp with e := e' } lc lcIdx (simpFirst := true)
     return (← k pf', lc', true)
+  let res0 ← IO.mkRef lc
+  -- (`solve_into_val_typed_struct`) an `if:` with an angelic `else` branch
+  if ← autoAngelicIf.get then
+    if let some ((P, e1), K, _) ← findAngelicIf wp.e then
+      let pf ← withLocalDeclD (← mkFreshUserName `Hif) P fun h => do
+        let (pf', lc', _) ← iWpAuto hyps { wp with e := ← fillExpr K e1 } lc lcIdx
+        res0.set lc'
+        mkLambdaFVars #[h] pf'
+      return (← mkAppNamed ``tac_wp_if_angelic'
+        [("P", P), ("K", wp.quoteK K), ("e", e1), ("Δ", ehyps), ("s", wp.s), ("E", wp.E),
+         ("Φ", wp.Φ), ("!h", pf)], ← res0.get, true)
   -- a call of an implementation constant `«Fooⁱᵐᵖˡ» v` (e.g. after
   -- `wp_method_call`): take the beta step
   if extras then
@@ -445,7 +526,16 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
 steps were taken. -/
 elab "wp_auto_lc " n:num : tactic =>
   runTacticGooseWp `wp_auto fun mvar g wp => do
-    let (pf, lc, progress) ← iWpAuto g.hyps wp n.getNat
+    -- annotate the continuations with their free variables (see `fvClosed`)
+    fvCache.set {}; closedCache.set {}
+    let eA ← if goose.wp.fvAnnot.get (← getOptions) then annotateFv wp.ext wp.e else pure wp.e
+    let (pf, lc, progress) ← iWpAuto g.hyps { wp with e := eA } n.getNat
+    let pf ← if eA == wp.e then pure pf else
+      let heq ← mkExpectedTypeHint (← mkEqRefl (wp.wrap wp.e)) (← mkEq (wp.wrap wp.e) (wp.wrap eA))
+      mkAppNamed ``tac_wp_expr_simp
+        [("Δ", g.e), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", wp.wrap wp.e), ("e'", wp.wrap eA),
+         ("!h", pf), ("!heq", heq)]
+    fvCache.set {}; closedCache.set {}
     unless progress do throwIPMError "no progress"
     if lc > 0 then throwIPMError "unable to generate enough later credits"
     mvar.assign pf
@@ -457,6 +547,15 @@ names the location of `let: "x" := GoAlloc t #v` `x_ptr` and its points-to
 At the end it clears the points-to facts of local variables that are no longer
 used. Fails if no progress is made. -/
 macro "wp_auto" : tactic => `(tactic| wp_auto_lc 0)
+
+open Lean Elab Tactic in
+/-- Internal (`solve_into_val_typed_struct`): `wp_auto`, also taking the steps
+`if: #(decide P) then e else AngelicExit #()` (with an inaccessible hypothesis
+`P`). -/
+elab "wp_auto_angelic" : tactic => do
+  let saved ← autoAngelicIf.get
+  autoAngelicIf.set true
+  try evalTactic (← `(tactic| wp_auto)) finally autoAngelicIf.set saved
 
 /-! ## `wp_apply` -/
 
@@ -689,6 +788,27 @@ elab_rules : tactic
     let core ← `(tactic| focus ((first | wp_apply_raw $pmt | (wp_pures; wp_apply_raw $pmt) | (wp_func_lits; wp_apply_raw $pmt) | (wp_pures; wp_apply_raw $pmt)) <;> wp_apply_post))
     evalTactic (← `(tactic| focus (($core:tactic) <;> (try iPkgInit); wp_apply_side; $intro:tactic; $auto:tactic; wp_untag_cont)))
 
+section if_angelic_tac
+open Lean Elab Tactic Meta Qq Iris.ProofMode
+
+/-- `wp_if_angelic`: for an `if: #(decide P) then e else AngelicExit #()` at the
+head of the WP expression, continue with `e` under the hypothesis `Hif : P`
+(the `else` branch is trivial). Constant cost (unlike `wp_if_destruct`, which
+simplifies the whole goal in both branches). -/
+elab "wp_if_angelic" : tactic => do
+  runTacticGooseWp `wp_if_angelic fun mvar g wp => do
+    let some ((P, e1), K, _) ← findAngelicIf wp.e
+      | throwIPMError "wp_if_angelic: no `if: #(decide P) then _ else AngelicExit #()` at the head"
+    let Q := wp.mk' (← fillExpr K e1) wp.Φ
+    let pP ← mkAppOptM ``BIBase.pure #[some g.prop, none, some P]
+    let goal' ← mkAppOptM ``BIBase.wand #[some g.prop, none, some pP, some Q]
+    let h ← addBIGoal g.hyps goal'
+    mvar.assign (← mkAppNamed ``tac_wp_if_angelic
+      [("P", P), ("K", wp.quoteK K), ("e", e1), ("Δ", g.e), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ),
+       ("!h", h)])
+
+end if_angelic_tac
+
 /-! ## Boolean cleanup -/
 
 section bool_lemmas
@@ -853,7 +973,7 @@ macro "solve_into_val_typed_struct" : tactic => `(tactic| (
     wp_pure
     clear _tagged
     wp_apply wp_GoPrealloc as %l %Hnotnull
-    repeat (wp_if_destruct; (rotate_left; wp_apply_core wp_AngelicExit))
+    try wp_auto_angelic
     subst_vars
     iapply HΦ
     try simp only [TypedPointsto.typed_pointsto_def, named]

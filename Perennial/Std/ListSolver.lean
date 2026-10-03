@@ -82,8 +82,8 @@ elab "find_list_hyps" : tactic => withMainContext do
     else if ty.isAppOfArity ``List.IsPrefix 3 then
       evalTactic (← `(tactic| have := prefix_length $hs; have := list_prefix_forall $hs))
 
-/-- Best-effort list solver (see the module docstring). -/
-macro "list_solver" : tactic => `(tactic| (
+/-- Best-effort list solver (see the module docstring). Closes the goal or fails. -/
+macro "list_solver" : tactic => `(tactic| no_sorry (
   intros
   find_list_hyps
   first
