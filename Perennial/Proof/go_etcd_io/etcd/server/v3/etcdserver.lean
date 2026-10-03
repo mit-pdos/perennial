@@ -9,6 +9,8 @@ Lean notes:
 * `wp_EtcdServer__Put` ends in `Abort` in Rocq and is not ported;
   `wp_EtcdServer__processInternalRaftRequestOnce` is `Admitted` (its Rocq
   proof script is almost entirely commented out).
+* Deviation from Rocq: `own_EtcdServer_access` (an axiom in Rocq too) also
+  quantifies over the ghost name `γgen` that `idutil.is_Generator` now takes.
 -/
 import Perennial.Code.go_etcd_io.etcd.server.v3.etcdserver
 import Perennial.GeneratedProof.go_etcd_io.etcd.server.v3.etcdserver
@@ -103,16 +105,22 @@ axiom own_EtcdServer {GF : BundledGFunctors} (s : loc) (γ : EtcdServer_names) :
 /-- (Rocq: `#[local] Axiom`) -/
 axiom is_EtcdServer_internal {GF : BundledGFunctors} (s : loc) (γ : EtcdServer_names) : IProp GF
 
+/-- Lean deviation: `is_Generator` takes the ghost name of its `Next` tickets
+(see `idutil.own_Generator_tickets`), so this axiom also existentially
+quantifies it (`γgen`). Rocq: `"#HreqIDGen" ∷ is_Generator reqIDGen (own_ID γ)`.
+No tickets are handed out here: `own_EtcdServer_access` can be used any number
+of times, so handing out a ticket each time would make the axiom inconsistent
+(more than `2^48` tickets combine to `False`). -/
 axiom own_EtcdServer_access [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
     [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
     [hG : heapGS HasLC.hasLC GF] [allG GF] [sem : go.Semantics]
     [package_sem : etcdserver.Assumptions]
     (s : loc) (γ : EtcdServer_names) :
   ⊢ own_EtcdServer (GF := GF) s γ -∗
-    ∃ (reqIDGen : loc) (MaxRequestBytes : w64) (w : interface.t_ok) (γw : wait_params GF)
-      (rn : interface.t_ok),
+    ∃ (reqIDGen : loc) (γgen : GName) (MaxRequestBytes : w64) (w : interface.t_ok)
+      (γw : wait_params GF) (rn : interface.t_ok),
       "#reqIDGen" ∷ s.[etcdserver.EtcdServer.t, go!"reqIDGen"] ↦□ reqIDGen ∗
-      "#HreqIDGen" ∷ is_Generator reqIDGen (own_ID γ) ∗
+      "#HreqIDGen" ∷ is_Generator reqIDGen γgen (own_ID γ) ∗
       "#Cfg_MaxRequestBytes" ∷
         s.[etcdserver.EtcdServer.t, go!"Cfg"].[config.ServerConfig.t, go!"MaxRequestBytes"] ↦□
           MaxRequestBytes ∗
@@ -212,6 +220,7 @@ theorem wp_EtcdServer__processInternalRaftRequestOnce (s : loc) (γ : EtcdServer
           @!! go!"processInternalRaftRequestOnce")) (Val #(interface.ok ctx))) (Val #req))
     {{ (a : loc) (err : interface.t), RET (PairV #a #err); own_EtcdServer s γ }} := by
   -- Unprovable: calls opaque packages (prometheus, otel `SpanFromContext`, `strconv.FormatBool`) and `context.WithTimeout` (unprovable).
+  -- Also `reqIDGen.Next()` now needs an `idutil.own_Generator_tickets γgen 1`, which neither this precondition nor `own_EtcdServer_access` supplies (it would need an invariant bounding the number of requests by `2^48`).
   sorry -- Rocq: Admitted
 
 end wps

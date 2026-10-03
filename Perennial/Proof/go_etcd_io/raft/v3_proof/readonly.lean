@@ -18,6 +18,15 @@ Lean notes:
   found through a persistent ghost map: `node_id ↪[term_gn]□ γn ∗
   mono_nat_auth_own γn 1 n` (resp. `mono_nat_lb_own γn n`). Neither is used
   in any lemma of this file except as an opaque persistent witness.
+* Deviations from Rocq (statements/definitions):
+  - `own_readOnly` takes the number `n` of read requests added so far, with
+    `"%Hcount"`; `wp_readOnly_recvAck` and `wp_readOnly_maybeAdvance` keep `n`,
+    `wp_readOnly_addRequest` requires `n < 2^64 - 1` and returns `n + 1`. This
+    makes the overflow side condition admitted in Rocq provable.
+  - `wp_ProgressTracker__IsSingleton`: Rocq's (trusted) statement
+    `{{{ True }}} .. {{{ RET #false; True }}}` is false; replaced by the true
+    spec (still unproved: the generated code is stuck, see the lemma).
+  - New: `wp_map_len` (spec of `len` on a map).
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.protocol
 import Perennial.Ghost.MonoList
@@ -586,14 +595,63 @@ variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
-/-- FIXME (Rocq): `own_ProgressTracker` precondition. -/
-theorem wp_ProgressTracker__IsSingleton (p : loc) :
-    {{ (True : IProp GF) }}
+/-- `len(m)` of a map (Lean addition; the framework has no spec for it).
+`len` of a nil map is not covered: `go.len` on maps reads the map
+unconditionally (`λ: "m", InternalMapLength (Read "m")`). -/
+theorem wp_map_len {K V : Type} [ZeroVal K] [DecidableEq K] [ZeroVal V] [go.IntoValInj K]
+    (key_type elem_type : go.type) (mref : loc) (m : gmap K V) (dq : DFrac) :
+    {{ (mref ↦${dq} m : IProp GF) }}
+      (App (Val #(functions go.len [go.type.MapType key_type elem_type])) (Val #mref))
+    {{ RET #(W64 (gmap.size m)); mref ↦${dq} m }} := by
+  wp_start as Hm
+  rw [own_map_unseal]
+  iNamed Hm
+  wp_apply _internal_wp_untyped_read $$ Hown with Hown
+  obtain ⟨ks, hks⟩ := go.is_map_domain_exists mv mp His_map
+  obtain ⟨Hnodup, Hks⟩ := go.is_map_domain_pure mv mp ks His_map hks
+  obtain ⟨keys, rfl⟩ := list_exists_map_of_forall (into_val (V := K)) ks
+    (fun kv hkv => Hdom kv ((Hks kv).2 hkv))
+  have Hmem : ∀ k, k ∈ keys ↔ (m !! k).isSome := by
+    intro k
+    rw [← list_mem_map_inj (into_val (V := K)) go.into_val_inj, ← Hks, Hagree k]
+    cases m !! k <;> simp
+  have Hnd : keys.Nodup := list_nodup_of_map _ _ Hnodup
+  have Hsize : keys.length = gmap.size m := (gmap.size_eq_length m keys Hnd Hmem).symm
+  haveI := go.internal_map_length_step_pure mv _ hks
+  wp_pures
+  rw [List.length_map, Hsize]
+  iapply HΦ
+  unfold own_map_def
+  simp only [named]
+  iexists mv, mp
+  iframe Hown
+  ipureintro
+  exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+
+/-- Lean deviation (Rocq: `{{{ True }}} p.IsSingleton() {{{ RET #false; True }}}`,
+admitted as trusted, which is false: `IsSingleton` returns `true` for a
+single-voter configuration). The true spec: given the `ProgressTracker` and
+its two voter maps (`Voters[0]`, `Voters[1]`, both non-nil), the result is
+`len(Voters[0]) == 1 && len(Voters[1]) == 0`, where `len` is the (wrapping)
+`int` size of the map. -/
+theorem wp_ProgressTracker__IsSingleton (p : loc) (dq : DFrac) (pt : v3.tracker.ProgressTracker.t)
+    (v0 v1 : loc) (m0 m1 : gmap w64 Unit) (dq0 dq1 : DFrac) :
+    {{ "Hp" ∷ p ↦{dq} pt ∗
+        "%Hvoters" ∷ ⌜pt.Config'.Voters'.arr = [v0, v1]⌝ ∗
+        "Hm0" ∷ (v0 ↦${dq0} m0 : IProp GF) ∗
+        "Hm1" ∷ (v1 ↦${dq1} m1 : IProp GF) }}
       (App (Val (p @!! go.type.PointerType v3.tracker.ProgressTracker @!! go!"IsSingleton"))
         (Val #()))
-    {{ RET #false; True }} := by
-  -- False in general: `IsSingleton` returns true for a single-voter config; the precondition says nothing about `p`.
-  sorry -- Rocq: Admitted (trusted)
+    {{ RET #(decide (W64 (gmap.size m0) = W64 1 ∧ W64 (gmap.size m1) = W64 0));
+        p ↦{dq} pt ∗ v0 ↦${dq0} m0 ∗ v1 ↦${dq1} m1 }} := by
+  -- Blocked by a goose translation bug: `p.Config.Voters[0]` is translated as
+  -- `IndexRef JointConfig (![JointConfig] (addr of p.Config.Voters), #0)`, i.e. `IndexRef`
+  -- of the loaded array *value* (goose `exprAddr` of an `ast.IndexExpr` uses `ctx.expr e.X`
+  -- also for arrays, where it should take the address `ctx.exprAddr e.X`). `IndexRef` of
+  -- an array type only steps on a location (`index_ref_array`), so the code is stuck.
+  -- Rocq's generated code has the same bug. Once fixed, the proof is `wp_auto` plus
+  -- `wp_map_len` on both maps.
+  sorry -- Rocq: Admitted (trusted, with a false statement)
 
 theorem wp_raft__committedEntryInCurrentTerm (r : loc) (rf : v3.raft.t) (γ : raft_names) :
     {{ r ↦ rf ∗ own_raft (GF := GF) γ rf }}
@@ -601,7 +659,13 @@ theorem wp_raft__committedEntryInCurrentTerm (r : loc) (rf : v3.raft.t) (γ : ra
         (Val #()))
     {{ (c : Bool), RET #c; r ↦ rf ∗ own_raft γ rf ∗
         if c then ∃ l, is_committed_in_term γ rf.Term' l else True }} := by
-  -- Unprovable: `own_raft` is an opaque axiom, so nothing links `rf.raftLog` to `is_committed_in_term`.
+  -- Unprovable: `own_raft` is an opaque axiom (as in Rocq). It gives neither ownership of
+  -- `rf.raftLog` (needed to run `raftLog.term`, which calls the `Storage` interface methods
+  -- `Term`/`FirstIndex`/`LastIndex` and `Logger.Panicf`) nor any link between the terms in the
+  -- log and `is_committed_in_term` (also an axiom). Replacing `own_raft` by a definition would
+  -- need representation predicates for `raftLog`/`unstable`, specs for user-supplied `Storage`
+  -- and `Logger` implementations, and a ghost protocol relating storage terms to
+  -- `is_committed_in_term`; none of these exist (in Rocq or here).
   sorry -- Rocq: Admitted (trusted)
 
 /-- Rocq `is_readIndexRequest`. -/
@@ -625,8 +689,15 @@ def own_heartbeat_auth (γ : raft_names) (term : w64) (highest_index : w64) : IP
     ⌜∀ k, k ∈ used → k = [] ∨ k.length = 8 ∧ uint.Z (le_to_u64 k) ≤ uint.Z highest_index⌝)
 
 /-- Rocq `own_readOnly`. The entries of `read_reqs` are
-`((read_req_ctx, index), stale_ids)`. -/
-def own_readOnly (γ : raft_names) (r : loc) (term : w64) : IProp GF :=
+`((read_req_ctx, index), stale_ids)`.
+
+Lean deviation: an extra parameter `n`, the number of read requests added
+so far (`confirmedReads + len(unconfirmedReads)` without wrap-around), with
+`"%Hcount" : uint.nat confirmedReads + len unconfirmedReads = n ∧ n < 2^64`.
+The heartbeat context of a new request is `u64_le (n + 1)`, which must not
+wrap around to an already used context, so `wp_readOnly_addRequest` requires
+`n < 2^64 - 1` (Rocq: no `n`, and the overflow side condition is admitted). -/
+def own_readOnly (γ : raft_names) (r : loc) (term : w64) (n : Nat) : IProp GF :=
   iprop(∃ (ro : v3.readOnly.t) (acks : gmap w64 w64) (unconfirmedReads : List loc)
       (read_reqs : List ((go_string × w64) × gset w64)),
     "r" ∷ r ↦ ro ∗
@@ -635,6 +706,7 @@ def own_readOnly (γ : raft_names) (r : loc) (term : w64) : IProp GF :=
         ⌜acks !! voterId = some ackedIdx⌝ →
         is_heartbeat_ack γ voterId term (u64_le ackedIdx)) ∗
     "%Hoption" ∷ ⌜ro.option' = W64 0⌝ ∗ -- equals ReadOnlySafe
+    "%Hcount" ∷ ⌜uint.nat ro.confirmedReads' + unconfirmedReads.length = n ∧ n < 2 ^ 64⌝ ∗
     "unconfirmedReads" ∷ ro.unconfirmedReads' ↦* unconfirmedReads ∗
     "unconfirmedReads_cap" ∷ own_slice_cap loc ro.unconfirmedReads' (DFrac.own 1) ∗
     "#HunconfirmedReads" ∷ □ ([∗list] i ↦ r; x ∈ unconfirmedReads; read_reqs,
@@ -710,14 +782,14 @@ theorem own_heartbeat_auth_agree (stale_ids : gset w64) (γ : raft_names) (term 
 set_option goose.wp.extras true in
 set_option maxHeartbeats 400000 in
 theorem wp_readOnly_recvAck (γ : raft_names) (r : loc) (term : w64) («from» : w64)
-    (ctx_sl : slice.t) (ctx : List w8) (v : w64) :
+    (ctx_sl : slice.t) (ctx : List w8) (v : w64) (n : Nat) :
     {{ is_pkg_init (PROP := IProp GF) raft ∗
-        "Hown" ∷ own_readOnly cfg γ r term ∗
+        "Hown" ∷ own_readOnly cfg γ r term n ∗
         "Hctx" ∷ ctx_sl ↦* ctx ∗
         "#Hack" ∷ is_heartbeat_ack γ «from» term ctx }}
       (App (App (Val (r @!! go.type.PointerType v3.readOnly @!! go!"recvAck")) (Val #«from»))
         (Val #ctx_sl))
-    {{ RET #(); own_readOnly cfg γ r term }} := by
+    {{ RET #(); own_readOnly cfg γ r term n }} := by
   wp_start as ⟨Hown, Hctx, #Hack⟩
   iunfold own_readOnly at Hown
   icases Hown with ⟨%ro, %acks, %unconfirmedReads, %read_reqs, Hown⟩
@@ -728,7 +800,7 @@ theorem wp_readOnly_recvAck (γ : raft_names) (r : loc) (term : w64) («from» :
     unfold own_readOnly
     iexists ro, acks, unconfirmedReads, read_reqs
     iframe # ∗
-    ipureintro; exact Hoption
+    ipureintro; exact ⟨Hoption, Hcount⟩
   · wp_apply wp_map_lookup1 $$ Hacks as Hacks
     ihave %Hctx_len := own_slice_len _ _ _ $$ Hctx
     iunfold is_heartbeat_ack at Hack
@@ -779,14 +851,14 @@ theorem wp_readOnly_recvAck (γ : raft_names) (r : loc) (term : w64) («from» :
       unfold own_readOnly
       iexists ro, _, unconfirmedReads, read_reqs
       iframe # ∗
-      ipureintro; exact Hoption
+      ipureintro; exact ⟨Hoption, Hcount⟩
     · wp_apply wp_map_insert $$ Hacks as Hacks
       iapply HΦ
       ihave #Hw := Hfin _ (Or.inl rfl) $$ Hacks_wits Hhb_ctx
       unfold own_readOnly
       iexists ro, _, unconfirmedReads, read_reqs
       iframe # ∗
-      ipureintro; exact Hoption
+      ipureintro; exact ⟨Hoption, Hcount⟩
 
 /-- Rocq `own_AckedIndexer`. The Rocq Texan triple (an `iProp`) is written out. -/
 def own_AckedIndexer (i : interface.t_ok) (acks : gmap w64 w64) (I : IProp GF) : IProp GF :=
@@ -854,7 +926,12 @@ theorem wp_raft__sendMsgReadIndexresponse (γ : raft_names) (r : loc) (rf : v3.r
         "#Hcom_in_term" ∷ True }}
       (App (App (Val (@! v3.sendMsgReadIndexResponse)) (Val #r)) (Val #m))
     {{ RET #(); True }} := by
-  -- Unprovable as stated: reads `rf.readOnly`, calls `send`/`bcastHeartbeat`/`readOnly.addRequest`, but `rf` is described only by the opaque axiom `own_raft`.
+  -- Unprovable as stated: `"#Hcom_in_term" ∷ True` is a placeholder (as in Rocq) for what
+  -- `readOnly.addRequest` needs (`is_raft_commit_inv`, `own_committed_in_term`,
+  -- `is_read_req_ctx`, and now the request-count bound `n < 2^64 - 1`), and `own_raft`
+  -- (an opaque axiom, see `wp_raft__committedEntryInCurrentTerm`) provides neither
+  -- `own_readOnly` for `rf.readOnly'` nor the state used by `bcastHeartbeat`
+  -- (`trk.Visit` with a closure, `sendHeartbeat`, `send`, which calls `Logger` methods).
   sorry -- Rocq: Admitted
 
 theorem wp_raft__stepLeader_MsgReadIndex (γ : raft_names) (r : loc) (rf : v3.raft.t)
@@ -864,23 +941,26 @@ theorem wp_raft__stepLeader_MsgReadIndex (γ : raft_names) (r : loc) (rf : v3.ra
         "%HmType" ∷ ⌜m.Type' = MsgReadIndex⌝ }}
       (App (App (Val (@! v3.stepLeader)) (Val #r)) (Val #m))
     {{ RET #(); True }} := by
-  -- Unprovable as stated: `stepLeader` uses `raft` state (trk, readOnly, ...) that only the opaque axiom `own_raft` describes.
+  -- Unprovable as stated: `stepLeader` uses `raft` state (trk, readOnly, raftLog, ...) that only
+  -- the opaque axiom `own_raft` describes, and calls `sendMsgReadIndexResponse` and
+  -- `committedEntryInCurrentTerm` (above). It also calls `r.trk.IsSingleton()`, which is stuck
+  -- because of the goose bug described at `wp_ProgressTracker__IsSingleton`.
   sorry -- Rocq: Admitted
 
 set_option goose.wp.extras true in
 set_option maxHeartbeats 1000000 in
 theorem wp_readOnly_maybeAdvance (γ : raft_names) (r : loc) (term : w64)
-    (c : v3.quorum.JointConfig.t) (voters_ref : loc) (voters : gmap w64 Unit) :
+    (c : v3.quorum.JointConfig.t) (voters_ref : loc) (voters : gmap w64 Unit) (n : Nat) :
     0 < gmap.size cfg →
     {{ is_pkg_init (PROP := IProp GF) raft ∗
-        "Hown" ∷ own_readOnly cfg γ r term ∗
+        "Hown" ∷ own_readOnly cfg γ r term n ∗
         -- The config `c` is simple (not joint): first component is voters, second is empty.
         "%Hc" ∷ ⌜c.arr = [voters_ref, map.nil]⌝ ∗
         "voters" ∷ voters_ref ↦$ voters ∗
         "%Hvoters_cfg" ∷ ⌜domSet voters = cfg⌝ }}
       (App (Val (r @!! go.type.PointerType v3.readOnly @!! go!"maybeAdvance")) (Val #c))
     {{ (rs : slice.t) (reads : List loc), RET #rs;
-        own_readOnly cfg γ r term ∗
+        own_readOnly cfg γ r term n ∗
         voters_ref ↦$ voters ∗
         rs ↦* reads ∗
         -- Every returned read request has a valid read index witness.
@@ -927,7 +1007,7 @@ theorem wp_readOnly_maybeAdvance (γ : raft_names) (r : loc) (term : w64)
     · unfold own_readOnly
       iexists ro, acks, unconfirmedReads, read_reqs
       iframe # ∗
-      ipureintro; exact Hoption
+      ipureintro; exact ⟨Hoption, Hcount⟩
     · imodintro
       iintro %i %rp %h
       simp at h
@@ -1022,7 +1102,13 @@ theorem wp_readOnly_maybeAdvance (γ : raft_names) (r : loc) (term : w64)
       acks, unconfirmedReads.drop k, read_reqs.drop k
     dsimp only
     iframe # ∗
-    ipureintro; exact Hoption
+    ipureintro; refine ⟨Hoption, ?_, Hcount.2⟩
+    rw [List.length_drop, ← Hcount.1]
+    have Hk' : (k : Int) = uint.Z newConfirmedReads - uint.Z ro.confirmedReads' := by
+      rw [Hk_eq]; word
+    have : (uint.nat newConfirmedReads : Int) = uint.Z newConfirmedReads := by word
+    have : (uint.nat ro.confirmedReads' : Int) = uint.Z ro.confirmedReads' := by word
+    omega
   · -- every returned read request has a valid read index witness
     imodintro
     iintro %i %rp %Hlookup
@@ -1090,18 +1176,20 @@ set_option goose.wp.extras true in
 set_option maxHeartbeats 1000000 in
 theorem wp_readOnly_addRequest (γ : raft_names) (r : loc) (term commitIndex : w64)
     (req : v3.raftpb.Message.t) (read_req_ctx : go_string) (log : List (List w8)) (dq : DFrac)
-    (Ψ : List (List w8) → IProp GF) :
+    (Ψ : List (List w8) → IProp GF) (n : Nat) :
     {{ is_pkg_init (PROP := IProp GF) raft ∗
         "#Hinv" ∷ is_raft_commit_inv γ ∗
-        "Hown" ∷ own_readOnly cfg γ r term ∗
+        "Hown" ∷ own_readOnly cfg γ r term n ∗
         "Hcom" ∷ own_committed_in_term γ term log ∗
         "%HcommitIndex" ∷ ⌜uint.nat commitIndex = log.length⌝ ∗
+        -- Lean deviation (Rocq: no such precondition; see `own_readOnly`)
+        "%Hn" ∷ ⌜n < 2 ^ 64 - 1⌝ ∗
         "Hctx" ∷ req.Context' ↦*{dq} read_req_ctx ∗
         "#Hread_ctx" ∷ is_read_req_ctx γ read_req_ctx Ψ }}
       (App (App (Val (r @!! go.type.PointerType v3.readOnly @!! go!"addRequest"))
         (Val #commitIndex)) (Val #req))
-    {{ RET #(); own_readOnly cfg γ r term }} := by
-  wp_start as ⟨#Hinv, Hown, Hcom, %HcommitIndex, Hctx, #Hread_ctx⟩
+    {{ RET #(); own_readOnly cfg γ r term (n + 1) }} := by
+  wp_start as ⟨#Hinv, Hown, Hcom, %HcommitIndex, %Hn, Hctx, #Hread_ctx⟩
   iunfold own_readOnly at Hown
   icases Hown with ⟨%ro, %acks, %unconfirmedReads, %read_reqs, Hown⟩
   iNamed Hown
@@ -1131,8 +1219,8 @@ theorem wp_readOnly_addRequest (γ : raft_names) (r : loc) (term commitIndex : w
   ihave %Hrr_len := BigSepL2.bigSepL2_length $$ HunconfirmedReads
   imod own_heartbeat_auth_new
       (union_list (read_reqs.map Prod.snd ++ [stale_ids'])) γ term _
-      -- Unprovable as stated: `own_readOnly` does not bound `confirmedReads + len unconfirmedReads` below `2^64 - 1`.
-      (by sorry) -- Rocq: Admitted (admit for overflow of incrementing value)
+      -- (Rocq: admitted overflow side condition; here from `Hcount` and `Hn`)
+      (by have := Hcount.1; word)
       $$ Hhb_auth with ⟨Hhb_auth, #Hhb⟩
   ipersist Hreq
   ipersist Hctx
@@ -1236,7 +1324,9 @@ theorem wp_readOnly_addRequest (γ : raft_names) (r : loc) (term commitIndex : w
     read_reqs ++ [((read_req_ctx, commitIndex), union_list (read_reqs.map Prod.snd ++ [stale_ids']))]
   dsimp only
   iframe # ∗
-  ipureintro; exact Hoption
+  ipureintro; refine ⟨Hoption, ?_, by omega⟩
+  simp only [List.length_append, List.length_singleton]
+  omega
 
 end wps2
 
