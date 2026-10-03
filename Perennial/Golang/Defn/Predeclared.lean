@@ -107,6 +107,8 @@ abbrev byte : go.type := uint8
 def uint16 : go.type := go.Named go!"uint16" []
 def uint32 : go.type := go.Named go!"uint32" []
 def uint64 : go.type := go.Named go!"uint64" []
+/-- 64-bit unsigned integer (Lean addition: Rocq declares only the name); see
+`go.UintptrSemantics`. -/
 def uintptr : go.type := go.Named go!"uintptr" []
 
 -- Untyped types
@@ -131,6 +133,7 @@ class inductive is_predeclared : go.type → Prop
   | is_predeclared_uint16 : is_predeclared go.uint16
   | is_predeclared_uint32 : is_predeclared go.uint32
   | is_predeclared_uint64 : is_predeclared go.uint64
+  | is_predeclared_uintptr : is_predeclared go.uintptr
   | is_predeclared_int : is_predeclared go.int
   | is_predeclared_int8 : is_predeclared go.int8
   | is_predeclared_int16 : is_predeclared go.int16
@@ -146,14 +149,16 @@ class inductive is_predeclared : go.type → Prop
 
 attribute [instance] is_predeclared.is_predeclared_uint is_predeclared.is_predeclared_uint8
   is_predeclared.is_predeclared_uint16 is_predeclared.is_predeclared_uint32
-  is_predeclared.is_predeclared_uint64 is_predeclared.is_predeclared_int
+  is_predeclared.is_predeclared_uint64 is_predeclared.is_predeclared_uintptr
+  is_predeclared.is_predeclared_int
   is_predeclared.is_predeclared_int8 is_predeclared.is_predeclared_int16
   is_predeclared.is_predeclared_int32 is_predeclared.is_predeclared_int64
   is_predeclared.is_predeclared_string is_predeclared.is_predeclared_bool
   is_predeclared.is_predeclared_Pointer is_predeclared.is_predeclared_float32
   is_predeclared.is_predeclared_float64 is_predeclared.is_predeclared_proph_id
 export is_predeclared (is_predeclared_uint is_predeclared_uint8 is_predeclared_uint16
-  is_predeclared_uint32 is_predeclared_uint64 is_predeclared_int is_predeclared_int8
+  is_predeclared_uint32 is_predeclared_uint64 is_predeclared_uintptr is_predeclared_int
+  is_predeclared_int8
   is_predeclared_int16 is_predeclared_int32 is_predeclared_int64 is_predeclared_string
   is_predeclared_bool is_predeclared_Pointer is_predeclared_float32 is_predeclared_float64
   is_predeclared_proph_id)
@@ -748,6 +753,111 @@ export Uint8Semantics (go_zero_val_uint8 comparable_uint8 underlying_uint8 go_eq
   convert_uint_to_uint8 convert_uint64_to_uint8 convert_uint32_to_uint8 convert_uint16_to_uint8
   convert_uint8_to_uint8)
 
+/-- Lean addition (not in Rocq: `new/golang/defn/predeclared.v` only declares the type name
+`go.uintptr`, with no semantics, so Rocq goose cannot use `uintptr` values). Trusted.
+
+Go's predeclared `uintptr` is "an unsigned integer type large enough to store the uninterpreted
+bits of a pointer value" (Go spec, Numeric types). It is word-sized: 64 bits on a 64-bit platform.
+Perennial's semantics already assumes a 64-bit platform (`go.int` and `go.uint` are `w64`, e.g.
+`convert_int_to_int64` is the identity), and `uintptr` being 64 bits is part of that same
+assumption, not a separate choice. So `uintptr` is modelled exactly like `uint`/`uint64`:
+
+* values are `w64` (it shares the `TypeReprUnderlying _ w64` representation with
+  `uint`/`uint64`/`int`/`int64`), the zero value is `W64 0`, and it is strictly comparable;
+* it occupies one heap location (`is_predeclared_uintptr`);
+* arithmetic, bitwise operations and shifts are the unsigned `w64` ones (wrapping mod 2^64,
+  `>>` logical), comparisons are unsigned (`uint.Z`), as for `uint64`;
+* conversions to and from the other integer types (and from untyped integer constants) are
+  those of `uint64`: identity to/from 64-bit types, truncation to narrower types, sign/zero
+  extension from narrower signed/unsigned types.
+
+Conversions between pointers (or `unsafe.Pointer`) and `uintptr` are deliberately *not*
+modelled: there is no `Convert unsafe.Pointer go.uintptr` or `Convert go.uintptr unsafe.Pointer`
+fact, so such a conversion is stuck (a program using one cannot be verified). A `uintptr` value
+is thus only ever an integer, never the address of an object. -/
+class UintptrSemantics [GoSemanticsFunctions] : Prop where
+  go_zero_val_uintptr : TypeReprUnderlying go.uintptr w64
+  comparable_uintptr : ⟦CheckComparable go.uintptr, #()⟧ ⤳[under] #()
+  underlying_uintptr : go.uintptr ↓u go.uintptr
+  go_eq_uintptr : IsStrictlyComparable go.uintptr w64
+  le_uintptr (v1 v2 : w64) : ⟦GoOp GoLe go.uintptr, (#v1, #v2)⟧
+    ⤳[under] #(decide (uint.Z v1 ≤ uint.Z v2))
+  lt_uintptr (v1 v2 : w64) : ⟦GoOp GoLt go.uintptr, (#v1, #v2)⟧
+    ⤳[under] #(decide (uint.Z v1 < uint.Z v2))
+  ge_uintptr (v1 v2 : w64) : ⟦GoOp GoGe go.uintptr, (#v1, #v2)⟧
+    ⤳[under] #(decide (uint.Z v2 ≤ uint.Z v1))
+  gt_uintptr (v1 v2 : w64) : ⟦GoOp GoGt go.uintptr, (#v1, #v2)⟧
+    ⤳[under] #(decide (uint.Z v2 < uint.Z v1))
+  plus_uintptr (v1 v2 : w64) : ⟦GoOp GoPlus go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
+  sub_uintptr (v1 v2 : w64) : ⟦GoOp GoSub go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
+  mul_uintptr (v1 v2 : w64) : ⟦GoOp GoMul go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
+  div_uintptr (v1 v2 : w64) : ⟦GoOp GoDiv go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 / v2)
+  remainder_uintptr (v1 v2 : w64) : ⟦GoOp GoRemainder go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 % v2)
+  and_uintptr (v1 v2 : w64) : ⟦GoOp GoAnd go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
+  or_uintptr (v1 v2 : w64) : ⟦GoOp GoOr go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
+  xor_uintptr (v1 v2 : w64) : ⟦GoOp GoXor go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
+  shiftl_uintptr (v1 v2 : w64) : ⟦GoOp GoShiftl go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_uintptr (v1 v2 : w64) : ⟦GoOp GoShiftr go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+
+  complement_uintptr (v : w64) : ⟦GoUnOp GoComplement go.uintptr, #v⟧ ⤳[under] #(~~~v)
+
+  convert_untyped_int_to_uintptr (v : Int) : ⟦Convert go.untyped_int go.uintptr, #v⟧
+    ⤳[under] #(W64 v)
+  convert_int_to_uintptr (v : w64) : ⟦Convert go.int go.uintptr, #v⟧ ⤳[under] #v
+  convert_int64_to_uintptr (v : w64) : ⟦Convert go.int64 go.uintptr, #v⟧ ⤳[under] #v
+  convert_int32_to_uintptr (v : w32) : ⟦Convert go.int32 go.uintptr, #v⟧ ⤳[under] #(W64 (sint.Z v))
+  convert_int16_to_uintptr (v : w16) : ⟦Convert go.int16 go.uintptr, #v⟧ ⤳[under] #(W64 (sint.Z v))
+  convert_int8_to_uintptr (v : w8) : ⟦Convert go.int8 go.uintptr, #v⟧ ⤳[under] #(W64 (sint.Z v))
+  convert_uint_to_uintptr (v : w64) : ⟦Convert go.uint go.uintptr, #v⟧ ⤳[under] #v
+  convert_uint64_to_uintptr (v : w64) : ⟦Convert go.uint64 go.uintptr, #v⟧ ⤳[under] #v
+  convert_uint32_to_uintptr (v : w32) : ⟦Convert go.uint32 go.uintptr, #v⟧
+    ⤳[under] #(W64 (uint.Z v))
+  convert_uint16_to_uintptr (v : w16) : ⟦Convert go.uint16 go.uintptr, #v⟧
+    ⤳[under] #(W64 (uint.Z v))
+  convert_uint8_to_uintptr (v : w8) : ⟦Convert go.uint8 go.uintptr, #v⟧ ⤳[under] #(W64 (uint.Z v))
+  convert_uintptr_to_uintptr (v : w64) : ⟦Convert go.uintptr go.uintptr, #v⟧ ⤳[under] #v
+  convert_uintptr_to_int (v : w64) : ⟦Convert go.uintptr go.int, #v⟧ ⤳[under] #v
+  convert_uintptr_to_int64 (v : w64) : ⟦Convert go.uintptr go.int64, #v⟧ ⤳[under] #v
+  convert_uintptr_to_int32 (v : w64) : ⟦Convert go.uintptr go.int32, #v⟧ ⤳[under] #(W32 (uint.Z v))
+  convert_uintptr_to_int16 (v : w64) : ⟦Convert go.uintptr go.int16, #v⟧ ⤳[under] #(W16 (uint.Z v))
+  convert_uintptr_to_int8 (v : w64) : ⟦Convert go.uintptr go.int8, #v⟧ ⤳[under] #(W8 (uint.Z v))
+  convert_uintptr_to_uint (v : w64) : ⟦Convert go.uintptr go.uint, #v⟧ ⤳[under] #v
+  convert_uintptr_to_uint64 (v : w64) : ⟦Convert go.uintptr go.uint64, #v⟧ ⤳[under] #v
+  convert_uintptr_to_uint32 (v : w64) : ⟦Convert go.uintptr go.uint32, #v⟧
+    ⤳[under] #(W32 (uint.Z v))
+  convert_uintptr_to_uint16 (v : w64) : ⟦Convert go.uintptr go.uint16, #v⟧
+    ⤳[under] #(W16 (uint.Z v))
+  convert_uintptr_to_uint8 (v : w64) : ⟦Convert go.uintptr go.uint8, #v⟧ ⤳[under] #(W8 (uint.Z v))
+
+attribute [instance] UintptrSemantics.go_zero_val_uintptr UintptrSemantics.comparable_uintptr
+  UintptrSemantics.underlying_uintptr UintptrSemantics.go_eq_uintptr UintptrSemantics.le_uintptr
+  UintptrSemantics.lt_uintptr UintptrSemantics.ge_uintptr UintptrSemantics.gt_uintptr
+  UintptrSemantics.plus_uintptr UintptrSemantics.sub_uintptr UintptrSemantics.mul_uintptr
+  UintptrSemantics.div_uintptr UintptrSemantics.remainder_uintptr UintptrSemantics.and_uintptr
+  UintptrSemantics.or_uintptr UintptrSemantics.xor_uintptr UintptrSemantics.shiftl_uintptr
+  UintptrSemantics.shiftr_uintptr UintptrSemantics.complement_uintptr
+  UintptrSemantics.convert_untyped_int_to_uintptr UintptrSemantics.convert_int_to_uintptr
+  UintptrSemantics.convert_int64_to_uintptr UintptrSemantics.convert_int32_to_uintptr
+  UintptrSemantics.convert_int16_to_uintptr UintptrSemantics.convert_int8_to_uintptr
+  UintptrSemantics.convert_uint_to_uintptr UintptrSemantics.convert_uint64_to_uintptr
+  UintptrSemantics.convert_uint32_to_uintptr UintptrSemantics.convert_uint16_to_uintptr
+  UintptrSemantics.convert_uint8_to_uintptr UintptrSemantics.convert_uintptr_to_uintptr
+  UintptrSemantics.convert_uintptr_to_int UintptrSemantics.convert_uintptr_to_int64
+  UintptrSemantics.convert_uintptr_to_int32 UintptrSemantics.convert_uintptr_to_int16
+  UintptrSemantics.convert_uintptr_to_int8 UintptrSemantics.convert_uintptr_to_uint
+  UintptrSemantics.convert_uintptr_to_uint64 UintptrSemantics.convert_uintptr_to_uint32
+  UintptrSemantics.convert_uintptr_to_uint16 UintptrSemantics.convert_uintptr_to_uint8
+export UintptrSemantics (go_zero_val_uintptr comparable_uintptr underlying_uintptr go_eq_uintptr
+  le_uintptr lt_uintptr ge_uintptr gt_uintptr plus_uintptr sub_uintptr mul_uintptr div_uintptr
+  remainder_uintptr and_uintptr or_uintptr xor_uintptr shiftl_uintptr shiftr_uintptr
+  complement_uintptr convert_untyped_int_to_uintptr convert_int_to_uintptr convert_int64_to_uintptr
+  convert_int32_to_uintptr convert_int16_to_uintptr convert_int8_to_uintptr convert_uint_to_uintptr
+  convert_uint64_to_uintptr convert_uint32_to_uintptr convert_uint16_to_uintptr
+  convert_uint8_to_uintptr convert_uintptr_to_uintptr convert_uintptr_to_int
+  convert_uintptr_to_int64 convert_uintptr_to_int32 convert_uintptr_to_int16 convert_uintptr_to_int8
+  convert_uintptr_to_uint convert_uintptr_to_uint64 convert_uintptr_to_uint32
+  convert_uintptr_to_uint16 convert_uintptr_to_uint8)
+
 class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_float : go.untyped_float ↓u go.untyped_float
   convert_untyped_float64 (v : w64) : ⟦Convert go.untyped_float go.float64, #v⟧ ⤳[under] #v
@@ -848,6 +958,7 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   [uint32_semantics : Uint32Semantics]
   [uint16_semantics : Uint16Semantics]
   [uint8_semantics : Uint8Semantics]
+  [uintptr_semantics : UintptrSemantics] -- Lean addition, see `UintptrSemantics`
   [untyped_float_semantics : UntypedFloatSemantics]
   [float64_semantics : Float64Semantics]
   [float32_semantics : Float32Semantics]
@@ -886,6 +997,7 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.int8_semantics PredeclaredSemantics.uint_semantics
   PredeclaredSemantics.uint64_semantics PredeclaredSemantics.uint32_semantics
   PredeclaredSemantics.uint16_semantics PredeclaredSemantics.uint8_semantics
+  PredeclaredSemantics.uintptr_semantics
   PredeclaredSemantics.untyped_float_semantics PredeclaredSemantics.float64_semantics
   PredeclaredSemantics.float32_semantics PredeclaredSemantics.prophid_semantics
   PredeclaredSemantics.comparable_string PredeclaredSemantics.go_eq_string
@@ -901,7 +1013,8 @@ export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclare
   unsafe_sem comparable_bool go_eq_bool underlying_bool go_zero_val_bool go_unop_not_bool
   untyped_int_semantics int_semantics int64_semantics int32_semantics int16_semantics
   int8_semantics uint_semantics uint64_semantics uint32_semantics uint16_semantics
-  uint8_semantics untyped_float_semantics float64_semantics float32_semantics prophid_semantics
+  uint8_semantics uintptr_semantics untyped_float_semantics float64_semantics float32_semantics
+  prophid_semantics
   comparable_string go_eq_string underlying_string plus_string go_zero_val_string
   underlying_untyped_nil convert_nil_pointer convert_nil_function convert_nil_slice
   convert_nil_chan convert_nil_map convert_nil_interface type_repr_empty_struct)

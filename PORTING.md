@@ -51,6 +51,12 @@ reasoning, `program_proof/`) is out of scope.
     coqutil's `word`. Do not use `bv_decide`/`native_decide`: they trust
     native code (`Lean.ofReduceBool`); prove bitwise facts via `toNat`.
   * `go_string` (Rocq `byte_string`) is `List w8`.
+* **64-bit platform.** As in Rocq, the Go semantics assumes a 64-bit platform: the
+  word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
+  `uintptr` has semantics only in Lean (`go.UintptrSemantics`,
+  `Perennial/Golang/Defn/Predeclared.lean`; Rocq declares only the type name). It
+  is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
+  conversions are not modelled: they are stuck.
 * **Generated code is regenerated, not translated.** `new/code` and
   `new/generatedproof` come from goose. `goose/` here carries a Lean backend
   that emits `Perennial/Code/**` and `Perennial/GeneratedProof/**`.

@@ -77,6 +77,13 @@ None found.
   that is not admitted in Rocq; the directory is untracked and in progress. Not
   yet ported: `theory/chan.v`, `chan_au_recv.v`, `sync_proof/{waitgroup,waitgroup_join,rwmutex_guard}.v`.
   `PORTING.md` refers to `PORTING_STATUS.md`, which does not exist.
+- **`uintptr` semantics (Lean addition, trusted).** Rocq declares only the type
+  name `go.uintptr`. Lean adds `go.UintptrSemantics` (`Defn/Predeclared.lean`; it is a field
+  `uintptr_semantics` of `PredeclaredSemantics`), plus `is_predeclared_uintptr` and
+  `into_val_typed_uintptr`. Under the existing 64-bit-platform assumption, `uintptr` is
+  `uint64`: the values are `w64`, the arithmetic and comparisons are unsigned, and the
+  integer conversions are those of `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
+  conversions are not modelled, so they are stuck.
 - **`sync_proof/once.lean`** fixes `HasLC.hasLC`, while the other files are
   generic over `hlc`. This is harmless.
 

@@ -470,4 +470,140 @@ end def_
 end testpkg
 end
 
+
+
+/-! A struct with a by-value `uintptr` field, in the shape goose generates:
+`type ub struct { p uintptr }`. -/
+noncomputable section
+namespace testpkg
+
+def ub [ffi_syntax] [GoGlobalContext] : go.type := (go.type.Named go!"testpkg.ub" [])
+attribute [irreducible] ub
+
+namespace ub
+structure t [ffi_syntax] where
+  mk ::
+  p' : w64
+instance zero_val [ffi_syntax] : ZeroVal t := ⟨t.mk zero_val_def⟩
+end ub
+
+@[reducible] def ub'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"p" go.uintptr)]
+@[irreducible] def ub'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl := ub'fds_unsealed
+instance equals_unfold_ub [ffi_syntax] [GoGlobalContext] : EqualsUnfold ub'fds ub'fds_unsealed :=
+  ⟨by unfold ub'fds; rfl⟩
+@[reducible] def «ubⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type := (go.type.StructType ub'fds)
+
+class ub_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  ub_type_repr : go.TypeReprUnderlying «ubⁱᵐᵖˡ» ub.t
+  ub_underlying : go.UnderlyingDirectedEq ub «ubⁱᵐᵖˡ»
+  ub_get_p : ∀ (x : ub.t), go.IsGoStepPureDetTagged under (StructFieldGet «ubⁱᵐᵖˡ» go!"p") #x (Val #(x.p'))
+  ub_set_p : ∀ (x : ub.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ubⁱᵐᵖˡ» go!"p") (PairV #x #y) (Val #(({ x with p' := y } : ub.t)))
+attribute [instance] ub_Assumptions.ub_type_repr ub_Assumptions.ub_underlying
+  ub_Assumptions.ub_get_p ub_Assumptions.ub_set_p
+
+section def_
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : ub_Assumptions]
+
+instance ub_typed_pointsto : TypedPointsto (GF := GF) ub.t where
+  typed_pointsto_def l v dq := iprop(
+    "p" ∷ typed_pointsto (struct_field_ref ub.t go!"p" l) v.p' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance ub_access_load_p (l : loc) (v : ub.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref ub.t go!"p" l) v.p' dq)
+      (typed_pointsto (struct_field_ref ub.t go!"p" l) v.p' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+  solve_pointsto_access_struct
+
+instance ub_access_store_p (l : loc) (v : ub.t) (p' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref ub.t go!"p" l) v.p' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref ub.t go!"p" l) p' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with p' := p' } : ub.t) (DFrac.own 1)) := by
+  solve_pointsto_access_struct
+
+instance ub_into_val_typed : IntoValTypedUnderlying (GF := GF) ub.t «ubⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+/-- Load, increment and store the `uintptr` field. -/
+example (l : loc) (v : ub.t) :
+    {{ (l ↦ v : IProp GF) }}
+      gl(StructFieldRef ub "p" #l <-[go.uintptr]
+           (![go.uintptr] (StructFieldRef ub "p" #l) +⟨go.uintptr⟩ #(W64 1)) ;;
+         ![go.uintptr] (StructFieldRef ub "p" #l))
+    {{ RET #(v.p' + W64 1); l ↦ ({ v with p' := v.p' + W64 1 } : ub.t) }} := by
+  iintro %Φ Hl HΦ
+  wp_auto
+  iapply HΦ $$ Hl
+
+end def_
+end testpkg
+end
+
+/-! ### `uintptr` (Lean addition, see `go.UintptrSemantics`): a 64-bit unsigned integer -/
+section uintptr_tests
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+/-- Allocation, load, store and wrapping addition at `uintptr`. -/
+example : ⊢ WP gl(let: "x" := GoAlloc go.uintptr #(W64 (2^64 - 1)) in
+     "x" <-[go.uintptr] (![go.uintptr] "x" +⟨go.uintptr⟩ #(W64 1)) ;;
+     ![go.uintptr] "x") {{ v, (⌜v = #(W64 0)⌝ : IProp GF) }} := by
+  wp_auto
+  ipureintro; rfl
+
+/-- The zero value of `uintptr` is `W64 0`. -/
+example : ⊢ WP (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #()))
+    {{ v, (⌜v = #(W64 0)⌝ : IProp GF) }} := by
+  wp_auto
+  ipureintro; rfl
+
+/-- Typed points-to and `wp_load` at `uintptr`. -/
+example (l : loc) (v : w64) (Φ : val → IProp GF) :
+    (l ↦ v) ∗ (l ↦ v -∗ Φ #v) ⊢ WP gl(![go.uintptr] #l) {{ Φ }} := by
+  iintro ⟨Hl, H⟩
+  wp_apply IntoValTyped.wp_load (t := go.uintptr) l (DFrac.own 1) v $$ [$Hl] as Hl
+  iapply H $$ Hl
+
+/-- Comparisons at `uintptr` are unsigned. -/
+example (Φ : val → IProp GF) :
+    Φ #true ⊢ WP gl(#(W64 1) <⟨go.uintptr⟩ #(W64 (2^64 - 1))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+example (Φ : val → IProp GF) (x : w64) :
+    Φ #true ⊢ WP gl(#x =⟨go.uintptr⟩ #x) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+/-- Conversions to and from `uintptr` (identity on 64-bit types, truncation to narrower ones). -/
+example (Φ : val → IProp GF) (x : w64) :
+    Φ #x ⊢ WP (App (Val (GoInstruction (Convert go.uintptr go.uint64)))
+      (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) (Val #x))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W8 1) ⊢ WP (App (Val (GoInstruction (Convert go.uintptr go.uint8)))
+      (App (Val (GoInstruction (Convert go.int go.uintptr))) (Val #(W64 257)))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show W8 (uint.Z (W64 257)) = W8 1 from rfl]
+  iexact H
+
+end uintptr_tests
+
 end Perennial
