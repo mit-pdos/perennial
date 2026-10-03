@@ -7,7 +7,10 @@ becomes `wrap (uint.Z x + uint.Z y)`) and calls `lia`. Here words are
 
 `word` (see `word_fast`) does:
 
-1. drop hypotheses that mention Iris entailments (`word_filter iris`);
+1. drop hypotheses that mention Iris entailments (`word_filter iris`), and the
+   hypotheses `omega` cannot use or that are not connected to the goal through
+   shared variables (`word_filter pre`), so that the rewriting steps below only
+   see the relevant hypotheses;
 2. unfold `uint.Z`, `sint.Z`, `W64`, ... and everything tagged `@[word_unfold]`
    (Rocq: `Hint Unfold foo : word`), rewrite sign extensions
    `W64 (sint.Z (x : w32))`, and evaluate word literals (`W64 3` becomes `3#64`,
@@ -18,16 +21,28 @@ becomes `wrap (uint.Z x + uint.Z y)`) and calls `lia`. Here words are
    it to `x.toInt / y.toInt` (`word_sdiv_facts`);
 5. rewrite `toNat` of BitVec operations into `Nat` arithmetic with `% 2^n`, and
    shifts by literals into division/multiplication (`word_tonat`);
-6. call `omega`, treating `x.toInt` as an atom: first without the hypotheses
-   that make `omega` case split (Nat subtraction, `Int.toNat`, `min`, `≠`, ...;
-   `word_filter_simple`; this gives much smaller proofs), then with them;
-7. if that fails, add for every `x.toInt` the fact relating it to `x.toNat`
+6. for `(x + y).toInt`, `(x - 1#64).toInt`, ... in the goal, add the equation
+   `(x + y).toInt = x.toInt + y.toInt` when `omega` proves that it does not
+   overflow (`word_sint_arith goal`), and call `omega` without the hypotheses
+   that make it case split (Nat subtraction, `Int.toNat`, `min`, `≠`, ...;
+   `word_filter_simple`; this gives much smaller proofs);
+7. do the same for the `toInt`s of the hypotheses (`word_sint_arith`), and call
+   `omega` without, then with, the hypotheses that make it case split;
+8. if that fails, add for every `x.toInt` the fact relating it to `x.toNat`
    (`sint_Z_cases`), resolving the case split with a quick `omega` call when
    the context decides the sign and rewriting `x.toInt` away
    (`word_sint_resolve`), and call `omega` again, first without the unresolved
    case splits (`word_drop_cases`).
 
-Only if that fails, the old, unfiltered pipeline (`word_prep; omega`, which
+Every `omega` call of `word` is `word_omega` (`omegaAtomized`): `toInt`/`toNat`
+terms (and `Int.toNat`s) are replaced by variables first, which keeps the
+kernel from unfolding them while checking the proof (it could blow up, see
+`etc/omega-kernel-blowup-repro.lean`) and avoids `omega`'s case splits on
+`Int.toNat`s. The `omega` calls of the steps above are cached, also their
+failures, and so are whole `word` proofs (`Perennial/Std/Word/Cache.lean`): the
+same side condition is often elaborated several times in the same context.
+
+Only if that fails, the old, unfiltered pipeline (`word_prep; word_omega`, which
 case-splits on the sign of every `toInt` and can be exponential) is tried under
 a heartbeat limit, then `omega`, then `bv_normalize` (the kernel-checked
 rewriting front end of `bv_decide`; it closes some bitwise goals on concrete
@@ -46,6 +61,9 @@ no-overflow side conditions with `word`.
 -/
 import Perennial.Std.Word
 import Perennial.Std.Attrs
+import Perennial.Std.Word.ToIntArith
+import Perennial.Std.Word.Cache
+import Perennial.Std.Word.SimpSets
 
 namespace Perennial
 
@@ -284,27 +302,29 @@ elab "word_bitwise_goal" : tactic => withMainContext do
       | _ => false).isSome do
     throwError "word: not a bitwise goal"
 
+attribute [word_unfold_simp] uint.Z uint.nat sint.Z sint.nat W64 W32 W16 W8 toInt_ofInt_toInt
+  BitVec.reduceOfInt BitVec.reduceToInt BitVec.reduceToNat Int.reducePow Nat.reducePow Int.reduceNeg
+
 /-- Unfolding and literal evaluation of `word` (step 2 of the module docstring). -/
 macro "word_unfold_lit" : tactic => `(tactic| (
-  (try simp (disch := decide) only [uint.Z, uint.nat, sint.Z, sint.nat, W64, W32, W16, W8,
-    word_unfold, toInt_ofInt_toInt] at *)
-  (try simp only [BitVec.reduceOfInt, BitVec.reduceToInt, BitVec.reduceToNat, Int.reducePow,
-    Nat.reducePow, Int.reduceNeg] at *)))
+  (try simp (disch := decide) only [word_unfold_simp, word_unfold] at *)))
+
+attribute [word_tonat_simp] BitVec.toNat_ofNat BitVec.toNat_ofFin
+    BitVec.toNat_setWidth BitVec.toNat_neg BitVec.ofNat_eq_ofNat BitVec.toNat_eq
+    BitVec.toNat_ne BitVec.toNat_ofInt BitVec.toNat_not BitVec.toNat_shiftLeft
+    BitVec.toNat_ushiftRight BitVec.toNat_add BitVec.toNat_sub BitVec.toNat_mul
+    BitVec.le_def BitVec.lt_def BitVec.toNat_udiv BitVec.toNat_umod BitVec.toNat_twoPow
+    BitVec.toNat_cast BitVec.toNat_ofNatLT BitVec.toNat_ofBool
+    BitVec.ushiftRight_eq' BitVec.shiftLeft_eq' Nat.shiftRight_eq_div_pow Nat.shiftLeft_eq
+    Int.toNat_natCast Int.natCast_pow Nat.reduceMod Nat.reducePow Nat.reduceSub
+    Nat.reduceAdd Nat.reduceMul Nat.reduceDiv Int.reduceMod Int.reducePow Int.reduceToNat
+    Int.reduceNeg Int.reduceNatCast implies_true and_true true_and and_self true_implies
+    not_true_eq_false not_false_eq_true false_implies or_true true_or
 
 /-- `toNat` of BitVec operations to `Nat` arithmetic, shifts by literals to
 division/multiplication, literal arithmetic evaluated (step 5). -/
 macro "word_tonat" : tactic => `(tactic|
-  (try simp -implicitDefEqProofs only [BitVec.toNat_ofNat, BitVec.toNat_ofFin,
-    BitVec.toNat_setWidth, BitVec.toNat_neg, BitVec.ofNat_eq_ofNat, BitVec.toNat_eq,
-    BitVec.toNat_ne, BitVec.toNat_ofInt, BitVec.toNat_not, BitVec.toNat_shiftLeft,
-    BitVec.toNat_ushiftRight, BitVec.toNat_add, BitVec.toNat_sub, BitVec.toNat_mul,
-    BitVec.le_def, BitVec.lt_def, BitVec.toNat_udiv, BitVec.toNat_umod, BitVec.toNat_twoPow,
-    BitVec.toNat_cast, BitVec.toNat_ofNatLT, BitVec.toNat_ofBool,
-    BitVec.ushiftRight_eq', BitVec.shiftLeft_eq', Nat.shiftRight_eq_div_pow, Nat.shiftLeft_eq,
-    Int.toNat_natCast, Int.natCast_pow, Nat.reduceMod, Nat.reducePow, Nat.reduceSub,
-    Nat.reduceAdd, Nat.reduceMul, Nat.reduceDiv, Int.reduceMod, Int.reducePow, Int.reduceToNat,
-    Int.reduceNeg, Int.reduceNatCast, implies_true, and_true, true_and, and_self, true_implies,
-    not_true_eq_false, not_false_eq_true, false_implies, or_true, true_or] at *))
+  (try simp -implicitDefEqProofs only [word_tonat_simp] at *))
 
 /-- `word_tonat` on the goal only. -/
 macro "word_tonat_goal" : tactic => `(tactic|
@@ -357,8 +377,18 @@ def isDataVar (lctx : LocalContext) (x : FVarId) : MetaM Bool := do
 when the goal is arithmetic and mentions variables, the arithmetic hypotheses
 not connected to the goal through shared variables (transitively). Clearing is best-effort (dependencies
 are kept). -/
-elab "word_filter" iris:(&" iris")? : tactic => withMainContext do
+elab "word_filter" iris:(&" iris")? pre:(&" pre")? : tactic => withMainContext do
   let g ← getMainGoal
+  -- the definitions `word_unfold` unfolds (all of them if it has rewriting lemmas)
+  let unfoldSet ← do
+    let some ext ← getSimpExtension? `word_unfold | pure (some {})
+    let thms ← ext.getTheorems
+    if thms.lemmaNames.isEmpty && thms.pre.size == 0 && thms.post.size == 0 then
+      pure (some thms.toUnfold)
+    else pure none
+  let mayUnfold (ty : Expr) : Bool := match unfoldSet with
+    | none => true
+    | some ns => (ty.find? fun s => s.isConst && ns.contains s.constName!).isSome
   let lctx ← getLCtx
   let tgt ← instantiateMVars (← g.getType)
   let mut drop := #[]
@@ -369,7 +399,9 @@ elab "word_filter" iris:(&" iris")? : tactic => withMainContext do
     unless ← isProp ty do continue
     if mentionsEntailment ty then drop := drop.push h.fvarId; continue
     if iris.isSome then continue
-    unless ← isArithTy ty do drop := drop.push h.fvarId; continue
+    unless ← isArithTy ty do
+      -- before unfolding (`pre`), keep what `word_unfold` might turn into arithmetic
+      unless pre.isSome && mayUnfold ty do drop := drop.push h.fvarId; continue
     let fvs ← (collectFVars {} ty).fvarSet.toArray.filterM fun x => isDataVar lctx x
     cands := cands.push (h.fvarId, fvs)
   let tgtVars ← (collectFVars {} tgt).fvarSet.toArray.filterM fun x => isDataVar lctx x
@@ -424,6 +456,170 @@ def noteNoBeta (g : MVarId) (n : Name) (t v : Expr) : MetaM (FVarId × MVarId) :
     g.assign (mkApp (← mkLambdaFVars #[h] new) v)
     return (h.fvarId!, new.mvarId!)
 
+/-- Collect the subterms `Int.toNat t` of `e` (without loose bound variables). -/
+partial def collectToNatInt (e : Expr) (acc : Array Expr) : Array Expr :=
+  let acc :=
+    if e.isAppOfArity ``Int.toNat 1 && !e.hasLooseBVars && !acc.contains e then acc.push e
+    else acc
+  match e with
+  | .app f a => collectToNatInt a (collectToNatInt f acc)
+  | .lam _ t b _ => collectToNatInt b (collectToNatInt t acc)
+  | .forallE _ t b _ => collectToNatInt b (collectToNatInt t acc)
+  | .letE _ t v b _ => collectToNatInt b (collectToNatInt v (collectToNatInt t acc))
+  | .mdata _ b => collectToNatInt b acc
+  | .proj _ _ b => collectToNatInt b acc
+  | _ => acc
+
+/-- Collect the subterms `BitVec.toInt e` and `BitVec.toNat e` of `e` (without
+loose bound variables). -/
+partial def collectBVAtoms (e : Expr) (acc : Array Expr) : Array Expr :=
+  let acc :=
+    if (e.isAppOfArity ``BitVec.toInt 2 || e.isAppOfArity ``BitVec.toNat 2) &&
+        !e.hasLooseBVars && !acc.contains e then acc.push e
+    else acc
+  match e with
+  | .app f a => collectBVAtoms a (collectBVAtoms f acc)
+  | .lam _ t b _ => collectBVAtoms b (collectBVAtoms t acc)
+  | .forallE _ t b _ => collectBVAtoms b (collectBVAtoms t acc)
+  | .letE _ t v b _ => collectBVAtoms b (collectBVAtoms v (collectBVAtoms t acc))
+  | .mdata _ b => collectBVAtoms b acc
+  | .proj _ _ b => collectBVAtoms b acc
+  | _ => acc
+
+/-- `omega`, with the `BitVec.toInt`/`BitVec.toNat` terms of the goal and the
+hypotheses replaced by fresh variables first (plus `x.toNat < 2 ^ n` for the
+`toNat`s, which `omega` would add itself). Then the kernel cannot unfold an
+atom while checking `omega`'s proof: with atoms like `(pos + 4294967295#32).toInt`
+it would evaluate `pos.toNat + 4294967295` in unary, which overflows the stack
+(and can use tens of GB) — see `etc/omega-kernel-blowup-repro.lean`.
+
+With `toNatAtoms` (the default), `Int.toNat z` becomes a variable `k` too, with
+the fact `(k : Int) = z` when `omega` proves `0 ≤ z` without the hypotheses that
+make it case split, and the case split `toNat_cases` otherwise. (`omega` itself
+case splits on every `Int.toNat`, which costs 0.2-0.8s in large contexts.) -/
+partial def omegaAtomized (g : MVarId) (toNatAtoms := true) : TacticM Unit := g.withContext do
+  let tgt ← instantiateMVars (← g.getType)
+  let mut hs : Array Expr := #[]
+  let mut simple : Array FVarId := #[]
+  let mut atoms := collectBVAtoms tgt #[]
+  let mut tn := if toNatAtoms then collectToNatInt tgt #[] else #[]
+  for d in ← getLCtx do
+    if d.isImplementationDetail || d.isLet then continue
+    let ty ← instantiateMVars d.type
+    unless ← isProp ty do continue
+    if mentionsEntailment ty then continue
+    atoms := collectBVAtoms ty atoms
+    if toNatAtoms then
+      tn := collectToNatInt ty tn
+      if ← (conjuncts ty).anyM fun c => (splitty c : MetaM Bool) then simple := simple.push d.fvarId
+    hs := hs.push d.toExpr
+  -- the facts about the `Int.toNat`s (see the docstring)
+  let mut tnFacts : Array Expr := #[]
+  unless tn.isEmpty do
+    let nonneg ← tn.mapM fun e => mkAppM ``LE.le #[mkIntLit 0, e.appArg!]
+    let prove (p : Expr) : TacticM (Option Expr) := do
+      let m ← mkFreshExprSyntheticOpaqueMVar p
+      let mg ← m.mvarId!.tryClearMany simple
+      let ctx ← mg.withContext propContext
+      if ← failLookup p ctx then return none
+      let ok ← try
+          omegaAtomized mg false
+          pure true
+        catch _ => pure false
+      if ok then return some (← instantiateMVars m)
+      else
+        failStore p ctx
+        return none
+    let all ← nonneg[1:].foldlM (fun acc p => mkAppM ``And #[acc, p]) nonneg[0]!
+    let pfs : Array (Option Expr) ← do
+      if let some pf ← prove all then
+        let mut res : Array (Option Expr) := #[]
+        let mut cur := pf
+        for _ in [1:tn.size] do
+          res := res.push (some (← mkAppM ``And.right #[cur]))
+          cur ← mkAppM ``And.left #[cur]
+        res := res.push (some cur)
+        pure res.reverse
+      else if tn.size == 1 then pure #[none]
+      else nonneg.mapM prove
+    for h : i in [:tn.size] do
+      tnFacts := tnFacts.push <| ← match pfs[i]! with
+        | some pf => mkAppM ``toNat_of_nonneg_eq #[pf]
+        | none => mkAppM ``toNat_cases #[tn[i].appArg!]
+  setGoals [g]
+  atoms := tn ++ atoms
+  if atoms.isEmpty then
+    evalTactic (← `(tactic| omega)); return
+  -- identify atoms that agree up to reducible unfolding (`w64` vs `BitVec 64`,
+  -- instances): `rep[i]` is the index of the first such atom
+  let mut reps : Array Expr := #[]
+  let mut rep : Array Nat := #[]
+  for a in atoms do
+    let mut found := none
+    for h : j in [:reps.size] do
+      let b := reps[j]
+      if a.getAppFn == b.getAppFn then
+        if ← withReducible (isDefEq a b) then found := some j; break
+    match found with
+    | some j => rep := rep.push j
+    | none => rep := rep.push reps.size; reps := reps.push a
+  let lts ← reps.filterMapM fun a => do
+    if a.isAppOfArity ``BitVec.toNat 2 then
+      return some (mkApp2 (mkConst ``BitVec.isLt) (a.getArg! 0) (a.getArg! 1))
+    else return none
+  let lts := tnFacts ++ lts
+  let ltTys ← lts.mapM fun l => inferType l
+  let atomTys ← reps.mapM fun a => inferType a
+  -- `∀ atoms, hyps → x.toNat < 2^n → goal`, abstracting the atoms syntactically
+  let stmt ← withLocalDeclsDND (atomTys.map (`a, ·)) fun vs => do
+    let body ← withLocalDeclsDND (ltTys.map (`hlt, ·)) fun lfv => mkForallFVars (hs ++ lfv) tgt
+    let body := body.replace fun s =>
+      if s.isApp then (atoms.idxOf? s).map (vs[rep[·]!]!) else none
+    mkForallFVars vs body
+  let m ← mkFreshExprSyntheticOpaqueMVar stmt
+  let mg ← m.mvarId!.tryClearMany (hs.map (·.fvarId!))
+  let (_, mg) ← mg.introNP (reps.size + hs.size + lts.size)
+  setGoals [mg]
+  evalTactic (← `(tactic| omega))
+  g.assign (mkAppN m (reps ++ hs ++ lts))
+
+/-- A proof of `p` by `omegaAtomized` in the context of `main` with the
+hypotheses `clear` cleared, if it succeeds; cached (see `Cache.lean`), also the
+failures. Changes the goal list. -/
+def omegaCached (main : MVarId) (p : Expr) (clear : Array FVarId) : TacticM (Option Expr) := do
+  if let some pf ← main.withContext (cacheLookup p) then return some pf
+  let m ← main.withContext (mkFreshExprSyntheticOpaqueMVar p)
+  let mg ← m.mvarId!.tryClearMany clear
+  let ctx ← mg.withContext propContext
+  if ← failLookup p ctx then return none
+  let ok ← try
+      omegaAtomized mg
+      pure true
+    catch _ => pure false
+  if ok then
+    let pf ← instantiateMVars m
+    mg.withContext (cacheStore p pf)
+    return some pf
+  else
+    failStore p ctx
+    return none
+
+/-- `word_omega`: `omegaAtomized` on the main goal. -/
+elab "word_omega" : tactic => do
+  let g ← getMainGoal
+  let gs ← getGoals
+  omegaAtomized g
+  setGoals gs.tail
+
+attribute [word_resolve_simp] BitVec.toNat_ofNat BitVec.toNat_ofFin BitVec.toNat_setWidth
+  BitVec.toNat_neg BitVec.ofNat_eq_ofNat BitVec.toNat_ofInt BitVec.toNat_not
+  BitVec.toNat_shiftLeft BitVec.toNat_ushiftRight BitVec.toNat_add BitVec.toNat_sub
+  BitVec.toNat_mul BitVec.toNat_udiv BitVec.toNat_umod BitVec.toNat_twoPow BitVec.toNat_cast
+  BitVec.toNat_ofNatLT BitVec.toNat_ofBool BitVec.ushiftRight_eq' BitVec.shiftLeft_eq'
+  Nat.shiftRight_eq_div_pow Nat.shiftLeft_eq Int.toNat_natCast Int.natCast_pow Nat.reduceMod
+  Nat.reducePow Nat.reduceSub Nat.reduceAdd Nat.reduceMul Nat.reduceDiv Int.reduceMod
+  Int.reducePow Int.reduceToNat Int.reduceNeg Int.reduceNatCast
+
 /-- Add the fact `sint_Z_cases t` for every `BitVec.toInt t` in the goal and
 the context (rewritten by `word_tonat`). A case split is then resolved
 (`Or.resolve_left/right`) when `omega` can refute one case from the context
@@ -451,15 +647,7 @@ elab "word_sint_resolve" : tactic => withMainContext do
       let (_, g) ← (← g.assert n ty pf).intro1P
       return [g]
   let ids : Array (TSyntax `ident) := names.map mkIdent
-  evalTactic (← `(tactic| (try simp -implicitDefEqProofs only [BitVec.toNat_ofNat,
-    BitVec.toNat_ofFin, BitVec.toNat_setWidth, BitVec.toNat_neg, BitVec.ofNat_eq_ofNat,
-    BitVec.toNat_ofInt, BitVec.toNat_not, BitVec.toNat_shiftLeft, BitVec.toNat_ushiftRight,
-    BitVec.toNat_add, BitVec.toNat_sub, BitVec.toNat_mul, BitVec.toNat_udiv, BitVec.toNat_umod,
-    BitVec.toNat_twoPow, BitVec.toNat_cast, BitVec.toNat_ofNatLT, BitVec.toNat_ofBool,
-    BitVec.ushiftRight_eq', BitVec.shiftLeft_eq', Nat.shiftRight_eq_div_pow, Nat.shiftLeft_eq,
-    Int.toNat_natCast, Int.natCast_pow, Nat.reduceMod, Nat.reducePow, Nat.reduceSub,
-    Nat.reduceAdd, Nat.reduceMul, Nat.reduceDiv, Int.reduceMod, Int.reducePow, Int.reduceToNat,
-    Int.reduceNeg, Int.reduceNatCast] at $ids*)))
+  evalTactic (← `(tactic| (try simp -implicitDefEqProofs only [word_resolve_simp] at $ids*)))
   -- resolve them in order
   let mut eqs : Array Name := #[]
   for i in [:names.size] do
@@ -472,8 +660,7 @@ elab "word_sint_resolve" : tactic => withMainContext do
     let b := ty.getArg! 1
     -- the other unresolved case splits (and this one), and the hypotheses that make
     -- `omega` case split, are not available to `omega` here (this keeps these
-    -- proofs small; also, some `omega` proofs with `Int.toNat` of `toInt` atoms
-    -- send the kernel into a deep recursion evaluating `x + 4294967295`)
+    -- proofs small)
     let mut others : Array FVarId := #[]
     for d in lctx do
       if d.isImplementationDetail then continue
@@ -483,16 +670,10 @@ elab "word_sint_resolve" : tactic => withMainContext do
       else if ← isProp dty then
         if ← (conjuncts dty).anyM fun c => (splitty c : MetaM Bool) then others := others.push d.fvarId
     for (refute, keep, lem) in [(b, a, ``Or.resolve_right), (a, b, ``Or.resolve_left)] do
-      let m ← main.withContext (mkFreshExprSyntheticOpaqueMVar (mkNot refute))
-      let ok ← try
-          let mg ← m.mvarId!.tryClearMany others
-          setGoals [mg]
-          evalTactic (← `(tactic| omega))
-          pure true
-        catch _ => pure false
+      let pf? ← omegaCached main (mkNot refute) others
       setGoals [main]
-      if ok then
-        let pf ← main.withContext (mkAppM lem #[h.toExpr, ← instantiateMVars m])
+      if let some pr := pf? then
+        let pf ← main.withContext (mkAppM lem #[h.toExpr, pr])
         -- `noteNoBeta`, not `assert`: see there (resolution proofs are chained)
         let (_, g) ← noteNoBeta main names[i]! keep pf
         let g ← g.clear h.fvarId
@@ -515,6 +696,159 @@ elab "word_sint_resolve" : tactic => withMainContext do
   unless eqs.isEmpty do
     let args ← eqs.mapM fun n => `(Lean.Parser.Tactic.simpLemma| $(mkIdent n):ident)
     evalTactic (← `(tactic| (try simp only [$args,*, Int.toNat_natCast] at *)))
+
+
+
+/-- Prove `p` with `omega` (`omegaCached`) in the context of the main goal, with
+the hypotheses `clear` cleared; `none` if `omega` fails. -/
+def omegaProve (p : Expr) (clear : Array FVarId) : TacticM (Option Expr) := do
+  let main ← getMainGoal
+  let r ← omegaCached main p clear
+  setGoals [main]
+  return r
+
+/-- The signed value of an operand: a literal's value, or `x.toInt` itself, with
+a proof of `x.toInt = X`. -/
+def operandVal (n x : Expr) : MetaM (Expr × Expr) := do
+  let t := mkApp2 (mkConst ``BitVec.toInt) n x
+  if let some (w, v) ← wordLit? x then
+    let X := toExpr (BitVec.ofNat w v).toInt
+    return (X, mkExpectedPropHint (← mkEqRefl X) (← mkEq t X))
+  return (t, ← mkEqRefl t)
+
+def isLit (x : Expr) : MetaM Bool := return (← wordLit? x).isSome
+
+/-- How `word_sint_arith` handles `t = BitVec.toInt e` for an arithmetic
+operation `e`: `lem` is the lemma application `e.toInt = X op Y` still expecting
+its no-overflow hypothesis `lo ∧ hi`; `auto` is a proof of one of `lo`
+(`.inl`) or `hi` (`.inr`) when it follows from the sign of a literal operand;
+`ops` are the non-literal operands. -/
+structure ArithLemma where
+  lem : Expr
+  auto : Option (Expr ⊕ Expr)
+  ops : Array Expr
+
+def toIntArithLemma? (t : Expr) : MetaM (Option ArithLemma) := do
+  let n := t.getArg! 0
+  let e := t.getArg! 1
+  if ← isLit e then return none
+  let ops (xs : Array Expr) : MetaM (Array Expr) := xs.filterM fun x => return !(← isLit x)
+  let litVal? (x : Expr) : MetaM (Option Int) := do
+    let some (w, v) ← wordLit? x | return none
+    return some (BitVec.ofNat w v).toInt
+  let sign (X : Expr) (v : Int) : MetaM (Bool × Expr) := do
+    if 0 ≤ v then return (true, ← mkDecideProof (← mkAppM ``LE.le #[mkIntLit 0, X]))
+    else return (false, ← mkDecideProof (← mkAppM ``LE.le #[X, mkIntLit 0]))
+  let bin (lem : Name) (x y : Expr) (isAdd : Bool) : MetaM (Option ArithLemma) := do
+    let (X, hx) ← operandVal n x
+    let (Y, hy) ← operandVal n y
+    let mut auto := none
+    if isAdd then
+      if let some v ← litVal? y then
+        let (pos, hY) ← sign Y v
+        auto := some (← if pos then (.inl <$> mkAppM ``add_lo_r #[x, hx, hY])
+          else (.inr <$> mkAppM ``add_hi_r #[x, hx, hY]))
+      else if let some v ← litVal? x then
+        let (pos, hX) ← sign X v
+        auto := some (← if pos then (.inl <$> mkAppM ``add_lo_l #[y, hy, hX])
+          else (.inr <$> mkAppM ``add_hi_l #[y, hy, hX]))
+    else if lem == ``toInt_sub_eq then
+      if let some v ← litVal? y then
+        let (pos, hY) ← sign Y v
+        auto := some (← if pos then (.inr <$> mkAppM ``sub_hi_r #[x, hx, hY])
+          else (.inl <$> mkAppM ``sub_lo_r #[x, hx, hY]))
+    return some { lem := ← mkAppM lem #[x, y, hx, hy], auto, ops := ← ops #[x, y] }
+  match_expr e with
+  | HAdd.hAdd _ _ _ _ x y => bin ``toInt_add_eq x y true
+  | HSub.hSub _ _ _ _ x y => bin ``toInt_sub_eq x y false
+  | HMul.hMul _ _ _ _ x y =>
+    if (← isLit x) || (← isLit y) then bin ``toInt_mul_eq x y false else return none
+  | HDiv.hDiv _ _ _ _ x y => if ← isLit y then bin ``toInt_udiv_eq x y false else return none
+  | HMod.hMod _ _ _ _ x y => if ← isLit y then bin ``toInt_umod_eq x y false else return none
+  | Neg.neg _ _ x =>
+    let (_, hx) ← operandVal n x
+    return some { lem := ← mkAppM ``toInt_neg_eq #[x, hx], auto := none, ops := ← ops #[x] }
+  | BitVec.ofInt w z =>
+    return some { lem := ← mkAppOptM ``toInt_ofInt_eq #[w, z], auto := none, ops := #[] }
+  | BitVec.ofNat w k =>
+    return some { lem := ← mkAppOptM ``toInt_ofNat_eq #[w, k], auto := none, ops := #[] }
+  | _ => return none
+
+/-- `word_sint_arith`: for every `BitVec.toInt e` (goal and context; only the goal
+with `goal`) with `e` an addition, subtraction, negation, multiplication by a
+literal, unsigned division/modulus by a literal, or `BitVec.ofInt`/`BitVec.ofNat`
+of a non-literal, add the equation `e.toInt = X op Y` (in terms of the
+operands' `toInt`s, e.g. `(j - 1#64).toInt = j.toInt - 1`) when `omega` proves
+(without the hypotheses that make it case split) that it does not overflow; for
+a literal operand only the side of the no-overflow condition that can fail is
+proved by `omega`. Smaller terms first (the compound operands of compound terms
+too), so that their equations are available for the larger ones. This replaces
+the case split `sint_Z_cases` of `word_sint_resolve` for the common goals
+`sint.nat (j - W64 1) = sint.nat j - 1`, `sint.Z (j + W64 1) ≤ sint.Z b`, ...
+Run after `word_tonat`; cheap when nothing applies. -/
+elab "word_sint_arith" goalOnly:(&" goal")? : tactic => withMainContext do
+  let tgt ← instantiateMVars (← getMainTarget)
+  let mut hyps : Array Expr := #[]
+  let mut others : Array FVarId := #[]
+  for d in ← getLCtx do
+    if d.isImplementationDetail then continue
+    let ty ← instantiateMVars d.type
+    unless ← isProp ty do continue
+    if mentionsEntailment ty then continue
+    hyps := hyps.push ty
+    if ← (conjuncts ty).anyM fun c => (splitty c : MetaM Bool) then others := others.push d.fvarId
+  let mut ts := collectToInt tgt #[]
+  if goalOnly.isNone then
+    for ty in hyps do ts := collectToInt ty ts
+  -- the compound operands of compound terms too
+  let mut lems : Std.HashMap Expr ArithLemma := {}
+  let mut work := ts
+  ts := #[]
+  while !work.isEmpty do
+    let t := work.back!
+    work := work.pop
+    if ← ts.anyM (fun u => return u == t || (← withReducible (isDefEq u t))) then continue
+    ts := ts.push t
+    let some l ← (try toIntArithLemma? t catch _ => pure none) | continue
+    lems := lems.insert t l
+    for x in l.ops do work := work.push (mkApp2 (mkConst ``BitVec.toInt) (t.getArg! 0) x)
+  -- smaller terms first: their equations are available for the larger ones
+  ts := ts.qsort (fun a b => a.approxDepth < b.approxDepth)
+  -- the terms with an equation from an earlier `word_sint_arith`
+  let mut done : Array Expr := #[]
+  let mut k := 0
+  for d in ← getLCtx do
+    if d.userName.toString.startsWith "word_sint_arith_" then
+      k := k + 1
+      let ty ← instantiateMVars d.type
+      if ty.isAppOfArity ``Eq 3 then done := done.push (ty.getArg! 1)
+  for t in ts do
+    let some l := lems[t]? | continue
+    if ← done.anyM (fun u => return u == t || (← withReducible (isDefEq u t))) then continue
+    let .forallE _ b _ _ ← whnfR (← inferType l.lem) | continue
+    let pf? : Option Expr ← do
+      match l.auto with
+      | some (.inl lo) =>
+        let some hi ← omegaProve (b.getArg! 1) others | pure none
+        pure (some (← mkAppM ``And.intro #[lo, hi]))
+      | some (.inr hi) =>
+        let some lo ← omegaProve (b.getArg! 0) others | pure none
+        pure (some (← mkAppM ``And.intro #[lo, hi]))
+      | none =>
+        -- with the ranges of the operands
+        let rs ← l.ops.mapM fun x => mkAppM ``toInt_range2 #[x]
+        let mut goal := b
+        for r in rs.reverse do goal := mkForall `r .default (← inferType r) goal
+        let some pf ← omegaProve goal others | pure none
+        pure (some (mkAppN pf rs))
+    let some pf := pf? | continue
+    let pf := mkApp l.lem pf
+    -- state the equation about `t` itself (not the lemma's instance of it)
+    let eq ← mkEq t (← inferType pf).appArg!
+    let main ← getMainGoal
+    let (_, g) ← noteNoBeta main (Name.mkSimple s!"word_sint_arith_{k}") eq pf
+    k := k + 1
+    replaceMainGoal [g]
 
 /-- Clear the unresolved case splits added by `word_sint_resolve` (fails if there
 are none). -/
@@ -594,21 +928,27 @@ elab "word_bounded " n:num t:tactic : tactic => do
 
 end word
 
+
 /-- The main pipeline of `word` (steps 1-7 of the module docstring). -/
 macro "word_fast" : tactic => `(tactic| (
   word_filter iris
+  word_filter pre
   word_unfold_lit
   all_goals (
     word_filter
     word_sdiv_facts
     word_tonat
+    word_sint_arith goal
     all_goals first
-      | (word_filter_simple; omega)
-      | omega
-      | (word_sint_resolve
-         all_goals first
-           | (word_drop_cases; omega)
-           | omega))))
+      | (word_filter_simple; word_omega)
+      | (word_sint_arith
+         first
+          | (word_filter_simple; word_omega)
+          | word_omega
+          | (word_sint_resolve
+             all_goals first
+               | (word_drop_cases; word_omega)
+               | word_omega)))))
 
 open Lean Elab Tactic in
 /-- `no_sorry tac`: run `tac` without error recovery (so that a failure inside
@@ -626,16 +966,30 @@ elab "no_sorry " tac:tactic : tactic => do
 /-- Internal: the alternatives of `word`. -/
 macro "word_core" : tactic => `(tactic| first
       | word_fast
-      | word_bounded 50000 (word_filter iris; word_prep; omega)
-      | word_bounded 50000 (word_filter iris; word_prep; word_lit_reduce; (try omega); done)
-      | word_bounded 20000 omega
+      | word_bounded 50000 (word_filter iris; word_prep; word_omega)
+      | word_bounded 50000 (word_filter iris; word_prep; word_lit_reduce; (try word_omega); done)
+      | word_bounded 20000 word_omega
       | word_bounded 50000 (bv_normalize; done))
+
+open Lean Elab Tactic in
+/-- `word_core` without error recovery, failing on `sorry` (see `no_sorry`), and
+with a cache of the proofs found (see `Perennial/Std/Word/Cache.lean`). -/
+elab "word_cached" : tactic => do
+  let g ← getMainGoal
+  let goal ← instantiateMVars (← g.getType)
+  if let some pf ← g.withContext (word.cacheLookup goal) then
+    g.assign pf
+    replaceMainGoal []
+    return
+  evalTactic (← `(tactic| no_sorry word_core))
+  let pf ← instantiateMVars (mkMVar g)
+  g.withContext (word.cacheStore goal pf)
 
 /-- Solve word-arithmetic goals (Rocq `word`). See the module docstring. Closes
 the goal or fails (never admits it). -/
 syntax "word" : tactic
 macro_rules
-  | `(tactic| word) => `(tactic| no_sorry word_core)
+  | `(tactic| word) => `(tactic| word_cached)
 
 /-! ## Rewriting lemmas for `uint.Z` / `sint.Z` of operations
 
@@ -784,6 +1138,32 @@ example (i j : w64) (h : 0 ≤ sint.Z i) (h2 : sint.Z i < sint.Z j) :
 
 example (a b c : w64) (ha : 0 ≤ sint.Z a) (hb : sint.Z a < sint.Z b) (hc : sint.Z b ≤ 100)
     (hc' : sint.Z c = sint.Z b - 1) : sint.Z (b - a - W64 1) = sint.Z b - sint.Z a - 1 := by word
+
+/-- `word_sint_arith`: `toInt` of `±` a literal / of sums, from the bounds in context. -/
+example (a b j : w64) (L : Nat) (h : 0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z b ∧ sint.Z b ≤ L ∧ L ≤ 2^62)
+    (hj : sint.Z a < sint.Z j) (hj2 : sint.Z j ≤ sint.Z b) :
+    sint.nat (j - W64 1) = sint.nat j - 1 := by word
+
+example (a b j : w64) (h : 0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z b) (hj : sint.Z a ≤ sint.Z j)
+    (hj2 : sint.Z j < sint.Z b) : sint.Z (j + W64 1) ≤ sint.Z b := by word
+
+example (a root : w64) (h : 0 ≤ sint.Z a ∧ sint.Z a < 2^40) (h2 : 0 ≤ sint.Z root ∧ sint.Z root < 2^40) :
+    sint.Z (a + (W64 2 * root + W64 1) + W64 1) = sint.Z a + 2 * sint.Z root + 2 := by word
+
+example (x : w64) (h : 0 ≤ sint.Z x) : sint.Z (x / W64 4) = sint.Z x / 4 := by word
+
+/-- The goal of `etc/omega-kernel-blowup-repro.lean` (where plain `omega`'s proof
+makes the kernel unfold `pos.toNat + 4294967295` in unary and use >6GB): fine
+with `word`, whose `omega` calls abstract the `toInt`/`toNat` atoms first. -/
+example (pos ws rs rwt r : BitVec 32) (num_readers : Nat)
+    (Hf1 : BitVec.toNat rwt = 0) (Hf2 : BitVec.toNat ws = 0)
+    (Hf3 : BitVec.toInt pos = ↑(num_readers + 1) + BitVec.toInt r + ↑(BitVec.toNat rs))
+    (e : (BitVec.toInt pos).toNat = 1 + (BitVec.toInt (pos - 1#32)).toNat)
+    (h1a : 2 * BitVec.toNat pos < 4294967296) (h1b : BitVec.toInt pos = ↑(BitVec.toNat pos)) :
+    ¬(4294967296 ≤ 2 * ((BitVec.toNat pos + 4294967295) % 4294967296) ∧
+      BitVec.toInt (pos + BitVec.ofNat 32 4294967295) =
+        ↑((BitVec.toNat pos + 4294967295) % 4294967296) - ((4294967296 : Nat) : Int)) := by
+  word
 
 end tests
 
