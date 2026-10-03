@@ -738,7 +738,7 @@ noncomputable def «node__insertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T 
   (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (App (App (Val exception_seq) (Lam BAnon
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "_"))))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
   (App (Val do_execute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
@@ -788,7 +788,7 @@ noncomputable def «node__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : g
   (App (App (Val exception_seq) (Lam BAnon
   (App (App (Val exception_seq) (Lam BAnon
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "_"))))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))
   (App (Val do_return)
   (Pair (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (Val #true)))
@@ -824,7 +824,7 @@ noncomputable def «minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type
   (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
   (App (Val do_execute)
   (Val #()))))))
   (App (App (App (Val do_for) (Lam BAnon
@@ -837,7 +837,7 @@ noncomputable def «minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
   (App (Val do_execute)
   (Val #())))))))))
 
@@ -859,7 +859,7 @@ noncomputable def «maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type
   (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
   (App (Val do_execute)
   (Val #()))))))
   (App (App (App (Val do_for) (Lam BAnon
@@ -873,7 +873,7 @@ noncomputable def «maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
   (App (Val do_execute)
   (Val #())))))))))
 
@@ -988,7 +988,7 @@ noncomputable def «node__removeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T 
   (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (App (App (Val exception_seq) (Lam BAnon
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "_"))))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))
   (App (Val do_return)
   (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
@@ -1684,7 +1684,7 @@ noncomputable def «BTree__ReplaceOrInsertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
   (App (App (Val exception_seq) (Lam BAnon
   (App (App (Val exception_seq) (Lam BAnon
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "_"))))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1))))))))))
   (App (Val do_execute)
@@ -1810,7 +1810,7 @@ noncomputable def «BTree__deleteItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
   (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0))))))
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "_"))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))
   (App (Val do_execute)
   (Val #())))))))))))))
 
@@ -2083,7 +2083,7 @@ noncomputable def «BTree__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : 
   (Pair (Var "$ret0") (Var "$ret1"))))))))
   (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
   (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "_")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "_"))))
+  (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))
   (App (Val do_execute)
   (Val #())))))))))))
 

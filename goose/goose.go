@@ -1029,10 +1029,7 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 			} else {
 				for _, name := range r.Names {
 					defaultRetExpr = append(defaultRetExpr,
-						glang.DerefExpr{
-							X:  glang.IdentExpr(name.Name),
-							Ty: ctx.glangType(r.Type, ctx.typeOf(r.Type)),
-						})
+						ctx.namedResultValue(name, r.Type))
 				}
 			}
 		}
@@ -1684,6 +1681,18 @@ func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
 	return expr
 }
 
+// namedResultValue is the value of the named result `name` (of type `ty`) on a
+// bare `return`: the contents of its local variable, or the zero value for a
+// blank result `_`, which has no variable (the binding of `_` is anonymous, and
+// there may be several of them).
+func (ctx *Ctx) namedResultValue(name *ast.Ident, ty ast.Expr) glang.Expr {
+	t := ctx.glangType(ty, ctx.typeOf(ty))
+	if name.Name == "_" {
+		return glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)
+	}
+	return glang.DerefExpr{X: glang.IdentExpr(name.Name), Ty: t}
+}
+
 func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 	if len(s.Results) == 0 {
 		return ctx.defaultReturn
@@ -2229,10 +2238,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 			} else {
 				for _, name := range r.Names {
 					defaultRetExpr = append(defaultRetExpr,
-						glang.DerefExpr{
-							X:  glang.IdentExpr(name.Name),
-							Ty: ctx.glangType(r.Type, ctx.typeOf(r.Type)),
-						})
+						ctx.namedResultValue(name, r.Type))
 				}
 			}
 		}
