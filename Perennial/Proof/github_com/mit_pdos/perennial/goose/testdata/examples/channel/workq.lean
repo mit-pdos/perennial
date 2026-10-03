@@ -305,8 +305,9 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
       ipureintro
       rw [imap_sum_insert_none word_count _ _ _ _ Hlookup Hdoc_i, Htotal_inv]
       unfold word_count
-      rw [Hlen.1]
-      word
+      rw [Hlen.1, Int.natCast_add, show ((sint.nat sl.len : Nat) : Int) = sint.Z sl.len from
+        Int.toNat_of_nonneg Hlen.2]
+      simp only [W64, sint.Z, BitVec.ofInt_add, BitVec.ofInt_toInt]
     iframe
     ipureintro
     refine ⟨?_, ?_⟩
@@ -624,7 +625,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ 2 ∧ workers.length = sint.nat i⌝ : IProp GF)
     $$ [i j workers_sl]
   · iexists W64 0, _, []
-    rw [show ([zero_val loc, zero_val loc] : List loc) =
+    rw [show List.replicate 2 (zero_val loc) =
       [] ++ List.replicate (2 - sint.nat (W64 0)) null from rfl]
     iframe
     isplitr

@@ -292,9 +292,9 @@ becomes part of the goal instead (in `wp_runtime_Semacquire`,
 the atomic step). See the ghost-state example in
 `PERENNIAL_PROOF_TUTORIAL.md` §10. The mask side condition (`↑N ⊆ E`, e.g.
 `↑(N.@"inv") ⊆ ⊤ ∖ ↑(N.@"sema")`) is proved by `solve_ndisj` (Perennial's
-`iinv`, `Perennial/Golang/Theory/IrisTactics.lean`; `solve_ndisj` is also tried by
-`trivial`, hence by every iris-lean side-condition solver); a condition it cannot
-prove is left as a goal before the main one.
+`iinv`, `Perennial/Golang/Theory/IrisTactics.lean`); a condition it cannot
+prove is left as a goal before the main one. For other mask goals (e.g. the
+premise of `fupd_mask_intro`) use `solve_ndisj` explicitly.
 
 ### Induction and rewriting
 

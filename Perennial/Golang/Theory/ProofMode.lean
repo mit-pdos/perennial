@@ -1069,6 +1069,11 @@ def binderNeProof (ext : Expr) (x : String) (xe : Expr) (b : Option String) (be 
 `solve_into_val_typed_struct` (`Auto.lean`). -/
 initialize autoAngelicIf : IO.Ref Bool ← IO.mkRef false
 
+register_option goose.wp.introSimp : Bool := {
+  defValue := true
+  descr := "simplify the hypotheses introduced by `wp_apply ... as pats` with the WP simp set"
+}
+
 register_option goose.wp.fvAnnot : Bool := {
   defValue := true
   descr := "let `wp_auto` annotate continuations with their free variables, so that \

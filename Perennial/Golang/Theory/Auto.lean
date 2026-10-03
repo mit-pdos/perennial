@@ -677,6 +677,7 @@ def simpIrisHyps (ivars : List IVarId) : TacticM Unit := withMainContext do
 /-- Run `tac` (an introduction), then simplify the hypotheses it introduced
 (`simpIrisHyps`). -/
 elab "wp_intro_simp " tac:tactic : tactic => do
+  unless goose.wp.introSimp.get (← getOptions) do return ← evalTactic tac
   let before ← withMainContext do
     match parseIrisGoal? (← instantiateMVars (← getMainTarget)) with
     | some g => pure ((hypsList g.hyps).map (·.2.1))
@@ -749,6 +750,15 @@ elab "wp_apply_side" : tactic => do
     if ← g.isAssigned then continue
     let ty ← instantiateMVars (← g.getType)
     if (isIrisGoal ty).or (ty.hasExprMVar.or !(← g.withContext (isProp ty))) then
+      out := out ++ [g]; continue
+    -- only closed (in)equations of numbers/words: `decide`, else `word`
+    -- (both can be slow on other goals)
+    let isArith (t : Expr) : Bool :=
+      (t.isAppOfArity ``LE.le 4).or ((t.isAppOfArity ``LT.lt 4).or
+        ((t.isAppOfArity ``Eq 3).and (((t.getArg! 0).isConstOf ``Int).or ((t.getArg! 0).isConstOf ``Nat))))
+    let t ← whnfR ty
+    let parts := if t.isAppOfArity ``And 2 then #[t.getArg! 0, t.getArg! 1] else #[t]
+    unless parts.all isArith do
       out := out ++ [g]; continue
     setGoals [g]
     let saved ← saveState

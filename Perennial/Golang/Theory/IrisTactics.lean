@@ -5,9 +5,9 @@ counterpart file; Rocq gets these from Iris/stdpp).
 * `solve_ndisj` (Rocq/stdpp `solve_ndisj`): prove mask side conditions about
   namespaces, e.g. `↑(N.@"inv") ⊆ ⊤ ∖ ↑(N.@"sema")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@"x")` or
   `↑(N.@"a") ## ↑(N.@"b")`, using hypotheses about masks from the context.
-  It is hooked into `trivial`, so iris-lean's side-condition solver (used by
-  `iinv`, `imod`, `iapply` of fancy updates, `TCSideCondition` instances, ...)
-  discharges these goals automatically.
+  `iinv` uses it for its mask side condition (it is not hooked into `trivial`,
+  which is called very often by iris-lean's side-condition solver: use
+  `solve_ndisj` explicitly for other mask goals).
 * `iinv` is re-implemented (same syntax and behaviour as iris-lean's) with a
   side-condition solver that never runs `simp [*]` (which could hit the maximum
   recursion depth with word facts in the context, or on the `Atomic` condition
@@ -92,9 +92,7 @@ elab "solve_ndisj" : tactic => withMainContext do
 
 end ndisj_tac
 
-/-- iris-lean's side-condition solver tries `trivial`: let it solve mask side
-conditions about namespaces (`solve_ndisj` fails immediately on other goals). -/
-macro_rules | `(tactic| trivial) => `(tactic| solve_ndisj)
+
 
 /-! ## `iinv` -/
 
@@ -245,15 +243,20 @@ Bounded; errors count as no match. -/
 def matchesByDefEq (P Q : Expr) : MetaM Bool := do
   if Q.hasMVar || P.hasMVar then return false
   if P.getAppFn != Q.getAppFn then return false
-  -- cheap filter: at most one argument may differ syntactically (e.g.
-  -- `P [v]` and `P ([] ++ [v])`), so that the points-to facts of different
-  -- locations are not compared by (expensive) unfolding
+  -- cheap filter: few arguments may differ syntactically (e.g. `P [v]` and
+  -- `P ([] ++ [v])`), and they are compared pairwise, so that e.g. the points-to
+  -- facts of different locations are not compared by (expensive) unfolding
   let pa := P.getAppArgs; let qa := Q.getAppArgs
   if pa.size != qa.size then return false
-  if ((pa.zip qa).filter fun (a, b) => a != b).size > 1 then return false
+  let diff := (pa.zip qa).filter fun (a, b) => a != b
+  if diff.isEmpty || diff.size > 4 then return false
+  -- distinct variables (e.g. the locations of different points-to facts) never match
+  if diff.any fun (a, b) => a.isFVar && b.isFVar then return false
+  -- compare only the differing arguments (not the unfoldings of the head)
   tryCatchRuntimeEx (Core.withCurrHeartbeats <|
     withTheReader Core.Context (fun c => { c with maxHeartbeats := 20000 * 1000 }) <|
-    withNewMCtxDepth <| withTransparency .default <| isDefEq P Q) fun _ => return false
+    withNewMCtxDepth <| withTransparency .default <|
+      diff.allM fun (a, b) => isDefEq a b) fun _ => return false
 
 /-- The conjuncts of the `∗`-spine of `e` (through `named`), with loose bound
 variables allowed. -/
@@ -295,6 +298,13 @@ def existsWitness? (goal : Expr) (hs : Array (Name × Expr)) : MetaM (Option Exp
   return found
 
 initialize inIframe : IO.Ref Bool ← IO.mkRef false
+
+register_option goose.iframe.prepass : Bool := {
+  defValue := true
+  descr := "let `iframe`/`iframe ∗` first frame up to computation, make persistent \
+    hypotheses needed several times intuitionistic and choose existential witnesses \
+    (see `iframePrep`)"
+}
 
 /-- The spatial hypotheses (name, type). -/
 def hypsSpatial {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
@@ -363,7 +373,8 @@ elab_rules : tactic
       throwUnsupportedSyntax
     let saved ← saveState
     let n0 := (← getGoals).length
-    try iframePrep n0 catch _ => saved.restore
+    if goose.iframe.prepass.get (← getOptions) then
+      try iframePrep n0 catch _ => saved.restore
     -- the prepass may already have closed the goal
     if (← getGoals).length < n0 then return
     inIframe.set true

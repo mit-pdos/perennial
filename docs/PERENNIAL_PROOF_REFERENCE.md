@@ -322,6 +322,7 @@ error is reported; otherwise remaining goals are left to you (often
 | Option | Default | Effect |
 |:--|:--|:--|
 | `goose.wp.extras` | `true` | `wp_auto` stores function literals as `#(func.mk ..)` and unfolds blocking package constants; `wp_pures`/`wp_auto` reduce `match`es on constructors and projections of constructors (`(zero_val S.t).f'`, `(interface.mk t v).v`, `zero_val` of base types), stop at slice composite literals (the list of `[]T{a, b}` comes out as `[a, b]`) and use the `goose_wp_simp_extra` simp set (`decide` with classical instances, `#a = #b` for injective `into_val`, `go.type` equalities, `ite` on closed conditions, ...); `wp_func_call` finds `FuncUnfold f (List.replicate n t)` for `[t, .., t]` |
+| `goose.wp.fvAnnot` | `true` | `wp_auto` annotates the continuations of the function with their free variables (`fvClosed`, removed before the goal is shown), so that substituting a `let:`-bound temporary is proved in constant size instead of by a proof of the size of the rest of the function (linear instead of quadratic kernel time in the length of a function) |
 | `goose.wp.unfoldSliceLiterals` | `false` | let `wp_pures` step slice composite literals instead of stopping (normally use `wp_slice_literal`) |
 
 Use them as `set_option goose.wp.extras false in` before a declaration (to get
@@ -347,17 +348,20 @@ the old behaviour).
 | `solve_pkg_init` | solve one `is_pkg_init pkg` goal (also through the dependencies of other packages' `is_pkg_init`) | same |
 | `is_pkg_init_unfold`, `is_pkg_init_finish` | unfold `is_pkg_init` in the goal; finish a `wp_initialize'` proof | `Golang/Theory/Auto.lean` |
 | `cleanup_bool_decide` | simplify `if decide (#(decide P) = #true)` and friends | `Golang/Theory/Auto.lean` |
-| `solve_ndisj` | prove namespace mask conditions (`↑(N.@"a") ⊆ ⊤ ∖ ↑(N.@"b")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@x)`, `↑(N.@"a") ## ↑(N.@"b")`, using mask hypotheses); also tried by `trivial`, so `iinv`/`imod`/... discharge these side conditions | `Golang/Theory/IrisTactics.lean` |
+| `solve_ndisj` | prove namespace mask conditions (`↑(N.@"a") ⊆ ⊤ ∖ ↑(N.@"b")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@x)`, `↑(N.@"a") ## ↑(N.@"b")`, using mask hypotheses); `iinv` discharges its mask side condition with it | `Golang/Theory/IrisTactics.lean` |
 | `iinv H with pat Hclose` | iris-lean's `iinv`, re-implemented: mask side conditions by `solve_ndisj`, no `simp [*]` (no deep recursion with word facts), an error (suggesting `wp_bind`) on a non-atomic WP | same |
 | `wp_func_lits` | rewrite function literal values `RecV f x e` in the WP expression to `#(func.mk f x e)` (`wp_apply` tries it when a spec does not apply, e.g. `wp_map_insert` of a closure) | `Golang/Theory/Auto.lean` |
 | `wp_alloc_anon` | an allocation not bound by `let:` (e.g. `&S{..}`), inaccessible names (Rocq `wp_alloc l as "?"`) | `Golang/Theory/Mem.lean` |
+| `wp_if_angelic` | for the head `if: #(decide P) then e else AngelicExit #()`: continue with `e` under a hypothesis `P` (introduce it with `iintro %H`) | `Golang/Theory/Auto.lean` |
+| `no_sorry tac` | run `tac` without error recovery and fail if the proof would contain `sorry` (used by `word`, `list_solver`) | `Std/Word/Automation.lean` |
 | `word_lit_simp` | evaluate `sint.Z`/`uint.Z`/`sint.nat`/`uint.nat` of word literals everywhere (`sint.Z (W64 7)` to `7`), keeping `W64 n` (a bare `simp` turns `W64 n` into `n#64`, which then no longer matches `W64 n` for `iframe`) | `Golang/Theory/TacticsSimp.lean` |
 | `word`, `word_simp`, `len`, `list_elem l i as x` | arithmetic and lists (below) | `Std/Word/Automation.lean`, `Std/ListLen.lean` |
 
-The generated files also use `solve_into_val_typed_struct`,
+The generated files also use `solve_into_val_typed_struct` (one `wp_auto` pass, stepping
+the field checks `if: .. else AngelicExit #()`), `solve_pointsto_access_struct` (linear in the
+number of fields: the field is focused in the unfolded struct points-to, no framing),
 `solve_typed_pointsto_dfractional`, `solve_typed_pointsto_timeless`,
-`solve_typed_pointsto_agree`, `solve_pointsto_access_struct` (instances for
-structs) and `solve_atomic_wps`.
+`solve_typed_pointsto_agree` (instances for structs) and `solve_atomic_wps`.
 
 ### Arithmetic
 
