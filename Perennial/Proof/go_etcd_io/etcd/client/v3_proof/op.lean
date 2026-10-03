@@ -6,6 +6,14 @@ Lean notes:
   `[allG GF]` here.
 * Rocq names the persistent points-to of `op.sort` `"%Hsort"`; it is not pure,
   so here it is `"#Hsort"`.
+* Deviation: in `is_Op_RangeRequest`, Rocq's `op.sort' ↦□ SortOption.mk ..`
+  becomes `⌜op.sort' = null ∧ req.sort_target = 0 ∧ req.sort_order = 0⌝ ∨
+  op.sort' ↦□ SortOption.mk ..`, matching `Op.toRangeRequest` (a nil `sort`
+  leaves the request's sort fields 0). Rocq's version excludes a nil `sort`,
+  which made its admitted `wp_OpGet` false (`OpGet` with no options returns
+  an `Op` with nil `sort`). `wp_OpGet` is now proved.
+* New helper specs (not in Rocq): `wp_NewOp`, `wp_IsOptsWithPrefix_nil`,
+  `wp_IsOptsWithFromKey_nil`. `wp_Op__applyOpts` is moved before `wp_OpGet`.
 -/
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.base
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.definitions
@@ -45,9 +53,13 @@ def is_Op_RangeRequest (op : v3.Op.t) (req : RangeRequest.t) : IProp GF :=
   "#key" ∷ op.key' ↦*□ req.key ∗
   "#end" ∷ op.end' ↦*□ req.range_end ∗
   "%Hlimit" ∷ ⌜op.limit' = req.limit⌝ ∗
+  -- Lean deviation (Rocq: just `op.sort' ↦□ SortOption.mk ..`, which excludes a nil
+  -- `sort`, so the admitted `wp_OpGet` was false): as in `Op.toRangeRequest`, a nil
+  -- `sort` means sort target and order 0.
   "#Hsort" ∷
-    op.sort' ↦□
-      (v3.SortOption.t.mk (W64 (sint.Z req.sort_target)) (W64 (sint.Z req.sort_order))) ∗
+    (⌜op.sort' = null ∧ req.sort_target = W32 0 ∧ req.sort_order = W32 0⌝ ∨
+     op.sort' ↦□
+      (v3.SortOption.t.mk (W64 (sint.Z req.sort_target)) (W64 (sint.Z req.sort_order)))) ∗
   "%Hserializable" ∷ ⌜op.serializable' = req.serializable⌝ ∗
   "%HkeysOnly" ∷ ⌜op.keysOnly' = req.keys_only⌝ ∗
   "%HcountOnly" ∷ ⌜op.countOnly' = req.count_only⌝ ∗
@@ -81,18 +93,6 @@ instance is_Op_persistent (op : v3.Op.t) (o : Op.t) :
   rw [is_Op_unseal]; unfold is_Op_def
   cases o <;> dsimp only <;> (try unfold is_Op_RangeRequest) <;> (try unfold is_Op_PutRequest) <;> infer_instance
 
-/-- NOTE (Rocq): for simplicity, this only supports empty opts list. -/
-theorem wp_OpGet (key : go_string) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
-      (App (App (Val (@! v3.OpGet)) (Val #key)) (Val #slice.nil))
-    {{ (op : v3.Op.t), RET #op;
-        is_Op op (.Get { RangeRequest.default with key := key }) }} := by
-  -- Unprovable as stated: `OpGet` (now with `IsOptsWithPrefix`/`IsOptsWithFromKey`/`NewOp`
-  -- translated) returns `Op{t: tRange, key: []byte(key)}`, whose `sort` field is nil, but
-  -- `is_Op_RangeRequest` requires `op.sort' ↦□ ...`, which implies `op.sort' ≠ null`.
-  -- Fixing this needs `is_Op_RangeRequest` to allow a nil `sort` (as `toRangeRequest` does).
-  sorry -- Rocq: Admitted
-
 theorem wp_Op__applyOpts (op : loc) :
     {{ is_pkg_init (PROP := IProp GF) pkg }}
       (App (Val (op @!! go.type.PointerType v3.Op @!! go!"applyOpts")) (Val #slice.nil))
@@ -101,6 +101,78 @@ theorem wp_Op__applyOpts (op : loc) :
   wp_auto
   wp_for
   wp_end
+
+/-- Lean addition (used by `wp_OpGet`). -/
+theorem wp_NewOp :
+    {{ is_pkg_init (PROP := IProp GF) pkg }}
+      (App (Val (@! v3.NewOp)) (Val #()))
+    {{ (l : loc), RET #l; ∃ op : v3.Op.t, l ↦ op ∗
+        ⌜op.isOptsWithPrefix' = false ∧ op.isOptsWithFromKey' = false⌝ }} := by
+  wp_start
+  wp_apply wp_string_to_bytes as %key_sl ⟨key_sl, -⟩
+  wp_alloc l as Hl
+  wp_auto
+  iapply HΦ
+  iexists _
+  iframe Hl
+  ipureintro
+  exact ⟨rfl, rfl⟩
+
+/-- Lean addition (used by `wp_OpGet`). -/
+theorem wp_IsOptsWithPrefix_nil :
+    {{ is_pkg_init (PROP := IProp GF) pkg }}
+      (App (Val (@! v3.IsOptsWithPrefix)) (Val #slice.nil))
+    {{ RET #false; True }} := by
+  wp_start
+  wp_alloc_auto
+  wp_pures
+  wp_alloc_auto
+  wp_pures
+  wp_apply wp_NewOp with %l ⟨%op, Hl, %Hop⟩
+  wp_for
+  rw [Hop.1]
+  iapply HΦ
+  itrivial
+
+/-- Lean addition (used by `wp_OpGet`). -/
+theorem wp_IsOptsWithFromKey_nil :
+    {{ is_pkg_init (PROP := IProp GF) pkg }}
+      (App (Val (@! v3.IsOptsWithFromKey)) (Val #slice.nil))
+    {{ RET #false; True }} := by
+  wp_start
+  wp_alloc_auto
+  wp_pures
+  wp_alloc_auto
+  wp_pures
+  wp_apply wp_NewOp with %l ⟨%op, Hl, %Hop⟩
+  wp_for
+  rw [Hop.2]
+  iapply HΦ
+  itrivial
+
+/-- NOTE (Rocq): for simplicity, this only supports empty opts list. -/
+theorem wp_OpGet (key : go_string) :
+    {{ is_pkg_init (PROP := IProp GF) pkg }}
+      (App (App (Val (@! v3.OpGet)) (Val #key)) (Val #slice.nil))
+    {{ (op : v3.Op.t), RET #op;
+        is_Op op (.Get { RangeRequest.default with key := key }) }} := by
+  wp_start
+  wp_auto
+  wp_apply wp_IsOptsWithPrefix_nil
+  wp_apply wp_string_to_bytes as %key_sl ⟨key_sl, -⟩
+  ipersist key_sl
+  wp_apply wp_Op__applyOpts
+  iapply HΦ
+  simp only [is_Op_unseal, is_Op_def, is_Op_RangeRequest, RangeRequest.default, named]
+  iframe key_sl
+  isplit
+  · iapply own_slice_nil
+  isplit
+  · ipureintro; rfl
+  isplitl []
+  · ileft; ipureintro; simp
+  ipureintro
+  simp
 
 theorem wp_OpPut (key v : go_string) :
     {{ is_pkg_init (PROP := IProp GF) pkg }}

@@ -1,6 +1,11 @@
 /-
 Port of `new/trusted_code/sync.v` (namespace `sync`, as the generated
 package).
+
+Lean addition (not in Rocq): `copyChecker` and its `check` method are trusted
+here (Rocq axiomatizes them: `copyChecker.t` is an axiom type and `check` has no
+body, so `wp_copyChecker__check` was admitted, with a false statement). See
+`«copyCheckerⁱᵐᵖˡ»` below.
 -/
 import Perennial.Golang.Defn.Pre
 import Perennial.Golang.Defn.Lock
@@ -81,7 +86,39 @@ def «runtime_SemacquireRWMutexRⁱᵐᵖˡ» : val :=
 def «runtime_SemacquireRWMutexⁱᵐᵖˡ» : val :=
   λ: "addr" "_lifo" "_skipframes", (FuncResolve "sync.runtime_Semacquire" []) #() "addr"
 
+/-- Lean addition. `copyChecker` is a `uintptr` (sync/cond.go:
+`type copyChecker uintptr`) that is only ever `0` or its own address
+`uintptr(unsafe.Pointer(c))`. goose supports neither `uintptr` nor
+pointer-to-integer conversions, so it is modeled as an `unsafe.Pointer` (a
+`loc`): `0` is `null`, and `uintptr(unsafe.Pointer(c))` is `c` itself. -/
+@[reducible] def «copyCheckerⁱᵐᵖˡ» : go.type := «unsafe».Pointer
+
+/-- Lean addition. Model of (sync/cond.go)
+```
+func (c *copyChecker) check() {
+	if uintptr(*c) != uintptr(unsafe.Pointer(c)) &&
+		!atomic.CompareAndSwapUintptr((*uintptr)(c), 0, uintptr(unsafe.Pointer(c))) &&
+		uintptr(*c) != uintptr(unsafe.Pointer(c)) {
+		panic("sync.Cond is copied")
+	}
+}
+```
+The two reads of `*c` are plain loads in Go (racing with the CAS; the sync
+package is exempt from the race detector); they are modeled as (atomic)
+`Load`s. -/
+def «copyChecker__checkⁱᵐᵖˡ» : val :=
+  λ: "c" <>,
+    if: Load "c" =⟨«unsafe».Pointer⟩ "c" then #()
+    else if: Snd (CmpXchg "c" #null "c") then #()
+    else if: Load "c" =⟨«unsafe».Pointer⟩ "c" then #()
+    else Panic "sync.Cond is copied"
+
 end code
+
+namespace copyChecker
+/-- Lean addition: see `«copyCheckerⁱᵐᵖˡ»`. -/
+abbrev t := loc
+end copyChecker
 
 namespace Mutex
 abbrev t := Bool

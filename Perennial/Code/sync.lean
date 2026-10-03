@@ -116,8 +116,6 @@ def WaitGroup [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] WaitGroup
 
-axiom «copyCheckerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «Mapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «Poolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -1252,20 +1250,12 @@ attribute [instance] notifyList_Assumptions.notifyList_type_repr
   notifyList_Assumptions.notifyList_underlying
   notifyList_Assumptions.«notifyListⁱᵐᵖˡ_underlying»
 
-namespace copyChecker
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end copyChecker
-
 class copyChecker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  copyChecker_type_repr : go.TypeReprUnderlying «copyCheckerⁱᵐᵖˡ» copyChecker.t
   copyChecker_underlying : go.UnderlyingDirectedEq copyChecker «copyCheckerⁱᵐᵖˡ»
-  «copyCheckerⁱᵐᵖˡ_underlying» : go.IsUnderlying «copyCheckerⁱᵐᵖˡ» «copyCheckerⁱᵐᵖˡ»
+  copyChecker'ptr_check_unfold : MethodUnfold (go.type.PointerType copyChecker) go!"check" «copyChecker__checkⁱᵐᵖˡ»
 
-attribute [instance] copyChecker_Assumptions.copyChecker_type_repr
-  copyChecker_Assumptions.copyChecker_underlying
-  copyChecker_Assumptions.«copyCheckerⁱᵐᵖˡ_underlying»
+attribute [instance] copyChecker_Assumptions.copyChecker_underlying
+  copyChecker_Assumptions.copyChecker'ptr_check_unfold
 
 namespace Cond
 structure t [ffi_syntax] where

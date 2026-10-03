@@ -8,6 +8,8 @@ Differences from Rocq:
   `Perennial.gmap K V`, which only needs `DecidableEq K`.
 * In `wp_map_for_range`, Rocq's `list_to_set keys = dom m` is stated as
   `∀ k, k ∈ keys ↔ (m !! k).isSome`.
+* New: `wp_map_len` (Rocq has no spec for `len` of a map), at any type whose
+  underlying type is a map (see `len_map` in `Perennial/Golang/Defn/Map.lean`).
 -/
 import Perennial.Golang.Theory.Auto
 import Perennial.Golang.Theory.Array
@@ -436,6 +438,41 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : func.t)
     have hsz : (i : Int) = (gmap.size m : Int) := by omega
     rw [hsz]
     iapply HΦ $$ HP
+
+
+/-- `len(m)` of a map (Lean addition, not in Rocq). `t` is any type whose
+underlying type is a map (`len_map` takes `[t ↓u go.MapType ..]`). `len` of a
+nil map is not covered: `go.len` on maps reads the map unconditionally
+(`λ: "m", InternalMapLength (Read "m")`, as in Rocq). -/
+theorem wp_map_len {t key_type elem_type : go.type} [t ↓u go.MapType key_type elem_type]
+    (mref : loc) (m : gmap K V) (dq : DFrac) :
+    {{ (mref ↦${dq} m : IProp GF) }}
+      (App (Val #(functions go.len [t])) (Val #mref)) @ s; E
+    {{ RET #(W64 (gmap.size m)); mref ↦${dq} m }} := by
+  wp_start as Hm
+  rw [own_map_unseal]
+  iNamed Hm
+  wp_apply _internal_wp_untyped_read $$ Hown with Hown
+  obtain ⟨ks, hks⟩ := go.is_map_domain_exists mv mp His_map
+  obtain ⟨Hnodup, Hks⟩ := go.is_map_domain_pure mv mp ks His_map hks
+  obtain ⟨keys, rfl⟩ := list_exists_map_of_forall (into_val (V := K)) ks
+    (fun kv hkv => Hdom kv ((Hks kv).2 hkv))
+  have Hmem : ∀ k, k ∈ keys ↔ (m !! k).isSome := by
+    intro k
+    rw [← list_mem_map_inj (into_val (V := K)) go.into_val_inj, ← Hks, Hagree k]
+    cases m !! k <;> simp
+  have Hnd : keys.Nodup := list_nodup_of_map _ _ Hnodup
+  have Hsize : keys.length = gmap.size m := (gmap.size_eq_length m keys Hnd Hmem).symm
+  haveI := go.internal_map_length_step_pure mv _ hks
+  wp_pures
+  rw [List.length_map, Hsize]
+  iapply HΦ
+  unfold own_map_def
+  simp only [named]
+  iexists mv, mp
+  iframe Hown
+  ipureintro
+  exact ⟨His_map, Hagree, Hdom, Hdefault⟩
 
 
 instance wp_map_nil_for_range (body : func.t) (key_type elem_type : go.type) :

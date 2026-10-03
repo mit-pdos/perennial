@@ -428,7 +428,10 @@ theorem wp_Cache__Get (c : loc) (ctx : interface.t) (key : go_string) (opts_sl :
       (App (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"Get")) (Val #ctx))
         (Val #key)) (Val #opts_sl))
     {{ (resp : loc) (err : error.t), RET (PairV #resp #err); True }} := by
-  -- Unprovable: calls `clientv3.OpGet` with arbitrary `opts` (unspecified closures; `IsOptsWithPrefix` has no translated body).
+  -- Unprovable as stated: calls `clientv3.OpGet` with arbitrary `opts`, i.e. unspecified
+  -- `OpOption` closures that `IsOptsWithPrefix`/`IsOptsWithFromKey`/`applyOpts` call
+  -- (`wp_OpGet` only covers an empty opts list), and needs specs that do not exist (in Rocq
+  -- either) for `WaitReady`, `validateGet`, `serverRevision`, `waitTillRevision`, `store.Get`.
   sorry -- Rocq: Admitted
 
 end store

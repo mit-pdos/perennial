@@ -25,8 +25,11 @@ Lean notes:
     makes the overflow side condition admitted in Rocq provable.
   - `wp_ProgressTracker__IsSingleton`: Rocq's (trusted) statement
     `{{{ True }}} .. {{{ RET #false; True }}}` is false; replaced by the true
-    spec (still unproved: `len` of a named map type is stuck, see the lemma).
-  - New: `wp_map_len` (spec of `len` on a map).
+    spec (see the lemma), now proved. This needed `len` to unfold at the named
+    map type `quorum.MajorityConfig`: `go.len_map` takes `[t ↓u go.MapType ..]`
+    (Rocq: literal `go.MapType` only), and `wp_map_len` (new, not in Rocq) is
+    in `Perennial/Golang/Theory/Map.lean`.
+  - New helper: `array_acc_same`.
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.protocol
 import Perennial.Ghost.MonoList
@@ -595,38 +598,23 @@ variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
-/-- `len(m)` of a map (Lean addition; the framework has no spec for it).
-`len` of a nil map is not covered: `go.len` on maps reads the map
-unconditionally (`λ: "m", InternalMapLength (Read "m")`). -/
-theorem wp_map_len {K V : Type} [ZeroVal K] [DecidableEq K] [ZeroVal V] [go.IntoValInj K]
-    (key_type elem_type : go.type) (mref : loc) (m : gmap K V) (dq : DFrac) :
-    {{ (mref ↦${dq} m : IProp GF) }}
-      (App (Val #(functions go.len [go.type.MapType key_type elem_type])) (Val #mref))
-    {{ RET #(W64 (gmap.size m)); mref ↦${dq} m }} := by
-  wp_start as Hm
-  rw [own_map_unseal]
-  iNamed Hm
-  wp_apply _internal_wp_untyped_read $$ Hown with Hown
-  obtain ⟨ks, hks⟩ := go.is_map_domain_exists mv mp His_map
-  obtain ⟨Hnodup, Hks⟩ := go.is_map_domain_pure mv mp ks His_map hks
-  obtain ⟨keys, rfl⟩ := list_exists_map_of_forall (into_val (V := K)) ks
-    (fun kv hkv => Hdom kv ((Hks kv).2 hkv))
-  have Hmem : ∀ k, k ∈ keys ↔ (m !! k).isSome := by
-    intro k
-    rw [← list_mem_map_inj (into_val (V := K)) go.into_val_inj, ← Hks, Hagree k]
-    cases m !! k <;> simp
-  have Hnd : keys.Nodup := list_nodup_of_map _ _ Hnodup
-  have Hsize : keys.length = gmap.size m := (gmap.size_eq_length m keys Hnd Hmem).symm
-  haveI := go.internal_map_length_step_pure mv _ hks
-  wp_pures
-  rw [List.length_map, Hsize]
-  iapply HΦ
-  unfold own_map_def
-  simp only [named]
-  iexists mv, mp
-  iframe Hown
-  ipureintro
-  exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+/-- Lean addition: `array_acc`, putting back the same element. -/
+theorem array_acc_same {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] (p : loc) (i : Int)
+    (dq : DFrac) (n : Int) (a : array.t V n) (v : V)
+    (hpos : 0 ≤ i) (hlookup : a.arr[i.toNat]? = some v) :
+    typed_pointsto (GF := GF) p a dq ⊢
+      iprop(typed_pointsto (array_index_ref V i p) v dq ∗
+        (typed_pointsto (array_index_ref V i p) v dq -∗ typed_pointsto p a dq)) := by
+  have hset : a.arr.set i.toNat v = a.arr := by
+    obtain ⟨h, rfl⟩ := List.getElem?_eq_some_iff.1 hlookup
+    exact List.set_getElem_self h
+  iintro Ha
+  icases array_acc (GF := GF) p i dq n a v hpos hlookup $$ Ha with ⟨Hv, Ha⟩
+  iframe Hv
+  iintro Hv
+  ihave Ha := Ha $$ %v Hv
+  rw [hset]
+  iexact Ha
 
 /-- Lean deviation (Rocq: `{{{ True }}} p.IsSingleton() {{{ RET #false; True }}}`,
 admitted as trusted, which is false: `IsSingleton` returns `true` for a
@@ -644,12 +632,42 @@ theorem wp_ProgressTracker__IsSingleton (p : loc) (dq : DFrac) (pt : v3.tracker.
         (Val #()))
     {{ RET #(decide (W64 (gmap.size m0) = W64 1 ∧ W64 (gmap.size m1) = W64 0));
         p ↦{dq} pt ∗ v0 ↦${dq0} m0 ∗ v1 ↦${dq1} m1 }} := by
-  -- The goose bug that made `p.Config.Voters[0]` stuck (`IndexRef` of a loaded array) is
-  -- fixed, so the voter maps can now be reached with `array_acc`. Still blocked:
-  -- `len(p.Config.Voters[0])` is `FuncResolve go.len [quorum.MajorityConfig]` at the
-  -- *named* map type, and the semantics only unfolds `len` at a literal `go.MapType`
-  -- (`len_map`, as in Rocq; unlike `len_slice`/`len_chan`, which take `[t ↓u ...]`).
-  sorry -- Rocq: Admitted (trusted, with a false statement)
+  wp_start as ⟨Hp, %Hvoters, Hm0, Hm1⟩
+  icases typed_pointsto_not_null_dup _ _ _ $$ Hp with ⟨Hp, %Hnn⟩
+  iStructNamed Hp
+  icases typed_pointsto_not_null_dup _ _ _ $$ Config with ⟨Config, %HnnC⟩
+  iStructNamed Config
+  icases array_acc_same (GF := GF) _ (sint.Z (W64 0)) _ _ _ v0 (by decide) (by simp [Hvoters])
+    $$ Voters with ⟨Hv0, Voters⟩
+  wp_auto
+  wp_apply wp_map_len $$ Hm0 with Hm0
+  ihave Voters := Voters $$ Hv0
+  wp_if_destruct
+  · icases array_acc_same (GF := GF) _ (sint.Z (W64 1)) _ _ _ v1 (by decide) (by simp [Hvoters])
+      $$ Voters with ⟨Hv1, Voters⟩
+    wp_auto
+    wp_apply wp_map_len $$ Hm1 with Hm1
+    ihave Voters := Voters $$ Hv1
+    rw [show decide (W64 ↑m0.size = W64 1 ∧ W64 ↑m1.size = W64 0) = decide (W64 ↑m1.size = W64 0)
+      by simp [Hif]]
+    iapply HΦ
+    iframe Hm0 Hm1
+    iapply typed_pointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typed_pointsto_def, named]
+    iframe Progress Votes MaxInflight MaxInflightBytes
+    iapply typed_pointsto_combine _ _ _ HnnC
+    simp only [TypedPointsto.typed_pointsto_def, named]
+    iframe
+  · rw [show decide (W64 ↑m0.size = W64 1 ∧ W64 ↑m1.size = W64 0) = false from
+      decide_eq_false (fun h => Hif h.1)]
+    iapply HΦ
+    iframe Hm0 Hm1
+    iapply typed_pointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typed_pointsto_def, named]
+    iframe Progress Votes MaxInflight MaxInflightBytes
+    iapply typed_pointsto_combine _ _ _ HnnC
+    simp only [TypedPointsto.typed_pointsto_def, named]
+    iframe
 
 theorem wp_raft__committedEntryInCurrentTerm (r : loc) (rf : v3.raft.t) (γ : raft_names) :
     {{ r ↦ rf ∗ own_raft (GF := GF) γ rf }}
@@ -941,8 +959,9 @@ theorem wp_raft__stepLeader_MsgReadIndex (γ : raft_names) (r : loc) (rf : v3.ra
     {{ RET #(); True }} := by
   -- Unprovable as stated: `stepLeader` uses `raft` state (trk, readOnly, raftLog, ...) that only
   -- the opaque axiom `own_raft` describes, and calls `sendMsgReadIndexResponse` and
-  -- `committedEntryInCurrentTerm` (above). It also calls `r.trk.IsSingleton()`, which is stuck
-  -- because of the goose bug described at `wp_ProgressTracker__IsSingleton`.
+  -- `committedEntryInCurrentTerm` (above). It also calls `r.trk.IsSingleton()`, whose (now proved)
+  -- spec `wp_ProgressTracker__IsSingleton` needs the voter-map points-tos, which `own_raft`
+  -- does not provide.
   sorry -- Rocq: Admitted
 
 set_option goose.wp.extras true in

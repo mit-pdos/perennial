@@ -16,6 +16,9 @@ This corresponds: `k` is a safe map key iff `go_eq k k` is safe to execute.
 The latter is safe when
   `#(interface.mk key_type k) =⟨go.any⟩ #(interface.mk key_type k)`
 is safe.
+
+Lean deviation from Rocq: `len_map` takes `[t ↓u go.MapType key_type elem_type]`
+(Rocq: only a literal `go.MapType`), so `len` also unfolds at named map types.
 -/
 import Perennial.Golang.Defn.Loop
 import Perennial.Golang.Defn.Predeclared
@@ -142,8 +145,13 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   make1_map (key_type elem_type : go.type) :
     FuncUnfold go.make1 [go.MapType key_type elem_type]
     (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0) : val)
-  len_map (key_type elem_type : go.type) :
-    FuncUnfold go.len [go.MapType key_type elem_type]
+  /-- Lean deviation: Rocq's `len_map key_type elem_type` unfolds `len` only at a
+  literal `go.MapType key_type elem_type`, so `len(m)` is stuck when `m` has a
+  named map type (e.g. raft's `quorum.MajorityConfig`). Go's `len` works on any
+  type whose underlying type is a map, so (like `len_slice`/`len_chan`) this
+  takes `[t ↓u go.MapType key_type elem_type]`. -/
+  len_map {t key_type elem_type : go.type} [t ↓u go.MapType key_type elem_type] :
+    FuncUnfold go.len [t]
     (λ: "m", InternalMapLength (Read "m") : val)
 
   composite_literal_map (key_type elem_type : go.type) (l : List keyed_element) :

@@ -21,7 +21,7 @@ translate = [
 
 imports = ["sync/atomic", "internal/race", "internal/synctest"]
 
-axiomatize = ["notifyList", "copyChecker", "copyChecker.*"]
+axiomatize = ["notifyList"]
 
 trusted = [
   # Unlike WaitGroup, one cannot translate and verify Mutex methods because they
@@ -33,6 +33,12 @@ trusted = [
   "Mutex.*",
 
   "runtime_notifyList*",
+
+  # `copyChecker` is a `uintptr` holding its own address, and `check` converts
+  # `unsafe.Pointer(c)` to `uintptr` and CASes it; goose supports neither, so
+  # both are modeled in TrustedCode/sync.lean (as an `unsafe.Pointer`).
+  "copyChecker",
+  "copyChecker.*",
 
   "runtime_Semacquire*",
   "runtime_Semrelease",

@@ -68,9 +68,11 @@ None found.
   - `index_array` uses `sint.nat`, so a negative index reads element 0.
 - **Foundational `sorry`s that are also `Admitted` in Rocq:**
   `into_val_typed_array` (`Theory/Array.lean:200`), and the generated
-  `TypedPointsto` for `notifyList`/`copyChecker`
-  (`GeneratedProof/sync.lean:53–76`). The latter are data instances, so `is_Cond`
-  facts about those fields rest on an arbitrary predicate, exactly as in Rocq.
+  `TypedPointsto` for `notifyList` (`GeneratedProof/sync.lean`). It is a data
+  instance, so `is_Cond` facts about that field rest on an arbitrary predicate,
+  exactly as in Rocq. (`copyChecker` and `copyChecker.check` are no longer
+  axiomatized: they are Lean-only trusted code in `TrustedCode/sync.lean`, with
+  `copyChecker.t = loc`, so `wp_copyChecker__check` is proved.)
 - **Unfinished work:** `Theory/Chan/AuSpec/ChanAuSend.lean:255` has `| _ => sorry`
   that is not admitted in Rocq; the directory is untracked and in progress. Not
   yet ported: `theory/chan.v`, `chan_au_recv.v`, `sync_proof/{waitgroup,waitgroup_join,rwmutex_guard}.v`.

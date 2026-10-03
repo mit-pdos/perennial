@@ -59,25 +59,6 @@ instance notifyList_into_val_typed :
 end def_
 end notifyList
 
-namespace copyChecker
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sync.Assumptions]
-
-instance copyChecker_typed_pointsto :
-    TypedPointsto (GF := GF) sync.copyChecker.t :=
-  sorry -- Rocq: Admitted
-
-instance copyChecker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.copyChecker.t sync.«copyCheckerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end copyChecker
-
 namespace Cond
 section def_
 
