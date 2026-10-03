@@ -451,8 +451,12 @@ theorem wp_WaitGroup__Add (wg : loc) (delta : w64) (γ : WaitGroup_names) (N : N
       have h2 := congrArg (· - W32 (sint.Z delta)) hc'
       simp only [BitVec.add_sub_cancel] at h2
       rw [h2, ← h]; decide
-    wp_if_destruct <;> try (wp_if_destruct; (exfalso; exact hc0 (hcz ‹_›)))
-    all_goals (
+    -- join the two cases of `delta > 0` before the rest of the function
+    wp_join with [v w delta]
+    · wp_if_destruct
+      · exfalso; exact hc0 (hcz ‹_›)
+      wp_join_done
+    (
       simp only [Int.lt_irrefl, decide_false, Hwne]
       wp_auto
       wp_apply_core sync.atomic.wp_Uint64__Load (wg_state wg) (DFrac.own (1 : Qp).half) $$ [] [-]
@@ -589,15 +593,15 @@ theorem wp_WaitGroup__Add (wg : loc) (delta : w64) (γ : WaitGroup_names) (N : N
       have : sint.Z c' ≠ 0 := fun h => hc'0 (by
         apply BitVec.eq_of_toInt_eq; simpa [sint.Z] using h)
       simp only [sint.Z] at *; simp; omega
-    wp_if_destruct
+    wp_join with [v w delta]
     · wp_if_destruct
       · exfalso
         apply Hw
         refine ⟨?_, ‹¬wait = W32 0›⟩
         have h := congrArg (· - W32 (sint.Z delta)) hc'
         simpa [BitVec.add_sub_cancel] using h
-      all_goals (wp_if_destruct <;> first | iexact HΦ | (exfalso; omega))
-    all_goals (wp_if_destruct <;> first | iexact HΦ | (exfalso; omega))
+      wp_join_done
+    wp_if_destruct <;> first | iexact HΦ | (exfalso; omega)
 
 theorem wp_WaitGroup__Done (wg : loc) (γ : WaitGroup_names) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,

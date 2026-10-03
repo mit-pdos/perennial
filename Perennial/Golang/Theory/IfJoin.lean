@@ -20,6 +20,9 @@ produces three goals:
 
 As in Rocq, goals 1 and 2 have already been simplified by `wp_if_destruct`
 (`wp_pures`, `wp_auto`), so they usually end with the postcondition `asn v`.
+For new proofs prefer `wp_join R` (`Perennial/Golang/Theory/Join.lean`): an
+assertion instead of a value predicate, frame mode, binding at a pattern or at
+the next statements, and automatic closing of trivial cases.
 A ported Rocq use-site is `wp_ifJoinDemo_join` in
 `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/unittest.lean`.
 

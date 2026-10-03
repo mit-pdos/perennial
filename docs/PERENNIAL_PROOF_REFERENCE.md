@@ -259,6 +259,64 @@ substituted; an equation between two variables (`i = n`) is kept as `Hif` (use
 `subst Hif` if wanted). For `#b` it does `cases b`. If there is no head `if:`, it falls
 back to the first `decide` in the expression, then in the goal.
 
+### `wp_join R`, `wp_join_done`
+
+`Perennial/Golang/Theory/Join.lean`. Prove the code after a case split once.
+After `wp_if_destruct` (or `cases s`, `by_cases`, ...) every goal contains the
+rest of the function and re-verifies it; `wp_join R` instead binds the head
+`if:` (or another subexpression, see `at`), asks for a common intermediate
+assertion `R : IProp GF` (may be `∃ x, ...`), and leaves
+
+1. the cases of the bound expression only, with postcondition
+   `fun v => ⌜v = v₀⌝ ∗ R` (`v₀ = execute_val` for an `if` statement that falls
+   through; `(v := #false)` for an expression such as a `&&`);
+2. the continuation `R -∗ WP K[v₀] {{ Φ }}`, proved once.
+
+```
+wp_join R with [H1 H2] as pats       -- H1 H2 go to the cases ([-HΦ]: all but HΦ)
+wp_join with [v w delta]             -- frame mode: R := the listed hypotheses, unchanged
+wp_join (v := #false) R ...          -- the join value
+wp_join (Q := fun v => ...) ...      -- general postcondition (continuation ∀ v, Q v -∗ ...)
+wp_join R at (pat) ...               -- bind the outermost match of a goose pattern
+wp_join R at next ... / at next 3    -- bind the next statement / next 3 statements
+```
+
+With the default binding it runs `wp_if_destruct` on the `if:` and then
+`wp_join_done` in every case that reached the join value: `wp_join_done` turns
+`⌜v₀ = v₀⌝ ∗ R` (or `True ∗ R`) into `R` and closes it when `iframe` does, so
+the remaining case goals are those that need work (`iexists ..; iframe;
+ipureintro; ...`, or more code ending in `wp_join_done`). With `at`, no case
+split is done: case split yourself inside the bound goal — this is how a case
+split on ghost or pure state (`cases s`, `rcases`) is joined before a common
+tail. With `as pats` (or in frame mode) the continuation introduces `R` and
+runs `wp_auto`. Statements are left-nested (`(s₁ ;;; s₂) ;;; s₃`), so `at next n`
+binds `s₁ … sₙ`; a declaration `x := e` scopes over the rest of its block and
+ends the statements that can be bound.
+
+Example (`docs/TutorialExamples.lean`, `wp_ifJoinDemo'`): the first `if` of
+`ifJoinDemo` is joined at "`arr` is some slice", so the second `if` is proved
+once:
+
+```
+wp_join iprop(∃ (sl : slice.t) (xs : List w64),
+    arr_ptr ↦ sl ∗ sl ↦* xs ∗ own_slice_cap w64 sl (DFrac.own 1))
+  with [arr Hz Hzcap] as ⟨%sl1, %xs, arr, Hz, Hzcap⟩
+· append_lit          -- `arg1 = true`; the `false` case was closed by `iframe`
+  wp_join_done
+wp_if_destruct        -- the rest of the function, once
+...
+```
+
+Other uses: `wp_WaitGroup__Add` (frame mode, the `w != 0 && delta > 0 && ...`
+panic checks), `wp_siftDownCmpFunc` (existential witness `c` from three cases).
+Where to join: after a case split whose cases fall through to the same code
+(`if` statements without `return`, `&&`/`||` conditions, `switch` cases that
+do not return). It does not help when every case runs its own code to the end
+of the function (e.g. a `switch` whose cases all `return`, as in the channel
+model's `TryReceive`): there is no common tail.
+`wp_if_join asn with pat` (`Perennial/Golang/Theory/IfJoin.lean`) is the
+literal port of Rocq's tactic (general `asn : val → IProp`).
+
 ### `wp_for`, `wp_for HI`, `wp_for_post`
 
 `Auto.lean`, `Perennial/Golang/Theory/Loop.lean`. `wp_for` binds the `do_for`
@@ -310,8 +368,8 @@ error is reported; otherwise remaining goals are left to you (often
 
 ### Not ported / different
 
-* Rocq `wp_if_join` is not ported: `wp_if_destruct` (or `cases b`) and prove the
-  rest of the function in each branch.
+* Rocq `wp_if_join asn with "pat"` is `wp_if_join asn with [pat]`
+  (`IfJoin.lean`); prefer `wp_join R` (above).
 * Rocq `wp_apply ... as "%x Hx"` is `wp_apply ... as %x Hx`; `as (x) "H"` is
   `as %x H`.
 * Rocq's global `wp_apply_auto_default` switch: use `wp_apply +noauto`.

@@ -20,6 +20,7 @@ Rocq tactic names are kept. Intro/cases patterns are iris-lean's
 | `wp_auto`, `wp_auto_lc n` | Auto | pure steps + loads/stores/allocs of locals + cleanup |
 | `wp_apply [+noauto] [(lc := n)] lem $$ spats as pats` | Auto | `wp_apply_core` + `iPkgInit` + intro + `wp_auto` |
 | `wp_if_destruct`, `wp_for [H]`, `wp_for_post`, `wp_end` | Auto, Loop | control flow |
+| `wp_join R with [H..] as pats`, `wp_join_done` | Join | prove the cases of an `if:` (or a case split) up to `R`, the rest of the function once |
 | `iPkgInit`, `solve_pkg_init` | Pkg | `is_pkg_init` goals |
 | `iNamed H`, `iNamed 1`, `iNamedAccu`, `iNamedPrefix/Suffix`, `iFrameNamed`, `iExactEq H` | Helpers/NamedProps | named propositions `"H" ∷ P` |
 | `iCombineNamed "H*" as Hout` | Experiments/Glob | glob over hypothesis names |
@@ -31,4 +32,5 @@ See `Perennial/Golang/Theory/Test.lean` for worked examples.
 import Perennial.Golang.Defn
 import Perennial.Golang.Theory.Pre
 import Perennial.Golang.Theory.String
+import Perennial.Golang.Theory.Join
 import Perennial.Ghost

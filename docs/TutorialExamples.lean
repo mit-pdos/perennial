@@ -306,6 +306,77 @@ example (p : slice.t) :
   wp_end
 -- ANCHOR_END: nosorry
 
+-- ANCHOR: wp_join
+section wp_join_example
+-- (`wp_slice_literal` expects slice literals folded; see `unittest.lean`)
+attribute [-instance] go.SliceSemantics.composite_literal_slice
+
+set_option hygiene false in
+/-- `arr = append(arr, []int{x})` (the slice is `Hz`, its capacity `Hzcap`). -/
+local macro "append_lit" : tactic => `(tactic| (
+  wp_apply wp_slice_literal
+  isplitr
+  · ipureintro; rfl
+  iintro %sl2 ⟨Hsl2, _⟩
+  wp_auto
+  wp_apply wp_slice_append $$ [Hz Hzcap Hsl2] with %sl1 ⟨Hz, Hzcap, _⟩
+  · iframe
+  try wp_auto))
+
+/-- `func ifJoinDemo(arg1, arg2 bool) { arr := []int{}; if arg1 { arr =
+append(arr, 2) }; if arg2 { arr = append(arr, 3) } }`: the two cases of the
+first `if` are joined at "`arr` is some slice", so the rest of the function
+(the second `if`) is verified once instead of once per case. -/
+theorem wp_ifJoinDemo' (arg1 arg2 : Bool) :
+    {{ is_pkg_init (PROP := IProp GF) pkg }}
+      (App (App (Val (@! ifJoinDemo)) (Val #arg1)) (Val #arg2))
+    {{ RET #(); True }} := by
+  wp_start
+  wp_auto
+  wp_apply wp_slice_literal
+  isplitr
+  · ipureintro; rfl
+  iintro %sl ⟨Hz, Hzcap⟩
+  wp_auto
+  wp_join iprop(∃ (sl : slice.t) (xs : List w64),
+      arr_ptr ↦ sl ∗ sl ↦* xs ∗ own_slice_cap w64 sl (DFrac.own 1))
+    with [arr Hz Hzcap] as ⟨%sl1, %xs, arr, Hz, Hzcap⟩
+  -- `arg1 = false` reached the join value and `iframe` proved `R`: closed
+  -- automatically. `arg1 = true`: append, then close the case at the join value.
+  · append_lit
+    wp_join_done
+  -- the continuation, once: `R` was introduced and `wp_auto` run
+  wp_if_destruct
+  · wp_end
+  · append_lit; wp_end
+
+/-- The same, binding the next statement with `at next` and case splitting by
+hand inside it (as one would for a case split on ghost state): the cases end
+with `wp_join_done`. -/
+theorem wp_ifJoinDemo'' (arg1 arg2 : Bool) :
+    {{ is_pkg_init (PROP := IProp GF) pkg }}
+      (App (App (Val (@! ifJoinDemo)) (Val #arg1)) (Val #arg2))
+    {{ RET #(); True }} := by
+  wp_start
+  wp_auto
+  wp_apply wp_slice_literal
+  isplitr
+  · ipureintro; rfl
+  iintro %sl ⟨Hz, Hzcap⟩
+  wp_auto
+  wp_join iprop(∃ (sl : slice.t) (xs : List w64),
+      arr_ptr ↦ sl ∗ sl ↦* xs ∗ own_slice_cap w64 sl (DFrac.own 1))
+    at next with [arr Hz Hzcap] as ⟨%sl1, %xs, arr, Hz, Hzcap⟩
+  · cases arg1
+    · wp_auto; wp_join_done
+    · wp_auto; append_lit; wp_join_done
+  wp_if_destruct
+  · wp_end
+  · append_lit; wp_end
+
+end wp_join_example
+-- ANCHOR_END: wp_join
+
 end tutorial
 
 

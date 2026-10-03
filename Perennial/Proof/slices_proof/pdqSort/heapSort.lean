@@ -413,8 +413,7 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
     have hridx : (sint.Z (a + root_val)).toNat = sint.nat a + sint.nat root_val := by iomega
     obtain ⟨xl, Hxl⟩ := list_lookup_lt xs' _ hrA
     -- choose the greatest child `c` (three cases), joined at `Hsel`
-    wp_bind (if: _ then _ else _)
-    iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗ ∃ (c : w64),
+    wp_join iprop(∃ (c : w64),
         "child" ∷ child_ptr ↦ c ∗
         "Hxs" ∷ data ↦* xs' ∗
         "cmp" ∷ cmp_ptr ↦ cmp_code ∗
@@ -423,44 +422,36 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
         "%Hsel" ∷ ⌜∃ cN : Nat, sint.nat c = cN ∧ sint.Z c = cN ∧
           (cN = 2 * sint.nat root_val + 1 ∨ cN = 2 * sint.nat root_val + 2) ∧ cN < sint.nat hi ∧
           max_child R xs' (sint.nat a) (sint.nat root_val) (sint.nat hi) cN ∧
-          (sint.Z (a + c)).toNat = sint.nat a + cN⌝))) $$ [child Hxs cmp first data]
-    · wp_if_destruct
-      · -- the right child is in bounds: compare the children
-        obtain ⟨xr', Hxr'⟩ := list_lookup_lt xs' (sint.nat a + (2 * sint.nat root_val + 2)) (by iomega)
-        load_at' Hxl
-        load_at' Hxr'
-        wp_apply Hcmp with %r1 %Hr1
-        wp_if_destruct
-        · -- the right child is greater
-          isplitr
-          · ipureintro; first | rfl | trivial
-          iexists _
-          iframe
-          ipureintro
-          exact ⟨2 * sint.nat root_val + 2, by iomega, by iomega, by omega, by iomega,
-            max_child_right R xs' _ _ _ xl xr' Hxl Hxr' (Hr1.1 (by iomega)), by iomega⟩
-        · -- the left child is not smaller
-          isplitr
-          · ipureintro; first | rfl | trivial
-          iexists _
-          iframe
-          ipureintro
-          exact ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega,
-            max_child_left R xs' _ _ _ xl xr' Hxl Hxr' (fun h => Hif (by have := Hr1.2 h; iomega)),
-            by iomega⟩
-      · -- the right child is out of bounds: only the left child
-        isplitr
-        · ipureintro; first | rfl | trivial
+          (sint.Z (a + c)).toNat = sint.nat a + cN⌝)
+      with [child Hxs cmp first data] as ⟨%c, child, Hxs, cmp, first, data, %Hsel⟩
+    · -- the right child is in bounds: compare the children
+      obtain ⟨xr', Hxr'⟩ := list_lookup_lt xs' (sint.nat a + (2 * sint.nat root_val + 2)) (by iomega)
+      load_at' Hxl
+      load_at' Hxr'
+      wp_apply Hcmp with %r1 %Hr1
+      wp_if_destruct
+      · -- the right child is greater
+        wp_join_done
+        iexists _
+        iframe
+        ipureintro
+        exact ⟨2 * sint.nat root_val + 2, by iomega, by iomega, by omega, by iomega,
+          max_child_right R xs' _ _ _ xl xr' Hxl Hxr' (Hr1.1 (by iomega)), by iomega⟩
+      · -- the left child is not smaller
+        wp_join_done
         iexists _
         iframe
         ipureintro
         exact ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega,
-          max_child_only R xs' _ _ _ (by iomega), by iomega⟩
-    iintro %v ⟨%Hv, %c, Hpost⟩
-    subst Hv
-    iNamed Hpost
+          max_child_left R xs' _ _ _ xl xr' Hxl Hxr' (fun h => Hif (by have := Hr1.2 h; iomega)),
+          by iomega⟩
+    · -- the right child is out of bounds: only the left child
+      iexists _
+      iframe
+      ipureintro
+      exact ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega,
+        max_child_only R xs' _ _ _ (by iomega), by iomega⟩
     clear Hr2 Halr Har Hal Hchild Hxl xl
-    wp_auto
     obtain ⟨cN, hcN, hcZ, hcsel, hcH, Hmax, hcidx⟩ := Hsel
     obtain ⟨xrt, Hxrt⟩ := list_lookup_lt xs' (sint.nat a + sint.nat root_val) (by omega)
     obtain ⟨xc, Hxc⟩ := list_lookup_lt xs' (sint.nat a + cN) (by omega)
