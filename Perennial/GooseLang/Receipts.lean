@@ -185,8 +185,8 @@ class receiptGpreS (GF : BundledGFunctors) where
 receipts (`⧗ N ⊢ False`): an unspecified positive number, fixed when the ghost
 state is allocated at adequacy time (`goose_adequacy`), where it is also the
 bound on the length of the executions the adequacy theorems are about. A proof
-that needs `N` to be small enough takes it as a premise (e.g.
-`receipt_bound GF ≤ 2 ^ 48` in `idutil.wp_Generator__Next`). -/
+that needs `N` to be small enough takes it as a premise (e.g. the postcondition
+`⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i` of `idutil.wp_Generator__Next`). -/
 class receiptGS (GF : BundledGFunctors) where
   receipt_inG : ElemG GF receiptF
   receipt_name : GName

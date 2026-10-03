@@ -106,15 +106,14 @@ axiom is_EtcdServer_internal {GF : BundledGFunctors} (s : loc) (γ : EtcdServer_
 /-- (Rocq: an axiom too.) `own_EtcdServer_access` can be used any number of
 times; `is_Generator` is persistent and `idutil.wp_Generator__Next` needs no
 further resource (it is proved with time receipts, see `idutil.lean`), so
-`reqIDGen.Next()` can be called each time.
-
-Lean: takes `idutil.wp_Generator__Next`'s premise `receipt_bound GF ≤ 2^48` on
-the time-receipt bound, under which the `is_Generator` it hands out is usable. -/
+`reqIDGen.Next()` can be called each time. As in Rocq, there is no premise on
+the time-receipt bound: `Next` is safe for every bound, and only the
+`own_ID γ i` token it returns is conditional on `receipt_bound GF ≤ 2^48`. -/
 axiom own_EtcdServer_access [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
     [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
     [hG : heapGS HasLC.hasLC GF] [allG GF] [sem : go.Semantics]
     [package_sem : etcdserver.Assumptions]
-    (Hbound : receipt_bound GF ≤ 2 ^ 48) (s : loc) (γ : EtcdServer_names) :
+    (s : loc) (γ : EtcdServer_names) :
   ⊢ own_EtcdServer (GF := GF) s γ -∗
     ∃ (reqIDGen : loc) (MaxRequestBytes : w64) (w : interface.t_ok)
       (γw : wait_params GF) (rn : interface.t_ok),
@@ -207,8 +206,14 @@ theorem wp_optional (R : IProp GF) (e : expr) :
   subst Hv
   iapply HΦ $$ HR
 
-/-- Lean: takes the premise `receipt_bound GF ≤ 2^48` of
-`idutil.wp_Generator__Next`, which it calls (`reqIDGen.Next()`). -/
+/-- Lean deviation: takes the premise `receipt_bound GF ≤ 2^48` on the
+time-receipt bound (Rocq: none). It is needed only where the token
+`own_ID γ id` returned by `reqIDGen.Next()` is consumed: `Next`'s postcondition
+is `⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ own_ID γ id`, and the token stands for the
+`own_unregistered_id id` that `w.Register(id)` needs (Rocq FIXME there:
+"own_unregistered as postcondition of idutil.Generator.Next()"; without it
+`Register` may panic on a duplicate ID, as IDs wrap around after `2^48`
+calls). The call to `Next` itself needs no premise. -/
 theorem wp_EtcdServer__processInternalRaftRequestOnce (Hbound : receipt_bound GF ≤ 2 ^ 48)
     (s : loc) (γ : EtcdServer_names)
     (ctx : interface.t_ok) (ctx_desc : context.Context_desc.t (IProp GF))
@@ -222,7 +227,7 @@ theorem wp_EtcdServer__processInternalRaftRequestOnce (Hbound : receipt_bound GF
           @!! go!"processInternalRaftRequestOnce")) (Val #(interface.ok ctx))) (Val #req))
     {{ (a : loc) (err : interface.t), RET (PairV #a #err); own_EtcdServer s γ }} := by
   -- Unprovable: calls opaque packages (prometheus, otel `SpanFromContext`, `strconv.FormatBool`) and `context.WithTimeout` (unprovable).
-  -- `reqIDGen.Next()` is no longer a blocker: `idutil.wp_Generator__Next Hbound` needs only the persistent `is_Generator` from `own_EtcdServer_access Hbound` (it is proved with time receipts).
+  -- `reqIDGen.Next()` is no longer a blocker: `idutil.wp_Generator__Next` needs only the persistent `is_Generator` from `own_EtcdServer_access` (it is proved with time receipts); `Hbound` is used only to specialize its result `⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ own_ID γ id` before `w.Register(id)` (whose `own_unregistered_id` is a Rocq FIXME).
   sorry -- Rocq: Admitted
 
 end wps

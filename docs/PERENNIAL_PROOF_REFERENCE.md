@@ -676,7 +676,11 @@ depends on `N`: the language instance, `PureExec`/`Atomic` instances and the
 receipt camera (`receiptGpreS`, `gooseGpreS`) are the same for every `N`. A
 proof that needs `N` to be small states it as a premise, e.g.
 `(Hbound : receipt_bound GF ≤ 2 ^ 48)`, and every caller passes the premise on;
-the client discharges it when it picks `N` at adequacy time (below).
+the client discharges it when it picks `N` at adequacy time (below). Prefer to
+put the premise only where it is needed: if the code is safe for every `N` and
+only some resource of the postcondition depends on the bound, make that resource
+conditional (`⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i`, as `idutil.Generator.Next`)
+rather than the whole spec.
 
 **Semantics.** The trusted `base_step` is unchanged. The registered language
 instance `goose_ectxi_lang` is a layer on top of it whose state is
@@ -763,7 +767,8 @@ A client chooses `N` and discharges the premises its proof makes about it from
 ```
 
 where `Hwp` is the client's WP proof under the premise `receipt_bound GF ≤ 2 ^ 48`
-(it calls `wp_Generator__Next Hbound`); `TimeReceiptsTest.lean` has this
+(it uses the premise to specialize the `⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i`
+returned by `wp_Generator__Next`); `TimeReceiptsTest.lean` has this
 instantiation for `N = 2 ^ 64`. The result holds for executions of fewer than
 `2^48` steps. Since there is
 nothing to gain from a smaller `N`, a client takes the largest `N` that all the
@@ -777,28 +782,38 @@ backed by a real one).
 
 **Example: `idutil.Generator.Next`** (`Perennial/Proof/go_etcd_io/etcd/pkg/v3/idutil.lean`).
 The invariant of `is_Generator g R` owns one receipt per completed call,
-`⧗ num_used`, next to the `2^48 - num_used` remaining `R` tokens. `Next` takes a
-receipt from an early Go instruction and adds it to the invariant when the
-atomic increment opens it; `receipt_add_one_lt` gives
-`num_used + 1 < receipt_bound GF`, and the premise `receipt_bound GF ≤ 2^48`
-gives `num_used + 1 < 2^48`, so a token is left. The specs are Rocq's, with no
-ticket, plus the premise on `N`:
+`⧗ num_used`, next to the remaining `R` tokens (the list
+`seqZ (init + num_used + 1) (2^48 - num_used)`, empty once `num_used ≥ 2^48`).
+`Next` takes a receipt from an early Go instruction and adds it to the
+invariant when the atomic increment opens it; `receipt_add_one_lt` gives
+`num_used + 1 < receipt_bound GF`. The specs hold for every `N` (the code never
+fails); only the token in `Next`'s postcondition is conditional. Either
+`num_used < 2^48` and the head of the token list is returned (the premise is
+unused), or the list is empty, stays empty, and the premise
+`receipt_bound GF ≤ 2^48` contradicts `num_used + 1 < receipt_bound GF`
+(`idutil.take_token`). The specs are Rocq's, with no ticket, except for that
+premise:
 
 ```
-theorem wp_Generator__Next (Hbound : receipt_bound GF ≤ 2 ^ 48) (g : loc) (R : w64 → IProp GF) :
+theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
     {{ is_pkg_init pkg ∗ is_Generator g R }}
       (App (Val (g @!! go.type.PointerType Generator @!! go!"Next")) (Val #()))
-    {{ (i : w64), RET #i; R i }}
+    {{ (i : w64), RET #i; ⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i }}
 
-theorem wp_NewGenerator (Hbound : receipt_bound GF ≤ 2 ^ 48) (R : w64 → IProp GF)
+theorem wp_NewGenerator (R : w64 → IProp GF)
     (memberID : w16) (now : time.Time.t) :
     {{ is_pkg_init pkg ∗ ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
     {{ (g : loc), RET #g; is_Generator g R }}
 ```
 
-Callers take the same premise (`etcdserver.own_EtcdServer_access`,
-`wp_EtcdServer__processInternalRaftRequestOnce`). The proof starts with
+The postcondition is a wand rather than `⌜…⌝ → R i` so that a caller holding
+`Hbound` specializes it with `ispecialize HR $$ %Hbound`. A caller takes the
+premise only if it consumes the token: `etcdserver.own_EtcdServer_access` hands
+out `is_Generator` with no premise, while
+`wp_EtcdServer__processInternalRaftRequestOnce` takes `Hbound` because the
+token stands for the `own_unregistered_id` that `w.Register(id)` needs. The
+proof starts with
 
 ```
   wp_start as H
@@ -815,7 +830,7 @@ Callers take the same premise (`etcdserver.own_EtcdServer_access`,
 
 and later, inside the atomic update of `AddUint64`,
 `icases receipt_add_one_lt _ $$ [Htk Hused] with ⟨%Hlt, Hused⟩` and
-`have Hlt48 : num_used.toNat + 1 < 2 ^ 48 := Nat.lt_of_lt_of_le Hlt Hbound`.
+`icases take_token (fun i => R (W64 (pfx * 2 ^ 48 + i % 2 ^ 48))) (init + num_used) num_used (receipt_bound GF) Hlt $$ HR with ⟨HRi, HR⟩`.
 `TimeReceiptsTest.lean` has the same pattern for the paper's clock
 (`wp_clock_incr`, premise `receipt_bound GF ≤ 2 ^ 64`).
 
