@@ -88,7 +88,7 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig) (gl
 			"could not load package %v:\n%v", pkg.PkgPath,
 			pkgErrors(pkg.Errors))
 	}
-	ctx := NewPkgCtx(pkg, declfilter.New(config))
+	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, declfilter.New(config)))
 	coqFile := ctx.initCoqFile(pkg, config)
 	preDecls, decls, errs := ctx.files(pkg.Syntax)
 

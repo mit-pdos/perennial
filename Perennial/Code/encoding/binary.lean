@@ -62,20 +62,6 @@ def nativeEndian [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] nativeEndian
 
-axiom «ByteOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «AppendByteOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «bigEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «coderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «decoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «encoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «nativeEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom MaxVarintLen16 [ffi_syntax] [GoGlobalContext] : val
 
 axiom MaxVarintLen32 [ffi_syntax] [GoGlobalContext] : val
@@ -431,34 +417,28 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc errOverflow go.error)) (Val #()))))))))
 
 namespace ByteOrder
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end ByteOrder
 
-class ByteOrder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ByteOrder_type_repr : go.TypeReprUnderlying «ByteOrderⁱᵐᵖˡ» ByteOrder.t
-  ByteOrder_underlying : go.UnderlyingDirectedEq ByteOrder «ByteOrderⁱᵐᵖˡ»
-  «ByteOrderⁱᵐᵖˡ_underlying» : go.IsUnderlying «ByteOrderⁱᵐᵖˡ» «ByteOrderⁱᵐᵖˡ»
+@[reducible] def «ByteOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"PutUint16" (go.signature.Signature [(go.type.SliceType go.byte), go.uint16] false [])), (go.interface_elem.MethodElem go!"PutUint32" (go.signature.Signature [(go.type.SliceType go.byte), go.uint32] false [])), (go.interface_elem.MethodElem go!"PutUint64" (go.signature.Signature [(go.type.SliceType go.byte), go.uint64] false [])), (go.interface_elem.MethodElem go!"String" (go.signature.Signature [] false [go.string])), (go.interface_elem.MethodElem go!"Uint16" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.uint16])), (go.interface_elem.MethodElem go!"Uint32" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.uint32])), (go.interface_elem.MethodElem go!"Uint64" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.uint64]))])
 
-attribute [instance] ByteOrder_Assumptions.ByteOrder_type_repr
-  ByteOrder_Assumptions.ByteOrder_underlying
-  ByteOrder_Assumptions.«ByteOrderⁱᵐᵖˡ_underlying»
+class ByteOrder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  ByteOrder_underlying : go.UnderlyingDirectedEq ByteOrder «ByteOrderⁱᵐᵖˡ»
+
+attribute [instance] ByteOrder_Assumptions.ByteOrder_underlying
 
 namespace AppendByteOrder
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end AppendByteOrder
 
-class AppendByteOrder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AppendByteOrder_type_repr : go.TypeReprUnderlying «AppendByteOrderⁱᵐᵖˡ» AppendByteOrder.t
-  AppendByteOrder_underlying : go.UnderlyingDirectedEq AppendByteOrder «AppendByteOrderⁱᵐᵖˡ»
-  «AppendByteOrderⁱᵐᵖˡ_underlying» : go.IsUnderlying «AppendByteOrderⁱᵐᵖˡ» «AppendByteOrderⁱᵐᵖˡ»
+@[reducible] def «AppendByteOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"AppendUint16" (go.signature.Signature [(go.type.SliceType go.byte), go.uint16] false [(go.type.SliceType go.byte)])), (go.interface_elem.MethodElem go!"AppendUint32" (go.signature.Signature [(go.type.SliceType go.byte), go.uint32] false [(go.type.SliceType go.byte)])), (go.interface_elem.MethodElem go!"AppendUint64" (go.signature.Signature [(go.type.SliceType go.byte), go.uint64] false [(go.type.SliceType go.byte)])), (go.interface_elem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-attribute [instance] AppendByteOrder_Assumptions.AppendByteOrder_type_repr
-  AppendByteOrder_Assumptions.AppendByteOrder_underlying
-  AppendByteOrder_Assumptions.«AppendByteOrderⁱᵐᵖˡ_underlying»
+class AppendByteOrder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  AppendByteOrder_underlying : go.UnderlyingDirectedEq AppendByteOrder «AppendByteOrderⁱᵐᵖˡ»
+
+attribute [instance] AppendByteOrder_Assumptions.AppendByteOrder_underlying
 
 namespace littleEndian
 structure t [ffi_syntax] where
@@ -544,79 +524,134 @@ attribute [instance] littleEndian_Assumptions.littleEndian_type_repr
   littleEndian_Assumptions.littleEndian'ptr_Uint64_unfold
 
 namespace bigEndian
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk⟩
 end bigEndian
+
+@[reducible] def bigEndian'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def bigEndian'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  bigEndian'fds_unsealed
+
+instance equals_unfold_bigEndian [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold bigEndian'fds bigEndian'fds_unsealed :=
+  ⟨by unfold bigEndian'fds; rfl⟩
+
+@[reducible] def «bigEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType bigEndian'fds)
 
 class bigEndian_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   bigEndian_type_repr : go.TypeReprUnderlying «bigEndianⁱᵐᵖˡ» bigEndian.t
   bigEndian_underlying : go.UnderlyingDirectedEq bigEndian «bigEndianⁱᵐᵖˡ»
-  «bigEndianⁱᵐᵖˡ_underlying» : go.IsUnderlying «bigEndianⁱᵐᵖˡ» «bigEndianⁱᵐᵖˡ»
 
 attribute [instance] bigEndian_Assumptions.bigEndian_type_repr
   bigEndian_Assumptions.bigEndian_underlying
-  bigEndian_Assumptions.«bigEndianⁱᵐᵖˡ_underlying»
 
 namespace coder
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  order' : ByteOrder.t
+  buf' : slice.t
+  offset' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end coder
+
+@[reducible] def coder'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"order" ByteOrder),
+(go.field_decl.FieldDecl go!"buf" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"offset" go.int)]
+
+@[irreducible] def coder'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  coder'fds_unsealed
+
+instance equals_unfold_coder [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold coder'fds coder'fds_unsealed :=
+  ⟨by unfold coder'fds; rfl⟩
+
+@[reducible] def «coderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType coder'fds)
 
 class coder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   coder_type_repr : go.TypeReprUnderlying «coderⁱᵐᵖˡ» coder.t
   coder_underlying : go.UnderlyingDirectedEq coder «coderⁱᵐᵖˡ»
-  «coderⁱᵐᵖˡ_underlying» : go.IsUnderlying «coderⁱᵐᵖˡ» «coderⁱᵐᵖˡ»
+  coder_get_order : ∀ (x : coder.t), go.IsGoStepPureDetTagged under (StructFieldGet «coderⁱᵐᵖˡ» go!"order") #x (Val #(x.order'))
+  coder_set_order : ∀ (x : coder.t) (y : ByteOrder.t), go.IsGoStepPureDetTagged under (StructFieldSet «coderⁱᵐᵖˡ» go!"order") (PairV #x #y) (Val #(({ x with order' := y } : coder.t)))
+  coder_get_buf : ∀ (x : coder.t), go.IsGoStepPureDetTagged under (StructFieldGet «coderⁱᵐᵖˡ» go!"buf") #x (Val #(x.buf'))
+  coder_set_buf : ∀ (x : coder.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «coderⁱᵐᵖˡ» go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : coder.t)))
+  coder_get_offset : ∀ (x : coder.t), go.IsGoStepPureDetTagged under (StructFieldGet «coderⁱᵐᵖˡ» go!"offset") #x (Val #(x.offset'))
+  coder_set_offset : ∀ (x : coder.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «coderⁱᵐᵖˡ» go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : coder.t)))
 
 attribute [instance] coder_Assumptions.coder_type_repr
   coder_Assumptions.coder_underlying
-  coder_Assumptions.«coderⁱᵐᵖˡ_underlying»
+  coder_Assumptions.coder_get_order
+  coder_Assumptions.coder_set_order
+  coder_Assumptions.coder_get_buf
+  coder_Assumptions.coder_set_buf
+  coder_Assumptions.coder_get_offset
+  coder_Assumptions.coder_set_offset
 
 namespace decoder
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := coder.t
 end decoder
 
-class decoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  decoder_type_repr : go.TypeReprUnderlying «decoderⁱᵐᵖˡ» decoder.t
-  decoder_underlying : go.UnderlyingDirectedEq decoder «decoderⁱᵐᵖˡ»
-  «decoderⁱᵐᵖˡ_underlying» : go.IsUnderlying «decoderⁱᵐᵖˡ» «decoderⁱᵐᵖˡ»
+@[reducible] def «decoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  coder
 
-attribute [instance] decoder_Assumptions.decoder_type_repr
-  decoder_Assumptions.decoder_underlying
-  decoder_Assumptions.«decoderⁱᵐᵖˡ_underlying»
+class decoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  decoder_underlying : go.UnderlyingDirectedEq decoder «decoderⁱᵐᵖˡ»
+
+attribute [instance] decoder_Assumptions.decoder_underlying
 
 namespace encoder
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := coder.t
 end encoder
 
-class encoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  encoder_type_repr : go.TypeReprUnderlying «encoderⁱᵐᵖˡ» encoder.t
-  encoder_underlying : go.UnderlyingDirectedEq encoder «encoderⁱᵐᵖˡ»
-  «encoderⁱᵐᵖˡ_underlying» : go.IsUnderlying «encoderⁱᵐᵖˡ» «encoderⁱᵐᵖˡ»
+@[reducible] def «encoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  coder
 
-attribute [instance] encoder_Assumptions.encoder_type_repr
-  encoder_Assumptions.encoder_underlying
-  encoder_Assumptions.«encoderⁱᵐᵖˡ_underlying»
+class encoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  encoder_underlying : go.UnderlyingDirectedEq encoder «encoderⁱᵐᵖˡ»
+
+attribute [instance] encoder_Assumptions.encoder_underlying
 
 namespace nativeEndian
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  littleEndian' : littleEndian.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
 end nativeEndian
+
+@[reducible] def nativeEndian'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"littleEndian" littleEndian)]
+
+@[irreducible] def nativeEndian'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  nativeEndian'fds_unsealed
+
+instance equals_unfold_nativeEndian [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold nativeEndian'fds nativeEndian'fds_unsealed :=
+  ⟨by unfold nativeEndian'fds; rfl⟩
+
+@[reducible] def «nativeEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType nativeEndian'fds)
 
 class nativeEndian_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nativeEndian_type_repr : go.TypeReprUnderlying «nativeEndianⁱᵐᵖˡ» nativeEndian.t
   nativeEndian_underlying : go.UnderlyingDirectedEq nativeEndian «nativeEndianⁱᵐᵖˡ»
-  «nativeEndianⁱᵐᵖˡ_underlying» : go.IsUnderlying «nativeEndianⁱᵐᵖˡ» «nativeEndianⁱᵐᵖˡ»
+  nativeEndian_get_littleEndian : ∀ (x : nativeEndian.t), go.IsGoStepPureDetTagged under (StructFieldGet «nativeEndianⁱᵐᵖˡ» go!"littleEndian") #x (Val #(x.littleEndian'))
+  nativeEndian_set_littleEndian : ∀ (x : nativeEndian.t) (y : littleEndian.t), go.IsGoStepPureDetTagged under (StructFieldSet «nativeEndianⁱᵐᵖˡ» go!"littleEndian") (PairV #x #y) (Val #(({ x with littleEndian' := y } : nativeEndian.t)))
 
 attribute [instance] nativeEndian_Assumptions.nativeEndian_type_repr
   nativeEndian_Assumptions.nativeEndian_underlying
-  nativeEndian_Assumptions.«nativeEndianⁱᵐᵖˡ_underlying»
+  nativeEndian_Assumptions.nativeEndian_get_littleEndian
+  nativeEndian_Assumptions.nativeEndian_set_littleEndian
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteOrder_instance : ByteOrder_Assumptions

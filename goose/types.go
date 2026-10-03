@@ -90,6 +90,7 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 				Name:       typeName,
 				Body:       ctx.glangType(spec.Type, types.Unalias(aliasedType)),
 				TypeParams: typeParams,
+				Alias:      true,
 			})
 		}
 	case declfilter.Trust:

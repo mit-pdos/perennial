@@ -330,6 +330,15 @@ noncomputable def «xorshift__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untyped_int xorshift))) (Val #(13 : Int)))))))))))))))
 
+/-- go: sort.go:188:6 -/
+noncomputable def «nextPowerOfTwoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+  (LamV "length"
+  (App (Val exception_do)
+  (Let "length" (App (Val (GoInstruction (GoAlloc go.int))) (Var "length"))
+  (App (Val do_return)
+  (App (Val (GoInstruction (GoOp GoShiftl go.uint))) (Pair (Val #(W64 1)) (App (Val (GoInstruction (Convert go.int go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.math.bits.Len []))) (Val #())) (Var "$a0"))))))))))
+
 /-- insertionSortCmpFunc sorts data[a:b] using insertion sort.
 
     go: zsortanyfunc.go:10:6 -/
@@ -1861,6 +1870,7 @@ class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFu
   sortedHint_instance : sortedHint_Assumptions
   xorshift_instance : xorshift_Assumptions
   SortFunc_unfold : ∀ (S E : go.type), FuncUnfold SortFunc [S, E] («SortFuncⁱᵐᵖˡ» S E)
+  nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] «nextPowerOfTwoⁱᵐᵖˡ»
   insertionSortCmpFunc_unfold : ∀ (E : go.type), FuncUnfold insertionSortCmpFunc [E] («insertionSortCmpFuncⁱᵐᵖˡ» E)
   siftDownCmpFunc_unfold : ∀ (E : go.type), FuncUnfold siftDownCmpFunc [E] («siftDownCmpFuncⁱᵐᵖˡ» E)
   heapSortCmpFunc_unfold : ∀ (E : go.type), FuncUnfold heapSortCmpFunc [E] («heapSortCmpFuncⁱᵐᵖˡ» E)
@@ -1883,6 +1893,7 @@ class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFu
 attribute [instance] Assumptions.sortedHint_instance
   Assumptions.xorshift_instance
   Assumptions.SortFunc_unfold
+  Assumptions.nextPowerOfTwo_unfold
   Assumptions.insertionSortCmpFunc_unfold
   Assumptions.siftDownCmpFunc_unfold
   Assumptions.heapSortCmpFunc_unfold

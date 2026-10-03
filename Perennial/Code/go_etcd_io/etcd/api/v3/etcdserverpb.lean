@@ -860,14 +860,6 @@ axiom «loggableValueCompareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.ty
 
 axiom «loggablePutRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «AlarmTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «WatchCreateRequest_FilterTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «AlarmRequest_AlarmActionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «DowngradeRequest_DowngradeActionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «CompactionRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «CompactionResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -885,8 +877,6 @@ axiom «SnapshotRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «SnapshotResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «WatchRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «isWatchRequest_RequestUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «WatchRequest_CreateRequestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -1054,8 +1044,6 @@ axiom «KVServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «UnimplementedKVServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «UnsafeKVServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «WatchClientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «watchClientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -1065,8 +1053,6 @@ axiom Watch_WatchClient [ffi_syntax] [GoGlobalContext] : go.type
 axiom «WatchServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «UnimplementedWatchServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «UnsafeWatchServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom Watch_WatchServer [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -1080,8 +1066,6 @@ axiom «LeaseServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «UnimplementedLeaseServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «UnsafeLeaseServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom Lease_LeaseKeepAliveServer [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «ClusterClientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -1091,8 +1075,6 @@ axiom «clusterClientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «ClusterServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «UnimplementedClusterServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «UnsafeClusterServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «MaintenanceClientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -1104,8 +1086,6 @@ axiom «MaintenanceServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «UnimplementedMaintenanceServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «UnsafeMaintenanceServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom Maintenance_SnapshotServer [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «AuthClientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -1115,8 +1095,6 @@ axiom «authClientⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «AuthServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «UnimplementedAuthServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «UnsafeAuthServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom AlarmType_NONE [ffi_syntax] [GoGlobalContext] : val
 
@@ -4031,19 +4009,16 @@ attribute [instance] loggablePutRequest_Assumptions.loggablePutRequest_type_repr
   loggablePutRequest_Assumptions.«loggablePutRequestⁱᵐᵖˡ_underlying»
 
 namespace AlarmType
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end AlarmType
 
-class AlarmType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AlarmType_type_repr : go.TypeReprUnderlying «AlarmTypeⁱᵐᵖˡ» AlarmType.t
-  AlarmType_underlying : go.UnderlyingDirectedEq AlarmType «AlarmTypeⁱᵐᵖˡ»
-  «AlarmTypeⁱᵐᵖˡ_underlying» : go.IsUnderlying «AlarmTypeⁱᵐᵖˡ» «AlarmTypeⁱᵐᵖˡ»
+@[reducible] def «AlarmTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int32
 
-attribute [instance] AlarmType_Assumptions.AlarmType_type_repr
-  AlarmType_Assumptions.AlarmType_underlying
-  AlarmType_Assumptions.«AlarmTypeⁱᵐᵖˡ_underlying»
+class AlarmType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  AlarmType_underlying : go.UnderlyingDirectedEq AlarmType «AlarmTypeⁱᵐᵖˡ»
+
+attribute [instance] AlarmType_Assumptions.AlarmType_underlying
 
 namespace RangeRequest_SortOrder
 abbrev t [ffi_syntax] : Type := w32
@@ -4114,49 +4089,40 @@ attribute [instance] Compare_CompareTarget_Assumptions.Compare_CompareTarget_und
   Compare_CompareTarget_Assumptions.Compare_CompareTarget'ptr_EnumDescriptor_unfold
 
 namespace WatchCreateRequest_FilterType
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end WatchCreateRequest_FilterType
 
-class WatchCreateRequest_FilterType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  WatchCreateRequest_FilterType_type_repr : go.TypeReprUnderlying «WatchCreateRequest_FilterTypeⁱᵐᵖˡ» WatchCreateRequest_FilterType.t
-  WatchCreateRequest_FilterType_underlying : go.UnderlyingDirectedEq WatchCreateRequest_FilterType «WatchCreateRequest_FilterTypeⁱᵐᵖˡ»
-  «WatchCreateRequest_FilterTypeⁱᵐᵖˡ_underlying» : go.IsUnderlying «WatchCreateRequest_FilterTypeⁱᵐᵖˡ» «WatchCreateRequest_FilterTypeⁱᵐᵖˡ»
+@[reducible] def «WatchCreateRequest_FilterTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int32
 
-attribute [instance] WatchCreateRequest_FilterType_Assumptions.WatchCreateRequest_FilterType_type_repr
-  WatchCreateRequest_FilterType_Assumptions.WatchCreateRequest_FilterType_underlying
-  WatchCreateRequest_FilterType_Assumptions.«WatchCreateRequest_FilterTypeⁱᵐᵖˡ_underlying»
+class WatchCreateRequest_FilterType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  WatchCreateRequest_FilterType_underlying : go.UnderlyingDirectedEq WatchCreateRequest_FilterType «WatchCreateRequest_FilterTypeⁱᵐᵖˡ»
+
+attribute [instance] WatchCreateRequest_FilterType_Assumptions.WatchCreateRequest_FilterType_underlying
 
 namespace AlarmRequest_AlarmAction
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end AlarmRequest_AlarmAction
 
-class AlarmRequest_AlarmAction_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AlarmRequest_AlarmAction_type_repr : go.TypeReprUnderlying «AlarmRequest_AlarmActionⁱᵐᵖˡ» AlarmRequest_AlarmAction.t
-  AlarmRequest_AlarmAction_underlying : go.UnderlyingDirectedEq AlarmRequest_AlarmAction «AlarmRequest_AlarmActionⁱᵐᵖˡ»
-  «AlarmRequest_AlarmActionⁱᵐᵖˡ_underlying» : go.IsUnderlying «AlarmRequest_AlarmActionⁱᵐᵖˡ» «AlarmRequest_AlarmActionⁱᵐᵖˡ»
+@[reducible] def «AlarmRequest_AlarmActionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int32
 
-attribute [instance] AlarmRequest_AlarmAction_Assumptions.AlarmRequest_AlarmAction_type_repr
-  AlarmRequest_AlarmAction_Assumptions.AlarmRequest_AlarmAction_underlying
-  AlarmRequest_AlarmAction_Assumptions.«AlarmRequest_AlarmActionⁱᵐᵖˡ_underlying»
+class AlarmRequest_AlarmAction_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  AlarmRequest_AlarmAction_underlying : go.UnderlyingDirectedEq AlarmRequest_AlarmAction «AlarmRequest_AlarmActionⁱᵐᵖˡ»
+
+attribute [instance] AlarmRequest_AlarmAction_Assumptions.AlarmRequest_AlarmAction_underlying
 
 namespace DowngradeRequest_DowngradeAction
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end DowngradeRequest_DowngradeAction
 
-class DowngradeRequest_DowngradeAction_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  DowngradeRequest_DowngradeAction_type_repr : go.TypeReprUnderlying «DowngradeRequest_DowngradeActionⁱᵐᵖˡ» DowngradeRequest_DowngradeAction.t
-  DowngradeRequest_DowngradeAction_underlying : go.UnderlyingDirectedEq DowngradeRequest_DowngradeAction «DowngradeRequest_DowngradeActionⁱᵐᵖˡ»
-  «DowngradeRequest_DowngradeActionⁱᵐᵖˡ_underlying» : go.IsUnderlying «DowngradeRequest_DowngradeActionⁱᵐᵖˡ» «DowngradeRequest_DowngradeActionⁱᵐᵖˡ»
+@[reducible] def «DowngradeRequest_DowngradeActionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int32
 
-attribute [instance] DowngradeRequest_DowngradeAction_Assumptions.DowngradeRequest_DowngradeAction_type_repr
-  DowngradeRequest_DowngradeAction_Assumptions.DowngradeRequest_DowngradeAction_underlying
-  DowngradeRequest_DowngradeAction_Assumptions.«DowngradeRequest_DowngradeActionⁱᵐᵖˡ_underlying»
+class DowngradeRequest_DowngradeAction_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  DowngradeRequest_DowngradeAction_underlying : go.UnderlyingDirectedEq DowngradeRequest_DowngradeAction «DowngradeRequest_DowngradeActionⁱᵐᵖˡ»
+
+attribute [instance] DowngradeRequest_DowngradeAction_Assumptions.DowngradeRequest_DowngradeAction_underlying
 
 namespace ResponseHeader
 structure t [ffi_syntax] where
@@ -5691,19 +5657,16 @@ attribute [instance] WatchRequest_Assumptions.WatchRequest_type_repr
   WatchRequest_Assumptions.«WatchRequestⁱᵐᵖˡ_underlying»
 
 namespace isWatchRequest_RequestUnion
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end isWatchRequest_RequestUnion
 
-class isWatchRequest_RequestUnion_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  isWatchRequest_RequestUnion_type_repr : go.TypeReprUnderlying «isWatchRequest_RequestUnionⁱᵐᵖˡ» isWatchRequest_RequestUnion.t
-  isWatchRequest_RequestUnion_underlying : go.UnderlyingDirectedEq isWatchRequest_RequestUnion «isWatchRequest_RequestUnionⁱᵐᵖˡ»
-  «isWatchRequest_RequestUnionⁱᵐᵖˡ_underlying» : go.IsUnderlying «isWatchRequest_RequestUnionⁱᵐᵖˡ» «isWatchRequest_RequestUnionⁱᵐᵖˡ»
+@[reducible] def «isWatchRequest_RequestUnionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"MarshalTo" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.int, go.error])), (go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.int])), (go.interface_elem.MethodElem go!"isWatchRequest_RequestUnion" (go.signature.Signature [] false []))])
 
-attribute [instance] isWatchRequest_RequestUnion_Assumptions.isWatchRequest_RequestUnion_type_repr
-  isWatchRequest_RequestUnion_Assumptions.isWatchRequest_RequestUnion_underlying
-  isWatchRequest_RequestUnion_Assumptions.«isWatchRequest_RequestUnionⁱᵐᵖˡ_underlying»
+class isWatchRequest_RequestUnion_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  isWatchRequest_RequestUnion_underlying : go.UnderlyingDirectedEq isWatchRequest_RequestUnion «isWatchRequest_RequestUnionⁱᵐᵖˡ»
+
+attribute [instance] isWatchRequest_RequestUnion_Assumptions.isWatchRequest_RequestUnion_underlying
 
 namespace WatchRequest_CreateRequest
 axiom t : Type
@@ -6951,19 +6914,16 @@ attribute [instance] UnimplementedKVServer_Assumptions.UnimplementedKVServer_typ
   UnimplementedKVServer_Assumptions.«UnimplementedKVServerⁱᵐᵖˡ_underlying»
 
 namespace UnsafeKVServer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeKVServer
 
-class UnsafeKVServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeKVServer_type_repr : go.TypeReprUnderlying «UnsafeKVServerⁱᵐᵖˡ» UnsafeKVServer.t
-  UnsafeKVServer_underlying : go.UnderlyingDirectedEq UnsafeKVServer «UnsafeKVServerⁱᵐᵖˡ»
-  «UnsafeKVServerⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeKVServerⁱᵐᵖˡ» «UnsafeKVServerⁱᵐᵖˡ»
+@[reducible] def «UnsafeKVServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"mustEmbedUnimplementedKVServer" (go.signature.Signature [] false []))])
 
-attribute [instance] UnsafeKVServer_Assumptions.UnsafeKVServer_type_repr
-  UnsafeKVServer_Assumptions.UnsafeKVServer_underlying
-  UnsafeKVServer_Assumptions.«UnsafeKVServerⁱᵐᵖˡ_underlying»
+class UnsafeKVServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeKVServer_underlying : go.UnderlyingDirectedEq UnsafeKVServer «UnsafeKVServerⁱᵐᵖˡ»
+
+attribute [instance] UnsafeKVServer_Assumptions.UnsafeKVServer_underlying
 
 namespace WatchClient
 axiom t : Type
@@ -7026,19 +6986,16 @@ attribute [instance] UnimplementedWatchServer_Assumptions.UnimplementedWatchServ
   UnimplementedWatchServer_Assumptions.«UnimplementedWatchServerⁱᵐᵖˡ_underlying»
 
 namespace UnsafeWatchServer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeWatchServer
 
-class UnsafeWatchServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeWatchServer_type_repr : go.TypeReprUnderlying «UnsafeWatchServerⁱᵐᵖˡ» UnsafeWatchServer.t
-  UnsafeWatchServer_underlying : go.UnderlyingDirectedEq UnsafeWatchServer «UnsafeWatchServerⁱᵐᵖˡ»
-  «UnsafeWatchServerⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeWatchServerⁱᵐᵖˡ» «UnsafeWatchServerⁱᵐᵖˡ»
+@[reducible] def «UnsafeWatchServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"mustEmbedUnimplementedWatchServer" (go.signature.Signature [] false []))])
 
-attribute [instance] UnsafeWatchServer_Assumptions.UnsafeWatchServer_type_repr
-  UnsafeWatchServer_Assumptions.UnsafeWatchServer_underlying
-  UnsafeWatchServer_Assumptions.«UnsafeWatchServerⁱᵐᵖˡ_underlying»
+class UnsafeWatchServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeWatchServer_underlying : go.UnderlyingDirectedEq UnsafeWatchServer «UnsafeWatchServerⁱᵐᵖˡ»
+
+attribute [instance] UnsafeWatchServer_Assumptions.UnsafeWatchServer_underlying
 
 namespace LeaseClient
 axiom t : Type
@@ -7101,19 +7058,16 @@ attribute [instance] UnimplementedLeaseServer_Assumptions.UnimplementedLeaseServ
   UnimplementedLeaseServer_Assumptions.«UnimplementedLeaseServerⁱᵐᵖˡ_underlying»
 
 namespace UnsafeLeaseServer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeLeaseServer
 
-class UnsafeLeaseServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeLeaseServer_type_repr : go.TypeReprUnderlying «UnsafeLeaseServerⁱᵐᵖˡ» UnsafeLeaseServer.t
-  UnsafeLeaseServer_underlying : go.UnderlyingDirectedEq UnsafeLeaseServer «UnsafeLeaseServerⁱᵐᵖˡ»
-  «UnsafeLeaseServerⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeLeaseServerⁱᵐᵖˡ» «UnsafeLeaseServerⁱᵐᵖˡ»
+@[reducible] def «UnsafeLeaseServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"mustEmbedUnimplementedLeaseServer" (go.signature.Signature [] false []))])
 
-attribute [instance] UnsafeLeaseServer_Assumptions.UnsafeLeaseServer_type_repr
-  UnsafeLeaseServer_Assumptions.UnsafeLeaseServer_underlying
-  UnsafeLeaseServer_Assumptions.«UnsafeLeaseServerⁱᵐᵖˡ_underlying»
+class UnsafeLeaseServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeLeaseServer_underlying : go.UnderlyingDirectedEq UnsafeLeaseServer «UnsafeLeaseServerⁱᵐᵖˡ»
+
+attribute [instance] UnsafeLeaseServer_Assumptions.UnsafeLeaseServer_underlying
 
 namespace ClusterClient
 axiom t : Type
@@ -7176,19 +7130,16 @@ attribute [instance] UnimplementedClusterServer_Assumptions.UnimplementedCluster
   UnimplementedClusterServer_Assumptions.«UnimplementedClusterServerⁱᵐᵖˡ_underlying»
 
 namespace UnsafeClusterServer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeClusterServer
 
-class UnsafeClusterServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeClusterServer_type_repr : go.TypeReprUnderlying «UnsafeClusterServerⁱᵐᵖˡ» UnsafeClusterServer.t
-  UnsafeClusterServer_underlying : go.UnderlyingDirectedEq UnsafeClusterServer «UnsafeClusterServerⁱᵐᵖˡ»
-  «UnsafeClusterServerⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeClusterServerⁱᵐᵖˡ» «UnsafeClusterServerⁱᵐᵖˡ»
+@[reducible] def «UnsafeClusterServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"mustEmbedUnimplementedClusterServer" (go.signature.Signature [] false []))])
 
-attribute [instance] UnsafeClusterServer_Assumptions.UnsafeClusterServer_type_repr
-  UnsafeClusterServer_Assumptions.UnsafeClusterServer_underlying
-  UnsafeClusterServer_Assumptions.«UnsafeClusterServerⁱᵐᵖˡ_underlying»
+class UnsafeClusterServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeClusterServer_underlying : go.UnderlyingDirectedEq UnsafeClusterServer «UnsafeClusterServerⁱᵐᵖˡ»
+
+attribute [instance] UnsafeClusterServer_Assumptions.UnsafeClusterServer_underlying
 
 namespace MaintenanceClient
 axiom t : Type
@@ -7251,19 +7202,16 @@ attribute [instance] UnimplementedMaintenanceServer_Assumptions.UnimplementedMai
   UnimplementedMaintenanceServer_Assumptions.«UnimplementedMaintenanceServerⁱᵐᵖˡ_underlying»
 
 namespace UnsafeMaintenanceServer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeMaintenanceServer
 
-class UnsafeMaintenanceServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeMaintenanceServer_type_repr : go.TypeReprUnderlying «UnsafeMaintenanceServerⁱᵐᵖˡ» UnsafeMaintenanceServer.t
-  UnsafeMaintenanceServer_underlying : go.UnderlyingDirectedEq UnsafeMaintenanceServer «UnsafeMaintenanceServerⁱᵐᵖˡ»
-  «UnsafeMaintenanceServerⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeMaintenanceServerⁱᵐᵖˡ» «UnsafeMaintenanceServerⁱᵐᵖˡ»
+@[reducible] def «UnsafeMaintenanceServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"mustEmbedUnimplementedMaintenanceServer" (go.signature.Signature [] false []))])
 
-attribute [instance] UnsafeMaintenanceServer_Assumptions.UnsafeMaintenanceServer_type_repr
-  UnsafeMaintenanceServer_Assumptions.UnsafeMaintenanceServer_underlying
-  UnsafeMaintenanceServer_Assumptions.«UnsafeMaintenanceServerⁱᵐᵖˡ_underlying»
+class UnsafeMaintenanceServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeMaintenanceServer_underlying : go.UnderlyingDirectedEq UnsafeMaintenanceServer «UnsafeMaintenanceServerⁱᵐᵖˡ»
+
+attribute [instance] UnsafeMaintenanceServer_Assumptions.UnsafeMaintenanceServer_underlying
 
 namespace AuthClient
 axiom t : Type
@@ -7326,19 +7274,16 @@ attribute [instance] UnimplementedAuthServer_Assumptions.UnimplementedAuthServer
   UnimplementedAuthServer_Assumptions.«UnimplementedAuthServerⁱᵐᵖˡ_underlying»
 
 namespace UnsafeAuthServer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeAuthServer
 
-class UnsafeAuthServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeAuthServer_type_repr : go.TypeReprUnderlying «UnsafeAuthServerⁱᵐᵖˡ» UnsafeAuthServer.t
-  UnsafeAuthServer_underlying : go.UnderlyingDirectedEq UnsafeAuthServer «UnsafeAuthServerⁱᵐᵖˡ»
-  «UnsafeAuthServerⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeAuthServerⁱᵐᵖˡ» «UnsafeAuthServerⁱᵐᵖˡ»
+@[reducible] def «UnsafeAuthServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"mustEmbedUnimplementedAuthServer" (go.signature.Signature [] false []))])
 
-attribute [instance] UnsafeAuthServer_Assumptions.UnsafeAuthServer_type_repr
-  UnsafeAuthServer_Assumptions.UnsafeAuthServer_underlying
-  UnsafeAuthServer_Assumptions.«UnsafeAuthServerⁱᵐᵖˡ_underlying»
+class UnsafeAuthServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeAuthServer_underlying : go.UnderlyingDirectedEq UnsafeAuthServer «UnsafeAuthServerⁱᵐᵖˡ»
+
+attribute [instance] UnsafeAuthServer_Assumptions.UnsafeAuthServer_underlying
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Metadata_instance : Metadata_Assumptions

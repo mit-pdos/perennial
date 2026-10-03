@@ -22,12 +22,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.pkg.v3.traceutil.Assumptions]
 
 instance TraceKey_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.TraceKey.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.TraceKey.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance TraceKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.TraceKey.t go_etcd_io.etcd.pkg.v3.traceutil.«TraceKeyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.TraceKey.t go_etcd_io.etcd.pkg.v3.traceutil.«TraceKeyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end TraceKey
@@ -41,12 +45,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.pkg.v3.traceutil.Assumptions]
 
 instance StartTimeKey_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance StartTimeKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.t go_etcd_io.etcd.pkg.v3.traceutil.«StartTimeKeyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.t go_etcd_io.etcd.pkg.v3.traceutil.«StartTimeKeyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end StartTimeKey
@@ -60,12 +68,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.pkg.v3.traceutil.Assumptions]
 
 instance Field_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Field.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Field.t where
+  typed_pointsto_def l v dq := iprop(
+    "Key" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Key" l) v.Key' dq ∗
+    "Value" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Field_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Field.t go_etcd_io.etcd.pkg.v3.traceutil.«Fieldⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Field.t go_etcd_io.etcd.pkg.v3.traceutil.«Fieldⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance Field_access_load_Key (l : loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.Field.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Key" l) v.Key' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Key" l) v.Key' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Field_access_store_Key (l : loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.Field.t) (Key' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Key" l) v.Key' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Key" l) Key' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Key' := Key' } : go_etcd_io.etcd.pkg.v3.traceutil.Field.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Field_access_load_Value (l : loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.Field.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Field_access_store_Value (l : loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.Field.t) (Value' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.pkg.v3.traceutil.Field.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : go_etcd_io.etcd.pkg.v3.traceutil.Field.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Field

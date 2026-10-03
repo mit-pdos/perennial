@@ -1,3 +1,6 @@
 translate = ["!*"]
 trusted = ["Run", "IsInBubble"]
 imports = ["!*"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

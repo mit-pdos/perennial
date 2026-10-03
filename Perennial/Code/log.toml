@@ -3,3 +3,6 @@ translate = ["Ldate", "Ltime", "LstdFlags"]
 trusted = ["Printf", "Println"]
 
 imports = ["!*"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

@@ -1,2 +1,5 @@
 translate = ["!*", "LittleEndian", "littleEndian*", "err*"]
 imports = ["*", "!reflect"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

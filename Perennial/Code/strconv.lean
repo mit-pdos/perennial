@@ -22,8 +22,6 @@ def NumError [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] NumError
 
-axiom «NumErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom IntSize [ffi_syntax] [GoGlobalContext] : val
 
 axiom lowerhex [ffi_syntax] [GoGlobalContext] : val
@@ -246,19 +244,49 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val isPrint16'init) (Val #()))))))))
 
 namespace NumError
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  Func' : go_string
+  Num' : go_string
+  Err' : error.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end NumError
+
+@[reducible] def NumError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Func" go.string),
+(go.field_decl.FieldDecl go!"Num" go.string),
+(go.field_decl.FieldDecl go!"Err" go.error)]
+
+@[irreducible] def NumError'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  NumError'fds_unsealed
+
+instance equals_unfold_NumError [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold NumError'fds NumError'fds_unsealed :=
+  ⟨by unfold NumError'fds; rfl⟩
+
+@[reducible] def «NumErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType NumError'fds)
 
 class NumError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   NumError_type_repr : go.TypeReprUnderlying «NumErrorⁱᵐᵖˡ» NumError.t
   NumError_underlying : go.UnderlyingDirectedEq NumError «NumErrorⁱᵐᵖˡ»
-  «NumErrorⁱᵐᵖˡ_underlying» : go.IsUnderlying «NumErrorⁱᵐᵖˡ» «NumErrorⁱᵐᵖˡ»
+  NumError_get_Func : ∀ (x : NumError.t), go.IsGoStepPureDetTagged under (StructFieldGet «NumErrorⁱᵐᵖˡ» go!"Func") #x (Val #(x.Func'))
+  NumError_set_Func : ∀ (x : NumError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «NumErrorⁱᵐᵖˡ» go!"Func") (PairV #x #y) (Val #(({ x with Func' := y } : NumError.t)))
+  NumError_get_Num : ∀ (x : NumError.t), go.IsGoStepPureDetTagged under (StructFieldGet «NumErrorⁱᵐᵖˡ» go!"Num") #x (Val #(x.Num'))
+  NumError_set_Num : ∀ (x : NumError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «NumErrorⁱᵐᵖˡ» go!"Num") (PairV #x #y) (Val #(({ x with Num' := y } : NumError.t)))
+  NumError_get_Err : ∀ (x : NumError.t), go.IsGoStepPureDetTagged under (StructFieldGet «NumErrorⁱᵐᵖˡ» go!"Err") #x (Val #(x.Err'))
+  NumError_set_Err : ∀ (x : NumError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet «NumErrorⁱᵐᵖˡ» go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : NumError.t)))
 
 attribute [instance] NumError_Assumptions.NumError_type_repr
   NumError_Assumptions.NumError_underlying
-  NumError_Assumptions.«NumErrorⁱᵐᵖˡ_underlying»
+  NumError_Assumptions.NumError_get_Func
+  NumError_Assumptions.NumError_set_Func
+  NumError_Assumptions.NumError_get_Num
+  NumError_Assumptions.NumError_set_Num
+  NumError_Assumptions.NumError_get_Err
+  NumError_Assumptions.NumError_set_Err
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   NumError_instance : NumError_Assumptions

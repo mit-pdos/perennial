@@ -37,3 +37,6 @@ trusted = [
   "runtime_Semacquire*",
   "runtime_Semrelease",
 ]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

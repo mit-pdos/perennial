@@ -60,12 +60,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance systemClock_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.systemClock.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.systemClock.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance systemClock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.systemClock.t go_uber_org.zap.zapcore.«systemClockⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.systemClock.t go_uber_org.zap.zapcore.«systemClockⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end systemClock
@@ -79,34 +83,36 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance consoleEncoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.consoleEncoder.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.consoleEncoder.t where
+  typed_pointsto_def l v dq := iprop(
+    "jsonEncoder" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.consoleEncoder.t go!"jsonEncoder" l) v.jsonEncoder' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance consoleEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.consoleEncoder.t go_uber_org.zap.zapcore.«consoleEncoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.consoleEncoder.t go_uber_org.zap.zapcore.«consoleEncoderⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance consoleEncoder_access_load_jsonEncoder (l : loc) (v : go_uber_org.zap.zapcore.consoleEncoder.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.consoleEncoder.t go!"jsonEncoder" l) v.jsonEncoder' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.consoleEncoder.t go!"jsonEncoder" l) v.jsonEncoder' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance consoleEncoder_access_store_jsonEncoder (l : loc) (v : go_uber_org.zap.zapcore.consoleEncoder.t) (jsonEncoder' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.consoleEncoder.t go!"jsonEncoder" l) v.jsonEncoder' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.consoleEncoder.t go!"jsonEncoder" l) jsonEncoder' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with jsonEncoder' := jsonEncoder' } : go_uber_org.zap.zapcore.consoleEncoder.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end consoleEncoder
-
-namespace Core
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance Core_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.Core.t :=
-  sorry -- Rocq: Admitted
-
-instance Core_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Core.t go_uber_org.zap.zapcore.«Coreⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Core
 
 namespace nopCore
 section def_
@@ -117,15 +123,57 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance nopCore_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.nopCore.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.nopCore.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance nopCore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.nopCore.t go_uber_org.zap.zapcore.«nopCoreⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.nopCore.t go_uber_org.zap.zapcore.«nopCoreⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end nopCore
+
+namespace Encoder
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
+
+instance Encoder_typed_pointsto :
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.Encoder.t :=
+  sorry -- Rocq: Admitted
+
+instance Encoder_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Encoder.t go_uber_org.zap.zapcore.«Encoderⁱᵐᵖˡ» :=
+  sorry -- Rocq: Admitted
+
+end def_
+end Encoder
+
+namespace WriteSyncer
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
+
+instance WriteSyncer_typed_pointsto :
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.WriteSyncer.t :=
+  sorry -- Rocq: Admitted
+
+instance WriteSyncer_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.WriteSyncer.t go_uber_org.zap.zapcore.«WriteSyncerⁱᵐᵖˡ» :=
+  sorry -- Rocq: Admitted
+
+end def_
+end WriteSyncer
 
 namespace ioCore
 section def_
@@ -136,34 +184,70 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance ioCore_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.ioCore.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.ioCore.t where
+  typed_pointsto_def l v dq := iprop(
+    "LevelEnabler" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"LevelEnabler" l) v.LevelEnabler' dq ∗
+    "enc" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"enc" l) v.enc' dq ∗
+    "out" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"out" l) v.out' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ioCore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ioCore.t go_uber_org.zap.zapcore.«ioCoreⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ioCore.t go_uber_org.zap.zapcore.«ioCoreⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance ioCore_access_load_LevelEnabler (l : loc) (v : go_uber_org.zap.zapcore.ioCore.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"LevelEnabler" l) v.LevelEnabler' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"LevelEnabler" l) v.LevelEnabler' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ioCore_access_store_LevelEnabler (l : loc) (v : go_uber_org.zap.zapcore.ioCore.t) (LevelEnabler' : go_uber_org.zap.zapcore.LevelEnabler.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"LevelEnabler" l) v.LevelEnabler' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"LevelEnabler" l) LevelEnabler' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with LevelEnabler' := LevelEnabler' } : go_uber_org.zap.zapcore.ioCore.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ioCore_access_load_enc (l : loc) (v : go_uber_org.zap.zapcore.ioCore.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"enc" l) v.enc' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"enc" l) v.enc' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ioCore_access_store_enc (l : loc) (v : go_uber_org.zap.zapcore.ioCore.t) (enc' : go_uber_org.zap.zapcore.Encoder.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"enc" l) v.enc' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"enc" l) enc' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with enc' := enc' } : go_uber_org.zap.zapcore.ioCore.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ioCore_access_load_out (l : loc) (v : go_uber_org.zap.zapcore.ioCore.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"out" l) v.out' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"out" l) v.out' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ioCore_access_store_out (l : loc) (v : go_uber_org.zap.zapcore.ioCore.t) (out' : go_uber_org.zap.zapcore.WriteSyncer.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"out" l) v.out' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.ioCore.t go!"out" l) out' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with out' := out' } : go_uber_org.zap.zapcore.ioCore.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ioCore
-
-namespace LevelEncoder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance LevelEncoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.LevelEncoder.t :=
-  sorry -- Rocq: Admitted
-
-instance LevelEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.LevelEncoder.t go_uber_org.zap.zapcore.«LevelEncoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end LevelEncoder
 
 namespace TimeEncoder
 section def_
@@ -202,44 +286,6 @@ instance DurationEncoder_into_val_typed :
 
 end def_
 end DurationEncoder
-
-namespace CallerEncoder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance CallerEncoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.CallerEncoder.t :=
-  sorry -- Rocq: Admitted
-
-instance CallerEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.CallerEncoder.t go_uber_org.zap.zapcore.«CallerEncoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end CallerEncoder
-
-namespace NameEncoder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance NameEncoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.NameEncoder.t :=
-  sorry -- Rocq: Admitted
-
-instance NameEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.NameEncoder.t go_uber_org.zap.zapcore.«NameEncoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end NameEncoder
 
 namespace EncoderConfig
 section def_
@@ -298,44 +344,6 @@ instance ArrayEncoder_into_val_typed :
 end def_
 end ArrayEncoder
 
-namespace PrimitiveArrayEncoder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance PrimitiveArrayEncoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.PrimitiveArrayEncoder.t :=
-  sorry -- Rocq: Admitted
-
-instance PrimitiveArrayEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.PrimitiveArrayEncoder.t go_uber_org.zap.zapcore.«PrimitiveArrayEncoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end PrimitiveArrayEncoder
-
-namespace Encoder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance Encoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.Encoder.t :=
-  sorry -- Rocq: Admitted
-
-instance Encoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Encoder.t go_uber_org.zap.zapcore.«Encoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Encoder
-
 namespace EntryCaller
 section def_
 
@@ -374,44 +382,6 @@ instance Entry_into_val_typed :
 end def_
 end Entry
 
-namespace CheckWriteHook
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance CheckWriteHook_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.CheckWriteHook.t :=
-  sorry -- Rocq: Admitted
-
-instance CheckWriteHook_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.CheckWriteHook.t go_uber_org.zap.zapcore.«CheckWriteHookⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end CheckWriteHook
-
-namespace CheckWriteAction
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance CheckWriteAction_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.CheckWriteAction.t :=
-  sorry -- Rocq: Admitted
-
-instance CheckWriteAction_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.CheckWriteAction.t go_uber_org.zap.zapcore.«CheckWriteActionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end CheckWriteAction
-
 namespace CheckedEntry
 section def_
 
@@ -421,53 +391,104 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance CheckedEntry_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.CheckedEntry.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.CheckedEntry.t where
+  typed_pointsto_def l v dq := iprop(
+    "Entry" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"Entry" l) v.Entry' dq ∗
+    "ErrorOutput" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"ErrorOutput" l) v.ErrorOutput' dq ∗
+    "dirty" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"dirty" l) v.dirty' dq ∗
+    "after" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"after" l) v.after' dq ∗
+    "cores" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"cores" l) v.cores' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance CheckedEntry_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.CheckedEntry.t go_uber_org.zap.zapcore.«CheckedEntryⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.CheckedEntry.t go_uber_org.zap.zapcore.«CheckedEntryⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance CheckedEntry_access_load_Entry (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"Entry" l) v.Entry' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"Entry" l) v.Entry' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_store_Entry (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (Entry' : go_uber_org.zap.zapcore.Entry.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"Entry" l) v.Entry' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"Entry" l) Entry' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Entry' := Entry' } : go_uber_org.zap.zapcore.CheckedEntry.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_load_ErrorOutput (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"ErrorOutput" l) v.ErrorOutput' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"ErrorOutput" l) v.ErrorOutput' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_store_ErrorOutput (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (ErrorOutput' : go_uber_org.zap.zapcore.WriteSyncer.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"ErrorOutput" l) v.ErrorOutput' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"ErrorOutput" l) ErrorOutput' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ErrorOutput' := ErrorOutput' } : go_uber_org.zap.zapcore.CheckedEntry.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_load_dirty (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"dirty" l) v.dirty' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"dirty" l) v.dirty' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_store_dirty (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (dirty' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"dirty" l) v.dirty' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"dirty" l) dirty' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with dirty' := dirty' } : go_uber_org.zap.zapcore.CheckedEntry.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_load_after (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"after" l) v.after' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"after" l) v.after' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_store_after (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (after' : go_uber_org.zap.zapcore.CheckWriteHook.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"after" l) v.after' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"after" l) after' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with after' := after' } : go_uber_org.zap.zapcore.CheckedEntry.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_load_cores (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"cores" l) v.cores' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"cores" l) v.cores' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance CheckedEntry_access_store_cores (l : loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (cores' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"cores" l) v.cores' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.CheckedEntry.t go!"cores" l) cores' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cores' := cores' } : go_uber_org.zap.zapcore.CheckedEntry.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end CheckedEntry
-
-namespace errorGroup
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance errorGroup_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.errorGroup.t :=
-  sorry -- Rocq: Admitted
-
-instance errorGroup_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.errorGroup.t go_uber_org.zap.zapcore.«errorGroupⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end errorGroup
-
-namespace errArray
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance errArray_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.errArray.t :=
-  sorry -- Rocq: Admitted
-
-instance errArray_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.errArray.t go_uber_org.zap.zapcore.«errArrayⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end errArray
 
 namespace errArrayElem
 section def_
@@ -478,12 +499,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance errArrayElem_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.errArrayElem.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.errArrayElem.t where
+  typed_pointsto_def l v dq := iprop(
+    "err" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.errArrayElem.t go!"err" l) v.err' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance errArrayElem_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.errArrayElem.t go_uber_org.zap.zapcore.«errArrayElemⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.errArrayElem.t go_uber_org.zap.zapcore.«errArrayElemⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance errArrayElem_access_load_err (l : loc) (v : go_uber_org.zap.zapcore.errArrayElem.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.errArrayElem.t go!"err" l) v.err' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.errArrayElem.t go!"err" l) v.err' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance errArrayElem_access_store_err (l : loc) (v : go_uber_org.zap.zapcore.errArrayElem.t) (err' : error.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.errArrayElem.t go!"err" l) v.err' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.errArrayElem.t go!"err" l) err' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with err' := err' } : go_uber_org.zap.zapcore.errArrayElem.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end errArrayElem
@@ -605,12 +647,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance hooked_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.hooked.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.hooked.t where
+  typed_pointsto_def l v dq := iprop(
+    "Core" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"Core" l) v.Core' dq ∗
+    "funcs" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"funcs" l) v.funcs' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance hooked_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.hooked.t go_uber_org.zap.zapcore.«hookedⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.hooked.t go_uber_org.zap.zapcore.«hookedⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance hooked_access_load_Core (l : loc) (v : go_uber_org.zap.zapcore.hooked.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"Core" l) v.Core' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"Core" l) v.Core' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance hooked_access_store_Core (l : loc) (v : go_uber_org.zap.zapcore.hooked.t) (Core' : go_uber_org.zap.zapcore.Core.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"Core" l) v.Core' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"Core" l) Core' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Core' := Core' } : go_uber_org.zap.zapcore.hooked.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance hooked_access_load_funcs (l : loc) (v : go_uber_org.zap.zapcore.hooked.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"funcs" l) v.funcs' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"funcs" l) v.funcs' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance hooked_access_store_funcs (l : loc) (v : go_uber_org.zap.zapcore.hooked.t) (funcs' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"funcs" l) v.funcs' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.hooked.t go!"funcs" l) funcs' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with funcs' := funcs' } : go_uber_org.zap.zapcore.hooked.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end hooked
@@ -624,12 +704,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance levelFilterCore_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.levelFilterCore.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.levelFilterCore.t where
+  typed_pointsto_def l v dq := iprop(
+    "core" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"core" l) v.core' dq ∗
+    "level" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"level" l) v.level' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance levelFilterCore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.levelFilterCore.t go_uber_org.zap.zapcore.«levelFilterCoreⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.levelFilterCore.t go_uber_org.zap.zapcore.«levelFilterCoreⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance levelFilterCore_access_load_core (l : loc) (v : go_uber_org.zap.zapcore.levelFilterCore.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"core" l) v.core' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"core" l) v.core' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance levelFilterCore_access_store_core (l : loc) (v : go_uber_org.zap.zapcore.levelFilterCore.t) (core' : go_uber_org.zap.zapcore.Core.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"core" l) v.core' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"core" l) core' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with core' := core' } : go_uber_org.zap.zapcore.levelFilterCore.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance levelFilterCore_access_load_level (l : loc) (v : go_uber_org.zap.zapcore.levelFilterCore.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"level" l) v.level' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"level" l) v.level' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance levelFilterCore_access_store_level (l : loc) (v : go_uber_org.zap.zapcore.levelFilterCore.t) (level' : go_uber_org.zap.zapcore.LevelEnabler.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"level" l) v.level' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.levelFilterCore.t go!"level" l) level' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with level' := level' } : go_uber_org.zap.zapcore.levelFilterCore.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end levelFilterCore
@@ -672,139 +790,6 @@ instance lazyWithCore_into_val_typed :
 end def_
 end lazyWithCore
 
-namespace Level
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance Level_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.Level.t :=
-  sorry -- Rocq: Admitted
-
-instance Level_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Level.t go_uber_org.zap.zapcore.«Levelⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Level
-
-namespace leveledEnabler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance leveledEnabler_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.leveledEnabler.t :=
-  sorry -- Rocq: Admitted
-
-instance leveledEnabler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.leveledEnabler.t go_uber_org.zap.zapcore.«leveledEnablerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end leveledEnabler
-
-namespace LevelEnabler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance LevelEnabler_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.LevelEnabler.t :=
-  sorry -- Rocq: Admitted
-
-instance LevelEnabler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.LevelEnabler.t go_uber_org.zap.zapcore.«LevelEnablerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end LevelEnabler
-
-namespace ObjectMarshaler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance ObjectMarshaler_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.ObjectMarshaler.t :=
-  sorry -- Rocq: Admitted
-
-instance ObjectMarshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ObjectMarshaler.t go_uber_org.zap.zapcore.«ObjectMarshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ObjectMarshaler
-
-namespace ObjectMarshalerFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance ObjectMarshalerFunc_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.ObjectMarshalerFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance ObjectMarshalerFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ObjectMarshalerFunc.t go_uber_org.zap.zapcore.«ObjectMarshalerFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ObjectMarshalerFunc
-
-namespace ArrayMarshaler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance ArrayMarshaler_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.ArrayMarshaler.t :=
-  sorry -- Rocq: Admitted
-
-instance ArrayMarshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ArrayMarshaler.t go_uber_org.zap.zapcore.«ArrayMarshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ArrayMarshaler
-
-namespace ArrayMarshalerFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance ArrayMarshalerFunc_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.ArrayMarshalerFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance ArrayMarshalerFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ArrayMarshalerFunc.t go_uber_org.zap.zapcore.«ArrayMarshalerFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ArrayMarshalerFunc
-
 namespace MapObjectEncoder
 section def_
 
@@ -814,12 +799,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance MapObjectEncoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.MapObjectEncoder.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.MapObjectEncoder.t where
+  typed_pointsto_def l v dq := iprop(
+    "Fields" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"Fields" l) v.Fields' dq ∗
+    "cur" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"cur" l) v.cur' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance MapObjectEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.MapObjectEncoder.t go_uber_org.zap.zapcore.«MapObjectEncoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.MapObjectEncoder.t go_uber_org.zap.zapcore.«MapObjectEncoderⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance MapObjectEncoder_access_load_Fields (l : loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"Fields" l) v.Fields' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"Fields" l) v.Fields' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MapObjectEncoder_access_store_Fields (l : loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder.t) (Fields' : map.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"Fields" l) v.Fields' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"Fields" l) Fields' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Fields' := Fields' } : go_uber_org.zap.zapcore.MapObjectEncoder.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance MapObjectEncoder_access_load_cur (l : loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"cur" l) v.cur' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"cur" l) v.cur' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MapObjectEncoder_access_store_cur (l : loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder.t) (cur' : map.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"cur" l) v.cur' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.MapObjectEncoder.t go!"cur" l) cur' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cur' := cur' } : go_uber_org.zap.zapcore.MapObjectEncoder.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end MapObjectEncoder
@@ -833,34 +856,36 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance sliceArrayEncoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.sliceArrayEncoder.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.sliceArrayEncoder.t where
+  typed_pointsto_def l v dq := iprop(
+    "elems" ∷ typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.sliceArrayEncoder.t go!"elems" l) v.elems' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance sliceArrayEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.sliceArrayEncoder.t go_uber_org.zap.zapcore.«sliceArrayEncoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.sliceArrayEncoder.t go_uber_org.zap.zapcore.«sliceArrayEncoderⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance sliceArrayEncoder_access_load_elems (l : loc) (v : go_uber_org.zap.zapcore.sliceArrayEncoder.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.sliceArrayEncoder.t go!"elems" l) v.elems' dq)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.sliceArrayEncoder.t go!"elems" l) v.elems' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance sliceArrayEncoder_access_store_elems (l : loc) (v : go_uber_org.zap.zapcore.sliceArrayEncoder.t) (elems' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.sliceArrayEncoder.t go!"elems" l) v.elems' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_uber_org.zap.zapcore.sliceArrayEncoder.t go!"elems" l) elems' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with elems' := elems' } : go_uber_org.zap.zapcore.sliceArrayEncoder.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end sliceArrayEncoder
-
-namespace ReflectedEncoder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance ReflectedEncoder_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.ReflectedEncoder.t :=
-  sorry -- Rocq: Admitted
-
-instance ReflectedEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ReflectedEncoder.t go_uber_org.zap.zapcore.«ReflectedEncoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ReflectedEncoder
 
 namespace counter
 section def_
@@ -881,82 +906,6 @@ instance counter_into_val_typed :
 end def_
 end counter
 
-namespace counters
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance counters_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.counters.t :=
-  sorry -- Rocq: Admitted
-
-instance counters_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.counters.t go_uber_org.zap.zapcore.«countersⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end counters
-
-namespace SamplingDecision
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance SamplingDecision_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.SamplingDecision.t :=
-  sorry -- Rocq: Admitted
-
-instance SamplingDecision_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.SamplingDecision.t go_uber_org.zap.zapcore.«SamplingDecisionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SamplingDecision
-
-namespace optionFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance optionFunc_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.optionFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance optionFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.optionFunc.t go_uber_org.zap.zapcore.«optionFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end optionFunc
-
-namespace SamplerOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance SamplerOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.SamplerOption.t :=
-  sorry -- Rocq: Admitted
-
-instance SamplerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.SamplerOption.t go_uber_org.zap.zapcore.«SamplerOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SamplerOption
-
 namespace sampler
 section def_
 
@@ -975,44 +924,6 @@ instance sampler_into_val_typed :
 
 end def_
 end sampler
-
-namespace multiCore
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance multiCore_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.multiCore.t :=
-  sorry -- Rocq: Admitted
-
-instance multiCore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.multiCore.t go_uber_org.zap.zapcore.«multiCoreⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end multiCore
-
-namespace WriteSyncer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance WriteSyncer_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.WriteSyncer.t :=
-  sorry -- Rocq: Admitted
-
-instance WriteSyncer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.WriteSyncer.t go_uber_org.zap.zapcore.«WriteSyncerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end WriteSyncer
 
 namespace lockedWriteSyncer
 section def_
@@ -1051,25 +962,6 @@ instance writerWrapper_into_val_typed :
 
 end def_
 end writerWrapper
-
-namespace multiWriteSyncer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
-
-instance multiWriteSyncer_typed_pointsto :
-    TypedPointsto (GF := GF) go_uber_org.zap.zapcore.multiWriteSyncer.t :=
-  sorry -- Rocq: Admitted
-
-instance multiWriteSyncer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.multiWriteSyncer.t go_uber_org.zap.zapcore.«multiWriteSyncerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end multiWriteSyncer
 
 end go_uber_org.zap.zapcore
 end

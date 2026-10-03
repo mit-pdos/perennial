@@ -18,44 +18,6 @@ open Iris Iris.BI
 noncomputable section
 namespace encoding.binary
 
-namespace ByteOrder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : encoding.binary.Assumptions]
-
-instance ByteOrder_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.ByteOrder.t :=
-  sorry -- Rocq: Admitted
-
-instance ByteOrder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.ByteOrder.t encoding.binary.«ByteOrderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ByteOrder
-
-namespace AppendByteOrder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : encoding.binary.Assumptions]
-
-instance AppendByteOrder_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.AppendByteOrder.t :=
-  sorry -- Rocq: Admitted
-
-instance AppendByteOrder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.AppendByteOrder.t encoding.binary.«AppendByteOrderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end AppendByteOrder
-
 namespace littleEndian
 section def_
 
@@ -88,12 +50,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
 instance bigEndian_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.bigEndian.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) encoding.binary.bigEndian.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance bigEndian_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.bigEndian.t encoding.binary.«bigEndianⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) encoding.binary.bigEndian.t encoding.binary.«bigEndianⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end bigEndian
@@ -107,53 +73,70 @@ variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
 instance coder_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.coder.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) encoding.binary.coder.t where
+  typed_pointsto_def l v dq := iprop(
+    "order" ∷ typed_pointsto (struct_field_ref encoding.binary.coder.t go!"order" l) v.order' dq ∗
+    "buf" ∷ typed_pointsto (struct_field_ref encoding.binary.coder.t go!"buf" l) v.buf' dq ∗
+    "offset" ∷ typed_pointsto (struct_field_ref encoding.binary.coder.t go!"offset" l) v.offset' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance coder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.coder.t encoding.binary.«coderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) encoding.binary.coder.t encoding.binary.«coderⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance coder_access_load_order (l : loc) (v : encoding.binary.coder.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"order" l) v.order' dq)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"order" l) v.order' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance coder_access_store_order (l : loc) (v : encoding.binary.coder.t) (order' : encoding.binary.ByteOrder.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"order" l) v.order' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"order" l) order' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with order' := order' } : encoding.binary.coder.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance coder_access_load_buf (l : loc) (v : encoding.binary.coder.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"buf" l) v.buf' dq)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"buf" l) v.buf' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance coder_access_store_buf (l : loc) (v : encoding.binary.coder.t) (buf' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"buf" l) v.buf' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"buf" l) buf' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with buf' := buf' } : encoding.binary.coder.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance coder_access_load_offset (l : loc) (v : encoding.binary.coder.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"offset" l) v.offset' dq)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"offset" l) v.offset' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance coder_access_store_offset (l : loc) (v : encoding.binary.coder.t) (offset' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"offset" l) v.offset' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref encoding.binary.coder.t go!"offset" l) offset' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with offset' := offset' } : encoding.binary.coder.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end coder
-
-namespace decoder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : encoding.binary.Assumptions]
-
-instance decoder_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.decoder.t :=
-  sorry -- Rocq: Admitted
-
-instance decoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.decoder.t encoding.binary.«decoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end decoder
-
-namespace encoder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : encoding.binary.Assumptions]
-
-instance encoder_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.encoder.t :=
-  sorry -- Rocq: Admitted
-
-instance encoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.encoder.t encoding.binary.«encoderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end encoder
 
 namespace nativeEndian
 section def_
@@ -164,12 +147,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
 instance nativeEndian_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.nativeEndian.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) encoding.binary.nativeEndian.t where
+  typed_pointsto_def l v dq := iprop(
+    "littleEndian" ∷ typed_pointsto (struct_field_ref encoding.binary.nativeEndian.t go!"littleEndian" l) v.littleEndian' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance nativeEndian_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.nativeEndian.t encoding.binary.«nativeEndianⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) encoding.binary.nativeEndian.t encoding.binary.«nativeEndianⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance nativeEndian_access_load_littleEndian (l : loc) (v : encoding.binary.nativeEndian.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref encoding.binary.nativeEndian.t go!"littleEndian" l) v.littleEndian' dq)
+      (typed_pointsto (struct_field_ref encoding.binary.nativeEndian.t go!"littleEndian" l) v.littleEndian' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance nativeEndian_access_store_littleEndian (l : loc) (v : encoding.binary.nativeEndian.t) (littleEndian' : encoding.binary.littleEndian.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref encoding.binary.nativeEndian.t go!"littleEndian" l) v.littleEndian' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref encoding.binary.nativeEndian.t go!"littleEndian" l) littleEndian' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with littleEndian' := littleEndian' } : encoding.binary.nativeEndian.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end nativeEndian

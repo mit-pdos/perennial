@@ -13,101 +13,6 @@ open Iris Iris.BI
 noncomputable section
 namespace github_com.gogo.protobuf.proto
 
-namespace Merger
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance Merger_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Merger.t :=
-  sorry -- Rocq: Admitted
-
-instance Merger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Merger.t github_com.gogo.protobuf.proto.«Mergerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Merger
-
-namespace generatedMerger
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance generatedMerger_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.generatedMerger.t :=
-  sorry -- Rocq: Admitted
-
-instance generatedMerger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.generatedMerger.t github_com.gogo.protobuf.proto.«generatedMergerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end generatedMerger
-
-namespace custom
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance custom_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.custom.t :=
-  sorry -- Rocq: Admitted
-
-instance custom_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.custom.t github_com.gogo.protobuf.proto.«customⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end custom
-
-namespace Unmarshaler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance Unmarshaler_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Unmarshaler.t :=
-  sorry -- Rocq: Admitted
-
-instance Unmarshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Unmarshaler.t github_com.gogo.protobuf.proto.«Unmarshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Unmarshaler
-
-namespace newUnmarshaler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance newUnmarshaler_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.newUnmarshaler.t :=
-  sorry -- Rocq: Admitted
-
-instance newUnmarshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.newUnmarshaler.t github_com.gogo.protobuf.proto.«newUnmarshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end newUnmarshaler
-
 namespace Stats
 section def_
 
@@ -117,34 +22,138 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance Stats_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Stats.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Stats.t where
+  typed_pointsto_def l v dq := iprop(
+    "Emalloc" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Emalloc" l) v.Emalloc' dq ∗
+    "Dmalloc" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Dmalloc" l) v.Dmalloc' dq ∗
+    "Encode" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Encode" l) v.Encode' dq ∗
+    "Decode" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Decode" l) v.Decode' dq ∗
+    "Chit" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Chit" l) v.Chit' dq ∗
+    "Cmiss" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Cmiss" l) v.Cmiss' dq ∗
+    "Size" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Size" l) v.Size' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Stats_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Stats.t github_com.gogo.protobuf.proto.«Statsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Stats.t github_com.gogo.protobuf.proto.«Statsⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance Stats_access_load_Emalloc (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Emalloc" l) v.Emalloc' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Emalloc" l) v.Emalloc' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_store_Emalloc (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (Emalloc' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Emalloc" l) v.Emalloc' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Emalloc" l) Emalloc' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Emalloc' := Emalloc' } : github_com.gogo.protobuf.proto.Stats.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_load_Dmalloc (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Dmalloc" l) v.Dmalloc' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Dmalloc" l) v.Dmalloc' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_store_Dmalloc (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (Dmalloc' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Dmalloc" l) v.Dmalloc' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Dmalloc" l) Dmalloc' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Dmalloc' := Dmalloc' } : github_com.gogo.protobuf.proto.Stats.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_load_Encode (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Encode" l) v.Encode' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Encode" l) v.Encode' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_store_Encode (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (Encode' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Encode" l) v.Encode' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Encode" l) Encode' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Encode' := Encode' } : github_com.gogo.protobuf.proto.Stats.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_load_Decode (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Decode" l) v.Decode' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Decode" l) v.Decode' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_store_Decode (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (Decode' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Decode" l) v.Decode' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Decode" l) Decode' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Decode' := Decode' } : github_com.gogo.protobuf.proto.Stats.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_load_Chit (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Chit" l) v.Chit' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Chit" l) v.Chit' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_store_Chit (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (Chit' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Chit" l) v.Chit' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Chit" l) Chit' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Chit' := Chit' } : github_com.gogo.protobuf.proto.Stats.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_load_Cmiss (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Cmiss" l) v.Cmiss' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Cmiss" l) v.Cmiss' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_store_Cmiss (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (Cmiss' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Cmiss" l) v.Cmiss' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Cmiss" l) Cmiss' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Cmiss' := Cmiss' } : github_com.gogo.protobuf.proto.Stats.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_load_Size (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Size" l) v.Size' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Size" l) v.Size' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Stats_access_store_Size (l : loc) (v : github_com.gogo.protobuf.proto.Stats.t) (Size' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Size" l) v.Size' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Stats.t go!"Size" l) Size' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Size' := Size' } : github_com.gogo.protobuf.proto.Stats.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Stats
-
-namespace generatedDiscarder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance generatedDiscarder_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.generatedDiscarder.t :=
-  sorry -- Rocq: Admitted
-
-instance generatedDiscarder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.generatedDiscarder.t github_com.gogo.protobuf.proto.«generatedDiscarderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end generatedDiscarder
 
 namespace discardInfo
 section def_
@@ -165,6 +174,25 @@ instance discardInfo_into_val_typed :
 end def_
 end discardInfo
 
+namespace field
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
+
+instance field_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.field.t :=
+  sorry -- Rocq: Admitted
+
+instance field_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.field.t github_com.gogo.protobuf.proto.«fieldⁱᵐᵖˡ» :=
+  sorry -- Rocq: Admitted
+
+end def_
+end field
+
 namespace discardFieldInfo
 section def_
 
@@ -174,12 +202,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance discardFieldInfo_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.discardFieldInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.discardFieldInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "field" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"field" l) v.field' dq ∗
+    "discard" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"discard" l) v.discard' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance discardFieldInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.discardFieldInfo.t github_com.gogo.protobuf.proto.«discardFieldInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.discardFieldInfo.t github_com.gogo.protobuf.proto.«discardFieldInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance discardFieldInfo_access_load_field (l : loc) (v : github_com.gogo.protobuf.proto.discardFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"field" l) v.field' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"field" l) v.field' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance discardFieldInfo_access_store_field (l : loc) (v : github_com.gogo.protobuf.proto.discardFieldInfo.t) (field' : github_com.gogo.protobuf.proto.field.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"field" l) v.field' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"field" l) field' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with field' := field' } : github_com.gogo.protobuf.proto.discardFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance discardFieldInfo_access_load_discard (l : loc) (v : github_com.gogo.protobuf.proto.discardFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"discard" l) v.discard' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"discard" l) v.discard' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance discardFieldInfo_access_store_discard (l : loc) (v : github_com.gogo.protobuf.proto.discardFieldInfo.t) (discard' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"discard" l) v.discard' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.discardFieldInfo.t go!"discard" l) discard' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with discard' := discard' } : github_com.gogo.protobuf.proto.discardFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end discardFieldInfo
@@ -193,34 +259,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance duration_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.duration.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.duration.t where
+  typed_pointsto_def l v dq := iprop(
+    "Seconds" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Seconds" l) v.Seconds' dq ∗
+    "Nanos" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Nanos" l) v.Nanos' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance duration_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.duration.t github_com.gogo.protobuf.proto.«durationⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.duration.t github_com.gogo.protobuf.proto.«durationⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance duration_access_load_Seconds (l : loc) (v : github_com.gogo.protobuf.proto.duration.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Seconds" l) v.Seconds' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Seconds" l) v.Seconds' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance duration_access_store_Seconds (l : loc) (v : github_com.gogo.protobuf.proto.duration.t) (Seconds' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Seconds" l) v.Seconds' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Seconds" l) Seconds' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Seconds' := Seconds' } : github_com.gogo.protobuf.proto.duration.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance duration_access_load_Nanos (l : loc) (v : github_com.gogo.protobuf.proto.duration.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Nanos" l) v.Nanos' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Nanos" l) v.Nanos' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance duration_access_store_Nanos (l : loc) (v : github_com.gogo.protobuf.proto.duration.t) (Nanos' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Nanos" l) v.Nanos' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.duration.t go!"Nanos" l) Nanos' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Nanos' := Nanos' } : github_com.gogo.protobuf.proto.duration.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end duration
-
-namespace Marshaler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance Marshaler_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Marshaler.t :=
-  sorry -- Rocq: Admitted
-
-instance Marshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Marshaler.t github_com.gogo.protobuf.proto.«Marshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Marshaler
 
 namespace ExtensionRange
 section def_
@@ -231,12 +316,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance ExtensionRange_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.ExtensionRange.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.ExtensionRange.t where
+  typed_pointsto_def l v dq := iprop(
+    "Start" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"Start" l) v.Start' dq ∗
+    "End" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"End" l) v.End' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ExtensionRange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ExtensionRange.t github_com.gogo.protobuf.proto.«ExtensionRangeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ExtensionRange.t github_com.gogo.protobuf.proto.«ExtensionRangeⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance ExtensionRange_access_load_Start (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionRange.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"Start" l) v.Start' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"Start" l) v.Start' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionRange_access_store_Start (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionRange.t) (Start' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"Start" l) v.Start' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"Start" l) Start' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Start' := Start' } : github_com.gogo.protobuf.proto.ExtensionRange.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionRange_access_load_End (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionRange.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"End" l) v.End' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"End" l) v.End' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionRange_access_store_End (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionRange.t) (End' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"End" l) v.End' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionRange.t go!"End" l) End' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with End' := End' } : github_com.gogo.protobuf.proto.ExtensionRange.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ExtensionRange
@@ -260,25 +383,6 @@ instance extendableProto_into_val_typed :
 end def_
 end extendableProto
 
-namespace extendableProtoV1
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance extendableProtoV1_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.extendableProtoV1.t :=
-  sorry -- Rocq: Admitted
-
-instance extendableProtoV1_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extendableProtoV1.t github_com.gogo.protobuf.proto.«extendableProtoV1ⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end extendableProtoV1
-
 namespace extensionAdapter
 section def_
 
@@ -288,12 +392,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance extensionAdapter_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.extensionAdapter.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.extensionAdapter.t where
+  typed_pointsto_def l v dq := iprop(
+    "extendableProtoV1" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.extensionAdapter.t go!"extendableProtoV1" l) v.extendableProtoV1' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance extensionAdapter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extensionAdapter.t github_com.gogo.protobuf.proto.«extensionAdapterⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extensionAdapter.t github_com.gogo.protobuf.proto.«extensionAdapterⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance extensionAdapter_access_load_extendableProtoV1 (l : loc) (v : github_com.gogo.protobuf.proto.extensionAdapter.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.extensionAdapter.t go!"extendableProtoV1" l) v.extendableProtoV1' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.extensionAdapter.t go!"extendableProtoV1" l) v.extendableProtoV1' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance extensionAdapter_access_store_extendableProtoV1 (l : loc) (v : github_com.gogo.protobuf.proto.extensionAdapter.t) (extendableProtoV1' : github_com.gogo.protobuf.proto.extendableProtoV1.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.extensionAdapter.t go!"extendableProtoV1" l) v.extendableProtoV1' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.extensionAdapter.t go!"extendableProtoV1" l) extendableProtoV1' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with extendableProtoV1' := extendableProtoV1' } : github_com.gogo.protobuf.proto.extensionAdapter.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end extensionAdapter
@@ -307,12 +432,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance notLocker_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.notLocker.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.notLocker.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance notLocker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.notLocker.t github_com.gogo.protobuf.proto.«notLockerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.notLocker.t github_com.gogo.protobuf.proto.«notLockerⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end notLocker
@@ -345,12 +474,118 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance ExtensionDesc_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.ExtensionDesc.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.ExtensionDesc.t where
+  typed_pointsto_def l v dq := iprop(
+    "ExtendedType" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtendedType" l) v.ExtendedType' dq ∗
+    "ExtensionType" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtensionType" l) v.ExtensionType' dq ∗
+    "Field" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Field" l) v.Field' dq ∗
+    "Name" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Name" l) v.Name' dq ∗
+    "Tag" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Tag" l) v.Tag' dq ∗
+    "Filename" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Filename" l) v.Filename' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ExtensionDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ExtensionDesc.t github_com.gogo.protobuf.proto.«ExtensionDescⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ExtensionDesc.t github_com.gogo.protobuf.proto.«ExtensionDescⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance ExtensionDesc_access_load_ExtendedType (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtendedType" l) v.ExtendedType' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtendedType" l) v.ExtendedType' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_store_ExtendedType (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (ExtendedType' : github_com.gogo.protobuf.proto.Message.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtendedType" l) v.ExtendedType' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtendedType" l) ExtendedType' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ExtendedType' := ExtendedType' } : github_com.gogo.protobuf.proto.ExtensionDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_load_ExtensionType (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtensionType" l) v.ExtensionType' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtensionType" l) v.ExtensionType' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_store_ExtensionType (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (ExtensionType' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtensionType" l) v.ExtensionType' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"ExtensionType" l) ExtensionType' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ExtensionType' := ExtensionType' } : github_com.gogo.protobuf.proto.ExtensionDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_load_Field (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Field" l) v.Field' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Field" l) v.Field' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_store_Field (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (Field' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Field" l) v.Field' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Field" l) Field' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Field' := Field' } : github_com.gogo.protobuf.proto.ExtensionDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_load_Name (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Name" l) v.Name' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Name" l) v.Name' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_store_Name (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (Name' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Name" l) v.Name' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Name" l) Name' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Name' := Name' } : github_com.gogo.protobuf.proto.ExtensionDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_load_Tag (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Tag" l) v.Tag' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Tag" l) v.Tag' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_store_Tag (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (Tag' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Tag" l) v.Tag' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Tag" l) Tag' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Tag' := Tag' } : github_com.gogo.protobuf.proto.ExtensionDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_load_Filename (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Filename" l) v.Filename' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Filename" l) v.Filename' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ExtensionDesc_access_store_Filename (l : loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (Filename' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Filename" l) v.Filename' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ExtensionDesc.t go!"Filename" l) Filename' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Filename' := Filename' } : github_com.gogo.protobuf.proto.ExtensionDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ExtensionDesc
@@ -364,12 +599,67 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance Extension_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Extension.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Extension.t where
+  typed_pointsto_def l v dq := iprop(
+    "desc" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"desc" l) v.desc' dq ∗
+    "value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"value" l) v.value' dq ∗
+    "enc" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"enc" l) v.enc' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Extension_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Extension.t github_com.gogo.protobuf.proto.«Extensionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Extension.t github_com.gogo.protobuf.proto.«Extensionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance Extension_access_load_desc (l : loc) (v : github_com.gogo.protobuf.proto.Extension.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"desc" l) v.desc' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"desc" l) v.desc' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Extension_access_store_desc (l : loc) (v : github_com.gogo.protobuf.proto.Extension.t) (desc' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"desc" l) v.desc' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"desc" l) desc' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with desc' := desc' } : github_com.gogo.protobuf.proto.Extension.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Extension_access_load_value (l : loc) (v : github_com.gogo.protobuf.proto.Extension.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"value" l) v.value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"value" l) v.value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Extension_access_store_value (l : loc) (v : github_com.gogo.protobuf.proto.Extension.t) (value' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"value" l) v.value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"value" l) value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : github_com.gogo.protobuf.proto.Extension.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Extension_access_load_enc (l : loc) (v : github_com.gogo.protobuf.proto.Extension.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"enc" l) v.enc' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"enc" l) v.enc' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Extension_access_store_enc (l : loc) (v : github_com.gogo.protobuf.proto.Extension.t) (enc' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"enc" l) v.enc' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Extension.t go!"enc" l) enc' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with enc' := enc' } : github_com.gogo.protobuf.proto.Extension.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Extension
@@ -393,25 +683,6 @@ instance extPropKey_into_val_typed :
 end def_
 end extPropKey
 
-namespace extensionsBytes
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance extensionsBytes_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.extensionsBytes.t :=
-  sorry -- Rocq: Admitted
-
-instance extensionsBytes_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extensionsBytes.t github_com.gogo.protobuf.proto.«extensionsBytesⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end extensionsBytes
-
 namespace slowExtensionAdapter
 section def_
 
@@ -421,12 +692,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance slowExtensionAdapter_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.slowExtensionAdapter.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.slowExtensionAdapter.t where
+  typed_pointsto_def l v dq := iprop(
+    "extensionsBytes" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.slowExtensionAdapter.t go!"extensionsBytes" l) v.extensionsBytes' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance slowExtensionAdapter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.slowExtensionAdapter.t github_com.gogo.protobuf.proto.«slowExtensionAdapterⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.slowExtensionAdapter.t github_com.gogo.protobuf.proto.«slowExtensionAdapterⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance slowExtensionAdapter_access_load_extensionsBytes (l : loc) (v : github_com.gogo.protobuf.proto.slowExtensionAdapter.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.slowExtensionAdapter.t go!"extensionsBytes" l) v.extensionsBytes' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.slowExtensionAdapter.t go!"extensionsBytes" l) v.extensionsBytes' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance slowExtensionAdapter_access_store_extensionsBytes (l : loc) (v : github_com.gogo.protobuf.proto.slowExtensionAdapter.t) (extensionsBytes' : github_com.gogo.protobuf.proto.extensionsBytes.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.slowExtensionAdapter.t go!"extensionsBytes" l) v.extensionsBytes' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.slowExtensionAdapter.t go!"extensionsBytes" l) extensionsBytes' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with extensionsBytes' := extensionsBytes' } : github_com.gogo.protobuf.proto.slowExtensionAdapter.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end slowExtensionAdapter
@@ -440,34 +732,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance sortableMapElem_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.sortableMapElem.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.sortableMapElem.t where
+  typed_pointsto_def l v dq := iprop(
+    "field" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"field" l) v.field' dq ∗
+    "ext" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"ext" l) v.ext' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance sortableMapElem_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.sortableMapElem.t github_com.gogo.protobuf.proto.«sortableMapElemⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.sortableMapElem.t github_com.gogo.protobuf.proto.«sortableMapElemⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance sortableMapElem_access_load_field (l : loc) (v : github_com.gogo.protobuf.proto.sortableMapElem.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"field" l) v.field' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"field" l) v.field' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance sortableMapElem_access_store_field (l : loc) (v : github_com.gogo.protobuf.proto.sortableMapElem.t) (field' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"field" l) v.field' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"field" l) field' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with field' := field' } : github_com.gogo.protobuf.proto.sortableMapElem.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance sortableMapElem_access_load_ext (l : loc) (v : github_com.gogo.protobuf.proto.sortableMapElem.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"ext" l) v.ext' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"ext" l) v.ext' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance sortableMapElem_access_store_ext (l : loc) (v : github_com.gogo.protobuf.proto.sortableMapElem.t) (ext' : github_com.gogo.protobuf.proto.Extension.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"ext" l) v.ext' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.sortableMapElem.t go!"ext" l) ext' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ext' := ext' } : github_com.gogo.protobuf.proto.sortableMapElem.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end sortableMapElem
-
-namespace sortableExtensions
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance sortableExtensions_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.sortableExtensions.t :=
-  sorry -- Rocq: Admitted
-
-instance sortableExtensions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.sortableExtensions.t github_com.gogo.protobuf.proto.«sortableExtensionsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end sortableExtensions
 
 namespace RequiredNotSetError
 section def_
@@ -478,12 +789,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance RequiredNotSetError_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.RequiredNotSetError.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.RequiredNotSetError.t where
+  typed_pointsto_def l v dq := iprop(
+    "field" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.RequiredNotSetError.t go!"field" l) v.field' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance RequiredNotSetError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.RequiredNotSetError.t github_com.gogo.protobuf.proto.«RequiredNotSetErrorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.RequiredNotSetError.t github_com.gogo.protobuf.proto.«RequiredNotSetErrorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance RequiredNotSetError_access_load_field (l : loc) (v : github_com.gogo.protobuf.proto.RequiredNotSetError.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.RequiredNotSetError.t go!"field" l) v.field' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.RequiredNotSetError.t go!"field" l) v.field' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance RequiredNotSetError_access_store_field (l : loc) (v : github_com.gogo.protobuf.proto.RequiredNotSetError.t) (field' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.RequiredNotSetError.t go!"field" l) v.field' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.RequiredNotSetError.t go!"field" l) field' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with field' := field' } : github_com.gogo.protobuf.proto.RequiredNotSetError.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end RequiredNotSetError
@@ -497,12 +829,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance invalidUTF8Error_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.invalidUTF8Error.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.invalidUTF8Error.t where
+  typed_pointsto_def l v dq := iprop(
+    "field" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.invalidUTF8Error.t go!"field" l) v.field' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance invalidUTF8Error_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.invalidUTF8Error.t github_com.gogo.protobuf.proto.«invalidUTF8Errorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.invalidUTF8Error.t github_com.gogo.protobuf.proto.«invalidUTF8Errorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance invalidUTF8Error_access_load_field (l : loc) (v : github_com.gogo.protobuf.proto.invalidUTF8Error.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.invalidUTF8Error.t go!"field" l) v.field' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.invalidUTF8Error.t go!"field" l) v.field' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance invalidUTF8Error_access_store_field (l : loc) (v : github_com.gogo.protobuf.proto.invalidUTF8Error.t) (field' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.invalidUTF8Error.t go!"field" l) v.field' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.invalidUTF8Error.t go!"field" l) field' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with field' := field' } : github_com.gogo.protobuf.proto.invalidUTF8Error.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end invalidUTF8Error
@@ -516,34 +869,36 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance nonFatal_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.nonFatal.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.nonFatal.t where
+  typed_pointsto_def l v dq := iprop(
+    "E" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.nonFatal.t go!"E" l) v.E' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance nonFatal_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.nonFatal.t github_com.gogo.protobuf.proto.«nonFatalⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.nonFatal.t github_com.gogo.protobuf.proto.«nonFatalⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance nonFatal_access_load_E (l : loc) (v : github_com.gogo.protobuf.proto.nonFatal.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.nonFatal.t go!"E" l) v.E' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.nonFatal.t go!"E" l) v.E' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance nonFatal_access_store_E (l : loc) (v : github_com.gogo.protobuf.proto.nonFatal.t) (E' : error.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.nonFatal.t go!"E" l) v.E' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.nonFatal.t go!"E" l) E' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with E' := E' } : github_com.gogo.protobuf.proto.nonFatal.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end nonFatal
-
-namespace Message
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance Message_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Message.t :=
-  sorry -- Rocq: Admitted
-
-instance Message_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Message.t github_com.gogo.protobuf.proto.«Messageⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Message
 
 namespace Buffer
 section def_
@@ -554,12 +909,67 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance Buffer_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Buffer.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Buffer.t where
+  typed_pointsto_def l v dq := iprop(
+    "buf" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"buf" l) v.buf' dq ∗
+    "index" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"index" l) v.index' dq ∗
+    "deterministic" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"deterministic" l) v.deterministic' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Buffer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Buffer.t github_com.gogo.protobuf.proto.«Bufferⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Buffer.t github_com.gogo.protobuf.proto.«Bufferⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance Buffer_access_load_buf (l : loc) (v : github_com.gogo.protobuf.proto.Buffer.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"buf" l) v.buf' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"buf" l) v.buf' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Buffer_access_store_buf (l : loc) (v : github_com.gogo.protobuf.proto.Buffer.t) (buf' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"buf" l) v.buf' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"buf" l) buf' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with buf' := buf' } : github_com.gogo.protobuf.proto.Buffer.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Buffer_access_load_index (l : loc) (v : github_com.gogo.protobuf.proto.Buffer.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"index" l) v.index' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"index" l) v.index' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Buffer_access_store_index (l : loc) (v : github_com.gogo.protobuf.proto.Buffer.t) (index' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"index" l) v.index' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"index" l) index' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with index' := index' } : github_com.gogo.protobuf.proto.Buffer.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Buffer_access_load_deterministic (l : loc) (v : github_com.gogo.protobuf.proto.Buffer.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"deterministic" l) v.deterministic' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"deterministic" l) v.deterministic' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Buffer_access_store_deterministic (l : loc) (v : github_com.gogo.protobuf.proto.Buffer.t) (deterministic' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"deterministic" l) v.deterministic' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.Buffer.t go!"deterministic" l) deterministic' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with deterministic' := deterministic' } : github_com.gogo.protobuf.proto.Buffer.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Buffer
@@ -573,12 +983,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance defaultMessage_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.defaultMessage.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.defaultMessage.t where
+  typed_pointsto_def l v dq := iprop(
+    "scalars" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"scalars" l) v.scalars' dq ∗
+    "nested" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"nested" l) v.nested' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance defaultMessage_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.defaultMessage.t github_com.gogo.protobuf.proto.«defaultMessageⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.defaultMessage.t github_com.gogo.protobuf.proto.«defaultMessageⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance defaultMessage_access_load_scalars (l : loc) (v : github_com.gogo.protobuf.proto.defaultMessage.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"scalars" l) v.scalars' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"scalars" l) v.scalars' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance defaultMessage_access_store_scalars (l : loc) (v : github_com.gogo.protobuf.proto.defaultMessage.t) (scalars' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"scalars" l) v.scalars' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"scalars" l) scalars' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with scalars' := scalars' } : github_com.gogo.protobuf.proto.defaultMessage.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance defaultMessage_access_load_nested (l : loc) (v : github_com.gogo.protobuf.proto.defaultMessage.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"nested" l) v.nested' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"nested" l) v.nested' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance defaultMessage_access_store_nested (l : loc) (v : github_com.gogo.protobuf.proto.defaultMessage.t) (nested' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"nested" l) v.nested' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.defaultMessage.t go!"nested" l) nested' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with nested' := nested' } : github_com.gogo.protobuf.proto.defaultMessage.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end defaultMessage
@@ -630,53 +1078,87 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance InternalMessageInfo_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.InternalMessageInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.InternalMessageInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "marshal" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"marshal" l) v.marshal' dq ∗
+    "unmarshal" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"unmarshal" l) v.unmarshal' dq ∗
+    "merge" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"merge" l) v.merge' dq ∗
+    "discard" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"discard" l) v.discard' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalMessageInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.InternalMessageInfo.t github_com.gogo.protobuf.proto.«InternalMessageInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.InternalMessageInfo.t github_com.gogo.protobuf.proto.«InternalMessageInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance InternalMessageInfo_access_load_marshal (l : loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"marshal" l) v.marshal' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"marshal" l) v.marshal' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance InternalMessageInfo_access_store_marshal (l : loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (marshal' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"marshal" l) v.marshal' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"marshal" l) marshal' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with marshal' := marshal' } : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance InternalMessageInfo_access_load_unmarshal (l : loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"unmarshal" l) v.unmarshal' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"unmarshal" l) v.unmarshal' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance InternalMessageInfo_access_store_unmarshal (l : loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (unmarshal' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"unmarshal" l) v.unmarshal' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"unmarshal" l) unmarshal' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with unmarshal' := unmarshal' } : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance InternalMessageInfo_access_load_merge (l : loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"merge" l) v.merge' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"merge" l) v.merge' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance InternalMessageInfo_access_store_merge (l : loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (merge' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"merge" l) v.merge' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"merge" l) merge' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with merge' := merge' } : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance InternalMessageInfo_access_load_discard (l : loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"discard" l) v.discard' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"discard" l) v.discard' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance InternalMessageInfo_access_store_discard (l : loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (discard' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"discard" l) v.discard' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.InternalMessageInfo.t go!"discard" l) discard' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with discard' := discard' } : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end InternalMessageInfo
-
-namespace Sizer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance Sizer_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Sizer.t :=
-  sorry -- Rocq: Admitted
-
-instance Sizer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Sizer.t github_com.gogo.protobuf.proto.«Sizerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Sizer
-
-namespace ProtoSizer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance ProtoSizer_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.ProtoSizer.t :=
-  sorry -- Rocq: Admitted
-
-instance ProtoSizer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ProtoSizer.t github_com.gogo.protobuf.proto.«ProtoSizerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ProtoSizer
 
 namespace _MessageSet_Item
 section def_
@@ -687,12 +1169,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance _MessageSet_Item_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto._MessageSet_Item.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto._MessageSet_Item.t where
+  typed_pointsto_def l v dq := iprop(
+    "TypeId" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"TypeId" l) v.TypeId' dq ∗
+    "Message" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"Message" l) v.Message' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance _MessageSet_Item_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto._MessageSet_Item.t github_com.gogo.protobuf.proto.«_MessageSet_Itemⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto._MessageSet_Item.t github_com.gogo.protobuf.proto.«_MessageSet_Itemⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance _MessageSet_Item_access_load_TypeId (l : loc) (v : github_com.gogo.protobuf.proto._MessageSet_Item.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"TypeId" l) v.TypeId' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"TypeId" l) v.TypeId' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance _MessageSet_Item_access_store_TypeId (l : loc) (v : github_com.gogo.protobuf.proto._MessageSet_Item.t) (TypeId' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"TypeId" l) v.TypeId' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"TypeId" l) TypeId' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with TypeId' := TypeId' } : github_com.gogo.protobuf.proto._MessageSet_Item.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance _MessageSet_Item_access_load_Message (l : loc) (v : github_com.gogo.protobuf.proto._MessageSet_Item.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"Message" l) v.Message' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"Message" l) v.Message' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance _MessageSet_Item_access_store_Message (l : loc) (v : github_com.gogo.protobuf.proto._MessageSet_Item.t) (Message' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"Message" l) v.Message' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto._MessageSet_Item.t go!"Message" l) Message' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Message' := Message' } : github_com.gogo.protobuf.proto._MessageSet_Item.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end _MessageSet_Item
@@ -706,53 +1226,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance messageSet_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.messageSet.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.messageSet.t where
+  typed_pointsto_def l v dq := iprop(
+    "Item" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"Item" l) v.Item' dq ∗
+    "XXX_unrecognized" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance messageSet_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.messageSet.t github_com.gogo.protobuf.proto.«messageSetⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.messageSet.t github_com.gogo.protobuf.proto.«messageSetⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance messageSet_access_load_Item (l : loc) (v : github_com.gogo.protobuf.proto.messageSet.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"Item" l) v.Item' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"Item" l) v.Item' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance messageSet_access_store_Item (l : loc) (v : github_com.gogo.protobuf.proto.messageSet.t) (Item' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"Item" l) v.Item' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"Item" l) Item' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Item' := Item' } : github_com.gogo.protobuf.proto.messageSet.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance messageSet_access_load_XXX_unrecognized (l : loc) (v : github_com.gogo.protobuf.proto.messageSet.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance messageSet_access_store_XXX_unrecognized (l : loc) (v : github_com.gogo.protobuf.proto.messageSet.t) (XXX_unrecognized' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.messageSet.t go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : github_com.gogo.protobuf.proto.messageSet.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end messageSet
-
-namespace messageTypeIder
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance messageTypeIder_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.messageTypeIder.t :=
-  sorry -- Rocq: Admitted
-
-instance messageTypeIder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.messageTypeIder.t github_com.gogo.protobuf.proto.«messageTypeIderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end messageTypeIder
-
-namespace field
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance field_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.field.t :=
-  sorry -- Rocq: Admitted
-
-instance field_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.field.t github_com.gogo.protobuf.proto.«fieldⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end field
 
 namespace pointer
 section def_
@@ -763,12 +1283,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance pointer_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.pointer.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.pointer.t where
+  typed_pointsto_def l v dq := iprop(
+    "p" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.pointer.t go!"p" l) v.p' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance pointer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.pointer.t github_com.gogo.protobuf.proto.«pointerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.pointer.t github_com.gogo.protobuf.proto.«pointerⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance pointer_access_load_p (l : loc) (v : github_com.gogo.protobuf.proto.pointer.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.pointer.t go!"p" l) v.p' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.pointer.t go!"p" l) v.p' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance pointer_access_store_p (l : loc) (v : github_com.gogo.protobuf.proto.pointer.t) (p' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.pointer.t go!"p" l) v.p' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.pointer.t go!"p" l) p' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with p' := p' } : github_com.gogo.protobuf.proto.pointer.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end pointer
@@ -782,12 +1323,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance tagMap_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.tagMap.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.tagMap.t where
+  typed_pointsto_def l v dq := iprop(
+    "fastTags" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"fastTags" l) v.fastTags' dq ∗
+    "slowTags" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"slowTags" l) v.slowTags' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance tagMap_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.tagMap.t github_com.gogo.protobuf.proto.«tagMapⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.tagMap.t github_com.gogo.protobuf.proto.«tagMapⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance tagMap_access_load_fastTags (l : loc) (v : github_com.gogo.protobuf.proto.tagMap.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"fastTags" l) v.fastTags' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"fastTags" l) v.fastTags' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance tagMap_access_store_fastTags (l : loc) (v : github_com.gogo.protobuf.proto.tagMap.t) (fastTags' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"fastTags" l) v.fastTags' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"fastTags" l) fastTags' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fastTags' := fastTags' } : github_com.gogo.protobuf.proto.tagMap.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance tagMap_access_load_slowTags (l : loc) (v : github_com.gogo.protobuf.proto.tagMap.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"slowTags" l) v.slowTags' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"slowTags" l) v.slowTags' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance tagMap_access_store_slowTags (l : loc) (v : github_com.gogo.protobuf.proto.tagMap.t) (slowTags' : map.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"slowTags" l) v.slowTags' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.tagMap.t go!"slowTags" l) slowTags' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with slowTags' := slowTags' } : github_com.gogo.protobuf.proto.tagMap.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end tagMap
@@ -801,12 +1380,118 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance StructProperties_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.StructProperties.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.StructProperties.t where
+  typed_pointsto_def l v dq := iprop(
+    "Prop'" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"Prop" l) v.Prop' dq ∗
+    "reqCount" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"reqCount" l) v.reqCount' dq ∗
+    "decoderTags" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderTags" l) v.decoderTags' dq ∗
+    "decoderOrigNames" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderOrigNames" l) v.decoderOrigNames' dq ∗
+    "order" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"order" l) v.order' dq ∗
+    "OneofTypes" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"OneofTypes" l) v.OneofTypes' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance StructProperties_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.StructProperties.t github_com.gogo.protobuf.proto.«StructPropertiesⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.StructProperties.t github_com.gogo.protobuf.proto.«StructPropertiesⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance StructProperties_access_load_Prop (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"Prop" l) v.Prop' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"Prop" l) v.Prop' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_store_Prop (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (Prop' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"Prop" l) v.Prop' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"Prop" l) Prop' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Prop' := Prop' } : github_com.gogo.protobuf.proto.StructProperties.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_load_reqCount (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"reqCount" l) v.reqCount' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"reqCount" l) v.reqCount' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_store_reqCount (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (reqCount' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"reqCount" l) v.reqCount' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"reqCount" l) reqCount' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with reqCount' := reqCount' } : github_com.gogo.protobuf.proto.StructProperties.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_load_decoderTags (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderTags" l) v.decoderTags' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderTags" l) v.decoderTags' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_store_decoderTags (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (decoderTags' : github_com.gogo.protobuf.proto.tagMap.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderTags" l) v.decoderTags' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderTags" l) decoderTags' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with decoderTags' := decoderTags' } : github_com.gogo.protobuf.proto.StructProperties.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_load_decoderOrigNames (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderOrigNames" l) v.decoderOrigNames' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderOrigNames" l) v.decoderOrigNames' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_store_decoderOrigNames (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (decoderOrigNames' : map.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderOrigNames" l) v.decoderOrigNames' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"decoderOrigNames" l) decoderOrigNames' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with decoderOrigNames' := decoderOrigNames' } : github_com.gogo.protobuf.proto.StructProperties.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_load_order (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"order" l) v.order' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"order" l) v.order' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_store_order (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (order' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"order" l) v.order' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"order" l) order' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with order' := order' } : github_com.gogo.protobuf.proto.StructProperties.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_load_OneofTypes (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"OneofTypes" l) v.OneofTypes' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"OneofTypes" l) v.OneofTypes' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StructProperties_access_store_OneofTypes (l : loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (OneofTypes' : map.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"OneofTypes" l) v.OneofTypes' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.StructProperties.t go!"OneofTypes" l) OneofTypes' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with OneofTypes' := OneofTypes' } : github_com.gogo.protobuf.proto.StructProperties.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end StructProperties
@@ -848,82 +1533,6 @@ instance Properties_into_val_typed :
 
 end def_
 end Properties
-
-namespace oneofFuncsIface
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance oneofFuncsIface_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.oneofFuncsIface.t :=
-  sorry -- Rocq: Admitted
-
-instance oneofFuncsIface_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.oneofFuncsIface.t github_com.gogo.protobuf.proto.«oneofFuncsIfaceⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end oneofFuncsIface
-
-namespace oneofWrappersIface
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance oneofWrappersIface_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.oneofWrappersIface.t :=
-  sorry -- Rocq: Admitted
-
-instance oneofWrappersIface_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.oneofWrappersIface.t github_com.gogo.protobuf.proto.«oneofWrappersIfaceⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end oneofWrappersIface
-
-namespace sizer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance sizer_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.sizer.t :=
-  sorry -- Rocq: Admitted
-
-instance sizer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.sizer.t github_com.gogo.protobuf.proto.«sizerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end sizer
-
-namespace marshaler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance marshaler_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.marshaler.t :=
-  sorry -- Rocq: Admitted
-
-instance marshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshaler.t github_com.gogo.protobuf.proto.«marshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end marshaler
 
 namespace marshalInfo
 section def_
@@ -972,53 +1581,104 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance marshalElemInfo_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.marshalElemInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.marshalElemInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "wiretag" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"wiretag" l) v.wiretag' dq ∗
+    "tagsize" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"tagsize" l) v.tagsize' dq ∗
+    "sizer" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"sizer" l) v.sizer' dq ∗
+    "marshaler" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"marshaler" l) v.marshaler' dq ∗
+    "isptr" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"isptr" l) v.isptr' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance marshalElemInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalElemInfo.t github_com.gogo.protobuf.proto.«marshalElemInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalElemInfo.t github_com.gogo.protobuf.proto.«marshalElemInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance marshalElemInfo_access_load_wiretag (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"wiretag" l) v.wiretag' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"wiretag" l) v.wiretag' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_store_wiretag (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (wiretag' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"wiretag" l) v.wiretag' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"wiretag" l) wiretag' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wiretag' := wiretag' } : github_com.gogo.protobuf.proto.marshalElemInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_load_tagsize (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"tagsize" l) v.tagsize' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"tagsize" l) v.tagsize' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_store_tagsize (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (tagsize' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"tagsize" l) v.tagsize' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"tagsize" l) tagsize' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tagsize' := tagsize' } : github_com.gogo.protobuf.proto.marshalElemInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_load_sizer (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"sizer" l) v.sizer' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"sizer" l) v.sizer' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_store_sizer (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (sizer' : github_com.gogo.protobuf.proto.sizer.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"sizer" l) v.sizer' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"sizer" l) sizer' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sizer' := sizer' } : github_com.gogo.protobuf.proto.marshalElemInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_load_marshaler (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"marshaler" l) v.marshaler' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"marshaler" l) v.marshaler' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_store_marshaler (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (marshaler' : github_com.gogo.protobuf.proto.marshaler.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"marshaler" l) v.marshaler' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"marshaler" l) marshaler' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with marshaler' := marshaler' } : github_com.gogo.protobuf.proto.marshalElemInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_load_isptr (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"isptr" l) v.isptr' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"isptr" l) v.isptr' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance marshalElemInfo_access_store_isptr (l : loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (isptr' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"isptr" l) v.isptr' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.marshalElemInfo.t go!"isptr" l) isptr' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with isptr' := isptr' } : github_com.gogo.protobuf.proto.marshalElemInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end marshalElemInfo
-
-namespace byTag
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance byTag_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.byTag.t :=
-  sorry -- Rocq: Admitted
-
-instance byTag_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.byTag.t github_com.gogo.protobuf.proto.«byTagⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end byTag
-
-namespace newMarshaler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance newMarshaler_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.newMarshaler.t :=
-  sorry -- Rocq: Admitted
-
-instance newMarshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.newMarshaler.t github_com.gogo.protobuf.proto.«newMarshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end newMarshaler
 
 namespace mergeInfo
 section def_
@@ -1048,12 +1708,84 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance mergeFieldInfo_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.mergeFieldInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.mergeFieldInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "field" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"field" l) v.field' dq ∗
+    "isPointer" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"isPointer" l) v.isPointer' dq ∗
+    "basicWidth" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"basicWidth" l) v.basicWidth' dq ∗
+    "merge" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"merge" l) v.merge' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance mergeFieldInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mergeFieldInfo.t github_com.gogo.protobuf.proto.«mergeFieldInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mergeFieldInfo.t github_com.gogo.protobuf.proto.«mergeFieldInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance mergeFieldInfo_access_load_field (l : loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"field" l) v.field' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"field" l) v.field' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance mergeFieldInfo_access_store_field (l : loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (field' : github_com.gogo.protobuf.proto.field.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"field" l) v.field' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"field" l) field' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with field' := field' } : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance mergeFieldInfo_access_load_isPointer (l : loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"isPointer" l) v.isPointer' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"isPointer" l) v.isPointer' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance mergeFieldInfo_access_store_isPointer (l : loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (isPointer' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"isPointer" l) v.isPointer' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"isPointer" l) isPointer' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with isPointer' := isPointer' } : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance mergeFieldInfo_access_load_basicWidth (l : loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"basicWidth" l) v.basicWidth' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"basicWidth" l) v.basicWidth' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance mergeFieldInfo_access_store_basicWidth (l : loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (basicWidth' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"basicWidth" l) v.basicWidth' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"basicWidth" l) basicWidth' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with basicWidth' := basicWidth' } : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance mergeFieldInfo_access_load_merge (l : loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"merge" l) v.merge' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"merge" l) v.merge' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance mergeFieldInfo_access_store_merge (l : loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (merge' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"merge" l) v.merge' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.mergeFieldInfo.t go!"merge" l) merge' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with merge' := merge' } : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end mergeFieldInfo
@@ -1077,25 +1809,6 @@ instance unmarshalInfo_into_val_typed :
 end def_
 end unmarshalInfo
 
-namespace unmarshaler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance unmarshaler_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.unmarshaler.t :=
-  sorry -- Rocq: Admitted
-
-instance unmarshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.unmarshaler.t github_com.gogo.protobuf.proto.«unmarshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end unmarshaler
-
 namespace unmarshalFieldInfo
 section def_
 
@@ -1105,12 +1818,84 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance unmarshalFieldInfo_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.unmarshalFieldInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.unmarshalFieldInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "field" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"field" l) v.field' dq ∗
+    "unmarshal" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"unmarshal" l) v.unmarshal' dq ∗
+    "reqMask" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"reqMask" l) v.reqMask' dq ∗
+    "name" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"name" l) v.name' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance unmarshalFieldInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.unmarshalFieldInfo.t github_com.gogo.protobuf.proto.«unmarshalFieldInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.unmarshalFieldInfo.t github_com.gogo.protobuf.proto.«unmarshalFieldInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance unmarshalFieldInfo_access_load_field (l : loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"field" l) v.field' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"field" l) v.field' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance unmarshalFieldInfo_access_store_field (l : loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (field' : github_com.gogo.protobuf.proto.field.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"field" l) v.field' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"field" l) field' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with field' := field' } : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance unmarshalFieldInfo_access_load_unmarshal (l : loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"unmarshal" l) v.unmarshal' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"unmarshal" l) v.unmarshal' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance unmarshalFieldInfo_access_store_unmarshal (l : loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (unmarshal' : github_com.gogo.protobuf.proto.unmarshaler.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"unmarshal" l) v.unmarshal' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"unmarshal" l) unmarshal' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with unmarshal' := unmarshal' } : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance unmarshalFieldInfo_access_load_reqMask (l : loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"reqMask" l) v.reqMask' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"reqMask" l) v.reqMask' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance unmarshalFieldInfo_access_store_reqMask (l : loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (reqMask' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"reqMask" l) v.reqMask' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"reqMask" l) reqMask' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with reqMask' := reqMask' } : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance unmarshalFieldInfo_access_load_name (l : loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"name" l) v.name' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"name" l) v.name' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance unmarshalFieldInfo_access_store_name (l : loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (name' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"name" l) v.name' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.unmarshalFieldInfo.t go!"name" l) name' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with name' := name' } : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end unmarshalFieldInfo
@@ -1143,34 +1928,87 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance textWriter_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.textWriter.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.textWriter.t where
+  typed_pointsto_def l v dq := iprop(
+    "ind" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"ind" l) v.ind' dq ∗
+    "complete" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"complete" l) v.complete' dq ∗
+    "compact" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"compact" l) v.compact' dq ∗
+    "w" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"w" l) v.w' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance textWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.textWriter.t github_com.gogo.protobuf.proto.«textWriterⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.textWriter.t github_com.gogo.protobuf.proto.«textWriterⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance textWriter_access_load_ind (l : loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"ind" l) v.ind' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"ind" l) v.ind' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textWriter_access_store_ind (l : loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (ind' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"ind" l) v.ind' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"ind" l) ind' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ind' := ind' } : github_com.gogo.protobuf.proto.textWriter.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance textWriter_access_load_complete (l : loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"complete" l) v.complete' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"complete" l) v.complete' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textWriter_access_store_complete (l : loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (complete' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"complete" l) v.complete' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"complete" l) complete' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with complete' := complete' } : github_com.gogo.protobuf.proto.textWriter.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance textWriter_access_load_compact (l : loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"compact" l) v.compact' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"compact" l) v.compact' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textWriter_access_store_compact (l : loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (compact' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"compact" l) v.compact' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"compact" l) compact' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with compact' := compact' } : github_com.gogo.protobuf.proto.textWriter.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance textWriter_access_load_w (l : loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"w" l) v.w' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"w" l) v.w' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textWriter_access_store_w (l : loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (w' : github_com.gogo.protobuf.proto.writer.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"w" l) v.w' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textWriter.t go!"w" l) w' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with w' := w' } : github_com.gogo.protobuf.proto.textWriter.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end textWriter
-
-namespace int32Slice
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
-
-instance int32Slice_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.int32Slice.t :=
-  sorry -- Rocq: Admitted
-
-instance int32Slice_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int32Slice.t github_com.gogo.protobuf.proto.«int32Sliceⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end int32Slice
 
 namespace TextMarshaler
 section def_
@@ -1181,12 +2019,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance TextMarshaler_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.TextMarshaler.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.TextMarshaler.t where
+  typed_pointsto_def l v dq := iprop(
+    "Compact" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"Compact" l) v.Compact' dq ∗
+    "ExpandAny" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"ExpandAny" l) v.ExpandAny' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance TextMarshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.TextMarshaler.t github_com.gogo.protobuf.proto.«TextMarshalerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.TextMarshaler.t github_com.gogo.protobuf.proto.«TextMarshalerⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance TextMarshaler_access_load_Compact (l : loc) (v : github_com.gogo.protobuf.proto.TextMarshaler.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"Compact" l) v.Compact' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"Compact" l) v.Compact' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance TextMarshaler_access_store_Compact (l : loc) (v : github_com.gogo.protobuf.proto.TextMarshaler.t) (Compact' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"Compact" l) v.Compact' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"Compact" l) Compact' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Compact' := Compact' } : github_com.gogo.protobuf.proto.TextMarshaler.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance TextMarshaler_access_load_ExpandAny (l : loc) (v : github_com.gogo.protobuf.proto.TextMarshaler.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"ExpandAny" l) v.ExpandAny' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"ExpandAny" l) v.ExpandAny' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance TextMarshaler_access_store_ExpandAny (l : loc) (v : github_com.gogo.protobuf.proto.TextMarshaler.t) (ExpandAny' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"ExpandAny" l) v.ExpandAny' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.TextMarshaler.t go!"ExpandAny" l) ExpandAny' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ExpandAny' := ExpandAny' } : github_com.gogo.protobuf.proto.TextMarshaler.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end TextMarshaler
@@ -1200,12 +2076,67 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance ParseError_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.ParseError.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.ParseError.t where
+  typed_pointsto_def l v dq := iprop(
+    "Message" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Message" l) v.Message' dq ∗
+    "Line" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Line" l) v.Line' dq ∗
+    "Offset" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Offset" l) v.Offset' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ParseError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ParseError.t github_com.gogo.protobuf.proto.«ParseErrorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ParseError.t github_com.gogo.protobuf.proto.«ParseErrorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance ParseError_access_load_Message (l : loc) (v : github_com.gogo.protobuf.proto.ParseError.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Message" l) v.Message' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Message" l) v.Message' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ParseError_access_store_Message (l : loc) (v : github_com.gogo.protobuf.proto.ParseError.t) (Message' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Message" l) v.Message' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Message" l) Message' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Message' := Message' } : github_com.gogo.protobuf.proto.ParseError.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ParseError_access_load_Line (l : loc) (v : github_com.gogo.protobuf.proto.ParseError.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Line" l) v.Line' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Line" l) v.Line' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ParseError_access_store_Line (l : loc) (v : github_com.gogo.protobuf.proto.ParseError.t) (Line' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Line" l) v.Line' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Line" l) Line' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Line' := Line' } : github_com.gogo.protobuf.proto.ParseError.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ParseError_access_load_Offset (l : loc) (v : github_com.gogo.protobuf.proto.ParseError.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Offset" l) v.Offset' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Offset" l) v.Offset' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ParseError_access_store_Offset (l : loc) (v : github_com.gogo.protobuf.proto.ParseError.t) (Offset' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Offset" l) v.Offset' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.ParseError.t go!"Offset" l) Offset' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Offset' := Offset' } : github_com.gogo.protobuf.proto.ParseError.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ParseError
@@ -1219,12 +2150,101 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance token_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.token.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.token.t where
+  typed_pointsto_def l v dq := iprop(
+    "value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"value" l) v.value' dq ∗
+    "err" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"err" l) v.err' dq ∗
+    "line" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"line" l) v.line' dq ∗
+    "offset" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"offset" l) v.offset' dq ∗
+    "unquoted" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"unquoted" l) v.unquoted' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance token_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.token.t github_com.gogo.protobuf.proto.«tokenⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.token.t github_com.gogo.protobuf.proto.«tokenⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance token_access_load_value (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"value" l) v.value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"value" l) v.value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_store_value (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (value' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"value" l) v.value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"value" l) value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : github_com.gogo.protobuf.proto.token.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_load_err (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"err" l) v.err' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"err" l) v.err' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_store_err (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (err' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"err" l) v.err' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"err" l) err' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with err' := err' } : github_com.gogo.protobuf.proto.token.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_load_line (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"line" l) v.line' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"line" l) v.line' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_store_line (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (line' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"line" l) v.line' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"line" l) line' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with line' := line' } : github_com.gogo.protobuf.proto.token.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_load_offset (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"offset" l) v.offset' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"offset" l) v.offset' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_store_offset (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (offset' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"offset" l) v.offset' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"offset" l) offset' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with offset' := offset' } : github_com.gogo.protobuf.proto.token.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_load_unquoted (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"unquoted" l) v.unquoted' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"unquoted" l) v.unquoted' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance token_access_store_unquoted (l : loc) (v : github_com.gogo.protobuf.proto.token.t) (unquoted' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"unquoted" l) v.unquoted' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.token.t go!"unquoted" l) unquoted' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with unquoted' := unquoted' } : github_com.gogo.protobuf.proto.token.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end token
@@ -1238,12 +2258,118 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance textParser_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.textParser.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.textParser.t where
+  typed_pointsto_def l v dq := iprop(
+    "s" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"s" l) v.s' dq ∗
+    "done" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"done" l) v.done' dq ∗
+    "backed" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"backed" l) v.backed' dq ∗
+    "offset" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"offset" l) v.offset' dq ∗
+    "line" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"line" l) v.line' dq ∗
+    "cur" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"cur" l) v.cur' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance textParser_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.textParser.t github_com.gogo.protobuf.proto.«textParserⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.textParser.t github_com.gogo.protobuf.proto.«textParserⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance textParser_access_load_s (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"s" l) v.s' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"s" l) v.s' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_store_s (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (s' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"s" l) v.s' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"s" l) s' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : github_com.gogo.protobuf.proto.textParser.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_load_done (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"done" l) v.done' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"done" l) v.done' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_store_done (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (done' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"done" l) v.done' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"done" l) done' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : github_com.gogo.protobuf.proto.textParser.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_load_backed (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"backed" l) v.backed' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"backed" l) v.backed' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_store_backed (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (backed' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"backed" l) v.backed' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"backed" l) backed' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with backed' := backed' } : github_com.gogo.protobuf.proto.textParser.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_load_offset (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"offset" l) v.offset' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"offset" l) v.offset' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_store_offset (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (offset' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"offset" l) v.offset' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"offset" l) offset' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with offset' := offset' } : github_com.gogo.protobuf.proto.textParser.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_load_line (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"line" l) v.line' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"line" l) v.line' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_store_line (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (line' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"line" l) v.line' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"line" l) line' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with line' := line' } : github_com.gogo.protobuf.proto.textParser.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_load_cur (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"cur" l) v.cur' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"cur" l) v.cur' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance textParser_access_store_cur (l : loc) (v : github_com.gogo.protobuf.proto.textParser.t) (cur' : github_com.gogo.protobuf.proto.token.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"cur" l) v.cur' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.textParser.t go!"cur" l) cur' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cur' := cur' } : github_com.gogo.protobuf.proto.textParser.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end textParser
@@ -1257,12 +2383,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance timestamp_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.timestamp.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.timestamp.t where
+  typed_pointsto_def l v dq := iprop(
+    "Seconds" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Seconds" l) v.Seconds' dq ∗
+    "Nanos" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Nanos" l) v.Nanos' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance timestamp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.timestamp.t github_com.gogo.protobuf.proto.«timestampⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.timestamp.t github_com.gogo.protobuf.proto.«timestampⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance timestamp_access_load_Seconds (l : loc) (v : github_com.gogo.protobuf.proto.timestamp.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Seconds" l) v.Seconds' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Seconds" l) v.Seconds' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance timestamp_access_store_Seconds (l : loc) (v : github_com.gogo.protobuf.proto.timestamp.t) (Seconds' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Seconds" l) v.Seconds' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Seconds" l) Seconds' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Seconds' := Seconds' } : github_com.gogo.protobuf.proto.timestamp.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance timestamp_access_load_Nanos (l : loc) (v : github_com.gogo.protobuf.proto.timestamp.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Nanos" l) v.Nanos' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Nanos" l) v.Nanos' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance timestamp_access_store_Nanos (l : loc) (v : github_com.gogo.protobuf.proto.timestamp.t) (Nanos' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Nanos" l) v.Nanos' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.timestamp.t go!"Nanos" l) Nanos' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Nanos' := Nanos' } : github_com.gogo.protobuf.proto.timestamp.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end timestamp
@@ -1276,12 +2440,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance float64Value_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.float64Value.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.float64Value.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float64Value.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance float64Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.float64Value.t github_com.gogo.protobuf.proto.«float64Valueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.float64Value.t github_com.gogo.protobuf.proto.«float64Valueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance float64Value_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.float64Value.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float64Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float64Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance float64Value_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.float64Value.t) (Value' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float64Value.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float64Value.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.float64Value.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end float64Value
@@ -1295,12 +2480,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance float32Value_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.float32Value.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.float32Value.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float32Value.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance float32Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.float32Value.t github_com.gogo.protobuf.proto.«float32Valueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.float32Value.t github_com.gogo.protobuf.proto.«float32Valueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance float32Value_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.float32Value.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float32Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float32Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance float32Value_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.float32Value.t) (Value' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float32Value.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.float32Value.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.float32Value.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end float32Value
@@ -1314,12 +2520,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance int64Value_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.int64Value.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.int64Value.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int64Value.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance int64Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int64Value.t github_com.gogo.protobuf.proto.«int64Valueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int64Value.t github_com.gogo.protobuf.proto.«int64Valueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance int64Value_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.int64Value.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int64Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int64Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance int64Value_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.int64Value.t) (Value' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int64Value.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int64Value.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.int64Value.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end int64Value
@@ -1333,12 +2560,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance uint64Value_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.uint64Value.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.uint64Value.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint64Value.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance uint64Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.uint64Value.t github_com.gogo.protobuf.proto.«uint64Valueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.uint64Value.t github_com.gogo.protobuf.proto.«uint64Valueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance uint64Value_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.uint64Value.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint64Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint64Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance uint64Value_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.uint64Value.t) (Value' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint64Value.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint64Value.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.uint64Value.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end uint64Value
@@ -1352,12 +2600,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance int32Value_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.int32Value.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.int32Value.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int32Value.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance int32Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int32Value.t github_com.gogo.protobuf.proto.«int32Valueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int32Value.t github_com.gogo.protobuf.proto.«int32Valueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance int32Value_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.int32Value.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int32Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int32Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance int32Value_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.int32Value.t) (Value' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int32Value.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.int32Value.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.int32Value.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end int32Value
@@ -1371,12 +2640,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance uint32Value_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.uint32Value.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.uint32Value.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint32Value.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance uint32Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.uint32Value.t github_com.gogo.protobuf.proto.«uint32Valueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.uint32Value.t github_com.gogo.protobuf.proto.«uint32Valueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance uint32Value_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.uint32Value.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint32Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint32Value.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance uint32Value_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.uint32Value.t) (Value' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint32Value.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.uint32Value.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.uint32Value.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end uint32Value
@@ -1390,12 +2680,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance boolValue_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.boolValue.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.boolValue.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.boolValue.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance boolValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.boolValue.t github_com.gogo.protobuf.proto.«boolValueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.boolValue.t github_com.gogo.protobuf.proto.«boolValueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance boolValue_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.boolValue.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.boolValue.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.boolValue.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance boolValue_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.boolValue.t) (Value' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.boolValue.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.boolValue.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.boolValue.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end boolValue
@@ -1409,12 +2720,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance stringValue_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.stringValue.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.stringValue.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.stringValue.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance stringValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.stringValue.t github_com.gogo.protobuf.proto.«stringValueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.stringValue.t github_com.gogo.protobuf.proto.«stringValueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance stringValue_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.stringValue.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.stringValue.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.stringValue.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance stringValue_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.stringValue.t) (Value' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.stringValue.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.stringValue.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.stringValue.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end stringValue
@@ -1428,12 +2760,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance bytesValue_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.bytesValue.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.bytesValue.t where
+  typed_pointsto_def l v dq := iprop(
+    "Value" ∷ typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.bytesValue.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance bytesValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.bytesValue.t github_com.gogo.protobuf.proto.«bytesValueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.bytesValue.t github_com.gogo.protobuf.proto.«bytesValueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance bytesValue_access_load_Value (l : loc) (v : github_com.gogo.protobuf.proto.bytesValue.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.bytesValue.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.bytesValue.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance bytesValue_access_store_Value (l : loc) (v : github_com.gogo.protobuf.proto.bytesValue.t) (Value' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.bytesValue.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.gogo.protobuf.proto.bytesValue.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : github_com.gogo.protobuf.proto.bytesValue.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end bytesValue

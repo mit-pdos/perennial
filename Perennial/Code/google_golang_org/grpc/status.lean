@@ -18,7 +18,7 @@ end pkg_id
 
 namespace google_golang_org.grpc.status
 
-def Status [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def Status [ffi_syntax] [GoGlobalContext] : go.type :=
   _root_.Perennial.google_golang_org.genproto.googleapis.rpc.status.Status
 
 noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=

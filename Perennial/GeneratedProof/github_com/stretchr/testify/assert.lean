@@ -13,158 +13,6 @@ open Iris Iris.BI
 noncomputable section
 namespace github_com.stretchr.testify.assert
 
-namespace compareResult
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance compareResult_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.compareResult.t :=
-  sorry -- Rocq: Admitted
-
-instance compareResult_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.compareResult.t github_com.stretchr.testify.assert.«compareResultⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end compareResult
-
-namespace TestingT
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance TestingT_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.TestingT.t :=
-  sorry -- Rocq: Admitted
-
-instance TestingT_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.TestingT.t github_com.stretchr.testify.assert.«TestingTⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end TestingT
-
-namespace ComparisonAssertionFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance ComparisonAssertionFunc_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.ComparisonAssertionFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance ComparisonAssertionFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.ComparisonAssertionFunc.t github_com.stretchr.testify.assert.«ComparisonAssertionFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ComparisonAssertionFunc
-
-namespace ValueAssertionFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance ValueAssertionFunc_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.ValueAssertionFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance ValueAssertionFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.ValueAssertionFunc.t github_com.stretchr.testify.assert.«ValueAssertionFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ValueAssertionFunc
-
-namespace BoolAssertionFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance BoolAssertionFunc_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.BoolAssertionFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance BoolAssertionFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.BoolAssertionFunc.t github_com.stretchr.testify.assert.«BoolAssertionFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end BoolAssertionFunc
-
-namespace ErrorAssertionFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance ErrorAssertionFunc_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.ErrorAssertionFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance ErrorAssertionFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.ErrorAssertionFunc.t github_com.stretchr.testify.assert.«ErrorAssertionFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ErrorAssertionFunc
-
-namespace Comparison
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance Comparison_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.Comparison.t :=
-  sorry -- Rocq: Admitted
-
-instance Comparison_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.Comparison.t github_com.stretchr.testify.assert.«Comparisonⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Comparison
-
-namespace failNower
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance failNower_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.failNower.t :=
-  sorry -- Rocq: Admitted
-
-instance failNower_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.failNower.t github_com.stretchr.testify.assert.«failNowerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end failNower
-
 namespace labeledContent
 section def_
 
@@ -174,34 +22,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
 
 instance labeledContent_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.labeledContent.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.labeledContent.t where
+  typed_pointsto_def l v dq := iprop(
+    "label" ∷ typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"label" l) v.label' dq ∗
+    "content" ∷ typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"content" l) v.content' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance labeledContent_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.labeledContent.t github_com.stretchr.testify.assert.«labeledContentⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.labeledContent.t github_com.stretchr.testify.assert.«labeledContentⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance labeledContent_access_load_label (l : loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"label" l) v.label' dq)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"label" l) v.label' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance labeledContent_access_store_label (l : loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (label' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"label" l) v.label' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"label" l) label' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with label' := label' } : github_com.stretchr.testify.assert.labeledContent.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance labeledContent_access_load_content (l : loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"content" l) v.content' dq)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"content" l) v.content' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance labeledContent_access_store_content (l : loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (content' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"content" l) v.content' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.labeledContent.t go!"content" l) content' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with content' := content' } : github_com.stretchr.testify.assert.labeledContent.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end labeledContent
-
-namespace PanicTestFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
-
-instance PanicTestFunc_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.PanicTestFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance PanicTestFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.PanicTestFunc.t github_com.stretchr.testify.assert.«PanicTestFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end PanicTestFunc
 
 namespace CollectT
 section def_
@@ -212,12 +79,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
 
 instance CollectT_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.CollectT.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.CollectT.t where
+  typed_pointsto_def l v dq := iprop(
+    "errors" ∷ typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.CollectT.t go!"errors" l) v.errors' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance CollectT_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.CollectT.t github_com.stretchr.testify.assert.«CollectTⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.CollectT.t github_com.stretchr.testify.assert.«CollectTⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance CollectT_access_load_errors (l : loc) (v : github_com.stretchr.testify.assert.CollectT.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.CollectT.t go!"errors" l) v.errors' dq)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.CollectT.t go!"errors" l) v.errors' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance CollectT_access_store_errors (l : loc) (v : github_com.stretchr.testify.assert.CollectT.t) (errors' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.CollectT.t go!"errors" l) v.errors' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.CollectT.t go!"errors" l) errors' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with errors' := errors' } : github_com.stretchr.testify.assert.CollectT.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end CollectT
@@ -231,12 +119,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
 
 instance Assertions_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.Assertions.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.Assertions.t where
+  typed_pointsto_def l v dq := iprop(
+    "t" ∷ typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.Assertions.t go!"t" l) v.t' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Assertions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.Assertions.t github_com.stretchr.testify.assert.«Assertionsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.Assertions.t github_com.stretchr.testify.assert.«Assertionsⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance Assertions_access_load_t (l : loc) (v : github_com.stretchr.testify.assert.Assertions.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.Assertions.t go!"t" l) v.t' dq)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.Assertions.t go!"t" l) v.t' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Assertions_access_store_t (l : loc) (v : github_com.stretchr.testify.assert.Assertions.t) (t' : github_com.stretchr.testify.assert.TestingT.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.Assertions.t go!"t" l) v.t' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.stretchr.testify.assert.Assertions.t go!"t" l) t' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with t' := t' } : github_com.stretchr.testify.assert.Assertions.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Assertions

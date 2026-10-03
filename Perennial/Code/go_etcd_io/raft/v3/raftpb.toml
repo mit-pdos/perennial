@@ -53,3 +53,6 @@ translate = [
 imports = ["!*"]
 
 trust_proofgen = true
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

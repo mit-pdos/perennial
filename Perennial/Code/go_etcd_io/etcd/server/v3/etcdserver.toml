@@ -24,3 +24,6 @@ imports = [
   "go.etcd.io/etcd/server/v3/features",
   "time",
 ]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

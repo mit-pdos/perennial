@@ -59,7 +59,10 @@ theorem wp_copyChecker__check (c : loc) (c_v : copyChecker.t) (dq : DFrac) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.sync ∗ typed_pointsto (GF := GF) c c_v dq }}
       (App (Val (c @!! go.type.PointerType copyChecker @!! go!"check")) (Val #()))
     {{ RET #(); typed_pointsto (GF := GF) c c_v dq }} := by
-  -- Unprovable: `copyChecker.check` has no translated body (no `MethodUnfold` in `sync.Assumptions`).
+  -- Unprovable: `copyChecker.check` has no translated body (no `MethodUnfold` in `sync.Assumptions`;
+  -- `copyChecker` is a `uintptr`, for which there is no `TypeRepr`). It is also false as
+  -- stated: for the zero checker (what `is_Cond` provides), `check` does a successful
+  -- `CompareAndSwapUintptr(c, 0, c)`, which needs (and changes) the full points-to of `c`.
   sorry -- Rocq: Admitted
 
 theorem wp_runtime_notifyListAdd (l : loc) (l_v : notifyList.t) (dq : DFrac) :

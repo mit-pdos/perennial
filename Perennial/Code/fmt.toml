@@ -1,3 +1,6 @@
 translate = ["!*"]
 imports = ["!*", "io"]
 trusted = ["Print", "Printf"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

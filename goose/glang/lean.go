@@ -115,7 +115,7 @@ func init() {
 	GoStore GoAlloc GoZeroVal FuncResolve MethodResolve StructFieldGet
 	StructFieldRef StructFieldSet GlobalVarAddr Index IndexRef Slice FullSlice
 	TypeAssert TypeAssert2 Convert CompositeLiteral SelectStmt LiteralValue
-	KeyedElement KeyField KeyExpression ElementExpression ElementLiteralValue
+	KeyedElement KeyField KeyInteger KeyExpression ElementExpression ElementLiteralValue
 	SelectStmtClauses CommClause SendCase RecvCase UntypedNil into_val
 	exception_seq do_execute do_return exception_do do_break do_continue do_for
 	wrap_defer deferType none some W64 W32 W16 W8 w64 w32 w16 w8 Int Bool Unit
@@ -572,7 +572,8 @@ var leanHeads = map[string]leanHead{
 	"Some":             {kind: headTermCtor, name: "some", argModes: []LeanMode{LeanTerm}},
 	"ElementExpression": {kind: headTermCtor, name: "ElementExpression",
 		argModes: []LeanMode{LeanTerm, LeanExpr}},
-	"KeyField": {kind: headTermCtor, name: "KeyField", argModes: []LeanMode{LeanTerm}},
+	"KeyField":   {kind: headTermCtor, name: "KeyField", argModes: []LeanMode{LeanTerm}},
+	"KeyInteger": {kind: headTermCtor, name: "KeyInteger", argModes: []LeanMode{LeanTerm}},
 	"KeyExpression": {kind: headTermCtor, name: "KeyExpression",
 		argModes: []LeanMode{LeanTerm, LeanExpr}},
 	"ElementLiteralValue": {kind: headTermCtor, name: "ElementLiteralValue",
@@ -1068,8 +1069,9 @@ func (d TypeDecl) LeanDecl() string {
 		typeParams += fmt.Sprintf(" (%s : go.type)", LeanIdent(t))
 	}
 	attr := ""
-	if strings.HasSuffix(d.Name, "ⁱᵐᵖˡ") {
-		// unfolded by the struct tactics of the theory
+	if strings.HasSuffix(d.Name, "ⁱᵐᵖˡ") || d.Alias {
+		// unfolded by the struct tactics of the theory; aliases are reducible so
+		// that instances for the aliased type apply
 		attr = "@[reducible] "
 	}
 	return fmt.Sprintf("%sdef %s %s%s : go.type :=\n  %s", attr, LeanIdent(d.Name), leanDeclParams, typeParams,

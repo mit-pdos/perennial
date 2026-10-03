@@ -62,12 +62,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : errors.Assumptions]
 
 instance joinError_typed_pointsto :
-    TypedPointsto (GF := GF) errors.joinError.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) errors.joinError.t where
+  typed_pointsto_def l v dq := iprop(
+    "errs" ∷ typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) v.errs' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance joinError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) errors.joinError.t errors.«joinErrorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) errors.joinError.t errors.«joinErrorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance joinError_access_load_errs (l : loc) (v : errors.joinError.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) v.errs' dq)
+      (typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) v.errs' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance joinError_access_store_errs (l : loc) (v : errors.joinError.t) (errs' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) v.errs' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) errs' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with errs' := errs' } : errors.joinError.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end joinError

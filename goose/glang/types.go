@@ -10,6 +10,8 @@ type TypeDecl struct {
 	Name       string
 	Body       Expr
 	TypeParams []string
+	// a type alias (Lean: reducible, so instances for the aliased type apply)
+	Alias bool
 }
 
 func (d TypeDecl) CoqDecl() string {

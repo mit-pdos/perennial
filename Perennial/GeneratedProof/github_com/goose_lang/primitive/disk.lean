@@ -14,26 +14,6 @@ open Iris Iris.BI
 noncomputable section
 namespace github_com.goose_lang.primitive.disk
 
-namespace Disk
-section def_
-
--- the FFI instances are global (from the disk prelude)
-variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : github_com.goose_lang.primitive.disk.Assumptions]
-
-instance Disk_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.goose_lang.primitive.disk.Disk.t :=
-  sorry -- Rocq: Admitted
-
-instance Disk_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.Disk.t github_com.goose_lang.primitive.disk.«Diskⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Disk
-
 namespace FileDisk
 section def_
 
@@ -44,12 +24,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.goose_lang.primitive.disk.Assumptions]
 
 instance FileDisk_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.goose_lang.primitive.disk.FileDisk.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) github_com.goose_lang.primitive.disk.FileDisk.t where
+  typed_pointsto_def l v dq := iprop(
+    "fd" ∷ typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"fd" l) v.fd' dq ∗
+    "numBlocks" ∷ typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"numBlocks" l) v.numBlocks' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance FileDisk_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.FileDisk.t github_com.goose_lang.primitive.disk.«FileDiskⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.FileDisk.t github_com.goose_lang.primitive.disk.«FileDiskⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance FileDisk_access_load_fd (l : loc) (v : github_com.goose_lang.primitive.disk.FileDisk.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"fd" l) v.fd' dq)
+      (typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"fd" l) v.fd' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance FileDisk_access_store_fd (l : loc) (v : github_com.goose_lang.primitive.disk.FileDisk.t) (fd' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"fd" l) v.fd' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"fd" l) fd' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fd' := fd' } : github_com.goose_lang.primitive.disk.FileDisk.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance FileDisk_access_load_numBlocks (l : loc) (v : github_com.goose_lang.primitive.disk.FileDisk.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"numBlocks" l) v.numBlocks' dq)
+      (typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"numBlocks" l) v.numBlocks' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance FileDisk_access_store_numBlocks (l : loc) (v : github_com.goose_lang.primitive.disk.FileDisk.t) (numBlocks' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"numBlocks" l) v.numBlocks' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref github_com.goose_lang.primitive.disk.FileDisk.t go!"numBlocks" l) numBlocks' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with numBlocks' := numBlocks' } : github_com.goose_lang.primitive.disk.FileDisk.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end FileDisk

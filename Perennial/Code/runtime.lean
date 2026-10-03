@@ -1883,8 +1883,6 @@ axiom «cgoCallersⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «argsetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «cgoErrorMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «hchanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «waitqⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -1905,7 +1903,8 @@ axiom «debugLogBufⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «debugLogReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom dlogger [ffi_syntax] [GoGlobalContext] : go.type
+@[reducible] def dlogger [ffi_syntax] [GoGlobalContext] : go.type :=
+  dloggerFake
 
 axiom «dlogPerMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -1953,19 +1952,11 @@ axiom «sigcontextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «sockaddr_unⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «TypeAssertionErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «errorStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «errorAddressStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «plainErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «boundsErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «stringerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «typeCacheBucketⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -1979,18 +1970,6 @@ axiom «timeHistogramⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «itabTableTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «uint16InterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «uint32InterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «uint64InterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «stringInterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «sliceInterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «lfstackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «linknameIterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «listHeadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2002,8 +1981,6 @@ axiom «listHeadManualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «listNodeManualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «mWaitListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «lockRankⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «lockRankStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2041,12 +2018,6 @@ axiom «cleanupQueueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «metricDataⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «metricReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «statDepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «statDepSetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «heapStatsAggregateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «sysStatsAggregateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2060,8 +2031,6 @@ axiom «finalStatsAggregateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.typ
 axiom «schedStatsAggregateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «statAggregateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «metricKindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «metricSampleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2079,15 +2048,9 @@ axiom «fixallocⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «mlinkⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «gcMarkWorkerModeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «workTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «gcModeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «gcTriggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «gcTriggerKindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «gcBgMarkWorkerNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2095,17 +2058,9 @@ axiom «gcBgMarkWorkerNodePaddedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : g
 
 axiom «gcCPULimiterStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «limiterEventTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «limiterEventStampⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «limiterEventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «gcDrainFlagsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «spanInlineMarkBitsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «spanScanOwnershipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «spanQueueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2125,8 +2080,6 @@ axiom «atomicScavChunkDataⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.typ
 
 axiom «scavChunkDataⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «scavChunkFlagsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «piControllerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «stackWorkBufⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2142,8 +2095,6 @@ axiom «stackObjectⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «stackScanStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «sweepdataⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «sweepClassⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «activeSweepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2163,17 +2114,9 @@ axiom «heapArenaⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «arenaHintⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «mSpanStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «mSpanStateBoxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «mspanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «spanClassⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «arenaIdxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «spanAllocTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «mSpanListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2209,23 +2152,11 @@ axiom «gcBitsHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «gcBitsArenaⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «floatyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «chunkIdxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «pageAllocⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «pallocSumⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «pageCacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «pageBitsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «pallocBitsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «pallocDataⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «bucketTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «bucketⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2246,8 +2177,6 @@ axiom «StackRecordⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «MemProfileRecordⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «BlockProfileRecordⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «goroutineProfileStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «goroutineProfileStateHolderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2273,8 +2202,6 @@ axiom «spanSetSpinePointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.typ
 
 axiom «spanSetBlockAllocⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «headTailIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «atomicHeadTailIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «atomicMSpanPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2282,8 +2209,6 @@ axiom «atomicMSpanPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «mstatsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «MemStatsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «sysMemStatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «heapStatsDeltaⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2295,8 +2220,6 @@ axiom «wbBufⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «pollDescⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «pollInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «pollCacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «winlibcallⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2307,10 +2230,6 @@ axiom «mOSⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «perThreadSyscallArgsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «sigsetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «throwTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «PanicNilErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «Pinnerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2318,8 +2237,6 @@ axiom «Pinnerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «pinnerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «pinStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «pinnerBitsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «ptabEntryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2333,12 +2250,6 @@ axiom «xRegPerGⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «xRegPerPⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «hexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «quotedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «stwReasonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «worldStopⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «cgothreadstartⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2348,8 +2259,6 @@ axiom «sysmontickⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «syscallingThreadⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «updateMaxProcsGStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «pMaskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «gQueueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2364,12 +2273,6 @@ axiom «initTaskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «tracestatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «profBufⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «profAtomicⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «profIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «profBufReadModeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «ticksTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2435,21 +2338,15 @@ axiom «savedOpenDeferStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.typ
 
 axiom «ancestorInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «waitReasonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «rwmutexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «scaseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «runtimeSelectⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «selectDirⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «semaRootⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «semTableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «semaProfileFlagsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «notifyListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2474,8 +2371,6 @@ axiom «stackObjectRecordⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «stkframeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «reflectMethodValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «tmpBufⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «stringStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2523,8 +2418,6 @@ axiom «synctestDeadlockErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.t
 
 axiom «specialBubbleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «taggedPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «timerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «timersⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2536,8 +2429,6 @@ axiom «timeTimerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «traceAdvancerStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «wakeableSleepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «unwindFlagsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «unwinderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2554,8 +2445,6 @@ axiom «traceBufQueueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «traceBufHeaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «traceBufⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «traceArgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «traceEventWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -2575,10 +2464,6 @@ axiom «mTraceStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «pTraceStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «traceBlockReasonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «traceGoStopReasonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «traceLockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «traceStackTableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -2588,8 +2473,6 @@ axiom «traceFrameⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 axiom «traceSchedResourceStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «traceStringTableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «traceTimeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «traceTypeTableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -11416,19 +11299,16 @@ attribute [instance] argset_Assumptions.argset_type_repr
   argset_Assumptions.«argsetⁱᵐᵖˡ_underlying»
 
 namespace cgoErrorMsg
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end cgoErrorMsg
 
-class cgoErrorMsg_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  cgoErrorMsg_type_repr : go.TypeReprUnderlying «cgoErrorMsgⁱᵐᵖˡ» cgoErrorMsg.t
-  cgoErrorMsg_underlying : go.UnderlyingDirectedEq cgoErrorMsg «cgoErrorMsgⁱᵐᵖˡ»
-  «cgoErrorMsgⁱᵐᵖˡ_underlying» : go.IsUnderlying «cgoErrorMsgⁱᵐᵖˡ» «cgoErrorMsgⁱᵐᵖˡ»
+@[reducible] def «cgoErrorMsgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] cgoErrorMsg_Assumptions.cgoErrorMsg_type_repr
-  cgoErrorMsg_Assumptions.cgoErrorMsg_underlying
-  cgoErrorMsg_Assumptions.«cgoErrorMsgⁱᵐᵖˡ_underlying»
+class cgoErrorMsg_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  cgoErrorMsg_underlying : go.UnderlyingDirectedEq cgoErrorMsg «cgoErrorMsgⁱᵐᵖˡ»
+
+attribute [instance] cgoErrorMsg_Assumptions.cgoErrorMsg_underlying
 
 namespace hchan
 axiom t : Type
@@ -11926,19 +11806,16 @@ attribute [instance] sockaddr_un_Assumptions.sockaddr_un_type_repr
   sockaddr_un_Assumptions.«sockaddr_unⁱᵐᵖˡ_underlying»
 
 namespace Error
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end Error
 
-class Error_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Error_type_repr : go.TypeReprUnderlying «Errorⁱᵐᵖˡ» Error.t
-  Error_underlying : go.UnderlyingDirectedEq Error «Errorⁱᵐᵖˡ»
-  «Errorⁱᵐᵖˡ_underlying» : go.IsUnderlying «Errorⁱᵐᵖˡ» «Errorⁱᵐᵖˡ»
+@[reducible] def «Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"RuntimeError" (go.signature.Signature [] false [])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm go.error)])])
 
-attribute [instance] Error_Assumptions.Error_type_repr
-  Error_Assumptions.Error_underlying
-  Error_Assumptions.«Errorⁱᵐᵖˡ_underlying»
+class Error_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Error_underlying : go.UnderlyingDirectedEq Error «Errorⁱᵐᵖˡ»
+
+attribute [instance] Error_Assumptions.Error_underlying
 
 namespace TypeAssertionError
 axiom t : Type
@@ -11956,19 +11833,16 @@ attribute [instance] TypeAssertionError_Assumptions.TypeAssertionError_type_repr
   TypeAssertionError_Assumptions.«TypeAssertionErrorⁱᵐᵖˡ_underlying»
 
 namespace errorString
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := go_string
 end errorString
 
-class errorString_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  errorString_type_repr : go.TypeReprUnderlying «errorStringⁱᵐᵖˡ» errorString.t
-  errorString_underlying : go.UnderlyingDirectedEq errorString «errorStringⁱᵐᵖˡ»
-  «errorStringⁱᵐᵖˡ_underlying» : go.IsUnderlying «errorStringⁱᵐᵖˡ» «errorStringⁱᵐᵖˡ»
+@[reducible] def «errorStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.string
 
-attribute [instance] errorString_Assumptions.errorString_type_repr
-  errorString_Assumptions.errorString_underlying
-  errorString_Assumptions.«errorStringⁱᵐᵖˡ_underlying»
+class errorString_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  errorString_underlying : go.UnderlyingDirectedEq errorString «errorStringⁱᵐᵖˡ»
+
+attribute [instance] errorString_Assumptions.errorString_underlying
 
 namespace errorAddressString
 axiom t : Type
@@ -11986,19 +11860,16 @@ attribute [instance] errorAddressString_Assumptions.errorAddressString_type_repr
   errorAddressString_Assumptions.«errorAddressStringⁱᵐᵖˡ_underlying»
 
 namespace plainError
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := go_string
 end plainError
 
-class plainError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  plainError_type_repr : go.TypeReprUnderlying «plainErrorⁱᵐᵖˡ» plainError.t
-  plainError_underlying : go.UnderlyingDirectedEq plainError «plainErrorⁱᵐᵖˡ»
-  «plainErrorⁱᵐᵖˡ_underlying» : go.IsUnderlying «plainErrorⁱᵐᵖˡ» «plainErrorⁱᵐᵖˡ»
+@[reducible] def «plainErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.string
 
-attribute [instance] plainError_Assumptions.plainError_type_repr
-  plainError_Assumptions.plainError_underlying
-  plainError_Assumptions.«plainErrorⁱᵐᵖˡ_underlying»
+class plainError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  plainError_underlying : go.UnderlyingDirectedEq plainError «plainErrorⁱᵐᵖˡ»
+
+attribute [instance] plainError_Assumptions.plainError_underlying
 
 namespace boundsError
 axiom t : Type
@@ -12016,19 +11887,16 @@ attribute [instance] boundsError_Assumptions.boundsError_type_repr
   boundsError_Assumptions.«boundsErrorⁱᵐᵖˡ_underlying»
 
 namespace stringer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end stringer
 
-class stringer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stringer_type_repr : go.TypeReprUnderlying «stringerⁱᵐᵖˡ» stringer.t
-  stringer_underlying : go.UnderlyingDirectedEq stringer «stringerⁱᵐᵖˡ»
-  «stringerⁱᵐᵖˡ_underlying» : go.IsUnderlying «stringerⁱᵐᵖˡ» «stringerⁱᵐᵖˡ»
+@[reducible] def «stringerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-attribute [instance] stringer_Assumptions.stringer_type_repr
-  stringer_Assumptions.stringer_underlying
-  stringer_Assumptions.«stringerⁱᵐᵖˡ_underlying»
+class stringer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  stringer_underlying : go.UnderlyingDirectedEq stringer «stringerⁱᵐᵖˡ»
+
+attribute [instance] stringer_Assumptions.stringer_underlying
 
 namespace typeCacheBucket
 axiom t : Type
@@ -12121,94 +11989,76 @@ attribute [instance] itabTableType_Assumptions.itabTableType_type_repr
   itabTableType_Assumptions.«itabTableTypeⁱᵐᵖˡ_underlying»
 
 namespace uint16InterfacePtr
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w16
 end uint16InterfacePtr
 
-class uint16InterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  uint16InterfacePtr_type_repr : go.TypeReprUnderlying «uint16InterfacePtrⁱᵐᵖˡ» uint16InterfacePtr.t
-  uint16InterfacePtr_underlying : go.UnderlyingDirectedEq uint16InterfacePtr «uint16InterfacePtrⁱᵐᵖˡ»
-  «uint16InterfacePtrⁱᵐᵖˡ_underlying» : go.IsUnderlying «uint16InterfacePtrⁱᵐᵖˡ» «uint16InterfacePtrⁱᵐᵖˡ»
+@[reducible] def «uint16InterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint16
 
-attribute [instance] uint16InterfacePtr_Assumptions.uint16InterfacePtr_type_repr
-  uint16InterfacePtr_Assumptions.uint16InterfacePtr_underlying
-  uint16InterfacePtr_Assumptions.«uint16InterfacePtrⁱᵐᵖˡ_underlying»
+class uint16InterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  uint16InterfacePtr_underlying : go.UnderlyingDirectedEq uint16InterfacePtr «uint16InterfacePtrⁱᵐᵖˡ»
+
+attribute [instance] uint16InterfacePtr_Assumptions.uint16InterfacePtr_underlying
 
 namespace uint32InterfacePtr
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end uint32InterfacePtr
 
-class uint32InterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  uint32InterfacePtr_type_repr : go.TypeReprUnderlying «uint32InterfacePtrⁱᵐᵖˡ» uint32InterfacePtr.t
-  uint32InterfacePtr_underlying : go.UnderlyingDirectedEq uint32InterfacePtr «uint32InterfacePtrⁱᵐᵖˡ»
-  «uint32InterfacePtrⁱᵐᵖˡ_underlying» : go.IsUnderlying «uint32InterfacePtrⁱᵐᵖˡ» «uint32InterfacePtrⁱᵐᵖˡ»
+@[reducible] def «uint32InterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint32
 
-attribute [instance] uint32InterfacePtr_Assumptions.uint32InterfacePtr_type_repr
-  uint32InterfacePtr_Assumptions.uint32InterfacePtr_underlying
-  uint32InterfacePtr_Assumptions.«uint32InterfacePtrⁱᵐᵖˡ_underlying»
+class uint32InterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  uint32InterfacePtr_underlying : go.UnderlyingDirectedEq uint32InterfacePtr «uint32InterfacePtrⁱᵐᵖˡ»
+
+attribute [instance] uint32InterfacePtr_Assumptions.uint32InterfacePtr_underlying
 
 namespace uint64InterfacePtr
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end uint64InterfacePtr
 
-class uint64InterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  uint64InterfacePtr_type_repr : go.TypeReprUnderlying «uint64InterfacePtrⁱᵐᵖˡ» uint64InterfacePtr.t
-  uint64InterfacePtr_underlying : go.UnderlyingDirectedEq uint64InterfacePtr «uint64InterfacePtrⁱᵐᵖˡ»
-  «uint64InterfacePtrⁱᵐᵖˡ_underlying» : go.IsUnderlying «uint64InterfacePtrⁱᵐᵖˡ» «uint64InterfacePtrⁱᵐᵖˡ»
+@[reducible] def «uint64InterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] uint64InterfacePtr_Assumptions.uint64InterfacePtr_type_repr
-  uint64InterfacePtr_Assumptions.uint64InterfacePtr_underlying
-  uint64InterfacePtr_Assumptions.«uint64InterfacePtrⁱᵐᵖˡ_underlying»
+class uint64InterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  uint64InterfacePtr_underlying : go.UnderlyingDirectedEq uint64InterfacePtr «uint64InterfacePtrⁱᵐᵖˡ»
+
+attribute [instance] uint64InterfacePtr_Assumptions.uint64InterfacePtr_underlying
 
 namespace stringInterfacePtr
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := go_string
 end stringInterfacePtr
 
-class stringInterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stringInterfacePtr_type_repr : go.TypeReprUnderlying «stringInterfacePtrⁱᵐᵖˡ» stringInterfacePtr.t
-  stringInterfacePtr_underlying : go.UnderlyingDirectedEq stringInterfacePtr «stringInterfacePtrⁱᵐᵖˡ»
-  «stringInterfacePtrⁱᵐᵖˡ_underlying» : go.IsUnderlying «stringInterfacePtrⁱᵐᵖˡ» «stringInterfacePtrⁱᵐᵖˡ»
+@[reducible] def «stringInterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.string
 
-attribute [instance] stringInterfacePtr_Assumptions.stringInterfacePtr_type_repr
-  stringInterfacePtr_Assumptions.stringInterfacePtr_underlying
-  stringInterfacePtr_Assumptions.«stringInterfacePtrⁱᵐᵖˡ_underlying»
+class stringInterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  stringInterfacePtr_underlying : go.UnderlyingDirectedEq stringInterfacePtr «stringInterfacePtrⁱᵐᵖˡ»
+
+attribute [instance] stringInterfacePtr_Assumptions.stringInterfacePtr_underlying
 
 namespace sliceInterfacePtr
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := slice.t
 end sliceInterfacePtr
 
-class sliceInterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  sliceInterfacePtr_type_repr : go.TypeReprUnderlying «sliceInterfacePtrⁱᵐᵖˡ» sliceInterfacePtr.t
-  sliceInterfacePtr_underlying : go.UnderlyingDirectedEq sliceInterfacePtr «sliceInterfacePtrⁱᵐᵖˡ»
-  «sliceInterfacePtrⁱᵐᵖˡ_underlying» : go.IsUnderlying «sliceInterfacePtrⁱᵐᵖˡ» «sliceInterfacePtrⁱᵐᵖˡ»
+@[reducible] def «sliceInterfacePtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType go.byte)
 
-attribute [instance] sliceInterfacePtr_Assumptions.sliceInterfacePtr_type_repr
-  sliceInterfacePtr_Assumptions.sliceInterfacePtr_underlying
-  sliceInterfacePtr_Assumptions.«sliceInterfacePtrⁱᵐᵖˡ_underlying»
+class sliceInterfacePtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  sliceInterfacePtr_underlying : go.UnderlyingDirectedEq sliceInterfacePtr «sliceInterfacePtrⁱᵐᵖˡ»
+
+attribute [instance] sliceInterfacePtr_Assumptions.sliceInterfacePtr_underlying
 
 namespace lfstack
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end lfstack
 
-class lfstack_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  lfstack_type_repr : go.TypeReprUnderlying «lfstackⁱᵐᵖˡ» lfstack.t
-  lfstack_underlying : go.UnderlyingDirectedEq lfstack «lfstackⁱᵐᵖˡ»
-  «lfstackⁱᵐᵖˡ_underlying» : go.IsUnderlying «lfstackⁱᵐᵖˡ» «lfstackⁱᵐᵖˡ»
+@[reducible] def «lfstackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] lfstack_Assumptions.lfstack_type_repr
-  lfstack_Assumptions.lfstack_underlying
-  lfstack_Assumptions.«lfstackⁱᵐᵖˡ_underlying»
+class lfstack_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  lfstack_underlying : go.UnderlyingDirectedEq lfstack «lfstackⁱᵐᵖˡ»
+
+attribute [instance] lfstack_Assumptions.lfstack_underlying
 
 namespace linknameIter
 axiom t : Type
@@ -12301,19 +12151,16 @@ attribute [instance] mWaitList_Assumptions.mWaitList_type_repr
   mWaitList_Assumptions.«mWaitListⁱᵐᵖˡ_underlying»
 
 namespace lockRank
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end lockRank
 
-class lockRank_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  lockRank_type_repr : go.TypeReprUnderlying «lockRankⁱᵐᵖˡ» lockRank.t
-  lockRank_underlying : go.UnderlyingDirectedEq lockRank «lockRankⁱᵐᵖˡ»
-  «lockRankⁱᵐᵖˡ_underlying» : go.IsUnderlying «lockRankⁱᵐᵖˡ» «lockRankⁱᵐᵖˡ»
+@[reducible] def «lockRankⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] lockRank_Assumptions.lockRank_type_repr
-  lockRank_Assumptions.lockRank_underlying
-  lockRank_Assumptions.«lockRankⁱᵐᵖˡ_underlying»
+class lockRank_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  lockRank_underlying : go.UnderlyingDirectedEq lockRank «lockRankⁱᵐᵖˡ»
+
+attribute [instance] lockRank_Assumptions.lockRank_underlying
 
 namespace lockRankStruct
 axiom t : Type
@@ -12586,49 +12433,40 @@ attribute [instance] metricData_Assumptions.metricData_type_repr
   metricData_Assumptions.«metricDataⁱᵐᵖˡ_underlying»
 
 namespace metricReader
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := func.t
 end metricReader
 
-class metricReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  metricReader_type_repr : go.TypeReprUnderlying «metricReaderⁱᵐᵖˡ» metricReader.t
-  metricReader_underlying : go.UnderlyingDirectedEq metricReader «metricReaderⁱᵐᵖˡ»
-  «metricReaderⁱᵐᵖˡ_underlying» : go.IsUnderlying «metricReaderⁱᵐᵖˡ» «metricReaderⁱᵐᵖˡ»
+@[reducible] def «metricReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.FunctionType (go.signature.Signature [] false [go.uint64]))
 
-attribute [instance] metricReader_Assumptions.metricReader_type_repr
-  metricReader_Assumptions.metricReader_underlying
-  metricReader_Assumptions.«metricReaderⁱᵐᵖˡ_underlying»
+class metricReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  metricReader_underlying : go.UnderlyingDirectedEq metricReader «metricReaderⁱᵐᵖˡ»
+
+attribute [instance] metricReader_Assumptions.metricReader_underlying
 
 namespace statDep
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end statDep
 
-class statDep_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  statDep_type_repr : go.TypeReprUnderlying «statDepⁱᵐᵖˡ» statDep.t
-  statDep_underlying : go.UnderlyingDirectedEq statDep «statDepⁱᵐᵖˡ»
-  «statDepⁱᵐᵖˡ_underlying» : go.IsUnderlying «statDepⁱᵐᵖˡ» «statDepⁱᵐᵖˡ»
+@[reducible] def «statDepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint
 
-attribute [instance] statDep_Assumptions.statDep_type_repr
-  statDep_Assumptions.statDep_underlying
-  statDep_Assumptions.«statDepⁱᵐᵖˡ_underlying»
+class statDep_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  statDep_underlying : go.UnderlyingDirectedEq statDep «statDepⁱᵐᵖˡ»
+
+attribute [instance] statDep_Assumptions.statDep_underlying
 
 namespace statDepSet
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := (array.t w64 1)
 end statDepSet
 
-class statDepSet_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  statDepSet_type_repr : go.TypeReprUnderlying «statDepSetⁱᵐᵖˡ» statDepSet.t
-  statDepSet_underlying : go.UnderlyingDirectedEq statDepSet «statDepSetⁱᵐᵖˡ»
-  «statDepSetⁱᵐᵖˡ_underlying» : go.IsUnderlying «statDepSetⁱᵐᵖˡ» «statDepSetⁱᵐᵖˡ»
+@[reducible] def «statDepSetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.ArrayType 1 go.uint64)
 
-attribute [instance] statDepSet_Assumptions.statDepSet_type_repr
-  statDepSet_Assumptions.statDepSet_underlying
-  statDepSet_Assumptions.«statDepSetⁱᵐᵖˡ_underlying»
+class statDepSet_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  statDepSet_underlying : go.UnderlyingDirectedEq statDepSet «statDepSetⁱᵐᵖˡ»
+
+attribute [instance] statDepSet_Assumptions.statDepSet_underlying
 
 namespace heapStatsAggregate
 axiom t : Type
@@ -12736,19 +12574,16 @@ attribute [instance] statAggregate_Assumptions.statAggregate_type_repr
   statAggregate_Assumptions.«statAggregateⁱᵐᵖˡ_underlying»
 
 namespace metricKind
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end metricKind
 
-class metricKind_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  metricKind_type_repr : go.TypeReprUnderlying «metricKindⁱᵐᵖˡ» metricKind.t
-  metricKind_underlying : go.UnderlyingDirectedEq metricKind «metricKindⁱᵐᵖˡ»
-  «metricKindⁱᵐᵖˡ_underlying» : go.IsUnderlying «metricKindⁱᵐᵖˡ» «metricKindⁱᵐᵖˡ»
+@[reducible] def «metricKindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] metricKind_Assumptions.metricKind_type_repr
-  metricKind_Assumptions.metricKind_underlying
-  metricKind_Assumptions.«metricKindⁱᵐᵖˡ_underlying»
+class metricKind_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  metricKind_underlying : go.UnderlyingDirectedEq metricKind «metricKindⁱᵐᵖˡ»
+
+attribute [instance] metricKind_Assumptions.metricKind_underlying
 
 namespace metricSample
 axiom t : Type
@@ -12871,19 +12706,16 @@ attribute [instance] mlink_Assumptions.mlink_type_repr
   mlink_Assumptions.«mlinkⁱᵐᵖˡ_underlying»
 
 namespace gcMarkWorkerMode
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end gcMarkWorkerMode
 
-class gcMarkWorkerMode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  gcMarkWorkerMode_type_repr : go.TypeReprUnderlying «gcMarkWorkerModeⁱᵐᵖˡ» gcMarkWorkerMode.t
-  gcMarkWorkerMode_underlying : go.UnderlyingDirectedEq gcMarkWorkerMode «gcMarkWorkerModeⁱᵐᵖˡ»
-  «gcMarkWorkerModeⁱᵐᵖˡ_underlying» : go.IsUnderlying «gcMarkWorkerModeⁱᵐᵖˡ» «gcMarkWorkerModeⁱᵐᵖˡ»
+@[reducible] def «gcMarkWorkerModeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] gcMarkWorkerMode_Assumptions.gcMarkWorkerMode_type_repr
-  gcMarkWorkerMode_Assumptions.gcMarkWorkerMode_underlying
-  gcMarkWorkerMode_Assumptions.«gcMarkWorkerModeⁱᵐᵖˡ_underlying»
+class gcMarkWorkerMode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  gcMarkWorkerMode_underlying : go.UnderlyingDirectedEq gcMarkWorkerMode «gcMarkWorkerModeⁱᵐᵖˡ»
+
+attribute [instance] gcMarkWorkerMode_Assumptions.gcMarkWorkerMode_underlying
 
 namespace workType
 axiom t : Type
@@ -12901,19 +12733,16 @@ attribute [instance] workType_Assumptions.workType_type_repr
   workType_Assumptions.«workTypeⁱᵐᵖˡ_underlying»
 
 namespace gcMode
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end gcMode
 
-class gcMode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  gcMode_type_repr : go.TypeReprUnderlying «gcModeⁱᵐᵖˡ» gcMode.t
-  gcMode_underlying : go.UnderlyingDirectedEq gcMode «gcModeⁱᵐᵖˡ»
-  «gcModeⁱᵐᵖˡ_underlying» : go.IsUnderlying «gcModeⁱᵐᵖˡ» «gcModeⁱᵐᵖˡ»
+@[reducible] def «gcModeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] gcMode_Assumptions.gcMode_type_repr
-  gcMode_Assumptions.gcMode_underlying
-  gcMode_Assumptions.«gcModeⁱᵐᵖˡ_underlying»
+class gcMode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  gcMode_underlying : go.UnderlyingDirectedEq gcMode «gcModeⁱᵐᵖˡ»
+
+attribute [instance] gcMode_Assumptions.gcMode_underlying
 
 namespace gcTrigger
 axiom t : Type
@@ -12931,19 +12760,16 @@ attribute [instance] gcTrigger_Assumptions.gcTrigger_type_repr
   gcTrigger_Assumptions.«gcTriggerⁱᵐᵖˡ_underlying»
 
 namespace gcTriggerKind
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end gcTriggerKind
 
-class gcTriggerKind_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  gcTriggerKind_type_repr : go.TypeReprUnderlying «gcTriggerKindⁱᵐᵖˡ» gcTriggerKind.t
-  gcTriggerKind_underlying : go.UnderlyingDirectedEq gcTriggerKind «gcTriggerKindⁱᵐᵖˡ»
-  «gcTriggerKindⁱᵐᵖˡ_underlying» : go.IsUnderlying «gcTriggerKindⁱᵐᵖˡ» «gcTriggerKindⁱᵐᵖˡ»
+@[reducible] def «gcTriggerKindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] gcTriggerKind_Assumptions.gcTriggerKind_type_repr
-  gcTriggerKind_Assumptions.gcTriggerKind_underlying
-  gcTriggerKind_Assumptions.«gcTriggerKindⁱᵐᵖˡ_underlying»
+class gcTriggerKind_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  gcTriggerKind_underlying : go.UnderlyingDirectedEq gcTriggerKind «gcTriggerKindⁱᵐᵖˡ»
+
+attribute [instance] gcTriggerKind_Assumptions.gcTriggerKind_underlying
 
 namespace gcBgMarkWorkerNode
 axiom t : Type
@@ -12991,34 +12817,28 @@ attribute [instance] gcCPULimiterState_Assumptions.gcCPULimiterState_type_repr
   gcCPULimiterState_Assumptions.«gcCPULimiterStateⁱᵐᵖˡ_underlying»
 
 namespace limiterEventType
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end limiterEventType
 
-class limiterEventType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  limiterEventType_type_repr : go.TypeReprUnderlying «limiterEventTypeⁱᵐᵖˡ» limiterEventType.t
-  limiterEventType_underlying : go.UnderlyingDirectedEq limiterEventType «limiterEventTypeⁱᵐᵖˡ»
-  «limiterEventTypeⁱᵐᵖˡ_underlying» : go.IsUnderlying «limiterEventTypeⁱᵐᵖˡ» «limiterEventTypeⁱᵐᵖˡ»
+@[reducible] def «limiterEventTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] limiterEventType_Assumptions.limiterEventType_type_repr
-  limiterEventType_Assumptions.limiterEventType_underlying
-  limiterEventType_Assumptions.«limiterEventTypeⁱᵐᵖˡ_underlying»
+class limiterEventType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  limiterEventType_underlying : go.UnderlyingDirectedEq limiterEventType «limiterEventTypeⁱᵐᵖˡ»
+
+attribute [instance] limiterEventType_Assumptions.limiterEventType_underlying
 
 namespace limiterEventStamp
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end limiterEventStamp
 
-class limiterEventStamp_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  limiterEventStamp_type_repr : go.TypeReprUnderlying «limiterEventStampⁱᵐᵖˡ» limiterEventStamp.t
-  limiterEventStamp_underlying : go.UnderlyingDirectedEq limiterEventStamp «limiterEventStampⁱᵐᵖˡ»
-  «limiterEventStampⁱᵐᵖˡ_underlying» : go.IsUnderlying «limiterEventStampⁱᵐᵖˡ» «limiterEventStampⁱᵐᵖˡ»
+@[reducible] def «limiterEventStampⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] limiterEventStamp_Assumptions.limiterEventStamp_type_repr
-  limiterEventStamp_Assumptions.limiterEventStamp_underlying
-  limiterEventStamp_Assumptions.«limiterEventStampⁱᵐᵖˡ_underlying»
+class limiterEventStamp_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  limiterEventStamp_underlying : go.UnderlyingDirectedEq limiterEventStamp «limiterEventStampⁱᵐᵖˡ»
+
+attribute [instance] limiterEventStamp_Assumptions.limiterEventStamp_underlying
 
 namespace limiterEvent
 axiom t : Type
@@ -13036,19 +12856,16 @@ attribute [instance] limiterEvent_Assumptions.limiterEvent_type_repr
   limiterEvent_Assumptions.«limiterEventⁱᵐᵖˡ_underlying»
 
 namespace gcDrainFlags
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end gcDrainFlags
 
-class gcDrainFlags_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  gcDrainFlags_type_repr : go.TypeReprUnderlying «gcDrainFlagsⁱᵐᵖˡ» gcDrainFlags.t
-  gcDrainFlags_underlying : go.UnderlyingDirectedEq gcDrainFlags «gcDrainFlagsⁱᵐᵖˡ»
-  «gcDrainFlagsⁱᵐᵖˡ_underlying» : go.IsUnderlying «gcDrainFlagsⁱᵐᵖˡ» «gcDrainFlagsⁱᵐᵖˡ»
+@[reducible] def «gcDrainFlagsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] gcDrainFlags_Assumptions.gcDrainFlags_type_repr
-  gcDrainFlags_Assumptions.gcDrainFlags_underlying
-  gcDrainFlags_Assumptions.«gcDrainFlagsⁱᵐᵖˡ_underlying»
+class gcDrainFlags_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  gcDrainFlags_underlying : go.UnderlyingDirectedEq gcDrainFlags «gcDrainFlagsⁱᵐᵖˡ»
+
+attribute [instance] gcDrainFlags_Assumptions.gcDrainFlags_underlying
 
 namespace spanInlineMarkBits
 axiom t : Type
@@ -13066,19 +12883,16 @@ attribute [instance] spanInlineMarkBits_Assumptions.spanInlineMarkBits_type_repr
   spanInlineMarkBits_Assumptions.«spanInlineMarkBitsⁱᵐᵖˡ_underlying»
 
 namespace spanScanOwnership
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end spanScanOwnership
 
-class spanScanOwnership_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  spanScanOwnership_type_repr : go.TypeReprUnderlying «spanScanOwnershipⁱᵐᵖˡ» spanScanOwnership.t
-  spanScanOwnership_underlying : go.UnderlyingDirectedEq spanScanOwnership «spanScanOwnershipⁱᵐᵖˡ»
-  «spanScanOwnershipⁱᵐᵖˡ_underlying» : go.IsUnderlying «spanScanOwnershipⁱᵐᵖˡ» «spanScanOwnershipⁱᵐᵖˡ»
+@[reducible] def «spanScanOwnershipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] spanScanOwnership_Assumptions.spanScanOwnership_type_repr
-  spanScanOwnership_Assumptions.spanScanOwnership_underlying
-  spanScanOwnership_Assumptions.«spanScanOwnershipⁱᵐᵖˡ_underlying»
+class spanScanOwnership_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  spanScanOwnership_underlying : go.UnderlyingDirectedEq spanScanOwnership «spanScanOwnershipⁱᵐᵖˡ»
+
+attribute [instance] spanScanOwnership_Assumptions.spanScanOwnership_underlying
 
 namespace spanQueue
 axiom t : Type
@@ -13216,19 +13030,16 @@ attribute [instance] scavChunkData_Assumptions.scavChunkData_type_repr
   scavChunkData_Assumptions.«scavChunkDataⁱᵐᵖˡ_underlying»
 
 namespace scavChunkFlags
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end scavChunkFlags
 
-class scavChunkFlags_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  scavChunkFlags_type_repr : go.TypeReprUnderlying «scavChunkFlagsⁱᵐᵖˡ» scavChunkFlags.t
-  scavChunkFlags_underlying : go.UnderlyingDirectedEq scavChunkFlags «scavChunkFlagsⁱᵐᵖˡ»
-  «scavChunkFlagsⁱᵐᵖˡ_underlying» : go.IsUnderlying «scavChunkFlagsⁱᵐᵖˡ» «scavChunkFlagsⁱᵐᵖˡ»
+@[reducible] def «scavChunkFlagsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] scavChunkFlags_Assumptions.scavChunkFlags_type_repr
-  scavChunkFlags_Assumptions.scavChunkFlags_underlying
-  scavChunkFlags_Assumptions.«scavChunkFlagsⁱᵐᵖˡ_underlying»
+class scavChunkFlags_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  scavChunkFlags_underlying : go.UnderlyingDirectedEq scavChunkFlags «scavChunkFlagsⁱᵐᵖˡ»
+
+attribute [instance] scavChunkFlags_Assumptions.scavChunkFlags_underlying
 
 namespace piController
 axiom t : Type
@@ -13351,19 +13162,16 @@ attribute [instance] sweepdata_Assumptions.sweepdata_type_repr
   sweepdata_Assumptions.«sweepdataⁱᵐᵖˡ_underlying»
 
 namespace sweepClass
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end sweepClass
 
-class sweepClass_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  sweepClass_type_repr : go.TypeReprUnderlying «sweepClassⁱᵐᵖˡ» sweepClass.t
-  sweepClass_underlying : go.UnderlyingDirectedEq sweepClass «sweepClassⁱᵐᵖˡ»
-  «sweepClassⁱᵐᵖˡ_underlying» : go.IsUnderlying «sweepClassⁱᵐᵖˡ» «sweepClassⁱᵐᵖˡ»
+@[reducible] def «sweepClassⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint32
 
-attribute [instance] sweepClass_Assumptions.sweepClass_type_repr
-  sweepClass_Assumptions.sweepClass_underlying
-  sweepClass_Assumptions.«sweepClassⁱᵐᵖˡ_underlying»
+class sweepClass_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  sweepClass_underlying : go.UnderlyingDirectedEq sweepClass «sweepClassⁱᵐᵖˡ»
+
+attribute [instance] sweepClass_Assumptions.sweepClass_underlying
 
 namespace activeSweep
 axiom t : Type
@@ -13501,19 +13309,16 @@ attribute [instance] arenaHint_Assumptions.arenaHint_type_repr
   arenaHint_Assumptions.«arenaHintⁱᵐᵖˡ_underlying»
 
 namespace mSpanState
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end mSpanState
 
-class mSpanState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  mSpanState_type_repr : go.TypeReprUnderlying «mSpanStateⁱᵐᵖˡ» mSpanState.t
-  mSpanState_underlying : go.UnderlyingDirectedEq mSpanState «mSpanStateⁱᵐᵖˡ»
-  «mSpanStateⁱᵐᵖˡ_underlying» : go.IsUnderlying «mSpanStateⁱᵐᵖˡ» «mSpanStateⁱᵐᵖˡ»
+@[reducible] def «mSpanStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] mSpanState_Assumptions.mSpanState_type_repr
-  mSpanState_Assumptions.mSpanState_underlying
-  mSpanState_Assumptions.«mSpanStateⁱᵐᵖˡ_underlying»
+class mSpanState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  mSpanState_underlying : go.UnderlyingDirectedEq mSpanState «mSpanStateⁱᵐᵖˡ»
+
+attribute [instance] mSpanState_Assumptions.mSpanState_underlying
 
 namespace mSpanStateBox
 axiom t : Type
@@ -13546,49 +13351,40 @@ attribute [instance] mspan_Assumptions.mspan_type_repr
   mspan_Assumptions.«mspanⁱᵐᵖˡ_underlying»
 
 namespace spanClass
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end spanClass
 
-class spanClass_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  spanClass_type_repr : go.TypeReprUnderlying «spanClassⁱᵐᵖˡ» spanClass.t
-  spanClass_underlying : go.UnderlyingDirectedEq spanClass «spanClassⁱᵐᵖˡ»
-  «spanClassⁱᵐᵖˡ_underlying» : go.IsUnderlying «spanClassⁱᵐᵖˡ» «spanClassⁱᵐᵖˡ»
+@[reducible] def «spanClassⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] spanClass_Assumptions.spanClass_type_repr
-  spanClass_Assumptions.spanClass_underlying
-  spanClass_Assumptions.«spanClassⁱᵐᵖˡ_underlying»
+class spanClass_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  spanClass_underlying : go.UnderlyingDirectedEq spanClass «spanClassⁱᵐᵖˡ»
+
+attribute [instance] spanClass_Assumptions.spanClass_underlying
 
 namespace arenaIdx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end arenaIdx
 
-class arenaIdx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  arenaIdx_type_repr : go.TypeReprUnderlying «arenaIdxⁱᵐᵖˡ» arenaIdx.t
-  arenaIdx_underlying : go.UnderlyingDirectedEq arenaIdx «arenaIdxⁱᵐᵖˡ»
-  «arenaIdxⁱᵐᵖˡ_underlying» : go.IsUnderlying «arenaIdxⁱᵐᵖˡ» «arenaIdxⁱᵐᵖˡ»
+@[reducible] def «arenaIdxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint
 
-attribute [instance] arenaIdx_Assumptions.arenaIdx_type_repr
-  arenaIdx_Assumptions.arenaIdx_underlying
-  arenaIdx_Assumptions.«arenaIdxⁱᵐᵖˡ_underlying»
+class arenaIdx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  arenaIdx_underlying : go.UnderlyingDirectedEq arenaIdx «arenaIdxⁱᵐᵖˡ»
+
+attribute [instance] arenaIdx_Assumptions.arenaIdx_underlying
 
 namespace spanAllocType
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end spanAllocType
 
-class spanAllocType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  spanAllocType_type_repr : go.TypeReprUnderlying «spanAllocTypeⁱᵐᵖˡ» spanAllocType.t
-  spanAllocType_underlying : go.UnderlyingDirectedEq spanAllocType «spanAllocTypeⁱᵐᵖˡ»
-  «spanAllocTypeⁱᵐᵖˡ_underlying» : go.IsUnderlying «spanAllocTypeⁱᵐᵖˡ» «spanAllocTypeⁱᵐᵖˡ»
+@[reducible] def «spanAllocTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] spanAllocType_Assumptions.spanAllocType_type_repr
-  spanAllocType_Assumptions.spanAllocType_underlying
-  spanAllocType_Assumptions.«spanAllocTypeⁱᵐᵖˡ_underlying»
+class spanAllocType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  spanAllocType_underlying : go.UnderlyingDirectedEq spanAllocType «spanAllocTypeⁱᵐᵖˡ»
+
+attribute [instance] spanAllocType_Assumptions.spanAllocType_underlying
 
 namespace mSpanList
 axiom t : Type
@@ -13846,34 +13642,28 @@ attribute [instance] gcBitsArena_Assumptions.gcBitsArena_type_repr
   gcBitsArena_Assumptions.«gcBitsArenaⁱᵐᵖˡ_underlying»
 
 namespace floaty
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end floaty
 
-class floaty_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  floaty_type_repr : go.TypeReprUnderlying «floatyⁱᵐᵖˡ» floaty.t
-  floaty_underlying : go.UnderlyingDirectedEq floaty «floatyⁱᵐᵖˡ»
-  «floatyⁱᵐᵖˡ_underlying» : go.IsUnderlying «floatyⁱᵐᵖˡ» «floatyⁱᵐᵖˡ»
+@[reducible] def «floatyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTermUnderlying go.float32), (go.type_term.TypeTermUnderlying go.float64)])])
 
-attribute [instance] floaty_Assumptions.floaty_type_repr
-  floaty_Assumptions.floaty_underlying
-  floaty_Assumptions.«floatyⁱᵐᵖˡ_underlying»
+class floaty_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  floaty_underlying : go.UnderlyingDirectedEq floaty «floatyⁱᵐᵖˡ»
+
+attribute [instance] floaty_Assumptions.floaty_underlying
 
 namespace chunkIdx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end chunkIdx
 
-class chunkIdx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  chunkIdx_type_repr : go.TypeReprUnderlying «chunkIdxⁱᵐᵖˡ» chunkIdx.t
-  chunkIdx_underlying : go.UnderlyingDirectedEq chunkIdx «chunkIdxⁱᵐᵖˡ»
-  «chunkIdxⁱᵐᵖˡ_underlying» : go.IsUnderlying «chunkIdxⁱᵐᵖˡ» «chunkIdxⁱᵐᵖˡ»
+@[reducible] def «chunkIdxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint
 
-attribute [instance] chunkIdx_Assumptions.chunkIdx_type_repr
-  chunkIdx_Assumptions.chunkIdx_underlying
-  chunkIdx_Assumptions.«chunkIdxⁱᵐᵖˡ_underlying»
+class chunkIdx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  chunkIdx_underlying : go.UnderlyingDirectedEq chunkIdx «chunkIdxⁱᵐᵖˡ»
+
+attribute [instance] chunkIdx_Assumptions.chunkIdx_underlying
 
 namespace pageAlloc
 axiom t : Type
@@ -13891,19 +13681,16 @@ attribute [instance] pageAlloc_Assumptions.pageAlloc_type_repr
   pageAlloc_Assumptions.«pageAllocⁱᵐᵖˡ_underlying»
 
 namespace pallocSum
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end pallocSum
 
-class pallocSum_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  pallocSum_type_repr : go.TypeReprUnderlying «pallocSumⁱᵐᵖˡ» pallocSum.t
-  pallocSum_underlying : go.UnderlyingDirectedEq pallocSum «pallocSumⁱᵐᵖˡ»
-  «pallocSumⁱᵐᵖˡ_underlying» : go.IsUnderlying «pallocSumⁱᵐᵖˡ» «pallocSumⁱᵐᵖˡ»
+@[reducible] def «pallocSumⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] pallocSum_Assumptions.pallocSum_type_repr
-  pallocSum_Assumptions.pallocSum_underlying
-  pallocSum_Assumptions.«pallocSumⁱᵐᵖˡ_underlying»
+class pallocSum_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  pallocSum_underlying : go.UnderlyingDirectedEq pallocSum «pallocSumⁱᵐᵖˡ»
+
+attribute [instance] pallocSum_Assumptions.pallocSum_underlying
 
 namespace pageCache
 axiom t : Type
@@ -13921,34 +13708,28 @@ attribute [instance] pageCache_Assumptions.pageCache_type_repr
   pageCache_Assumptions.«pageCacheⁱᵐᵖˡ_underlying»
 
 namespace pageBits
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := (array.t w64 8)
 end pageBits
 
-class pageBits_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  pageBits_type_repr : go.TypeReprUnderlying «pageBitsⁱᵐᵖˡ» pageBits.t
-  pageBits_underlying : go.UnderlyingDirectedEq pageBits «pageBitsⁱᵐᵖˡ»
-  «pageBitsⁱᵐᵖˡ_underlying» : go.IsUnderlying «pageBitsⁱᵐᵖˡ» «pageBitsⁱᵐᵖˡ»
+@[reducible] def «pageBitsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.ArrayType 8 go.uint64)
 
-attribute [instance] pageBits_Assumptions.pageBits_type_repr
-  pageBits_Assumptions.pageBits_underlying
-  pageBits_Assumptions.«pageBitsⁱᵐᵖˡ_underlying»
+class pageBits_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  pageBits_underlying : go.UnderlyingDirectedEq pageBits «pageBitsⁱᵐᵖˡ»
+
+attribute [instance] pageBits_Assumptions.pageBits_underlying
 
 namespace pallocBits
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := pageBits.t
 end pallocBits
 
-class pallocBits_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  pallocBits_type_repr : go.TypeReprUnderlying «pallocBitsⁱᵐᵖˡ» pallocBits.t
-  pallocBits_underlying : go.UnderlyingDirectedEq pallocBits «pallocBitsⁱᵐᵖˡ»
-  «pallocBitsⁱᵐᵖˡ_underlying» : go.IsUnderlying «pallocBitsⁱᵐᵖˡ» «pallocBitsⁱᵐᵖˡ»
+@[reducible] def «pallocBitsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  pageBits
 
-attribute [instance] pallocBits_Assumptions.pallocBits_type_repr
-  pallocBits_Assumptions.pallocBits_underlying
-  pallocBits_Assumptions.«pallocBitsⁱᵐᵖˡ_underlying»
+class pallocBits_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  pallocBits_underlying : go.UnderlyingDirectedEq pallocBits «pallocBitsⁱᵐᵖˡ»
+
+attribute [instance] pallocBits_Assumptions.pallocBits_underlying
 
 namespace pallocData
 axiom t : Type
@@ -13966,19 +13747,16 @@ attribute [instance] pallocData_Assumptions.pallocData_type_repr
   pallocData_Assumptions.«pallocDataⁱᵐᵖˡ_underlying»
 
 namespace bucketType
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end bucketType
 
-class bucketType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  bucketType_type_repr : go.TypeReprUnderlying «bucketTypeⁱᵐᵖˡ» bucketType.t
-  bucketType_underlying : go.UnderlyingDirectedEq bucketType «bucketTypeⁱᵐᵖˡ»
-  «bucketTypeⁱᵐᵖˡ_underlying» : go.IsUnderlying «bucketTypeⁱᵐᵖˡ» «bucketTypeⁱᵐᵖˡ»
+@[reducible] def «bucketTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] bucketType_Assumptions.bucketType_type_repr
-  bucketType_Assumptions.bucketType_underlying
-  bucketType_Assumptions.«bucketTypeⁱᵐᵖˡ_underlying»
+class bucketType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  bucketType_underlying : go.UnderlyingDirectedEq bucketType «bucketTypeⁱᵐᵖˡ»
+
+attribute [instance] bucketType_Assumptions.bucketType_underlying
 
 namespace bucket
 axiom t : Type
@@ -14131,19 +13909,16 @@ attribute [instance] BlockProfileRecord_Assumptions.BlockProfileRecord_type_repr
   BlockProfileRecord_Assumptions.«BlockProfileRecordⁱᵐᵖˡ_underlying»
 
 namespace goroutineProfileState
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end goroutineProfileState
 
-class goroutineProfileState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  goroutineProfileState_type_repr : go.TypeReprUnderlying «goroutineProfileStateⁱᵐᵖˡ» goroutineProfileState.t
-  goroutineProfileState_underlying : go.UnderlyingDirectedEq goroutineProfileState «goroutineProfileStateⁱᵐᵖˡ»
-  «goroutineProfileStateⁱᵐᵖˡ_underlying» : go.IsUnderlying «goroutineProfileStateⁱᵐᵖˡ» «goroutineProfileStateⁱᵐᵖˡ»
+@[reducible] def «goroutineProfileStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint32
 
-attribute [instance] goroutineProfileState_Assumptions.goroutineProfileState_type_repr
-  goroutineProfileState_Assumptions.goroutineProfileState_underlying
-  goroutineProfileState_Assumptions.«goroutineProfileStateⁱᵐᵖˡ_underlying»
+class goroutineProfileState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  goroutineProfileState_underlying : go.UnderlyingDirectedEq goroutineProfileState «goroutineProfileStateⁱᵐᵖˡ»
+
+attribute [instance] goroutineProfileState_Assumptions.goroutineProfileState_underlying
 
 namespace goroutineProfileStateHolder
 axiom t : Type
@@ -14326,19 +14101,16 @@ attribute [instance] spanSetBlockAlloc_Assumptions.spanSetBlockAlloc_type_repr
   spanSetBlockAlloc_Assumptions.«spanSetBlockAllocⁱᵐᵖˡ_underlying»
 
 namespace headTailIndex
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end headTailIndex
 
-class headTailIndex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  headTailIndex_type_repr : go.TypeReprUnderlying «headTailIndexⁱᵐᵖˡ» headTailIndex.t
-  headTailIndex_underlying : go.UnderlyingDirectedEq headTailIndex «headTailIndexⁱᵐᵖˡ»
-  «headTailIndexⁱᵐᵖˡ_underlying» : go.IsUnderlying «headTailIndexⁱᵐᵖˡ» «headTailIndexⁱᵐᵖˡ»
+@[reducible] def «headTailIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] headTailIndex_Assumptions.headTailIndex_type_repr
-  headTailIndex_Assumptions.headTailIndex_underlying
-  headTailIndex_Assumptions.«headTailIndexⁱᵐᵖˡ_underlying»
+class headTailIndex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  headTailIndex_underlying : go.UnderlyingDirectedEq headTailIndex «headTailIndexⁱᵐᵖˡ»
+
+attribute [instance] headTailIndex_Assumptions.headTailIndex_underlying
 
 namespace atomicHeadTailIndex
 axiom t : Type
@@ -14401,19 +14173,16 @@ attribute [instance] MemStats_Assumptions.MemStats_type_repr
   MemStats_Assumptions.«MemStatsⁱᵐᵖˡ_underlying»
 
 namespace sysMemStat
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end sysMemStat
 
-class sysMemStat_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  sysMemStat_type_repr : go.TypeReprUnderlying «sysMemStatⁱᵐᵖˡ» sysMemStat.t
-  sysMemStat_underlying : go.UnderlyingDirectedEq sysMemStat «sysMemStatⁱᵐᵖˡ»
-  «sysMemStatⁱᵐᵖˡ_underlying» : go.IsUnderlying «sysMemStatⁱᵐᵖˡ» «sysMemStatⁱᵐᵖˡ»
+@[reducible] def «sysMemStatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] sysMemStat_Assumptions.sysMemStat_type_repr
-  sysMemStat_Assumptions.sysMemStat_underlying
-  sysMemStat_Assumptions.«sysMemStatⁱᵐᵖˡ_underlying»
+class sysMemStat_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  sysMemStat_underlying : go.UnderlyingDirectedEq sysMemStat «sysMemStatⁱᵐᵖˡ»
+
+attribute [instance] sysMemStat_Assumptions.sysMemStat_underlying
 
 namespace heapStatsDelta
 axiom t : Type
@@ -14491,19 +14260,16 @@ attribute [instance] pollDesc_Assumptions.pollDesc_type_repr
   pollDesc_Assumptions.«pollDescⁱᵐᵖˡ_underlying»
 
 namespace pollInfo
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end pollInfo
 
-class pollInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  pollInfo_type_repr : go.TypeReprUnderlying «pollInfoⁱᵐᵖˡ» pollInfo.t
-  pollInfo_underlying : go.UnderlyingDirectedEq pollInfo «pollInfoⁱᵐᵖˡ»
-  «pollInfoⁱᵐᵖˡ_underlying» : go.IsUnderlying «pollInfoⁱᵐᵖˡ» «pollInfoⁱᵐᵖˡ»
+@[reducible] def «pollInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint32
 
-attribute [instance] pollInfo_Assumptions.pollInfo_type_repr
-  pollInfo_Assumptions.pollInfo_underlying
-  pollInfo_Assumptions.«pollInfoⁱᵐᵖˡ_underlying»
+class pollInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  pollInfo_underlying : go.UnderlyingDirectedEq pollInfo «pollInfoⁱᵐᵖˡ»
+
+attribute [instance] pollInfo_Assumptions.pollInfo_underlying
 
 namespace pollCache
 axiom t : Type
@@ -14581,34 +14347,28 @@ attribute [instance] perThreadSyscallArgs_Assumptions.perThreadSyscallArgs_type_
   perThreadSyscallArgs_Assumptions.«perThreadSyscallArgsⁱᵐᵖˡ_underlying»
 
 namespace sigset
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := (array.t w32 2)
 end sigset
 
-class sigset_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  sigset_type_repr : go.TypeReprUnderlying «sigsetⁱᵐᵖˡ» sigset.t
-  sigset_underlying : go.UnderlyingDirectedEq sigset «sigsetⁱᵐᵖˡ»
-  «sigsetⁱᵐᵖˡ_underlying» : go.IsUnderlying «sigsetⁱᵐᵖˡ» «sigsetⁱᵐᵖˡ»
+@[reducible] def «sigsetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.ArrayType 2 go.uint32)
 
-attribute [instance] sigset_Assumptions.sigset_type_repr
-  sigset_Assumptions.sigset_underlying
-  sigset_Assumptions.«sigsetⁱᵐᵖˡ_underlying»
+class sigset_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  sigset_underlying : go.UnderlyingDirectedEq sigset «sigsetⁱᵐᵖˡ»
+
+attribute [instance] sigset_Assumptions.sigset_underlying
 
 namespace throwType
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w32
 end throwType
 
-class throwType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  throwType_type_repr : go.TypeReprUnderlying «throwTypeⁱᵐᵖˡ» throwType.t
-  throwType_underlying : go.UnderlyingDirectedEq throwType «throwTypeⁱᵐᵖˡ»
-  «throwTypeⁱᵐᵖˡ_underlying» : go.IsUnderlying «throwTypeⁱᵐᵖˡ» «throwTypeⁱᵐᵖˡ»
+@[reducible] def «throwTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint32
 
-attribute [instance] throwType_Assumptions.throwType_type_repr
-  throwType_Assumptions.throwType_underlying
-  throwType_Assumptions.«throwTypeⁱᵐᵖˡ_underlying»
+class throwType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  throwType_underlying : go.UnderlyingDirectedEq throwType «throwTypeⁱᵐᵖˡ»
+
+attribute [instance] throwType_Assumptions.throwType_underlying
 
 namespace PanicNilError
 axiom t : Type
@@ -14671,19 +14431,16 @@ attribute [instance] pinState_Assumptions.pinState_type_repr
   pinState_Assumptions.«pinStateⁱᵐᵖˡ_underlying»
 
 namespace pinnerBits
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := gcBits.t
 end pinnerBits
 
-class pinnerBits_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  pinnerBits_type_repr : go.TypeReprUnderlying «pinnerBitsⁱᵐᵖˡ» pinnerBits.t
-  pinnerBits_underlying : go.UnderlyingDirectedEq pinnerBits «pinnerBitsⁱᵐᵖˡ»
-  «pinnerBitsⁱᵐᵖˡ_underlying» : go.IsUnderlying «pinnerBitsⁱᵐᵖˡ» «pinnerBitsⁱᵐᵖˡ»
+@[reducible] def «pinnerBitsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  gcBits
 
-attribute [instance] pinnerBits_Assumptions.pinnerBits_type_repr
-  pinnerBits_Assumptions.pinnerBits_underlying
-  pinnerBits_Assumptions.«pinnerBitsⁱᵐᵖˡ_underlying»
+class pinnerBits_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  pinnerBits_underlying : go.UnderlyingDirectedEq pinnerBits «pinnerBitsⁱᵐᵖˡ»
+
+attribute [instance] pinnerBits_Assumptions.pinnerBits_underlying
 
 namespace ptabEntry
 axiom t : Type
@@ -14776,49 +14533,40 @@ attribute [instance] xRegPerP_Assumptions.xRegPerP_type_repr
   xRegPerP_Assumptions.«xRegPerPⁱᵐᵖˡ_underlying»
 
 namespace hex
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end hex
 
-class hex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  hex_type_repr : go.TypeReprUnderlying «hexⁱᵐᵖˡ» hex.t
-  hex_underlying : go.UnderlyingDirectedEq hex «hexⁱᵐᵖˡ»
-  «hexⁱᵐᵖˡ_underlying» : go.IsUnderlying «hexⁱᵐᵖˡ» «hexⁱᵐᵖˡ»
+@[reducible] def «hexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] hex_Assumptions.hex_type_repr
-  hex_Assumptions.hex_underlying
-  hex_Assumptions.«hexⁱᵐᵖˡ_underlying»
+class hex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  hex_underlying : go.UnderlyingDirectedEq hex «hexⁱᵐᵖˡ»
+
+attribute [instance] hex_Assumptions.hex_underlying
 
 namespace quoted
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := go_string
 end quoted
 
-class quoted_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  quoted_type_repr : go.TypeReprUnderlying «quotedⁱᵐᵖˡ» quoted.t
-  quoted_underlying : go.UnderlyingDirectedEq quoted «quotedⁱᵐᵖˡ»
-  «quotedⁱᵐᵖˡ_underlying» : go.IsUnderlying «quotedⁱᵐᵖˡ» «quotedⁱᵐᵖˡ»
+@[reducible] def «quotedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.string
 
-attribute [instance] quoted_Assumptions.quoted_type_repr
-  quoted_Assumptions.quoted_underlying
-  quoted_Assumptions.«quotedⁱᵐᵖˡ_underlying»
+class quoted_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  quoted_underlying : go.UnderlyingDirectedEq quoted «quotedⁱᵐᵖˡ»
+
+attribute [instance] quoted_Assumptions.quoted_underlying
 
 namespace stwReason
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end stwReason
 
-class stwReason_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stwReason_type_repr : go.TypeReprUnderlying «stwReasonⁱᵐᵖˡ» stwReason.t
-  stwReason_underlying : go.UnderlyingDirectedEq stwReason «stwReasonⁱᵐᵖˡ»
-  «stwReasonⁱᵐᵖˡ_underlying» : go.IsUnderlying «stwReasonⁱᵐᵖˡ» «stwReasonⁱᵐᵖˡ»
+@[reducible] def «stwReasonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] stwReason_Assumptions.stwReason_type_repr
-  stwReason_Assumptions.stwReason_underlying
-  stwReason_Assumptions.«stwReasonⁱᵐᵖˡ_underlying»
+class stwReason_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  stwReason_underlying : go.UnderlyingDirectedEq stwReason «stwReasonⁱᵐᵖˡ»
+
+attribute [instance] stwReason_Assumptions.stwReason_underlying
 
 namespace worldStop
 axiom t : Type
@@ -14896,19 +14644,16 @@ attribute [instance] updateMaxProcsGState_Assumptions.updateMaxProcsGState_type_
   updateMaxProcsGState_Assumptions.«updateMaxProcsGStateⁱᵐᵖˡ_underlying»
 
 namespace pMask
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := slice.t
 end pMask
 
-class pMask_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  pMask_type_repr : go.TypeReprUnderlying «pMaskⁱᵐᵖˡ» pMask.t
-  pMask_underlying : go.UnderlyingDirectedEq pMask «pMaskⁱᵐᵖˡ»
-  «pMaskⁱᵐᵖˡ_underlying» : go.IsUnderlying «pMaskⁱᵐᵖˡ» «pMaskⁱᵐᵖˡ»
+@[reducible] def «pMaskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType go.uint32)
 
-attribute [instance] pMask_Assumptions.pMask_type_repr
-  pMask_Assumptions.pMask_underlying
-  pMask_Assumptions.«pMaskⁱᵐᵖˡ_underlying»
+class pMask_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  pMask_underlying : go.UnderlyingDirectedEq pMask «pMaskⁱᵐᵖˡ»
+
+attribute [instance] pMask_Assumptions.pMask_underlying
 
 namespace gQueue
 axiom t : Type
@@ -15016,49 +14761,40 @@ attribute [instance] profBuf_Assumptions.profBuf_type_repr
   profBuf_Assumptions.«profBufⁱᵐᵖˡ_underlying»
 
 namespace profAtomic
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end profAtomic
 
-class profAtomic_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  profAtomic_type_repr : go.TypeReprUnderlying «profAtomicⁱᵐᵖˡ» profAtomic.t
-  profAtomic_underlying : go.UnderlyingDirectedEq profAtomic «profAtomicⁱᵐᵖˡ»
-  «profAtomicⁱᵐᵖˡ_underlying» : go.IsUnderlying «profAtomicⁱᵐᵖˡ» «profAtomicⁱᵐᵖˡ»
+@[reducible] def «profAtomicⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] profAtomic_Assumptions.profAtomic_type_repr
-  profAtomic_Assumptions.profAtomic_underlying
-  profAtomic_Assumptions.«profAtomicⁱᵐᵖˡ_underlying»
+class profAtomic_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  profAtomic_underlying : go.UnderlyingDirectedEq profAtomic «profAtomicⁱᵐᵖˡ»
+
+attribute [instance] profAtomic_Assumptions.profAtomic_underlying
 
 namespace profIndex
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end profIndex
 
-class profIndex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  profIndex_type_repr : go.TypeReprUnderlying «profIndexⁱᵐᵖˡ» profIndex.t
-  profIndex_underlying : go.UnderlyingDirectedEq profIndex «profIndexⁱᵐᵖˡ»
-  «profIndexⁱᵐᵖˡ_underlying» : go.IsUnderlying «profIndexⁱᵐᵖˡ» «profIndexⁱᵐᵖˡ»
+@[reducible] def «profIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] profIndex_Assumptions.profIndex_type_repr
-  profIndex_Assumptions.profIndex_underlying
-  profIndex_Assumptions.«profIndexⁱᵐᵖˡ_underlying»
+class profIndex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  profIndex_underlying : go.UnderlyingDirectedEq profIndex «profIndexⁱᵐᵖˡ»
+
+attribute [instance] profIndex_Assumptions.profIndex_underlying
 
 namespace profBufReadMode
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end profBufReadMode
 
-class profBufReadMode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  profBufReadMode_type_repr : go.TypeReprUnderlying «profBufReadModeⁱᵐᵖˡ» profBufReadMode.t
-  profBufReadMode_underlying : go.UnderlyingDirectedEq profBufReadMode «profBufReadModeⁱᵐᵖˡ»
-  «profBufReadModeⁱᵐᵖˡ_underlying» : go.IsUnderlying «profBufReadModeⁱᵐᵖˡ» «profBufReadModeⁱᵐᵖˡ»
+@[reducible] def «profBufReadModeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] profBufReadMode_Assumptions.profBufReadMode_type_repr
-  profBufReadMode_Assumptions.profBufReadMode_underlying
-  profBufReadMode_Assumptions.«profBufReadModeⁱᵐᵖˡ_underlying»
+class profBufReadMode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  profBufReadMode_underlying : go.UnderlyingDirectedEq profBufReadMode «profBufReadModeⁱᵐᵖˡ»
+
+attribute [instance] profBufReadMode_Assumptions.profBufReadMode_underlying
 
 namespace ticksType
 axiom t : Type
@@ -15526,19 +15262,16 @@ attribute [instance] ancestorInfo_Assumptions.ancestorInfo_type_repr
   ancestorInfo_Assumptions.«ancestorInfoⁱᵐᵖˡ_underlying»
 
 namespace waitReason
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end waitReason
 
-class waitReason_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  waitReason_type_repr : go.TypeReprUnderlying «waitReasonⁱᵐᵖˡ» waitReason.t
-  waitReason_underlying : go.UnderlyingDirectedEq waitReason «waitReasonⁱᵐᵖˡ»
-  «waitReasonⁱᵐᵖˡ_underlying» : go.IsUnderlying «waitReasonⁱᵐᵖˡ» «waitReasonⁱᵐᵖˡ»
+@[reducible] def «waitReasonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] waitReason_Assumptions.waitReason_type_repr
-  waitReason_Assumptions.waitReason_underlying
-  waitReason_Assumptions.«waitReasonⁱᵐᵖˡ_underlying»
+class waitReason_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  waitReason_underlying : go.UnderlyingDirectedEq waitReason «waitReasonⁱᵐᵖˡ»
+
+attribute [instance] waitReason_Assumptions.waitReason_underlying
 
 namespace rwmutex
 axiom t : Type
@@ -15586,19 +15319,16 @@ attribute [instance] runtimeSelect_Assumptions.runtimeSelect_type_repr
   runtimeSelect_Assumptions.«runtimeSelectⁱᵐᵖˡ_underlying»
 
 namespace selectDir
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end selectDir
 
-class selectDir_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  selectDir_type_repr : go.TypeReprUnderlying «selectDirⁱᵐᵖˡ» selectDir.t
-  selectDir_underlying : go.UnderlyingDirectedEq selectDir «selectDirⁱᵐᵖˡ»
-  «selectDirⁱᵐᵖˡ_underlying» : go.IsUnderlying «selectDirⁱᵐᵖˡ» «selectDirⁱᵐᵖˡ»
+@[reducible] def «selectDirⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] selectDir_Assumptions.selectDir_type_repr
-  selectDir_Assumptions.selectDir_underlying
-  selectDir_Assumptions.«selectDirⁱᵐᵖˡ_underlying»
+class selectDir_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  selectDir_underlying : go.UnderlyingDirectedEq selectDir «selectDirⁱᵐᵖˡ»
+
+attribute [instance] selectDir_Assumptions.selectDir_underlying
 
 namespace semaRoot
 axiom t : Type
@@ -15631,19 +15361,16 @@ attribute [instance] semTable_Assumptions.semTable_type_repr
   semTable_Assumptions.«semTableⁱᵐᵖˡ_underlying»
 
 namespace semaProfileFlags
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end semaProfileFlags
 
-class semaProfileFlags_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  semaProfileFlags_type_repr : go.TypeReprUnderlying «semaProfileFlagsⁱᵐᵖˡ» semaProfileFlags.t
-  semaProfileFlags_underlying : go.UnderlyingDirectedEq semaProfileFlags «semaProfileFlagsⁱᵐᵖˡ»
-  «semaProfileFlagsⁱᵐᵖˡ_underlying» : go.IsUnderlying «semaProfileFlagsⁱᵐᵖˡ» «semaProfileFlagsⁱᵐᵖˡ»
+@[reducible] def «semaProfileFlagsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] semaProfileFlags_Assumptions.semaProfileFlags_type_repr
-  semaProfileFlags_Assumptions.semaProfileFlags_underlying
-  semaProfileFlags_Assumptions.«semaProfileFlagsⁱᵐᵖˡ_underlying»
+class semaProfileFlags_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  semaProfileFlags_underlying : go.UnderlyingDirectedEq semaProfileFlags «semaProfileFlagsⁱᵐᵖˡ»
+
+attribute [instance] semaProfileFlags_Assumptions.semaProfileFlags_underlying
 
 namespace notifyList
 axiom t : Type
@@ -15826,19 +15553,16 @@ attribute [instance] reflectMethodValue_Assumptions.reflectMethodValue_type_repr
   reflectMethodValue_Assumptions.«reflectMethodValueⁱᵐᵖˡ_underlying»
 
 namespace tmpBuf
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := (array.t w8 32)
 end tmpBuf
 
-class tmpBuf_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  tmpBuf_type_repr : go.TypeReprUnderlying «tmpBufⁱᵐᵖˡ» tmpBuf.t
-  tmpBuf_underlying : go.UnderlyingDirectedEq tmpBuf «tmpBufⁱᵐᵖˡ»
-  «tmpBufⁱᵐᵖˡ_underlying» : go.IsUnderlying «tmpBufⁱᵐᵖˡ» «tmpBufⁱᵐᵖˡ»
+@[reducible] def «tmpBufⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.ArrayType 32 go.byte)
 
-attribute [instance] tmpBuf_Assumptions.tmpBuf_type_repr
-  tmpBuf_Assumptions.tmpBuf_underlying
-  tmpBuf_Assumptions.«tmpBufⁱᵐᵖˡ_underlying»
+class tmpBuf_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  tmpBuf_underlying : go.UnderlyingDirectedEq tmpBuf «tmpBufⁱᵐᵖˡ»
+
+attribute [instance] tmpBuf_Assumptions.tmpBuf_underlying
 
 namespace stringStruct
 axiom t : Type
@@ -16186,19 +15910,16 @@ attribute [instance] specialBubble_Assumptions.specialBubble_type_repr
   specialBubble_Assumptions.«specialBubbleⁱᵐᵖˡ_underlying»
 
 namespace taggedPointer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end taggedPointer
 
-class taggedPointer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  taggedPointer_type_repr : go.TypeReprUnderlying «taggedPointerⁱᵐᵖˡ» taggedPointer.t
-  taggedPointer_underlying : go.UnderlyingDirectedEq taggedPointer «taggedPointerⁱᵐᵖˡ»
-  «taggedPointerⁱᵐᵖˡ_underlying» : go.IsUnderlying «taggedPointerⁱᵐᵖˡ» «taggedPointerⁱᵐᵖˡ»
+@[reducible] def «taggedPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] taggedPointer_Assumptions.taggedPointer_type_repr
-  taggedPointer_Assumptions.taggedPointer_underlying
-  taggedPointer_Assumptions.«taggedPointerⁱᵐᵖˡ_underlying»
+class taggedPointer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  taggedPointer_underlying : go.UnderlyingDirectedEq taggedPointer «taggedPointerⁱᵐᵖˡ»
+
+attribute [instance] taggedPointer_Assumptions.taggedPointer_underlying
 
 namespace timer
 axiom t : Type
@@ -16291,19 +16012,16 @@ attribute [instance] wakeableSleep_Assumptions.wakeableSleep_type_repr
   wakeableSleep_Assumptions.«wakeableSleepⁱᵐᵖˡ_underlying»
 
 namespace unwindFlags
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end unwindFlags
 
-class unwindFlags_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  unwindFlags_type_repr : go.TypeReprUnderlying «unwindFlagsⁱᵐᵖˡ» unwindFlags.t
-  unwindFlags_underlying : go.UnderlyingDirectedEq unwindFlags «unwindFlagsⁱᵐᵖˡ»
-  «unwindFlagsⁱᵐᵖˡ_underlying» : go.IsUnderlying «unwindFlagsⁱᵐᵖˡ» «unwindFlagsⁱᵐᵖˡ»
+@[reducible] def «unwindFlagsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] unwindFlags_Assumptions.unwindFlags_type_repr
-  unwindFlags_Assumptions.unwindFlags_underlying
-  unwindFlags_Assumptions.«unwindFlagsⁱᵐᵖˡ_underlying»
+class unwindFlags_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  unwindFlags_underlying : go.UnderlyingDirectedEq unwindFlags «unwindFlagsⁱᵐᵖˡ»
+
+attribute [instance] unwindFlags_Assumptions.unwindFlags_underlying
 
 namespace unwinder
 axiom t : Type
@@ -16426,19 +16144,16 @@ attribute [instance] traceBuf_Assumptions.traceBuf_type_repr
   traceBuf_Assumptions.«traceBufⁱᵐᵖˡ_underlying»
 
 namespace traceArg
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end traceArg
 
-class traceArg_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  traceArg_type_repr : go.TypeReprUnderlying «traceArgⁱᵐᵖˡ» traceArg.t
-  traceArg_underlying : go.UnderlyingDirectedEq traceArg «traceArgⁱᵐᵖˡ»
-  «traceArgⁱᵐᵖˡ_underlying» : go.IsUnderlying «traceArgⁱᵐᵖˡ» «traceArgⁱᵐᵖˡ»
+@[reducible] def «traceArgⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] traceArg_Assumptions.traceArg_type_repr
-  traceArg_Assumptions.traceArg_underlying
-  traceArg_Assumptions.«traceArgⁱᵐᵖˡ_underlying»
+class traceArg_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  traceArg_underlying : go.UnderlyingDirectedEq traceArg «traceArgⁱᵐᵖˡ»
+
+attribute [instance] traceArg_Assumptions.traceArg_underlying
 
 namespace traceEventWriter
 axiom t : Type
@@ -16576,34 +16291,28 @@ attribute [instance] pTraceState_Assumptions.pTraceState_type_repr
   pTraceState_Assumptions.«pTraceStateⁱᵐᵖˡ_underlying»
 
 namespace traceBlockReason
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end traceBlockReason
 
-class traceBlockReason_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  traceBlockReason_type_repr : go.TypeReprUnderlying «traceBlockReasonⁱᵐᵖˡ» traceBlockReason.t
-  traceBlockReason_underlying : go.UnderlyingDirectedEq traceBlockReason «traceBlockReasonⁱᵐᵖˡ»
-  «traceBlockReasonⁱᵐᵖˡ_underlying» : go.IsUnderlying «traceBlockReasonⁱᵐᵖˡ» «traceBlockReasonⁱᵐᵖˡ»
+@[reducible] def «traceBlockReasonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] traceBlockReason_Assumptions.traceBlockReason_type_repr
-  traceBlockReason_Assumptions.traceBlockReason_underlying
-  traceBlockReason_Assumptions.«traceBlockReasonⁱᵐᵖˡ_underlying»
+class traceBlockReason_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  traceBlockReason_underlying : go.UnderlyingDirectedEq traceBlockReason «traceBlockReasonⁱᵐᵖˡ»
+
+attribute [instance] traceBlockReason_Assumptions.traceBlockReason_underlying
 
 namespace traceGoStopReason
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w8
 end traceGoStopReason
 
-class traceGoStopReason_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  traceGoStopReason_type_repr : go.TypeReprUnderlying «traceGoStopReasonⁱᵐᵖˡ» traceGoStopReason.t
-  traceGoStopReason_underlying : go.UnderlyingDirectedEq traceGoStopReason «traceGoStopReasonⁱᵐᵖˡ»
-  «traceGoStopReasonⁱᵐᵖˡ_underlying» : go.IsUnderlying «traceGoStopReasonⁱᵐᵖˡ» «traceGoStopReasonⁱᵐᵖˡ»
+@[reducible] def «traceGoStopReasonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint8
 
-attribute [instance] traceGoStopReason_Assumptions.traceGoStopReason_type_repr
-  traceGoStopReason_Assumptions.traceGoStopReason_underlying
-  traceGoStopReason_Assumptions.«traceGoStopReasonⁱᵐᵖˡ_underlying»
+class traceGoStopReason_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  traceGoStopReason_underlying : go.UnderlyingDirectedEq traceGoStopReason «traceGoStopReasonⁱᵐᵖˡ»
+
+attribute [instance] traceGoStopReason_Assumptions.traceGoStopReason_underlying
 
 namespace traceLocker
 axiom t : Type
@@ -16681,19 +16390,16 @@ attribute [instance] traceStringTable_Assumptions.traceStringTable_type_repr
   traceStringTable_Assumptions.«traceStringTableⁱᵐᵖˡ_underlying»
 
 namespace traceTime
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end traceTime
 
-class traceTime_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  traceTime_type_repr : go.TypeReprUnderlying «traceTimeⁱᵐᵖˡ» traceTime.t
-  traceTime_underlying : go.UnderlyingDirectedEq traceTime «traceTimeⁱᵐᵖˡ»
-  «traceTimeⁱᵐᵖˡ_underlying» : go.IsUnderlying «traceTimeⁱᵐᵖˡ» «traceTimeⁱᵐᵖˡ»
+@[reducible] def «traceTimeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.uint64
 
-attribute [instance] traceTime_Assumptions.traceTime_type_repr
-  traceTime_Assumptions.traceTime_underlying
-  traceTime_Assumptions.«traceTimeⁱᵐᵖˡ_underlying»
+class traceTime_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  traceTime_underlying : go.UnderlyingDirectedEq traceTime «traceTimeⁱᵐᵖˡ»
+
+attribute [instance] traceTime_Assumptions.traceTime_underlying
 
 namespace traceTypeTable
 axiom t : Type

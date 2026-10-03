@@ -70,25 +70,6 @@ instance deleteKeyAction_into_val_typed :
 end def_
 end deleteKeyAction
 
-namespace ActionList
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
-
-instance ActionList_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.ActionList.t :=
-  sorry -- Rocq: Admitted
-
-instance ActionList_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.ActionList.t go_etcd_io.etcd.server.v3.storage.schema.«ActionListⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ActionList
-
 namespace AlarmBackend
 section def_
 
@@ -203,25 +184,6 @@ instance bucket_into_val_typed :
 end def_
 end bucket
 
-namespace schemaChange
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
-
-instance schemaChange_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.schemaChange.t :=
-  sorry -- Rocq: Admitted
-
-instance schemaChange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.schemaChange.t go_etcd_io.etcd.server.v3.storage.schema.«schemaChangeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end schemaChange
-
 namespace simpleSchemaChange
 section def_
 
@@ -231,12 +193,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance simpleSchemaChange_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t where
+  typed_pointsto_def l v dq := iprop(
+    "upgrade" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) v.upgrade' dq ∗
+    "downgrade" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) v.downgrade' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance simpleSchemaChange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go_etcd_io.etcd.server.v3.storage.schema.«simpleSchemaChangeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go_etcd_io.etcd.server.v3.storage.schema.«simpleSchemaChangeⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance simpleSchemaChange_access_load_upgrade (l : loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) v.upgrade' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) v.upgrade' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance simpleSchemaChange_access_store_upgrade (l : loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (upgrade' : go_etcd_io.etcd.server.v3.storage.schema.action.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) v.upgrade' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) upgrade' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with upgrade' := upgrade' } : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance simpleSchemaChange_access_load_downgrade (l : loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) v.downgrade' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) v.downgrade' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance simpleSchemaChange_access_store_downgrade (l : loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (downgrade' : go_etcd_io.etcd.server.v3.storage.schema.action.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) v.downgrade' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) downgrade' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with downgrade' := downgrade' } : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end simpleSchemaChange
@@ -259,25 +259,6 @@ instance membershipBackend_into_val_typed :
 
 end def_
 end membershipBackend
-
-namespace migrationPlan
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
-
-instance migrationPlan_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationPlan.t :=
-  sorry -- Rocq: Admitted
-
-instance migrationPlan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationPlan.t go_etcd_io.etcd.server.v3.storage.schema.«migrationPlanⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end migrationPlan
 
 namespace migrationStep
 section def_

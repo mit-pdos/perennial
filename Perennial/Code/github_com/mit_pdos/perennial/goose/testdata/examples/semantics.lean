@@ -202,13 +202,13 @@ def Log [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Log
 
-def AdderType [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def AdderType [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))
 
-def MultipleArgsType [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def MultipleArgsType [ffi_syntax] [GoGlobalContext] : go.type :=
   (go.type.FunctionType (go.signature.Signature [go.uint64, go.bool] false [go.uint64]))
 
-def DefinedStr2 [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def DefinedStr2 [ffi_syntax] [GoGlobalContext] : go.type :=
   DefinedStr
 
 /-- 10 is completely arbitrary -/
@@ -2165,7 +2165,7 @@ noncomputable def «testPolymorphismInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGloba
   (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 3 Flower)))) (LiteralValue [(KeyedElement none (ElementExpression (go.type.PointerType Lily) (Var "$v0"))), (KeyedElement none (ElementExpression (go.type.PointerType Rose) (Var "$v1"))), (KeyedElement none (ElementExpression (go.type.PointerType Daisy) (Var "$v2")))])))))
   (App (App (Val exception_seq) (Lam BAnon
   (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flower go!"Petals"))) (App (Val (GoInstruction (GoLoad Flower))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 3 Flower)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 3 Flower)))) (Var "f")) (Val #(W64 0)))))) (Val #())) (Val #(W64 3)))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flower go!"Petals"))) (App (Val (GoInstruction (GoLoad Flower))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 3 Flower)))) (Pair (Var "f") (Val #(W64 0)))))) (Val #())) (Val #(W64 3)))))))
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore (go.type.ArrayType 3 Flower)))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val do_execute)
@@ -2195,7 +2195,7 @@ noncomputable def «testEmbeddingInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
   (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 3 Flora)))) (LiteralValue [(KeyedElement none (ElementExpression (go.type.PointerType Lily) (Var "$v0"))), (KeyedElement none (ElementExpression (go.type.PointerType Rose) (Var "$v1"))), (KeyedElement none (ElementExpression (go.type.PointerType Daisy) (Var "$v2")))])))))
   (App (App (Val exception_seq) (Lam BAnon
   (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flora go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 3 Flora)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 3 Flora)))) (Var "f")) (Val #(W64 0)))))) (Val #())) (Val #(W64 3)))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flora go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 3 Flora)))) (Pair (Var "f") (Val #(W64 0)))))) (Val #())) (Val #(W64 3)))))))
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore (go.type.ArrayType 3 Flora)))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val do_execute)

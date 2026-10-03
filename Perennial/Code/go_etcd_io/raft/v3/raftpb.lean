@@ -87,8 +87,6 @@ def ConfChangeV2 [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] ConfChangeV2
 
-axiom «ConfChangeSingleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 @[reducible] noncomputable def EntryNormal [ffi_syntax] [GoGlobalContext] : val :=
   #(W32 0)
 
@@ -810,19 +808,43 @@ attribute [instance] ConfChange_Assumptions.ConfChange_type_repr
   ConfChange_Assumptions.ConfChange_set_ID
 
 namespace ConfChangeSingle
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  Type' : ConfChangeType.t
+  NodeID' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end ConfChangeSingle
+
+@[reducible] def ConfChangeSingle'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Type" ConfChangeType),
+(go.field_decl.FieldDecl go!"NodeID" go.uint64)]
+
+@[irreducible] def ConfChangeSingle'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  ConfChangeSingle'fds_unsealed
+
+instance equals_unfold_ConfChangeSingle [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold ConfChangeSingle'fds ConfChangeSingle'fds_unsealed :=
+  ⟨by unfold ConfChangeSingle'fds; rfl⟩
+
+@[reducible] def «ConfChangeSingleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType ConfChangeSingle'fds)
 
 class ConfChangeSingle_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfChangeSingle_type_repr : go.TypeReprUnderlying «ConfChangeSingleⁱᵐᵖˡ» ConfChangeSingle.t
   ConfChangeSingle_underlying : go.UnderlyingDirectedEq ConfChangeSingle «ConfChangeSingleⁱᵐᵖˡ»
-  «ConfChangeSingleⁱᵐᵖˡ_underlying» : go.IsUnderlying «ConfChangeSingleⁱᵐᵖˡ» «ConfChangeSingleⁱᵐᵖˡ»
+  ConfChangeSingle_get_Type : ∀ (x : ConfChangeSingle.t), go.IsGoStepPureDetTagged under (StructFieldGet «ConfChangeSingleⁱᵐᵖˡ» go!"Type") #x (Val #(x.Type'))
+  ConfChangeSingle_set_Type : ∀ (x : ConfChangeSingle.t) (y : ConfChangeType.t), go.IsGoStepPureDetTagged under (StructFieldSet «ConfChangeSingleⁱᵐᵖˡ» go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : ConfChangeSingle.t)))
+  ConfChangeSingle_get_NodeID : ∀ (x : ConfChangeSingle.t), go.IsGoStepPureDetTagged under (StructFieldGet «ConfChangeSingleⁱᵐᵖˡ» go!"NodeID") #x (Val #(x.NodeID'))
+  ConfChangeSingle_set_NodeID : ∀ (x : ConfChangeSingle.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ConfChangeSingleⁱᵐᵖˡ» go!"NodeID") (PairV #x #y) (Val #(({ x with NodeID' := y } : ConfChangeSingle.t)))
 
 attribute [instance] ConfChangeSingle_Assumptions.ConfChangeSingle_type_repr
   ConfChangeSingle_Assumptions.ConfChangeSingle_underlying
-  ConfChangeSingle_Assumptions.«ConfChangeSingleⁱᵐᵖˡ_underlying»
+  ConfChangeSingle_Assumptions.ConfChangeSingle_get_Type
+  ConfChangeSingle_Assumptions.ConfChangeSingle_set_Type
+  ConfChangeSingle_Assumptions.ConfChangeSingle_get_NodeID
+  ConfChangeSingle_Assumptions.ConfChangeSingle_set_NodeID
 
 namespace ConfChangeV2
 structure t [ffi_syntax] where

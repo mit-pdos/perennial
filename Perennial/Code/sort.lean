@@ -57,18 +57,6 @@ def StringSlice [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] StringSlice
 
-axiom «Interfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «lessSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «reverseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «IntSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Float64Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «StringSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 @[reducible] noncomputable def unknownHint [ffi_syntax] [GoGlobalContext] : val :=
   #(W64 0)
 
@@ -446,19 +434,16 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))
 
 namespace Interface
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end Interface
 
-class Interface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Interface_type_repr : go.TypeReprUnderlying «Interfaceⁱᵐᵖˡ» Interface.t
-  Interface_underlying : go.UnderlyingDirectedEq Interface «Interfaceⁱᵐᵖˡ»
-  «Interfaceⁱᵐᵖˡ_underlying» : go.IsUnderlying «Interfaceⁱᵐᵖˡ» «Interfaceⁱᵐᵖˡ»
+@[reducible] def «Interfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Len" (go.signature.Signature [] false [go.int])), (go.interface_elem.MethodElem go!"Less" (go.signature.Signature [go.int, go.int] false [go.bool])), (go.interface_elem.MethodElem go!"Swap" (go.signature.Signature [go.int, go.int] false []))])
 
-attribute [instance] Interface_Assumptions.Interface_type_repr
-  Interface_Assumptions.Interface_underlying
-  Interface_Assumptions.«Interfaceⁱᵐᵖˡ_underlying»
+class Interface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Interface_underlying : go.UnderlyingDirectedEq Interface «Interfaceⁱᵐᵖˡ»
+
+attribute [instance] Interface_Assumptions.Interface_underlying
 
 namespace sortedHint
 abbrev t [ffi_syntax] : Type := w64
@@ -487,79 +472,112 @@ attribute [instance] xorshift_Assumptions.xorshift_underlying
   xorshift_Assumptions.xorshift'ptr_Next_unfold
 
 namespace lessSwap
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  Less' : func.t
+  Swap' : func.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end lessSwap
+
+@[reducible] def lessSwap'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Less" (go.type.FunctionType (go.signature.Signature [go.int, go.int] false [go.bool]))),
+(go.field_decl.FieldDecl go!"Swap" (go.type.FunctionType (go.signature.Signature [go.int, go.int] false [])))]
+
+@[irreducible] def lessSwap'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  lessSwap'fds_unsealed
+
+instance equals_unfold_lessSwap [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold lessSwap'fds lessSwap'fds_unsealed :=
+  ⟨by unfold lessSwap'fds; rfl⟩
+
+@[reducible] def «lessSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType lessSwap'fds)
 
 class lessSwap_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   lessSwap_type_repr : go.TypeReprUnderlying «lessSwapⁱᵐᵖˡ» lessSwap.t
   lessSwap_underlying : go.UnderlyingDirectedEq lessSwap «lessSwapⁱᵐᵖˡ»
-  «lessSwapⁱᵐᵖˡ_underlying» : go.IsUnderlying «lessSwapⁱᵐᵖˡ» «lessSwapⁱᵐᵖˡ»
+  lessSwap_get_Less : ∀ (x : lessSwap.t), go.IsGoStepPureDetTagged under (StructFieldGet «lessSwapⁱᵐᵖˡ» go!"Less") #x (Val #(x.Less'))
+  lessSwap_set_Less : ∀ (x : lessSwap.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «lessSwapⁱᵐᵖˡ» go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap.t)))
+  lessSwap_get_Swap : ∀ (x : lessSwap.t), go.IsGoStepPureDetTagged under (StructFieldGet «lessSwapⁱᵐᵖˡ» go!"Swap") #x (Val #(x.Swap'))
+  lessSwap_set_Swap : ∀ (x : lessSwap.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «lessSwapⁱᵐᵖˡ» go!"Swap") (PairV #x #y) (Val #(({ x with Swap' := y } : lessSwap.t)))
 
 attribute [instance] lessSwap_Assumptions.lessSwap_type_repr
   lessSwap_Assumptions.lessSwap_underlying
-  lessSwap_Assumptions.«lessSwapⁱᵐᵖˡ_underlying»
+  lessSwap_Assumptions.lessSwap_get_Less
+  lessSwap_Assumptions.lessSwap_set_Less
+  lessSwap_Assumptions.lessSwap_get_Swap
+  lessSwap_Assumptions.lessSwap_set_Swap
 
 namespace reverse
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  Interface' : Interface.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
 end reverse
+
+@[reducible] def reverse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"Interface" Interface)]
+
+@[irreducible] def reverse'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  reverse'fds_unsealed
+
+instance equals_unfold_reverse [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold reverse'fds reverse'fds_unsealed :=
+  ⟨by unfold reverse'fds; rfl⟩
+
+@[reducible] def «reverseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType reverse'fds)
 
 class reverse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   reverse_type_repr : go.TypeReprUnderlying «reverseⁱᵐᵖˡ» reverse.t
   reverse_underlying : go.UnderlyingDirectedEq reverse «reverseⁱᵐᵖˡ»
-  «reverseⁱᵐᵖˡ_underlying» : go.IsUnderlying «reverseⁱᵐᵖˡ» «reverseⁱᵐᵖˡ»
+  reverse_get_Interface : ∀ (x : reverse.t), go.IsGoStepPureDetTagged under (StructFieldGet «reverseⁱᵐᵖˡ» go!"Interface") #x (Val #(x.Interface'))
+  reverse_set_Interface : ∀ (x : reverse.t) (y : Interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «reverseⁱᵐᵖˡ» go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse.t)))
 
 attribute [instance] reverse_Assumptions.reverse_type_repr
   reverse_Assumptions.reverse_underlying
-  reverse_Assumptions.«reverseⁱᵐᵖˡ_underlying»
+  reverse_Assumptions.reverse_get_Interface
+  reverse_Assumptions.reverse_set_Interface
 
 namespace IntSlice
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := slice.t
 end IntSlice
 
-class IntSlice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  IntSlice_type_repr : go.TypeReprUnderlying «IntSliceⁱᵐᵖˡ» IntSlice.t
-  IntSlice_underlying : go.UnderlyingDirectedEq IntSlice «IntSliceⁱᵐᵖˡ»
-  «IntSliceⁱᵐᵖˡ_underlying» : go.IsUnderlying «IntSliceⁱᵐᵖˡ» «IntSliceⁱᵐᵖˡ»
+@[reducible] def «IntSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType go.int)
 
-attribute [instance] IntSlice_Assumptions.IntSlice_type_repr
-  IntSlice_Assumptions.IntSlice_underlying
-  IntSlice_Assumptions.«IntSliceⁱᵐᵖˡ_underlying»
+class IntSlice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  IntSlice_underlying : go.UnderlyingDirectedEq IntSlice «IntSliceⁱᵐᵖˡ»
+
+attribute [instance] IntSlice_Assumptions.IntSlice_underlying
 
 namespace Float64Slice
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := slice.t
 end Float64Slice
 
-class Float64Slice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Float64Slice_type_repr : go.TypeReprUnderlying «Float64Sliceⁱᵐᵖˡ» Float64Slice.t
-  Float64Slice_underlying : go.UnderlyingDirectedEq Float64Slice «Float64Sliceⁱᵐᵖˡ»
-  «Float64Sliceⁱᵐᵖˡ_underlying» : go.IsUnderlying «Float64Sliceⁱᵐᵖˡ» «Float64Sliceⁱᵐᵖˡ»
+@[reducible] def «Float64Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType go.float64)
 
-attribute [instance] Float64Slice_Assumptions.Float64Slice_type_repr
-  Float64Slice_Assumptions.Float64Slice_underlying
-  Float64Slice_Assumptions.«Float64Sliceⁱᵐᵖˡ_underlying»
+class Float64Slice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Float64Slice_underlying : go.UnderlyingDirectedEq Float64Slice «Float64Sliceⁱᵐᵖˡ»
+
+attribute [instance] Float64Slice_Assumptions.Float64Slice_underlying
 
 namespace StringSlice
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := slice.t
 end StringSlice
 
-class StringSlice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StringSlice_type_repr : go.TypeReprUnderlying «StringSliceⁱᵐᵖˡ» StringSlice.t
-  StringSlice_underlying : go.UnderlyingDirectedEq StringSlice «StringSliceⁱᵐᵖˡ»
-  «StringSliceⁱᵐᵖˡ_underlying» : go.IsUnderlying «StringSliceⁱᵐᵖˡ» «StringSliceⁱᵐᵖˡ»
+@[reducible] def «StringSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType go.string)
 
-attribute [instance] StringSlice_Assumptions.StringSlice_type_repr
-  StringSlice_Assumptions.StringSlice_underlying
-  StringSlice_Assumptions.«StringSliceⁱᵐᵖˡ_underlying»
+class StringSlice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  StringSlice_underlying : go.UnderlyingDirectedEq StringSlice «StringSliceⁱᵐᵖˡ»
+
+attribute [instance] StringSlice_Assumptions.StringSlice_underlying
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Interface_instance : Interface_Assumptions

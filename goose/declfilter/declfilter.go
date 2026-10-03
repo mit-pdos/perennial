@@ -31,6 +31,14 @@ type FilterConfig struct {
 	Bootstrap Bootstrap `toml:"bootstrap"`
 	// Set to true to emit Admitted proofs.
 	TrustProofGen bool `toml:"trust_proofgen"`
+	// Set to true to also translate every type declaration that would
+	// otherwise be axiomatized, as long as its definition only refers to
+	// imported packages and uses supported constructs (see
+	// util.ExtendFilter). Function and method bodies are not affected.
+	TranslateTypes bool `toml:"translate_types"`
+	// With translate_types, keep struct types axiomatized (their generated
+	// proofs are by far the most expensive part of translating types).
+	TranslateTypesExceptStructs bool `toml:"translate_types_except_structs"`
 }
 
 type Bootstrap struct {
@@ -170,6 +178,27 @@ func New(c FilterConfig) DeclFilter {
 	df.trusted = newStringSet(c.Trusted)
 	df.trustProofGen = c.TrustProofGen
 	return &df
+}
+
+// withTranslated overrides a filter to translate the given names.
+type withTranslated struct {
+	DeclFilter
+	names map[string]bool
+}
+
+func (df withTranslated) GetAction(name string) Action {
+	if df.names[name] {
+		return Translate
+	}
+	return df.DeclFilter.GetAction(name)
+}
+
+// WithTranslated returns df, except that the given names are translated.
+func WithTranslated(df DeclFilter, names map[string]bool) DeclFilter {
+	if len(names) == 0 {
+		return df
+	}
+	return withTranslated{DeclFilter: df, names: names}
 }
 
 var AxiomatizeConfig FilterConfig = FilterConfig{

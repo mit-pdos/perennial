@@ -98,8 +98,6 @@ axiom «setKeyActionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «deleteKeyActionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «ActionListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «AlarmBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «alarmBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -112,13 +110,7 @@ axiom «authBatchTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «bucketⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «schemaChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «simpleSchemaChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «membershipBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «migrationPlanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «migrationStepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -629,19 +621,16 @@ attribute [instance] deleteKeyAction_Assumptions.deleteKeyAction_type_repr
   deleteKeyAction_Assumptions.«deleteKeyActionⁱᵐᵖˡ_underlying»
 
 namespace ActionList
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := slice.t
 end ActionList
 
-class ActionList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ActionList_type_repr : go.TypeReprUnderlying «ActionListⁱᵐᵖˡ» ActionList.t
-  ActionList_underlying : go.UnderlyingDirectedEq ActionList «ActionListⁱᵐᵖˡ»
-  «ActionListⁱᵐᵖˡ_underlying» : go.IsUnderlying «ActionListⁱᵐᵖˡ» «ActionListⁱᵐᵖˡ»
+@[reducible] def «ActionListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType action)
 
-attribute [instance] ActionList_Assumptions.ActionList_type_repr
-  ActionList_Assumptions.ActionList_underlying
-  ActionList_Assumptions.«ActionListⁱᵐᵖˡ_underlying»
+class ActionList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  ActionList_underlying : go.UnderlyingDirectedEq ActionList «ActionListⁱᵐᵖˡ»
+
+attribute [instance] ActionList_Assumptions.ActionList_underlying
 
 namespace AlarmBackend
 axiom t : Type
@@ -734,34 +723,55 @@ attribute [instance] bucket_Assumptions.bucket_type_repr
   bucket_Assumptions.«bucketⁱᵐᵖˡ_underlying»
 
 namespace schemaChange
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end schemaChange
 
-class schemaChange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  schemaChange_type_repr : go.TypeReprUnderlying «schemaChangeⁱᵐᵖˡ» schemaChange.t
-  schemaChange_underlying : go.UnderlyingDirectedEq schemaChange «schemaChangeⁱᵐᵖˡ»
-  «schemaChangeⁱᵐᵖˡ_underlying» : go.IsUnderlying «schemaChangeⁱᵐᵖˡ» «schemaChangeⁱᵐᵖˡ»
+@[reducible] def «schemaChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"downgradeAction" (go.signature.Signature [] false [action])), (go.interface_elem.MethodElem go!"upgradeAction" (go.signature.Signature [] false [action]))])
 
-attribute [instance] schemaChange_Assumptions.schemaChange_type_repr
-  schemaChange_Assumptions.schemaChange_underlying
-  schemaChange_Assumptions.«schemaChangeⁱᵐᵖˡ_underlying»
+class schemaChange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  schemaChange_underlying : go.UnderlyingDirectedEq schemaChange «schemaChangeⁱᵐᵖˡ»
+
+attribute [instance] schemaChange_Assumptions.schemaChange_underlying
 
 namespace simpleSchemaChange
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  upgrade' : action.t
+  downgrade' : action.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end simpleSchemaChange
+
+@[reducible] def simpleSchemaChange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"upgrade" action),
+(go.field_decl.FieldDecl go!"downgrade" action)]
+
+@[irreducible] def simpleSchemaChange'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  simpleSchemaChange'fds_unsealed
+
+instance equals_unfold_simpleSchemaChange [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold simpleSchemaChange'fds simpleSchemaChange'fds_unsealed :=
+  ⟨by unfold simpleSchemaChange'fds; rfl⟩
+
+@[reducible] def «simpleSchemaChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType simpleSchemaChange'fds)
 
 class simpleSchemaChange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   simpleSchemaChange_type_repr : go.TypeReprUnderlying «simpleSchemaChangeⁱᵐᵖˡ» simpleSchemaChange.t
   simpleSchemaChange_underlying : go.UnderlyingDirectedEq simpleSchemaChange «simpleSchemaChangeⁱᵐᵖˡ»
-  «simpleSchemaChangeⁱᵐᵖˡ_underlying» : go.IsUnderlying «simpleSchemaChangeⁱᵐᵖˡ» «simpleSchemaChangeⁱᵐᵖˡ»
+  simpleSchemaChange_get_upgrade : ∀ (x : simpleSchemaChange.t), go.IsGoStepPureDetTagged under (StructFieldGet «simpleSchemaChangeⁱᵐᵖˡ» go!"upgrade") #x (Val #(x.upgrade'))
+  simpleSchemaChange_set_upgrade : ∀ (x : simpleSchemaChange.t) (y : action.t), go.IsGoStepPureDetTagged under (StructFieldSet «simpleSchemaChangeⁱᵐᵖˡ» go!"upgrade") (PairV #x #y) (Val #(({ x with upgrade' := y } : simpleSchemaChange.t)))
+  simpleSchemaChange_get_downgrade : ∀ (x : simpleSchemaChange.t), go.IsGoStepPureDetTagged under (StructFieldGet «simpleSchemaChangeⁱᵐᵖˡ» go!"downgrade") #x (Val #(x.downgrade'))
+  simpleSchemaChange_set_downgrade : ∀ (x : simpleSchemaChange.t) (y : action.t), go.IsGoStepPureDetTagged under (StructFieldSet «simpleSchemaChangeⁱᵐᵖˡ» go!"downgrade") (PairV #x #y) (Val #(({ x with downgrade' := y } : simpleSchemaChange.t)))
 
 attribute [instance] simpleSchemaChange_Assumptions.simpleSchemaChange_type_repr
   simpleSchemaChange_Assumptions.simpleSchemaChange_underlying
-  simpleSchemaChange_Assumptions.«simpleSchemaChangeⁱᵐᵖˡ_underlying»
+  simpleSchemaChange_Assumptions.simpleSchemaChange_get_upgrade
+  simpleSchemaChange_Assumptions.simpleSchemaChange_set_upgrade
+  simpleSchemaChange_Assumptions.simpleSchemaChange_get_downgrade
+  simpleSchemaChange_Assumptions.simpleSchemaChange_set_downgrade
 
 namespace membershipBackend
 axiom t : Type
@@ -779,19 +789,16 @@ attribute [instance] membershipBackend_Assumptions.membershipBackend_type_repr
   membershipBackend_Assumptions.«membershipBackendⁱᵐᵖˡ_underlying»
 
 namespace migrationPlan
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := slice.t
 end migrationPlan
 
-class migrationPlan_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  migrationPlan_type_repr : go.TypeReprUnderlying «migrationPlanⁱᵐᵖˡ» migrationPlan.t
-  migrationPlan_underlying : go.UnderlyingDirectedEq migrationPlan «migrationPlanⁱᵐᵖˡ»
-  «migrationPlanⁱᵐᵖˡ_underlying» : go.IsUnderlying «migrationPlanⁱᵐᵖˡ» «migrationPlanⁱᵐᵖˡ»
+@[reducible] def «migrationPlanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType migrationStep)
 
-attribute [instance] migrationPlan_Assumptions.migrationPlan_type_repr
-  migrationPlan_Assumptions.migrationPlan_underlying
-  migrationPlan_Assumptions.«migrationPlanⁱᵐᵖˡ_underlying»
+class migrationPlan_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  migrationPlan_underlying : go.UnderlyingDirectedEq migrationPlan «migrationPlanⁱᵐᵖˡ»
+
+attribute [instance] migrationPlan_Assumptions.migrationPlan_underlying
 
 namespace migrationStep
 axiom t : Type

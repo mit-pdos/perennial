@@ -244,7 +244,7 @@ def UseNamedType [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] UseNamedType
 
-def my_u64 [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def my_u64 [ffi_syntax] [GoGlobalContext] : go.type :=
   go.uint64
 
 @[reducible] noncomputable def arrayA [ffi_syntax] [GoGlobalContext] : val :=
@@ -979,7 +979,7 @@ noncomputable def «takesArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
   (App (Val exception_do)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.ArrayType 13 go.string)))) (Var "x"))
   (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 13 go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 13 go.string)))) (Var "x")) (Val #(W64 3)))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 13 go.string)))) (Pair (Var "x") (Val #(W64 3)))))))))
 
 /-- go: array.go:9:6 -/
 noncomputable def «takesPtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
@@ -1007,10 +1007,10 @@ noncomputable def «usesArrayElemRefⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
   (Let "$r0" (Val #(go!"c"))
   (App (App (Val exception_seq) (Lam BAnon
   (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (IndexRef (go.type.ArrayType 2 go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 2 go.string)))) (Var "x")) (Val #(W64 1))))
+  (Let "$a0" (App (Val (GoInstruction (IndexRef (go.type.ArrayType 2 go.string)))) (Pair (Var "x") (Val #(W64 1))))
   (App (App (Val (GoInstruction (FuncResolve takesPtr []))) (Val #())) (Var "$a0"))))))
   (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (IndexRef (go.type.ArrayType 2 go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 2 go.string)))) (Var "x")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (IndexRef (go.type.ArrayType 2 go.string)))) (Pair (Var "x") (Val #(W64 1)))) (Var "$r0"))))))))
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore (go.type.ArrayType 2 go.string)))) (Pair (Var "x") (Var "$r0"))))))))))
 
@@ -1034,7 +1034,7 @@ noncomputable def «sumⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (App (Val do_for) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (FuncResolve go.len [(go.type.ArrayType 100 go.uint64)]))) (Val #()))))))) (Lam BAnon
   (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 100 go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 100 go.uint64)))) (Var "x")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 100 go.uint64)))) (Pair (Var "x") (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))))))))))
   (Lam BAnon
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
@@ -1063,17 +1063,15 @@ noncomputable def «arrayLiteralKeyedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
   (LamV BAnon
   (App (Val exception_do)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.ArrayType 13 go.string)))) (App (Val (GoInstruction (GoZeroVal (go.type.ArrayType 13 go.string)))) (Val #())))
-  (Let "$r0" (Let "$k0" (App (Val (GoInstruction (Convert go.untyped_int go.int))) (Val arrayB))
-  (Let "$v1" (Val #(go!"B"))
-  (Let "$v2" (Val #(go!"1"))
-  (Let "$v3" (Val #(go!"2"))
-  (Let "$k4" (App (Val (GoInstruction (Convert go.untyped_int go.int))) (Val arrayA))
-  (Let "$v5" (Val #(go!"A"))
-  (Let "$v6" (Val #(go!"3"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 13 go.string)))) (LiteralValue [(KeyedElement (some (KeyExpression go.int (Var "$k0"))) (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.string (Var "$v2"))), (KeyedElement none (ElementExpression go.string (Var "$v3"))), (KeyedElement (some (KeyExpression go.int (Var "$k4"))) (ElementExpression go.string (Var "$v5"))), (KeyedElement none (ElementExpression go.string (Var "$v6")))])))))))))
+  (Let "$r0" (Let "$v0" (Val #(go!"B"))
+  (Let "$v1" (Val #(go!"1"))
+  (Let "$v2" (Val #(go!"2"))
+  (Let "$v3" (Val #(go!"A"))
+  (Let "$v4" (Val #(go!"3"))
+  (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 13 go.string)))) (LiteralValue [(KeyedElement (some (KeyInteger 10)) (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.string (Var "$v2"))), (KeyedElement (some (KeyInteger 0)) (ElementExpression go.string (Var "$v3"))), (KeyedElement none (ElementExpression go.string (Var "$v4")))])))))))
   (App (App (Val exception_seq) (Lam BAnon
   (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 13 go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ArrayType 13 go.string)))) (Var "x")) (Val #(W64 0))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 13 go.string)))) (Pair (Var "x") (Val #(W64 0))))))))
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore (go.type.ArrayType 13 go.string)))) (Pair (Var "x") (Var "$r0")))))))))
 

@@ -137,6 +137,7 @@ var GallinaKeywords map[string]bool = map[string]bool{
 	"ElementLiteralValue": true,
 	"KeyField":            true,
 	"KeyExpression":       true,
+	"KeyInteger":          true,
 	"FuncResolve":         true,
 	"MethodResolve":       true,
 	"StructFieldGet":      true,

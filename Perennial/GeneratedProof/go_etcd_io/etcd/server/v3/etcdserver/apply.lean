@@ -32,6 +32,25 @@ instance authApplierV3_into_val_typed :
 end def_
 end authApplierV3
 
+namespace ApplierOptions
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
+
+instance ApplierOptions_typed_pointsto :
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.t :=
+  sorry -- Rocq: Admitted
+
+instance ApplierOptions_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.t go_etcd_io.etcd.server.v3.etcdserver.apply.«ApplierOptionsⁱᵐᵖˡ» :=
+  sorry -- Rocq: Admitted
+
+end def_
+end ApplierOptions
+
 namespace applierV3backend
 section def_
 
@@ -41,12 +60,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance applierV3backend_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t where
+  typed_pointsto_def l v dq := iprop(
+    "options" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go!"options" l) v.options' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance applierV3backend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applierV3backendⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applierV3backendⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance applierV3backend_access_load_options (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go!"options" l) v.options' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go!"options" l) v.options' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance applierV3backend_access_store_options (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t) (options' : go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go!"options" l) v.options' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go!"options" l) options' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with options' := options' } : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end applierV3backend
@@ -70,25 +110,6 @@ instance applierV3Capped_into_val_typed :
 end def_
 end applierV3Capped
 
-namespace applierV3Corrupt
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
-
-instance applierV3Corrupt_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t :=
-  sorry -- Rocq: Admitted
-
-instance applierV3Corrupt_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applierV3Corruptⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end applierV3Corrupt
-
 namespace applierV3
 section def_
 
@@ -108,7 +129,7 @@ instance applierV3_into_val_typed :
 end def_
 end applierV3
 
-namespace ApplierOptions
+namespace applierV3Corrupt
 section def_
 
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
@@ -116,35 +137,37 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
-instance ApplierOptions_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.t :=
-  sorry -- Rocq: Admitted
+instance applierV3Corrupt_typed_pointsto :
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t where
+  typed_pointsto_def l v dq := iprop(
+    "applierV3" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go!"applierV3" l) v.applierV3' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
-instance ApplierOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.t go_etcd_io.etcd.server.v3.etcdserver.apply.«ApplierOptionsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+instance applierV3Corrupt_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applierV3Corruptⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance applierV3Corrupt_access_load_applierV3 (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go!"applierV3" l) v.applierV3' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go!"applierV3" l) v.applierV3' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance applierV3Corrupt_access_store_applierV3 (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t) (applierV3' : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go!"applierV3" l) v.applierV3' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go!"applierV3" l) applierV3' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with applierV3' := applierV3' } : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
-end ApplierOptions
-
-namespace SnapshotServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
-
-instance SnapshotServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.SnapshotServer.t :=
-  sorry -- Rocq: Admitted
-
-instance SnapshotServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.SnapshotServer.t go_etcd_io.etcd.server.v3.etcdserver.apply.«SnapshotServerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SnapshotServer
+end applierV3Corrupt
 
 namespace RaftStatusGetter
 section def_

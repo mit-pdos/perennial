@@ -910,82 +910,6 @@ instance loggablePutRequest_into_val_typed :
 end def_
 end loggablePutRequest
 
-namespace AlarmType
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance AlarmType_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AlarmType.t :=
-  sorry -- Rocq: Admitted
-
-instance AlarmType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AlarmType.t go_etcd_io.etcd.api.v3.etcdserverpb.«AlarmTypeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end AlarmType
-
-namespace WatchCreateRequest_FilterType
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance WatchCreateRequest_FilterType_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchCreateRequest_FilterType.t :=
-  sorry -- Rocq: Admitted
-
-instance WatchCreateRequest_FilterType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchCreateRequest_FilterType.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchCreateRequest_FilterTypeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end WatchCreateRequest_FilterType
-
-namespace AlarmRequest_AlarmAction
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance AlarmRequest_AlarmAction_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AlarmRequest_AlarmAction.t :=
-  sorry -- Rocq: Admitted
-
-instance AlarmRequest_AlarmAction_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AlarmRequest_AlarmAction.t go_etcd_io.etcd.api.v3.etcdserverpb.«AlarmRequest_AlarmActionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end AlarmRequest_AlarmAction
-
-namespace DowngradeRequest_DowngradeAction
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance DowngradeRequest_DowngradeAction_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DowngradeRequest_DowngradeAction.t :=
-  sorry -- Rocq: Admitted
-
-instance DowngradeRequest_DowngradeAction_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DowngradeRequest_DowngradeAction.t go_etcd_io.etcd.api.v3.etcdserverpb.«DowngradeRequest_DowngradeActionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end DowngradeRequest_DowngradeAction
-
 namespace ResponseHeader
 section def_
 
@@ -3381,25 +3305,6 @@ instance WatchRequest_into_val_typed :
 end def_
 end WatchRequest
 
-namespace isWatchRequest_RequestUnion
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance isWatchRequest_RequestUnion_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.isWatchRequest_RequestUnion.t :=
-  sorry -- Rocq: Admitted
-
-instance isWatchRequest_RequestUnion_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.isWatchRequest_RequestUnion.t go_etcd_io.etcd.api.v3.etcdserverpb.«isWatchRequest_RequestUnionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end isWatchRequest_RequestUnion
-
 namespace WatchRequest_CreateRequest
 section def_
 
@@ -4977,25 +4882,6 @@ instance UnimplementedKVServer_into_val_typed :
 end def_
 end UnimplementedKVServer
 
-namespace UnsafeKVServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance UnsafeKVServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeKVServer.t :=
-  sorry -- Rocq: Admitted
-
-instance UnsafeKVServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeKVServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnsafeKVServerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end UnsafeKVServer
-
 namespace WatchClient
 section def_
 
@@ -5071,25 +4957,6 @@ instance UnimplementedWatchServer_into_val_typed :
 
 end def_
 end UnimplementedWatchServer
-
-namespace UnsafeWatchServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance UnsafeWatchServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeWatchServer.t :=
-  sorry -- Rocq: Admitted
-
-instance UnsafeWatchServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeWatchServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnsafeWatchServerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end UnsafeWatchServer
 
 namespace LeaseClient
 section def_
@@ -5167,25 +5034,6 @@ instance UnimplementedLeaseServer_into_val_typed :
 end def_
 end UnimplementedLeaseServer
 
-namespace UnsafeLeaseServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance UnsafeLeaseServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeLeaseServer.t :=
-  sorry -- Rocq: Admitted
-
-instance UnsafeLeaseServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeLeaseServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnsafeLeaseServerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end UnsafeLeaseServer
-
 namespace ClusterClient
 section def_
 
@@ -5261,25 +5109,6 @@ instance UnimplementedClusterServer_into_val_typed :
 
 end def_
 end UnimplementedClusterServer
-
-namespace UnsafeClusterServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance UnsafeClusterServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeClusterServer.t :=
-  sorry -- Rocq: Admitted
-
-instance UnsafeClusterServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeClusterServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnsafeClusterServerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end UnsafeClusterServer
 
 namespace MaintenanceClient
 section def_
@@ -5357,25 +5186,6 @@ instance UnimplementedMaintenanceServer_into_val_typed :
 end def_
 end UnimplementedMaintenanceServer
 
-namespace UnsafeMaintenanceServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance UnsafeMaintenanceServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeMaintenanceServer.t :=
-  sorry -- Rocq: Admitted
-
-instance UnsafeMaintenanceServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeMaintenanceServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnsafeMaintenanceServerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end UnsafeMaintenanceServer
-
 namespace AuthClient
 section def_
 
@@ -5451,25 +5261,6 @@ instance UnimplementedAuthServer_into_val_typed :
 
 end def_
 end UnimplementedAuthServer
-
-namespace UnsafeAuthServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
-
-instance UnsafeAuthServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeAuthServer.t :=
-  sorry -- Rocq: Admitted
-
-instance UnsafeAuthServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnsafeAuthServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnsafeAuthServerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end UnsafeAuthServer
 
 end go_etcd_io.etcd.api.v3.etcdserverpb
 end

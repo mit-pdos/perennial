@@ -136,17 +136,38 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance defaultConfigSelector_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.defaultConfigSelector.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.defaultConfigSelector.t where
+  typed_pointsto_def l v dq := iprop(
+    "sc" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance defaultConfigSelector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.defaultConfigSelector.t google_golang_org.grpc.«defaultConfigSelectorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.defaultConfigSelector.t google_golang_org.grpc.«defaultConfigSelectorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance defaultConfigSelector_access_load_sc (l : loc) (v : google_golang_org.grpc.defaultConfigSelector.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance defaultConfigSelector_access_store_sc (l : loc) (v : google_golang_org.grpc.defaultConfigSelector.t) (sc' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) sc' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sc' := sc' } : google_golang_org.grpc.defaultConfigSelector.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end defaultConfigSelector
 
-namespace idler
+namespace ClientConn
 section def_
 
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
@@ -154,16 +175,16 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
-instance idler_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.idler.t :=
+instance ClientConn_typed_pointsto :
+    TypedPointsto (GF := GF) google_golang_org.grpc.ClientConn.t :=
   sorry -- Rocq: Admitted
 
-instance idler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.idler.t google_golang_org.grpc.«idlerⁱᵐᵖˡ» :=
+instance ClientConn_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ClientConn.t google_golang_org.grpc.«ClientConnⁱᵐᵖˡ» :=
   sorry -- Rocq: Admitted
 
 end def_
-end idler
+end ClientConn
 
 namespace connectivityStateManager
 section def_
@@ -203,25 +224,6 @@ instance ClientConnInterface_into_val_typed :
 end def_
 end ClientConnInterface
 
-namespace ClientConn
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance ClientConn_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.ClientConn.t :=
-  sorry -- Rocq: Admitted
-
-instance ClientConn_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ClientConn.t google_golang_org.grpc.«ClientConnⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ClientConn
-
 namespace addrConn
 section def_
 
@@ -250,12 +252,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance securityLevelKey_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.securityLevelKey.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.securityLevelKey.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance securityLevelKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.securityLevelKey.t google_golang_org.grpc.«securityLevelKeyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.securityLevelKey.t google_golang_org.grpc.«securityLevelKeyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end securityLevelKey
@@ -307,12 +313,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance codecV0Bridge_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.codecV0Bridge.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.codecV0Bridge.t where
+  typed_pointsto_def l v dq := iprop(
+    "codec" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance codecV0Bridge_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.codecV0Bridge.t google_golang_org.grpc.«codecV0Bridgeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.codecV0Bridge.t google_golang_org.grpc.«codecV0Bridgeⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance codecV0Bridge_access_load_codec (l : loc) (v : google_golang_org.grpc.codecV0Bridge.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance codecV0Bridge_access_store_codec (l : loc) (v : google_golang_org.grpc.codecV0Bridge.t) (codec' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) codec' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with codec' := codec' } : google_golang_org.grpc.codecV0Bridge.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end codecV0Bridge
@@ -326,34 +353,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance codecV1Bridge_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.codecV1Bridge.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.codecV1Bridge.t where
+  typed_pointsto_def l v dq := iprop(
+    "codecV0Bridge" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"codecV0Bridge" l) v.codecV0Bridge' dq ∗
+    "name" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"name" l) v.name' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance codecV1Bridge_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.codecV1Bridge.t google_golang_org.grpc.«codecV1Bridgeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.codecV1Bridge.t google_golang_org.grpc.«codecV1Bridgeⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance codecV1Bridge_access_load_codecV0Bridge (l : loc) (v : google_golang_org.grpc.codecV1Bridge.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"codecV0Bridge" l) v.codecV0Bridge' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"codecV0Bridge" l) v.codecV0Bridge' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance codecV1Bridge_access_store_codecV0Bridge (l : loc) (v : google_golang_org.grpc.codecV1Bridge.t) (codecV0Bridge' : google_golang_org.grpc.codecV0Bridge.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"codecV0Bridge" l) v.codecV0Bridge' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"codecV0Bridge" l) codecV0Bridge' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with codecV0Bridge' := codecV0Bridge' } : google_golang_org.grpc.codecV1Bridge.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance codecV1Bridge_access_load_name (l : loc) (v : google_golang_org.grpc.codecV1Bridge.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"name" l) v.name' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"name" l) v.name' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance codecV1Bridge_access_store_name (l : loc) (v : google_golang_org.grpc.codecV1Bridge.t) (name' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"name" l) v.name' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV1Bridge.t go!"name" l) name' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with name' := name' } : google_golang_org.grpc.codecV1Bridge.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end codecV1Bridge
-
-namespace Codec
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance Codec_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.Codec.t :=
-  sorry -- Rocq: Admitted
-
-instance Codec_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.Codec.t google_golang_org.grpc.«Codecⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Codec
 
 namespace dialOptions
 section def_
@@ -373,25 +419,6 @@ instance dialOptions_into_val_typed :
 
 end def_
 end dialOptions
-
-namespace DialOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance DialOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.DialOption.t :=
-  sorry -- Rocq: Admitted
-
-instance DialOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.DialOption.t google_golang_org.grpc.«DialOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end DialOption
 
 namespace perTargetDialOption
 section def_
@@ -421,12 +448,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance EmptyDialOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.EmptyDialOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.EmptyDialOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance EmptyDialOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyDialOption.t google_golang_org.grpc.«EmptyDialOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyDialOption.t google_golang_org.grpc.«EmptyDialOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end EmptyDialOption
@@ -440,12 +471,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance disableGlobalDialOptions_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.disableGlobalDialOptions.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.disableGlobalDialOptions.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance disableGlobalDialOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.disableGlobalDialOptions.t google_golang_org.grpc.«disableGlobalDialOptionsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.disableGlobalDialOptions.t google_golang_org.grpc.«disableGlobalDialOptionsⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end disableGlobalDialOptions
@@ -459,12 +494,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance funcDialOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.funcDialOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.funcDialOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "f" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance funcDialOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.funcDialOption.t google_golang_org.grpc.«funcDialOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.funcDialOption.t google_golang_org.grpc.«funcDialOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance funcDialOption_access_load_f (l : loc) (v : google_golang_org.grpc.funcDialOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance funcDialOption_access_store_f (l : loc) (v : google_golang_org.grpc.funcDialOption.t) (f' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) f' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with f' := f' } : google_golang_org.grpc.funcDialOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end funcDialOption
@@ -478,12 +534,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance joinDialOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.joinDialOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.joinDialOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "opts" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance joinDialOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.joinDialOption.t google_golang_org.grpc.«joinDialOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.joinDialOption.t google_golang_org.grpc.«joinDialOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance joinDialOption_access_load_opts (l : loc) (v : google_golang_org.grpc.joinDialOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance joinDialOption_access_store_opts (l : loc) (v : google_golang_org.grpc.joinDialOption.t) (opts' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) opts' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with opts' := opts' } : google_golang_org.grpc.joinDialOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end joinDialOption
@@ -497,12 +574,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxHeaderListSizeDialOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.MaxHeaderListSizeDialOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.MaxHeaderListSizeDialOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "MaxHeaderListSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxHeaderListSizeDialOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxHeaderListSizeDialOption.t google_golang_org.grpc.«MaxHeaderListSizeDialOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxHeaderListSizeDialOption.t google_golang_org.grpc.«MaxHeaderListSizeDialOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance MaxHeaderListSizeDialOption_access_load_MaxHeaderListSize (l : loc) (v : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MaxHeaderListSizeDialOption_access_store_MaxHeaderListSize (l : loc) (v : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (MaxHeaderListSize' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) MaxHeaderListSize' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxHeaderListSize' := MaxHeaderListSize' } : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end MaxHeaderListSizeDialOption
@@ -592,12 +690,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance UnaryServerInfo_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.UnaryServerInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.UnaryServerInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "Server" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq ∗
+    "FullMethod" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance UnaryServerInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.UnaryServerInfo.t google_golang_org.grpc.«UnaryServerInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.UnaryServerInfo.t google_golang_org.grpc.«UnaryServerInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance UnaryServerInfo_access_load_Server (l : loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance UnaryServerInfo_access_store_Server (l : loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (Server' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) Server' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Server' := Server' } : google_golang_org.grpc.UnaryServerInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance UnaryServerInfo_access_load_FullMethod (l : loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance UnaryServerInfo_access_store_FullMethod (l : loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (FullMethod' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) FullMethod' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with FullMethod' := FullMethod' } : google_golang_org.grpc.UnaryServerInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end UnaryServerInfo
@@ -649,34 +785,70 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance StreamServerInfo_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.StreamServerInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.StreamServerInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "FullMethod" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq ∗
+    "IsClientStream" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq ∗
+    "IsServerStream" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance StreamServerInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamServerInfo.t google_golang_org.grpc.«StreamServerInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamServerInfo.t google_golang_org.grpc.«StreamServerInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance StreamServerInfo_access_load_FullMethod (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamServerInfo_access_store_FullMethod (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (FullMethod' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) FullMethod' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with FullMethod' := FullMethod' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamServerInfo_access_load_IsClientStream (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamServerInfo_access_store_IsClientStream (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (IsClientStream' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) IsClientStream' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with IsClientStream' := IsClientStream' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamServerInfo_access_load_IsServerStream (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamServerInfo_access_store_IsServerStream (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (IsServerStream' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) IsServerStream' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with IsServerStream' := IsServerStream' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end StreamServerInfo
-
-namespace StreamServerInterceptor
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance StreamServerInterceptor_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.StreamServerInterceptor.t :=
-  sorry -- Rocq: Admitted
-
-instance StreamServerInterceptor_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamServerInterceptor.t google_golang_org.grpc.«StreamServerInterceptorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end StreamServerInterceptor
 
 namespace pickerGeneration
 section def_
@@ -744,12 +916,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance dropError_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.dropError.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.dropError.t where
+  typed_pointsto_def l v dq := iprop(
+    "error" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) v.error' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance dropError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.dropError.t google_golang_org.grpc.«dropErrorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.dropError.t google_golang_org.grpc.«dropErrorⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance dropError_access_load_error (l : loc) (v : google_golang_org.grpc.dropError.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) v.error' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) v.error' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance dropError_access_store_error (l : loc) (v : google_golang_org.grpc.dropError.t) (error' : error.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) v.error' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) error' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with error' := error' } : google_golang_org.grpc.dropError.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end dropError
@@ -887,25 +1080,6 @@ instance callInfo_into_val_typed :
 end def_
 end callInfo
 
-namespace CallOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance CallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.CallOption.t :=
-  sorry -- Rocq: Admitted
-
-instance CallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.CallOption.t google_golang_org.grpc.«CallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end CallOption
-
 namespace EmptyCallOption
 section def_
 
@@ -915,12 +1089,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance EmptyCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.EmptyCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.EmptyCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance EmptyCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyCallOption.t google_golang_org.grpc.«EmptyCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyCallOption.t google_golang_org.grpc.«EmptyCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end EmptyCallOption
@@ -934,12 +1112,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance StaticMethodCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.StaticMethodCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.StaticMethodCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "EmptyCallOption" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StaticMethodCallOption.t go!"EmptyCallOption" l) v.EmptyCallOption' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance StaticMethodCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StaticMethodCallOption.t google_golang_org.grpc.«StaticMethodCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StaticMethodCallOption.t google_golang_org.grpc.«StaticMethodCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance StaticMethodCallOption_access_load_EmptyCallOption (l : loc) (v : google_golang_org.grpc.StaticMethodCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StaticMethodCallOption.t go!"EmptyCallOption" l) v.EmptyCallOption' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StaticMethodCallOption.t go!"EmptyCallOption" l) v.EmptyCallOption' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StaticMethodCallOption_access_store_EmptyCallOption (l : loc) (v : google_golang_org.grpc.StaticMethodCallOption.t) (EmptyCallOption' : google_golang_org.grpc.EmptyCallOption.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StaticMethodCallOption.t go!"EmptyCallOption" l) v.EmptyCallOption' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StaticMethodCallOption.t go!"EmptyCallOption" l) EmptyCallOption' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with EmptyCallOption' := EmptyCallOption' } : google_golang_org.grpc.StaticMethodCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end StaticMethodCallOption
@@ -1010,12 +1209,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance FailFastCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.FailFastCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.FailFastCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "FailFast" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance FailFastCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.FailFastCallOption.t google_golang_org.grpc.«FailFastCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.FailFastCallOption.t google_golang_org.grpc.«FailFastCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance FailFastCallOption_access_load_FailFast (l : loc) (v : google_golang_org.grpc.FailFastCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance FailFastCallOption_access_store_FailFast (l : loc) (v : google_golang_org.grpc.FailFastCallOption.t) (FailFast' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) FailFast' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with FailFast' := FailFast' } : google_golang_org.grpc.FailFastCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end FailFastCallOption
@@ -1029,12 +1249,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance OnFinishCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.OnFinishCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.OnFinishCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "OnFinish" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance OnFinishCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.OnFinishCallOption.t google_golang_org.grpc.«OnFinishCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.OnFinishCallOption.t google_golang_org.grpc.«OnFinishCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance OnFinishCallOption_access_load_OnFinish (l : loc) (v : google_golang_org.grpc.OnFinishCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance OnFinishCallOption_access_store_OnFinish (l : loc) (v : google_golang_org.grpc.OnFinishCallOption.t) (OnFinish' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) OnFinish' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with OnFinish' := OnFinish' } : google_golang_org.grpc.OnFinishCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end OnFinishCallOption
@@ -1048,12 +1289,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxRecvMsgSizeCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.MaxRecvMsgSizeCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.MaxRecvMsgSizeCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "MaxRecvMsgSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxRecvMsgSizeCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxRecvMsgSizeCallOption.t google_golang_org.grpc.«MaxRecvMsgSizeCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxRecvMsgSizeCallOption.t google_golang_org.grpc.«MaxRecvMsgSizeCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance MaxRecvMsgSizeCallOption_access_load_MaxRecvMsgSize (l : loc) (v : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MaxRecvMsgSizeCallOption_access_store_MaxRecvMsgSize (l : loc) (v : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (MaxRecvMsgSize' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) MaxRecvMsgSize' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxRecvMsgSize' := MaxRecvMsgSize' } : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end MaxRecvMsgSizeCallOption
@@ -1067,12 +1329,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance AuthorityOverrideCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.AuthorityOverrideCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.AuthorityOverrideCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "Authority" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthorityOverrideCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.AuthorityOverrideCallOption.t google_golang_org.grpc.«AuthorityOverrideCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.AuthorityOverrideCallOption.t google_golang_org.grpc.«AuthorityOverrideCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance AuthorityOverrideCallOption_access_load_Authority (l : loc) (v : google_golang_org.grpc.AuthorityOverrideCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance AuthorityOverrideCallOption_access_store_Authority (l : loc) (v : google_golang_org.grpc.AuthorityOverrideCallOption.t) (Authority' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) Authority' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Authority' := Authority' } : google_golang_org.grpc.AuthorityOverrideCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end AuthorityOverrideCallOption
@@ -1086,12 +1369,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxSendMsgSizeCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.MaxSendMsgSizeCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.MaxSendMsgSizeCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "MaxSendMsgSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxSendMsgSizeCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxSendMsgSizeCallOption.t google_golang_org.grpc.«MaxSendMsgSizeCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxSendMsgSizeCallOption.t google_golang_org.grpc.«MaxSendMsgSizeCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance MaxSendMsgSizeCallOption_access_load_MaxSendMsgSize (l : loc) (v : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MaxSendMsgSizeCallOption_access_store_MaxSendMsgSize (l : loc) (v : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (MaxSendMsgSize' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) MaxSendMsgSize' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxSendMsgSize' := MaxSendMsgSize' } : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end MaxSendMsgSizeCallOption
@@ -1124,12 +1428,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance CompressorCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.CompressorCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.CompressorCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "CompressorType" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance CompressorCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.CompressorCallOption.t google_golang_org.grpc.«CompressorCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.CompressorCallOption.t google_golang_org.grpc.«CompressorCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance CompressorCallOption_access_load_CompressorType (l : loc) (v : google_golang_org.grpc.CompressorCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance CompressorCallOption_access_store_CompressorType (l : loc) (v : google_golang_org.grpc.CompressorCallOption.t) (CompressorType' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) CompressorType' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with CompressorType' := CompressorType' } : google_golang_org.grpc.CompressorCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end CompressorCallOption
@@ -1143,12 +1468,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance acceptCompressorsCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.acceptCompressorsCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.acceptCompressorsCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "names" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance acceptCompressorsCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.acceptCompressorsCallOption.t google_golang_org.grpc.«acceptCompressorsCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.acceptCompressorsCallOption.t google_golang_org.grpc.«acceptCompressorsCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance acceptCompressorsCallOption_access_load_names (l : loc) (v : google_golang_org.grpc.acceptCompressorsCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance acceptCompressorsCallOption_access_store_names (l : loc) (v : google_golang_org.grpc.acceptCompressorsCallOption.t) (names' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) names' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with names' := names' } : google_golang_org.grpc.acceptCompressorsCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end acceptCompressorsCallOption
@@ -1162,12 +1508,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ContentSubtypeCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.ContentSubtypeCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.ContentSubtypeCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "ContentSubtype" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ContentSubtypeCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ContentSubtypeCallOption.t google_golang_org.grpc.«ContentSubtypeCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ContentSubtypeCallOption.t google_golang_org.grpc.«ContentSubtypeCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance ContentSubtypeCallOption_access_load_ContentSubtype (l : loc) (v : google_golang_org.grpc.ContentSubtypeCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ContentSubtypeCallOption_access_store_ContentSubtype (l : loc) (v : google_golang_org.grpc.ContentSubtypeCallOption.t) (ContentSubtype' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) ContentSubtype' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ContentSubtype' := ContentSubtype' } : google_golang_org.grpc.ContentSubtypeCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ContentSubtypeCallOption
@@ -1219,12 +1586,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance CustomCodecCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.CustomCodecCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.CustomCodecCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "Codec" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.CustomCodecCallOption.t go!"Codec" l) v.Codec' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance CustomCodecCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.CustomCodecCallOption.t google_golang_org.grpc.«CustomCodecCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.CustomCodecCallOption.t google_golang_org.grpc.«CustomCodecCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance CustomCodecCallOption_access_load_Codec (l : loc) (v : google_golang_org.grpc.CustomCodecCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.CustomCodecCallOption.t go!"Codec" l) v.Codec' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.CustomCodecCallOption.t go!"Codec" l) v.Codec' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance CustomCodecCallOption_access_store_Codec (l : loc) (v : google_golang_org.grpc.CustomCodecCallOption.t) (Codec' : google_golang_org.grpc.Codec.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.CustomCodecCallOption.t go!"Codec" l) v.Codec' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.CustomCodecCallOption.t go!"Codec" l) Codec' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Codec' := Codec' } : google_golang_org.grpc.CustomCodecCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end CustomCodecCallOption
@@ -1238,34 +1626,36 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxRetryRPCBufferSizeCallOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "MaxRetryRPCBufferSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxRetryRPCBufferSizeCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t google_golang_org.grpc.«MaxRetryRPCBufferSizeCallOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t google_golang_org.grpc.«MaxRetryRPCBufferSizeCallOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance MaxRetryRPCBufferSizeCallOption_access_load_MaxRetryRPCBufferSize (l : loc) (v : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MaxRetryRPCBufferSizeCallOption_access_store_MaxRetryRPCBufferSize (l : loc) (v : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (MaxRetryRPCBufferSize' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) MaxRetryRPCBufferSize' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxRetryRPCBufferSize' := MaxRetryRPCBufferSize' } : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end MaxRetryRPCBufferSizeCallOption
-
-namespace payloadFormat
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance payloadFormat_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.payloadFormat.t :=
-  sorry -- Rocq: Admitted
-
-instance payloadFormat_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.payloadFormat.t google_golang_org.grpc.«payloadFormatⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end payloadFormat
 
 namespace streamReader
 section def_
@@ -1295,12 +1685,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance noCopy_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.noCopy.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.noCopy.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance noCopy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.noCopy.t google_golang_org.grpc.«noCopyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.noCopy.t google_golang_org.grpc.«noCopyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end noCopy
@@ -1343,44 +1737,6 @@ instance payloadInfo_into_val_typed :
 end def_
 end payloadInfo
 
-namespace recvCompressor
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance recvCompressor_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.recvCompressor.t :=
-  sorry -- Rocq: Admitted
-
-instance recvCompressor_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.recvCompressor.t google_golang_org.grpc.«recvCompressorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end recvCompressor
-
-namespace rpcInfo
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance rpcInfo_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.rpcInfo.t :=
-  sorry -- Rocq: Admitted
-
-instance rpcInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.rpcInfo.t google_golang_org.grpc.«rpcInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end rpcInfo
-
 namespace compressorInfo
 section def_
 
@@ -1400,6 +1756,63 @@ instance compressorInfo_into_val_typed :
 end def_
 end compressorInfo
 
+namespace rpcInfo
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : google_golang_org.grpc.Assumptions]
+
+instance rpcInfo_typed_pointsto :
+    TypedPointsto (GF := GF) google_golang_org.grpc.rpcInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "failfast" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"failfast" l) v.failfast' dq ∗
+    "preloaderInfo" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"preloaderInfo" l) v.preloaderInfo' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance rpcInfo_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.rpcInfo.t google_golang_org.grpc.«rpcInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance rpcInfo_access_load_failfast (l : loc) (v : google_golang_org.grpc.rpcInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"failfast" l) v.failfast' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"failfast" l) v.failfast' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance rpcInfo_access_store_failfast (l : loc) (v : google_golang_org.grpc.rpcInfo.t) (failfast' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"failfast" l) v.failfast' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"failfast" l) failfast' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with failfast' := failfast' } : google_golang_org.grpc.rpcInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance rpcInfo_access_load_preloaderInfo (l : loc) (v : google_golang_org.grpc.rpcInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"preloaderInfo" l) v.preloaderInfo' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"preloaderInfo" l) v.preloaderInfo' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance rpcInfo_access_store_preloaderInfo (l : loc) (v : google_golang_org.grpc.rpcInfo.t) (preloaderInfo' : google_golang_org.grpc.compressorInfo.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"preloaderInfo" l) v.preloaderInfo' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.rpcInfo.t go!"preloaderInfo" l) preloaderInfo' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with preloaderInfo' := preloaderInfo' } : google_golang_org.grpc.rpcInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end rpcInfo
+
 namespace rpcInfoContextKey
 section def_
 
@@ -1409,12 +1822,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance rpcInfoContextKey_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.rpcInfoContextKey.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.rpcInfoContextKey.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance rpcInfoContextKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.rpcInfoContextKey.t google_golang_org.grpc.«rpcInfoContextKeyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.rpcInfoContextKey.t google_golang_org.grpc.«rpcInfoContextKeyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end rpcInfoContextKey
@@ -1447,12 +1864,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MethodDesc_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.MethodDesc.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.MethodDesc.t where
+  typed_pointsto_def l v dq := iprop(
+    "MethodName" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"MethodName" l) v.MethodName' dq ∗
+    "Handler" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"Handler" l) v.Handler' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance MethodDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MethodDesc.t google_golang_org.grpc.«MethodDescⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MethodDesc.t google_golang_org.grpc.«MethodDescⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance MethodDesc_access_load_MethodName (l : loc) (v : google_golang_org.grpc.MethodDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"MethodName" l) v.MethodName' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"MethodName" l) v.MethodName' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MethodDesc_access_store_MethodName (l : loc) (v : google_golang_org.grpc.MethodDesc.t) (MethodName' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"MethodName" l) v.MethodName' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"MethodName" l) MethodName' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MethodName' := MethodName' } : google_golang_org.grpc.MethodDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance MethodDesc_access_load_Handler (l : loc) (v : google_golang_org.grpc.MethodDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"Handler" l) v.Handler' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"Handler" l) v.Handler' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MethodDesc_access_store_Handler (l : loc) (v : google_golang_org.grpc.MethodDesc.t) (Handler' : google_golang_org.grpc.MethodHandler.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"Handler" l) v.Handler' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodDesc.t go!"Handler" l) Handler' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Handler' := Handler' } : google_golang_org.grpc.MethodDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end MethodDesc
@@ -1466,12 +1921,101 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ServiceDesc_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.ServiceDesc.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.ServiceDesc.t where
+  typed_pointsto_def l v dq := iprop(
+    "ServiceName" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"ServiceName" l) v.ServiceName' dq ∗
+    "HandlerType" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"HandlerType" l) v.HandlerType' dq ∗
+    "Methods" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Methods" l) v.Methods' dq ∗
+    "Streams" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Streams" l) v.Streams' dq ∗
+    "Metadata" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Metadata" l) v.Metadata' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ServiceDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceDesc.t google_golang_org.grpc.«ServiceDescⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceDesc.t google_golang_org.grpc.«ServiceDescⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance ServiceDesc_access_load_ServiceName (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"ServiceName" l) v.ServiceName' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"ServiceName" l) v.ServiceName' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_store_ServiceName (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (ServiceName' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"ServiceName" l) v.ServiceName' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"ServiceName" l) ServiceName' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ServiceName' := ServiceName' } : google_golang_org.grpc.ServiceDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_load_HandlerType (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"HandlerType" l) v.HandlerType' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"HandlerType" l) v.HandlerType' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_store_HandlerType (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (HandlerType' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"HandlerType" l) v.HandlerType' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"HandlerType" l) HandlerType' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with HandlerType' := HandlerType' } : google_golang_org.grpc.ServiceDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_load_Methods (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Methods" l) v.Methods' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Methods" l) v.Methods' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_store_Methods (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (Methods' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Methods" l) v.Methods' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Methods" l) Methods' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Methods' := Methods' } : google_golang_org.grpc.ServiceDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_load_Streams (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Streams" l) v.Streams' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Streams" l) v.Streams' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_store_Streams (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (Streams' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Streams" l) v.Streams' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Streams" l) Streams' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Streams' := Streams' } : google_golang_org.grpc.ServiceDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_load_Metadata (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Metadata" l) v.Metadata' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Metadata" l) v.Metadata' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceDesc_access_store_Metadata (l : loc) (v : google_golang_org.grpc.ServiceDesc.t) (Metadata' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Metadata" l) v.Metadata' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceDesc.t go!"Metadata" l) Metadata' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Metadata' := Metadata' } : google_golang_org.grpc.ServiceDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ServiceDesc
@@ -1485,12 +2029,84 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance serviceInfo_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.serviceInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.serviceInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "serviceImpl" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"serviceImpl" l) v.serviceImpl' dq ∗
+    "methods" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"methods" l) v.methods' dq ∗
+    "streams" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"streams" l) v.streams' dq ∗
+    "mdata" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"mdata" l) v.mdata' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance serviceInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serviceInfo.t google_golang_org.grpc.«serviceInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serviceInfo.t google_golang_org.grpc.«serviceInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance serviceInfo_access_load_serviceImpl (l : loc) (v : google_golang_org.grpc.serviceInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"serviceImpl" l) v.serviceImpl' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"serviceImpl" l) v.serviceImpl' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance serviceInfo_access_store_serviceImpl (l : loc) (v : google_golang_org.grpc.serviceInfo.t) (serviceImpl' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"serviceImpl" l) v.serviceImpl' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"serviceImpl" l) serviceImpl' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with serviceImpl' := serviceImpl' } : google_golang_org.grpc.serviceInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance serviceInfo_access_load_methods (l : loc) (v : google_golang_org.grpc.serviceInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"methods" l) v.methods' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"methods" l) v.methods' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance serviceInfo_access_store_methods (l : loc) (v : google_golang_org.grpc.serviceInfo.t) (methods' : map.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"methods" l) v.methods' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"methods" l) methods' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with methods' := methods' } : google_golang_org.grpc.serviceInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance serviceInfo_access_load_streams (l : loc) (v : google_golang_org.grpc.serviceInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"streams" l) v.streams' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"streams" l) v.streams' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance serviceInfo_access_store_streams (l : loc) (v : google_golang_org.grpc.serviceInfo.t) (streams' : map.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"streams" l) v.streams' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"streams" l) streams' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with streams' := streams' } : google_golang_org.grpc.serviceInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance serviceInfo_access_load_mdata (l : loc) (v : google_golang_org.grpc.serviceInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"mdata" l) v.mdata' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"mdata" l) v.mdata' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance serviceInfo_access_store_mdata (l : loc) (v : google_golang_org.grpc.serviceInfo.t) (mdata' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"mdata" l) v.mdata' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.serviceInfo.t go!"mdata" l) mdata' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mdata' := mdata' } : google_golang_org.grpc.serviceInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end serviceInfo
@@ -1533,25 +2149,6 @@ instance serverOptions_into_val_typed :
 end def_
 end serverOptions
 
-namespace ServerOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance ServerOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.ServerOption.t :=
-  sorry -- Rocq: Admitted
-
-instance ServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServerOption.t google_golang_org.grpc.«ServerOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ServerOption
-
 namespace EmptyServerOption
 section def_
 
@@ -1561,12 +2158,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance EmptyServerOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.EmptyServerOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.EmptyServerOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance EmptyServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyServerOption.t google_golang_org.grpc.«EmptyServerOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyServerOption.t google_golang_org.grpc.«EmptyServerOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end EmptyServerOption
@@ -1580,12 +2181,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance funcServerOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.funcServerOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.funcServerOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "f" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.funcServerOption.t go!"f" l) v.f' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance funcServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.funcServerOption.t google_golang_org.grpc.«funcServerOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.funcServerOption.t google_golang_org.grpc.«funcServerOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance funcServerOption_access_load_f (l : loc) (v : google_golang_org.grpc.funcServerOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcServerOption.t go!"f" l) v.f' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcServerOption.t go!"f" l) v.f' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance funcServerOption_access_store_f (l : loc) (v : google_golang_org.grpc.funcServerOption.t) (f' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcServerOption.t go!"f" l) v.f' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcServerOption.t go!"f" l) f' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with f' := f' } : google_golang_org.grpc.funcServerOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end funcServerOption
@@ -1599,12 +2221,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance joinServerOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.joinServerOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.joinServerOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "opts" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.joinServerOption.t go!"opts" l) v.opts' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance joinServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.joinServerOption.t google_golang_org.grpc.«joinServerOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.joinServerOption.t google_golang_org.grpc.«joinServerOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance joinServerOption_access_load_opts (l : loc) (v : google_golang_org.grpc.joinServerOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinServerOption.t go!"opts" l) v.opts' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinServerOption.t go!"opts" l) v.opts' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance joinServerOption_access_store_opts (l : loc) (v : google_golang_org.grpc.joinServerOption.t) (opts' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinServerOption.t go!"opts" l) v.opts' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinServerOption.t go!"opts" l) opts' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with opts' := opts' } : google_golang_org.grpc.joinServerOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end joinServerOption
@@ -1618,34 +2261,36 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxHeaderListSizeServerOption_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.MaxHeaderListSizeServerOption.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.MaxHeaderListSizeServerOption.t where
+  typed_pointsto_def l v dq := iprop(
+    "MaxHeaderListSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeServerOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxHeaderListSizeServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxHeaderListSizeServerOption.t google_golang_org.grpc.«MaxHeaderListSizeServerOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxHeaderListSizeServerOption.t google_golang_org.grpc.«MaxHeaderListSizeServerOptionⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance MaxHeaderListSizeServerOption_access_load_MaxHeaderListSize (l : loc) (v : google_golang_org.grpc.MaxHeaderListSizeServerOption.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeServerOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeServerOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MaxHeaderListSizeServerOption_access_store_MaxHeaderListSize (l : loc) (v : google_golang_org.grpc.MaxHeaderListSizeServerOption.t) (MaxHeaderListSize' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeServerOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeServerOption.t go!"MaxHeaderListSize" l) MaxHeaderListSize' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxHeaderListSize' := MaxHeaderListSize' } : google_golang_org.grpc.MaxHeaderListSizeServerOption.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end MaxHeaderListSizeServerOption
-
-namespace ServiceRegistrar
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance ServiceRegistrar_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.ServiceRegistrar.t :=
-  sorry -- Rocq: Admitted
-
-instance ServiceRegistrar_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceRegistrar.t google_golang_org.grpc.«ServiceRegistrarⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ServiceRegistrar
 
 namespace MethodInfo
 section def_
@@ -1656,12 +2301,67 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MethodInfo_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.MethodInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.MethodInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "Name" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"Name" l) v.Name' dq ∗
+    "IsClientStream" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsClientStream" l) v.IsClientStream' dq ∗
+    "IsServerStream" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsServerStream" l) v.IsServerStream' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance MethodInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MethodInfo.t google_golang_org.grpc.«MethodInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MethodInfo.t google_golang_org.grpc.«MethodInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance MethodInfo_access_load_Name (l : loc) (v : google_golang_org.grpc.MethodInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"Name" l) v.Name' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"Name" l) v.Name' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MethodInfo_access_store_Name (l : loc) (v : google_golang_org.grpc.MethodInfo.t) (Name' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"Name" l) v.Name' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"Name" l) Name' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Name' := Name' } : google_golang_org.grpc.MethodInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance MethodInfo_access_load_IsClientStream (l : loc) (v : google_golang_org.grpc.MethodInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsClientStream" l) v.IsClientStream' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsClientStream" l) v.IsClientStream' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MethodInfo_access_store_IsClientStream (l : loc) (v : google_golang_org.grpc.MethodInfo.t) (IsClientStream' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsClientStream" l) v.IsClientStream' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsClientStream" l) IsClientStream' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with IsClientStream' := IsClientStream' } : google_golang_org.grpc.MethodInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance MethodInfo_access_load_IsServerStream (l : loc) (v : google_golang_org.grpc.MethodInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsServerStream" l) v.IsServerStream' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsServerStream" l) v.IsServerStream' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance MethodInfo_access_store_IsServerStream (l : loc) (v : google_golang_org.grpc.MethodInfo.t) (IsServerStream' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsServerStream" l) v.IsServerStream' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.MethodInfo.t go!"IsServerStream" l) IsServerStream' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with IsServerStream' := IsServerStream' } : google_golang_org.grpc.MethodInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end MethodInfo
@@ -1675,12 +2375,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ServiceInfo_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.ServiceInfo.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.ServiceInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "Methods" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Methods" l) v.Methods' dq ∗
+    "Metadata" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Metadata" l) v.Metadata' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ServiceInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceInfo.t google_golang_org.grpc.«ServiceInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceInfo.t google_golang_org.grpc.«ServiceInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance ServiceInfo_access_load_Methods (l : loc) (v : google_golang_org.grpc.ServiceInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Methods" l) v.Methods' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Methods" l) v.Methods' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceInfo_access_store_Methods (l : loc) (v : google_golang_org.grpc.ServiceInfo.t) (Methods' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Methods" l) v.Methods' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Methods" l) Methods' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Methods' := Methods' } : google_golang_org.grpc.ServiceInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceInfo_access_load_Metadata (l : loc) (v : google_golang_org.grpc.ServiceInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Metadata" l) v.Metadata' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Metadata" l) v.Metadata' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ServiceInfo_access_store_Metadata (l : loc) (v : google_golang_org.grpc.ServiceInfo.t) (Metadata' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Metadata" l) v.Metadata' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.ServiceInfo.t go!"Metadata" l) Metadata' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Metadata' := Metadata' } : google_golang_org.grpc.ServiceInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ServiceInfo
@@ -1713,12 +2451,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance streamKey_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.streamKey.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.streamKey.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance streamKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.streamKey.t google_golang_org.grpc.«streamKeyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.streamKey.t google_golang_org.grpc.«streamKeyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end streamKey
@@ -1751,12 +2493,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance serverKey_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.serverKey.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.serverKey.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance serverKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverKey.t google_golang_org.grpc.«serverKeyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverKey.t google_golang_org.grpc.«serverKeyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end serverKey
@@ -1808,12 +2554,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance healthCheckConfig_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.healthCheckConfig.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.healthCheckConfig.t where
+  typed_pointsto_def l v dq := iprop(
+    "ServiceName" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.healthCheckConfig.t go!"ServiceName" l) v.ServiceName' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance healthCheckConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.healthCheckConfig.t google_golang_org.grpc.«healthCheckConfigⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.healthCheckConfig.t google_golang_org.grpc.«healthCheckConfigⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance healthCheckConfig_access_load_ServiceName (l : loc) (v : google_golang_org.grpc.healthCheckConfig.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.healthCheckConfig.t go!"ServiceName" l) v.ServiceName' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.healthCheckConfig.t go!"ServiceName" l) v.ServiceName' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance healthCheckConfig_access_store_ServiceName (l : loc) (v : google_golang_org.grpc.healthCheckConfig.t) (ServiceName' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.healthCheckConfig.t go!"ServiceName" l) v.ServiceName' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.healthCheckConfig.t go!"ServiceName" l) ServiceName' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ServiceName' := ServiceName' } : google_golang_org.grpc.healthCheckConfig.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end healthCheckConfig
@@ -1846,12 +2613,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance retryThrottlingPolicy_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.retryThrottlingPolicy.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.retryThrottlingPolicy.t where
+  typed_pointsto_def l v dq := iprop(
+    "MaxTokens" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"MaxTokens" l) v.MaxTokens' dq ∗
+    "TokenRatio" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"TokenRatio" l) v.TokenRatio' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance retryThrottlingPolicy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.retryThrottlingPolicy.t google_golang_org.grpc.«retryThrottlingPolicyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.retryThrottlingPolicy.t google_golang_org.grpc.«retryThrottlingPolicyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance retryThrottlingPolicy_access_load_MaxTokens (l : loc) (v : google_golang_org.grpc.retryThrottlingPolicy.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"MaxTokens" l) v.MaxTokens' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"MaxTokens" l) v.MaxTokens' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance retryThrottlingPolicy_access_store_MaxTokens (l : loc) (v : google_golang_org.grpc.retryThrottlingPolicy.t) (MaxTokens' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"MaxTokens" l) v.MaxTokens' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"MaxTokens" l) MaxTokens' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxTokens' := MaxTokens' } : google_golang_org.grpc.retryThrottlingPolicy.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance retryThrottlingPolicy_access_load_TokenRatio (l : loc) (v : google_golang_org.grpc.retryThrottlingPolicy.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"TokenRatio" l) v.TokenRatio' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"TokenRatio" l) v.TokenRatio' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance retryThrottlingPolicy_access_store_TokenRatio (l : loc) (v : google_golang_org.grpc.retryThrottlingPolicy.t) (TokenRatio' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"TokenRatio" l) v.TokenRatio' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottlingPolicy.t go!"TokenRatio" l) TokenRatio' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with TokenRatio' := TokenRatio' } : google_golang_org.grpc.retryThrottlingPolicy.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end retryThrottlingPolicy
@@ -1865,12 +2670,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance jsonName_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.jsonName.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.jsonName.t where
+  typed_pointsto_def l v dq := iprop(
+    "Service" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Service" l) v.Service' dq ∗
+    "Method" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Method" l) v.Method' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance jsonName_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonName.t google_golang_org.grpc.«jsonNameⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonName.t google_golang_org.grpc.«jsonNameⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance jsonName_access_load_Service (l : loc) (v : google_golang_org.grpc.jsonName.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Service" l) v.Service' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Service" l) v.Service' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance jsonName_access_store_Service (l : loc) (v : google_golang_org.grpc.jsonName.t) (Service' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Service" l) v.Service' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Service" l) Service' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Service' := Service' } : google_golang_org.grpc.jsonName.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance jsonName_access_load_Method (l : loc) (v : google_golang_org.grpc.jsonName.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Method" l) v.Method' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Method" l) v.Method' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance jsonName_access_store_Method (l : loc) (v : google_golang_org.grpc.jsonName.t) (Method' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Method" l) v.Method' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.jsonName.t go!"Method" l) Method' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Method' := Method' } : google_golang_org.grpc.jsonName.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end jsonName
@@ -1913,25 +2756,6 @@ instance jsonSC_into_val_typed :
 end def_
 end jsonSC
 
-namespace StreamHandler
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance StreamHandler_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.StreamHandler.t :=
-  sorry -- Rocq: Admitted
-
-instance StreamHandler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamHandler.t google_golang_org.grpc.«StreamHandlerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end StreamHandler
-
 namespace StreamDesc
 section def_
 
@@ -1941,12 +2765,84 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance StreamDesc_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.StreamDesc.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.StreamDesc.t where
+  typed_pointsto_def l v dq := iprop(
+    "StreamName" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"StreamName" l) v.StreamName' dq ∗
+    "Handler" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"Handler" l) v.Handler' dq ∗
+    "ServerStreams" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ServerStreams" l) v.ServerStreams' dq ∗
+    "ClientStreams" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ClientStreams" l) v.ClientStreams' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance StreamDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamDesc.t google_golang_org.grpc.«StreamDescⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamDesc.t google_golang_org.grpc.«StreamDescⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance StreamDesc_access_load_StreamName (l : loc) (v : google_golang_org.grpc.StreamDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"StreamName" l) v.StreamName' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"StreamName" l) v.StreamName' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamDesc_access_store_StreamName (l : loc) (v : google_golang_org.grpc.StreamDesc.t) (StreamName' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"StreamName" l) v.StreamName' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"StreamName" l) StreamName' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with StreamName' := StreamName' } : google_golang_org.grpc.StreamDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamDesc_access_load_Handler (l : loc) (v : google_golang_org.grpc.StreamDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"Handler" l) v.Handler' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"Handler" l) v.Handler' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamDesc_access_store_Handler (l : loc) (v : google_golang_org.grpc.StreamDesc.t) (Handler' : google_golang_org.grpc.StreamHandler.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"Handler" l) v.Handler' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"Handler" l) Handler' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Handler' := Handler' } : google_golang_org.grpc.StreamDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamDesc_access_load_ServerStreams (l : loc) (v : google_golang_org.grpc.StreamDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ServerStreams" l) v.ServerStreams' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ServerStreams" l) v.ServerStreams' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamDesc_access_store_ServerStreams (l : loc) (v : google_golang_org.grpc.StreamDesc.t) (ServerStreams' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ServerStreams" l) v.ServerStreams' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ServerStreams" l) ServerStreams' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ServerStreams' := ServerStreams' } : google_golang_org.grpc.StreamDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamDesc_access_load_ClientStreams (l : loc) (v : google_golang_org.grpc.StreamDesc.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ClientStreams" l) v.ClientStreams' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ClientStreams" l) v.ClientStreams' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance StreamDesc_access_store_ClientStreams (l : loc) (v : google_golang_org.grpc.StreamDesc.t) (ClientStreams' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ClientStreams" l) v.ClientStreams' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamDesc.t go!"ClientStreams" l) ClientStreams' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ClientStreams' := ClientStreams' } : google_golang_org.grpc.StreamDesc.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end StreamDesc
@@ -2017,12 +2913,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance replayOp_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.replayOp.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.replayOp.t where
+  typed_pointsto_def l v dq := iprop(
+    "op" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"op" l) v.op' dq ∗
+    "cleanup" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"cleanup" l) v.cleanup' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance replayOp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.replayOp.t google_golang_org.grpc.«replayOpⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.replayOp.t google_golang_org.grpc.«replayOpⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance replayOp_access_load_op (l : loc) (v : google_golang_org.grpc.replayOp.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"op" l) v.op' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"op" l) v.op' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance replayOp_access_store_op (l : loc) (v : google_golang_org.grpc.replayOp.t) (op' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"op" l) v.op' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"op" l) op' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with op' := op' } : google_golang_org.grpc.replayOp.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance replayOp_access_load_cleanup (l : loc) (v : google_golang_org.grpc.replayOp.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"cleanup" l) v.cleanup' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"cleanup" l) v.cleanup' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance replayOp_access_store_cleanup (l : loc) (v : google_golang_org.grpc.replayOp.t) (cleanup' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"cleanup" l) v.cleanup' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.replayOp.t go!"cleanup" l) cleanup' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cleanup' := cleanup' } : google_golang_org.grpc.replayOp.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end replayOp
@@ -2103,120 +3037,6 @@ instance serverStream_into_val_typed :
 end def_
 end serverStream
 
-namespace ServerStreamingClient
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance ServerStreamingClient_typed_pointsto {Res' : Type} [TypedPointsto (GF := GF) Res'] :
-    TypedPointsto (GF := GF) (google_golang_org.grpc.ServerStreamingClient.t Res') :=
-  sorry -- Rocq: Admitted
-
-instance ServerStreamingClient_into_val_typed (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.ServerStreamingClient.t Res') (google_golang_org.grpc.«ServerStreamingClientⁱᵐᵖˡ» Res) :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ServerStreamingClient
-
-namespace ServerStreamingServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance ServerStreamingServer_typed_pointsto {Res' : Type} [TypedPointsto (GF := GF) Res'] :
-    TypedPointsto (GF := GF) (google_golang_org.grpc.ServerStreamingServer.t Res') :=
-  sorry -- Rocq: Admitted
-
-instance ServerStreamingServer_into_val_typed (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.ServerStreamingServer.t Res') (google_golang_org.grpc.«ServerStreamingServerⁱᵐᵖˡ» Res) :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ServerStreamingServer
-
-namespace ClientStreamingClient
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance ClientStreamingClient_typed_pointsto {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] :
-    TypedPointsto (GF := GF) (google_golang_org.grpc.ClientStreamingClient.t Req' Res') :=
-  sorry -- Rocq: Admitted
-
-instance ClientStreamingClient_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.ClientStreamingClient.t Req' Res') (google_golang_org.grpc.«ClientStreamingClientⁱᵐᵖˡ» Req Res) :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ClientStreamingClient
-
-namespace ClientStreamingServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance ClientStreamingServer_typed_pointsto {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] :
-    TypedPointsto (GF := GF) (google_golang_org.grpc.ClientStreamingServer.t Req' Res') :=
-  sorry -- Rocq: Admitted
-
-instance ClientStreamingServer_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.ClientStreamingServer.t Req' Res') (google_golang_org.grpc.«ClientStreamingServerⁱᵐᵖˡ» Req Res) :=
-  sorry -- Rocq: Admitted
-
-end def_
-end ClientStreamingServer
-
-namespace BidiStreamingClient
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance BidiStreamingClient_typed_pointsto {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] :
-    TypedPointsto (GF := GF) (google_golang_org.grpc.BidiStreamingClient.t Req' Res') :=
-  sorry -- Rocq: Admitted
-
-instance BidiStreamingClient_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.BidiStreamingClient.t Req' Res') (google_golang_org.grpc.«BidiStreamingClientⁱᵐᵖˡ» Req Res) :=
-  sorry -- Rocq: Admitted
-
-end def_
-end BidiStreamingClient
-
-namespace BidiStreamingServer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance BidiStreamingServer_typed_pointsto {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] :
-    TypedPointsto (GF := GF) (google_golang_org.grpc.BidiStreamingServer.t Req' Res') :=
-  sorry -- Rocq: Admitted
-
-instance BidiStreamingServer_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.BidiStreamingServer.t Req' Res') (google_golang_org.grpc.«BidiStreamingServerⁱᵐᵖˡ» Req Res) :=
-  sorry -- Rocq: Admitted
-
-end def_
-end BidiStreamingServer
-
 namespace GenericClientStream
 section def_
 
@@ -2226,12 +3046,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance GenericClientStream_typed_pointsto {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] :
-    TypedPointsto (GF := GF) (google_golang_org.grpc.GenericClientStream.t Req' Res') :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) (google_golang_org.grpc.GenericClientStream.t Req' Res') where
+  typed_pointsto_def l v dq := iprop(
+    "ClientStream" ∷ typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericClientStream.t Req' Res') go!"ClientStream" l) v.ClientStream' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance GenericClientStream_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericClientStream.t Req' Res') (google_golang_org.grpc.«GenericClientStreamⁱᵐᵖˡ» Req Res) :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericClientStream.t Req' Res') (google_golang_org.grpc.«GenericClientStreamⁱᵐᵖˡ» Req Res) := by
+  solve_into_val_typed_struct
+
+instance GenericClientStream_access_load_ClientStream {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] (l : loc) (v : (google_golang_org.grpc.GenericClientStream.t Req' Res')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericClientStream.t Req' Res') go!"ClientStream" l) v.ClientStream' dq)
+      (typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericClientStream.t Req' Res') go!"ClientStream" l) v.ClientStream' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance GenericClientStream_access_store_ClientStream {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] (l : loc) (v : (google_golang_org.grpc.GenericClientStream.t Req' Res')) (ClientStream' : google_golang_org.grpc.ClientStream.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericClientStream.t Req' Res') go!"ClientStream" l) v.ClientStream' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericClientStream.t Req' Res') go!"ClientStream" l) ClientStream' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ClientStream' := ClientStream' } : (google_golang_org.grpc.GenericClientStream.t Req' Res')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end GenericClientStream
@@ -2245,34 +3086,36 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance GenericServerStream_typed_pointsto {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] :
-    TypedPointsto (GF := GF) (google_golang_org.grpc.GenericServerStream.t Req' Res') :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) (google_golang_org.grpc.GenericServerStream.t Req' Res') where
+  typed_pointsto_def l v dq := iprop(
+    "ServerStream" ∷ typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericServerStream.t Req' Res') go!"ServerStream" l) v.ServerStream' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance GenericServerStream_into_val_typed (Req : go.type) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.type) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericServerStream.t Req' Res') (google_golang_org.grpc.«GenericServerStreamⁱᵐᵖˡ» Req Res) :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericServerStream.t Req' Res') (google_golang_org.grpc.«GenericServerStreamⁱᵐᵖˡ» Req Res) := by
+  solve_into_val_typed_struct
+
+instance GenericServerStream_access_load_ServerStream {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] (l : loc) (v : (google_golang_org.grpc.GenericServerStream.t Req' Res')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericServerStream.t Req' Res') go!"ServerStream" l) v.ServerStream' dq)
+      (typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericServerStream.t Req' Res') go!"ServerStream" l) v.ServerStream' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance GenericServerStream_access_store_ServerStream {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] (l : loc) (v : (google_golang_org.grpc.GenericServerStream.t Req' Res')) (ServerStream' : google_golang_org.grpc.ServerStream.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericServerStream.t Req' Res') go!"ServerStream" l) v.ServerStream' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (google_golang_org.grpc.GenericServerStream.t Req' Res') go!"ServerStream" l) ServerStream' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ServerStream' := ServerStream' } : (google_golang_org.grpc.GenericServerStream.t Req' Res')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end GenericServerStream
-
-namespace traceEventLog
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance traceEventLog_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.traceEventLog.t :=
-  sorry -- Rocq: Admitted
-
-instance traceEventLog_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.traceEventLog.t google_golang_org.grpc.«traceEventLogⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end traceEventLog
 
 namespace traceLog
 section def_
@@ -2293,25 +3136,6 @@ instance traceLog_into_val_typed :
 end def_
 end traceLog
 
-namespace traceInfo
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance traceInfo_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.traceInfo.t :=
-  sorry -- Rocq: Admitted
-
-instance traceInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.traceInfo.t google_golang_org.grpc.«traceInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end traceInfo
-
 namespace firstLine
 section def_
 
@@ -2331,6 +3155,63 @@ instance firstLine_into_val_typed :
 end def_
 end firstLine
 
+namespace traceInfo
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : google_golang_org.grpc.Assumptions]
+
+instance traceInfo_typed_pointsto :
+    TypedPointsto (GF := GF) google_golang_org.grpc.traceInfo.t where
+  typed_pointsto_def l v dq := iprop(
+    "tr" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"tr" l) v.tr' dq ∗
+    "firstLine" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"firstLine" l) v.firstLine' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance traceInfo_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.traceInfo.t google_golang_org.grpc.«traceInfoⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance traceInfo_access_load_tr (l : loc) (v : google_golang_org.grpc.traceInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"tr" l) v.tr' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"tr" l) v.tr' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance traceInfo_access_store_tr (l : loc) (v : google_golang_org.grpc.traceInfo.t) (tr' : google_golang_org.grpc.traceLog.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"tr" l) v.tr' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"tr" l) tr' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tr' := tr' } : google_golang_org.grpc.traceInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance traceInfo_access_load_firstLine (l : loc) (v : google_golang_org.grpc.traceInfo.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"firstLine" l) v.firstLine' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"firstLine" l) v.firstLine' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance traceInfo_access_store_firstLine (l : loc) (v : google_golang_org.grpc.traceInfo.t) (firstLine' : google_golang_org.grpc.firstLine.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"firstLine" l) v.firstLine' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.traceInfo.t go!"firstLine" l) firstLine' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with firstLine' := firstLine' } : google_golang_org.grpc.traceInfo.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end traceInfo
+
 namespace payload
 section def_
 
@@ -2340,12 +3221,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance payload_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.payload.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.payload.t where
+  typed_pointsto_def l v dq := iprop(
+    "sent" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"sent" l) v.sent' dq ∗
+    "msg" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"msg" l) v.msg' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance payload_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.payload.t google_golang_org.grpc.«payloadⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.payload.t google_golang_org.grpc.«payloadⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance payload_access_load_sent (l : loc) (v : google_golang_org.grpc.payload.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"sent" l) v.sent' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"sent" l) v.sent' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance payload_access_store_sent (l : loc) (v : google_golang_org.grpc.payload.t) (sent' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"sent" l) v.sent' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"sent" l) sent' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sent' := sent' } : google_golang_org.grpc.payload.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance payload_access_load_msg (l : loc) (v : google_golang_org.grpc.payload.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"msg" l) v.msg' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"msg" l) v.msg' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance payload_access_store_msg (l : loc) (v : google_golang_org.grpc.payload.t) (msg' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"msg" l) v.msg' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.payload.t go!"msg" l) msg' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with msg' := msg' } : google_golang_org.grpc.payload.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end payload
@@ -2359,34 +3278,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance fmtStringer_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.fmtStringer.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) google_golang_org.grpc.fmtStringer.t where
+  typed_pointsto_def l v dq := iprop(
+    "format" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"format" l) v.format' dq ∗
+    "a" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"a" l) v.a' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance fmtStringer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.fmtStringer.t google_golang_org.grpc.«fmtStringerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.fmtStringer.t google_golang_org.grpc.«fmtStringerⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance fmtStringer_access_load_format (l : loc) (v : google_golang_org.grpc.fmtStringer.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"format" l) v.format' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"format" l) v.format' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance fmtStringer_access_store_format (l : loc) (v : google_golang_org.grpc.fmtStringer.t) (format' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"format" l) v.format' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"format" l) format' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with format' := format' } : google_golang_org.grpc.fmtStringer.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance fmtStringer_access_load_a (l : loc) (v : google_golang_org.grpc.fmtStringer.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"a" l) v.a' dq)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"a" l) v.a' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance fmtStringer_access_store_a (l : loc) (v : google_golang_org.grpc.fmtStringer.t) (a' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"a" l) v.a' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref google_golang_org.grpc.fmtStringer.t go!"a" l) a' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : google_golang_org.grpc.fmtStringer.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end fmtStringer
-
-namespace stringer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : google_golang_org.grpc.Assumptions]
-
-instance stringer_typed_pointsto :
-    TypedPointsto (GF := GF) google_golang_org.grpc.stringer.t :=
-  sorry -- Rocq: Admitted
-
-instance stringer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.stringer.t google_golang_org.grpc.«stringerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end stringer
 
 end google_golang_org.grpc
 end

@@ -79,12 +79,118 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance spanLimits_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.spanLimits.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.spanLimits.t where
+  typed_pointsto_def l v dq := iprop(
+    "Attrs" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Attrs" l) v.Attrs' dq ∗
+    "AttrValueLen" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"AttrValueLen" l) v.AttrValueLen' dq ∗
+    "Events" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Events" l) v.Events' dq ∗
+    "EventAttrs" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"EventAttrs" l) v.EventAttrs' dq ∗
+    "Links" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Links" l) v.Links' dq ∗
+    "LinkAttrs" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"LinkAttrs" l) v.LinkAttrs' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance spanLimits_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.spanLimits.t go_opentelemetry_io.otel.trace.«spanLimitsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.spanLimits.t go_opentelemetry_io.otel.trace.«spanLimitsⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance spanLimits_access_load_Attrs (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Attrs" l) v.Attrs' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Attrs" l) v.Attrs' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_store_Attrs (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (Attrs' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Attrs" l) v.Attrs' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Attrs" l) Attrs' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Attrs' := Attrs' } : go_opentelemetry_io.otel.trace.spanLimits.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_load_AttrValueLen (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"AttrValueLen" l) v.AttrValueLen' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"AttrValueLen" l) v.AttrValueLen' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_store_AttrValueLen (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (AttrValueLen' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"AttrValueLen" l) v.AttrValueLen' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"AttrValueLen" l) AttrValueLen' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with AttrValueLen' := AttrValueLen' } : go_opentelemetry_io.otel.trace.spanLimits.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_load_Events (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Events" l) v.Events' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Events" l) v.Events' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_store_Events (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (Events' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Events" l) v.Events' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Events" l) Events' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Events' := Events' } : go_opentelemetry_io.otel.trace.spanLimits.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_load_EventAttrs (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"EventAttrs" l) v.EventAttrs' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"EventAttrs" l) v.EventAttrs' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_store_EventAttrs (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (EventAttrs' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"EventAttrs" l) v.EventAttrs' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"EventAttrs" l) EventAttrs' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with EventAttrs' := EventAttrs' } : go_opentelemetry_io.otel.trace.spanLimits.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_load_Links (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Links" l) v.Links' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Links" l) v.Links' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_store_Links (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (Links' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Links" l) v.Links' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"Links" l) Links' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Links' := Links' } : go_opentelemetry_io.otel.trace.spanLimits.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_load_LinkAttrs (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"LinkAttrs" l) v.LinkAttrs' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"LinkAttrs" l) v.LinkAttrs' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance spanLimits_access_store_LinkAttrs (l : loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (LinkAttrs' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"LinkAttrs" l) v.LinkAttrs' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.spanLimits.t go!"LinkAttrs" l) LinkAttrs' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with LinkAttrs' := LinkAttrs' } : go_opentelemetry_io.otel.trace.spanLimits.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end spanLimits
@@ -108,44 +214,6 @@ instance TracerConfig_into_val_typed :
 end def_
 end TracerConfig
 
-namespace TracerOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance TracerOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.TracerOption.t :=
-  sorry -- Rocq: Admitted
-
-instance TracerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TracerOption.t go_opentelemetry_io.otel.trace.«TracerOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end TracerOption
-
-namespace tracerOptionFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance tracerOptionFunc_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.tracerOptionFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance tracerOptionFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.tracerOptionFunc.t go_opentelemetry_io.otel.trace.«tracerOptionFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end tracerOptionFunc
-
 namespace SpanConfig
 section def_
 
@@ -164,63 +232,6 @@ instance SpanConfig_into_val_typed :
 
 end def_
 end SpanConfig
-
-namespace SpanStartOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanStartOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanStartOption.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanStartOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanStartOption.t go_opentelemetry_io.otel.trace.«SpanStartOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanStartOption
-
-namespace spanOptionFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance spanOptionFunc_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.spanOptionFunc.t :=
-  sorry -- Rocq: Admitted
-
-instance spanOptionFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.spanOptionFunc.t go_opentelemetry_io.otel.trace.«spanOptionFuncⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end spanOptionFunc
-
-namespace SpanEndOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanEndOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanEndOption.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanEndOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanEndOption.t go_opentelemetry_io.otel.trace.«SpanEndOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanEndOption
 
 namespace EventConfig
 section def_
@@ -241,82 +252,6 @@ instance EventConfig_into_val_typed :
 end def_
 end EventConfig
 
-namespace EventOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance EventOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.EventOption.t :=
-  sorry -- Rocq: Admitted
-
-instance EventOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.EventOption.t go_opentelemetry_io.otel.trace.«EventOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end EventOption
-
-namespace SpanOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanOption.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanOption.t go_opentelemetry_io.otel.trace.«SpanOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanOption
-
-namespace SpanStartEventOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanStartEventOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanStartEventOption.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanStartEventOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanStartEventOption.t go_opentelemetry_io.otel.trace.«SpanStartEventOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanStartEventOption
-
-namespace SpanEndEventOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanEndEventOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanEndEventOption.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanEndEventOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanEndEventOption.t go_opentelemetry_io.otel.trace.«SpanEndEventOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanEndEventOption
-
 namespace attributeOption
 section def_
 
@@ -335,25 +270,6 @@ instance attributeOption_into_val_typed :
 
 end def_
 end attributeOption
-
-namespace SpanEventOption
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanEventOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanEventOption.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanEventOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanEventOption.t go_opentelemetry_io.otel.trace.«SpanEventOptionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanEventOption
 
 namespace timestampOption
 section def_
@@ -374,7 +290,7 @@ instance timestampOption_into_val_typed :
 end def_
 end timestampOption
 
-namespace stackTraceOption
+namespace noopSpan
 section def_
 
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
@@ -382,18 +298,18 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
-instance stackTraceOption_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.stackTraceOption.t :=
+instance noopSpan_typed_pointsto :
+    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.noopSpan.t :=
   sorry -- Rocq: Admitted
 
-instance stackTraceOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.stackTraceOption.t go_opentelemetry_io.otel.trace.«stackTraceOptionⁱᵐᵖˡ» :=
+instance noopSpan_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.noopSpan.t go_opentelemetry_io.otel.trace.«noopSpanⁱᵐᵖˡ» :=
   sorry -- Rocq: Admitted
 
 end def_
-end stackTraceOption
+end noopSpan
 
-namespace traceContextKeyType
+namespace TraceState
 section def_
 
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
@@ -401,16 +317,145 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
-instance traceContextKeyType_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.traceContextKeyType.t :=
-  sorry -- Rocq: Admitted
+instance TraceState_typed_pointsto :
+    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.TraceState.t where
+  typed_pointsto_def l v dq := iprop(
+    "list" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.TraceState.t go!"list" l) v.list' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
-instance traceContextKeyType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.traceContextKeyType.t go_opentelemetry_io.otel.trace.«traceContextKeyTypeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+instance TraceState_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TraceState.t go_opentelemetry_io.otel.trace.«TraceStateⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance TraceState_access_load_list (l : loc) (v : go_opentelemetry_io.otel.trace.TraceState.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.TraceState.t go!"list" l) v.list' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.TraceState.t go!"list" l) v.list' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance TraceState_access_store_list (l : loc) (v : go_opentelemetry_io.otel.trace.TraceState.t) (list' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.TraceState.t go!"list" l) v.list' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.TraceState.t go!"list" l) list' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with list' := list' } : go_opentelemetry_io.otel.trace.TraceState.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
-end traceContextKeyType
+end TraceState
+
+namespace SpanContext
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
+
+instance SpanContext_typed_pointsto :
+    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanContext.t where
+  typed_pointsto_def l v dq := iprop(
+    "traceID" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceID" l) v.traceID' dq ∗
+    "spanID" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"spanID" l) v.spanID' dq ∗
+    "traceFlags" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceFlags" l) v.traceFlags' dq ∗
+    "traceState" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceState" l) v.traceState' dq ∗
+    "remote" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"remote" l) v.remote' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance SpanContext_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanContext.t go_opentelemetry_io.otel.trace.«SpanContextⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance SpanContext_access_load_traceID (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceID" l) v.traceID' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceID" l) v.traceID' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_store_traceID (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (traceID' : go_opentelemetry_io.otel.trace.TraceID.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceID" l) v.traceID' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceID" l) traceID' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with traceID' := traceID' } : go_opentelemetry_io.otel.trace.SpanContext.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_load_spanID (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"spanID" l) v.spanID' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"spanID" l) v.spanID' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_store_spanID (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (spanID' : go_opentelemetry_io.otel.trace.SpanID.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"spanID" l) v.spanID' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"spanID" l) spanID' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with spanID' := spanID' } : go_opentelemetry_io.otel.trace.SpanContext.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_load_traceFlags (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceFlags" l) v.traceFlags' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceFlags" l) v.traceFlags' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_store_traceFlags (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (traceFlags' : go_opentelemetry_io.otel.trace.TraceFlags.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceFlags" l) v.traceFlags' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceFlags" l) traceFlags' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with traceFlags' := traceFlags' } : go_opentelemetry_io.otel.trace.SpanContext.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_load_traceState (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceState" l) v.traceState' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceState" l) v.traceState' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_store_traceState (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (traceState' : go_opentelemetry_io.otel.trace.TraceState.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceState" l) v.traceState' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"traceState" l) traceState' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with traceState' := traceState' } : go_opentelemetry_io.otel.trace.SpanContext.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_load_remote (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"remote" l) v.remote' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"remote" l) v.remote' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContext_access_store_remote (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (remote' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"remote" l) v.remote' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContext.t go!"remote" l) remote' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with remote' := remote' } : go_opentelemetry_io.otel.trace.SpanContext.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end SpanContext
 
 namespace nonRecordingSpan
 section def_
@@ -421,12 +466,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance nonRecordingSpan_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.nonRecordingSpan.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.nonRecordingSpan.t where
+  typed_pointsto_def l v dq := iprop(
+    "noopSpan" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"noopSpan" l) v.noopSpan' dq ∗
+    "sc" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"sc" l) v.sc' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance nonRecordingSpan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.nonRecordingSpan.t go_opentelemetry_io.otel.trace.«nonRecordingSpanⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.nonRecordingSpan.t go_opentelemetry_io.otel.trace.«nonRecordingSpanⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance nonRecordingSpan_access_load_noopSpan (l : loc) (v : go_opentelemetry_io.otel.trace.nonRecordingSpan.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"noopSpan" l) v.noopSpan' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"noopSpan" l) v.noopSpan' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance nonRecordingSpan_access_store_noopSpan (l : loc) (v : go_opentelemetry_io.otel.trace.nonRecordingSpan.t) (noopSpan' : go_opentelemetry_io.otel.trace.noopSpan.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"noopSpan" l) v.noopSpan' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"noopSpan" l) noopSpan' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noopSpan' := noopSpan' } : go_opentelemetry_io.otel.trace.nonRecordingSpan.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance nonRecordingSpan_access_load_sc (l : loc) (v : go_opentelemetry_io.otel.trace.nonRecordingSpan.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"sc" l) v.sc' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"sc" l) v.sc' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance nonRecordingSpan_access_store_sc (l : loc) (v : go_opentelemetry_io.otel.trace.nonRecordingSpan.t) (sc' : go_opentelemetry_io.otel.trace.SpanContext.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"sc" l) v.sc' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.nonRecordingSpan.t go!"sc" l) sc' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sc' := sc' } : go_opentelemetry_io.otel.trace.nonRecordingSpan.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end nonRecordingSpan
@@ -468,25 +551,6 @@ instance noopTracer_into_val_typed :
 
 end def_
 end noopTracer
-
-namespace noopSpan
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance noopSpan_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.noopSpan.t :=
-  sorry -- Rocq: Admitted
-
-instance noopSpan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.noopSpan.t go_opentelemetry_io.otel.trace.«noopSpanⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end noopSpan
 
 namespace TracerProvider
 section def_
@@ -545,101 +609,6 @@ instance Link_into_val_typed :
 end def_
 end Link
 
-namespace SpanKind
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanKind_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanKind.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanKind_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanKind.t go_opentelemetry_io.otel.trace.«SpanKindⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanKind
-
-namespace errorConst
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance errorConst_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.errorConst.t :=
-  sorry -- Rocq: Admitted
-
-instance errorConst_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.errorConst.t go_opentelemetry_io.otel.trace.«errorConstⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end errorConst
-
-namespace TraceID
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance TraceID_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.TraceID.t :=
-  sorry -- Rocq: Admitted
-
-instance TraceID_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TraceID.t go_opentelemetry_io.otel.trace.«TraceIDⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end TraceID
-
-namespace SpanID
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanID_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanID.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanID_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanID.t go_opentelemetry_io.otel.trace.«SpanIDⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanID
-
-namespace TraceFlags
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance TraceFlags_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.TraceFlags.t :=
-  sorry -- Rocq: Admitted
-
-instance TraceFlags_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TraceFlags.t go_opentelemetry_io.otel.trace.«TraceFlagsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end TraceFlags
-
 namespace SpanContextConfig
 section def_
 
@@ -649,34 +618,104 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance SpanContextConfig_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanContextConfig.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanContextConfig.t where
+  typed_pointsto_def l v dq := iprop(
+    "TraceID" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceID" l) v.TraceID' dq ∗
+    "SpanID" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"SpanID" l) v.SpanID' dq ∗
+    "TraceFlags" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceFlags" l) v.TraceFlags' dq ∗
+    "TraceState" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceState" l) v.TraceState' dq ∗
+    "Remote" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"Remote" l) v.Remote' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance SpanContextConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanContextConfig.t go_opentelemetry_io.otel.trace.«SpanContextConfigⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanContextConfig.t go_opentelemetry_io.otel.trace.«SpanContextConfigⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance SpanContextConfig_access_load_TraceID (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceID" l) v.TraceID' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceID" l) v.TraceID' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_store_TraceID (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (TraceID' : go_opentelemetry_io.otel.trace.TraceID.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceID" l) v.TraceID' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceID" l) TraceID' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with TraceID' := TraceID' } : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_load_SpanID (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"SpanID" l) v.SpanID' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"SpanID" l) v.SpanID' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_store_SpanID (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (SpanID' : go_opentelemetry_io.otel.trace.SpanID.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"SpanID" l) v.SpanID' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"SpanID" l) SpanID' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with SpanID' := SpanID' } : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_load_TraceFlags (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceFlags" l) v.TraceFlags' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceFlags" l) v.TraceFlags' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_store_TraceFlags (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (TraceFlags' : go_opentelemetry_io.otel.trace.TraceFlags.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceFlags" l) v.TraceFlags' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceFlags" l) TraceFlags' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with TraceFlags' := TraceFlags' } : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_load_TraceState (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceState" l) v.TraceState' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceState" l) v.TraceState' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_store_TraceState (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (TraceState' : go_opentelemetry_io.otel.trace.TraceState.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceState" l) v.TraceState' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"TraceState" l) TraceState' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with TraceState' := TraceState' } : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_load_Remote (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"Remote" l) v.Remote' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"Remote" l) v.Remote' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance SpanContextConfig_access_store_Remote (l : loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (Remote' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"Remote" l) v.Remote' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.SpanContextConfig.t go!"Remote" l) Remote' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Remote' := Remote' } : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end SpanContextConfig
-
-namespace SpanContext
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance SpanContext_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanContext.t :=
-  sorry -- Rocq: Admitted
-
-instance SpanContext_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanContext.t go_opentelemetry_io.otel.trace.«SpanContextⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end SpanContext
 
 namespace Tracer
 section def_
@@ -706,34 +745,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance member_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.member.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.member.t where
+  typed_pointsto_def l v dq := iprop(
+    "Key" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Key" l) v.Key' dq ∗
+    "Value" ∷ typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Value" l) v.Value' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance member_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.member.t go_opentelemetry_io.otel.trace.«memberⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.member.t go_opentelemetry_io.otel.trace.«memberⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance member_access_load_Key (l : loc) (v : go_opentelemetry_io.otel.trace.member.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Key" l) v.Key' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Key" l) v.Key' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance member_access_store_Key (l : loc) (v : go_opentelemetry_io.otel.trace.member.t) (Key' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Key" l) v.Key' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Key" l) Key' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Key' := Key' } : go_opentelemetry_io.otel.trace.member.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance member_access_load_Value (l : loc) (v : go_opentelemetry_io.otel.trace.member.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Value" l) v.Value' dq)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Value" l) v.Value' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance member_access_store_Value (l : loc) (v : go_opentelemetry_io.otel.trace.member.t) (Value' : go_string) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Value" l) v.Value' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_opentelemetry_io.otel.trace.member.t go!"Value" l) Value' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Value' := Value' } : go_opentelemetry_io.otel.trace.member.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end member
-
-namespace TraceState
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
-
-instance TraceState_typed_pointsto :
-    TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.TraceState.t :=
-  sorry -- Rocq: Admitted
-
-instance TraceState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TraceState.t go_opentelemetry_io.otel.trace.«TraceStateⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end TraceState
 
 end go_opentelemetry_io.otel.trace
 end

@@ -114,8 +114,6 @@ attribute [irreducible] permSlice
 
 axiom «tokenJWTⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «tokenNopⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «jwtOptionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «unifiedRangePermissionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -124,23 +122,13 @@ axiom «simpleTokenTTLKeeperⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.ty
 
 axiom «tokenSimpleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «AuthenticateParamIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «AuthStoreⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «TokenProviderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «AuthBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «AuthReadTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «UnsafeAuthReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «AuthBatchTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «UnsafeAuthReadWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «UnsafeAuthWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -478,19 +466,32 @@ attribute [instance] tokenJWT_Assumptions.tokenJWT_type_repr
   tokenJWT_Assumptions.«tokenJWTⁱᵐᵖˡ_underlying»
 
 namespace tokenNop
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk⟩
 end tokenNop
+
+@[reducible] def tokenNop'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def tokenNop'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  tokenNop'fds_unsealed
+
+instance equals_unfold_tokenNop [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold tokenNop'fds tokenNop'fds_unsealed :=
+  ⟨by unfold tokenNop'fds; rfl⟩
+
+@[reducible] def «tokenNopⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType tokenNop'fds)
 
 class tokenNop_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   tokenNop_type_repr : go.TypeReprUnderlying «tokenNopⁱᵐᵖˡ» tokenNop.t
   tokenNop_underlying : go.UnderlyingDirectedEq tokenNop «tokenNopⁱᵐᵖˡ»
-  «tokenNopⁱᵐᵖˡ_underlying» : go.IsUnderlying «tokenNopⁱᵐᵖˡ» «tokenNopⁱᵐᵖˡ»
 
 attribute [instance] tokenNop_Assumptions.tokenNop_type_repr
   tokenNop_Assumptions.tokenNop_underlying
-  tokenNop_Assumptions.«tokenNopⁱᵐᵖˡ_underlying»
 
 namespace jwtOptions
 axiom t : Type
@@ -592,34 +593,60 @@ attribute [instance] AuthInfo_Assumptions.AuthInfo_type_repr
   AuthInfo_Assumptions.AuthInfo_set_Revision
 
 namespace AuthenticateParamIndex
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk⟩
 end AuthenticateParamIndex
+
+@[reducible] def AuthenticateParamIndex'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def AuthenticateParamIndex'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  AuthenticateParamIndex'fds_unsealed
+
+instance equals_unfold_AuthenticateParamIndex [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold AuthenticateParamIndex'fds AuthenticateParamIndex'fds_unsealed :=
+  ⟨by unfold AuthenticateParamIndex'fds; rfl⟩
+
+@[reducible] def «AuthenticateParamIndexⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType AuthenticateParamIndex'fds)
 
 class AuthenticateParamIndex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   AuthenticateParamIndex_type_repr : go.TypeReprUnderlying «AuthenticateParamIndexⁱᵐᵖˡ» AuthenticateParamIndex.t
   AuthenticateParamIndex_underlying : go.UnderlyingDirectedEq AuthenticateParamIndex «AuthenticateParamIndexⁱᵐᵖˡ»
-  «AuthenticateParamIndexⁱᵐᵖˡ_underlying» : go.IsUnderlying «AuthenticateParamIndexⁱᵐᵖˡ» «AuthenticateParamIndexⁱᵐᵖˡ»
 
 attribute [instance] AuthenticateParamIndex_Assumptions.AuthenticateParamIndex_type_repr
   AuthenticateParamIndex_Assumptions.AuthenticateParamIndex_underlying
-  AuthenticateParamIndex_Assumptions.«AuthenticateParamIndexⁱᵐᵖˡ_underlying»
 
 namespace AuthenticateParamSimpleTokenPrefix
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk⟩
 end AuthenticateParamSimpleTokenPrefix
+
+@[reducible] def AuthenticateParamSimpleTokenPrefix'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def AuthenticateParamSimpleTokenPrefix'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  AuthenticateParamSimpleTokenPrefix'fds_unsealed
+
+instance equals_unfold_AuthenticateParamSimpleTokenPrefix [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold AuthenticateParamSimpleTokenPrefix'fds AuthenticateParamSimpleTokenPrefix'fds_unsealed :=
+  ⟨by unfold AuthenticateParamSimpleTokenPrefix'fds; rfl⟩
+
+@[reducible] def «AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType AuthenticateParamSimpleTokenPrefix'fds)
 
 class AuthenticateParamSimpleTokenPrefix_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   AuthenticateParamSimpleTokenPrefix_type_repr : go.TypeReprUnderlying «AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ» AuthenticateParamSimpleTokenPrefix.t
   AuthenticateParamSimpleTokenPrefix_underlying : go.UnderlyingDirectedEq AuthenticateParamSimpleTokenPrefix «AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ»
-  «AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ_underlying» : go.IsUnderlying «AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ» «AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ»
 
 attribute [instance] AuthenticateParamSimpleTokenPrefix_Assumptions.AuthenticateParamSimpleTokenPrefix_type_repr
   AuthenticateParamSimpleTokenPrefix_Assumptions.AuthenticateParamSimpleTokenPrefix_underlying
-  AuthenticateParamSimpleTokenPrefix_Assumptions.«AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ_underlying»
 
 namespace AuthStore
 axiom t : Type
@@ -667,19 +694,16 @@ attribute [instance] AuthBackend_Assumptions.AuthBackend_type_repr
   AuthBackend_Assumptions.«AuthBackendⁱᵐᵖˡ_underlying»
 
 namespace AuthReadTx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end AuthReadTx
 
-class AuthReadTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AuthReadTx_type_repr : go.TypeReprUnderlying «AuthReadTxⁱᵐᵖˡ» AuthReadTx.t
-  AuthReadTx_underlying : go.UnderlyingDirectedEq AuthReadTx «AuthReadTxⁱᵐᵖˡ»
-  «AuthReadTxⁱᵐᵖˡ_underlying» : go.IsUnderlying «AuthReadTxⁱᵐᵖˡ» «AuthReadTxⁱᵐᵖˡ»
+@[reducible] def «AuthReadTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"RLock" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"RUnlock" (go.signature.Signature [] false [])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm UnsafeAuthReader)])])
 
-attribute [instance] AuthReadTx_Assumptions.AuthReadTx_type_repr
-  AuthReadTx_Assumptions.AuthReadTx_underlying
-  AuthReadTx_Assumptions.«AuthReadTxⁱᵐᵖˡ_underlying»
+class AuthReadTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  AuthReadTx_underlying : go.UnderlyingDirectedEq AuthReadTx «AuthReadTxⁱᵐᵖˡ»
+
+attribute [instance] AuthReadTx_Assumptions.AuthReadTx_underlying
 
 namespace UnsafeAuthReader
 axiom t : Type
@@ -697,34 +721,28 @@ attribute [instance] UnsafeAuthReader_Assumptions.UnsafeAuthReader_type_repr
   UnsafeAuthReader_Assumptions.«UnsafeAuthReaderⁱᵐᵖˡ_underlying»
 
 namespace AuthBatchTx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end AuthBatchTx
 
-class AuthBatchTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AuthBatchTx_type_repr : go.TypeReprUnderlying «AuthBatchTxⁱᵐᵖˡ» AuthBatchTx.t
-  AuthBatchTx_underlying : go.UnderlyingDirectedEq AuthBatchTx «AuthBatchTxⁱᵐᵖˡ»
-  «AuthBatchTxⁱᵐᵖˡ_underlying» : go.IsUnderlying «AuthBatchTxⁱᵐᵖˡ» «AuthBatchTxⁱᵐᵖˡ»
+@[reducible] def «AuthBatchTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Lock" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Unlock" (go.signature.Signature [] false [])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm UnsafeAuthReadWriter)])])
 
-attribute [instance] AuthBatchTx_Assumptions.AuthBatchTx_type_repr
-  AuthBatchTx_Assumptions.AuthBatchTx_underlying
-  AuthBatchTx_Assumptions.«AuthBatchTxⁱᵐᵖˡ_underlying»
+class AuthBatchTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  AuthBatchTx_underlying : go.UnderlyingDirectedEq AuthBatchTx «AuthBatchTxⁱᵐᵖˡ»
+
+attribute [instance] AuthBatchTx_Assumptions.AuthBatchTx_underlying
 
 namespace UnsafeAuthReadWriter
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeAuthReadWriter
 
-class UnsafeAuthReadWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeAuthReadWriter_type_repr : go.TypeReprUnderlying «UnsafeAuthReadWriterⁱᵐᵖˡ» UnsafeAuthReadWriter.t
-  UnsafeAuthReadWriter_underlying : go.UnderlyingDirectedEq UnsafeAuthReadWriter «UnsafeAuthReadWriterⁱᵐᵖˡ»
-  «UnsafeAuthReadWriterⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeAuthReadWriterⁱᵐᵖˡ» «UnsafeAuthReadWriterⁱᵐᵖˡ»
+@[reducible] def «UnsafeAuthReadWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm UnsafeAuthReader)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm UnsafeAuthWriter)])])
 
-attribute [instance] UnsafeAuthReadWriter_Assumptions.UnsafeAuthReadWriter_type_repr
-  UnsafeAuthReadWriter_Assumptions.UnsafeAuthReadWriter_underlying
-  UnsafeAuthReadWriter_Assumptions.«UnsafeAuthReadWriterⁱᵐᵖˡ_underlying»
+class UnsafeAuthReadWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeAuthReadWriter_underlying : go.UnderlyingDirectedEq UnsafeAuthReadWriter «UnsafeAuthReadWriterⁱᵐᵖˡ»
+
+attribute [instance] UnsafeAuthReadWriter_Assumptions.UnsafeAuthReadWriter_underlying
 
 namespace UnsafeAuthWriter
 axiom t : Type

@@ -32,8 +32,6 @@ def Options [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Options
 
-axiom «PrivateKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «Optionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom PublicKeySize [ffi_syntax] [GoGlobalContext] : val
@@ -98,19 +96,16 @@ class PublicKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoS
 attribute [instance] PublicKey_Assumptions.PublicKey_underlying
 
 namespace PrivateKey
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := slice.t
 end PrivateKey
 
-class PrivateKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  PrivateKey_type_repr : go.TypeReprUnderlying «PrivateKeyⁱᵐᵖˡ» PrivateKey.t
-  PrivateKey_underlying : go.UnderlyingDirectedEq PrivateKey «PrivateKeyⁱᵐᵖˡ»
-  «PrivateKeyⁱᵐᵖˡ_underlying» : go.IsUnderlying «PrivateKeyⁱᵐᵖˡ» «PrivateKeyⁱᵐᵖˡ»
+@[reducible] def «PrivateKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType go.byte)
 
-attribute [instance] PrivateKey_Assumptions.PrivateKey_type_repr
-  PrivateKey_Assumptions.PrivateKey_underlying
-  PrivateKey_Assumptions.«PrivateKeyⁱᵐᵖˡ_underlying»
+class PrivateKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  PrivateKey_underlying : go.UnderlyingDirectedEq PrivateKey «PrivateKeyⁱᵐᵖˡ»
+
+attribute [instance] PrivateKey_Assumptions.PrivateKey_underlying
 
 namespace Options
 axiom t : Type

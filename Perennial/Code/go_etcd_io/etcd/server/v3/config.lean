@@ -29,8 +29,6 @@ attribute [irreducible] V2DeprecationEnum
 
 axiom «ServerConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «V2DeprecationEnumⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom grpcOverheadBytes [ffi_syntax] [GoGlobalContext] : val
 
 axiom V2Depr0NotYet [ffi_syntax] [GoGlobalContext] : val
@@ -84,19 +82,16 @@ attribute [instance] ServerConfig_Assumptions.ServerConfig_type_repr
   ServerConfig_Assumptions.«ServerConfigⁱᵐᵖˡ_underlying»
 
 namespace V2DeprecationEnum
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := go_string
 end V2DeprecationEnum
 
-class V2DeprecationEnum_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  V2DeprecationEnum_type_repr : go.TypeReprUnderlying «V2DeprecationEnumⁱᵐᵖˡ» V2DeprecationEnum.t
-  V2DeprecationEnum_underlying : go.UnderlyingDirectedEq V2DeprecationEnum «V2DeprecationEnumⁱᵐᵖˡ»
-  «V2DeprecationEnumⁱᵐᵖˡ_underlying» : go.IsUnderlying «V2DeprecationEnumⁱᵐᵖˡ» «V2DeprecationEnumⁱᵐᵖˡ»
+@[reducible] def «V2DeprecationEnumⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.string
 
-attribute [instance] V2DeprecationEnum_Assumptions.V2DeprecationEnum_type_repr
-  V2DeprecationEnum_Assumptions.V2DeprecationEnum_underlying
-  V2DeprecationEnum_Assumptions.«V2DeprecationEnumⁱᵐᵖˡ_underlying»
+class V2DeprecationEnum_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  V2DeprecationEnum_underlying : go.UnderlyingDirectedEq V2DeprecationEnum «V2DeprecationEnumⁱᵐᵖˡ»
+
+attribute [instance] V2DeprecationEnum_Assumptions.V2DeprecationEnum_underlying
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ServerConfig_instance : ServerConfig_Assumptions

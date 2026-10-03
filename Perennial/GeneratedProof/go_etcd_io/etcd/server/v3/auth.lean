@@ -41,12 +41,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
 
 instance tokenNop_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenNop.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenNop.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance tokenNop_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenNop.t go_etcd_io.etcd.server.v3.auth.«tokenNopⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenNop.t go_etcd_io.etcd.server.v3.auth.«tokenNopⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end tokenNop
@@ -193,12 +197,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
 
 instance AuthenticateParamIndex_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamIndex.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamIndex.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthenticateParamIndex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamIndex.t go_etcd_io.etcd.server.v3.auth.«AuthenticateParamIndexⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamIndex.t go_etcd_io.etcd.server.v3.auth.«AuthenticateParamIndexⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end AuthenticateParamIndex
@@ -212,12 +220,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
 
 instance AuthenticateParamSimpleTokenPrefix_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamSimpleTokenPrefix.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamSimpleTokenPrefix.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthenticateParamSimpleTokenPrefix_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamSimpleTokenPrefix.t go_etcd_io.etcd.server.v3.auth.«AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamSimpleTokenPrefix.t go_etcd_io.etcd.server.v3.auth.«AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end AuthenticateParamSimpleTokenPrefix
@@ -279,25 +291,6 @@ instance AuthBackend_into_val_typed :
 end def_
 end AuthBackend
 
-namespace AuthReadTx
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
-
-instance AuthReadTx_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthReadTx.t :=
-  sorry -- Rocq: Admitted
-
-instance AuthReadTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthReadTx.t go_etcd_io.etcd.server.v3.auth.«AuthReadTxⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end AuthReadTx
-
 namespace UnsafeAuthReader
 section def_
 
@@ -316,44 +309,6 @@ instance UnsafeAuthReader_into_val_typed :
 
 end def_
 end UnsafeAuthReader
-
-namespace AuthBatchTx
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
-
-instance AuthBatchTx_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthBatchTx.t :=
-  sorry -- Rocq: Admitted
-
-instance AuthBatchTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthBatchTx.t go_etcd_io.etcd.server.v3.auth.«AuthBatchTxⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end AuthBatchTx
-
-namespace UnsafeAuthReadWriter
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
-
-instance UnsafeAuthReadWriter_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.UnsafeAuthReadWriter.t :=
-  sorry -- Rocq: Admitted
-
-instance UnsafeAuthReadWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.UnsafeAuthReadWriter.t go_etcd_io.etcd.server.v3.auth.«UnsafeAuthReadWriterⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end UnsafeAuthReadWriter
 
 namespace UnsafeAuthWriter
 section def_

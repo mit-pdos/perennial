@@ -1434,7 +1434,7 @@ Definition testPolymorphismInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     let: "$v2" := (![go.PointerType Daisy] "d") in
     CompositeLiteral (go.ArrayType 3 Flower) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType Lily) "$v0"); KeyedElement None (ElementExpression (go.PointerType Rose) "$v1"); KeyedElement None (ElementExpression (go.PointerType Daisy) "$v2")])) in
     do:  ("f" <-[go.ArrayType 3 Flower] "$r0");;;
-    return: (((MethodResolve Flower "Petals"%go (![Flower] (IndexRef (go.ArrayType 3 Flower) (![go.ArrayType 3 Flower] "f", #(W64 0))))) #()) =⟨go.uint64⟩ #(W64 3))).
+    return: (((MethodResolve Flower "Petals"%go (![Flower] (IndexRef (go.ArrayType 3 Flower) ("f", #(W64 0))))) #()) =⟨go.uint64⟩ #(W64 3))).
 
 (* go: interfaces_complex.go:178:6 *)
 Definition testEmbeddingInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1454,7 +1454,7 @@ Definition testEmbeddingInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     let: "$v2" := (![go.PointerType Daisy] "d") in
     CompositeLiteral (go.ArrayType 3 Flora) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType Lily) "$v0"); KeyedElement None (ElementExpression (go.PointerType Rose) "$v1"); KeyedElement None (ElementExpression (go.PointerType Daisy) "$v2")])) in
     do:  ("f" <-[go.ArrayType 3 Flora] "$r0");;;
-    return: (((MethodResolve Flora "Petals"%go (![Flora] (IndexRef (go.ArrayType 3 Flora) (![go.ArrayType 3 Flora] "f", #(W64 0))))) #()) =⟨go.uint64⟩ #(W64 3))).
+    return: (((MethodResolve Flora "Petals"%go (![Flora] (IndexRef (go.ArrayType 3 Flora) ("f", #(W64 0))))) #()) =⟨go.uint64⟩ #(W64 3))).
 
 (* go: interfaces_complex.go:186:6 *)
 Definition testDowncastInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

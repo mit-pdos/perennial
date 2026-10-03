@@ -109,25 +109,6 @@ instance argset_into_val_typed :
 end def_
 end argset
 
-namespace cgoErrorMsg
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance cgoErrorMsg_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.cgoErrorMsg.t :=
-  sorry -- Rocq: Admitted
-
-instance cgoErrorMsg_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.cgoErrorMsg.t runtime.«cgoErrorMsgⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end cgoErrorMsg
-
 namespace hchan
 section def_
 
@@ -755,25 +736,6 @@ instance sockaddr_un_into_val_typed :
 end def_
 end sockaddr_un
 
-namespace Error
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance Error_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.Error.t :=
-  sorry -- Rocq: Admitted
-
-instance Error_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.Error.t runtime.«Errorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Error
-
 namespace TypeAssertionError
 section def_
 
@@ -792,25 +754,6 @@ instance TypeAssertionError_into_val_typed :
 
 end def_
 end TypeAssertionError
-
-namespace errorString
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance errorString_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.errorString.t :=
-  sorry -- Rocq: Admitted
-
-instance errorString_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.errorString.t runtime.«errorStringⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end errorString
 
 namespace errorAddressString
 section def_
@@ -831,25 +774,6 @@ instance errorAddressString_into_val_typed :
 end def_
 end errorAddressString
 
-namespace plainError
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance plainError_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.plainError.t :=
-  sorry -- Rocq: Admitted
-
-instance plainError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.plainError.t runtime.«plainErrorⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end plainError
-
 namespace boundsError
 section def_
 
@@ -868,25 +792,6 @@ instance boundsError_into_val_typed :
 
 end def_
 end boundsError
-
-namespace stringer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance stringer_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.stringer.t :=
-  sorry -- Rocq: Admitted
-
-instance stringer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stringer.t runtime.«stringerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end stringer
 
 namespace typeCacheBucket
 section def_
@@ -1002,120 +907,6 @@ instance itabTableType_into_val_typed :
 end def_
 end itabTableType
 
-namespace uint16InterfacePtr
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance uint16InterfacePtr_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.uint16InterfacePtr.t :=
-  sorry -- Rocq: Admitted
-
-instance uint16InterfacePtr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.uint16InterfacePtr.t runtime.«uint16InterfacePtrⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end uint16InterfacePtr
-
-namespace uint32InterfacePtr
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance uint32InterfacePtr_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.uint32InterfacePtr.t :=
-  sorry -- Rocq: Admitted
-
-instance uint32InterfacePtr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.uint32InterfacePtr.t runtime.«uint32InterfacePtrⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end uint32InterfacePtr
-
-namespace uint64InterfacePtr
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance uint64InterfacePtr_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.uint64InterfacePtr.t :=
-  sorry -- Rocq: Admitted
-
-instance uint64InterfacePtr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.uint64InterfacePtr.t runtime.«uint64InterfacePtrⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end uint64InterfacePtr
-
-namespace stringInterfacePtr
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance stringInterfacePtr_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.stringInterfacePtr.t :=
-  sorry -- Rocq: Admitted
-
-instance stringInterfacePtr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stringInterfacePtr.t runtime.«stringInterfacePtrⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end stringInterfacePtr
-
-namespace sliceInterfacePtr
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance sliceInterfacePtr_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.sliceInterfacePtr.t :=
-  sorry -- Rocq: Admitted
-
-instance sliceInterfacePtr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sliceInterfacePtr.t runtime.«sliceInterfacePtrⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end sliceInterfacePtr
-
-namespace lfstack
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance lfstack_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.lfstack.t :=
-  sorry -- Rocq: Admitted
-
-instance lfstack_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.lfstack.t runtime.«lfstackⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end lfstack
-
 namespace linknameIter
 section def_
 
@@ -1229,25 +1020,6 @@ instance mWaitList_into_val_typed :
 
 end def_
 end mWaitList
-
-namespace lockRank
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance lockRank_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.lockRank.t :=
-  sorry -- Rocq: Admitted
-
-instance lockRank_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.lockRank.t runtime.«lockRankⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end lockRank
 
 namespace lockRankStruct
 section def_
@@ -1591,63 +1363,6 @@ instance metricData_into_val_typed :
 end def_
 end metricData
 
-namespace metricReader
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance metricReader_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.metricReader.t :=
-  sorry -- Rocq: Admitted
-
-instance metricReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.metricReader.t runtime.«metricReaderⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end metricReader
-
-namespace statDep
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance statDep_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.statDep.t :=
-  sorry -- Rocq: Admitted
-
-instance statDep_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.statDep.t runtime.«statDepⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end statDep
-
-namespace statDepSet
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance statDepSet_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.statDepSet.t :=
-  sorry -- Rocq: Admitted
-
-instance statDepSet_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.statDepSet.t runtime.«statDepSetⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end statDepSet
-
 namespace heapStatsAggregate
 section def_
 
@@ -1780,25 +1495,6 @@ instance statAggregate_into_val_typed :
 
 end def_
 end statAggregate
-
-namespace metricKind
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance metricKind_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.metricKind.t :=
-  sorry -- Rocq: Admitted
-
-instance metricKind_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.metricKind.t runtime.«metricKindⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end metricKind
 
 namespace metricSample
 section def_
@@ -1952,25 +1648,6 @@ instance mlink_into_val_typed :
 end def_
 end mlink
 
-namespace gcMarkWorkerMode
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance gcMarkWorkerMode_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.gcMarkWorkerMode.t :=
-  sorry -- Rocq: Admitted
-
-instance gcMarkWorkerMode_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gcMarkWorkerMode.t runtime.«gcMarkWorkerModeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end gcMarkWorkerMode
-
 namespace workType
 section def_
 
@@ -1990,25 +1667,6 @@ instance workType_into_val_typed :
 end def_
 end workType
 
-namespace gcMode
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance gcMode_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.gcMode.t :=
-  sorry -- Rocq: Admitted
-
-instance gcMode_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gcMode.t runtime.«gcModeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end gcMode
-
 namespace gcTrigger
 section def_
 
@@ -2027,25 +1685,6 @@ instance gcTrigger_into_val_typed :
 
 end def_
 end gcTrigger
-
-namespace gcTriggerKind
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance gcTriggerKind_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.gcTriggerKind.t :=
-  sorry -- Rocq: Admitted
-
-instance gcTriggerKind_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gcTriggerKind.t runtime.«gcTriggerKindⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end gcTriggerKind
 
 namespace gcBgMarkWorkerNode
 section def_
@@ -2104,44 +1743,6 @@ instance gcCPULimiterState_into_val_typed :
 end def_
 end gcCPULimiterState
 
-namespace limiterEventType
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance limiterEventType_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.limiterEventType.t :=
-  sorry -- Rocq: Admitted
-
-instance limiterEventType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.limiterEventType.t runtime.«limiterEventTypeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end limiterEventType
-
-namespace limiterEventStamp
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance limiterEventStamp_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.limiterEventStamp.t :=
-  sorry -- Rocq: Admitted
-
-instance limiterEventStamp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.limiterEventStamp.t runtime.«limiterEventStampⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end limiterEventStamp
-
 namespace limiterEvent
 section def_
 
@@ -2161,25 +1762,6 @@ instance limiterEvent_into_val_typed :
 end def_
 end limiterEvent
 
-namespace gcDrainFlags
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance gcDrainFlags_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.gcDrainFlags.t :=
-  sorry -- Rocq: Admitted
-
-instance gcDrainFlags_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gcDrainFlags.t runtime.«gcDrainFlagsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end gcDrainFlags
-
 namespace spanInlineMarkBits
 section def_
 
@@ -2198,25 +1780,6 @@ instance spanInlineMarkBits_into_val_typed :
 
 end def_
 end spanInlineMarkBits
-
-namespace spanScanOwnership
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance spanScanOwnership_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.spanScanOwnership.t :=
-  sorry -- Rocq: Admitted
-
-instance spanScanOwnership_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.spanScanOwnership.t runtime.«spanScanOwnershipⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end spanScanOwnership
 
 namespace spanQueue
 section def_
@@ -2389,25 +1952,6 @@ instance scavChunkData_into_val_typed :
 end def_
 end scavChunkData
 
-namespace scavChunkFlags
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance scavChunkFlags_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.scavChunkFlags.t :=
-  sorry -- Rocq: Admitted
-
-instance scavChunkFlags_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.scavChunkFlags.t runtime.«scavChunkFlagsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end scavChunkFlags
-
 namespace piController
 section def_
 
@@ -2559,25 +2103,6 @@ instance sweepdata_into_val_typed :
 
 end def_
 end sweepdata
-
-namespace sweepClass
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance sweepClass_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.sweepClass.t :=
-  sorry -- Rocq: Admitted
-
-instance sweepClass_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sweepClass.t runtime.«sweepClassⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end sweepClass
 
 namespace activeSweep
 section def_
@@ -2750,25 +2275,6 @@ instance arenaHint_into_val_typed :
 end def_
 end arenaHint
 
-namespace mSpanState
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance mSpanState_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.mSpanState.t :=
-  sorry -- Rocq: Admitted
-
-instance mSpanState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mSpanState.t runtime.«mSpanStateⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end mSpanState
-
 namespace mSpanStateBox
 section def_
 
@@ -2806,63 +2312,6 @@ instance mspan_into_val_typed :
 
 end def_
 end mspan
-
-namespace spanClass
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance spanClass_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.spanClass.t :=
-  sorry -- Rocq: Admitted
-
-instance spanClass_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.spanClass.t runtime.«spanClassⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end spanClass
-
-namespace arenaIdx
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance arenaIdx_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.arenaIdx.t :=
-  sorry -- Rocq: Admitted
-
-instance arenaIdx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.arenaIdx.t runtime.«arenaIdxⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end arenaIdx
-
-namespace spanAllocType
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance spanAllocType_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.spanAllocType.t :=
-  sorry -- Rocq: Admitted
-
-instance spanAllocType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.spanAllocType.t runtime.«spanAllocTypeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end spanAllocType
 
 namespace mSpanList
 section def_
@@ -3187,44 +2636,6 @@ instance gcBitsArena_into_val_typed :
 end def_
 end gcBitsArena
 
-namespace floaty
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance floaty_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.floaty.t :=
-  sorry -- Rocq: Admitted
-
-instance floaty_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.floaty.t runtime.«floatyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end floaty
-
-namespace chunkIdx
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance chunkIdx_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.chunkIdx.t :=
-  sorry -- Rocq: Admitted
-
-instance chunkIdx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.chunkIdx.t runtime.«chunkIdxⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end chunkIdx
-
 namespace pageAlloc
 section def_
 
@@ -3243,25 +2654,6 @@ instance pageAlloc_into_val_typed :
 
 end def_
 end pageAlloc
-
-namespace pallocSum
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance pallocSum_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.pallocSum.t :=
-  sorry -- Rocq: Admitted
-
-instance pallocSum_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pallocSum.t runtime.«pallocSumⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end pallocSum
 
 namespace pageCache
 section def_
@@ -3282,44 +2674,6 @@ instance pageCache_into_val_typed :
 end def_
 end pageCache
 
-namespace pageBits
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance pageBits_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.pageBits.t :=
-  sorry -- Rocq: Admitted
-
-instance pageBits_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pageBits.t runtime.«pageBitsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end pageBits
-
-namespace pallocBits
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance pallocBits_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.pallocBits.t :=
-  sorry -- Rocq: Admitted
-
-instance pallocBits_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pallocBits.t runtime.«pallocBitsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end pallocBits
-
 namespace pallocData
 section def_
 
@@ -3338,25 +2692,6 @@ instance pallocData_into_val_typed :
 
 end def_
 end pallocData
-
-namespace bucketType
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance bucketType_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.bucketType.t :=
-  sorry -- Rocq: Admitted
-
-instance bucketType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.bucketType.t runtime.«bucketTypeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end bucketType
 
 namespace bucket
 section def_
@@ -3547,25 +2882,6 @@ instance BlockProfileRecord_into_val_typed :
 
 end def_
 end BlockProfileRecord
-
-namespace goroutineProfileState
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance goroutineProfileState_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.goroutineProfileState.t :=
-  sorry -- Rocq: Admitted
-
-instance goroutineProfileState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.goroutineProfileState.t runtime.«goroutineProfileStateⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end goroutineProfileState
 
 namespace goroutineProfileStateHolder
 section def_
@@ -3795,25 +3111,6 @@ instance spanSetBlockAlloc_into_val_typed :
 end def_
 end spanSetBlockAlloc
 
-namespace headTailIndex
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance headTailIndex_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.headTailIndex.t :=
-  sorry -- Rocq: Admitted
-
-instance headTailIndex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.headTailIndex.t runtime.«headTailIndexⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end headTailIndex
-
 namespace atomicHeadTailIndex
 section def_
 
@@ -3889,25 +3186,6 @@ instance MemStats_into_val_typed :
 
 end def_
 end MemStats
-
-namespace sysMemStat
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance sysMemStat_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.sysMemStat.t :=
-  sorry -- Rocq: Admitted
-
-instance sysMemStat_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sysMemStat.t runtime.«sysMemStatⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end sysMemStat
 
 namespace heapStatsDelta
 section def_
@@ -4004,25 +3282,6 @@ instance pollDesc_into_val_typed :
 end def_
 end pollDesc
 
-namespace pollInfo
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance pollInfo_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.pollInfo.t :=
-  sorry -- Rocq: Admitted
-
-instance pollInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pollInfo.t runtime.«pollInfoⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end pollInfo
-
 namespace pollCache
 section def_
 
@@ -4118,44 +3377,6 @@ instance perThreadSyscallArgs_into_val_typed :
 end def_
 end perThreadSyscallArgs
 
-namespace sigset
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance sigset_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.sigset.t :=
-  sorry -- Rocq: Admitted
-
-instance sigset_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sigset.t runtime.«sigsetⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end sigset
-
-namespace throwType
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance throwType_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.throwType.t :=
-  sorry -- Rocq: Admitted
-
-instance throwType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.throwType.t runtime.«throwTypeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end throwType
-
 namespace PanicNilError
 section def_
 
@@ -4231,25 +3452,6 @@ instance pinState_into_val_typed :
 
 end def_
 end pinState
-
-namespace pinnerBits
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance pinnerBits_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.pinnerBits.t :=
-  sorry -- Rocq: Admitted
-
-instance pinnerBits_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pinnerBits.t runtime.«pinnerBitsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end pinnerBits
 
 namespace ptabEntry
 section def_
@@ -4365,63 +3567,6 @@ instance xRegPerP_into_val_typed :
 end def_
 end xRegPerP
 
-namespace hex
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance hex_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.hex.t :=
-  sorry -- Rocq: Admitted
-
-instance hex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.hex.t runtime.«hexⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end hex
-
-namespace quoted
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance quoted_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.quoted.t :=
-  sorry -- Rocq: Admitted
-
-instance quoted_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.quoted.t runtime.«quotedⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end quoted
-
-namespace stwReason
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance stwReason_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.stwReason.t :=
-  sorry -- Rocq: Admitted
-
-instance stwReason_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stwReason.t runtime.«stwReasonⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end stwReason
-
 namespace worldStop
 section def_
 
@@ -4516,25 +3661,6 @@ instance updateMaxProcsGState_into_val_typed :
 
 end def_
 end updateMaxProcsGState
-
-namespace pMask
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance pMask_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.pMask.t :=
-  sorry -- Rocq: Admitted
-
-instance pMask_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pMask.t runtime.«pMaskⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end pMask
 
 namespace gQueue
 section def_
@@ -4668,63 +3794,6 @@ instance profBuf_into_val_typed :
 
 end def_
 end profBuf
-
-namespace profAtomic
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance profAtomic_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.profAtomic.t :=
-  sorry -- Rocq: Admitted
-
-instance profAtomic_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.profAtomic.t runtime.«profAtomicⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end profAtomic
-
-namespace profIndex
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance profIndex_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.profIndex.t :=
-  sorry -- Rocq: Admitted
-
-instance profIndex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.profIndex.t runtime.«profIndexⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end profIndex
-
-namespace profBufReadMode
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance profBufReadMode_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.profBufReadMode.t :=
-  sorry -- Rocq: Admitted
-
-instance profBufReadMode_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.profBufReadMode.t runtime.«profBufReadModeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end profBufReadMode
 
 namespace ticksType
 section def_
@@ -5315,25 +4384,6 @@ instance ancestorInfo_into_val_typed :
 end def_
 end ancestorInfo
 
-namespace waitReason
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance waitReason_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.waitReason.t :=
-  sorry -- Rocq: Admitted
-
-instance waitReason_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.waitReason.t runtime.«waitReasonⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end waitReason
-
 namespace rwmutex
 section def_
 
@@ -5391,25 +4441,6 @@ instance runtimeSelect_into_val_typed :
 end def_
 end runtimeSelect
 
-namespace selectDir
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance selectDir_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.selectDir.t :=
-  sorry -- Rocq: Admitted
-
-instance selectDir_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.selectDir.t runtime.«selectDirⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end selectDir
-
 namespace semaRoot
 section def_
 
@@ -5447,25 +4478,6 @@ instance semTable_into_val_typed :
 
 end def_
 end semTable
-
-namespace semaProfileFlags
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance semaProfileFlags_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.semaProfileFlags.t :=
-  sorry -- Rocq: Admitted
-
-instance semaProfileFlags_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.semaProfileFlags.t runtime.«semaProfileFlagsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end semaProfileFlags
 
 namespace notifyList
 section def_
@@ -5694,25 +4706,6 @@ instance reflectMethodValue_into_val_typed :
 
 end def_
 end reflectMethodValue
-
-namespace tmpBuf
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance tmpBuf_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.tmpBuf.t :=
-  sorry -- Rocq: Admitted
-
-instance tmpBuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.tmpBuf.t runtime.«tmpBufⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end tmpBuf
 
 namespace stringStruct
 section def_
@@ -6151,25 +5144,6 @@ instance specialBubble_into_val_typed :
 end def_
 end specialBubble
 
-namespace taggedPointer
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance taggedPointer_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.taggedPointer.t :=
-  sorry -- Rocq: Admitted
-
-instance taggedPointer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.taggedPointer.t runtime.«taggedPointerⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end taggedPointer
-
 namespace timer
 section def_
 
@@ -6283,25 +5257,6 @@ instance wakeableSleep_into_val_typed :
 
 end def_
 end wakeableSleep
-
-namespace unwindFlags
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance unwindFlags_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.unwindFlags.t :=
-  sorry -- Rocq: Admitted
-
-instance unwindFlags_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.unwindFlags.t runtime.«unwindFlagsⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end unwindFlags
 
 namespace unwinder
 section def_
@@ -6454,25 +5409,6 @@ instance traceBuf_into_val_typed :
 
 end def_
 end traceBuf
-
-namespace traceArg
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance traceArg_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceArg.t :=
-  sorry -- Rocq: Admitted
-
-instance traceArg_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceArg.t runtime.«traceArgⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end traceArg
 
 namespace traceEventWriter
 section def_
@@ -6645,44 +5581,6 @@ instance pTraceState_into_val_typed :
 end def_
 end pTraceState
 
-namespace traceBlockReason
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance traceBlockReason_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceBlockReason.t :=
-  sorry -- Rocq: Admitted
-
-instance traceBlockReason_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceBlockReason.t runtime.«traceBlockReasonⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end traceBlockReason
-
-namespace traceGoStopReason
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance traceGoStopReason_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceGoStopReason.t :=
-  sorry -- Rocq: Admitted
-
-instance traceGoStopReason_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceGoStopReason.t runtime.«traceGoStopReasonⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end traceGoStopReason
-
 namespace traceLocker
 section def_
 
@@ -6777,25 +5675,6 @@ instance traceStringTable_into_val_typed :
 
 end def_
 end traceStringTable
-
-namespace traceTime
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance traceTime_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceTime.t :=
-  sorry -- Rocq: Admitted
-
-instance traceTime_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceTime.t runtime.«traceTimeⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end traceTime
 
 namespace traceTypeTable
 section def_

@@ -34,11 +34,8 @@ def MemDisk [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] MemDisk
 
-axiom Block [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Diskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «FileDiskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+@[reducible] def Block [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType go.byte)
 
 axiom «MemDiskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -85,34 +82,55 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val _'init) (Val #()))))))))
 
 namespace Disk
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end Disk
 
-class Disk_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Disk_type_repr : go.TypeReprUnderlying «Diskⁱᵐᵖˡ» Disk.t
-  Disk_underlying : go.UnderlyingDirectedEq Disk «Diskⁱᵐᵖˡ»
-  «Diskⁱᵐᵖˡ_underlying» : go.IsUnderlying «Diskⁱᵐᵖˡ» «Diskⁱᵐᵖˡ»
+@[reducible] def «Diskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Barrier" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Read" (go.signature.Signature [go.uint64] false [Block])), (go.interface_elem.MethodElem go!"ReadTo" (go.signature.Signature [go.uint64, Block] false [])), (go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.uint64])), (go.interface_elem.MethodElem go!"Write" (go.signature.Signature [go.uint64, Block] false []))])
 
-attribute [instance] Disk_Assumptions.Disk_type_repr
-  Disk_Assumptions.Disk_underlying
-  Disk_Assumptions.«Diskⁱᵐᵖˡ_underlying»
+class Disk_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Disk_underlying : go.UnderlyingDirectedEq Disk «Diskⁱᵐᵖˡ»
+
+attribute [instance] Disk_Assumptions.Disk_underlying
 
 namespace FileDisk
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  fd' : w64
+  numBlocks' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end FileDisk
+
+@[reducible] def FileDisk'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"fd" go.int),
+(go.field_decl.FieldDecl go!"numBlocks" go.uint64)]
+
+@[irreducible] def FileDisk'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  FileDisk'fds_unsealed
+
+instance equals_unfold_FileDisk [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold FileDisk'fds FileDisk'fds_unsealed :=
+  ⟨by unfold FileDisk'fds; rfl⟩
+
+@[reducible] def «FileDiskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType FileDisk'fds)
 
 class FileDisk_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   FileDisk_type_repr : go.TypeReprUnderlying «FileDiskⁱᵐᵖˡ» FileDisk.t
   FileDisk_underlying : go.UnderlyingDirectedEq FileDisk «FileDiskⁱᵐᵖˡ»
-  «FileDiskⁱᵐᵖˡ_underlying» : go.IsUnderlying «FileDiskⁱᵐᵖˡ» «FileDiskⁱᵐᵖˡ»
+  FileDisk_get_fd : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet «FileDiskⁱᵐᵖˡ» go!"fd") #x (Val #(x.fd'))
+  FileDisk_set_fd : ∀ (x : FileDisk.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «FileDiskⁱᵐᵖˡ» go!"fd") (PairV #x #y) (Val #(({ x with fd' := y } : FileDisk.t)))
+  FileDisk_get_numBlocks : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet «FileDiskⁱᵐᵖˡ» go!"numBlocks") #x (Val #(x.numBlocks'))
+  FileDisk_set_numBlocks : ∀ (x : FileDisk.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «FileDiskⁱᵐᵖˡ» go!"numBlocks") (PairV #x #y) (Val #(({ x with numBlocks' := y } : FileDisk.t)))
 
 attribute [instance] FileDisk_Assumptions.FileDisk_type_repr
   FileDisk_Assumptions.FileDisk_underlying
-  FileDisk_Assumptions.«FileDiskⁱᵐᵖˡ_underlying»
+  FileDisk_Assumptions.FileDisk_get_fd
+  FileDisk_Assumptions.FileDisk_set_fd
+  FileDisk_Assumptions.FileDisk_get_numBlocks
+  FileDisk_Assumptions.FileDisk_set_numBlocks
 
 namespace MemDisk
 axiom t : Type

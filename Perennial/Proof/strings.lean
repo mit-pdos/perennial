@@ -70,13 +70,6 @@ instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.strings :=
 instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.strings :=
   build_get_is_pkg_init_wf
 
-theorem wp_asciiSpace_init :
-    {{ (True : IProp GF) }}
-      (App (Val asciiSpace'init) (Val #()))
-    {{ RET #(); True }} := by
-  -- Unprovable: `asciiSpace'init` is opaque (an axiom in Perennial/Code/strings.lean).
-  sorry -- Rocq: Admitted
-
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
     (Hinit : get_is_pkg_init_prop pkg_id.strings get_is_pkg_init) :
     {{ own_initializing get_is_pkg_init }}
@@ -88,7 +81,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_asciiSpace_init
+  wp_apply wp_GlobalAlloc (V := array.t w8 256) asciiSpace (go.ArrayType 256 go.uint8) with H
   iframe Hown
   is_pkg_init_finish
 

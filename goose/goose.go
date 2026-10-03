@@ -613,6 +613,19 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 				}
 			}
 			if !done {
+				// array and slice literal keys are constant indices, which the
+				// semantics expects as KeyInteger
+				switch underlyingType(ctx.typeOf(e)).(type) {
+				case *types.Array, *types.Slice:
+					if tv, ok := ctx.info.Types[el.Key]; ok && tv.Value != nil {
+						if idx, exact := constant.Int64Val(constant.ToInt(tv.Value)); exact {
+							k = glang.NewCallExpr(glang.VerbatimExpr("KeyInteger"), glang.IntToZ(idx))
+							done = true
+						}
+					}
+				}
+			}
+			if !done {
 				name := fmt.Sprintf("$k%d", len(*bindings))
 				*bindings = append(*bindings, compositeBinding{name: name, val: ctx.expr(el.Key)})
 				k = glang.NewCallExpr(glang.VerbatimExpr("KeyExpression"),
@@ -1461,9 +1474,24 @@ func (ctx *Ctx) exprAddr(e ast.Expr) glang.Expr {
 		}
 	case *ast.IndexExpr:
 		targetTy := ctx.typeOf(e.X)
+		// IndexRef of a slice takes the slice value, of an array the
+		// array's address
+		var target glang.Expr
+		switch t := underlyingType(targetTy).(type) {
+		case *types.Array:
+			target = ctx.exprAddr(e.X)
+		case *types.Pointer:
+			// p[i] for p a pointer to an array indexes *p
+			if _, ok := underlyingType(t.Elem()).(*types.Array); ok {
+				targetTy = t.Elem()
+			}
+			target = ctx.expr(e.X)
+		default:
+			target = ctx.expr(e.X)
+		}
 		return glang.NewCallExpr(glang.VerbatimExpr("IndexRef"),
 			ctx.glangType(e, targetTy),
-			glang.TupleExpr{ctx.expr(e.X),
+			glang.TupleExpr{target,
 				ctx.exprIntoType(e.Index, ctx.getIndexType(e.Index, targetTy))})
 	case *ast.StarExpr:
 		return ctx.expr(e.X)

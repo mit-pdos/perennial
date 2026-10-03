@@ -92,35 +92,7 @@ def unknownValueType [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] unknownValueType
 
-axiom «Encoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «EncoderIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «defaultAttrEncoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Filterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Iteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «MergeIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «oneIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «KeyValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Set'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Distinctⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Sortableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Type'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «unknownValueTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom escapeChar [ffi_syntax] [GoGlobalContext] : val
 
@@ -374,34 +346,49 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val _'init) (Val #()))))))))
 
 namespace Encoder
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end Encoder
 
-class Encoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Encoder_type_repr : go.TypeReprUnderlying «Encoderⁱᵐᵖˡ» Encoder.t
-  Encoder_underlying : go.UnderlyingDirectedEq Encoder «Encoderⁱᵐᵖˡ»
-  «Encoderⁱᵐᵖˡ_underlying» : go.IsUnderlying «Encoderⁱᵐᵖˡ» «Encoderⁱᵐᵖˡ»
+@[reducible] def «Encoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Encode" (go.signature.Signature [Iterator] false [go.string])), (go.interface_elem.MethodElem go!"ID" (go.signature.Signature [] false [EncoderID]))])
 
-attribute [instance] Encoder_Assumptions.Encoder_type_repr
-  Encoder_Assumptions.Encoder_underlying
-  Encoder_Assumptions.«Encoderⁱᵐᵖˡ_underlying»
+class Encoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Encoder_underlying : go.UnderlyingDirectedEq Encoder «Encoderⁱᵐᵖˡ»
+
+attribute [instance] Encoder_Assumptions.Encoder_underlying
 
 namespace EncoderID
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  value' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
 end EncoderID
+
+@[reducible] def EncoderID'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"value" go.uint64)]
+
+@[irreducible] def EncoderID'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  EncoderID'fds_unsealed
+
+instance equals_unfold_EncoderID [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold EncoderID'fds EncoderID'fds_unsealed :=
+  ⟨by unfold EncoderID'fds; rfl⟩
+
+@[reducible] def «EncoderIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType EncoderID'fds)
 
 class EncoderID_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   EncoderID_type_repr : go.TypeReprUnderlying «EncoderIDⁱᵐᵖˡ» EncoderID.t
   EncoderID_underlying : go.UnderlyingDirectedEq EncoderID «EncoderIDⁱᵐᵖˡ»
-  «EncoderIDⁱᵐᵖˡ_underlying» : go.IsUnderlying «EncoderIDⁱᵐᵖˡ» «EncoderIDⁱᵐᵖˡ»
+  EncoderID_get_value : ∀ (x : EncoderID.t), go.IsGoStepPureDetTagged under (StructFieldGet «EncoderIDⁱᵐᵖˡ» go!"value") #x (Val #(x.value'))
+  EncoderID_set_value : ∀ (x : EncoderID.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «EncoderIDⁱᵐᵖˡ» go!"value") (PairV #x #y) (Val #(({ x with value' := y } : EncoderID.t)))
 
 attribute [instance] EncoderID_Assumptions.EncoderID_type_repr
   EncoderID_Assumptions.EncoderID_underlying
-  EncoderID_Assumptions.«EncoderIDⁱᵐᵖˡ_underlying»
+  EncoderID_Assumptions.EncoderID_get_value
+  EncoderID_Assumptions.EncoderID_set_value
 
 namespace defaultAttrEncoder
 axiom t : Type
@@ -419,184 +406,371 @@ attribute [instance] defaultAttrEncoder_Assumptions.defaultAttrEncoder_type_repr
   defaultAttrEncoder_Assumptions.«defaultAttrEncoderⁱᵐᵖˡ_underlying»
 
 namespace Filter
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := func.t
 end Filter
 
-class Filter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Filter_type_repr : go.TypeReprUnderlying «Filterⁱᵐᵖˡ» Filter.t
-  Filter_underlying : go.UnderlyingDirectedEq Filter «Filterⁱᵐᵖˡ»
-  «Filterⁱᵐᵖˡ_underlying» : go.IsUnderlying «Filterⁱᵐᵖˡ» «Filterⁱᵐᵖˡ»
+@[reducible] def «Filterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.FunctionType (go.signature.Signature [KeyValue] false [go.bool]))
 
-attribute [instance] Filter_Assumptions.Filter_type_repr
-  Filter_Assumptions.Filter_underlying
-  Filter_Assumptions.«Filterⁱᵐᵖˡ_underlying»
+class Filter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Filter_underlying : go.UnderlyingDirectedEq Filter «Filterⁱᵐᵖˡ»
+
+attribute [instance] Filter_Assumptions.Filter_underlying
 
 namespace Iterator
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  storage' : loc
+  idx' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end Iterator
+
+@[reducible] def Iterator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"storage" (go.type.PointerType Set')),
+(go.field_decl.FieldDecl go!"idx" go.int)]
+
+@[irreducible] def Iterator'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  Iterator'fds_unsealed
+
+instance equals_unfold_Iterator [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold Iterator'fds Iterator'fds_unsealed :=
+  ⟨by unfold Iterator'fds; rfl⟩
+
+@[reducible] def «Iteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType Iterator'fds)
 
 class Iterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Iterator_type_repr : go.TypeReprUnderlying «Iteratorⁱᵐᵖˡ» Iterator.t
   Iterator_underlying : go.UnderlyingDirectedEq Iterator «Iteratorⁱᵐᵖˡ»
-  «Iteratorⁱᵐᵖˡ_underlying» : go.IsUnderlying «Iteratorⁱᵐᵖˡ» «Iteratorⁱᵐᵖˡ»
+  Iterator_get_storage : ∀ (x : Iterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «Iteratorⁱᵐᵖˡ» go!"storage") #x (Val #(x.storage'))
+  Iterator_set_storage : ∀ (x : Iterator.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Iteratorⁱᵐᵖˡ» go!"storage") (PairV #x #y) (Val #(({ x with storage' := y } : Iterator.t)))
+  Iterator_get_idx : ∀ (x : Iterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «Iteratorⁱᵐᵖˡ» go!"idx") #x (Val #(x.idx'))
+  Iterator_set_idx : ∀ (x : Iterator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Iteratorⁱᵐᵖˡ» go!"idx") (PairV #x #y) (Val #(({ x with idx' := y } : Iterator.t)))
 
 attribute [instance] Iterator_Assumptions.Iterator_type_repr
   Iterator_Assumptions.Iterator_underlying
-  Iterator_Assumptions.«Iteratorⁱᵐᵖˡ_underlying»
-
-namespace MergeIterator
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end MergeIterator
-
-class MergeIterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  MergeIterator_type_repr : go.TypeReprUnderlying «MergeIteratorⁱᵐᵖˡ» MergeIterator.t
-  MergeIterator_underlying : go.UnderlyingDirectedEq MergeIterator «MergeIteratorⁱᵐᵖˡ»
-  «MergeIteratorⁱᵐᵖˡ_underlying» : go.IsUnderlying «MergeIteratorⁱᵐᵖˡ» «MergeIteratorⁱᵐᵖˡ»
-
-attribute [instance] MergeIterator_Assumptions.MergeIterator_type_repr
-  MergeIterator_Assumptions.MergeIterator_underlying
-  MergeIterator_Assumptions.«MergeIteratorⁱᵐᵖˡ_underlying»
-
-namespace oneIterator
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end oneIterator
-
-class oneIterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  oneIterator_type_repr : go.TypeReprUnderlying «oneIteratorⁱᵐᵖˡ» oneIterator.t
-  oneIterator_underlying : go.UnderlyingDirectedEq oneIterator «oneIteratorⁱᵐᵖˡ»
-  «oneIteratorⁱᵐᵖˡ_underlying» : go.IsUnderlying «oneIteratorⁱᵐᵖˡ» «oneIteratorⁱᵐᵖˡ»
-
-attribute [instance] oneIterator_Assumptions.oneIterator_type_repr
-  oneIterator_Assumptions.oneIterator_underlying
-  oneIterator_Assumptions.«oneIteratorⁱᵐᵖˡ_underlying»
+  Iterator_Assumptions.Iterator_get_storage
+  Iterator_Assumptions.Iterator_set_storage
+  Iterator_Assumptions.Iterator_get_idx
+  Iterator_Assumptions.Iterator_set_idx
 
 namespace Key
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := go_string
 end Key
 
+@[reducible] def «Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.string
+
 class Key_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Key_type_repr : go.TypeReprUnderlying «Keyⁱᵐᵖˡ» Key.t
   Key_underlying : go.UnderlyingDirectedEq Key «Keyⁱᵐᵖˡ»
-  «Keyⁱᵐᵖˡ_underlying» : go.IsUnderlying «Keyⁱᵐᵖˡ» «Keyⁱᵐᵖˡ»
 
-attribute [instance] Key_Assumptions.Key_type_repr
-  Key_Assumptions.Key_underlying
-  Key_Assumptions.«Keyⁱᵐᵖˡ_underlying»
-
-namespace KeyValue
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end KeyValue
-
-class KeyValue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  KeyValue_type_repr : go.TypeReprUnderlying «KeyValueⁱᵐᵖˡ» KeyValue.t
-  KeyValue_underlying : go.UnderlyingDirectedEq KeyValue «KeyValueⁱᵐᵖˡ»
-  «KeyValueⁱᵐᵖˡ_underlying» : go.IsUnderlying «KeyValueⁱᵐᵖˡ» «KeyValueⁱᵐᵖˡ»
-
-attribute [instance] KeyValue_Assumptions.KeyValue_type_repr
-  KeyValue_Assumptions.KeyValue_underlying
-  KeyValue_Assumptions.«KeyValueⁱᵐᵖˡ_underlying»
-
-namespace Set'
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Set'
-
-class Set_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Set_type_repr : go.TypeReprUnderlying «Set'ⁱᵐᵖˡ» Set'.t
-  Set_underlying : go.UnderlyingDirectedEq Set' «Set'ⁱᵐᵖˡ»
-  «Set'ⁱᵐᵖˡ_underlying» : go.IsUnderlying «Set'ⁱᵐᵖˡ» «Set'ⁱᵐᵖˡ»
-
-attribute [instance] Set_Assumptions.Set_type_repr
-  Set_Assumptions.Set_underlying
-  Set_Assumptions.«Set'ⁱᵐᵖˡ_underlying»
-
-namespace Distinct
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Distinct
-
-class Distinct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Distinct_type_repr : go.TypeReprUnderlying «Distinctⁱᵐᵖˡ» Distinct.t
-  Distinct_underlying : go.UnderlyingDirectedEq Distinct «Distinctⁱᵐᵖˡ»
-  «Distinctⁱᵐᵖˡ_underlying» : go.IsUnderlying «Distinctⁱᵐᵖˡ» «Distinctⁱᵐᵖˡ»
-
-attribute [instance] Distinct_Assumptions.Distinct_type_repr
-  Distinct_Assumptions.Distinct_underlying
-  Distinct_Assumptions.«Distinctⁱᵐᵖˡ_underlying»
-
-namespace Sortable
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Sortable
-
-class Sortable_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Sortable_type_repr : go.TypeReprUnderlying «Sortableⁱᵐᵖˡ» Sortable.t
-  Sortable_underlying : go.UnderlyingDirectedEq Sortable «Sortableⁱᵐᵖˡ»
-  «Sortableⁱᵐᵖˡ_underlying» : go.IsUnderlying «Sortableⁱᵐᵖˡ» «Sortableⁱᵐᵖˡ»
-
-attribute [instance] Sortable_Assumptions.Sortable_type_repr
-  Sortable_Assumptions.Sortable_underlying
-  Sortable_Assumptions.«Sortableⁱᵐᵖˡ_underlying»
+attribute [instance] Key_Assumptions.Key_underlying
 
 namespace Type'
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end Type'
 
-class Type_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Type_type_repr : go.TypeReprUnderlying «Type'ⁱᵐᵖˡ» Type'.t
-  Type_underlying : go.UnderlyingDirectedEq Type' «Type'ⁱᵐᵖˡ»
-  «Type'ⁱᵐᵖˡ_underlying» : go.IsUnderlying «Type'ⁱᵐᵖˡ» «Type'ⁱᵐᵖˡ»
+@[reducible] def «Type'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] Type_Assumptions.Type_type_repr
-  Type_Assumptions.Type_underlying
-  Type_Assumptions.«Type'ⁱᵐᵖˡ_underlying»
+class Type_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Type_underlying : go.UnderlyingDirectedEq Type' «Type'ⁱᵐᵖˡ»
+
+attribute [instance] Type_Assumptions.Type_underlying
 
 namespace Value
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  vtype' : Type'.t
+  numeric' : w64
+  stringly' : go_string
+  slice' : interface.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Value
+
+@[reducible] def Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"vtype" Type'),
+(go.field_decl.FieldDecl go!"numeric" go.uint64),
+(go.field_decl.FieldDecl go!"stringly" go.string),
+(go.field_decl.FieldDecl go!"slice" go.any)]
+
+@[irreducible] def Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  Value'fds_unsealed
+
+instance equals_unfold_Value [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold Value'fds Value'fds_unsealed :=
+  ⟨by unfold Value'fds; rfl⟩
+
+@[reducible] def «Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType Value'fds)
 
 class Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Value_type_repr : go.TypeReprUnderlying «Valueⁱᵐᵖˡ» Value.t
   Value_underlying : go.UnderlyingDirectedEq Value «Valueⁱᵐᵖˡ»
-  «Valueⁱᵐᵖˡ_underlying» : go.IsUnderlying «Valueⁱᵐᵖˡ» «Valueⁱᵐᵖˡ»
+  Value_get_vtype : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"vtype") #x (Val #(x.vtype'))
+  Value_set_vtype : ∀ (x : Value.t) (y : Type'.t), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"vtype") (PairV #x #y) (Val #(({ x with vtype' := y } : Value.t)))
+  Value_get_numeric : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"numeric") #x (Val #(x.numeric'))
+  Value_set_numeric : ∀ (x : Value.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"numeric") (PairV #x #y) (Val #(({ x with numeric' := y } : Value.t)))
+  Value_get_stringly : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"stringly") #x (Val #(x.stringly'))
+  Value_set_stringly : ∀ (x : Value.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"stringly") (PairV #x #y) (Val #(({ x with stringly' := y } : Value.t)))
+  Value_get_slice : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"slice") #x (Val #(x.slice'))
+  Value_set_slice : ∀ (x : Value.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"slice") (PairV #x #y) (Val #(({ x with slice' := y } : Value.t)))
 
 attribute [instance] Value_Assumptions.Value_type_repr
   Value_Assumptions.Value_underlying
-  Value_Assumptions.«Valueⁱᵐᵖˡ_underlying»
+  Value_Assumptions.Value_get_vtype
+  Value_Assumptions.Value_set_vtype
+  Value_Assumptions.Value_get_numeric
+  Value_Assumptions.Value_set_numeric
+  Value_Assumptions.Value_get_stringly
+  Value_Assumptions.Value_set_stringly
+  Value_Assumptions.Value_get_slice
+  Value_Assumptions.Value_set_slice
+
+namespace KeyValue
+structure t [ffi_syntax] where
+  mk ::
+  Key' : Key.t
+  Value' : Value.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
+end KeyValue
+
+@[reducible] def KeyValue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Key" Key),
+(go.field_decl.FieldDecl go!"Value" Value)]
+
+@[irreducible] def KeyValue'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  KeyValue'fds_unsealed
+
+instance equals_unfold_KeyValue [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold KeyValue'fds KeyValue'fds_unsealed :=
+  ⟨by unfold KeyValue'fds; rfl⟩
+
+@[reducible] def «KeyValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType KeyValue'fds)
+
+class KeyValue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  KeyValue_type_repr : go.TypeReprUnderlying «KeyValueⁱᵐᵖˡ» KeyValue.t
+  KeyValue_underlying : go.UnderlyingDirectedEq KeyValue «KeyValueⁱᵐᵖˡ»
+  KeyValue_get_Key : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"Key") #x (Val #(x.Key'))
+  KeyValue_set_Key : ∀ (x : KeyValue.t) (y : Key.t), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : KeyValue.t)))
+  KeyValue_get_Value : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
+  KeyValue_set_Value : ∀ (x : KeyValue.t) (y : Value.t), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : KeyValue.t)))
+
+attribute [instance] KeyValue_Assumptions.KeyValue_type_repr
+  KeyValue_Assumptions.KeyValue_underlying
+  KeyValue_Assumptions.KeyValue_get_Key
+  KeyValue_Assumptions.KeyValue_set_Key
+  KeyValue_Assumptions.KeyValue_get_Value
+  KeyValue_Assumptions.KeyValue_set_Value
+
+namespace oneIterator
+structure t [ffi_syntax] where
+  mk ::
+  iter' : Iterator.t
+  done' : Bool
+  attr' : KeyValue.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+end oneIterator
+
+@[reducible] def oneIterator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"iter" Iterator),
+(go.field_decl.FieldDecl go!"done" go.bool),
+(go.field_decl.FieldDecl go!"attr" KeyValue)]
+
+@[irreducible] def oneIterator'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  oneIterator'fds_unsealed
+
+instance equals_unfold_oneIterator [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold oneIterator'fds oneIterator'fds_unsealed :=
+  ⟨by unfold oneIterator'fds; rfl⟩
+
+@[reducible] def «oneIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType oneIterator'fds)
+
+class oneIterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  oneIterator_type_repr : go.TypeReprUnderlying «oneIteratorⁱᵐᵖˡ» oneIterator.t
+  oneIterator_underlying : go.UnderlyingDirectedEq oneIterator «oneIteratorⁱᵐᵖˡ»
+  oneIterator_get_iter : ∀ (x : oneIterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «oneIteratorⁱᵐᵖˡ» go!"iter") #x (Val #(x.iter'))
+  oneIterator_set_iter : ∀ (x : oneIterator.t) (y : Iterator.t), go.IsGoStepPureDetTagged under (StructFieldSet «oneIteratorⁱᵐᵖˡ» go!"iter") (PairV #x #y) (Val #(({ x with iter' := y } : oneIterator.t)))
+  oneIterator_get_done : ∀ (x : oneIterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «oneIteratorⁱᵐᵖˡ» go!"done") #x (Val #(x.done'))
+  oneIterator_set_done : ∀ (x : oneIterator.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «oneIteratorⁱᵐᵖˡ» go!"done") (PairV #x #y) (Val #(({ x with done' := y } : oneIterator.t)))
+  oneIterator_get_attr : ∀ (x : oneIterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «oneIteratorⁱᵐᵖˡ» go!"attr") #x (Val #(x.attr'))
+  oneIterator_set_attr : ∀ (x : oneIterator.t) (y : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldSet «oneIteratorⁱᵐᵖˡ» go!"attr") (PairV #x #y) (Val #(({ x with attr' := y } : oneIterator.t)))
+
+attribute [instance] oneIterator_Assumptions.oneIterator_type_repr
+  oneIterator_Assumptions.oneIterator_underlying
+  oneIterator_Assumptions.oneIterator_get_iter
+  oneIterator_Assumptions.oneIterator_set_iter
+  oneIterator_Assumptions.oneIterator_get_done
+  oneIterator_Assumptions.oneIterator_set_done
+  oneIterator_Assumptions.oneIterator_get_attr
+  oneIterator_Assumptions.oneIterator_set_attr
+
+namespace MergeIterator
+structure t [ffi_syntax] where
+  mk ::
+  one' : oneIterator.t
+  two' : oneIterator.t
+  current' : KeyValue.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+end MergeIterator
+
+@[reducible] def MergeIterator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"one" oneIterator),
+(go.field_decl.FieldDecl go!"two" oneIterator),
+(go.field_decl.FieldDecl go!"current" KeyValue)]
+
+@[irreducible] def MergeIterator'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  MergeIterator'fds_unsealed
+
+instance equals_unfold_MergeIterator [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold MergeIterator'fds MergeIterator'fds_unsealed :=
+  ⟨by unfold MergeIterator'fds; rfl⟩
+
+@[reducible] def «MergeIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType MergeIterator'fds)
+
+class MergeIterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  MergeIterator_type_repr : go.TypeReprUnderlying «MergeIteratorⁱᵐᵖˡ» MergeIterator.t
+  MergeIterator_underlying : go.UnderlyingDirectedEq MergeIterator «MergeIteratorⁱᵐᵖˡ»
+  MergeIterator_get_one : ∀ (x : MergeIterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «MergeIteratorⁱᵐᵖˡ» go!"one") #x (Val #(x.one'))
+  MergeIterator_set_one : ∀ (x : MergeIterator.t) (y : oneIterator.t), go.IsGoStepPureDetTagged under (StructFieldSet «MergeIteratorⁱᵐᵖˡ» go!"one") (PairV #x #y) (Val #(({ x with one' := y } : MergeIterator.t)))
+  MergeIterator_get_two : ∀ (x : MergeIterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «MergeIteratorⁱᵐᵖˡ» go!"two") #x (Val #(x.two'))
+  MergeIterator_set_two : ∀ (x : MergeIterator.t) (y : oneIterator.t), go.IsGoStepPureDetTagged under (StructFieldSet «MergeIteratorⁱᵐᵖˡ» go!"two") (PairV #x #y) (Val #(({ x with two' := y } : MergeIterator.t)))
+  MergeIterator_get_current : ∀ (x : MergeIterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «MergeIteratorⁱᵐᵖˡ» go!"current") #x (Val #(x.current'))
+  MergeIterator_set_current : ∀ (x : MergeIterator.t) (y : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldSet «MergeIteratorⁱᵐᵖˡ» go!"current") (PairV #x #y) (Val #(({ x with current' := y } : MergeIterator.t)))
+
+attribute [instance] MergeIterator_Assumptions.MergeIterator_type_repr
+  MergeIterator_Assumptions.MergeIterator_underlying
+  MergeIterator_Assumptions.MergeIterator_get_one
+  MergeIterator_Assumptions.MergeIterator_set_one
+  MergeIterator_Assumptions.MergeIterator_get_two
+  MergeIterator_Assumptions.MergeIterator_set_two
+  MergeIterator_Assumptions.MergeIterator_get_current
+  MergeIterator_Assumptions.MergeIterator_set_current
+
+namespace Set'
+structure t [ffi_syntax] where
+  mk ::
+  hash' : w64
+  data' : interface.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
+end Set'
+
+@[reducible] def Set'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"hash" go.uint64),
+(go.field_decl.FieldDecl go!"data" go.any)]
+
+@[irreducible] def Set'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  Set'fds_unsealed
+
+instance equals_unfold_Set [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold Set'fds Set'fds_unsealed :=
+  ⟨by unfold Set'fds; rfl⟩
+
+@[reducible] def «Set'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType Set'fds)
+
+class Set_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Set_type_repr : go.TypeReprUnderlying «Set'ⁱᵐᵖˡ» Set'.t
+  Set_underlying : go.UnderlyingDirectedEq Set' «Set'ⁱᵐᵖˡ»
+  Set_get_hash : ∀ (x : Set'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Set'ⁱᵐᵖˡ» go!"hash") #x (Val #(x.hash'))
+  Set_set_hash : ∀ (x : Set'.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Set'ⁱᵐᵖˡ» go!"hash") (PairV #x #y) (Val #(({ x with hash' := y } : Set'.t)))
+  Set_get_data : ∀ (x : Set'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Set'ⁱᵐᵖˡ» go!"data") #x (Val #(x.data'))
+  Set_set_data : ∀ (x : Set'.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Set'ⁱᵐᵖˡ» go!"data") (PairV #x #y) (Val #(({ x with data' := y } : Set'.t)))
+
+attribute [instance] Set_Assumptions.Set_type_repr
+  Set_Assumptions.Set_underlying
+  Set_Assumptions.Set_get_hash
+  Set_Assumptions.Set_set_hash
+  Set_Assumptions.Set_get_data
+  Set_Assumptions.Set_set_data
+
+namespace Distinct
+structure t [ffi_syntax] where
+  mk ::
+  hash' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
+end Distinct
+
+@[reducible] def Distinct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"hash" go.uint64)]
+
+@[irreducible] def Distinct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  Distinct'fds_unsealed
+
+instance equals_unfold_Distinct [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold Distinct'fds Distinct'fds_unsealed :=
+  ⟨by unfold Distinct'fds; rfl⟩
+
+@[reducible] def «Distinctⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType Distinct'fds)
+
+class Distinct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Distinct_type_repr : go.TypeReprUnderlying «Distinctⁱᵐᵖˡ» Distinct.t
+  Distinct_underlying : go.UnderlyingDirectedEq Distinct «Distinctⁱᵐᵖˡ»
+  Distinct_get_hash : ∀ (x : Distinct.t), go.IsGoStepPureDetTagged under (StructFieldGet «Distinctⁱᵐᵖˡ» go!"hash") #x (Val #(x.hash'))
+  Distinct_set_hash : ∀ (x : Distinct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Distinctⁱᵐᵖˡ» go!"hash") (PairV #x #y) (Val #(({ x with hash' := y } : Distinct.t)))
+
+attribute [instance] Distinct_Assumptions.Distinct_type_repr
+  Distinct_Assumptions.Distinct_underlying
+  Distinct_Assumptions.Distinct_get_hash
+  Distinct_Assumptions.Distinct_set_hash
+
+namespace Sortable
+abbrev t [ffi_syntax] : Type := slice.t
+end Sortable
+
+@[reducible] def «Sortableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.SliceType KeyValue)
+
+class Sortable_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Sortable_underlying : go.UnderlyingDirectedEq Sortable «Sortableⁱᵐᵖˡ»
+
+attribute [instance] Sortable_Assumptions.Sortable_underlying
 
 namespace unknownValueType
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk⟩
 end unknownValueType
+
+@[reducible] def unknownValueType'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def unknownValueType'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  unknownValueType'fds_unsealed
+
+instance equals_unfold_unknownValueType [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold unknownValueType'fds unknownValueType'fds_unsealed :=
+  ⟨by unfold unknownValueType'fds; rfl⟩
+
+@[reducible] def «unknownValueTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType unknownValueType'fds)
 
 class unknownValueType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   unknownValueType_type_repr : go.TypeReprUnderlying «unknownValueTypeⁱᵐᵖˡ» unknownValueType.t
   unknownValueType_underlying : go.UnderlyingDirectedEq unknownValueType «unknownValueTypeⁱᵐᵖˡ»
-  «unknownValueTypeⁱᵐᵖˡ_underlying» : go.IsUnderlying «unknownValueTypeⁱᵐᵖˡ» «unknownValueTypeⁱᵐᵖˡ»
 
 attribute [instance] unknownValueType_Assumptions.unknownValueType_type_repr
   unknownValueType_Assumptions.unknownValueType_underlying
-  unknownValueType_Assumptions.«unknownValueTypeⁱᵐᵖˡ_underlying»
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Encoder_instance : Encoder_Assumptions

@@ -1,2 +1,5 @@
 imports = ["go.uber.org/zap/zapcore"]
 translate = ["!*"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

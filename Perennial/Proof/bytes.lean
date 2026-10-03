@@ -2,6 +2,7 @@
 Port of `new/proof/bytes.v`: specs for the Go `bytes` package.
 -/
 import Perennial.Proof.ProofPrelude
+import Perennial.Proof.errors
 import Perennial.Code.bytes
 import Perennial.GeneratedProof.bytes
 
@@ -25,8 +26,6 @@ instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.bytes :=
 instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.bytes :=
   build_get_is_pkg_init_wf
 
-/-- The initializers of the global variables (`asciiSpace'init` etc.) are
-opaque (axiomatized by goose), so this cannot be proven. -/
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
     (Hinit : get_is_pkg_init_prop pkg_id.bytes get_is_pkg_init) :
     {{ own_initializing get_is_pkg_init }}
@@ -38,8 +37,12 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  -- Unprovable: `ErrTooLarge'init`, `asciiSpace'init`, ... are opaque (axioms in Perennial/Code/bytes.lean).
-  sorry -- Rocq: Admitted
+  wp_apply wp_GlobalAlloc (V := array.t w8 256) asciiSpace (go.ArrayType 256 go.uint8) as _
+  repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
+  wp_apply errors.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
+  repeat (wp_apply errors.wp_New as %_ _)
+  iframe Hown
+  is_pkg_init_finish
 
 theorem wp_Clone (sl_b : slice.t) (dq : DFrac) (b : List w8) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.bytes ∗

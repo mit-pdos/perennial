@@ -87,7 +87,10 @@ theorem wp_OpGet (key : go_string) :
       (App (App (Val (@! v3.OpGet)) (Val #key)) (Val #slice.nil))
     {{ (op : v3.Op.t), RET #op;
         is_Op op (.Get { RangeRequest.default with key := key }) }} := by
-  -- Unprovable: `OpGet` calls `clientv3.IsOptsWithPrefix`/`IsOptsWithFromKey`, which have no translated body.
+  -- Unprovable as stated: `OpGet` (now with `IsOptsWithPrefix`/`IsOptsWithFromKey`/`NewOp`
+  -- translated) returns `Op{t: tRange, key: []byte(key)}`, whose `sort` field is nil, but
+  -- `is_Op_RangeRequest` requires `op.sort' ↦□ ...`, which implies `op.sort' ≠ null`.
+  -- Fixing this needs `is_Op_RangeRequest` to allow a nil `sort` (as `toRangeRequest` does).
   sorry -- Rocq: Admitted
 
 theorem wp_Op__applyOpts (op : loc) :

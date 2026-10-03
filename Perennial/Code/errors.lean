@@ -27,8 +27,6 @@ def joinError [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] joinError
 
-axiom «joinErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 noncomputable def ErrUnsupported [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"errors.ErrUnsupported"
 
@@ -334,19 +332,37 @@ attribute [instance] errorString_Assumptions.errorString_type_repr
   errorString_Assumptions.errorString'ptr_Error_unfold
 
 namespace joinError
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  errs' : slice.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
 end joinError
+
+@[reducible] def joinError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"errs" (go.type.SliceType go.error))]
+
+@[irreducible] def joinError'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  joinError'fds_unsealed
+
+instance equals_unfold_joinError [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold joinError'fds joinError'fds_unsealed :=
+  ⟨by unfold joinError'fds; rfl⟩
+
+@[reducible] def «joinErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType joinError'fds)
 
 class joinError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   joinError_type_repr : go.TypeReprUnderlying «joinErrorⁱᵐᵖˡ» joinError.t
   joinError_underlying : go.UnderlyingDirectedEq joinError «joinErrorⁱᵐᵖˡ»
-  «joinErrorⁱᵐᵖˡ_underlying» : go.IsUnderlying «joinErrorⁱᵐᵖˡ» «joinErrorⁱᵐᵖˡ»
+  joinError_get_errs : ∀ (x : joinError.t), go.IsGoStepPureDetTagged under (StructFieldGet «joinErrorⁱᵐᵖˡ» go!"errs") #x (Val #(x.errs'))
+  joinError_set_errs : ∀ (x : joinError.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «joinErrorⁱᵐᵖˡ» go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError.t)))
 
 attribute [instance] joinError_Assumptions.joinError_type_repr
   joinError_Assumptions.joinError_underlying
-  joinError_Assumptions.«joinErrorⁱᵐᵖˡ_underlying»
+  joinError_Assumptions.joinError_get_errs
+  joinError_Assumptions.joinError_set_errs
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   errorString_instance : errorString_Assumptions

@@ -1,3 +1,6 @@
 translate = ["!*"]
 imports = ["!*"]
 trusted = ["BlockSize", "Get", "Read", "ReadTo", "Write", "Barrier", "Size"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

@@ -136,19 +136,11 @@ axiom «Clockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «Timerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «realClockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «realTimerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «Configⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «Optionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «demuxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «notifierⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Prefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «progressNotifierⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -156,21 +148,10 @@ axiom «progressRequestorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «conditionalProgressRequestorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «ringBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : ∀ (T : go.type), go.type
-
-axiom «entryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : ∀ (T : go.type), go.type
-
-axiom KeyPredicate [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «RevisionOfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : ∀ (T : go.type), go.type
-
-axiom «IterFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : ∀ (T : go.type), go.type
+@[reducible] def KeyPredicate [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.FunctionType (go.signature.Signature [(go.type.SliceType go.byte)] false [go.bool]))
 
 axiom «kvItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «watcherⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 noncomputable def ErrUnsupportedRequest [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"go.etcd.io/etcd/cache/v3.ErrUnsupportedRequest"
@@ -719,19 +700,32 @@ attribute [instance] Timer_Assumptions.Timer_type_repr
   Timer_Assumptions.«Timerⁱᵐᵖˡ_underlying»
 
 namespace realClock
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk⟩
 end realClock
+
+@[reducible] def realClock'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def realClock'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  realClock'fds_unsealed
+
+instance equals_unfold_realClock [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold realClock'fds realClock'fds_unsealed :=
+  ⟨by unfold realClock'fds; rfl⟩
+
+@[reducible] def «realClockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType realClock'fds)
 
 class realClock_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   realClock_type_repr : go.TypeReprUnderlying «realClockⁱᵐᵖˡ» realClock.t
   realClock_underlying : go.UnderlyingDirectedEq realClock «realClockⁱᵐᵖˡ»
-  «realClockⁱᵐᵖˡ_underlying» : go.IsUnderlying «realClockⁱᵐᵖˡ» «realClockⁱᵐᵖˡ»
 
 attribute [instance] realClock_Assumptions.realClock_type_repr
   realClock_Assumptions.realClock_underlying
-  realClock_Assumptions.«realClockⁱᵐᵖˡ_underlying»
 
 namespace realTimer
 axiom t : Type
@@ -749,19 +743,16 @@ attribute [instance] realTimer_Assumptions.realTimer_type_repr
   realTimer_Assumptions.«realTimerⁱᵐᵖˡ_underlying»
 
 namespace Option
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := func.t
 end Option
 
-class Option_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Option_type_repr : go.TypeReprUnderlying «Optionⁱᵐᵖˡ» Option.t
-  Option_underlying : go.UnderlyingDirectedEq Option «Optionⁱᵐᵖˡ»
-  «Optionⁱᵐᵖˡ_underlying» : go.IsUnderlying «Optionⁱᵐᵖˡ» «Optionⁱᵐᵖˡ»
+@[reducible] def «Optionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.FunctionType (go.signature.Signature [(go.type.PointerType Config)] false []))
 
-attribute [instance] Option_Assumptions.Option_type_repr
-  Option_Assumptions.Option_underlying
-  Option_Assumptions.«Optionⁱᵐᵖˡ_underlying»
+class Option_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Option_underlying : go.UnderlyingDirectedEq Option «Optionⁱᵐᵖˡ»
+
+attribute [instance] Option_Assumptions.Option_underlying
 
 namespace demux
 axiom t : Type
@@ -779,34 +770,55 @@ attribute [instance] demux_Assumptions.demux_type_repr
   demux_Assumptions.«demuxⁱᵐᵖˡ_underlying»
 
 namespace notifier
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  mu' : _root_.Perennial.sync.RWMutex.t
+  ch' : chan.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end notifier
+
+@[reducible] def notifier'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.RWMutex),
+(go.field_decl.FieldDecl go!"ch" (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))]
+
+@[irreducible] def notifier'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  notifier'fds_unsealed
+
+instance equals_unfold_notifier [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold notifier'fds notifier'fds_unsealed :=
+  ⟨by unfold notifier'fds; rfl⟩
+
+@[reducible] def «notifierⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType notifier'fds)
 
 class notifier_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   notifier_type_repr : go.TypeReprUnderlying «notifierⁱᵐᵖˡ» notifier.t
   notifier_underlying : go.UnderlyingDirectedEq notifier «notifierⁱᵐᵖˡ»
-  «notifierⁱᵐᵖˡ_underlying» : go.IsUnderlying «notifierⁱᵐᵖˡ» «notifierⁱᵐᵖˡ»
+  notifier_get_mu : ∀ (x : notifier.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifierⁱᵐᵖˡ» go!"mu") #x (Val #(x.mu'))
+  notifier_set_mu : ∀ (x : notifier.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «notifierⁱᵐᵖˡ» go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : notifier.t)))
+  notifier_get_ch : ∀ (x : notifier.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifierⁱᵐᵖˡ» go!"ch") #x (Val #(x.ch'))
+  notifier_set_ch : ∀ (x : notifier.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «notifierⁱᵐᵖˡ» go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : notifier.t)))
 
 attribute [instance] notifier_Assumptions.notifier_type_repr
   notifier_Assumptions.notifier_underlying
-  notifier_Assumptions.«notifierⁱᵐᵖˡ_underlying»
+  notifier_Assumptions.notifier_get_mu
+  notifier_Assumptions.notifier_set_mu
+  notifier_Assumptions.notifier_get_ch
+  notifier_Assumptions.notifier_set_ch
 
 namespace Prefix
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := go_string
 end Prefix
 
-class Prefix_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Prefix_type_repr : go.TypeReprUnderlying «Prefixⁱᵐᵖˡ» Prefix.t
-  Prefix_underlying : go.UnderlyingDirectedEq Prefix «Prefixⁱᵐᵖˡ»
-  «Prefixⁱᵐᵖˡ_underlying» : go.IsUnderlying «Prefixⁱᵐᵖˡ» «Prefixⁱᵐᵖˡ»
+@[reducible] def «Prefixⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.string
 
-attribute [instance] Prefix_Assumptions.Prefix_type_repr
-  Prefix_Assumptions.Prefix_underlying
-  Prefix_Assumptions.«Prefixⁱᵐᵖˡ_underlying»
+class Prefix_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Prefix_underlying : go.UnderlyingDirectedEq Prefix «Prefixⁱᵐᵖˡ»
+
+attribute [instance] Prefix_Assumptions.Prefix_underlying
 
 namespace progressNotifier
 axiom t : Type
@@ -839,79 +851,169 @@ attribute [instance] conditionalProgressRequestor_Assumptions.conditionalProgres
   conditionalProgressRequestor_Assumptions.«conditionalProgressRequestorⁱᵐᵖˡ_underlying»
 
 namespace ready
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  mu' : _root_.Perennial.sync.Mutex.t
+  isReady' : Bool
+  stateCh' : chan.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end ready
+
+@[reducible] def ready'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
+(go.field_decl.FieldDecl go!"isReady" go.bool),
+(go.field_decl.FieldDecl go!"stateCh" (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))]
+
+@[irreducible] def ready'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  ready'fds_unsealed
+
+instance equals_unfold_ready [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold ready'fds ready'fds_unsealed :=
+  ⟨by unfold ready'fds; rfl⟩
+
+@[reducible] def «readyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType ready'fds)
 
 class ready_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ready_type_repr : go.TypeReprUnderlying «readyⁱᵐᵖˡ» ready.t
   ready_underlying : go.UnderlyingDirectedEq ready «readyⁱᵐᵖˡ»
-  «readyⁱᵐᵖˡ_underlying» : go.IsUnderlying «readyⁱᵐᵖˡ» «readyⁱᵐᵖˡ»
+  ready_get_mu : ∀ (x : ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «readyⁱᵐᵖˡ» go!"mu") #x (Val #(x.mu'))
+  ready_set_mu : ∀ (x : ready.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «readyⁱᵐᵖˡ» go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : ready.t)))
+  ready_get_isReady : ∀ (x : ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «readyⁱᵐᵖˡ» go!"isReady") #x (Val #(x.isReady'))
+  ready_set_isReady : ∀ (x : ready.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «readyⁱᵐᵖˡ» go!"isReady") (PairV #x #y) (Val #(({ x with isReady' := y } : ready.t)))
+  ready_get_stateCh : ∀ (x : ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «readyⁱᵐᵖˡ» go!"stateCh") #x (Val #(x.stateCh'))
+  ready_set_stateCh : ∀ (x : ready.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «readyⁱᵐᵖˡ» go!"stateCh") (PairV #x #y) (Val #(({ x with stateCh' := y } : ready.t)))
 
 attribute [instance] ready_Assumptions.ready_type_repr
   ready_Assumptions.ready_underlying
-  ready_Assumptions.«readyⁱᵐᵖˡ_underlying»
+  ready_Assumptions.ready_get_mu
+  ready_Assumptions.ready_set_mu
+  ready_Assumptions.ready_get_isReady
+  ready_Assumptions.ready_set_isReady
+  ready_Assumptions.ready_get_stateCh
+  ready_Assumptions.ready_set_stateCh
+
+namespace RevisionOf
+abbrev t [ffi_syntax] (T : Type) : Type := func.t
+end RevisionOf
+
+@[reducible] def «RevisionOfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+  (go.type.FunctionType (go.signature.Signature [T] false [go.int64]))
+
+class RevisionOf_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  RevisionOf_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (RevisionOf T) («RevisionOfⁱᵐᵖˡ» T)
+
+attribute [instance] RevisionOf_Assumptions.RevisionOf_underlying
 
 namespace ringBuffer
-axiom t : ∀ (T : Type), Type
-axiom zero_val : ∀ {T : Type} [ZeroVal T], ZeroVal (t T)
-attribute [instance] zero_val
+structure t [ffi_syntax] (T : Type) where
+  mk ::
+  buffer' : slice.t
+  head' : w64
+  tail' : w64
+  size' : w64
+  revisionOf' : (RevisionOf.t T)
+
+instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end ringBuffer
+
+@[reducible] def ringBuffer'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"buffer" (go.type.SliceType (entry T))),
+(go.field_decl.FieldDecl go!"head" go.int),
+(go.field_decl.FieldDecl go!"tail" go.int),
+(go.field_decl.FieldDecl go!"size" go.int),
+(go.field_decl.FieldDecl go!"revisionOf" (RevisionOf T))]
+
+@[irreducible] def ringBuffer'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+  (ringBuffer'fds_unsealed T)
+
+instance equals_unfold_ringBuffer [ffi_syntax] [GoGlobalContext] (T : go.type) :
+    EqualsUnfold (ringBuffer'fds T) (ringBuffer'fds_unsealed T) :=
+  ⟨by unfold ringBuffer'fds; rfl⟩
+
+@[reducible] def «ringBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+  (go.type.StructType (ringBuffer'fds T))
 
 class ringBuffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ringBuffer_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («ringBufferⁱᵐᵖˡ» T) (ringBuffer.t T')
   ringBuffer_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (ringBuffer T) («ringBufferⁱᵐᵖˡ» T)
-  «ringBufferⁱᵐᵖˡ_underlying» : ∀ (T : go.type), go.IsUnderlying («ringBufferⁱᵐᵖˡ» T) («ringBufferⁱᵐᵖˡ» T)
+  ringBuffer_get_buffer : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («ringBufferⁱᵐᵖˡ» T) go!"buffer") #x (Val #(x.buffer'))
+  ringBuffer_set_buffer : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet («ringBufferⁱᵐᵖˡ» T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (ringBuffer.t T'))))
+  ringBuffer_get_head : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («ringBufferⁱᵐᵖˡ» T) go!"head") #x (Val #(x.head'))
+  ringBuffer_set_head : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («ringBufferⁱᵐᵖˡ» T) go!"head") (PairV #x #y) (Val #(({ x with head' := y } : (ringBuffer.t T'))))
+  ringBuffer_get_tail : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («ringBufferⁱᵐᵖˡ» T) go!"tail") #x (Val #(x.tail'))
+  ringBuffer_set_tail : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («ringBufferⁱᵐᵖˡ» T) go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : (ringBuffer.t T'))))
+  ringBuffer_get_size : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («ringBufferⁱᵐᵖˡ» T) go!"size") #x (Val #(x.size'))
+  ringBuffer_set_size : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («ringBufferⁱᵐᵖˡ» T) go!"size") (PairV #x #y) (Val #(({ x with size' := y } : (ringBuffer.t T'))))
+  ringBuffer_get_revisionOf : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («ringBufferⁱᵐᵖˡ» T) go!"revisionOf") #x (Val #(x.revisionOf'))
+  ringBuffer_set_revisionOf : ∀ (T : go.type) (T' : Type) (x : (ringBuffer.t T')) (y : (RevisionOf.t T')), go.IsGoStepPureDetTagged under (StructFieldSet («ringBufferⁱᵐᵖˡ» T) go!"revisionOf") (PairV #x #y) (Val #(({ x with revisionOf' := y } : (ringBuffer.t T'))))
 
 attribute [instance] ringBuffer_Assumptions.ringBuffer_type_repr
   ringBuffer_Assumptions.ringBuffer_underlying
-  ringBuffer_Assumptions.«ringBufferⁱᵐᵖˡ_underlying»
+  ringBuffer_Assumptions.ringBuffer_get_buffer
+  ringBuffer_Assumptions.ringBuffer_set_buffer
+  ringBuffer_Assumptions.ringBuffer_get_head
+  ringBuffer_Assumptions.ringBuffer_set_head
+  ringBuffer_Assumptions.ringBuffer_get_tail
+  ringBuffer_Assumptions.ringBuffer_set_tail
+  ringBuffer_Assumptions.ringBuffer_get_size
+  ringBuffer_Assumptions.ringBuffer_set_size
+  ringBuffer_Assumptions.ringBuffer_get_revisionOf
+  ringBuffer_Assumptions.ringBuffer_set_revisionOf
 
 namespace entry
-axiom t : ∀ (T : Type), Type
-axiom zero_val : ∀ {T : Type} [ZeroVal T], ZeroVal (t T)
-attribute [instance] zero_val
+structure t [ffi_syntax] (T : Type) where
+  mk ::
+  revision' : w64
+  item' : T
+
+instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end entry
+
+@[reducible] def entry'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"revision" go.int64),
+(go.field_decl.FieldDecl go!"item" T)]
+
+@[irreducible] def entry'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+  (entry'fds_unsealed T)
+
+instance equals_unfold_entry [ffi_syntax] [GoGlobalContext] (T : go.type) :
+    EqualsUnfold (entry'fds T) (entry'fds_unsealed T) :=
+  ⟨by unfold entry'fds; rfl⟩
+
+@[reducible] def «entryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+  (go.type.StructType (entry'fds T))
 
 class entry_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   entry_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («entryⁱᵐᵖˡ» T) (entry.t T')
   entry_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (entry T) («entryⁱᵐᵖˡ» T)
-  «entryⁱᵐᵖˡ_underlying» : ∀ (T : go.type), go.IsUnderlying («entryⁱᵐᵖˡ» T) («entryⁱᵐᵖˡ» T)
+  entry_get_revision : ∀ (T : go.type) (T' : Type) (x : (entry.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («entryⁱᵐᵖˡ» T) go!"revision") #x (Val #(x.revision'))
+  entry_set_revision : ∀ (T : go.type) (T' : Type) (x : (entry.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («entryⁱᵐᵖˡ» T) go!"revision") (PairV #x #y) (Val #(({ x with revision' := y } : (entry.t T'))))
+  entry_get_item : ∀ (T : go.type) (T' : Type) (x : (entry.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («entryⁱᵐᵖˡ» T) go!"item") #x (Val #(x.item'))
+  entry_set_item : ∀ (T : go.type) (T' : Type) (x : (entry.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («entryⁱᵐᵖˡ» T) go!"item") (PairV #x #y) (Val #(({ x with item' := y } : (entry.t T'))))
 
 attribute [instance] entry_Assumptions.entry_type_repr
   entry_Assumptions.entry_underlying
-  entry_Assumptions.«entryⁱᵐᵖˡ_underlying»
-
-namespace RevisionOf
-axiom t : ∀ (T : Type), Type
-axiom zero_val : ∀ {T : Type} [ZeroVal T], ZeroVal (t T)
-attribute [instance] zero_val
-end RevisionOf
-
-class RevisionOf_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  RevisionOf_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («RevisionOfⁱᵐᵖˡ» T) (RevisionOf.t T')
-  RevisionOf_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (RevisionOf T) («RevisionOfⁱᵐᵖˡ» T)
-  «RevisionOfⁱᵐᵖˡ_underlying» : ∀ (T : go.type), go.IsUnderlying («RevisionOfⁱᵐᵖˡ» T) («RevisionOfⁱᵐᵖˡ» T)
-
-attribute [instance] RevisionOf_Assumptions.RevisionOf_type_repr
-  RevisionOf_Assumptions.RevisionOf_underlying
-  RevisionOf_Assumptions.«RevisionOfⁱᵐᵖˡ_underlying»
+  entry_Assumptions.entry_get_revision
+  entry_Assumptions.entry_set_revision
+  entry_Assumptions.entry_get_item
+  entry_Assumptions.entry_set_item
 
 namespace IterFunc
-axiom t : ∀ (T : Type), Type
-axiom zero_val : ∀ {T : Type} [ZeroVal T], ZeroVal (t T)
-attribute [instance] zero_val
+abbrev t [ffi_syntax] (T : Type) : Type := func.t
 end IterFunc
 
-class IterFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  IterFunc_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («IterFuncⁱᵐᵖˡ» T) (IterFunc.t T')
-  IterFunc_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (IterFunc T) («IterFuncⁱᵐᵖˡ» T)
-  «IterFuncⁱᵐᵖˡ_underlying» : ∀ (T : go.type), go.IsUnderlying («IterFuncⁱᵐᵖˡ» T) («IterFuncⁱᵐᵖˡ» T)
+@[reducible] def «IterFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
+  (go.type.FunctionType (go.signature.Signature [go.int64, T] false [go.bool]))
 
-attribute [instance] IterFunc_Assumptions.IterFunc_type_repr
-  IterFunc_Assumptions.IterFunc_underlying
-  IterFunc_Assumptions.«IterFuncⁱᵐᵖˡ_underlying»
+class IterFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  IterFunc_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (IterFunc T) («IterFuncⁱᵐᵖˡ» T)
+
+attribute [instance] IterFunc_Assumptions.IterFunc_underlying
 
 namespace snapshot
 structure t [ffi_syntax] where
@@ -1029,19 +1131,55 @@ attribute [instance] kvItem_Assumptions.kvItem_type_repr
   kvItem_Assumptions.«kvItemⁱᵐᵖˡ_underlying»
 
 namespace watcher
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  respCh' : chan.t
+  cancelResp' : loc
+  keyPred' : func.t
+  stopOnce' : _root_.Perennial.sync.Once.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end watcher
+
+@[reducible] def watcher'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"respCh" (go.type.ChannelType go.chan_dir.sendrecv _root_.Perennial.go_etcd_io.etcd.client.v3.WatchResponse)),
+(go.field_decl.FieldDecl go!"cancelResp" (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.WatchResponse)),
+(go.field_decl.FieldDecl go!"keyPred" KeyPredicate),
+(go.field_decl.FieldDecl go!"stopOnce" _root_.Perennial.sync.Once)]
+
+@[irreducible] def watcher'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  watcher'fds_unsealed
+
+instance equals_unfold_watcher [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold watcher'fds watcher'fds_unsealed :=
+  ⟨by unfold watcher'fds; rfl⟩
+
+@[reducible] def «watcherⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType watcher'fds)
 
 class watcher_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   watcher_type_repr : go.TypeReprUnderlying «watcherⁱᵐᵖˡ» watcher.t
   watcher_underlying : go.UnderlyingDirectedEq watcher «watcherⁱᵐᵖˡ»
-  «watcherⁱᵐᵖˡ_underlying» : go.IsUnderlying «watcherⁱᵐᵖˡ» «watcherⁱᵐᵖˡ»
+  watcher_get_respCh : ∀ (x : watcher.t), go.IsGoStepPureDetTagged under (StructFieldGet «watcherⁱᵐᵖˡ» go!"respCh") #x (Val #(x.respCh'))
+  watcher_set_respCh : ∀ (x : watcher.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «watcherⁱᵐᵖˡ» go!"respCh") (PairV #x #y) (Val #(({ x with respCh' := y } : watcher.t)))
+  watcher_get_cancelResp : ∀ (x : watcher.t), go.IsGoStepPureDetTagged under (StructFieldGet «watcherⁱᵐᵖˡ» go!"cancelResp") #x (Val #(x.cancelResp'))
+  watcher_set_cancelResp : ∀ (x : watcher.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «watcherⁱᵐᵖˡ» go!"cancelResp") (PairV #x #y) (Val #(({ x with cancelResp' := y } : watcher.t)))
+  watcher_get_keyPred : ∀ (x : watcher.t), go.IsGoStepPureDetTagged under (StructFieldGet «watcherⁱᵐᵖˡ» go!"keyPred") #x (Val #(x.keyPred'))
+  watcher_set_keyPred : ∀ (x : watcher.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «watcherⁱᵐᵖˡ» go!"keyPred") (PairV #x #y) (Val #(({ x with keyPred' := y } : watcher.t)))
+  watcher_get_stopOnce : ∀ (x : watcher.t), go.IsGoStepPureDetTagged under (StructFieldGet «watcherⁱᵐᵖˡ» go!"stopOnce") #x (Val #(x.stopOnce'))
+  watcher_set_stopOnce : ∀ (x : watcher.t) (y : _root_.Perennial.sync.Once.t), go.IsGoStepPureDetTagged under (StructFieldSet «watcherⁱᵐᵖˡ» go!"stopOnce") (PairV #x #y) (Val #(({ x with stopOnce' := y } : watcher.t)))
 
 attribute [instance] watcher_Assumptions.watcher_type_repr
   watcher_Assumptions.watcher_underlying
-  watcher_Assumptions.«watcherⁱᵐᵖˡ_underlying»
+  watcher_Assumptions.watcher_get_respCh
+  watcher_Assumptions.watcher_set_respCh
+  watcher_Assumptions.watcher_get_cancelResp
+  watcher_Assumptions.watcher_set_cancelResp
+  watcher_Assumptions.watcher_get_keyPred
+  watcher_Assumptions.watcher_set_keyPred
+  watcher_Assumptions.watcher_get_stopOnce
+  watcher_Assumptions.watcher_set_stopOnce
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Cache_instance : Cache_Assumptions

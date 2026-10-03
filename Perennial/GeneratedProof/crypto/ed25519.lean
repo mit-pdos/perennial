@@ -13,25 +13,6 @@ open Iris Iris.BI
 noncomputable section
 namespace crypto.ed25519
 
-namespace PrivateKey
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : crypto.ed25519.Assumptions]
-
-instance PrivateKey_typed_pointsto :
-    TypedPointsto (GF := GF) crypto.ed25519.PrivateKey.t :=
-  sorry -- Rocq: Admitted
-
-instance PrivateKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) crypto.ed25519.PrivateKey.t crypto.ed25519.«PrivateKeyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end PrivateKey
-
 namespace Options
 section def_
 

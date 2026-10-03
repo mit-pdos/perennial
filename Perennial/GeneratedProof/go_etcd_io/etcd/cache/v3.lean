@@ -313,12 +313,16 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
 
 instance realClock_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.realClock.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.realClock.t where
+  typed_pointsto_def l v dq := iprop(
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance realClock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.realClock.t go_etcd_io.etcd.cache.v3.«realClockⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.realClock.t go_etcd_io.etcd.cache.v3.«realClockⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
 
 end def_
 end realClock
@@ -341,25 +345,6 @@ instance realTimer_into_val_typed :
 
 end def_
 end realTimer
-
-namespace Option
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
-
-instance Option_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.Option.t :=
-  sorry -- Rocq: Admitted
-
-instance Option_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.Option.t go_etcd_io.etcd.cache.v3.«Optionⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Option
 
 namespace demux
 section def_
@@ -389,34 +374,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
 
 instance notifier_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.notifier.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.notifier.t where
+  typed_pointsto_def l v dq := iprop(
+    "mu" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"mu" l) v.mu' dq ∗
+    "ch" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"ch" l) v.ch' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance notifier_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.notifier.t go_etcd_io.etcd.cache.v3.«notifierⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.notifier.t go_etcd_io.etcd.cache.v3.«notifierⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance notifier_access_load_mu (l : loc) (v : go_etcd_io.etcd.cache.v3.notifier.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"mu" l) v.mu' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"mu" l) v.mu' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifier_access_store_mu (l : loc) (v : go_etcd_io.etcd.cache.v3.notifier.t) (mu' : sync.RWMutex.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"mu" l) v.mu' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"mu" l) mu' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : go_etcd_io.etcd.cache.v3.notifier.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifier_access_load_ch (l : loc) (v : go_etcd_io.etcd.cache.v3.notifier.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"ch" l) v.ch' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"ch" l) v.ch' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifier_access_store_ch (l : loc) (v : go_etcd_io.etcd.cache.v3.notifier.t) (ch' : chan.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"ch" l) v.ch' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.notifier.t go!"ch" l) ch' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ch' := ch' } : go_etcd_io.etcd.cache.v3.notifier.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end notifier
-
-namespace Prefix
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
-
-instance Prefix_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.Prefix.t :=
-  sorry -- Rocq: Admitted
-
-instance Prefix_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.Prefix.t go_etcd_io.etcd.cache.v3.«Prefixⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Prefix
 
 namespace progressNotifier
 section def_
@@ -465,12 +469,67 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
 
 instance ready_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.ready.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.ready.t where
+  typed_pointsto_def l v dq := iprop(
+    "mu" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"mu" l) v.mu' dq ∗
+    "isReady" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"isReady" l) v.isReady' dq ∗
+    "stateCh" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"stateCh" l) v.stateCh' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ready_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.ready.t go_etcd_io.etcd.cache.v3.«readyⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.ready.t go_etcd_io.etcd.cache.v3.«readyⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance ready_access_load_mu (l : loc) (v : go_etcd_io.etcd.cache.v3.ready.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"mu" l) v.mu' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"mu" l) v.mu' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ready_access_store_mu (l : loc) (v : go_etcd_io.etcd.cache.v3.ready.t) (mu' : sync.Mutex.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"mu" l) v.mu' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"mu" l) mu' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : go_etcd_io.etcd.cache.v3.ready.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ready_access_load_isReady (l : loc) (v : go_etcd_io.etcd.cache.v3.ready.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"isReady" l) v.isReady' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"isReady" l) v.isReady' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ready_access_store_isReady (l : loc) (v : go_etcd_io.etcd.cache.v3.ready.t) (isReady' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"isReady" l) v.isReady' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"isReady" l) isReady' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with isReady' := isReady' } : go_etcd_io.etcd.cache.v3.ready.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ready_access_load_stateCh (l : loc) (v : go_etcd_io.etcd.cache.v3.ready.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"stateCh" l) v.stateCh' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"stateCh" l) v.stateCh' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ready_access_store_stateCh (l : loc) (v : go_etcd_io.etcd.cache.v3.ready.t) (stateCh' : chan.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"stateCh" l) v.stateCh' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.ready.t go!"stateCh" l) stateCh' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stateCh' := stateCh' } : go_etcd_io.etcd.cache.v3.ready.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ready
@@ -484,12 +543,101 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
 
 instance ringBuffer_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
-    TypedPointsto (GF := GF) (go_etcd_io.etcd.cache.v3.ringBuffer.t T') :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) (go_etcd_io.etcd.cache.v3.ringBuffer.t T') where
+  typed_pointsto_def l v dq := iprop(
+    "buffer" ∷ typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"buffer" l) v.buffer' dq ∗
+    "head" ∷ typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"head" l) v.head' dq ∗
+    "tail" ∷ typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"tail" l) v.tail' dq ∗
+    "size" ∷ typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"size" l) v.size' dq ∗
+    "revisionOf" ∷ typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"revisionOf" l) v.revisionOf' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance ringBuffer_into_val_typed (T : go.type) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.ringBuffer.t T') (go_etcd_io.etcd.cache.v3.«ringBufferⁱᵐᵖˡ» T) :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.ringBuffer.t T') (go_etcd_io.etcd.cache.v3.«ringBufferⁱᵐᵖˡ» T) := by
+  solve_into_val_typed_struct
+
+instance ringBuffer_access_load_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"buffer" l) v.buffer' dq)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"buffer" l) v.buffer' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_store_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (buffer' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"buffer" l) v.buffer' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"buffer" l) buffer' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with buffer' := buffer' } : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_load_head {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"head" l) v.head' dq)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"head" l) v.head' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_store_head {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (head' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"head" l) v.head' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"head" l) head' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with head' := head' } : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_load_tail {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"tail" l) v.tail' dq)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"tail" l) v.tail' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_store_tail {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (tail' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"tail" l) v.tail' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"tail" l) tail' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tail' := tail' } : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_load_size {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"size" l) v.size' dq)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"size" l) v.size' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_store_size {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (size' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"size" l) v.size' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"size" l) size' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with size' := size' } : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_load_revisionOf {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"revisionOf" l) v.revisionOf' dq)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"revisionOf" l) v.revisionOf' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance ringBuffer_access_store_revisionOf {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (revisionOf' : (go_etcd_io.etcd.cache.v3.RevisionOf.t T')) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"revisionOf" l) v.revisionOf' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.ringBuffer.t T') go!"revisionOf" l) revisionOf' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with revisionOf' := revisionOf' } : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end ringBuffer
@@ -503,53 +651,53 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
 
 instance entry_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
-    TypedPointsto (GF := GF) (go_etcd_io.etcd.cache.v3.entry.t T') :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) (go_etcd_io.etcd.cache.v3.entry.t T') where
+  typed_pointsto_def l v dq := iprop(
+    "revision" ∷ typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"revision" l) v.revision' dq ∗
+    "item" ∷ typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"item" l) v.item' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance entry_into_val_typed (T : go.type) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.entry.t T') (go_etcd_io.etcd.cache.v3.«entryⁱᵐᵖˡ» T) :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.entry.t T') (go_etcd_io.etcd.cache.v3.«entryⁱᵐᵖˡ» T) := by
+  solve_into_val_typed_struct
+
+instance entry_access_load_revision {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.entry.t T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"revision" l) v.revision' dq)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"revision" l) v.revision' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance entry_access_store_revision {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.entry.t T')) (revision' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"revision" l) v.revision' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"revision" l) revision' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with revision' := revision' } : (go_etcd_io.etcd.cache.v3.entry.t T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance entry_access_load_item {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.entry.t T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"item" l) v.item' dq)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"item" l) v.item' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance entry_access_store_item {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (go_etcd_io.etcd.cache.v3.entry.t T')) (item' : T') :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"item" l) v.item' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref (go_etcd_io.etcd.cache.v3.entry.t T') go!"item" l) item' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with item' := item' } : (go_etcd_io.etcd.cache.v3.entry.t T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end entry
-
-namespace RevisionOf
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
-
-instance RevisionOf_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
-    TypedPointsto (GF := GF) (go_etcd_io.etcd.cache.v3.RevisionOf.t T') :=
-  sorry -- Rocq: Admitted
-
-instance RevisionOf_into_val_typed (T : go.type) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.RevisionOf.t T') (go_etcd_io.etcd.cache.v3.«RevisionOfⁱᵐᵖˡ» T) :=
-  sorry -- Rocq: Admitted
-
-end def_
-end RevisionOf
-
-namespace IterFunc
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
-
-instance IterFunc_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
-    TypedPointsto (GF := GF) (go_etcd_io.etcd.cache.v3.IterFunc.t T') :=
-  sorry -- Rocq: Admitted
-
-instance IterFunc_into_val_typed (T : go.type) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.IterFunc.t T') (go_etcd_io.etcd.cache.v3.«IterFuncⁱᵐᵖˡ» T) :=
-  sorry -- Rocq: Admitted
-
-end def_
-end IterFunc
 
 namespace snapshot
 section def_
@@ -744,12 +892,84 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.cache.v3.Assumptions]
 
 instance watcher_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.watcher.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) go_etcd_io.etcd.cache.v3.watcher.t where
+  typed_pointsto_def l v dq := iprop(
+    "respCh" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"respCh" l) v.respCh' dq ∗
+    "cancelResp" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"cancelResp" l) v.cancelResp' dq ∗
+    "keyPred" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"keyPred" l) v.keyPred' dq ∗
+    "stopOnce" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"stopOnce" l) v.stopOnce' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance watcher_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.watcher.t go_etcd_io.etcd.cache.v3.«watcherⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.watcher.t go_etcd_io.etcd.cache.v3.«watcherⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance watcher_access_load_respCh (l : loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"respCh" l) v.respCh' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"respCh" l) v.respCh' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance watcher_access_store_respCh (l : loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (respCh' : chan.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"respCh" l) v.respCh' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"respCh" l) respCh' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with respCh' := respCh' } : go_etcd_io.etcd.cache.v3.watcher.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance watcher_access_load_cancelResp (l : loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"cancelResp" l) v.cancelResp' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"cancelResp" l) v.cancelResp' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance watcher_access_store_cancelResp (l : loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (cancelResp' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"cancelResp" l) v.cancelResp' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"cancelResp" l) cancelResp' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cancelResp' := cancelResp' } : go_etcd_io.etcd.cache.v3.watcher.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance watcher_access_load_keyPred (l : loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"keyPred" l) v.keyPred' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"keyPred" l) v.keyPred' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance watcher_access_store_keyPred (l : loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (keyPred' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"keyPred" l) v.keyPred' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"keyPred" l) keyPred' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with keyPred' := keyPred' } : go_etcd_io.etcd.cache.v3.watcher.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance watcher_access_load_stopOnce (l : loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"stopOnce" l) v.stopOnce' dq)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"stopOnce" l) v.stopOnce' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance watcher_access_store_stopOnce (l : loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (stopOnce' : sync.Once.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"stopOnce" l) v.stopOnce' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref go_etcd_io.etcd.cache.v3.watcher.t go!"stopOnce" l) stopOnce' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stopOnce' := stopOnce' } : go_etcd_io.etcd.cache.v3.watcher.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end watcher

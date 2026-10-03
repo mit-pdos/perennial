@@ -1,2 +1,5 @@
 translate = ["Search", "SearchInts", "Find", "*Hint", "xorshift", "xorshift.*"]
 imports = ["!*"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

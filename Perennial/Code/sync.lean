@@ -122,18 +122,6 @@ axiom «Mapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «Poolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «poolLocalInternalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «poolLocalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «poolDequeueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «efaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «dequeueNilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «poolChainⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «poolChainEltⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «notifyListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -1428,96 +1416,6 @@ attribute [instance] Pool_Assumptions.Pool_type_repr
   Pool_Assumptions.Pool_underlying
   Pool_Assumptions.«Poolⁱᵐᵖˡ_underlying»
 
-namespace poolLocalInternal
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end poolLocalInternal
-
-class poolLocalInternal_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolLocalInternal_type_repr : go.TypeReprUnderlying «poolLocalInternalⁱᵐᵖˡ» poolLocalInternal.t
-  poolLocalInternal_underlying : go.UnderlyingDirectedEq poolLocalInternal «poolLocalInternalⁱᵐᵖˡ»
-  «poolLocalInternalⁱᵐᵖˡ_underlying» : go.IsUnderlying «poolLocalInternalⁱᵐᵖˡ» «poolLocalInternalⁱᵐᵖˡ»
-
-attribute [instance] poolLocalInternal_Assumptions.poolLocalInternal_type_repr
-  poolLocalInternal_Assumptions.poolLocalInternal_underlying
-  poolLocalInternal_Assumptions.«poolLocalInternalⁱᵐᵖˡ_underlying»
-
-namespace poolLocal
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end poolLocal
-
-class poolLocal_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolLocal_type_repr : go.TypeReprUnderlying «poolLocalⁱᵐᵖˡ» poolLocal.t
-  poolLocal_underlying : go.UnderlyingDirectedEq poolLocal «poolLocalⁱᵐᵖˡ»
-  «poolLocalⁱᵐᵖˡ_underlying» : go.IsUnderlying «poolLocalⁱᵐᵖˡ» «poolLocalⁱᵐᵖˡ»
-
-attribute [instance] poolLocal_Assumptions.poolLocal_type_repr
-  poolLocal_Assumptions.poolLocal_underlying
-  poolLocal_Assumptions.«poolLocalⁱᵐᵖˡ_underlying»
-
-namespace poolDequeue
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end poolDequeue
-
-class poolDequeue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolDequeue_type_repr : go.TypeReprUnderlying «poolDequeueⁱᵐᵖˡ» poolDequeue.t
-  poolDequeue_underlying : go.UnderlyingDirectedEq poolDequeue «poolDequeueⁱᵐᵖˡ»
-  «poolDequeueⁱᵐᵖˡ_underlying» : go.IsUnderlying «poolDequeueⁱᵐᵖˡ» «poolDequeueⁱᵐᵖˡ»
-
-attribute [instance] poolDequeue_Assumptions.poolDequeue_type_repr
-  poolDequeue_Assumptions.poolDequeue_underlying
-  poolDequeue_Assumptions.«poolDequeueⁱᵐᵖˡ_underlying»
-
-namespace eface
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end eface
-
-class eface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  eface_type_repr : go.TypeReprUnderlying «efaceⁱᵐᵖˡ» eface.t
-  eface_underlying : go.UnderlyingDirectedEq eface «efaceⁱᵐᵖˡ»
-  «efaceⁱᵐᵖˡ_underlying» : go.IsUnderlying «efaceⁱᵐᵖˡ» «efaceⁱᵐᵖˡ»
-
-attribute [instance] eface_Assumptions.eface_type_repr
-  eface_Assumptions.eface_underlying
-  eface_Assumptions.«efaceⁱᵐᵖˡ_underlying»
-
-namespace dequeueNil
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end dequeueNil
-
-class dequeueNil_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  dequeueNil_type_repr : go.TypeReprUnderlying «dequeueNilⁱᵐᵖˡ» dequeueNil.t
-  dequeueNil_underlying : go.UnderlyingDirectedEq dequeueNil «dequeueNilⁱᵐᵖˡ»
-  «dequeueNilⁱᵐᵖˡ_underlying» : go.IsUnderlying «dequeueNilⁱᵐᵖˡ» «dequeueNilⁱᵐᵖˡ»
-
-attribute [instance] dequeueNil_Assumptions.dequeueNil_type_repr
-  dequeueNil_Assumptions.dequeueNil_underlying
-  dequeueNil_Assumptions.«dequeueNilⁱᵐᵖˡ_underlying»
-
-namespace poolChain
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end poolChain
-
-class poolChain_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolChain_type_repr : go.TypeReprUnderlying «poolChainⁱᵐᵖˡ» poolChain.t
-  poolChain_underlying : go.UnderlyingDirectedEq poolChain «poolChainⁱᵐᵖˡ»
-  «poolChainⁱᵐᵖˡ_underlying» : go.IsUnderlying «poolChainⁱᵐᵖˡ» «poolChainⁱᵐᵖˡ»
-
-attribute [instance] poolChain_Assumptions.poolChain_type_repr
-  poolChain_Assumptions.poolChain_underlying
-  poolChain_Assumptions.«poolChainⁱᵐᵖˡ_underlying»
-
 namespace poolChainElt
 axiom t : Type
 axiom zero_val : ZeroVal t
@@ -1532,6 +1430,213 @@ class poolChainElt_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [
 attribute [instance] poolChainElt_Assumptions.poolChainElt_type_repr
   poolChainElt_Assumptions.poolChainElt_underlying
   poolChainElt_Assumptions.«poolChainEltⁱᵐᵖˡ_underlying»
+
+namespace poolChain
+structure t [ffi_syntax] where
+  mk ::
+  head' : loc
+  tail' : (_root_.Perennial.sync.atomic.Pointer.t poolChainElt.t)
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
+end poolChain
+
+@[reducible] def poolChain'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"head" (go.type.PointerType poolChainElt)),
+(go.field_decl.FieldDecl go!"tail" (_root_.Perennial.sync.atomic.Pointer poolChainElt))]
+
+@[irreducible] def poolChain'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  poolChain'fds_unsealed
+
+instance equals_unfold_poolChain [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold poolChain'fds poolChain'fds_unsealed :=
+  ⟨by unfold poolChain'fds; rfl⟩
+
+@[reducible] def «poolChainⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType poolChain'fds)
+
+class poolChain_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  poolChain_type_repr : go.TypeReprUnderlying «poolChainⁱᵐᵖˡ» poolChain.t
+  poolChain_underlying : go.UnderlyingDirectedEq poolChain «poolChainⁱᵐᵖˡ»
+  poolChain_get_head : ∀ (x : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolChainⁱᵐᵖˡ» go!"head") #x (Val #(x.head'))
+  poolChain_set_head : ∀ (x : poolChain.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «poolChainⁱᵐᵖˡ» go!"head") (PairV #x #y) (Val #(({ x with head' := y } : poolChain.t)))
+  poolChain_get_tail : ∀ (x : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolChainⁱᵐᵖˡ» go!"tail") #x (Val #(x.tail'))
+  poolChain_set_tail : ∀ (x : poolChain.t) (y : (_root_.Perennial.sync.atomic.Pointer.t poolChainElt.t)), go.IsGoStepPureDetTagged under (StructFieldSet «poolChainⁱᵐᵖˡ» go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : poolChain.t)))
+
+attribute [instance] poolChain_Assumptions.poolChain_type_repr
+  poolChain_Assumptions.poolChain_underlying
+  poolChain_Assumptions.poolChain_get_head
+  poolChain_Assumptions.poolChain_set_head
+  poolChain_Assumptions.poolChain_get_tail
+  poolChain_Assumptions.poolChain_set_tail
+
+namespace poolLocalInternal
+structure t [ffi_syntax] where
+  mk ::
+  private' : interface.t
+  shared' : poolChain.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
+end poolLocalInternal
+
+@[reducible] def poolLocalInternal'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"private" go.any),
+(go.field_decl.FieldDecl go!"shared" poolChain)]
+
+@[irreducible] def poolLocalInternal'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  poolLocalInternal'fds_unsealed
+
+instance equals_unfold_poolLocalInternal [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold poolLocalInternal'fds poolLocalInternal'fds_unsealed :=
+  ⟨by unfold poolLocalInternal'fds; rfl⟩
+
+@[reducible] def «poolLocalInternalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType poolLocalInternal'fds)
+
+class poolLocalInternal_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  poolLocalInternal_type_repr : go.TypeReprUnderlying «poolLocalInternalⁱᵐᵖˡ» poolLocalInternal.t
+  poolLocalInternal_underlying : go.UnderlyingDirectedEq poolLocalInternal «poolLocalInternalⁱᵐᵖˡ»
+  poolLocalInternal_get_private : ∀ (x : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolLocalInternalⁱᵐᵖˡ» go!"private") #x (Val #(x.private'))
+  poolLocalInternal_set_private : ∀ (x : poolLocalInternal.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolLocalInternalⁱᵐᵖˡ» go!"private") (PairV #x #y) (Val #(({ x with private' := y } : poolLocalInternal.t)))
+  poolLocalInternal_get_shared : ∀ (x : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolLocalInternalⁱᵐᵖˡ» go!"shared") #x (Val #(x.shared'))
+  poolLocalInternal_set_shared : ∀ (x : poolLocalInternal.t) (y : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolLocalInternalⁱᵐᵖˡ» go!"shared") (PairV #x #y) (Val #(({ x with shared' := y } : poolLocalInternal.t)))
+
+attribute [instance] poolLocalInternal_Assumptions.poolLocalInternal_type_repr
+  poolLocalInternal_Assumptions.poolLocalInternal_underlying
+  poolLocalInternal_Assumptions.poolLocalInternal_get_private
+  poolLocalInternal_Assumptions.poolLocalInternal_set_private
+  poolLocalInternal_Assumptions.poolLocalInternal_get_shared
+  poolLocalInternal_Assumptions.poolLocalInternal_set_shared
+
+namespace poolLocal
+structure t [ffi_syntax] where
+  mk ::
+  poolLocalInternal' : poolLocalInternal.t
+  pad' : (array.t w8 96)
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
+end poolLocal
+
+@[reducible] def poolLocal'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"poolLocalInternal" poolLocalInternal),
+(go.field_decl.FieldDecl go!"pad" (go.type.ArrayType 96 go.byte))]
+
+@[irreducible] def poolLocal'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  poolLocal'fds_unsealed
+
+instance equals_unfold_poolLocal [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold poolLocal'fds poolLocal'fds_unsealed :=
+  ⟨by unfold poolLocal'fds; rfl⟩
+
+@[reducible] def «poolLocalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType poolLocal'fds)
+
+class poolLocal_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  poolLocal_type_repr : go.TypeReprUnderlying «poolLocalⁱᵐᵖˡ» poolLocal.t
+  poolLocal_underlying : go.UnderlyingDirectedEq poolLocal «poolLocalⁱᵐᵖˡ»
+  poolLocal_get_poolLocalInternal : ∀ (x : poolLocal.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolLocalⁱᵐᵖˡ» go!"poolLocalInternal") #x (Val #(x.poolLocalInternal'))
+  poolLocal_set_poolLocalInternal : ∀ (x : poolLocal.t) (y : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolLocalⁱᵐᵖˡ» go!"poolLocalInternal") (PairV #x #y) (Val #(({ x with poolLocalInternal' := y } : poolLocal.t)))
+  poolLocal_get_pad : ∀ (x : poolLocal.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolLocalⁱᵐᵖˡ» go!"pad") #x (Val #(x.pad'))
+  poolLocal_set_pad : ∀ (x : poolLocal.t) (y : (array.t w8 96)), go.IsGoStepPureDetTagged under (StructFieldSet «poolLocalⁱᵐᵖˡ» go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : poolLocal.t)))
+
+attribute [instance] poolLocal_Assumptions.poolLocal_type_repr
+  poolLocal_Assumptions.poolLocal_underlying
+  poolLocal_Assumptions.poolLocal_get_poolLocalInternal
+  poolLocal_Assumptions.poolLocal_set_poolLocalInternal
+  poolLocal_Assumptions.poolLocal_get_pad
+  poolLocal_Assumptions.poolLocal_set_pad
+
+namespace poolDequeue
+structure t [ffi_syntax] where
+  mk ::
+  headTail' : _root_.Perennial.sync.atomic.Uint64.t
+  vals' : slice.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
+end poolDequeue
+
+@[reducible] def poolDequeue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"headTail" _root_.Perennial.sync.atomic.Uint64),
+(go.field_decl.FieldDecl go!"vals" (go.type.SliceType eface))]
+
+@[irreducible] def poolDequeue'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  poolDequeue'fds_unsealed
+
+instance equals_unfold_poolDequeue [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold poolDequeue'fds poolDequeue'fds_unsealed :=
+  ⟨by unfold poolDequeue'fds; rfl⟩
+
+@[reducible] def «poolDequeueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType poolDequeue'fds)
+
+class poolDequeue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  poolDequeue_type_repr : go.TypeReprUnderlying «poolDequeueⁱᵐᵖˡ» poolDequeue.t
+  poolDequeue_underlying : go.UnderlyingDirectedEq poolDequeue «poolDequeueⁱᵐᵖˡ»
+  poolDequeue_get_headTail : ∀ (x : poolDequeue.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolDequeueⁱᵐᵖˡ» go!"headTail") #x (Val #(x.headTail'))
+  poolDequeue_set_headTail : ∀ (x : poolDequeue.t) (y : _root_.Perennial.sync.atomic.Uint64.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolDequeueⁱᵐᵖˡ» go!"headTail") (PairV #x #y) (Val #(({ x with headTail' := y } : poolDequeue.t)))
+  poolDequeue_get_vals : ∀ (x : poolDequeue.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolDequeueⁱᵐᵖˡ» go!"vals") #x (Val #(x.vals'))
+  poolDequeue_set_vals : ∀ (x : poolDequeue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolDequeueⁱᵐᵖˡ» go!"vals") (PairV #x #y) (Val #(({ x with vals' := y } : poolDequeue.t)))
+
+attribute [instance] poolDequeue_Assumptions.poolDequeue_type_repr
+  poolDequeue_Assumptions.poolDequeue_underlying
+  poolDequeue_Assumptions.poolDequeue_get_headTail
+  poolDequeue_Assumptions.poolDequeue_set_headTail
+  poolDequeue_Assumptions.poolDequeue_get_vals
+  poolDequeue_Assumptions.poolDequeue_set_vals
+
+namespace eface
+structure t [ffi_syntax] where
+  mk ::
+  typ' : loc
+  val' : loc
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
+end eface
+
+@[reducible] def eface'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"typ" «unsafe».Pointer),
+(go.field_decl.FieldDecl go!"val" «unsafe».Pointer)]
+
+@[irreducible] def eface'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  eface'fds_unsealed
+
+instance equals_unfold_eface [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold eface'fds eface'fds_unsealed :=
+  ⟨by unfold eface'fds; rfl⟩
+
+@[reducible] def «efaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType eface'fds)
+
+class eface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  eface_type_repr : go.TypeReprUnderlying «efaceⁱᵐᵖˡ» eface.t
+  eface_underlying : go.UnderlyingDirectedEq eface «efaceⁱᵐᵖˡ»
+  eface_get_typ : ∀ (x : eface.t), go.IsGoStepPureDetTagged under (StructFieldGet «efaceⁱᵐᵖˡ» go!"typ") #x (Val #(x.typ'))
+  eface_set_typ : ∀ (x : eface.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «efaceⁱᵐᵖˡ» go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : eface.t)))
+  eface_get_val : ∀ (x : eface.t), go.IsGoStepPureDetTagged under (StructFieldGet «efaceⁱᵐᵖˡ» go!"val") #x (Val #(x.val'))
+  eface_set_val : ∀ (x : eface.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «efaceⁱᵐᵖˡ» go!"val") (PairV #x #y) (Val #(({ x with val' := y } : eface.t)))
+
+attribute [instance] eface_Assumptions.eface_type_repr
+  eface_Assumptions.eface_underlying
+  eface_Assumptions.eface_get_typ
+  eface_Assumptions.eface_set_typ
+  eface_Assumptions.eface_get_val
+  eface_Assumptions.eface_set_val
+
+namespace dequeueNil
+abbrev t [ffi_syntax] : Type := loc
+end dequeueNil
+
+@[reducible] def «dequeueNilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.PointerType (go.type.StructType []))
+
+class dequeueNil_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  dequeueNil_underlying : go.UnderlyingDirectedEq dequeueNil «dequeueNilⁱᵐᵖˡ»
+
+attribute [instance] dequeueNil_Assumptions.dequeueNil_underlying
 
 namespace RWMutex
 structure t [ffi_syntax] where

@@ -25,7 +25,7 @@ Lean notes:
     makes the overflow side condition admitted in Rocq provable.
   - `wp_ProgressTracker__IsSingleton`: Rocq's (trusted) statement
     `{{{ True }}} .. {{{ RET #false; True }}}` is false; replaced by the true
-    spec (still unproved: the generated code is stuck, see the lemma).
+    spec (still unproved: `len` of a named map type is stuck, see the lemma).
   - New: `wp_map_len` (spec of `len` on a map).
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.protocol
@@ -644,13 +644,11 @@ theorem wp_ProgressTracker__IsSingleton (p : loc) (dq : DFrac) (pt : v3.tracker.
         (Val #()))
     {{ RET #(decide (W64 (gmap.size m0) = W64 1 ∧ W64 (gmap.size m1) = W64 0));
         p ↦{dq} pt ∗ v0 ↦${dq0} m0 ∗ v1 ↦${dq1} m1 }} := by
-  -- Blocked by a goose translation bug: `p.Config.Voters[0]` is translated as
-  -- `IndexRef JointConfig (![JointConfig] (addr of p.Config.Voters), #0)`, i.e. `IndexRef`
-  -- of the loaded array *value* (goose `exprAddr` of an `ast.IndexExpr` uses `ctx.expr e.X`
-  -- also for arrays, where it should take the address `ctx.exprAddr e.X`). `IndexRef` of
-  -- an array type only steps on a location (`index_ref_array`), so the code is stuck.
-  -- Rocq's generated code has the same bug. Once fixed, the proof is `wp_auto` plus
-  -- `wp_map_len` on both maps.
+  -- The goose bug that made `p.Config.Voters[0]` stuck (`IndexRef` of a loaded array) is
+  -- fixed, so the voter maps can now be reached with `array_acc`. Still blocked:
+  -- `len(p.Config.Voters[0])` is `FuncResolve go.len [quorum.MajorityConfig]` at the
+  -- *named* map type, and the semantics only unfolds `len` at a literal `go.MapType`
+  -- (`len_map`, as in Rocq; unlike `len_slice`/`len_chan`, which take `[t ↓u ...]`).
   sorry -- Rocq: Admitted (trusted, with a false statement)
 
 theorem wp_raft__committedEntryInCurrentTerm (r : loc) (rf : v3.raft.t) (γ : raft_names) :

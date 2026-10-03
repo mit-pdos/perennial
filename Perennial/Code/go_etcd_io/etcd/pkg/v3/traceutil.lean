@@ -42,12 +42,6 @@ def step [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] step
 
-axiom «TraceKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «StartTimeKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Fieldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «Traceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «stepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -90,49 +84,99 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val Tracer'init) (Val #())))))))
 
 namespace TraceKey
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk⟩
 end TraceKey
+
+@[reducible] def TraceKey'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def TraceKey'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  TraceKey'fds_unsealed
+
+instance equals_unfold_TraceKey [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold TraceKey'fds TraceKey'fds_unsealed :=
+  ⟨by unfold TraceKey'fds; rfl⟩
+
+@[reducible] def «TraceKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType TraceKey'fds)
 
 class TraceKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   TraceKey_type_repr : go.TypeReprUnderlying «TraceKeyⁱᵐᵖˡ» TraceKey.t
   TraceKey_underlying : go.UnderlyingDirectedEq TraceKey «TraceKeyⁱᵐᵖˡ»
-  «TraceKeyⁱᵐᵖˡ_underlying» : go.IsUnderlying «TraceKeyⁱᵐᵖˡ» «TraceKeyⁱᵐᵖˡ»
 
 attribute [instance] TraceKey_Assumptions.TraceKey_type_repr
   TraceKey_Assumptions.TraceKey_underlying
-  TraceKey_Assumptions.«TraceKeyⁱᵐᵖˡ_underlying»
 
 namespace StartTimeKey
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk⟩
 end StartTimeKey
+
+@[reducible] def StartTimeKey'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def StartTimeKey'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  StartTimeKey'fds_unsealed
+
+instance equals_unfold_StartTimeKey [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold StartTimeKey'fds StartTimeKey'fds_unsealed :=
+  ⟨by unfold StartTimeKey'fds; rfl⟩
+
+@[reducible] def «StartTimeKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType StartTimeKey'fds)
 
 class StartTimeKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   StartTimeKey_type_repr : go.TypeReprUnderlying «StartTimeKeyⁱᵐᵖˡ» StartTimeKey.t
   StartTimeKey_underlying : go.UnderlyingDirectedEq StartTimeKey «StartTimeKeyⁱᵐᵖˡ»
-  «StartTimeKeyⁱᵐᵖˡ_underlying» : go.IsUnderlying «StartTimeKeyⁱᵐᵖˡ» «StartTimeKeyⁱᵐᵖˡ»
 
 attribute [instance] StartTimeKey_Assumptions.StartTimeKey_type_repr
   StartTimeKey_Assumptions.StartTimeKey_underlying
-  StartTimeKey_Assumptions.«StartTimeKeyⁱᵐᵖˡ_underlying»
 
 namespace Field
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  Key' : go_string
+  Value' : interface.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end Field
+
+@[reducible] def Field'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Key" go.string),
+(go.field_decl.FieldDecl go!"Value" go.any)]
+
+@[irreducible] def Field'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  Field'fds_unsealed
+
+instance equals_unfold_Field [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold Field'fds Field'fds_unsealed :=
+  ⟨by unfold Field'fds; rfl⟩
+
+@[reducible] def «Fieldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType Field'fds)
 
 class Field_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Field_type_repr : go.TypeReprUnderlying «Fieldⁱᵐᵖˡ» Field.t
   Field_underlying : go.UnderlyingDirectedEq Field «Fieldⁱᵐᵖˡ»
-  «Fieldⁱᵐᵖˡ_underlying» : go.IsUnderlying «Fieldⁱᵐᵖˡ» «Fieldⁱᵐᵖˡ»
+  Field_get_Key : ∀ (x : Field.t), go.IsGoStepPureDetTagged under (StructFieldGet «Fieldⁱᵐᵖˡ» go!"Key") #x (Val #(x.Key'))
+  Field_set_Key : ∀ (x : Field.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «Fieldⁱᵐᵖˡ» go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : Field.t)))
+  Field_get_Value : ∀ (x : Field.t), go.IsGoStepPureDetTagged under (StructFieldGet «Fieldⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
+  Field_set_Value : ∀ (x : Field.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Fieldⁱᵐᵖˡ» go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Field.t)))
 
 attribute [instance] Field_Assumptions.Field_type_repr
   Field_Assumptions.Field_underlying
-  Field_Assumptions.«Fieldⁱᵐᵖˡ_underlying»
+  Field_Assumptions.Field_get_Key
+  Field_Assumptions.Field_set_Key
+  Field_Assumptions.Field_get_Value
+  Field_Assumptions.Field_set_Value
 
 namespace Trace
 axiom t : Type

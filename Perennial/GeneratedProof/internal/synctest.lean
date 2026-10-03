@@ -14,25 +14,6 @@ open Iris Iris.BI
 noncomputable section
 namespace internal.synctest
 
-namespace Association
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : internal.synctest.Assumptions]
-
-instance Association_typed_pointsto :
-    TypedPointsto (GF := GF) internal.synctest.Association.t :=
-  sorry -- Rocq: Admitted
-
-instance Association_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.synctest.Association.t internal.synctest.«Associationⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Association
-
 namespace Bubble
 section def_
 
@@ -42,12 +23,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : internal.synctest.Assumptions]
 
 instance Bubble_typed_pointsto :
-    TypedPointsto (GF := GF) internal.synctest.Bubble.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) internal.synctest.Bubble.t where
+  typed_pointsto_def l v dq := iprop(
+    "b" ∷ typed_pointsto (struct_field_ref internal.synctest.Bubble.t go!"b" l) v.b' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Bubble_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.synctest.Bubble.t internal.synctest.«Bubbleⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) internal.synctest.Bubble.t internal.synctest.«Bubbleⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance Bubble_access_load_b (l : loc) (v : internal.synctest.Bubble.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref internal.synctest.Bubble.t go!"b" l) v.b' dq)
+      (typed_pointsto (struct_field_ref internal.synctest.Bubble.t go!"b" l) v.b' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Bubble_access_store_b (l : loc) (v : internal.synctest.Bubble.t) (b' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref internal.synctest.Bubble.t go!"b" l) v.b' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref internal.synctest.Bubble.t go!"b" l) b' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : internal.synctest.Bubble.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Bubble

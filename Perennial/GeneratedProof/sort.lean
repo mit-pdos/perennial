@@ -13,25 +13,6 @@ open Iris Iris.BI
 noncomputable section
 namespace sort
 
-namespace Interface
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sort.Assumptions]
-
-instance Interface_typed_pointsto :
-    TypedPointsto (GF := GF) sort.Interface.t :=
-  sorry -- Rocq: Admitted
-
-instance Interface_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.Interface.t sort.«Interfaceⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Interface
-
 namespace lessSwap
 section def_
 
@@ -41,12 +22,50 @@ variable [sem : go.Semantics]
 variable [package_sem' : sort.Assumptions]
 
 instance lessSwap_typed_pointsto :
-    TypedPointsto (GF := GF) sort.lessSwap.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) sort.lessSwap.t where
+  typed_pointsto_def l v dq := iprop(
+    "Less" ∷ typed_pointsto (struct_field_ref sort.lessSwap.t go!"Less" l) v.Less' dq ∗
+    "Swap" ∷ typed_pointsto (struct_field_ref sort.lessSwap.t go!"Swap" l) v.Swap' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance lessSwap_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.lessSwap.t sort.«lessSwapⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) sort.lessSwap.t sort.«lessSwapⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance lessSwap_access_load_Less (l : loc) (v : sort.lessSwap.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sort.lessSwap.t go!"Less" l) v.Less' dq)
+      (typed_pointsto (struct_field_ref sort.lessSwap.t go!"Less" l) v.Less' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance lessSwap_access_store_Less (l : loc) (v : sort.lessSwap.t) (Less' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sort.lessSwap.t go!"Less" l) v.Less' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sort.lessSwap.t go!"Less" l) Less' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Less' := Less' } : sort.lessSwap.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance lessSwap_access_load_Swap (l : loc) (v : sort.lessSwap.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sort.lessSwap.t go!"Swap" l) v.Swap' dq)
+      (typed_pointsto (struct_field_ref sort.lessSwap.t go!"Swap" l) v.Swap' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance lessSwap_access_store_Swap (l : loc) (v : sort.lessSwap.t) (Swap' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sort.lessSwap.t go!"Swap" l) v.Swap' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sort.lessSwap.t go!"Swap" l) Swap' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Swap' := Swap' } : sort.lessSwap.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end lessSwap
@@ -60,72 +79,36 @@ variable [sem : go.Semantics]
 variable [package_sem' : sort.Assumptions]
 
 instance reverse_typed_pointsto :
-    TypedPointsto (GF := GF) sort.reverse.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) sort.reverse.t where
+  typed_pointsto_def l v dq := iprop(
+    "Interface" ∷ typed_pointsto (struct_field_ref sort.reverse.t go!"Interface" l) v.Interface' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance reverse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.reverse.t sort.«reverseⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) sort.reverse.t sort.«reverseⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance reverse_access_load_Interface (l : loc) (v : sort.reverse.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sort.reverse.t go!"Interface" l) v.Interface' dq)
+      (typed_pointsto (struct_field_ref sort.reverse.t go!"Interface" l) v.Interface' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance reverse_access_store_Interface (l : loc) (v : sort.reverse.t) (Interface' : sort.Interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sort.reverse.t go!"Interface" l) v.Interface' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sort.reverse.t go!"Interface" l) Interface' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Interface' := Interface' } : sort.reverse.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end reverse
-
-namespace IntSlice
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sort.Assumptions]
-
-instance IntSlice_typed_pointsto :
-    TypedPointsto (GF := GF) sort.IntSlice.t :=
-  sorry -- Rocq: Admitted
-
-instance IntSlice_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.IntSlice.t sort.«IntSliceⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end IntSlice
-
-namespace Float64Slice
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sort.Assumptions]
-
-instance Float64Slice_typed_pointsto :
-    TypedPointsto (GF := GF) sort.Float64Slice.t :=
-  sorry -- Rocq: Admitted
-
-instance Float64Slice_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.Float64Slice.t sort.«Float64Sliceⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end Float64Slice
-
-namespace StringSlice
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sort.Assumptions]
-
-instance StringSlice_typed_pointsto :
-    TypedPointsto (GF := GF) sort.StringSlice.t :=
-  sorry -- Rocq: Admitted
-
-instance StringSlice_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.StringSlice.t sort.«StringSliceⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end StringSlice
 
 end sort
 end

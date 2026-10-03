@@ -281,120 +281,6 @@ instance Pool_into_val_typed :
 end def_
 end Pool
 
-namespace poolLocalInternal
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sync.Assumptions]
-
-instance poolLocalInternal_typed_pointsto :
-    TypedPointsto (GF := GF) sync.poolLocalInternal.t :=
-  sorry -- Rocq: Admitted
-
-instance poolLocalInternal_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolLocalInternal.t sync.«poolLocalInternalⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end poolLocalInternal
-
-namespace poolLocal
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sync.Assumptions]
-
-instance poolLocal_typed_pointsto :
-    TypedPointsto (GF := GF) sync.poolLocal.t :=
-  sorry -- Rocq: Admitted
-
-instance poolLocal_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolLocal.t sync.«poolLocalⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end poolLocal
-
-namespace poolDequeue
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sync.Assumptions]
-
-instance poolDequeue_typed_pointsto :
-    TypedPointsto (GF := GF) sync.poolDequeue.t :=
-  sorry -- Rocq: Admitted
-
-instance poolDequeue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolDequeue.t sync.«poolDequeueⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end poolDequeue
-
-namespace eface
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sync.Assumptions]
-
-instance eface_typed_pointsto :
-    TypedPointsto (GF := GF) sync.eface.t :=
-  sorry -- Rocq: Admitted
-
-instance eface_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.eface.t sync.«efaceⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end eface
-
-namespace dequeueNil
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sync.Assumptions]
-
-instance dequeueNil_typed_pointsto :
-    TypedPointsto (GF := GF) sync.dequeueNil.t :=
-  sorry -- Rocq: Admitted
-
-instance dequeueNil_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.dequeueNil.t sync.«dequeueNilⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end dequeueNil
-
-namespace poolChain
-section def_
-
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sync.Assumptions]
-
-instance poolChain_typed_pointsto :
-    TypedPointsto (GF := GF) sync.poolChain.t :=
-  sorry -- Rocq: Admitted
-
-instance poolChain_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolChain.t sync.«poolChainⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
-
-end def_
-end poolChain
-
 namespace poolChainElt
 section def_
 
@@ -413,6 +299,291 @@ instance poolChainElt_into_val_typed :
 
 end def_
 end poolChainElt
+
+namespace poolChain
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+instance poolChain_typed_pointsto :
+    TypedPointsto (GF := GF) sync.poolChain.t where
+  typed_pointsto_def l v dq := iprop(
+    "head" ∷ typed_pointsto (struct_field_ref sync.poolChain.t go!"head" l) v.head' dq ∗
+    "tail" ∷ typed_pointsto (struct_field_ref sync.poolChain.t go!"tail" l) v.tail' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance poolChain_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.poolChain.t sync.«poolChainⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance poolChain_access_load_head (l : loc) (v : sync.poolChain.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolChain.t go!"head" l) v.head' dq)
+      (typed_pointsto (struct_field_ref sync.poolChain.t go!"head" l) v.head' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolChain_access_store_head (l : loc) (v : sync.poolChain.t) (head' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolChain.t go!"head" l) v.head' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.poolChain.t go!"head" l) head' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with head' := head' } : sync.poolChain.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolChain_access_load_tail (l : loc) (v : sync.poolChain.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolChain.t go!"tail" l) v.tail' dq)
+      (typed_pointsto (struct_field_ref sync.poolChain.t go!"tail" l) v.tail' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolChain_access_store_tail (l : loc) (v : sync.poolChain.t) (tail' : (sync.atomic.Pointer.t sync.poolChainElt.t)) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolChain.t go!"tail" l) v.tail' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.poolChain.t go!"tail" l) tail' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tail' := tail' } : sync.poolChain.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end poolChain
+
+namespace poolLocalInternal
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+instance poolLocalInternal_typed_pointsto :
+    TypedPointsto (GF := GF) sync.poolLocalInternal.t where
+  typed_pointsto_def l v dq := iprop(
+    "private'" ∷ typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"private" l) v.private' dq ∗
+    "shared" ∷ typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"shared" l) v.shared' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance poolLocalInternal_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.poolLocalInternal.t sync.«poolLocalInternalⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance poolLocalInternal_access_load_private (l : loc) (v : sync.poolLocalInternal.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"private" l) v.private' dq)
+      (typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"private" l) v.private' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolLocalInternal_access_store_private (l : loc) (v : sync.poolLocalInternal.t) (private' : interface.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"private" l) v.private' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"private" l) private' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with private' := private' } : sync.poolLocalInternal.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolLocalInternal_access_load_shared (l : loc) (v : sync.poolLocalInternal.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"shared" l) v.shared' dq)
+      (typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"shared" l) v.shared' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolLocalInternal_access_store_shared (l : loc) (v : sync.poolLocalInternal.t) (shared' : sync.poolChain.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"shared" l) v.shared' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.poolLocalInternal.t go!"shared" l) shared' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with shared' := shared' } : sync.poolLocalInternal.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end poolLocalInternal
+
+namespace poolLocal
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+instance poolLocal_typed_pointsto :
+    TypedPointsto (GF := GF) sync.poolLocal.t where
+  typed_pointsto_def l v dq := iprop(
+    "poolLocalInternal" ∷ typed_pointsto (struct_field_ref sync.poolLocal.t go!"poolLocalInternal" l) v.poolLocalInternal' dq ∗
+    "pad" ∷ typed_pointsto (struct_field_ref sync.poolLocal.t go!"pad" l) v.pad' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance poolLocal_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.poolLocal.t sync.«poolLocalⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance poolLocal_access_load_poolLocalInternal (l : loc) (v : sync.poolLocal.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolLocal.t go!"poolLocalInternal" l) v.poolLocalInternal' dq)
+      (typed_pointsto (struct_field_ref sync.poolLocal.t go!"poolLocalInternal" l) v.poolLocalInternal' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolLocal_access_store_poolLocalInternal (l : loc) (v : sync.poolLocal.t) (poolLocalInternal' : sync.poolLocalInternal.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolLocal.t go!"poolLocalInternal" l) v.poolLocalInternal' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.poolLocal.t go!"poolLocalInternal" l) poolLocalInternal' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with poolLocalInternal' := poolLocalInternal' } : sync.poolLocal.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolLocal_access_load_pad (l : loc) (v : sync.poolLocal.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolLocal.t go!"pad" l) v.pad' dq)
+      (typed_pointsto (struct_field_ref sync.poolLocal.t go!"pad" l) v.pad' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolLocal_access_store_pad (l : loc) (v : sync.poolLocal.t) (pad' : (array.t w8 96)) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolLocal.t go!"pad" l) v.pad' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.poolLocal.t go!"pad" l) pad' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with pad' := pad' } : sync.poolLocal.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end poolLocal
+
+namespace poolDequeue
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+instance poolDequeue_typed_pointsto :
+    TypedPointsto (GF := GF) sync.poolDequeue.t where
+  typed_pointsto_def l v dq := iprop(
+    "headTail" ∷ typed_pointsto (struct_field_ref sync.poolDequeue.t go!"headTail" l) v.headTail' dq ∗
+    "vals" ∷ typed_pointsto (struct_field_ref sync.poolDequeue.t go!"vals" l) v.vals' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance poolDequeue_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.poolDequeue.t sync.«poolDequeueⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance poolDequeue_access_load_headTail (l : loc) (v : sync.poolDequeue.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolDequeue.t go!"headTail" l) v.headTail' dq)
+      (typed_pointsto (struct_field_ref sync.poolDequeue.t go!"headTail" l) v.headTail' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolDequeue_access_store_headTail (l : loc) (v : sync.poolDequeue.t) (headTail' : sync.atomic.Uint64.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolDequeue.t go!"headTail" l) v.headTail' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.poolDequeue.t go!"headTail" l) headTail' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with headTail' := headTail' } : sync.poolDequeue.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolDequeue_access_load_vals (l : loc) (v : sync.poolDequeue.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolDequeue.t go!"vals" l) v.vals' dq)
+      (typed_pointsto (struct_field_ref sync.poolDequeue.t go!"vals" l) v.vals' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance poolDequeue_access_store_vals (l : loc) (v : sync.poolDequeue.t) (vals' : slice.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.poolDequeue.t go!"vals" l) v.vals' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.poolDequeue.t go!"vals" l) vals' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with vals' := vals' } : sync.poolDequeue.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end poolDequeue
+
+namespace eface
+section def_
+
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+instance eface_typed_pointsto :
+    TypedPointsto (GF := GF) sync.eface.t where
+  typed_pointsto_def l v dq := iprop(
+    "typ" ∷ typed_pointsto (struct_field_ref sync.eface.t go!"typ" l) v.typ' dq ∗
+    "val" ∷ typed_pointsto (struct_field_ref sync.eface.t go!"val" l) v.val' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
+
+instance eface_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.eface.t sync.«efaceⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance eface_access_load_typ (l : loc) (v : sync.eface.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.eface.t go!"typ" l) v.typ' dq)
+      (typed_pointsto (struct_field_ref sync.eface.t go!"typ" l) v.typ' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance eface_access_store_typ (l : loc) (v : sync.eface.t) (typ' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.eface.t go!"typ" l) v.typ' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.eface.t go!"typ" l) typ' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with typ' := typ' } : sync.eface.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance eface_access_load_val (l : loc) (v : sync.eface.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.eface.t go!"val" l) v.val' dq)
+      (typed_pointsto (struct_field_ref sync.eface.t go!"val" l) v.val' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance eface_access_store_val (l : loc) (v : sync.eface.t) (val' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.eface.t go!"val" l) v.val' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.eface.t go!"val" l) val' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with val' := val' } : sync.eface.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end eface
 
 namespace RWMutex
 section def_

@@ -157,8 +157,6 @@ def bucketBuffer [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] bucketBuffer
 
-axiom «Backendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «Snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «txReadBufferCacheⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -167,51 +165,13 @@ axiom «backendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «BackendConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «BackendConfigOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «zapBoltLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «BucketIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Bucketⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «BatchTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «UnsafeReadWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «UnsafeWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «batchTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «batchTxBufferedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «HookFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Hooksⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «hooksⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «ReadTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «UnsafeReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «baseReadTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «readTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «concurrentReadTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «txBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «txWriteBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «txReadBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «kvⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «bucketBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom bucketBufferInitialSize [ffi_syntax] [GoGlobalContext] : val
 
@@ -394,19 +354,16 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val defaultBatchLimit'init) (Val #()))))))))
 
 namespace Backend
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end Backend
 
-class Backend_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Backend_type_repr : go.TypeReprUnderlying «Backendⁱᵐᵖˡ» Backend.t
-  Backend_underlying : go.UnderlyingDirectedEq Backend «Backendⁱᵐᵖˡ»
-  «Backendⁱᵐᵖˡ_underlying» : go.IsUnderlying «Backendⁱᵐᵖˡ» «Backendⁱᵐᵖˡ»
+@[reducible] def «Backendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"BatchTx" (go.signature.Signature [] false [BatchTx])), (go.interface_elem.MethodElem go!"Close" (go.signature.Signature [] false [go.error])), (go.interface_elem.MethodElem go!"ConcurrentReadTx" (go.signature.Signature [] false [ReadTx])), (go.interface_elem.MethodElem go!"Defrag" (go.signature.Signature [] false [go.error])), (go.interface_elem.MethodElem go!"ForceCommit" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Hash" (go.signature.Signature [(go.type.FunctionType (go.signature.Signature [(go.type.SliceType go.byte), (go.type.SliceType go.byte)] false [go.bool]))] false [go.uint32, go.error])), (go.interface_elem.MethodElem go!"OpenReadTxN" (go.signature.Signature [] false [go.int64])), (go.interface_elem.MethodElem go!"ReadTx" (go.signature.Signature [] false [ReadTx])), (go.interface_elem.MethodElem go!"SetTxPostLockInsideApplyHook" (go.signature.Signature [(go.type.FunctionType (go.signature.Signature [] false []))] false [])), (go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.int64])), (go.interface_elem.MethodElem go!"SizeInUse" (go.signature.Signature [] false [go.int64])), (go.interface_elem.MethodElem go!"Snapshot" (go.signature.Signature [] false [Snapshot]))])
 
-attribute [instance] Backend_Assumptions.Backend_type_repr
-  Backend_Assumptions.Backend_underlying
-  Backend_Assumptions.«Backendⁱᵐᵖˡ_underlying»
+class Backend_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Backend_underlying : go.UnderlyingDirectedEq Backend «Backendⁱᵐᵖˡ»
+
+attribute [instance] Backend_Assumptions.Backend_underlying
 
 namespace Snapshot
 axiom t : Type
@@ -469,19 +426,16 @@ attribute [instance] BackendConfig_Assumptions.BackendConfig_type_repr
   BackendConfig_Assumptions.«BackendConfigⁱᵐᵖˡ_underlying»
 
 namespace BackendConfigOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := func.t
 end BackendConfigOption
 
-class BackendConfigOption_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  BackendConfigOption_type_repr : go.TypeReprUnderlying «BackendConfigOptionⁱᵐᵖˡ» BackendConfigOption.t
-  BackendConfigOption_underlying : go.UnderlyingDirectedEq BackendConfigOption «BackendConfigOptionⁱᵐᵖˡ»
-  «BackendConfigOptionⁱᵐᵖˡ_underlying» : go.IsUnderlying «BackendConfigOptionⁱᵐᵖˡ» «BackendConfigOptionⁱᵐᵖˡ»
+@[reducible] def «BackendConfigOptionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.FunctionType (go.signature.Signature [(go.type.PointerType BackendConfig)] false []))
 
-attribute [instance] BackendConfigOption_Assumptions.BackendConfigOption_type_repr
-  BackendConfigOption_Assumptions.BackendConfigOption_underlying
-  BackendConfigOption_Assumptions.«BackendConfigOptionⁱᵐᵖˡ_underlying»
+class BackendConfigOption_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  BackendConfigOption_underlying : go.UnderlyingDirectedEq BackendConfigOption «BackendConfigOptionⁱᵐᵖˡ»
+
+attribute [instance] BackendConfigOption_Assumptions.BackendConfigOption_underlying
 
 namespace snapshot
 axiom t : Type
@@ -514,79 +468,64 @@ attribute [instance] zapBoltLogger_Assumptions.zapBoltLogger_type_repr
   zapBoltLogger_Assumptions.«zapBoltLoggerⁱᵐᵖˡ_underlying»
 
 namespace BucketID
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end BucketID
 
-class BucketID_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  BucketID_type_repr : go.TypeReprUnderlying «BucketIDⁱᵐᵖˡ» BucketID.t
-  BucketID_underlying : go.UnderlyingDirectedEq BucketID «BucketIDⁱᵐᵖˡ»
-  «BucketIDⁱᵐᵖˡ_underlying» : go.IsUnderlying «BucketIDⁱᵐᵖˡ» «BucketIDⁱᵐᵖˡ»
+@[reducible] def «BucketIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] BucketID_Assumptions.BucketID_type_repr
-  BucketID_Assumptions.BucketID_underlying
-  BucketID_Assumptions.«BucketIDⁱᵐᵖˡ_underlying»
+class BucketID_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  BucketID_underlying : go.UnderlyingDirectedEq BucketID «BucketIDⁱᵐᵖˡ»
+
+attribute [instance] BucketID_Assumptions.BucketID_underlying
 
 namespace Bucket
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end Bucket
 
-class Bucket_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Bucket_type_repr : go.TypeReprUnderlying «Bucketⁱᵐᵖˡ» Bucket.t
-  Bucket_underlying : go.UnderlyingDirectedEq Bucket «Bucketⁱᵐᵖˡ»
-  «Bucketⁱᵐᵖˡ_underlying» : go.IsUnderlying «Bucketⁱᵐᵖˡ» «Bucketⁱᵐᵖˡ»
+@[reducible] def «Bucketⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ID" (go.signature.Signature [] false [BucketID])), (go.interface_elem.MethodElem go!"IsSafeRangeBucket" (go.signature.Signature [] false [go.bool])), (go.interface_elem.MethodElem go!"Name" (go.signature.Signature [] false [(go.type.SliceType go.byte)])), (go.interface_elem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-attribute [instance] Bucket_Assumptions.Bucket_type_repr
-  Bucket_Assumptions.Bucket_underlying
-  Bucket_Assumptions.«Bucketⁱᵐᵖˡ_underlying»
+class Bucket_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Bucket_underlying : go.UnderlyingDirectedEq Bucket «Bucketⁱᵐᵖˡ»
+
+attribute [instance] Bucket_Assumptions.Bucket_underlying
 
 namespace BatchTx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end BatchTx
 
-class BatchTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  BatchTx_type_repr : go.TypeReprUnderlying «BatchTxⁱᵐᵖˡ» BatchTx.t
-  BatchTx_underlying : go.UnderlyingDirectedEq BatchTx «BatchTxⁱᵐᵖˡ»
-  «BatchTxⁱᵐᵖˡ_underlying» : go.IsUnderlying «BatchTxⁱᵐᵖˡ» «BatchTxⁱᵐᵖˡ»
+@[reducible] def «BatchTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Commit" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"CommitAndStop" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Lock" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"LockInsideApply" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"LockOutsideApply" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Unlock" (go.signature.Signature [] false [])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm UnsafeReadWriter)])])
 
-attribute [instance] BatchTx_Assumptions.BatchTx_type_repr
-  BatchTx_Assumptions.BatchTx_underlying
-  BatchTx_Assumptions.«BatchTxⁱᵐᵖˡ_underlying»
+class BatchTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  BatchTx_underlying : go.UnderlyingDirectedEq BatchTx «BatchTxⁱᵐᵖˡ»
+
+attribute [instance] BatchTx_Assumptions.BatchTx_underlying
 
 namespace UnsafeReadWriter
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeReadWriter
 
-class UnsafeReadWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeReadWriter_type_repr : go.TypeReprUnderlying «UnsafeReadWriterⁱᵐᵖˡ» UnsafeReadWriter.t
-  UnsafeReadWriter_underlying : go.UnderlyingDirectedEq UnsafeReadWriter «UnsafeReadWriterⁱᵐᵖˡ»
-  «UnsafeReadWriterⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeReadWriterⁱᵐᵖˡ» «UnsafeReadWriterⁱᵐᵖˡ»
+@[reducible] def «UnsafeReadWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm UnsafeReader)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm UnsafeWriter)])])
 
-attribute [instance] UnsafeReadWriter_Assumptions.UnsafeReadWriter_type_repr
-  UnsafeReadWriter_Assumptions.UnsafeReadWriter_underlying
-  UnsafeReadWriter_Assumptions.«UnsafeReadWriterⁱᵐᵖˡ_underlying»
+class UnsafeReadWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeReadWriter_underlying : go.UnderlyingDirectedEq UnsafeReadWriter «UnsafeReadWriterⁱᵐᵖˡ»
+
+attribute [instance] UnsafeReadWriter_Assumptions.UnsafeReadWriter_underlying
 
 namespace UnsafeWriter
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeWriter
 
-class UnsafeWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeWriter_type_repr : go.TypeReprUnderlying «UnsafeWriterⁱᵐᵖˡ» UnsafeWriter.t
-  UnsafeWriter_underlying : go.UnderlyingDirectedEq UnsafeWriter «UnsafeWriterⁱᵐᵖˡ»
-  «UnsafeWriterⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeWriterⁱᵐᵖˡ» «UnsafeWriterⁱᵐᵖˡ»
+@[reducible] def «UnsafeWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"UnsafeCreateBucket" (go.signature.Signature [Bucket] false [])), (go.interface_elem.MethodElem go!"UnsafeDelete" (go.signature.Signature [Bucket, (go.type.SliceType go.byte)] false [])), (go.interface_elem.MethodElem go!"UnsafeDeleteBucket" (go.signature.Signature [Bucket] false [])), (go.interface_elem.MethodElem go!"UnsafePut" (go.signature.Signature [Bucket, (go.type.SliceType go.byte), (go.type.SliceType go.byte)] false [])), (go.interface_elem.MethodElem go!"UnsafeSeqPut" (go.signature.Signature [Bucket, (go.type.SliceType go.byte), (go.type.SliceType go.byte)] false []))])
 
-attribute [instance] UnsafeWriter_Assumptions.UnsafeWriter_type_repr
-  UnsafeWriter_Assumptions.UnsafeWriter_underlying
-  UnsafeWriter_Assumptions.«UnsafeWriterⁱᵐᵖˡ_underlying»
+class UnsafeWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeWriter_underlying : go.UnderlyingDirectedEq UnsafeWriter «UnsafeWriterⁱᵐᵖˡ»
+
+attribute [instance] UnsafeWriter_Assumptions.UnsafeWriter_underlying
 
 namespace batchTx
 axiom t : Type
@@ -603,95 +542,203 @@ attribute [instance] batchTx_Assumptions.batchTx_type_repr
   batchTx_Assumptions.batchTx_underlying
   batchTx_Assumptions.«batchTxⁱᵐᵖˡ_underlying»
 
+namespace txBuffer
+structure t [ffi_syntax] where
+  mk ::
+  buckets' : map.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
+end txBuffer
+
+@[reducible] def txBuffer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"buckets" (go.type.MapType BucketID (go.type.PointerType bucketBuffer)))]
+
+@[irreducible] def txBuffer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  txBuffer'fds_unsealed
+
+instance equals_unfold_txBuffer [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold txBuffer'fds txBuffer'fds_unsealed :=
+  ⟨by unfold txBuffer'fds; rfl⟩
+
+@[reducible] def «txBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType txBuffer'fds)
+
+class txBuffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  txBuffer_type_repr : go.TypeReprUnderlying «txBufferⁱᵐᵖˡ» txBuffer.t
+  txBuffer_underlying : go.UnderlyingDirectedEq txBuffer «txBufferⁱᵐᵖˡ»
+  txBuffer_get_buckets : ∀ (x : txBuffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «txBufferⁱᵐᵖˡ» go!"buckets") #x (Val #(x.buckets'))
+  txBuffer_set_buckets : ∀ (x : txBuffer.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «txBufferⁱᵐᵖˡ» go!"buckets") (PairV #x #y) (Val #(({ x with buckets' := y } : txBuffer.t)))
+
+attribute [instance] txBuffer_Assumptions.txBuffer_type_repr
+  txBuffer_Assumptions.txBuffer_underlying
+  txBuffer_Assumptions.txBuffer_get_buckets
+  txBuffer_Assumptions.txBuffer_set_buckets
+
+namespace txWriteBuffer
+structure t [ffi_syntax] where
+  mk ::
+  txBuffer' : txBuffer.t
+  bucket2seq' : map.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
+end txWriteBuffer
+
+@[reducible] def txWriteBuffer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"txBuffer" txBuffer),
+(go.field_decl.FieldDecl go!"bucket2seq" (go.type.MapType BucketID go.bool))]
+
+@[irreducible] def txWriteBuffer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  txWriteBuffer'fds_unsealed
+
+instance equals_unfold_txWriteBuffer [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold txWriteBuffer'fds txWriteBuffer'fds_unsealed :=
+  ⟨by unfold txWriteBuffer'fds; rfl⟩
+
+@[reducible] def «txWriteBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType txWriteBuffer'fds)
+
+class txWriteBuffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  txWriteBuffer_type_repr : go.TypeReprUnderlying «txWriteBufferⁱᵐᵖˡ» txWriteBuffer.t
+  txWriteBuffer_underlying : go.UnderlyingDirectedEq txWriteBuffer «txWriteBufferⁱᵐᵖˡ»
+  txWriteBuffer_get_txBuffer : ∀ (x : txWriteBuffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «txWriteBufferⁱᵐᵖˡ» go!"txBuffer") #x (Val #(x.txBuffer'))
+  txWriteBuffer_set_txBuffer : ∀ (x : txWriteBuffer.t) (y : txBuffer.t), go.IsGoStepPureDetTagged under (StructFieldSet «txWriteBufferⁱᵐᵖˡ» go!"txBuffer") (PairV #x #y) (Val #(({ x with txBuffer' := y } : txWriteBuffer.t)))
+  txWriteBuffer_get_bucket2seq : ∀ (x : txWriteBuffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «txWriteBufferⁱᵐᵖˡ» go!"bucket2seq") #x (Val #(x.bucket2seq'))
+  txWriteBuffer_set_bucket2seq : ∀ (x : txWriteBuffer.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «txWriteBufferⁱᵐᵖˡ» go!"bucket2seq") (PairV #x #y) (Val #(({ x with bucket2seq' := y } : txWriteBuffer.t)))
+
+attribute [instance] txWriteBuffer_Assumptions.txWriteBuffer_type_repr
+  txWriteBuffer_Assumptions.txWriteBuffer_underlying
+  txWriteBuffer_Assumptions.txWriteBuffer_get_txBuffer
+  txWriteBuffer_Assumptions.txWriteBuffer_set_txBuffer
+  txWriteBuffer_Assumptions.txWriteBuffer_get_bucket2seq
+  txWriteBuffer_Assumptions.txWriteBuffer_set_bucket2seq
+
 namespace batchTxBuffered
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  batchTx' : batchTx.t
+  buf' : txWriteBuffer.t
+  pendingDeleteOperations' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
 end batchTxBuffered
+
+@[reducible] def batchTxBuffered'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"batchTx" batchTx),
+(go.field_decl.FieldDecl go!"buf" txWriteBuffer),
+(go.field_decl.FieldDecl go!"pendingDeleteOperations" go.int)]
+
+@[irreducible] def batchTxBuffered'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  batchTxBuffered'fds_unsealed
+
+instance equals_unfold_batchTxBuffered [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold batchTxBuffered'fds batchTxBuffered'fds_unsealed :=
+  ⟨by unfold batchTxBuffered'fds; rfl⟩
+
+@[reducible] def «batchTxBufferedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType batchTxBuffered'fds)
 
 class batchTxBuffered_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   batchTxBuffered_type_repr : go.TypeReprUnderlying «batchTxBufferedⁱᵐᵖˡ» batchTxBuffered.t
   batchTxBuffered_underlying : go.UnderlyingDirectedEq batchTxBuffered «batchTxBufferedⁱᵐᵖˡ»
-  «batchTxBufferedⁱᵐᵖˡ_underlying» : go.IsUnderlying «batchTxBufferedⁱᵐᵖˡ» «batchTxBufferedⁱᵐᵖˡ»
+  batchTxBuffered_get_batchTx : ∀ (x : batchTxBuffered.t), go.IsGoStepPureDetTagged under (StructFieldGet «batchTxBufferedⁱᵐᵖˡ» go!"batchTx") #x (Val #(x.batchTx'))
+  batchTxBuffered_set_batchTx : ∀ (x : batchTxBuffered.t) (y : batchTx.t), go.IsGoStepPureDetTagged under (StructFieldSet «batchTxBufferedⁱᵐᵖˡ» go!"batchTx") (PairV #x #y) (Val #(({ x with batchTx' := y } : batchTxBuffered.t)))
+  batchTxBuffered_get_buf : ∀ (x : batchTxBuffered.t), go.IsGoStepPureDetTagged under (StructFieldGet «batchTxBufferedⁱᵐᵖˡ» go!"buf") #x (Val #(x.buf'))
+  batchTxBuffered_set_buf : ∀ (x : batchTxBuffered.t) (y : txWriteBuffer.t), go.IsGoStepPureDetTagged under (StructFieldSet «batchTxBufferedⁱᵐᵖˡ» go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : batchTxBuffered.t)))
+  batchTxBuffered_get_pendingDeleteOperations : ∀ (x : batchTxBuffered.t), go.IsGoStepPureDetTagged under (StructFieldGet «batchTxBufferedⁱᵐᵖˡ» go!"pendingDeleteOperations") #x (Val #(x.pendingDeleteOperations'))
+  batchTxBuffered_set_pendingDeleteOperations : ∀ (x : batchTxBuffered.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «batchTxBufferedⁱᵐᵖˡ» go!"pendingDeleteOperations") (PairV #x #y) (Val #(({ x with pendingDeleteOperations' := y } : batchTxBuffered.t)))
 
 attribute [instance] batchTxBuffered_Assumptions.batchTxBuffered_type_repr
   batchTxBuffered_Assumptions.batchTxBuffered_underlying
-  batchTxBuffered_Assumptions.«batchTxBufferedⁱᵐᵖˡ_underlying»
+  batchTxBuffered_Assumptions.batchTxBuffered_get_batchTx
+  batchTxBuffered_Assumptions.batchTxBuffered_set_batchTx
+  batchTxBuffered_Assumptions.batchTxBuffered_get_buf
+  batchTxBuffered_Assumptions.batchTxBuffered_set_buf
+  batchTxBuffered_Assumptions.batchTxBuffered_get_pendingDeleteOperations
+  batchTxBuffered_Assumptions.batchTxBuffered_set_pendingDeleteOperations
 
 namespace HookFunc
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := func.t
 end HookFunc
 
-class HookFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  HookFunc_type_repr : go.TypeReprUnderlying «HookFuncⁱᵐᵖˡ» HookFunc.t
-  HookFunc_underlying : go.UnderlyingDirectedEq HookFunc «HookFuncⁱᵐᵖˡ»
-  «HookFuncⁱᵐᵖˡ_underlying» : go.IsUnderlying «HookFuncⁱᵐᵖˡ» «HookFuncⁱᵐᵖˡ»
+@[reducible] def «HookFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.FunctionType (go.signature.Signature [UnsafeReadWriter] false []))
 
-attribute [instance] HookFunc_Assumptions.HookFunc_type_repr
-  HookFunc_Assumptions.HookFunc_underlying
-  HookFunc_Assumptions.«HookFuncⁱᵐᵖˡ_underlying»
+class HookFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  HookFunc_underlying : go.UnderlyingDirectedEq HookFunc «HookFuncⁱᵐᵖˡ»
+
+attribute [instance] HookFunc_Assumptions.HookFunc_underlying
 
 namespace Hooks
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end Hooks
 
-class Hooks_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Hooks_type_repr : go.TypeReprUnderlying «Hooksⁱᵐᵖˡ» Hooks.t
-  Hooks_underlying : go.UnderlyingDirectedEq Hooks «Hooksⁱᵐᵖˡ»
-  «Hooksⁱᵐᵖˡ_underlying» : go.IsUnderlying «Hooksⁱᵐᵖˡ» «Hooksⁱᵐᵖˡ»
+@[reducible] def «Hooksⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"OnPreCommitUnsafe" (go.signature.Signature [UnsafeReadWriter] false []))])
 
-attribute [instance] Hooks_Assumptions.Hooks_type_repr
-  Hooks_Assumptions.Hooks_underlying
-  Hooks_Assumptions.«Hooksⁱᵐᵖˡ_underlying»
+class Hooks_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Hooks_underlying : go.UnderlyingDirectedEq Hooks «Hooksⁱᵐᵖˡ»
+
+attribute [instance] Hooks_Assumptions.Hooks_underlying
 
 namespace hooks
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  onPreCommitUnsafe' : HookFunc.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
 end hooks
+
+@[reducible] def hooks'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"onPreCommitUnsafe" HookFunc)]
+
+@[irreducible] def hooks'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  hooks'fds_unsealed
+
+instance equals_unfold_hooks [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold hooks'fds hooks'fds_unsealed :=
+  ⟨by unfold hooks'fds; rfl⟩
+
+@[reducible] def «hooksⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType hooks'fds)
 
 class hooks_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   hooks_type_repr : go.TypeReprUnderlying «hooksⁱᵐᵖˡ» hooks.t
   hooks_underlying : go.UnderlyingDirectedEq hooks «hooksⁱᵐᵖˡ»
-  «hooksⁱᵐᵖˡ_underlying» : go.IsUnderlying «hooksⁱᵐᵖˡ» «hooksⁱᵐᵖˡ»
+  hooks_get_onPreCommitUnsafe : ∀ (x : hooks.t), go.IsGoStepPureDetTagged under (StructFieldGet «hooksⁱᵐᵖˡ» go!"onPreCommitUnsafe") #x (Val #(x.onPreCommitUnsafe'))
+  hooks_set_onPreCommitUnsafe : ∀ (x : hooks.t) (y : HookFunc.t), go.IsGoStepPureDetTagged under (StructFieldSet «hooksⁱᵐᵖˡ» go!"onPreCommitUnsafe") (PairV #x #y) (Val #(({ x with onPreCommitUnsafe' := y } : hooks.t)))
 
 attribute [instance] hooks_Assumptions.hooks_type_repr
   hooks_Assumptions.hooks_underlying
-  hooks_Assumptions.«hooksⁱᵐᵖˡ_underlying»
+  hooks_Assumptions.hooks_get_onPreCommitUnsafe
+  hooks_Assumptions.hooks_set_onPreCommitUnsafe
 
 namespace ReadTx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end ReadTx
 
-class ReadTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ReadTx_type_repr : go.TypeReprUnderlying «ReadTxⁱᵐᵖˡ» ReadTx.t
-  ReadTx_underlying : go.UnderlyingDirectedEq ReadTx «ReadTxⁱᵐᵖˡ»
-  «ReadTxⁱᵐᵖˡ_underlying» : go.IsUnderlying «ReadTxⁱᵐᵖˡ» «ReadTxⁱᵐᵖˡ»
+@[reducible] def «ReadTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"RLock" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"RUnlock" (go.signature.Signature [] false [])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm UnsafeReader)])])
 
-attribute [instance] ReadTx_Assumptions.ReadTx_type_repr
-  ReadTx_Assumptions.ReadTx_underlying
-  ReadTx_Assumptions.«ReadTxⁱᵐᵖˡ_underlying»
+class ReadTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  ReadTx_underlying : go.UnderlyingDirectedEq ReadTx «ReadTxⁱᵐᵖˡ»
+
+attribute [instance] ReadTx_Assumptions.ReadTx_underlying
 
 namespace UnsafeReader
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := interface.t
 end UnsafeReader
 
-class UnsafeReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  UnsafeReader_type_repr : go.TypeReprUnderlying «UnsafeReaderⁱᵐᵖˡ» UnsafeReader.t
-  UnsafeReader_underlying : go.UnderlyingDirectedEq UnsafeReader «UnsafeReaderⁱᵐᵖˡ»
-  «UnsafeReaderⁱᵐᵖˡ_underlying» : go.IsUnderlying «UnsafeReaderⁱᵐᵖˡ» «UnsafeReaderⁱᵐᵖˡ»
+@[reducible] def «UnsafeReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"UnsafeForEach" (go.signature.Signature [Bucket, (go.type.FunctionType (go.signature.Signature [(go.type.SliceType go.byte), (go.type.SliceType go.byte)] false [go.error]))] false [go.error])), (go.interface_elem.MethodElem go!"UnsafeRange" (go.signature.Signature [Bucket, (go.type.SliceType go.byte), (go.type.SliceType go.byte), go.int64] false [(go.type.SliceType (go.type.SliceType go.byte)), (go.type.SliceType (go.type.SliceType go.byte))]))])
 
-attribute [instance] UnsafeReader_Assumptions.UnsafeReader_type_repr
-  UnsafeReader_Assumptions.UnsafeReader_underlying
-  UnsafeReader_Assumptions.«UnsafeReaderⁱᵐᵖˡ_underlying»
+class UnsafeReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  UnsafeReader_underlying : go.UnderlyingDirectedEq UnsafeReader «UnsafeReaderⁱᵐᵖˡ»
+
+attribute [instance] UnsafeReader_Assumptions.UnsafeReader_underlying
 
 namespace baseReadTx
 axiom t : Type
@@ -709,109 +756,187 @@ attribute [instance] baseReadTx_Assumptions.baseReadTx_type_repr
   baseReadTx_Assumptions.«baseReadTxⁱᵐᵖˡ_underlying»
 
 namespace readTx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  baseReadTx' : baseReadTx.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
 end readTx
+
+@[reducible] def readTx'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"baseReadTx" baseReadTx)]
+
+@[irreducible] def readTx'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  readTx'fds_unsealed
+
+instance equals_unfold_readTx [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold readTx'fds readTx'fds_unsealed :=
+  ⟨by unfold readTx'fds; rfl⟩
+
+@[reducible] def «readTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType readTx'fds)
 
 class readTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   readTx_type_repr : go.TypeReprUnderlying «readTxⁱᵐᵖˡ» readTx.t
   readTx_underlying : go.UnderlyingDirectedEq readTx «readTxⁱᵐᵖˡ»
-  «readTxⁱᵐᵖˡ_underlying» : go.IsUnderlying «readTxⁱᵐᵖˡ» «readTxⁱᵐᵖˡ»
+  readTx_get_baseReadTx : ∀ (x : readTx.t), go.IsGoStepPureDetTagged under (StructFieldGet «readTxⁱᵐᵖˡ» go!"baseReadTx") #x (Val #(x.baseReadTx'))
+  readTx_set_baseReadTx : ∀ (x : readTx.t) (y : baseReadTx.t), go.IsGoStepPureDetTagged under (StructFieldSet «readTxⁱᵐᵖˡ» go!"baseReadTx") (PairV #x #y) (Val #(({ x with baseReadTx' := y } : readTx.t)))
 
 attribute [instance] readTx_Assumptions.readTx_type_repr
   readTx_Assumptions.readTx_underlying
-  readTx_Assumptions.«readTxⁱᵐᵖˡ_underlying»
+  readTx_Assumptions.readTx_get_baseReadTx
+  readTx_Assumptions.readTx_set_baseReadTx
 
 namespace concurrentReadTx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  baseReadTx' : baseReadTx.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
 end concurrentReadTx
+
+@[reducible] def concurrentReadTx'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"baseReadTx" baseReadTx)]
+
+@[irreducible] def concurrentReadTx'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  concurrentReadTx'fds_unsealed
+
+instance equals_unfold_concurrentReadTx [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold concurrentReadTx'fds concurrentReadTx'fds_unsealed :=
+  ⟨by unfold concurrentReadTx'fds; rfl⟩
+
+@[reducible] def «concurrentReadTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType concurrentReadTx'fds)
 
 class concurrentReadTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   concurrentReadTx_type_repr : go.TypeReprUnderlying «concurrentReadTxⁱᵐᵖˡ» concurrentReadTx.t
   concurrentReadTx_underlying : go.UnderlyingDirectedEq concurrentReadTx «concurrentReadTxⁱᵐᵖˡ»
-  «concurrentReadTxⁱᵐᵖˡ_underlying» : go.IsUnderlying «concurrentReadTxⁱᵐᵖˡ» «concurrentReadTxⁱᵐᵖˡ»
+  concurrentReadTx_get_baseReadTx : ∀ (x : concurrentReadTx.t), go.IsGoStepPureDetTagged under (StructFieldGet «concurrentReadTxⁱᵐᵖˡ» go!"baseReadTx") #x (Val #(x.baseReadTx'))
+  concurrentReadTx_set_baseReadTx : ∀ (x : concurrentReadTx.t) (y : baseReadTx.t), go.IsGoStepPureDetTagged under (StructFieldSet «concurrentReadTxⁱᵐᵖˡ» go!"baseReadTx") (PairV #x #y) (Val #(({ x with baseReadTx' := y } : concurrentReadTx.t)))
 
 attribute [instance] concurrentReadTx_Assumptions.concurrentReadTx_type_repr
   concurrentReadTx_Assumptions.concurrentReadTx_underlying
-  concurrentReadTx_Assumptions.«concurrentReadTxⁱᵐᵖˡ_underlying»
-
-namespace txBuffer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end txBuffer
-
-class txBuffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  txBuffer_type_repr : go.TypeReprUnderlying «txBufferⁱᵐᵖˡ» txBuffer.t
-  txBuffer_underlying : go.UnderlyingDirectedEq txBuffer «txBufferⁱᵐᵖˡ»
-  «txBufferⁱᵐᵖˡ_underlying» : go.IsUnderlying «txBufferⁱᵐᵖˡ» «txBufferⁱᵐᵖˡ»
-
-attribute [instance] txBuffer_Assumptions.txBuffer_type_repr
-  txBuffer_Assumptions.txBuffer_underlying
-  txBuffer_Assumptions.«txBufferⁱᵐᵖˡ_underlying»
-
-namespace txWriteBuffer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end txWriteBuffer
-
-class txWriteBuffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  txWriteBuffer_type_repr : go.TypeReprUnderlying «txWriteBufferⁱᵐᵖˡ» txWriteBuffer.t
-  txWriteBuffer_underlying : go.UnderlyingDirectedEq txWriteBuffer «txWriteBufferⁱᵐᵖˡ»
-  «txWriteBufferⁱᵐᵖˡ_underlying» : go.IsUnderlying «txWriteBufferⁱᵐᵖˡ» «txWriteBufferⁱᵐᵖˡ»
-
-attribute [instance] txWriteBuffer_Assumptions.txWriteBuffer_type_repr
-  txWriteBuffer_Assumptions.txWriteBuffer_underlying
-  txWriteBuffer_Assumptions.«txWriteBufferⁱᵐᵖˡ_underlying»
+  concurrentReadTx_Assumptions.concurrentReadTx_get_baseReadTx
+  concurrentReadTx_Assumptions.concurrentReadTx_set_baseReadTx
 
 namespace txReadBuffer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  txBuffer' : txBuffer.t
+  bufVersion' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end txReadBuffer
+
+@[reducible] def txReadBuffer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"txBuffer" txBuffer),
+(go.field_decl.FieldDecl go!"bufVersion" go.uint64)]
+
+@[irreducible] def txReadBuffer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  txReadBuffer'fds_unsealed
+
+instance equals_unfold_txReadBuffer [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold txReadBuffer'fds txReadBuffer'fds_unsealed :=
+  ⟨by unfold txReadBuffer'fds; rfl⟩
+
+@[reducible] def «txReadBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType txReadBuffer'fds)
 
 class txReadBuffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   txReadBuffer_type_repr : go.TypeReprUnderlying «txReadBufferⁱᵐᵖˡ» txReadBuffer.t
   txReadBuffer_underlying : go.UnderlyingDirectedEq txReadBuffer «txReadBufferⁱᵐᵖˡ»
-  «txReadBufferⁱᵐᵖˡ_underlying» : go.IsUnderlying «txReadBufferⁱᵐᵖˡ» «txReadBufferⁱᵐᵖˡ»
+  txReadBuffer_get_txBuffer : ∀ (x : txReadBuffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «txReadBufferⁱᵐᵖˡ» go!"txBuffer") #x (Val #(x.txBuffer'))
+  txReadBuffer_set_txBuffer : ∀ (x : txReadBuffer.t) (y : txBuffer.t), go.IsGoStepPureDetTagged under (StructFieldSet «txReadBufferⁱᵐᵖˡ» go!"txBuffer") (PairV #x #y) (Val #(({ x with txBuffer' := y } : txReadBuffer.t)))
+  txReadBuffer_get_bufVersion : ∀ (x : txReadBuffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «txReadBufferⁱᵐᵖˡ» go!"bufVersion") #x (Val #(x.bufVersion'))
+  txReadBuffer_set_bufVersion : ∀ (x : txReadBuffer.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «txReadBufferⁱᵐᵖˡ» go!"bufVersion") (PairV #x #y) (Val #(({ x with bufVersion' := y } : txReadBuffer.t)))
 
 attribute [instance] txReadBuffer_Assumptions.txReadBuffer_type_repr
   txReadBuffer_Assumptions.txReadBuffer_underlying
-  txReadBuffer_Assumptions.«txReadBufferⁱᵐᵖˡ_underlying»
+  txReadBuffer_Assumptions.txReadBuffer_get_txBuffer
+  txReadBuffer_Assumptions.txReadBuffer_set_txBuffer
+  txReadBuffer_Assumptions.txReadBuffer_get_bufVersion
+  txReadBuffer_Assumptions.txReadBuffer_set_bufVersion
 
 namespace kv
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  key' : slice.t
+  val' : slice.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end kv
+
+@[reducible] def kv'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"key" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"val" (go.type.SliceType go.byte))]
+
+@[irreducible] def kv'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  kv'fds_unsealed
+
+instance equals_unfold_kv [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold kv'fds kv'fds_unsealed :=
+  ⟨by unfold kv'fds; rfl⟩
+
+@[reducible] def «kvⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType kv'fds)
 
 class kv_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   kv_type_repr : go.TypeReprUnderlying «kvⁱᵐᵖˡ» kv.t
   kv_underlying : go.UnderlyingDirectedEq kv «kvⁱᵐᵖˡ»
-  «kvⁱᵐᵖˡ_underlying» : go.IsUnderlying «kvⁱᵐᵖˡ» «kvⁱᵐᵖˡ»
+  kv_get_key : ∀ (x : kv.t), go.IsGoStepPureDetTagged under (StructFieldGet «kvⁱᵐᵖˡ» go!"key") #x (Val #(x.key'))
+  kv_set_key : ∀ (x : kv.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «kvⁱᵐᵖˡ» go!"key") (PairV #x #y) (Val #(({ x with key' := y } : kv.t)))
+  kv_get_val : ∀ (x : kv.t), go.IsGoStepPureDetTagged under (StructFieldGet «kvⁱᵐᵖˡ» go!"val") #x (Val #(x.val'))
+  kv_set_val : ∀ (x : kv.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «kvⁱᵐᵖˡ» go!"val") (PairV #x #y) (Val #(({ x with val' := y } : kv.t)))
 
 attribute [instance] kv_Assumptions.kv_type_repr
   kv_Assumptions.kv_underlying
-  kv_Assumptions.«kvⁱᵐᵖˡ_underlying»
+  kv_Assumptions.kv_get_key
+  kv_Assumptions.kv_set_key
+  kv_Assumptions.kv_get_val
+  kv_Assumptions.kv_set_val
 
 namespace bucketBuffer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  buf' : slice.t
+  used' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end bucketBuffer
+
+@[reducible] def bucketBuffer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"buf" (go.type.SliceType kv)),
+(go.field_decl.FieldDecl go!"used" go.int)]
+
+@[irreducible] def bucketBuffer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  bucketBuffer'fds_unsealed
+
+instance equals_unfold_bucketBuffer [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold bucketBuffer'fds bucketBuffer'fds_unsealed :=
+  ⟨by unfold bucketBuffer'fds; rfl⟩
+
+@[reducible] def «bucketBufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType bucketBuffer'fds)
 
 class bucketBuffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   bucketBuffer_type_repr : go.TypeReprUnderlying «bucketBufferⁱᵐᵖˡ» bucketBuffer.t
   bucketBuffer_underlying : go.UnderlyingDirectedEq bucketBuffer «bucketBufferⁱᵐᵖˡ»
-  «bucketBufferⁱᵐᵖˡ_underlying» : go.IsUnderlying «bucketBufferⁱᵐᵖˡ» «bucketBufferⁱᵐᵖˡ»
+  bucketBuffer_get_buf : ∀ (x : bucketBuffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «bucketBufferⁱᵐᵖˡ» go!"buf") #x (Val #(x.buf'))
+  bucketBuffer_set_buf : ∀ (x : bucketBuffer.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «bucketBufferⁱᵐᵖˡ» go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : bucketBuffer.t)))
+  bucketBuffer_get_used : ∀ (x : bucketBuffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «bucketBufferⁱᵐᵖˡ» go!"used") #x (Val #(x.used'))
+  bucketBuffer_set_used : ∀ (x : bucketBuffer.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «bucketBufferⁱᵐᵖˡ» go!"used") (PairV #x #y) (Val #(({ x with used' := y } : bucketBuffer.t)))
 
 attribute [instance] bucketBuffer_Assumptions.bucketBuffer_type_repr
   bucketBuffer_Assumptions.bucketBuffer_underlying
-  bucketBuffer_Assumptions.«bucketBufferⁱᵐᵖˡ_underlying»
+  bucketBuffer_Assumptions.bucketBuffer_get_buf
+  bucketBuffer_Assumptions.bucketBuffer_set_buf
+  bucketBuffer_Assumptions.bucketBuffer_get_used
+  bucketBuffer_Assumptions.bucketBuffer_set_used
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Backend_instance : Backend_Assumptions

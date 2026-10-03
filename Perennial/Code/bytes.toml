@@ -1,2 +1,12 @@
-translate = ["Clone", "Equal"]
-imports = ["!*"]
+translate = [
+  "Clone",
+  "Equal",
+  "ErrTooLarge",
+  "errNegativeRead",
+  "errUnreadByte",
+  "asciiSpace",
+]
+imports = ["!*", "errors"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

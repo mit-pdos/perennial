@@ -28,10 +28,6 @@ def Bubble [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] Bubble
 
-axiom «Associationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «Bubbleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom Unbubbled [ffi_syntax] [GoGlobalContext] : val
 
 axiom CurrentBubble [ffi_syntax] [GoGlobalContext] : val
@@ -90,34 +86,49 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (Val #()))))))
 
 namespace Association
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+abbrev t [ffi_syntax] : Type := w64
 end Association
 
-class Association_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Association_type_repr : go.TypeReprUnderlying «Associationⁱᵐᵖˡ» Association.t
-  Association_underlying : go.UnderlyingDirectedEq Association «Associationⁱᵐᵖˡ»
-  «Associationⁱᵐᵖˡ_underlying» : go.IsUnderlying «Associationⁱᵐᵖˡ» «Associationⁱᵐᵖˡ»
+@[reducible] def «Associationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  go.int
 
-attribute [instance] Association_Assumptions.Association_type_repr
-  Association_Assumptions.Association_underlying
-  Association_Assumptions.«Associationⁱᵐᵖˡ_underlying»
+class Association_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Association_underlying : go.UnderlyingDirectedEq Association «Associationⁱᵐᵖˡ»
+
+attribute [instance] Association_Assumptions.Association_underlying
 
 namespace Bubble
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  b' : interface.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def⟩
 end Bubble
+
+@[reducible] def Bubble'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"b" go.any)]
+
+@[irreducible] def Bubble'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  Bubble'fds_unsealed
+
+instance equals_unfold_Bubble [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold Bubble'fds Bubble'fds_unsealed :=
+  ⟨by unfold Bubble'fds; rfl⟩
+
+@[reducible] def «Bubbleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType Bubble'fds)
 
 class Bubble_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Bubble_type_repr : go.TypeReprUnderlying «Bubbleⁱᵐᵖˡ» Bubble.t
   Bubble_underlying : go.UnderlyingDirectedEq Bubble «Bubbleⁱᵐᵖˡ»
-  «Bubbleⁱᵐᵖˡ_underlying» : go.IsUnderlying «Bubbleⁱᵐᵖˡ» «Bubbleⁱᵐᵖˡ»
+  Bubble_get_b : ∀ (x : Bubble.t), go.IsGoStepPureDetTagged under (StructFieldGet «Bubbleⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
+  Bubble_set_b : ∀ (x : Bubble.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Bubbleⁱᵐᵖˡ» go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble.t)))
 
 attribute [instance] Bubble_Assumptions.Bubble_type_repr
   Bubble_Assumptions.Bubble_underlying
-  Bubble_Assumptions.«Bubbleⁱᵐᵖˡ_underlying»
+  Bubble_Assumptions.Bubble_get_b
+  Bubble_Assumptions.Bubble_set_b
 
 class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Association_instance : Association_Assumptions

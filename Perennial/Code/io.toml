@@ -13,3 +13,6 @@ translate = [
   "multiWriter",
   "_",
 ]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

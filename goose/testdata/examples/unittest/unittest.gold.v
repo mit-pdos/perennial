@@ -682,7 +682,7 @@ Definition LocalConsts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_strin
 Definition takesArrayⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x",
     exception_do (let: "x" := (GoAlloc (go.ArrayType 13 go.string) "x") in
-    return: (![go.string] (IndexRef (go.ArrayType 13 go.string) (![go.ArrayType 13 go.string] "x", #(W64 3))))).
+    return: (![go.string] (IndexRef (go.ArrayType 13 go.string) ("x", #(W64 3))))).
 
 (* go: array.go:9:6 *)
 Definition takesPtrⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -700,8 +700,8 @@ Definition usesArrayElemRefⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     CompositeLiteral (go.ArrayType 2 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1")])) in
     do:  ("x" <-[go.ArrayType 2 go.string] "$r0");;;
     let: "$r0" := #"c"%go in
-    do:  ((IndexRef (go.ArrayType 2 go.string) (![go.ArrayType 2 go.string] "x", #(W64 1))) <-[go.string] "$r0");;;
-    do:  (let: "$a0" := (IndexRef (go.ArrayType 2 go.string) (![go.ArrayType 2 go.string] "x", #(W64 1))) in
+    do:  ((IndexRef (go.ArrayType 2 go.string) ("x", #(W64 1))) <-[go.string] "$r0");;;
+    do:  (let: "$a0" := (IndexRef (go.ArrayType 2 go.string) ("x", #(W64 1))) in
     (FuncResolve takesPtr [] #()) "$a0");;;
     return: #()).
 
@@ -716,7 +716,7 @@ Definition sumⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (Convert go.int go.uint64 (FuncResolve go.len [go.ArrayType 100 go.uint64] #()))); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
-      do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.ArrayType 100 go.uint64) (![go.ArrayType 100 go.uint64] "x", Convert go.uint64 go.int (![go.uint64] "i"))))))));;;
+      do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.ArrayType 100 go.uint64) ("x", Convert go.uint64 go.int (![go.uint64] "i"))))))));;;
     do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (Convert go.int go.uint64 (FuncResolve go.cap [go.ArrayType 100 go.uint64] #()))));;;
     return: (![go.uint64] "sum")).
 
@@ -735,16 +735,14 @@ Definition arrayToSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition arrayLiteralKeyedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.ArrayType 13 go.string) (GoZeroVal (go.ArrayType 13 go.string) #())) in
-    let: "$r0" := (let: "$k0" := (Convert go.untyped_int go.int arrayB) in
-    let: "$v1" := #"B"%go in
-    let: "$v2" := #"1"%go in
-    let: "$v3" := #"2"%go in
-    let: "$k4" := (Convert go.untyped_int go.int arrayA) in
-    let: "$v5" := #"A"%go in
-    let: "$v6" := #"3"%go in
-    CompositeLiteral (go.ArrayType 13 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int "$k0")) (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.string "$v2"); KeyedElement None (ElementExpression go.string "$v3"); KeyedElement (Some (KeyExpression go.int "$k4")) (ElementExpression go.string "$v5"); KeyedElement None (ElementExpression go.string "$v6")])) in
+    let: "$r0" := (let: "$v0" := #"B"%go in
+    let: "$v1" := #"1"%go in
+    let: "$v2" := #"2"%go in
+    let: "$v3" := #"A"%go in
+    let: "$v4" := #"3"%go in
+    CompositeLiteral (go.ArrayType 13 go.string) (LiteralValue [KeyedElement (Some (KeyInteger 10)) (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.string "$v2"); KeyedElement (Some (KeyInteger 0)) (ElementExpression go.string "$v3"); KeyedElement None (ElementExpression go.string "$v4")])) in
     do:  ("x" <-[go.ArrayType 13 go.string] "$r0");;;
-    return: (![go.string] (IndexRef (go.ArrayType 13 go.string) (![go.ArrayType 13 go.string] "x", #(W64 0))))).
+    return: (![go.string] (IndexRef (go.ArrayType 13 go.string) ("x", #(W64 0))))).
 
 (* go: chan.go:5:6 *)
 Definition chanBasicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
