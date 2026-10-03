@@ -102,7 +102,7 @@ theorem wp_NewSession (client : loc) (γetcd : clientv3_names) :
   wp_auto
   simp only [↓reduceIte]
   icases Hl with #Hlease0
-  wp_apply context.wp_WithCancel iprop(True) $$ [] as %ctx' %done' %cancel ⟨#Hcancel, #Hctx⟩
+  wp_apply context.wp_WithCancel iprop(True) $$ [] as %ctx' %γctx' %cancel ⟨#Hcancel, #Hctx⟩
   · iframe #
   wp_auto
   wp_apply wp_Client__KeepAlive $$ [$His_client $Hlease0] as %kch %err Hkch
@@ -111,6 +111,7 @@ theorem wp_NewSession (client : loc) (γetcd : clientv3_names) :
     -- error
     wp_auto
     wp_apply Hcancel
+    · imodintro; itrivial
     iapply HΦ
     simp only [reduceCtorEq, ↓reduceIte]
     itrivial
@@ -148,6 +149,7 @@ theorem wp_NewSession (client : loc) (γetcd : clientv3_names) :
       wp_apply wp_broadcast_chan_close $$ [$Hdonec_open] as -
       · iframe #; imodintro; itrivial
       wp_apply Hcancel
+      · imodintro; itrivial
       itrivial
     · wp_auto
       wp_for_post

@@ -244,7 +244,7 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
   iNamed Hctx
   iunfold context.is_Context_def at Hctx
   iNamed Hctx
-  wp_apply HDone $$ []
+  wp_apply HDone $$ [] as %dch %dγ #HDone_ch
   wp_apply_core chan.wp_select_blocking
   iapply BigAndL.bigAndL_cons.2
   isplit
@@ -263,7 +263,7 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
       ipureintro; exact ⟨rfl, rfl⟩
     inext
     wp_auto
-    wp_apply HDone $$ []
+    wp_apply HDone $$ [] as %dch2 %dγ2 #HDone_ch2
     wp_apply_core chan.wp_select_blocking
     iapply BigAndL.bigAndL_cons.2
     isplit
@@ -287,17 +287,16 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
     isplit
     · -- `ctx.Done()` is closed
       simp only [chan.blocking_clause_pre]
-      iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ctx_desc.Done,
-        ctx_desc.Done_gn
+      iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, dch2, dγ2
       isplit
       · ipureintro; rfl
       isplit
-      · iapply own_broadcast_chan_is_chan $$ HDone_ch
-      iapply broadcast_chan_receive _ _ _ _ _ $$ HDone_ch
-      iintro ⟨_, _⟩
+      · iapply context.is_Context_Done_is_chan $$ HDone_ch2
+      iapply context.is_Context_Done_receive _ _ _ _ $$ HDone_ch2
+      iintro _
       wp_auto
       ihave #HErr' := HErr $$ %broadcast.t.Unknown
-      wp_apply HErr' $$ [$HDone_ch] as %err _
+      wp_apply HErr' as %err _
       wp_end
       rw [ite_self]; itrivial
     iapply BigAndL.bigAndL_cons.2
@@ -320,17 +319,16 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
   isplit
   · -- `ctx.Done()` is closed
     simp only [chan.blocking_clause_pre]
-    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ctx_desc.Done,
-      ctx_desc.Done_gn
+    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, dch, dγ
     isplit
     · ipureintro; rfl
     isplit
-    · iapply own_broadcast_chan_is_chan $$ HDone_ch
-    iapply broadcast_chan_receive _ _ _ _ _ $$ HDone_ch
-    iintro ⟨_, _⟩
+    · iapply context.is_Context_Done_is_chan $$ HDone_ch
+    iapply context.is_Context_Done_receive _ _ _ _ $$ HDone_ch
+    iintro _
     wp_auto
     ihave #HErr' := HErr $$ %broadcast.t.Unknown
-    wp_apply HErr' $$ [$HDone_ch] as %err _
+    wp_apply HErr' as %err _
     wp_end
     rw [ite_self]; itrivial
   iapply BigAndL.bigAndL_cons.2
