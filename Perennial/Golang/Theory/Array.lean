@@ -6,6 +6,7 @@ Port of `new/golang/theory/array.v`: the typed points-to for arrays
 `into_val_typed_array` is `Admitted` in Rocq. It is proved here, against the
 corrected `go.store_array` of `Perennial/Golang/Defn/Array.lean` (see there).
 -/
+import Perennial.Golang.Theory.TacticsSimp
 import Perennial.Golang.Theory.Auto
 import Perennial.Golang.Defn.Array
 

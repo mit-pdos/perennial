@@ -23,6 +23,7 @@ These were first written as local workarounds in a goose testdata
 file (`TacticWorkarounds.lean`, now removed).
 -/
 import Perennial.Golang.Theory.Pkg
+import Perennial.Std.Word.Automation
 
 namespace Perennial
 

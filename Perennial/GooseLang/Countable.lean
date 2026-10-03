@@ -17,9 +17,30 @@ open GenTree
 
 /-! ## Go types -/
 
-/-- Close the mismatched-constructor cases of an injectivity proof (`cases b`). -/
-local macro "inj_cases " b:ident : tactic => `(tactic| (cases $b:ident <;> simp at * ))
+set_option hygiene false in
+/-- The core of an injectivity proof `h : a.toTree = b.toTree ⊢ a = b`, for a fixed constructor
+of `a`: case on `b`; `injection h` (which unfolds `toTree` by `whnf`) splits `h` into the
+equality `h0` of the node tags, refuted by `contradiction` for mismatched constructors, and the
+equality `h` of the children, which `simp only` turns into a conjunction (and the goal into the
+conjunction of the equalities of the constructor arguments, with their `injEq` lemmas `ls`).
+This needs neither the equation lemmas of the `toTree` functions nor `simp` with the default
+simp set, both slow on these large mutual inductives. -/
+local macro "inj_cases " b:ident " [" ls:Lean.Parser.Tactic.simpLemma,* "]" : tactic =>
+  `(tactic| (cases $b:ident <;> injection h with h0 h <;> first
+    | contradiction
+    | (try simp only [List.cons.injEq, GenTree.leaf.injEq, Pos.encode_eq_iff, and_true,
+        Option.some.injEq, Prod.mk.injEq, $ls,*] at h ⊢)))
 
+set_option hygiene false in
+/-- `inj_cases` for the Go types. -/
+local macro "inj_ty " b:ident : tactic => `(tactic| inj_cases $b:ident [
+    go.type.Named.injEq, go.type.ArrayType.injEq, go.type.StructType.injEq,
+    go.type.PointerType.injEq, go.type.FunctionType.injEq, go.type.InterfaceType.injEq,
+    go.type.SliceType.injEq, go.type.MapType.injEq, go.type.ChannelType.injEq,
+    go.type.UntypedType.injEq, go.field_decl.FieldDecl.injEq, go.field_decl.EmbeddedField.injEq,
+    go.signature.Signature.injEq, go.interface_elem.MethodElem.injEq,
+    go.interface_elem.TypeElem.injEq, go.type_term.TypeTerm.injEq,
+    go.type_term.TypeTermUnderlying.injEq])
 
 namespace go
 
@@ -64,48 +85,53 @@ def terms_toTree : List type_term → GenTree
   | t :: ts => node 1 [t.toTree, terms_toTree ts]
 end
 
-attribute [local simp] type.toTree chan_dir.toTree field_decl.toTree signature.toTree
-  interface_elem.toTree type_term.toTree types_toTree fields_toTree elems_toTree terms_toTree
-  GenTree.node.injEq GenTree.leaf.injEq List.cons.injEq Pos.encode_eq_iff
-
 mutual
 theorem type.toTree_inj : ∀ {a b : type}, a.toTree = b.toTree → a = b
-  | .Named n a, b, h => by inj_cases b; exact ⟨h.1, types_toTree_inj h.2⟩
-  | .ArrayType n t, b, h => by inj_cases b; exact ⟨h.1, type.toTree_inj h.2⟩
-  | .StructType fs, b, h => by inj_cases b; exact fields_toTree_inj h
-  | .PointerType t, b, h => by inj_cases b; exact type.toTree_inj h
-  | .FunctionType s, b, h => by inj_cases b; exact signature.toTree_inj h
-  | .InterfaceType es, b, h => by inj_cases b; exact elems_toTree_inj h
-  | .SliceType t, b, h => by inj_cases b; exact type.toTree_inj h
-  | .MapType k v, b, h => by inj_cases b; exact ⟨type.toTree_inj h.1, type.toTree_inj h.2⟩
-  | .ChannelType d t, b, h => by inj_cases b; exact ⟨chan_dir.toTree_inj h.1, type.toTree_inj h.2⟩
-  | .UntypedType n, b, h => by inj_cases b; exact h
+  | .Named n a, b, h => by inj_ty b; exact ⟨h.1, types_toTree_inj h.2⟩
+  | .ArrayType n t, b, h => by inj_ty b; exact ⟨h.1, type.toTree_inj h.2⟩
+  | .StructType fs, b, h => by inj_ty b; exact fields_toTree_inj h
+  | .PointerType t, b, h => by inj_ty b; exact type.toTree_inj h
+  | .FunctionType s, b, h => by inj_ty b; exact signature.toTree_inj h
+  | .InterfaceType es, b, h => by inj_ty b; exact elems_toTree_inj h
+  | .SliceType t, b, h => by inj_ty b; exact type.toTree_inj h
+  | .MapType k v, b, h => by inj_ty b; exact ⟨type.toTree_inj h.1, type.toTree_inj h.2⟩
+  | .ChannelType d t, b, h => by inj_ty b; exact ⟨chan_dir.toTree_inj h.1, type.toTree_inj h.2⟩
+  | .UntypedType n, b, h => by inj_ty b; exact h
+termination_by structural a _ _ => a
 theorem chan_dir.toTree_inj : ∀ {a b : chan_dir}, a.toTree = b.toTree → a = b
-  | a, b, h => by cases a <;> cases b <;> simp at h ⊢
+  | a, b, h => by cases a <;> cases b <;> first | rfl | (injection h with h0 h; contradiction)
 theorem field_decl.toTree_inj : ∀ {a b : field_decl}, a.toTree = b.toTree → a = b
-  | .FieldDecl n t, b, h => by inj_cases b; exact ⟨h.1, type.toTree_inj h.2⟩
-  | .EmbeddedField n t, b, h => by inj_cases b; exact ⟨h.1, type.toTree_inj h.2⟩
+  | .FieldDecl n t, b, h => by inj_ty b; exact ⟨h.1, type.toTree_inj h.2⟩
+  | .EmbeddedField n t, b, h => by inj_ty b; exact ⟨h.1, type.toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem signature.toTree_inj : ∀ {a b : signature}, a.toTree = b.toTree → a = b
   | .Signature ps v rs, b, h => by
-    inj_cases b; exact ⟨types_toTree_inj h.1, h.2.1, types_toTree_inj h.2.2⟩
+    inj_ty b; exact ⟨types_toTree_inj h.1, h.2.1, types_toTree_inj h.2.2⟩
+termination_by structural a _ _ => a
 theorem interface_elem.toTree_inj : ∀ {a b : interface_elem}, a.toTree = b.toTree → a = b
-  | .MethodElem n s, b, h => by inj_cases b; exact ⟨h.1, signature.toTree_inj h.2⟩
-  | .TypeElem ts, b, h => by inj_cases b; exact terms_toTree_inj h
+  | .MethodElem n s, b, h => by inj_ty b; exact ⟨h.1, signature.toTree_inj h.2⟩
+  | .TypeElem ts, b, h => by inj_ty b; exact terms_toTree_inj h
+termination_by structural a _ _ => a
 theorem type_term.toTree_inj : ∀ {a b : type_term}, a.toTree = b.toTree → a = b
-  | .TypeTerm t, b, h => by inj_cases b; exact type.toTree_inj h
-  | .TypeTermUnderlying t, b, h => by inj_cases b; exact type.toTree_inj h
+  | .TypeTerm t, b, h => by inj_ty b; exact type.toTree_inj h
+  | .TypeTermUnderlying t, b, h => by inj_ty b; exact type.toTree_inj h
+termination_by structural a _ _ => a
 theorem types_toTree_inj : ∀ {a b : List type}, types_toTree a = types_toTree b → a = b
-  | [], b, h => by inj_cases b
-  | t :: ts, b, h => by inj_cases b; exact ⟨type.toTree_inj h.1, types_toTree_inj h.2⟩
+  | [], b, h => by inj_ty b
+  | t :: ts, b, h => by inj_ty b; exact ⟨type.toTree_inj h.1, types_toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem fields_toTree_inj : ∀ {a b : List field_decl}, fields_toTree a = fields_toTree b → a = b
-  | [], b, h => by inj_cases b
-  | t :: ts, b, h => by inj_cases b; exact ⟨field_decl.toTree_inj h.1, fields_toTree_inj h.2⟩
+  | [], b, h => by inj_ty b
+  | t :: ts, b, h => by inj_ty b; exact ⟨field_decl.toTree_inj h.1, fields_toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem elems_toTree_inj : ∀ {a b : List interface_elem}, elems_toTree a = elems_toTree b → a = b
-  | [], b, h => by inj_cases b
-  | t :: ts, b, h => by inj_cases b; exact ⟨interface_elem.toTree_inj h.1, elems_toTree_inj h.2⟩
+  | [], b, h => by inj_ty b
+  | t :: ts, b, h => by inj_ty b; exact ⟨interface_elem.toTree_inj h.1, elems_toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem terms_toTree_inj : ∀ {a b : List type_term}, terms_toTree a = terms_toTree b → a = b
-  | [], b, h => by inj_cases b
-  | t :: ts, b, h => by inj_cases b; exact ⟨type_term.toTree_inj h.1, terms_toTree_inj h.2⟩
+  | [], b, h => by inj_ty b
+  | t :: ts, b, h => by inj_ty b; exact ⟨type_term.toTree_inj h.1, terms_toTree_inj h.2⟩
+termination_by structural a _ _ => a
 end
 
 instance type.countable : Pos.Countable type := countableOfTree type.toTree type.toTree_inj
@@ -345,6 +371,21 @@ instance go_instruction.countable : Pos.Countable go_instruction :=
 section goose_syntax
 variable [ffi_syntax]
 
+set_option hygiene false in
+/-- `inj_cases` for GooseLang syntax. -/
+local macro "inj_ex " b:ident : tactic => `(tactic| inj_cases $b:ident [
+    expr.Val.injEq, expr.Var.injEq, expr.Rec.injEq, expr.App.injEq, expr.If.injEq,
+    expr.Pair.injEq, expr.Fst.injEq, expr.Snd.injEq, expr.Fork.injEq, expr.Primitive0.injEq,
+    expr.Primitive1.injEq, expr.Primitive2.injEq, expr.CmpXchg.injEq, expr.ExternalOp.injEq,
+    expr.ResolveProph.injEq, expr.LiteralValue.injEq, expr.SelectStmtClauses.injEq,
+    val.LitV.injEq, val.RecV.injEq, val.PairV.injEq, val.InjLV.injEq, val.InjRV.injEq,
+    val.ExtV.injEq, val.GoInstruction.injEq, val.ArrayV.injEq, val.InterfaceV.injEq,
+    val.LiteralValueV.injEq, val.SelectStmtClausesV.injEq,
+    keyed_element.KeyedElement.injEq, key.KeyField.injEq, key.KeyInteger.injEq,
+    key.KeyExpression.injEq, key.KeyLiteralValue.injEq, element.ElementExpression.injEq,
+    element.ElementLiteralValue.injEq, comm_clause.CommClause.injEq, comm_case.SendCase.injEq,
+    comm_case.RecvCase.injEq])
+
 mutual
 def expr.toTree : expr → GenTree
   | .Val v => node 0 [v.toTree]
@@ -415,88 +456,101 @@ def tyval_toTree : go.type × val → GenTree
   | (t, v) => node 0 [of t, v.toTree]
 end
 
-attribute [local simp] expr.toTree val.toTree keyed_element.toTree key.toTree element.toTree
-  comm_clause.toTree comm_case.toTree kes_toTree clauses_toTree vals_toTree optexpr_toTree
-  optkey_toTree optiface_toTree tyval_toTree
-
 mutual
 theorem expr.toTree_inj : ∀ {a b : expr}, a.toTree = b.toTree → a = b
-  | .Val _, b, h => by inj_cases b; exact val.toTree_inj h
-  | .Var _, b, h => by inj_cases b; exact h
-  | .Rec .., b, h => by inj_cases b; exact ⟨h.1, h.2.1, expr.toTree_inj h.2.2⟩
-  | .App .., b, h => by inj_cases b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2⟩
+  | .Val _, b, h => by inj_ex b; exact val.toTree_inj h
+  | .Var _, b, h => by inj_ex b; exact h
+  | .Rec .., b, h => by inj_ex b; exact ⟨h.1, h.2.1, expr.toTree_inj h.2.2⟩
+  | .App .., b, h => by inj_ex b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2⟩
   | .If .., b, h => by
-    inj_cases b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
-  | .Pair .., b, h => by inj_cases b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2⟩
-  | .Fst _, b, h => by inj_cases b; exact expr.toTree_inj h
-  | .Snd _, b, h => by inj_cases b; exact expr.toTree_inj h
-  | .Fork _, b, h => by inj_cases b; exact expr.toTree_inj h
-  | .Primitive0 _, b, h => by inj_cases b; exact h
-  | .Primitive1 .., b, h => by inj_cases b; exact ⟨h.1, expr.toTree_inj h.2⟩
+    inj_ex b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
+  | .Pair .., b, h => by inj_ex b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2⟩
+  | .Fst _, b, h => by inj_ex b; exact expr.toTree_inj h
+  | .Snd _, b, h => by inj_ex b; exact expr.toTree_inj h
+  | .Fork _, b, h => by inj_ex b; exact expr.toTree_inj h
+  | .Primitive0 _, b, h => by inj_ex b; exact h
+  | .Primitive1 .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
   | .Primitive2 .., b, h => by
-    inj_cases b; exact ⟨h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
+    inj_ex b; exact ⟨h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
   | .CmpXchg .., b, h => by
-    inj_cases b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
-  | .ExternalOp .., b, h => by inj_cases b; exact ⟨h.1, expr.toTree_inj h.2⟩
-  | .NewProph, b, h => by inj_cases b
-  | .ResolveProph .., b, h => by inj_cases b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2⟩
-  | .LiteralValue _, b, h => by inj_cases b; exact kes_toTree_inj h
+    inj_ex b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
+  | .ExternalOp .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
+  | .NewProph, b, h => by inj_ex b
+  | .ResolveProph .., b, h => by inj_ex b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2⟩
+  | .LiteralValue _, b, h => by inj_ex b; exact kes_toTree_inj h
   | .SelectStmtClauses .., b, h => by
-    inj_cases b; exact ⟨optexpr_toTree_inj h.1, clauses_toTree_inj h.2⟩
+    inj_ex b; exact ⟨optexpr_toTree_inj h.1, clauses_toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem val.toTree_inj : ∀ {a b : val}, a.toTree = b.toTree → a = b
-  | .LitV _, b, h => by inj_cases b; exact h
-  | .RecV .., b, h => by inj_cases b; exact ⟨h.1, h.2.1, expr.toTree_inj h.2.2⟩
-  | .PairV .., b, h => by inj_cases b; exact ⟨val.toTree_inj h.1, val.toTree_inj h.2⟩
-  | .InjLV _, b, h => by inj_cases b; exact val.toTree_inj h
-  | .InjRV _, b, h => by inj_cases b; exact val.toTree_inj h
-  | .ExtV _, b, h => by inj_cases b; exact h
-  | .GoInstruction _, b, h => by inj_cases b; exact h
-  | .ArrayV _, b, h => by inj_cases b; exact vals_toTree_inj h
-  | .InterfaceV _, b, h => by inj_cases b; exact optiface_toTree_inj h
-  | .LiteralValueV _, b, h => by inj_cases b; exact kes_toTree_inj h
+  | .LitV _, b, h => by inj_ex b; exact h
+  | .RecV .., b, h => by inj_ex b; exact ⟨h.1, h.2.1, expr.toTree_inj h.2.2⟩
+  | .PairV .., b, h => by inj_ex b; exact ⟨val.toTree_inj h.1, val.toTree_inj h.2⟩
+  | .InjLV _, b, h => by inj_ex b; exact val.toTree_inj h
+  | .InjRV _, b, h => by inj_ex b; exact val.toTree_inj h
+  | .ExtV _, b, h => by inj_ex b; exact h
+  | .GoInstruction _, b, h => by inj_ex b; exact h
+  | .ArrayV _, b, h => by inj_ex b; exact vals_toTree_inj h
+  | .InterfaceV _, b, h => by inj_ex b; exact optiface_toTree_inj h
+  | .LiteralValueV _, b, h => by inj_ex b; exact kes_toTree_inj h
   | .SelectStmtClausesV .., b, h => by
-    inj_cases b; exact ⟨optexpr_toTree_inj h.1, clauses_toTree_inj h.2⟩
-  | .UntypedNil, b, h => by inj_cases b
+    inj_ex b; exact ⟨optexpr_toTree_inj h.1, clauses_toTree_inj h.2⟩
+  | .UntypedNil, b, h => by inj_ex b
+termination_by structural a _ _ => a
 theorem keyed_element.toTree_inj : ∀ {a b : keyed_element}, a.toTree = b.toTree → a = b
   | .KeyedElement .., b, h => by
-    inj_cases b; exact ⟨optkey_toTree_inj h.1, element.toTree_inj h.2⟩
+    inj_ex b; exact ⟨optkey_toTree_inj h.1, element.toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem key.toTree_inj : ∀ {a b : key}, a.toTree = b.toTree → a = b
-  | .KeyField _, b, h => by inj_cases b; exact h
-  | .KeyInteger _, b, h => by inj_cases b; exact h
-  | .KeyExpression .., b, h => by inj_cases b; exact ⟨h.1, expr.toTree_inj h.2⟩
-  | .KeyLiteralValue _, b, h => by inj_cases b; exact kes_toTree_inj h
+  | .KeyField _, b, h => by inj_ex b; exact h
+  | .KeyInteger _, b, h => by inj_ex b; exact h
+  | .KeyExpression .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
+  | .KeyLiteralValue _, b, h => by inj_ex b; exact kes_toTree_inj h
+termination_by structural a _ _ => a
 theorem element.toTree_inj : ∀ {a b : element}, a.toTree = b.toTree → a = b
-  | .ElementExpression .., b, h => by inj_cases b; exact ⟨h.1, expr.toTree_inj h.2⟩
-  | .ElementLiteralValue _, b, h => by inj_cases b; exact kes_toTree_inj h
+  | .ElementExpression .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
+  | .ElementLiteralValue _, b, h => by inj_ex b; exact kes_toTree_inj h
+termination_by structural a _ _ => a
 theorem comm_clause.toTree_inj : ∀ {a b : comm_clause}, a.toTree = b.toTree → a = b
   | .CommClause .., b, h => by
-    inj_cases b; exact ⟨comm_case.toTree_inj h.1, expr.toTree_inj h.2⟩
+    inj_ex b; exact ⟨comm_case.toTree_inj h.1, expr.toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem comm_case.toTree_inj : ∀ {a b : comm_case}, a.toTree = b.toTree → a = b
   | .SendCase .., b, h => by
-    inj_cases b; exact ⟨h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
-  | .RecvCase .., b, h => by inj_cases b; exact ⟨h.1, expr.toTree_inj h.2⟩
+    inj_ex b; exact ⟨h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
+  | .RecvCase .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem kes_toTree_inj : ∀ {a b : List keyed_element}, kes_toTree a = kes_toTree b → a = b
-  | [], b, h => by inj_cases b
-  | _ :: _, b, h => by inj_cases b; exact ⟨keyed_element.toTree_inj h.1, kes_toTree_inj h.2⟩
+  | [], b, h => by inj_ex b
+  | _ :: _, b, h => by inj_ex b; exact ⟨keyed_element.toTree_inj h.1, kes_toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem clauses_toTree_inj : ∀ {a b : List comm_clause}, clauses_toTree a = clauses_toTree b → a = b
-  | [], b, h => by inj_cases b
-  | _ :: _, b, h => by inj_cases b; exact ⟨comm_clause.toTree_inj h.1, clauses_toTree_inj h.2⟩
+  | [], b, h => by inj_ex b
+  | _ :: _, b, h => by inj_ex b; exact ⟨comm_clause.toTree_inj h.1, clauses_toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem vals_toTree_inj : ∀ {a b : List val}, vals_toTree a = vals_toTree b → a = b
-  | [], b, h => by inj_cases b
-  | _ :: _, b, h => by inj_cases b; exact ⟨val.toTree_inj h.1, vals_toTree_inj h.2⟩
+  | [], b, h => by inj_ex b
+  | _ :: _, b, h => by inj_ex b; exact ⟨val.toTree_inj h.1, vals_toTree_inj h.2⟩
+termination_by structural a _ _ => a
 theorem optexpr_toTree_inj : ∀ {a b : Option expr}, optexpr_toTree a = optexpr_toTree b → a = b
-  | none, b, h => by inj_cases b
-  | some _, b, h => by inj_cases b; exact expr.toTree_inj h
+  | none, b, h => by inj_ex b
+  | some _, b, h => by inj_ex b; exact expr.toTree_inj h
+termination_by structural a _ _ => a
 theorem optkey_toTree_inj : ∀ {a b : Option key}, optkey_toTree a = optkey_toTree b → a = b
-  | none, b, h => by inj_cases b
-  | some _, b, h => by inj_cases b; exact key.toTree_inj h
+  | none, b, h => by inj_ex b
+  | some _, b, h => by inj_ex b; exact key.toTree_inj h
+termination_by structural a _ _ => a
 theorem optiface_toTree_inj : ∀ {a b : Option (go.type × val)},
     optiface_toTree a = optiface_toTree b → a = b
-  | none, b, h => by inj_cases b
-  | some _, b, h => by inj_cases b; exact tyval_toTree_inj h
+  | none, b, h => by inj_ex b
+  | some _, b, h => by inj_ex b; exact tyval_toTree_inj h
+termination_by structural a _ _ => a
 theorem tyval_toTree_inj : ∀ {a b : go.type × val}, tyval_toTree a = tyval_toTree b → a = b
   | (_, _), (_, _), h => by
-    simp at h; simp only [Prod.mk.injEq]; exact ⟨h.1, val.toTree_inj h.2⟩
+    injection h with _ h
+    simp only [List.cons.injEq, GenTree.leaf.injEq, Pos.encode_eq_iff, and_true,
+      Prod.mk.injEq] at h ⊢
+    exact ⟨h.1, val.toTree_inj h.2⟩
+termination_by structural a _ _ => a
 end
 
 instance expr.countable : Pos.Countable expr := countableOfTree expr.toTree expr.toTree_inj

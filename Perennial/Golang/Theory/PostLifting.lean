@@ -18,6 +18,8 @@ Differences from Rocq:
   `l ↦□ v` (discarded), scoped to `Perennial`.
 -/
 import Perennial.Golang.Theory.ProofMode
+import Perennial.Golang.Theory.Display
+import Perennial.Golang.Defn.Pre
 import Perennial.Helpers.NamedProps
 import Perennial.Experiments.Glob
 import Perennial.IrisLib.DFractional
@@ -25,6 +27,27 @@ import Perennial.IrisLib.DFractional
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
+
+/-! ## `PureWp` for calls of Go function values
+
+(The last of the basic `PureWp` instances of `ProofMode.lean`, here because it needs
+`go.PreSemantics`.) -/
+
+section instances
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+instance wp_call_go_func (v2 : val) (f x : binder) (e : expr) :
+    PureWp (G := G) (L := L) True (App (Val #(func.mk f x e)) (Val v2))
+      (subst' x v2 (subst' f #(func.mk f x e) e)) := by
+  have h : (#(func.mk f x e) : val) = RecV f x e := by
+    rw [go.into_val_unfold func.t]
+  rw [h]
+  exact pure_exec_pure_wp (pure_beta f x e v2)
+
+end instances
 
 /-! ## Underlying-type instances -/
 
@@ -685,6 +708,17 @@ macro "solve_typed_pointsto_agree" : tactic => `(tactic| (
           subst Heq)
   ipureintro; first | rfl | trivial))
 
+section tactics
+open Lean Qq Iris.ProofMode
 
+/-- All hypotheses of `hyps`: `(name, ivar, p, ty)`. (A helper of the tactics of
+`Mem.lean`, `Pkg.lean` and `Auto.lean`.) -/
+def hypsList {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
+    ∀ {e}, Hyps bi e → List (Name × IVarId × Q(Bool) × Q($prop))
+  | _, .emp _ => []
+  | _, .hyp _ name ivar p ty _ => [(name, ivar, p, ty)]
+  | _, .sep _ _ _ _ lhs rhs => hypsList rhs ++ hypsList lhs
+
+end tactics
 
 end Perennial

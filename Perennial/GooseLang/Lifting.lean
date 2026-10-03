@@ -39,7 +39,6 @@ import Perennial.Algebra.NaHeap
 import Perennial.GooseLang.Lang
 import Perennial.GooseLang.BoundedLang
 import Perennial.GooseLang.Receipts
-import Perennial.GooseLang.Countable
 
 noncomputable section
 

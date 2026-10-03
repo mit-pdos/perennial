@@ -9,7 +9,7 @@ mode's Rocq-style typeclass search (which can instantiate metavariables), the
 analogue of Rocq's `Hint Mode Access + ! ! - -`. The last two parameters are
 `outParam`s (Rocq: `-`).
 -/
-import Perennial.Golang.Theory.Predeclared
+import Perennial.Golang.Theory.PostLifting
 
 namespace Perennial
 
@@ -223,12 +223,7 @@ def isGoInstrApp? (e : Expr) (instr : Name) : MetaM (Option (Expr × Expr)) := d
   let some argv ← isGooseVal? arg | return none
   return some (i, argv)
 
-/-- All hypotheses of `hyps`: `(name, ivar, p, ty)`. -/
-def hypsList {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
-    ∀ {e}, Hyps bi e → List (Name × IVarId × Q(Bool) × Q($prop))
-  | _, .emp _ => []
-  | _, .hyp _ name ivar p ty _ => [(name, ivar, p, ty)]
-  | _, .sep _ _ _ _ lhs rhs => hypsList rhs ++ hypsList lhs
+-- `hypsList` (all hypotheses of an Iris context) is in `PostLifting.lean`.
 
 /-- The hypotheses of `hyps` (as `hypsList`), with those that are a typed
 points-to at exactly the address `l` first: these are tried first by

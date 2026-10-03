@@ -12,6 +12,7 @@ import Perennial.Golang.Theory.Exception
 import Perennial.Golang.Theory.Loop
 import Perennial.Golang.Theory.Assume
 import Perennial.Golang.Theory.Pkg
+import Perennial.Golang.Theory.TacticsSimp
 import Perennial.Golang.Theory.Auto
 import Perennial.Golang.Theory.Defer
 import Perennial.Golang.Theory.Array

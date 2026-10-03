@@ -27,6 +27,7 @@ Differences from the Rocq version:
 -/
 import Iris.ProgramLogic.Adequacy
 import Perennial.GooseLang.Lifting
+import Perennial.GooseLang.Countable
 
 noncomputable section
 

@@ -11,6 +11,7 @@ Differences from Rocq:
 * New: `wp_map_len` (Rocq has no spec for `len` of a map), at any type whose
   underlying type is a map (see `len_map` in `Perennial/Golang/Defn/Map.lean`).
 -/
+import Perennial.Golang.Theory.TacticsSimp
 import Perennial.Golang.Theory.Auto
 import Perennial.Golang.Theory.Array
 import Perennial.Golang.Defn.Map

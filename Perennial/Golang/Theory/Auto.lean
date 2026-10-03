@@ -42,7 +42,10 @@ Differences from Rocq:
 * `wp_alloc_auto` (not `wp_auto`) also does anonymous allocations.
 -/
 import Perennial.Golang.Theory.Pkg
-import Perennial.Golang.Theory.TacticsSimp
+import Perennial.Golang.Theory.Loop
+import Perennial.Golang.Theory.Assume
+import Perennial.Golang.Theory.Mem
+import Perennial.Golang.Theory.Predeclared
 
 namespace Perennial
 

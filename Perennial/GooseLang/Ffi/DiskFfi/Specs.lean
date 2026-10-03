@@ -16,6 +16,7 @@ Differences from the Rocq version:
 -/
 import Iris.BI.Lib.GenHeap
 import Perennial.GooseLang.Lifting
+import Perennial.GooseLang.Countable
 import Perennial.GooseLang.Ffi.DiskFfi.Impl
 import Perennial.GooseLang.Ffi.GenHeap
 

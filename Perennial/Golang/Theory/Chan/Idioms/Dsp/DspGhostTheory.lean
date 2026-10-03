@@ -251,6 +251,14 @@ attribute [local instance] internalEq.ne_l internalEq.ne_r
 private instance idfun_ne {α : Type _} [OFE α] : NonExpansive (fun x : α => x) := ⟨fun _ _ _ h => h⟩
 variable {GF : BundledGFunctors} {V : Type}
 
+/-- Rocq `MsgTele`: `m` is (equal to) the telescopic message `∃.. x, MSG tv x {{ tP x }}; tp x`.
+The telescope `TT` and `tv`, `tP`, `tp` are `outParam`s (Rocq: `Hint Mode MsgTele ! ! - ! - - -`),
+computed from `m` by the instances `msg_tele_base` and `msg_tele_exist`. -/
+class MsgTele {TT : outParam Iris.Std.Tele} (m : iMsg GF V) (tv : outParam (TT -t> V))
+    (tP : outParam (TT -t> IProp GF)) (tp : outParam (TT -t> iProto GF V)) : Prop where
+  msg_tele : m = iMsg_texist fun x =>
+    iMsg_base (Iris.Std.Tele.app tv x) (Iris.Std.Tele.app tP x) (Iris.Std.Tele.app tp x)
+
 theorem iMsg_ext {m1 m2 : iMsg GF V} (h : ∀ v p, m1.car v p ⊣⊢ m2.car v p) : m1 = m2 := by
   obtain ⟨m1⟩ := m1; obtain ⟨m2⟩ := m2
   congr; funext v; apply Hom.ext; funext p; exact BI.equiv_iff.mpr (h v p)
@@ -1219,14 +1227,6 @@ theorem iMsg_texist_exist {TT : Iris.Std.Tele} (w : V) (lp : Later (iProto GF V)
     show (iMsg_exist fun x => iMsg_texist fun xs => m (.cons x xs)).car w lp ⊣⊢ _
     rw [iMsg_exist_car]
     exact exists_congr fun x => ih x _
-
-/-- Rocq `MsgTele`: `m` is (equal to) the telescopic message `∃.. x, MSG tv x {{ tP x }}; tp x`.
-The telescope `TT` and `tv`, `tP`, `tp` are `outParam`s (Rocq: `Hint Mode MsgTele ! ! - ! - - -`),
-computed from `m` by the instances `msg_tele_base` and `msg_tele_exist`. -/
-class MsgTele {TT : outParam Iris.Std.Tele} (m : iMsg GF V) (tv : outParam (TT -t> V))
-    (tP : outParam (TT -t> IProp GF)) (tp : outParam (TT -t> iProto GF V)) : Prop where
-  msg_tele : m = iMsg_texist fun x =>
-    iMsg_base (Iris.Std.Tele.app tv x) (Iris.Std.Tele.app tP x) (Iris.Std.Tele.app tp x)
 
 universe u in
 /-- `ULift.up v` as a telescopic function on the empty telescope. Its type is syntactically

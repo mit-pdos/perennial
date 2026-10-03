@@ -3,7 +3,7 @@ Port of `new/golang/theory/exception.v`: `PureWp` instances for the exception
 monad (`do:`, `return:`, `;;;`, `exception_do`), so that `wp_pures` steps
 through function bodies.
 -/
-import Perennial.Golang.Theory.Mem
+import Perennial.Golang.Theory.PostLifting
 
 namespace Perennial
 

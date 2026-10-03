@@ -23,11 +23,12 @@ iris-lean's `Iris/HeapLang/ProofMode.lean`.
   `heapGS`). Stuckness `s` plays the role of Rocq's `stk`.
 -/
 import Perennial.GooseLang.Lifting
+import Perennial.GooseLang.Countable
 import Perennial.Golang.Theory.SimpAttr
+import Perennial.Golang.Theory.SubstSimp
 import Perennial.Golang.Theory.TacticsSimpAttr
-import Perennial.Golang.Theory.Display
 import Perennial.Golang.Theory.IrisTactics
-import Perennial.Golang.Defn.Pre
+import Perennial.GooseLang.Notation
 import Iris.ProofMode
 
 namespace Perennial
@@ -137,15 +138,8 @@ instance pure_wp_SelectStmtClauses (d : Option expr) (cs : List comm_clause) :
     PureWp (G := G) (L := L) True (SelectStmtClauses d cs) (Val (SelectStmtClausesV d cs)) :=
   pure_exec_pure_wp (pure_select_stmt_clauses d cs)
 
-variable [GoSemanticsFunctions] [go.PreSemantics]
-
-instance wp_call_go_func (v2 : val) (f x : binder) (e : expr) :
-    PureWp (G := G) (L := L) True (App (Val #(func.mk f x e)) (Val v2))
-      (subst' x v2 (subst' f #(func.mk f x e) e)) := by
-  have h : (#(func.mk f x e) : val) = RecV f x e := by
-    rw [go.into_val_unfold func.t]
-  rw [h]
-  exact pure_exec_pure_wp (pure_beta f x e v2)
+-- `wp_call_go_func` (which needs `go.PreSemantics`, `Golang/Defn/Pre.lean`) is at the start of
+-- `PostLifting.lean`, so that this file does not wait for `Golang/Defn`.
 
 end instances
 
@@ -224,8 +218,7 @@ variable [ext : ffi_syntax]
 @[goose_wp_simp] theorem subst'_BNamed (x : String) (v : val) (e : expr) :
     subst' (BNamed x) v e = subst x v e := rfl
 
-attribute [goose_wp_simp] subst subst_opt subst_keyed_elements subst_keyed_element subst_opt_key
-  subst_element subst_comm_clauses subst_comm_clause
+-- The equations of `subst` are in `goose_wp_simp` too (`SubstSimp.lean`).
 
 end simp_lemmas
 
@@ -1816,7 +1809,7 @@ where
       | Perennial.expr.App _ a b => do
         let a' ← whnfR a
         let isSeq := match_expr a' with
-          | Perennial.expr.Val _ c => c.getAppFn.isConstOf ``exception_seq
+          | Perennial.expr.Val _ c => c.getAppFn.isConstOf `Perennial.exception_seq
           | _ => false
         let isRec := a'.isAppOf ``Perennial.expr.Rec
         let na ← if isRec then wrapRec cache a else go cache a
@@ -1936,7 +1929,19 @@ def laterModality {u} (prop : Q(Type u)) (bi : Q(BI $prop)) : MetaM Q(Modality $
 
 initialize laterCache : IO.Ref (Std.HashMap Expr Bool) ← IO.mkRef {}
 
-/-- Does some hypothesis mention `▷`? (Cached per hypothesis type and per context.) -/
+/-- May `IntoLaterN` strip a later from (a part of) `ty`? A syntactic over-approximation:
+`ty` has a `▷` or `▷^[n]` that is not below a wand or an implication. (No
+`IntoLaterN` instance looks below `-∗`/`→`, so a `▷` there, as in a Löb induction hypothesis
+whose own `▷` has been stripped or in a Texan-triple specification `∀ Φ, P -∗ ▷ (Q -∗ Φ) -∗
+WP ...`, does not trigger the `IntoLaterN` search over all hypotheses on every step.) -/
+def strippableLater (ty : Expr) : Bool :=
+  (ty.findExt? fun s =>
+    if s.isAppOf ``BIBase.later || s.isAppOf ``BIBase.laterN then .found
+    else if s.isAppOf ``BIBase.wand || s.isAppOf ``BIBase.imp then .done
+    else .visit).isSome
+
+/-- Does some hypothesis have a later that `IntoLaterN` may strip (`strippableLater`)?
+(Cached per hypothesis type and per context.) -/
 partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) :
     MetaM Bool := do
   match hyps with
@@ -1952,12 +1957,12 @@ partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : 
   | .hyp _ _ _ _ ty _ =>
     let ty ← instantiateMVars ty
     if let some b := (← laterCache.get)[ty]? then return b
-    let b := (ty.find? fun s => s.isConstOf ``BIBase.later || s.isConstOf ``BIBase.laterN).isSome
+    let b := strippableLater ty
     laterCache.modify fun c => (if c.size > 100000 then {} else c).insert ty b
     return b
 
 /-- Introduce a `▷` in front of the hypotheses: `hyps ⊢ ▷ hyps'`, stripping laters
-from the hypotheses (Rocq `MaybeIntoLaterNEnvs`). When no hypothesis mentions `▷`,
+from the hypotheses (Rocq `MaybeIntoLaterNEnvs`). When no hypothesis has a strippable `▷`,
 this is `later_intro` (`hyps' = hyps`), avoiding a typeclass search per
 hypothesis on every step. -/
 def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}

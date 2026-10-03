@@ -16,7 +16,7 @@ Port of `new/golang/theory/pkg.v`: package initialization.
   intuitionistic context), `iPkgInit` (solve `is_pkg_init` goals and conjuncts
   at the front of the goal).
 -/
-import Perennial.Golang.Theory.Assume
+import Perennial.Golang.Theory.PostLifting
 import Perennial.Golang.Defn.Pkg
 import Perennial.Algebra.BigOp
 

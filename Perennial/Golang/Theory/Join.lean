@@ -59,6 +59,7 @@ rest of the function is symbolically executed once.
 Examples: below, `docs/TutorialExamples.lean`, `wp_WaitGroup__Add` in
 `Perennial/Proof/sync_proof/waitgroup.lean`.
 -/
+import Perennial.Golang.Theory.TacticsSimp
 import Perennial.Golang.Theory.Auto
 
 namespace Perennial

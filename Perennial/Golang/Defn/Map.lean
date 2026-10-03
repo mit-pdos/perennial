@@ -22,7 +22,6 @@ Lean deviation from Rocq: `len_map` takes `[t ↓u go.MapType key_type elem_type
 -/
 import Perennial.Golang.Defn.Loop
 import Perennial.Golang.Defn.Predeclared
-import Perennial.Golang.Defn.Slice
 
 namespace Perennial
 

@@ -2,7 +2,7 @@
 Port of `new/golang/theory/assume.v`: specs for `assume` and the overflow
 assumptions built on it.
 -/
-import Perennial.Golang.Theory.Loop
+import Perennial.Golang.Theory.PostLifting
 import Perennial.Golang.Defn.Assume
 import Perennial.Std.Word.Automation
 import Perennial.Std.Word.MulOverflow

@@ -6,6 +6,7 @@ splitting/combining slices, and specs for the slice built-ins (`len`, `cap`,
 -/
 import Perennial.Golang.Theory.Array
 import Perennial.Golang.Theory.Loop
+import Perennial.Golang.Theory.TacticsSimp
 import Perennial.Golang.Theory.Auto
 import Perennial.Golang.Theory.Assume
 import Perennial.Golang.Defn.Slice
