@@ -1,6 +1,24 @@
 /-
 Port of `new/proof/github_com/tchajed/marshal.v`: specs for the stateless
 `github.com/tchajed/marshal` encoding helpers.
+
+Statement changes vs Rocq (Rocq's `wp_reserve` is `Admitted` and false as
+stated; these are worth reporting upstream):
+* `wp_reserve`: new hypothesis `Hbound : length vs + uint.Z extra ≤ 2^62`.
+  Without it the spec is false: `reserve` grows to
+  `new_cap = max(2 * cap b, len b + extra)` and `make3` panics when
+  `new_cap ≥ 2^63` (e.g. `cap b = 2^62`, `len b + extra = 2^62 + 1`).
+  The bound is tight: for `extra ≥ 1` and any `len b + extra` in
+  `(2^62, 2^64)` there is a capacity (`len b + extra - 1` or `len b`) that
+  makes `make3` panic. (If `len b + extra` overflows,
+  `SumAssumeNoOverflow` diverges, which is safe.)
+* `wp_WriteInt` / `wp_WriteInt32` / `wp_WriteLenPrefixedBytes`: new
+  hypothesis `length vs + 8 ≤ 2^62` (`+ 4` for `WriteInt32`), inherited from
+  `wp_reserve` (tight for the same reason). `wp_WriteBytes` and
+  `wp_WriteBool` use `append` and are unchanged.
+* `wp_compute_new_cap`: postcondition strengthened with
+  `⌜new_cap = min_cap ∨ new_cap = old_cap * W64 2⌝` (needed to bound the
+  capacity passed to `make3`).
 -/
 import Perennial.Proof.github_com.goose_lang.std
 import Perennial.Proof.github_com.goose_lang.primitive
@@ -257,25 +275,56 @@ theorem wp_ReadBool (s : slice.t) (q : DFrac) (bit : w8) (tail : List w8) :
 theorem wp_compute_new_cap (old_cap min_cap : w64) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.tchajed.marshal }}
       (App (App (Val (@! compute_new_cap)) (Val #old_cap)) (Val #min_cap))
-    {{ (new_cap : w64), RET #new_cap; ⌜uint.Z min_cap ≤ uint.Z new_cap⌝ }} := by
+    {{ (new_cap : w64), RET #new_cap; ⌜uint.Z min_cap ≤ uint.Z new_cap⌝ ∗
+        ⌜new_cap = min_cap ∨ new_cap = old_cap * W64 2⌝ }} := by
   wp_start
   wp_auto
   wp_if_destruct
-  · iapply HΦ; ipureintro; omega
-  · iapply HΦ; ipureintro; simp only [uint.Z] at *; omega
+  · iapply HΦ; ipureintro; exact ⟨by omega, .inl rfl⟩
+  · iapply HΦ; ipureintro; exact ⟨by simp only [uint.Z] at *; omega, .inr rfl⟩
 
-theorem wp_reserve (s : slice.t) (extra : w64) (vs : List w8) :
+theorem wp_reserve (s : slice.t) (extra : w64) (vs : List w8)
+    (Hbound : (vs.length : Int) + uint.Z extra ≤ 2 ^ 62) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         own_slice_cap w8 s (DFrac.own 1) }}
       (App (App (Val (@! reserve)) (Val #s)) (Val #extra))
     {{ (s' : slice.t), RET #s';
         ⌜uint.Z extra ≤ uint.Z s'.cap - uint.Z s'.len⌝ ∗
         s' ↦* vs ∗ own_slice_cap w8 s' (DFrac.own 1) }} := by
-  -- Rocq: Admitted. As stated this is not provable: if the new capacity computed
-  -- by `compute_new_cap` is at least 2^63, `make3` panics.
-  sorry -- Rocq: Admitted
+  wp_start as ⟨Hs, Hcap⟩
+  ihave %Hsz := own_slice_len _ _ _ $$ Hs
+  ihave %Hcapwf := own_slice_cap_wf _ _ $$ Hcap
+  ihave #Hstd : is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std $$ []
+  · iPkgInit
+  wp_auto
+  wp_apply github_com.goose_lang.std.wp_SumAssumeNoOverflow s.len extra as %Hsum
+  wp_if_destruct
+  · wp_apply wp_compute_new_cap s.cap (s.len + extra) as %new_cap ⟨%Hnc, %Hnc'⟩
+    have hlen : 0 ≤ sint.Z s.len ∧ sint.Z s.len ≤ sint.Z new_cap := by
+      have := Hsz.1
+      refine ⟨Hcapwf.1, ?_⟩
+      rcases Hnc' with h | h <;> subst h <;> word
+    wp_apply wp_slice_make3 (V := w8) s.len new_cap hlen as %sl ⟨Hsl, Hslcap, %Hslc⟩
+    ihave %Hsllen := own_slice_len _ _ _ $$ Hsl
+    ihave %Hslwf := own_slice_cap_wf _ _ $$ Hslcap
+    wp_apply wp_slice_copy (V := w8) (t := go.byte) sl _ s vs (DFrac.own 1) $$ [$Hsl $Hs]
+      as %n ⟨%Hn, Hsl, Hs⟩
+    iapply HΦ
+    rw [List.length_replicate, ← Hsz.1, List.take_length,
+      List.drop_eq_nil_of_le (by simp), List.append_nil]
+    iframe Hsl Hslcap
+    ipureintro
+    simp only [List.length_replicate] at Hsllen
+    subst Hslc
+    have := Hsz.1
+    word
+  · iapply HΦ
+    iframe Hs Hcap
+    ipureintro
+    word
 
-theorem wp_WriteInt (s : slice.t) (x : w64) (vs : List w8) :
+theorem wp_WriteInt (s : slice.t) (x : w64) (vs : List w8)
+    (Hbound : (vs.length : Int) + 8 ≤ 2 ^ 62) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         own_slice_cap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteInt)) (Val #s)) (Val #x))
@@ -284,7 +333,7 @@ theorem wp_WriteInt (s : slice.t) (x : w64) (vs : List w8) :
   ihave #Hbin : is_pkg_init (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
   wp_auto
-  wp_apply wp_reserve s (W64 8) vs $$ [$Hs $Hcap] as %s2 ⟨%Hroom, Hs, Hcap⟩
+  wp_apply wp_reserve s (W64 8) vs Hbound $$ [$Hs $Hcap] as %s2 ⟨%Hroom, Hs, Hcap⟩
   ihave %Hsz := own_slice_len _ _ _ $$ Hs
   ihave %Hcapwf := own_slice_cap_wf _ _ $$ Hcap
   have hr := room8 _ _ Hroom Hcapwf
@@ -320,7 +369,8 @@ theorem wp_WriteInt (s : slice.t) (x : w64) (vs : List w8) :
   rw [List.append_nil]
   iexact Hput
 
-theorem wp_WriteInt32 (s : slice.t) (x : w32) (vs : List w8) :
+theorem wp_WriteInt32 (s : slice.t) (x : w32) (vs : List w8)
+    (Hbound : (vs.length : Int) + 4 ≤ 2 ^ 62) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         own_slice_cap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteInt32)) (Val #s)) (Val #x))
@@ -329,7 +379,7 @@ theorem wp_WriteInt32 (s : slice.t) (x : w32) (vs : List w8) :
   ihave #Hbin : is_pkg_init (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
   wp_auto
-  wp_apply wp_reserve s (W64 4) vs $$ [$Hs $Hcap] as %s2 ⟨%Hroom, Hs, Hcap⟩
+  wp_apply wp_reserve s (W64 4) vs Hbound $$ [$Hs $Hcap] as %s2 ⟨%Hroom, Hs, Hcap⟩
   ihave %Hsz := own_slice_len _ _ _ $$ Hs
   ihave %Hcapwf := own_slice_cap_wf _ _ $$ Hcap
   have hr := room4 _ _ Hroom Hcapwf
@@ -379,7 +429,7 @@ theorem wp_WriteBytes (s : slice.t) (vs : List w8) (data_sl : slice.t) (q : DFra
   iframe
 
 theorem wp_WriteLenPrefixedBytes (s : slice.t) (vs : List w8) (data_sl : slice.t) (q : DFrac)
-    (data : List w8) :
+    (data : List w8) (Hbound : (vs.length : Int) + 8 ≤ 2 ^ 62) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         data_sl ↦*{q} data ∗ own_slice_cap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteLenPrefixedBytes)) (Val #s)) (Val #data_sl))
@@ -389,7 +439,7 @@ theorem wp_WriteLenPrefixedBytes (s : slice.t) (vs : List w8) (data_sl : slice.t
   wp_start as ⟨Hs, Hdata, Hscap⟩
   ihave %Hdlen := own_slice_len _ _ _ $$ Hdata
   wp_auto
-  wp_apply wp_WriteInt s data_sl.len vs $$ [$Hs $Hscap] as %s' ⟨Hs', Hscap⟩
+  wp_apply wp_WriteInt s data_sl.len vs Hbound $$ [$Hs $Hscap] as %s' ⟨Hs', Hscap⟩
   wp_apply wp_WriteBytes s' _ data_sl q data $$ [$Hs' $Hdata $Hscap] as %s'0 ⟨Hs, Hscap, Hdata⟩
   iapply HΦ
   have : W64 (data.length : Int) = data_sl.len := by
