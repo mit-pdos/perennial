@@ -161,6 +161,34 @@ theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List ectx_
     Δ ⊢ WP (fill K e') @ s; E {{ Φ }} :=
   H.trans (wp_bind (fill K))
 
+/-- The postcondition of `e` in `WP (fill K e) {{ Φ }}` (`wp_nestedPost`): the
+evaluation context `K` is moved into the postcondition, one `WP` per item. Used
+by `wp_auto`/`wp_pures` to work on a redex deep inside an evaluation context
+(e.g. in the field-by-field load of a wide struct) in constant time per step. -/
+def wpNestedPost (s : Stuckness) (E : CoPset) (K : List ectx_item) (Φ : val → IProp GF) :
+    val → IProp GF :=
+  match K with
+  | [] => Φ
+  | Ki :: K' => fun v => WP (fill_item Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}
+
+theorem wp_nestedPost {s : Stuckness} {E : CoPset} {K : List ectx_item} {e : expr}
+    {Φ : val → IProp GF} :
+    WP (fill K e) @ s; E {{ Φ }} ⊣⊢ WP e @ s; E {{ wpNestedPost s E K Φ }} := by
+  induction K generalizing e with
+  | nil => exact .rfl
+  | cons Ki K ih =>
+    refine (ih (e := fill_item Ki e)).trans ⟨?_, ?_⟩
+    · exact wp_bind_inv (fill [Ki]) (e := e)
+    · exact wp_bind (fill [Ki]) (e := e)
+
+theorem tac_wp_focus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List ectx_item} {e : expr}
+    {Φ : val → IProp GF} (h : Δ ⊢ WP e @ s; E {{ wpNestedPost s E K Φ }}) :
+    Δ ⊢ WP (fill K e) @ s; E {{ Φ }} := h.trans wp_nestedPost.2
+
+theorem tac_wp_unfocus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List ectx_item} {e : expr}
+    {Φ : val → IProp GF} (h : Δ ⊢ WP (fill K e) @ s; E {{ Φ }}) :
+    Δ ⊢ WP e @ s; E {{ wpNestedPost s E K Φ }} := h.trans wp_nestedPost.1
+
 theorem tac_wp_value {Δ : IProp GF} {s : Stuckness} {E : CoPset} {v : val} {Φ : val → IProp GF}
     (H : Δ ⊢ |={E}=> Φ v) : Δ ⊢ WP (Val v) @ s; E {{ Φ }} :=
   H.trans (wp_value_fupd (e := Val v) ⟨rfl⟩).2
@@ -484,11 +512,54 @@ private partial def binderNames : Expr → List Name
   | .forallE n _ b _ => n :: binderNames b
   | _ => []
 
+/-- Names of context arguments (`GooseWpGoal.ctxArgs`, `PROP`) that `mkAppNamed`
+ignores for constants that do not take them. -/
+def ctxArgNames : List String := ["hlc", "GF", "ι", "PROP"]
+
+/-- `mkAppNamed c args` when `args` gives every argument of `c` except
+instance-implicit ones (which are synthesized): the application is built
+directly, without unification. Only binder types with metavariables (e.g.
+universe levels) are unified with the types of the given arguments; the kernel
+checks the final proof. `none` if some argument is missing. -/
+def mkAppNamedDirect? (c : Name) (args : List (String × Expr)) (partialApp := false) :
+    MetaM (Option Expr) := do
+  let info ← getConstInfo c
+  let us ← info.levelParams.mapM fun _ => mkFreshLevelMVar
+  let mut ty ← instantiateTypeLevelParams info.toConstantVal us
+  let mut out := #[]
+  let args := args.map fun (n, v) => (if n.startsWith "!" then (n.drop 1).toString else n, v)
+  repeat
+    let .forallE n d b bi := ty | break
+    let given := args.lookup n.toString
+    -- (`partialApp`: the remaining explicit arguments are left out)
+    if given.isNone && partialApp && bi == .default then break
+    let v ← match given with
+      | some v =>
+        if d.hasMVar then
+          unless ← isDefEq d (← inferType v) do
+            throwError "mkAppNamed: type mismatch for argument {n} of {c}"
+        pure v
+      | none =>
+        unless bi == .instImplicit do return none
+        synthInstance (← instantiateMVars d)
+    out := out.push v
+    -- metavariables of `d` (e.g. the universe level of `PROP`) were assigned:
+    -- instantiate them in the rest of the type
+    let b ← if d.hasMVar then instantiateMVars b else pure b
+    ty := b.instantiate1 v
+  let us ← us.mapM instantiateLevelMVars
+  if us.any (·.hasMVar) then return none
+  return some (mkAppN (mkConst c us) out)
+
 /-- Apply constant `c` to the arguments named in `args` (by binder name); all
 other arguments are inferred by unification, and remaining instance-implicit
 arguments are synthesized. Types of the given arguments are checked with
-`isDefEq`. -/
+`isDefEq`, except when `args` gives all the arguments that are not
+instance-implicit: then the application is built directly (`mkAppNamedDirect?`),
+which avoids unifying (and traversing) the large types of the arguments, and the
+kernel checks it. -/
 def mkAppNamed (c : Name) (args : List (String × Expr)) : MetaM Expr := do
+  if let some r ← mkAppNamedDirect? c args then return r
   let info ← getConstInfo c
   let us ← info.levelParams.mapM fun _ => mkFreshLevelMVar
   let ty ← instantiateTypeLevelParams info.toConstantVal us
@@ -498,15 +569,22 @@ def mkAppNamed (c : Name) (args : List (String × Expr)) : MetaM Expr := do
   -- kernel checks the final proof); they are assigned last
   let (unchecked, checked) := args.partition (·.1.startsWith "!")
   for (n, v) in checked do
-    let some i := names.idxOf? (Name.mkSimple n) | throwError "mkAppNamed: {c} has no argument {n}"
+    let some i := names.idxOf? (Name.mkSimple n)
+      | if ctxArgNames.contains n then continue
+        throwError "mkAppNamed: {c} has no argument {n}"
     let mv := mvs[i]!
     let mvTy ← instantiateMVars (← inferType mv)
     let vTy ← inferType v
     unless ← isDefEq mvTy vTy do
       throwError "mkAppNamed: type mismatch for argument {n} of {c}:{indentExpr vTy}\n\
         expected{indentExpr mvTy}"
-    unless ← isDefEq mv v do
-      throwError "mkAppNamed: could not assign argument {n} of {c}"
+    -- an argument not yet determined by unification is assigned directly: `isDefEq`
+    -- would traverse the (possibly large) value to check the assignment
+    if ← mv.mvarId!.isAssigned then
+      unless ← isDefEq mv v do
+        throwError "mkAppNamed: could not assign argument {n} of {c}"
+    else
+      mv.mvarId!.assign v
   for i in [:mvs.size] do
     if bis[i]! == .instImplicit then
       let mv := mvs[i]!
@@ -584,6 +662,26 @@ initialize needsHeadsCache : IO.Ref (Option (Option NameSet)) ← IO.mkRef none
 initialize needsCache : IO.Ref (Std.HashMap Expr Bool) ← IO.mkRef {}
 initialize needsConstCache : IO.Ref (Std.HashMap Name Bool) ← IO.mkRef {}
 
+/-- Results of `synthPureWp`, per thread (declarations are elaborated in parallel)
+and cleared by every WP tactic (`withNoSorry`). The keys contain the local
+instances, so that a result never mentions free variables of another context. -/
+initialize pureWpCache :
+    IO.Ref (Std.HashMap UInt64 (Std.HashMap Expr (Option (Expr × Expr × Expr)))) ← IO.mkRef {}
+
+def pureWpCacheFind? (key : Expr) : BaseIO (Option (Option (Expr × Expr × Expr))) := do
+  let tid ← IO.getTID
+  return (← pureWpCache.get)[tid]? >>= (·[key]?)
+
+def pureWpCacheInsert (key : Expr) (r : Option (Expr × Expr × Expr)) : BaseIO Unit := do
+  let tid ← IO.getTID
+  pureWpCache.modify fun m =>
+    let c := m.getD tid {}
+    m.insert tid ((if c.size > 10000 then {} else c).insert key r)
+
+def pureWpCacheClear : BaseIO Unit := do
+  let tid ← IO.getTID
+  pureWpCache.modify (·.erase tid)
+
 /-- Clear the caches of `needsGooseSimp`. -/
 def clearNeedsCaches : BaseIO Unit := do
   needsHeadsCache.set none; needsCache.set {}; needsConstCache.set {}
@@ -594,6 +692,7 @@ it produces contains a (synthetic) `sorry` that was not already in the goal.
 All GooseLang WP tactics run under this guard, so that e.g. an ill-typed lemma
 given to `wp_apply` is an error rather than a silently admitted goal. -/
 def withNoSorry {α} (tacName : Name) (k : TacticM α) : TacticM α := do
+  pureWpCacheClear
   let mvar ← getMainGoal
   let hadSorry := (← instantiateMVars (← mvar.getType)).hasSyntheticSorry
   let r ← Term.withoutErrToSorry <| withoutRecover k
@@ -608,6 +707,13 @@ def runTacticGooseWp {α} (tacName : Name)
     (k : MVarId → IrisGoal → GooseWpGoal → ProofModeM α) : TacticM α :=
   withNoSorry tacName <| ProofModeM.runTactic tacName fun mvar g => do
     clearNeedsCaches
+    -- the goal of the proof mode typically mentions assigned (universe level)
+    -- metavariables; instantiated here once, so that the hypotheses and the terms
+    -- built by the tactics do not contain them (otherwise every `instantiateMVars`
+    -- of the growing context traverses it)
+    let g ← match parseIrisGoal? (← instantiateMVars (← mvar.getType)) with
+      | some g' => pure g'
+      | none => pure g
     let some wp ← parseGooseWp? g.goal
       | throwIPMError "the goal {g.goal} is not a GooseLang WP"
     k mvar g wp
@@ -839,8 +945,9 @@ def gooseSimpHeads : MetaM (Option NameSet) := do
 subterm is headed by a constant that a `goose_wp_simp` rule rewrites, a
 matcher/recursor, a projection of a constructor, a `let`, or a beta-redex), so
 that the (expensive) simp call over the whole expression is skipped when it
-would do nothing. -/
-def needsGooseSimp (e : Expr) : MetaM Bool := do
+would do nothing. The subterms `known` are known to be in normal form (e.g. the
+subterms of the WP expression that a step only moves around) and are skipped. -/
+def needsGooseSimp (e : Expr) (known : Array Expr := #[]) : MetaM Bool := do
   let heads? ← match ← needsHeadsCache.get with
     | some h => pure h
     | none => do let h ← gooseSimpHeads; needsHeadsCache.set (some h); pure h
@@ -886,6 +993,7 @@ def needsGooseSimp (e : Expr) : MetaM Bool := do
       | _ => return false
     | _ => return false
   let rec go (s : Expr) : MetaM Bool := do
+    if known.contains s then return false
     if let some b := (← needsCache.get)[s]? then return b
     let b ← do
       if ← localNeeds s then pure true
@@ -910,6 +1018,17 @@ def gooseGSArgs (ι : Expr) : MetaM (Array Expr) := do
   let a := ι.getAppArgs
   return #[a[0]!, a[1]!, a[2]!, a[5]!, a[6]!, a[3]!, a[4]!, a[7]!, a[8]!]
 
+/-- The context arguments `hlc`, `GF`, `ι` of the tactic lemmas about the WP of `wp`. -/
+def GooseWpGoal.ctxArgs (wp : GooseWpGoal) : MetaM (List (String × Expr)) := do
+  let gs ← gooseGSArgs wp.ι
+  return [("hlc", gs[5]!), ("GF", gs[6]!), ("ι", wp.ι)]
+
+/-- `mkAppNamed` with the context arguments of `wp` (`GooseWpGoal.ctxArgs`), so
+that the application can be built without unification (`mkAppNamedDirect?`). -/
+def GooseWpGoal.mkAppNamed (wp : GooseWpGoal) (c : Name) (args : List (String × Expr)) :
+    MetaM Expr := do
+  Perennial.mkAppNamed c ((← wp.ctxArgs) ++ args)
+
 /-- Is the goal's expression a value `Val v` (with no opaque outer context)? -/
 def GooseWpGoal.isVal? (g : GooseWpGoal) : MetaM (Option Expr) := do
   if g.tail.isSome then return none
@@ -933,15 +1052,219 @@ structure PureStep where
   e2 : Expr
   inst : Expr
 
-/-- Find a `PureWp` instance for `e1`. -/
-def synthPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+/-- The `PureWp` instance of a step that only rearranges `e1`: `Rec f x e`
+(`wp_recc`), a beta-redex `App (Val (RecV f x e)) (Val v)` (`wp_call`) and a pair
+of values (`wp_pair`), built
+directly instead of by typeclass search: unifying the instance with `e1` assigns
+the (possibly large) body `e` to a metavariable, which costs a traversal of `e`
+at every step. Returns the same as `synthPureWp`. -/
+def directPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+  unless gs.size == 9 do return none
+  let ext := gs[0]!
+  let e ← whnfR (← instantiateMVars e1)
+  let val (v : Expr) := mkApp2 (mkConst ``Perennial.expr.Val) ext v
+  match_expr e with
+  | Perennial.expr.Rec _ f x body =>
+    return some (mkConst ``True, val (mkApp4 (mkConst ``Perennial.val.RecV) ext f x body),
+      mkAppN (mkConst ``wp_recc) (gs ++ #[f, x, body]))
+  | Perennial.expr.App _ a b =>
+    let some fv ← isGooseVal? a | return none
+    let some v2 ← isGooseVal? b | return none
+    let fv ← whnfR fv
+    let_expr Perennial.val.RecV _ f x body := fv | return none
+    let recv := mkApp4 (mkConst ``Perennial.val.RecV) ext f x body
+    let s1 := mkApp4 (mkConst ``Perennial.subst') ext f recv body
+    return some (mkConst ``True, mkApp4 (mkConst ``Perennial.subst') ext x v2 s1,
+      mkAppN (mkConst ``wp_call) (gs ++ #[v2, f, x, body]))
+  | Perennial.expr.Pair _ a b =>
+    let some v1 ← isGooseVal? a | return none
+    let some v2 ← isGooseVal? b | return none
+    return some (mkConst ``True, val (mkApp3 (mkConst ``Perennial.val.PairV) ext v1 v2),
+      mkAppN (mkConst ``wp_pair) (gs ++ #[v1, v2]))
+  | _ => return none
+
+/-- Is `e` an application of a constructor of `go.type` (e.g. a struct type with its
+field list)? Such subterms are treated as atoms by the keys of `synthPureWp`. -/
+def isGoTypeApp (e : Expr) : Bool :=
+  match e.getAppFn with
+  | .const n _ => n.getPrefix == ``Perennial.go.type
+  | _ => false
+
+/-- Is `e` small (at most `n` nodes, counting shared subterms repeatedly, and the
+payloads `x` of values `#x` as one node when `modPayloads`)? Takes `O(n)`. -/
+def exprSmall (e : Expr) (n : Nat) (modPayloads := false) : Bool :=
+  (go n e).isSome
+where
+  go : Nat → Expr → Option Nat
+    | 0, _ => none
+    | fuel + 1, e@(.app f a) =>
+      if modPayloads && (e.isAppOfArity ``GoGlobalContext.into_val 4 || isGoTypeApp e) then
+        go fuel f
+      else do let fuel ← go fuel f; go fuel a
+    | fuel + 1, .mdata _ b => go fuel b
+    | fuel + 1, .lam _ t b _ | fuel + 1, .forallE _ t b _ => do let fuel ← go fuel t; go fuel b
+    | fuel + 1, _ => some fuel
+
+/-- Is `V` a type whose Go values are matched generically by the `PureWp`
+instances, so that the payload `x` of a value `#x` of type `V` can be abstracted
+in the key of a search (`synthPureWp`)? Machine words (`BitVec n`) and the struct
+types generated by goose: no instance matches on a particular word or struct.
+(Not locations, slices, maps, ...: e.g. the comparison of a map with `#map.nil`
+has its own instance.) -/
+def genericPayloadType (V : Expr) : MetaM Bool := do
+  let V ← whnfR V
+  if V.isAppOfArity ``BitVec 1 then return true
+  -- the struct types generated by goose (fields `f'`): Go structs are not compared
+  -- with constants (unlike pointers, slices, maps, ... with `nil`)
+  let .const n _ := V.getAppFn | return false
+  let env ← getEnv
+  let some info := getStructureInfo? env n | return false
+  return !info.fieldNames.isEmpty && info.fieldNames.all fun f =>
+    match f with
+    | .str _ s => s.endsWith "'"
+    | _ => false
+
+/-- If `e` is `StructFieldRef t f` applied to a value: the instruction `StructFieldRef t f`
+and `f` (the instances are generic in the field name `f`, so that it can be
+abstracted in the key of the search, see `synthPureWp`). -/
+def fieldRefName? (e : Expr) : MetaM (Option (Expr × Expr)) := do
+  let e ← whnfR e
+  let_expr Perennial.expr.App _ fe _ := e | return none
+  let some fv ← isGooseVal? fe | return none
+  let fv ← whnfR fv
+  let_expr Perennial.val.GoInstruction _ i := fv | return none
+  let i' ← whnfR i
+  unless i'.isAppOf ``go_instruction.StructFieldRef && i'.getAppNumArgs ≥ 2 do return none
+  return some (i, i'.appArg!)
+
+/-- The values `#x` in `e` (below applications) whose payload `x` has a generic type
+(`genericPayloadType`), as `(V, x)`, and for each value `#x` (in the order of
+`replaceGenericPayloads`) whether it is one of them. -/
+def genericPayloads (e : Expr) : MetaM (Array (Expr × Expr) × Array Bool) := do
+  let mut acc : Array (Expr × Expr) := #[]
+  let mut flags : Array Bool := #[]
+  for s in collectIntoVals e #[] do
+    let x := s.getArg! 3
+    let g ← if x.hasLooseBVars then pure false else genericPayloadType (s.getArg! 2)
+    flags := flags.push g
+    if g then acc := acc.push (s.getArg! 2, x)
+  return (acc, flags)
+where
+  collectIntoVals (e : Expr) (acc : Array Expr) : Array Expr :=
+    if e.isAppOfArity ``GoGlobalContext.into_val 4 then acc.push e
+    else if isGoTypeApp e then acc
+    else match e with
+      | .app f a => collectIntoVals a (collectIntoVals f acc)
+      | .mdata _ b => collectIntoVals b acc
+      | _ => acc
+
+/-- Replace the payloads found by `genericPayloads e` (`isGeneric`, in the same
+order) by `ys`. -/
+def replaceGenericPayloads (e : Expr) (isGeneric : Array Bool) (ys : Array Expr) : Expr :=
+  (go e 0 0).1
+where
+  -- returns the new expression, the index of the next `#x` and of the next `y`
+  go (e : Expr) (i j : Nat) : Expr × Nat × Nat :=
+    if e.isAppOfArity ``GoGlobalContext.into_val 4 then
+      if isGeneric[i]?.getD false then
+        (mkApp e.appFn! ys[j]!, i + 1, j + 1)
+      else (e, i + 1, j)
+    else if isGoTypeApp e then (e, i, j)
+    else match e with
+      | .app f a =>
+        let (f', i, j) := go f i j
+        let (a', i, j) := go a i j
+        (mkApp f' a', i, j)
+      | .mdata d b => let (b', i, j) := go b i j; (.mdata d b', i, j)
+      | _ => (e, i, j)
+
+/-- The free variables of `e` that are neither let-bound nor local instances
+(sorted by declaration order), or `none` if `e` mentions a let-bound variable. -/
+def pureWpKeyVars (e : Expr) : MetaM (Option (Array Expr)) := do
+  let lctx ← getLCtx
+  let insts := (← getLocalInstances).map (·.fvar)
+  let mut ds := #[]
+  for fv in (collectFVars {} e).fvarIds do
+    let some d := lctx.find? fv | return none
+    if d.isLet then return none
+    unless insts.contains (mkFVar fv) do ds := ds.push d
+  return some ((ds.qsort (·.index < ·.index)).map (·.toExpr))
+
+/-- The `PureWp` search for `e1` (no shortcut, no cache). -/
+def synthPureWpCore (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
   let φ ← mkFreshExprMVar (mkSort .zero)
   let e2 ← mkFreshExprMVar (mkApp (mkConst ``Perennial.expr) gs[0]!)
   let ty ← mkAppOptM ``PureWp (gs.map some ++ #[some φ, some e1, some e2])
   let some inst ← synthInstance? ty | return none
   let ty ← instantiateMVars ty
   let args := ty.getAppArgs
-  return some (args[gs.size]!, args[gs.size + 2]!, inst)
+  return some (args[gs.size]!, args[gs.size + 2]!, ← instantiateMVars inst)
+
+/-- Find a `PureWp` instance for `e1`: the structural steps are built directly
+(`directPureWp`); for a small redex, the search is done once per *shape* (within
+one tactic call, `pureWpCache`): the redex with its free variables (other than
+local instances), the payloads of its machine-word and struct values
+(`genericPayloadType`) and the field name of a `StructFieldRef` abstracted, so
+that e.g. all the steps `#x +⟨go.uint64⟩ #(W64 1)` of a function, or all the field
+references of a struct, share one search; a failed generic search is final. A
+redex without such payloads is cached up to its free variables. -/
+def synthPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+  if let some r ← directPureWp gs e1 then return some r
+  let e1 ← instantiateMVars e1
+  -- (only small redexes: the key is built at every step)
+  if e1.hasMVar.or !(exprSmall e1 400 (modPayloads := true)) then return ← synthPureWpCore gs e1
+  -- (the local instances are part of the key: the results may mention them)
+  let insts := (← getLocalInstances).map (·.fvar)
+  let mkKey (k : Expr) : MetaM Expr := pure (mkAppN k insts)
+  let inst3 (r : Option (Expr × Expr × Expr)) (args : Array Expr) :=
+    r.map fun (φ, e2, inst) => (φ.beta args, e2.beta args, inst.beta args)
+  let abs3 (params : Array Expr) :
+      Option (Expr × Expr × Expr) → MetaM (Option (Option (Expr × Expr × Expr)))
+    | none => pure (some none)
+    | some (φ, e2, inst) =>
+      if φ.hasMVar.or (e2.hasMVar.or inst.hasMVar) then pure none
+      else return some (some (← mkLambdaFVars params φ, ← mkLambdaFVars params e2,
+        ← mkLambdaFVars params inst))
+  -- the generic search, with the payloads abstracted
+  let (payloads, isGeneric) ← genericPayloads e1
+  -- (and the field name of a `StructFieldRef`)
+  let fieldRef? ← fieldRefName? e1
+  let payloads ← match fieldRef? with
+    | some (_, f) => pure (payloads.push (← inferType f, f))
+    | none => pure payloads
+  unless payloads.isEmpty do
+    let r? ← withLocalDeclsDND (payloads.map fun (V, _) => (`y, V)) fun ys => do
+      let e1' := replaceGenericPayloads e1 isGeneric ys
+      let e1' := match fieldRef? with
+        | some (i, f) =>
+          let i' := i.replace fun s => if s == f then some ys.back! else none
+          e1'.replace fun s => if s == i then some i' else none
+        | none => e1'
+      unless exprSmall e1' 400 do
+        return none
+      let some xs ← pureWpKeyVars e1' | return none
+      let xs := xs.filter (!ys.contains ·)
+      let params := ys ++ xs
+      let key ← mkKey (← mkLambdaFVars params e1')
+      if let some r ← pureWpCacheFind? key then
+        return some (r, xs)
+      let r ← synthPureWpCore gs e1'
+      let some ra ← abs3 params r | return none
+      pureWpCacheInsert key ra
+      return some (ra, xs)
+    -- (a failed generic search is final: the instances do not match on the
+    -- payloads that are abstracted, see `genericPayloadType`)
+    if let some (r, xs) := r? then
+      return inst3 r (payloads.map (·.2) ++ xs)
+  -- the concrete search (cached up to free variables)
+  unless exprSmall e1 400 do return ← synthPureWpCore gs e1
+  let some xs ← pureWpKeyVars e1 | return ← synthPureWpCore gs e1
+  let key ← mkKey (← mkLambdaFVars xs e1)
+  if let some r ← pureWpCacheFind? key then
+    return inst3 r xs
+  let r ← synthPureWpCore gs e1
+  if let some ra ← abs3 xs r then pureWpCacheInsert key ra
+  return r
 
 /-- Discharge the side condition `φ` of a pure step. `True` is solved
 immediately; otherwise iris-lean's side-condition solver is tried, and if it
@@ -1526,7 +1849,8 @@ def addBIGoalStripped {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
   if goal' == goal then return ← k goal
   let h ← k goal'
   let heq ← mkExpectedTypeHint (← mkEqRefl goal) (← mkEq goal goal')
-  mkAppNamed ``tac_goal_defeq [("Δ", ehyps), ("P", goal), ("Q", goal'), ("!h", h), ("!heq", heq)]
+  mkAppNamed ``tac_goal_defeq
+    [("PROP", prop), ("Δ", ehyps), ("P", goal), ("Q", goal'), ("!h", h), ("!heq", heq)]
 
 /-- Evaluate the `subst'`/`subst` applications at the head of `e`, with a proof
 (`none`: unchanged). `vals` collects the substituted values; `dirty` is set if
@@ -1584,13 +1908,14 @@ Substitutions are evaluated by `evalSubstsPf` (with a kernel-cheap proof). The
 `goose_wp_simp` simp set is then only run if it could change something: the
 expression of a WP goal is kept in `goose_wp_simp` normal form, so after a
 substitution only the substituted values need to be checked (`needsGooseSimp`). -/
-def simpReduct (ext : Expr) (K : List Expr) (e2 : Expr) : MetaM (Expr × Option Expr) := do
+def simpReduct (ext : Expr) (K : List Expr) (e2 : Expr) (known : Array Expr := #[]) :
+    MetaM (Expr × Option Expr) := do
   let vals ← IO.mkRef #[]
   let dirty ← IO.mkRef false
   let (e2s, p1?) ← evalSubstsPf ext vals dirty e2
   let vals ← vals.get
   let needs ← if !vals.isEmpty && !(← dirty.get) then vals.anyM needsGooseSimp
-    else needsGooseSimp e2s
+    else needsGooseSimp e2s known
   let (e2', p2?) ← if needs then gooseExprSimp e2s else pure (e2s, none)
   let p? ← match p1?, p2? with
     | none, none => pure none
@@ -1611,12 +1936,19 @@ def laterModality {u} (prop : Q(Type u)) (bi : Q(BI $prop)) : MetaM Q(Modality $
 
 initialize laterCache : IO.Ref (Std.HashMap Expr Bool) ← IO.mkRef {}
 
-/-- Does some hypothesis mention `▷`? (Cached per hypothesis type.) -/
+/-- Does some hypothesis mention `▷`? (Cached per hypothesis type and per context.) -/
 partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) :
     MetaM Bool := do
   match hyps with
   | .emp _ => return false
-  | .sep _ _ _ _ lhs rhs => return (← hypsHaveLater rhs) || (← hypsHaveLater lhs)
+  | .sep _ _ _ _ lhs rhs =>
+    -- (cached per context, so that a step that adds a hypothesis costs `O(1)`)
+    let e : Expr := e
+    if e.hasMVar then return (← hypsHaveLater rhs) || (← hypsHaveLater lhs)
+    if let some b := (← laterCache.get)[e]? then return b
+    let b := (← hypsHaveLater rhs) || (← hypsHaveLater lhs)
+    laterCache.modify fun c => (if c.size > 100000 then {} else c).insert e b
+    return b
   | .hyp _ _ _ _ ty _ =>
     let ty ← instantiateMVars ty
     if let some b := (← laterCache.get)[ty]? then return b
@@ -1626,15 +1958,28 @@ partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : 
 
 /-- Introduce a `▷` in front of the hypotheses: `hyps ⊢ ▷ hyps'`, stripping laters
 from the hypotheses (Rocq `MaybeIntoLaterNEnvs`). When no hypothesis mentions `▷`,
-this is `laterN_intro` (`hyps' = hyps`), avoiding a typeclass search per
+this is `later_intro` (`hyps' = hyps`), avoiding a typeclass search per
 hypothesis on every step. -/
 def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) : ProofModeM ((e' : Q($prop)) × Hyps bi e' × Expr) := do
   if ← hypsHaveLater hyps then
     let ⟨e', hyps', pf⟩ ← iModAction (prop1 := prop) (bi1 := bi) hyps (← laterModality prop bi)
     return ⟨e', hyps', pf⟩
-  let pf ← mkAppOptM ``laterN_intro #[some prop, some bi, some (mkNatLit 1), some ehyps]
+  -- (`▷` rather than `▷^[1]`, as in the tactic lemmas: no unfolding in the kernel)
+  let pf ← mkAppOptM ``BI.later_intro #[some prop, some bi, some ehyps]
   return ⟨ehyps, hyps, pf⟩
+
+/-- Is `e` an application of a `CompositeLiteral` instruction (possibly curried)? -/
+def isCompositeLitApp (e : Expr) : MetaM Bool := do
+  let mut e ← whnfR e
+  for _ in [0:4] do
+    let_expr Perennial.expr.App _ f _ := e | return false
+    if let some fv ← isGooseVal? f then
+      let fv ← whnfR fv
+      let_expr Perennial.val.GoInstruction _ i := fv | return false
+      return (← whnfR i).isAppOf ``go_instruction.CompositeLiteral
+    e ← whnfR f
+  return false
 
 /-- Find the pure step that `iWpPureStep` would take (the outermost redex with a
 `PureWp` instance satisfying `pred`) and solve its side condition. -/
@@ -1658,30 +2003,66 @@ def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
             let h ← whnfR h
             let_expr Perennial.expr.App _ f a := h | return false
             return (← valApp fuel a) && (← valApp fuel f)
-        unless ← valApp 8 hole do throwError "skip"
+        -- (only an application can be a redex with an application of values in
+        -- evaluation position, e.g. not `(#l, #x +⟨t⟩ #y)`; and an application
+        -- whose function is not a value or a curried application of values, e.g.
+        -- `(rec: ...) (f #v)`, is not one either)
+        let e1' ← whnfR e1
+        if e1'.isAppOfArity ``Perennial.expr.App 3 then
+          unless ← valApp 8 hole do throwError "skip"
+          unless ← valApp 8 (e1'.getArg! 1) do throwError "skip"
+        else
+          unless (← isGooseVal? hole).isSome do throwError "skip"
       let some (φ, e2, inst) ← synthPureWp gs e1 | throwError "no PureWp instance"
       -- `wp_pures`/`wp_auto` stop at slice composite literals (as in Rocq, where
       -- `go.composite_literal_slice` is not an instance): use `wp_slice_literal`
       if multi && !stepSliceLits then
-        if (← instantiateMVars inst).getUsedConstants.contains
-            `Perennial.go.SliceSemantics.composite_literal_slice then
-          throwError "slice literal"
+        -- (only composite literals: the instance of e.g. a beta step contains the
+        -- whole function body, which is not worth traversing)
+        if ← isCompositeLitApp e1 then
+          if (← instantiateMVars inst).getUsedConstants.contains
+              `Perennial.go.SliceSemantics.composite_literal_slice then
+            throwError "slice literal"
       return ({ K, e1, φ, e2, inst } : PureStep))
     | throwIPMError "could not find a head subexpression with a known next step"
   let hφ ← solvePureSideCondition st.φ failOnUnsolved
   return (st, hφ)
+
+/-- The subterms of the redex `e1` up to depth 3 (looking through reducible
+definitions such as `Let`): these are parts of the WP expression, hence in
+`goose_wp_simp` normal form, and a step that only moves them (e.g. `Rec` to
+`RecV`, or a beta step for an anonymous binder) need not re-check them. -/
+def redexParts (e1 : Expr) : MetaM (Array Expr) := do
+  let rec go : Nat → Expr → Array Expr → MetaM (Array Expr)
+    | 0, _, acc => pure acc
+    | d + 1, e, acc => do
+      let mut acc := acc
+      for a in (← whnfR e).getAppArgs do
+        acc ← go d a (acc.push a)
+      return acc
+  go 3 e1 #[]
 
 /-- Take the pure step `st` found by `iWpPureStepFind`. -/
 def iWpPureStepTake {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (st : PureStep) (hφ : Expr) (lc : Bool) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
   let ⟨ehyps', hyps', hlater⟩ ← iLaterIntro hyps
-  let (e', heq?) ← simpReduct wp.ext st.K (← instantiateMVars st.e2)
+  -- the subterms of the redex are in normal form (as parts of the WP expression)
+  let known ← redexParts st.e1
+  let (e', heq?) ← simpReduct wp.ext st.K (← instantiateMVars st.e2) known
   let heq ← wp.wrapEq e' heq?
   let Kq := wp.quoteK st.K
-  let k := fun (h : Expr) => mkAppNamed (if lc then ``tac_wp_pure_wp_lc' else ``tac_wp_pure_wp')
-    [("Hwp", st.inst), ("K", Kq), ("e1", st.e1), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ),
-     ("hφ", hφ), ("hlater", hlater), ("e'", wp.wrap e'), ("!heq", heq),
+  let gs ← gooseGSArgs wp.ι
+  if !lc && gs.size == 9 then
+    -- built directly (`tac_wp_pure_wp'` takes the 9 section variables of `gs` first)
+    let k := fun (h : Expr) => pure <| mkAppN (mkConst ``tac_wp_pure_wp')
+      (gs ++ #[st.φ, st.e1, st.e2, wp.wrap e', st.inst, Kq, ehyps, ehyps', wp.s, wp.E, wp.Φ,
+        hφ, hlater, heq, h])
+    return ⟨ehyps', hyps', e', k⟩
+  let k := fun (h : Expr) => wp.mkAppNamed (if lc then ``tac_wp_pure_wp_lc' else ``tac_wp_pure_wp')
+    [("Δ", ehyps), ("Δ'", ehyps'), ("e2", st.e2), ("e'", wp.wrap e'),
+     ("Hwp", st.inst), ("K", Kq), ("e1", st.e1), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ),
+     ("hφ", hφ), ("hlater", hlater), ("!heq", heq),
      (if lc then "h" else "!h", h)]
   return ⟨ehyps', hyps', e', k⟩
 
@@ -1705,7 +2086,7 @@ def iWpExprSimp (wp : GooseWpGoal) (Δ : Expr) : MetaM (Option (Expr × (Expr �
   let some _ := p? | return none
   if e' == wp.e then return none
   let heq ← wp.wrapEq e' p?
-  return some (e', fun h => mkAppNamed ``tac_wp_expr_simp
+  return some (e', fun h => wp.mkAppNamed ``tac_wp_expr_simp
     [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", wp.wrap wp.e), ("e'", wp.wrap e'),
      ("!h", h), ("!heq", heq)])
 
@@ -1751,7 +2132,7 @@ def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Expr) :
   let e' := wp.e.replace fun s => if s == c then some c' else none
   if e' == wp.e then return none
   let heq ← mkExpectedTypeHint (← mkEqRefl (wp.wrap wp.e)) (← mkEq (wp.wrap wp.e) (wp.wrap e'))
-  return some (e', fun h => mkAppNamed ``tac_wp_expr_simp
+  return some (e', fun h => wp.mkAppNamed ``tac_wp_expr_simp
     [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", wp.wrap wp.e), ("e'", wp.wrap e'),
      ("!h", h), ("!heq", heq)])
 
@@ -1762,8 +2143,112 @@ def iWpValue {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (k : Expr → ProofModeM Expr) : ProofModeM Expr := do
   let goal := (mkApp wp.Φ v).headBeta
   let pf ← k goal
-  mkAppNamed ``tac_wp_value_nofupd
+  wp.mkAppNamed ``tac_wp_value_nofupd
     [("Δ", ehyps), ("s", wp.s), ("E", wp.E), ("v", v), ("Φ", wp.Φ), ("!H", pf)]
+
+/-! ### Focusing on a redex deep inside an evaluation context
+
+When the redex of the WP expression is deep inside its evaluation context `K`
+(e.g. in the code that loads or stores a wide struct field by field), every step
+would cost `O(|K|)` (finding the redex, quoting `K`, and checking `fill K` in the
+kernel). `wp_auto`/`wp_pures` then *focus*: `WP (fill K e) {{ Φ }}` becomes
+`WP e {{ wpNestedPost K Φ }}` (`tac_wp_focus`), and when `e` becomes a value the
+innermost item of `K` is popped. A goal that is returned to the user is
+unfocused first (`tac_wp_unfocus`), so focusing is invisible. -/
+
+/-- The evaluation-context depth from which the tactics focus, and the number of
+items they keep around the redex. -/
+def focusTrigger : Nat := 6
+def focusMargin : Nat := 3
+
+/-- The evaluation-context path of `e` (items and holes, outermost first), if it
+is longer than `focusTrigger` (checked in `O(focusTrigger)` otherwise). -/
+def deepEctxPath? (e : Expr) : MetaM (Option (Array (Expr × Expr))) := do
+  let mut cur := e
+  let mut acc := #[]
+  for _ in [0:focusTrigger + 1] do
+    let some (Ki, h) ← extractEctxItem cur | return none
+    if (← isGooseVal? h).isSome then return none
+    acc := acc.push (Ki, h)
+    cur := h
+  repeat
+    let some (Ki, h) ← extractEctxItem cur | break
+    if (← isGooseVal? h).isSome then break
+    acc := acc.push (Ki, h)
+    cur := h
+  return some acc
+
+/-- Focus on the redex of `wp` if it is deep in its evaluation context: the new
+goal (expression and postcondition `wpNestedPost`), and a function turning a proof
+of it into a proof of the old one. -/
+def GooseWpGoal.focus? (wp : GooseWpGoal) (Δ : Expr) :
+    MetaM (Option (GooseWpGoal × (Expr → MetaM Expr))) := do
+  unless wp.tail.isNone do return none
+  let some path ← deepEctxPath? wp.e | return none
+  let cut := path.size - focusMargin
+  -- the items outside the focus, innermost first
+  let items := ((path.extract 0 cut).map (·.1)).reverse.toList
+  let e' := path[cut - 1]!.2
+  let Kq := quoteEctx wp.ext items
+  let some Φ' ← mkAppNamedDirect? ``wpNestedPost
+      ((← wp.ctxArgs) ++ [("s", wp.s), ("E", wp.E), ("K", Kq), ("Φ", wp.Φ)]) (partialApp := true)
+    | return none
+  return some ({ wp with e := e', Φ := Φ' }, fun h => wp.mkAppNamed ``tac_wp_focus
+    [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("K", Kq), ("e", e'), ("Φ", wp.Φ), ("!h", h)])
+
+/-- The arguments `(s, E, K, Φ)` of a postcondition `wpNestedPost s E K Φ`, and the
+partial application to the section variables. -/
+def nestedPostArgs? (Φ : Expr) : Option (Expr × Expr × Expr × Expr × Expr) :=
+  let Φ := Φ.consumeMData
+  if !Φ.getAppFn.isConstOf ``wpNestedPost then none else
+  let args := Φ.getAppArgs
+  let n := args.size
+  if n < 4 then none else
+  some (args[n-4]!, args[n-3]!, args[n-2]!, args[n-1]!, mkAppN Φ.getAppFn (args.extract 0 (n - 4)))
+
+/-- The goal `wpNestedPost s E K Φ v` (after the focused expression became the value
+`v`) with the innermost item `Ki` of `K = Ki :: K'` popped:
+`WP (fill_item Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}`, or `Φ v` (popped
+again if it is of this form) if `K = []` (definitionally equal). `none` if the goal is
+not of this form. -/
+partial def popNestedPost? (wp : GooseWpGoal) (goal : Expr) : MetaM (Option Expr) := do
+  let goal := goal.consumeMData
+  unless goal.isApp do return none
+  let some (s, E, K, Φ, head) := nestedPostArgs? goal.appFn! | return none
+  let v := goal.appArg!
+  let K' ← whnfR K
+  if K'.isAppOfArity ``List.nil 1 then
+    -- (`Φ` may again be a `wpNestedPost`, of an enclosing focus)
+    let g := (mkApp Φ v).headBeta
+    return some ((← popNestedPost? wp g).getD g)
+  unless K'.isAppOfArity ``List.cons 3 do return none
+  let e ← fillItemExpr (K'.getArg! 1) (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext v)
+  return some ({ wp with s, E, tail := none }.mk' e (mkAppN head #[s, E, K'.getArg! 2, Φ]))
+
+/-- A literal list of evaluation-context items. -/
+partial def ectxListLit? (K : Expr) : MetaM (Option (List Expr)) := do
+  let K ← whnfR K
+  if K.isAppOfArity ``List.nil 1 then return some []
+  unless K.isAppOfArity ``List.cons 3 do return none
+  let some t ← ectxListLit? (K.getArg! 2) | return none
+  return some (K.getArg! 1 :: t)
+
+/-- Undo `GooseWpGoal.focus?` (one level): `WP e {{ wpNestedPost K Φ }}` becomes
+`WP (fill K e) {{ Φ }}` with `fill K e` computed. -/
+def GooseWpGoal.unfocus? (wp : GooseWpGoal) (Δ : Expr) :
+    MetaM (Option (GooseWpGoal × (Expr → MetaM Expr))) := do
+  unless wp.tail.isNone do return none
+  let some (s, E, K, Φ, _) := nestedPostArgs? wp.Φ | return none
+  let some items ← ectxListLit? K | return none
+  let e' ← fillExpr items wp.e
+  return some ({ wp with e := e', Φ }, fun h => wp.mkAppNamed ``tac_wp_unfocus
+    [("Δ", Δ), ("s", s), ("E", E), ("K", K), ("e", wp.e), ("Φ", Φ), ("!h", h)])
+
+/-- Add the goal `hyps ⊢ WP e {{ Φ }}` of `wp`, unfocused (`GooseWpGoal.unfocus?`). -/
+partial def addWpGoal {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) : ProofModeM Expr := do
+  if let some (wp', k) ← wp.unfocus? ehyps then return ← k (← addWpGoal hyps wp')
+  addBIGoal hyps (wp.mk' wp.e wp.Φ)
 
 /-- Repeatedly take pure steps (`wp_pures`); steps whose side condition cannot
 be discharged automatically are not taken. When the expression becomes a value
@@ -1775,8 +2260,11 @@ partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)
       return ← k (← iWpPures hyps { wp with e := e' } (simpFirst := false))
   if let some v ← wp.isVal? then
     return ← iWpValue hyps wp v fun goal => do
+      let goal := (← popNestedPost? wp goal).getD goal
       if let some wp' ← parseGooseWp? goal then iWpPures hyps wp'
       else addBIGoal hyps goal
+  if let some (wp', k) ← wp.focus? ehyps then
+    return ← k (← iWpPures hyps wp' (simpFirst := false))
   let saved ← saveState
   -- only the search is allowed to fail; errors while taking the step (e.g. in
   -- `simp`) are reported
@@ -1789,10 +2277,10 @@ partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)
     -- do not loop on an expression that steps to itself (e.g. `rec: f <> := f #()`)
     if e' == wp.e then
       saved.restore
-      return ← addBIGoal hyps (wp.mk' wp.e wp.Φ)
+      return ← addWpGoal hyps wp
     let pf ← iWpPures hyps' { wp with e := e' } (simpFirst := false)
     k pf
-  | none => addBIGoal hyps (wp.mk' wp.e wp.Φ)
+  | none => addWpGoal hyps wp
 
 /-- Finish a goal `hyps ⊢ WP e {{ Φ }}`: if `e` is a value, replace the WP by
 `Φ v`; otherwise leave it. -/
@@ -1814,7 +2302,7 @@ def iWpBindCore (Δ : Expr) (wp : GooseWpGoal) (K : List Expr) (e' : Expr)
     let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext v)
     mkLambdaFVars #[v] (wp.mk' filled wp.Φ)
   let pf ← k ({ wp with tail := none }.mk' e' Φ')
-  mkAppNamed ``tac_wp_bind [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("K", wp.quoteK K),
+  wp.mkAppNamed ``tac_wp_bind [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("K", wp.quoteK K),
     ("e'", e'), ("Φ", wp.Φ), ("!H", pf)]
 
 /-- Rocq `wp_bind_next`: the evaluation context to bind for the "next"
@@ -2025,9 +2513,10 @@ def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   let (e', heq?) ← simpReduct wp.ext K s2
   let heq ← wp.wrapEq e' heq?
   let hfv ← mkEqRefl fv
-  let k := fun (h : Expr) => mkAppNamed (if lc then ``tac_wp_call_lc' else ``tac_wp_call')
-    [("hfv", hfv), ("v2", v2), ("f", f), ("x", x), ("e", body), ("K", wp.quoteK K),
-     ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("hlater", hlater), ("e'", wp.wrap e'),
+  let k := fun (h : Expr) => wp.mkAppNamed (if lc then ``tac_wp_call_lc' else ``tac_wp_call')
+    [("Δ", ehyps), ("Δ'", ehyps'), ("e'", wp.wrap e'),
+     ("hfv", hfv), ("v2", v2), ("f", f), ("x", x), ("e", body), ("K", wp.quoteK K),
+     ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("hlater", hlater),
      ("!heq", heq), (if lc then "h" else "!h", h)]
   return ⟨ehyps', hyps', e', k⟩
 

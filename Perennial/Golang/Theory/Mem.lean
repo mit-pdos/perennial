@@ -284,15 +284,17 @@ def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       if ← isDefEq P' P then
         let r := hyps.remove true ivar
         let v ← instantiateMVars v
-        let vv ← mkAppOptM ``GoGlobalContext.into_val #[none, none, some (← instantiateMVars V), some v]
+        let vv ← instantiateMVars (← mkAppOptM ``GoGlobalContext.into_val
+          #[none, none, some (← instantiateMVars V), some v])
         let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext vv)
         let k := fun (h : Expr) => do
           let V ← instantiateMVars V
           let inst ← instantiateMVars inst
-          mkAppNamed ``tac_wp_load
-            [("V", V), ("t", t), ("K", wp.quoteK K), ("l", l), ("v", v),
-             ("dq", ← instantiateMVars dq), ("Δ", ehyps), ("p", r.p), ("P", P),
-             ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("tpt", inst), ("hacc", hacc),
+          wp.mkAppNamed ``tac_wp_load
+            [("Δ", ehyps), ("Δ'", r.e'), ("Φ", wp.Φ),
+             ("V", V), ("t", t), ("K", wp.quoteK K), ("l", l), ("v", v),
+             ("dq", ← instantiateMVars dq), ("p", r.p), ("P", P),
+             ("s", wp.s), ("E", wp.E), ("tpt", inst), ("hacc", hacc),
              ("hsplit", r.pf), ("!h", h)]
         let _ := p
         return ⟨ehyps, hyps, filled, k, vv⟩
@@ -320,7 +322,10 @@ def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       return (i.getArg! 1, l, W, w))
     | throwIPMError "could not find a store `GoStore t (#l, #w)`"
   let GF := (← gooseGSArgs wp.ι)[6]!
-  let own1 ← mkAppM ``DFrac.own #[← mkAppOptM ``OfNat.ofNat #[some (mkConst ``Iris.Qp), some (mkRawNatLit 1), none]]
+  -- (instantiated: an assigned instance metavariable in the context would make every
+  -- later `instantiateMVars` of the context traverse it)
+  let own1 ← instantiateMVars (← mkAppM ``DFrac.own
+    #[← mkAppOptM ``OfNat.ofNat #[some (mkConst ``Iris.Qp), some (mkRawNatLit 1), none]])
   for (name, ivar, p, P) in ← hypsListFor hyps l do
     if isTrue p then continue
     let saved ← saveState
@@ -328,14 +333,16 @@ def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     let A' ← mkAppOptM ``typed_pointsto #[some GF, some W, some inst, some l, some w, some own1]
     if let some (hacc, P') ← synthAccess A A' P then
       let r := hyps.remove true ivar
-      let ⟨_, hyps'', hadd⟩ := r.hyps'.add bi name ivar q(false) P'
-      let unitV ← mkAppOptM ``GoGlobalContext.into_val #[none, none, some (mkConst ``Unit), some (mkConst ``Unit.unit)]
+      let ⟨ehyps'', hyps'', hadd⟩ := r.hyps'.add bi name ivar q(false) P'
+      let unitV ← instantiateMVars (← mkAppOptM ``GoGlobalContext.into_val
+        #[none, none, some (mkConst ``Unit), some (mkConst ``Unit.unit)])
       let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext unitV)
       let k := fun (h : Expr) => do
-        mkAppNamed ``tac_wp_store
-          [("V", W), ("t", t), ("K", wp.quoteK K), ("l", l), ("v", ← instantiateMVars v),
-           ("w", w), ("Δ", ehyps), ("P", P), ("P'", P'),
-           ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("tpt", ← instantiateMVars inst),
+        wp.mkAppNamed ``tac_wp_store
+          [("Δ", ehyps), ("Δ'", r.e'), ("Δ''", ehyps''), ("Φ", wp.Φ),
+           ("V", W), ("t", t), ("K", wp.quoteK K), ("l", l), ("v", ← instantiateMVars v),
+           ("w", w), ("P", P), ("P'", P'),
+           ("s", wp.s), ("E", wp.E), ("tpt", ← instantiateMVars inst),
            ("hacc", hacc), ("hsplit", r.pf), ("hadd", hadd), ("!h", h)]
       return ⟨_, hyps'', filled, k⟩
     restoreState saved
@@ -376,7 +383,7 @@ def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Expr) :
     | none => rhs.headBeta
     | some _ => rhs.headBeta.appArg!
   let lhs := (mkApp motive (mkApp4 (mkConst ``Perennial.val.RecV) ext f x body)).headBeta
-  return some (e', fun h => mkAppNamed ``tac_wp_expr_simp
+  return some (e', fun h => wp.mkAppNamed ``tac_wp_expr_simp
     [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", lhs), ("e'", wp.wrap e'),
      ("!h", h), ("!heq", heq)])
 
@@ -420,7 +427,10 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     | none, some x => (Name.mkSimple (x ++ "_ptr"), Name.mkSimple x)
     | none, none => (`l, `Hl)
   let GF := (← gooseGSArgs wp.ι)[6]!
-  let own1 ← mkAppM ``DFrac.own #[← mkAppOptM ``OfNat.ofNat #[some (mkConst ``Iris.Qp), some (mkRawNatLit 1), none]]
+  -- (instantiated: an assigned instance metavariable in the context would make every
+  -- later `instantiateMVars` of the context traverse it)
+  let own1 ← instantiateMVars (← mkAppM ``DFrac.own
+    #[← mkAppOptM ``OfNat.ofNat #[some (mkConst ``Iris.Qp), some (mkRawNatLit 1), none]])
   let instTy ← mkAppOptM ``TypedPointsto #[some GF, some V]
   let inst ← synthInstance instTy
   let locTy := mkConst ``Perennial.loc
@@ -428,14 +438,17 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   -- `MVarId.intro` (a delayed assignment), so that the (large) continuation proof is
   -- not abstracted over `l` here (that made `wp_auto` quadratic)
   let mkParts (l : Expr) : MetaM (Expr × Expr) := do
-    let pt ← mkAppOptM ``typed_pointsto #[some GF, some V, some inst, some l, some v, some own1]
-    let lv ← mkAppOptM ``GoGlobalContext.into_val #[none, none, some locTy, some l]
+    let pt ← instantiateMVars
+      (← mkAppOptM ``typed_pointsto #[some GF, some V, some inst, some l, some v, some own1])
+    let lv ← instantiateMVars
+      (← mkAppOptM ``GoGlobalContext.into_val #[none, none, some locTy, some l])
     let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext lv)
     return (pt, filled)
   let hTy ← withLocalDeclD lName locTy fun l => do
     let (pt, filled) ← mkParts l
-    let lhs ← mkAppOptM ``BIBase.sep #[some prop, none, some ehyps, some pt]
-    let T ← mkAppOptM ``BIBase.Entails #[some prop, none, some lhs, some (wp.mk' filled wp.Φ)]
+    let lhs ← instantiateMVars (← mkAppOptM ``BIBase.sep #[some prop, none, some ehyps, some pt])
+    let T ← instantiateMVars
+      (← mkAppOptM ``BIBase.Entails #[some prop, none, some lhs, some (wp.mk' filled wp.Φ)])
     mkForallFVars #[l] T
   let m ← mkFreshExprSyntheticOpaqueMVar hTy
   let (l, m') ← m.mvarId!.intro lName
@@ -443,16 +456,17 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     let l := mkFVar l
     let (pt, filled) ← mkParts l
     let ivar ← mkFreshIVarId false
-    let ⟨_, hyps', hadd⟩ := hyps.add bi hName ivar q(false) pt
+    let ⟨ehyps', hyps', hadd⟩ := hyps.add bi hName ivar q(false) pt
     let pfCont ← k hyps' { wp with e := filled }
     -- `hadd : Δ ∗ □?false (l ↦ v) ⊣⊢ Δ'`
     let pfl ← mkAppNamed ``tac_add_hyp
-      [("Δ", ehyps), ("P", pt), ("hadd", hadd), ("Q", wp.mk' filled wp.Φ), ("!h", pfCont)]
+      [("PROP", prop), ("Δ", ehyps), ("Δ'", ehyps'), ("Q", wp.mk' filled wp.Φ), ("P", pt),
+       ("hadd", hadd), ("!h", pfCont)]
     m'.assign pfl
   let pf := m
-  mkAppNamed ``tac_wp_alloc
-    [("V", V), ("t", t), ("K", wp.quoteK K), ("v", v), ("Δ", ehyps),
-     ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("tpt", inst), ("!h", pf)]
+  wp.mkAppNamed ``tac_wp_alloc
+    [("Δ", ehyps), ("Φ", wp.Φ), ("V", V), ("t", t), ("K", wp.quoteK K), ("v", v),
+     ("s", wp.s), ("E", wp.E), ("tpt", inst), ("!h", pf)]
 
 end tactics
 

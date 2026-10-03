@@ -132,7 +132,8 @@ def wpFuncCallCore : TacticM Bool :=
     let heq' ← mkCongrArg motive heq
     let pf ← addBIGoal g.hyps (wpE'.mk' e' wp.Φ)
     mvar.assign (← mkAppNamed ``tac_wp_func_unfold
-      [("Δ", g.e), ("P", g.goal), ("Q", wpE'.mk' e' wp.Φ), ("!h", pf), ("!heq", heq')])
+      [("PROP", g.prop), ("Δ", g.e), ("P", g.goal), ("Q", wpE'.mk' e' wp.Φ), ("!h", pf),
+       ("!heq", heq')])
     return true
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
@@ -394,7 +395,9 @@ where addGoalCleaningCore {ehyps : Q($prop)} (hyps : Hyps bi ehyps) (goal : Expr
     | (ivar, _) :: us =>
       let r := hyps.remove false ivar
       let pf ← go r.hyps' us
-      mkAppNamed ``tac_clear_hyp [("h", r.pf), ("Q", goal), ("!h'", pf)]
+      mkAppNamed ``tac_clear_hyp
+        [("PROP", prop), ("Δ", ehyps), ("Δ'", r.e'), ("P", r.out), ("Q", goal), ("h", r.pf),
+         ("!h'", pf)]
   go hyps unused
 
 /-- Rocq `wp_auto_lc`: repeatedly take pure steps (the first `lc` of them
@@ -410,14 +413,19 @@ loaded `#v`) could be simplified (`simpOnlyIf`); substitutions get kernel-cheap
 proofs (`substPf`); the later introduced by a pure step is `laterN_intro` unless
 a hypothesis contains `▷` (`iLaterIntro`); loads and stores try the points-to at
 the same address first (`hypsListFor`); allocations do not re-abstract the
-continuation proof (`iWpAllocStep`). Together these make `wp_auto` roughly linear
-in the length of straight-line code.
+continuation proof (`iWpAllocStep`); the proof terms of the steps are built
+without unification (`mkAppNamedDirect?`); structural steps (`rec`, beta, pairs)
+get their `PureWp` instance directly and the other searches are shared between
+redexes of the same shape (`synthPureWp`); a redex deep inside its evaluation
+context is focused on (`GooseWpGoal.focus?`). Together these make `wp_auto`
+roughly linear in the length of straight-line code and in the depth of
+evaluation contexts.
 
 Only the search for the next step may fail silently; an error while taking a
 step that was found (e.g. in `simp`) is reported. -/
 partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (lc : Nat) (lcIdx : Nat := 1)
-    (simpFirst : Bool := true) (simpOnlyIf : Option Expr := none) :
+    (simpFirst : Bool := true) (simpOnlyIf : Option Expr := none) (allowFocus : Bool := true) :
     ProofModeM (Expr × Nat × Bool) := do
   let simpFirst ← if simpFirst then
       match simpOnlyIf with
@@ -431,6 +439,7 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   if let some v ← wp.isVal? then
     let res ← IO.mkRef (lc, true)
     let pf ← iWpValue hyps wp v fun goal => do
+      let goal := (← popNestedPost? wp goal).getD goal
       if let some wp' ← parseGooseWp? goal then
         let (pf, lc', _) ← iWpAuto hyps wp' lc lcIdx
         res.set (lc', true)
@@ -438,10 +447,15 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       else addGoalCleaning hyps goal
     let (lc', p) ← res.get
     return (pf, lc', p)
+  -- a redex deep inside its evaluation context: focus on it (see `wpNestedPost`)
+  if allowFocus then
+    if let some (wp', k) ← wp.focus? ehyps then
+      let (pf, lc', p) ← iWpAuto hyps wp' lc lcIdx (simpFirst := false)
+      return (← k pf, lc', p)
   let saved ← saveState
   -- pure step
   if let some (st, hφ) ← observing? (iWpPureStepFind wp (failOnUnsolved := true) (multi := true)) then
-    let ⟨_, hyps', e', k⟩ ← iWpPureStepTake hyps wp st hφ (lc := lc > 0)
+    let ⟨ehyps1, hyps', e', k⟩ ← iWpPureStepTake hyps wp st hφ (lc := lc > 0)
     if e' == wp.e then
       saved.restore
     else if lc > 0 then
@@ -453,10 +467,12 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       let wand ← whnfR T.getAppArgs.back!
       let lcProp := wand.getArg! 2
       let ivar ← mkFreshIVarId false
-      let ⟨_, hyps'', hadd⟩ := hyps'.add bi (Name.mkSimple s!"Hlc{lcIdx}") ivar q(false) lcProp
+      let ⟨ehyps'', hyps'', hadd⟩ :=
+        hyps'.add bi (Name.mkSimple s!"Hlc{lcIdx}") ivar q(false) lcProp
       let (pf', lc', _) ← iWpAuto hyps'' { wp with e := e' } (lc - 1) (lcIdx + 1) (simpFirst := false)
       h.mvarId!.assign (← mkAppNamed ``tac_intro_hyp_wand
-        [("hadd", hadd), ("Q", wp.mk' e' wp.Φ), ("!h", pf')])
+        [("PROP", prop), ("Δ", ehyps1), ("Δ'", ehyps''), ("Q", wp.mk' e' wp.Φ), ("P", lcProp),
+         ("hadd", hadd), ("!h", pf')])
       return (pf, lc', true)
     else
       let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx (simpFirst := false)
@@ -503,7 +519,7 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
         let (pf', lc', _) ← iWpAuto hyps { wp with e := ← fillExpr K e1 } lc lcIdx
         res0.set lc'
         mkLambdaFVars #[h] pf'
-      return (← mkAppNamed ``tac_wp_if_angelic'
+      return (← wp.mkAppNamed ``tac_wp_if_angelic'
         [("P", P), ("K", wp.quoteK K), ("e", e1), ("Δ", ehyps), ("s", wp.s), ("E", wp.E),
          ("Φ", wp.Φ), ("!h", pf)], ← res0.get, true)
   -- a call of an implementation constant `«Fooⁱᵐᵖˡ» v` (e.g. after
@@ -514,6 +530,11 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx (simpFirst := false)
       return (← k pf', lc', true)
     saved.restore
+  -- no step in the focused expression: unfocus, and try the steps on the whole
+  -- expression (as without focusing)
+  if let some (wp', k) ← wp.unfocus? ehyps then
+    let (pf, lc', p) ← iWpAuto hyps wp' lc lcIdx (simpFirst := false) (allowFocus := false)
+    return (← k pf, lc', p)
   -- done: clean up dead points-to facts
   let unused ← unusedPointsto hyps (wp.mk' wp.e wp.Φ)
   return (← addGoalCleaning hyps (wp.mk' wp.e wp.Φ), lc, !unused.isEmpty)
@@ -532,7 +553,7 @@ elab "wp_auto_lc " n:num : tactic =>
     let (pf, lc, progress) ← iWpAuto g.hyps { wp with e := eA } n.getNat
     let pf ← if eA == wp.e then pure pf else
       let heq ← mkExpectedTypeHint (← mkEqRefl (wp.wrap wp.e)) (← mkEq (wp.wrap wp.e) (wp.wrap eA))
-      mkAppNamed ``tac_wp_expr_simp
+      wp.mkAppNamed ``tac_wp_expr_simp
         [("Δ", g.e), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", wp.wrap wp.e), ("e'", wp.wrap eA),
          ("!h", pf), ("!heq", heq)]
     fvCache.set {}; closedCache.set {}
@@ -575,7 +596,7 @@ elab "wp_func_lits" : tactic =>
     let some p := res.proof? | throwIPMError "no function literal in the expression"
     let heq ← wp.wrapEq res.expr (some p)
     let pf ← addBIGoal g.hyps (wp.mk' res.expr wp.Φ)
-    mvar.assign (← mkAppNamed ``tac_wp_expr_simp
+    mvar.assign (← wp.mkAppNamed ``tac_wp_expr_simp
       [("Δ", g.e), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", wp.wrap wp.e),
        ("e'", wp.wrap res.expr), ("!h", pf), ("!heq", heq)])
 
@@ -813,7 +834,7 @@ elab "wp_if_angelic" : tactic => do
     let pP ← mkAppOptM ``BIBase.pure #[some g.prop, none, some P]
     let goal' ← mkAppOptM ``BIBase.wand #[some g.prop, none, some pP, some Q]
     let h ← addBIGoal g.hyps goal'
-    mvar.assign (← mkAppNamed ``tac_wp_if_angelic
+    mvar.assign (← wp.mkAppNamed ``tac_wp_if_angelic
       [("P", P), ("K", wp.quoteK K), ("e", e1), ("Δ", g.e), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ),
        ("!h", h)])
 
@@ -969,12 +990,691 @@ elab "wp_if_destruct" : tactic => withMainContext do
       cleanup_bool_decide)))
   | none => throwError "wp_if_destruct: no `decide` or Boolean variable in the expression"
 
-/-! ## Struct instances -/
+/-! ## Struct instances
 
-/-- Rocq `solve_into_val_typed_struct`: prove `IntoValTypedUnderlying V T` for
-a struct type `T` whose typed points-to is the conjunction of its (named)
-field points-tos. -/
-macro "solve_into_val_typed_struct" : tactic => `(tactic| (
+`solve_into_val_typed_struct` proves `IntoValTypedUnderlying V T` for a struct type
+`T = go.StructType fds` with the generic lemma `struct_into_val_typed`, whose
+proofs of the allocation, load and store of a struct go field by field, by
+induction over a list of field descriptions (`StructFieldDesc`); for a particular
+struct only these descriptions (built from the field list and the
+`StructFieldGet`/`StructFieldSet` step instances) and a few definitional facts are
+checked. If this fails, the struct code is executed symbolically (`wp_auto`). -/
+
+section struct_generic
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+/-- A field of a struct with Lean type `V` and Go type `T`. -/
+structure StructFieldDesc (V : Type) (T : go.type) where
+  name : go_string
+  ty : go.type
+  F : Type
+  [zv : ZeroVal F]
+  [tpt : TypedPointsto (GF := GF) F]
+  [ivt : IntoValTyped (GF := GF) F ty]
+  proj : V → F
+  upd : V → F → V
+  get : ∀ x : V, go.IsGoStepPureDetTagged under (StructFieldGet T name) #x (Val #(proj x))
+  set : ∀ (x : V) (y : F),
+    go.IsGoStepPureDetTagged under (StructFieldSet T name) (PairV #x #y) (Val #(upd x y))
+
+def fieldDeclName : go.field_decl → go_string
+  | .FieldDecl n _ => n
+  | .EmbeddedField n _ => n
+
+def fieldDeclType : go.field_decl → go.type
+  | .FieldDecl _ t => t
+  | .EmbeddedField _ t => t
+
+def FieldsMatch {V : Type} {T : go.type} :
+    List go.field_decl → List (StructFieldDesc (GF := GF) V T) → Prop
+  | [], [] => True
+  | fd :: fds, f :: fs => fieldDeclName fd = f.name ∧ fieldDeclType fd = f.ty ∧ FieldsMatch fds fs
+  | _, _ => False
+
+def structFieldsPointsto {V : Type} {T : go.type} :
+    List (StructFieldDesc (GF := GF) V T) → loc → V → DFrac → IProp GF
+  | [], _, _, _ => iprop(True)
+  | f :: fs, l, v, dq =>
+    iprop(@typed_pointsto GF f.F f.tpt (struct_field_ref V f.name l) (f.proj v) dq ∗
+      structFieldsPointsto fs l v dq)
+
+/-- The expansion of `GoAlloc (go.StructType fds) v` (`go.alloc_struct`). -/
+def allocStructRaw (fds : List go.field_decl) (v : val) (fds_unsealed : List go.field_decl) : expr :=
+  gl(let: "l" := GoPrealloc #() in
+       List.foldr (fun fd alloc_rest =>
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => (n, t)
+                                                | go.EmbeddedField n t => (n, t)
+                let field_addr := gl(StructFieldRef (go.StructType fds) field_name "l")
+                gl(let: "l_field" :=
+                    GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
+                  (if: ("l_field" =⟨go.PointerType field_type⟩ field_addr) then #()
+                   else AngelicExit #()) ;;
+                  alloc_rest)
+         ) (#() : expr) fds_unsealed ;;
+       "l")
+
+
+/-- One field of the expansion of `GoAlloc (go.StructType fds) v`, with the location
+of the struct given by `l`. -/
+def allocFieldExpr (T : go.type) (v : val) (l : expr) (fd : go.field_decl) (rest : expr) : expr :=
+  gl(let: "l_field" := GoAlloc (fieldDeclType fd) (StructFieldGet T (fieldDeclName fd) v) in
+    (if: ("l_field" =⟨go.PointerType (fieldDeclType fd)⟩ (StructFieldRef T (fieldDeclName fd) l))
+      then #() else AngelicExit #()) ;;
+    rest)
+
+theorem allocStructRaw_eq (fds : List go.field_decl) (v : val) (fds_unsealed : List go.field_decl) :
+    allocStructRaw fds v fds_unsealed =
+      gl(let: "l" := GoPrealloc #() in
+        List.foldr (allocFieldExpr (go.StructType fds) v (Var "l")) (#() : expr) fds_unsealed ;; "l") := by
+  have h : (fun fd alloc_rest =>
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => (n, t)
+                                                | go.EmbeddedField n t => (n, t)
+                let field_addr := gl(StructFieldRef (go.StructType fds) field_name "l")
+                gl(let: "l_field" :=
+                    GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
+                  (if: ("l_field" =⟨go.PointerType field_type⟩ field_addr) then #()
+                   else AngelicExit #()) ;;
+                  alloc_rest)) = allocFieldExpr (go.StructType fds) v (Var "l") := by
+    funext fd rest; cases fd <;> rfl
+  unfold allocStructRaw
+  rw [h]
+
+theorem subst_allocFields (T : go.type) (v : val) (l : loc) (fds : List go.field_decl) :
+    subst "l" #l (List.foldr (allocFieldExpr T v (Var "l")) (#() : expr) fds) =
+      List.foldr (allocFieldExpr T v (Val #l)) (#() : expr) fds := by
+  induction fds with
+  | nil => rfl
+  | cons fd fds ih =>
+    simp [List.foldr_cons, allocFieldExpr, subst, ih]
+
+theorem closed_allocFields (T : go.type) (v : val) (l : loc) (fds : List go.field_decl) (x : String) (w : val) :
+    subst x w (List.foldr (allocFieldExpr T v (Val #l)) (#() : expr) fds) =
+      List.foldr (allocFieldExpr T v (Val #l)) (#() : expr) fds := by
+  induction fds with
+  | nil => rfl
+  | cons fd fds ih =>
+    simp only [List.foldr_cons, allocFieldExpr, subst]
+    split <;> simp_all
+
+theorem struct_alloc_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : loc) (s : Stuckness) (E : CoPset) :
+    ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
+    FieldsMatch fds fs → ∀ (K : List ectx_item) (Φ : val → IProp GF),
+    (structFieldsPointsto fs l x (DFrac.own 1) -∗ WP (fill K (Val #())) @ s; E {{ Φ }}) ⊢
+      WP (fill K (List.foldr (allocFieldExpr (go.StructType fdsT) #x (Val #l)) (Val #()) fds))
+        @ s; E {{ Φ }} := by
+  intro fds
+  induction fds with
+  | nil =>
+    intro fs hm K Φ
+    cases fs with
+    | nil =>
+      simp only [List.foldr_nil]
+      iintro H
+      iapply H
+      simp only [structFieldsPointsto]
+      ipureintro; trivial
+    | cons => exact absurd hm id
+  | cons fd fds ih =>
+    intro fs hm K Φ
+    cases fs with
+    | nil => exact absurd hm id
+    | cons f fs =>
+      obtain ⟨hn, ht, hm'⟩ := hm
+      simp only [List.foldr_cons, allocFieldExpr, hn, ht]
+      iintro H
+      have _zv := f.zv
+      have _tpt := f.tpt
+      have _ivt := f.ivt
+      have _get := f.get
+      wp_pure
+      wp_apply +noauto (IntoValTyped.wp_alloc (V := f.F) (t := f.ty) (f.proj x)) as %lf Hlf
+      wp_pures
+      rw [closed_allocFields]
+      wp_if_angelic
+      iintro %Hlf_eq
+      subst Hlf_eq
+      wp_pures
+      iapply (ih fs hm' K Φ)
+      iintro Hrest
+      iapply H
+      simp only [structFieldsPointsto]
+      iframe
+
+theorem struct_alloc_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : loc) (s : Stuckness) (E : CoPset)
+    (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT)))
+    (hm : FieldsMatch fds fs) (Φ : val → IProp GF) :
+    (structFieldsPointsto fs l x (DFrac.own 1) -∗ WP (Val #()) @ s; E {{ Φ }}) ⊢
+      WP (List.foldr (allocFieldExpr (go.StructType fdsT) #x (Val #l)) (Val #()) fds)
+        @ s; E {{ Φ }} :=
+  struct_alloc_fields x l s E fds fs hm [] Φ
+
+theorem wp_pure_raw_step {φ : Prop} {e1 e2 : expr} [Hwp : PureWp (hlc := hlc) (GF := GF) φ e1 e2] (hφ : φ)
+    {s : Stuckness} {E : CoPset} {Φ : val → IProp GF} :
+    iprop(▷ WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }} :=
+  tac_wp_pure_wp (Hwp := Hwp) (K := []) hφ .rfl .rfl
+
+theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
+    {fds fds_unsealed : List go.field_decl} [EqualsUnfold fds fds_unsealed]
+    [go.TypeReprUnderlying (go.StructType fds) V]
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fds)))
+    (hfs : FieldsMatch fds_unsealed fs)
+    (hdef : ∀ l v dq, typed_pointsto_def l v dq ⊣⊢ structFieldsPointsto fs l v dq)
+    {s : Stuckness} {E : CoPset} {t : go.type} [t ↓u go.StructType fds] (v : V) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val #v)) @ s; E
+    {{ (l : loc), RET #l; l ↦ v }} := by
+  iintro %Φ _ HΦ
+  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoAlloc t))) (Val #v))
+      (allocStructRaw fds #v fds_unsealed) := by
+    have _tagged := @go.tagged_internal_inst
+    infer_instance
+  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  inext
+  rw [allocStructRaw_eq]
+  wp_bind (GoPrealloc #())
+  iapply wp_GoPrealloc
+  · itrivial
+  inext
+  iintro %l %Hl
+  wp_pures
+  rw [subst_allocFields]
+  wp_bind (List.foldr _ _ _)
+  iapply (struct_alloc_fields' v l s E fds_unsealed fs hfs)
+  iintro Hfs
+  wp_pures
+  iapply HΦ
+  rw [typed_pointsto_unseal]
+  unfold typed_pointsto_wrap
+  isplitl [Hfs]
+  · iapply (hdef l v _).2
+    iexact Hfs
+  · ipureintro; exact Hl
+
+/-! ### Load -/
+
+/-- The expansion of `GoLoad (go.StructType fds) l` (`go.load_struct`). -/
+def loadStructRaw (fds : List go.field_decl) (l : val) (fds_unsealed : List go.field_decl) : expr :=
+  gl(List.foldl (fun struct_so_far fd =>
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => (n, t)
+                                                | go.EmbeddedField n t => (n, t)
+                let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
+                let field_val := gl(GoLoad field_type field_addr)
+                gl(StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val))
+         ) (GoZeroVal (go.StructType fds) #()) fds_unsealed)
+
+
+/-- One field of the expansion of `GoLoad (go.StructType fds) l`. -/
+def loadFieldExpr (T : go.type) (l : val) (so_far : expr) (fd : go.field_decl) : expr :=
+  gl(StructFieldSet T (fieldDeclName fd)
+    (so_far, GoLoad (fieldDeclType fd) (StructFieldRef T (fieldDeclName fd) l)))
+
+theorem loadStructRaw_eq (fds : List go.field_decl) (l : val) (fds_unsealed : List go.field_decl) :
+    loadStructRaw fds l fds_unsealed =
+      List.foldl (loadFieldExpr (go.StructType fds) l) gl(GoZeroVal (go.StructType fds) #())
+        fds_unsealed := by
+  have h : (fun struct_so_far fd =>
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => (n, t)
+                                                | go.EmbeddedField n t => (n, t)
+                let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
+                let field_val := gl(GoLoad field_type field_addr)
+                gl(StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val))) =
+      loadFieldExpr (go.StructType fds) l := by
+    funext so_far fd; cases fd <;> rfl
+  unfold loadStructRaw
+  rw [h]
+
+/-- The struct value built by the field-by-field load: the fields of `fs` set in `acc`
+to the ones of `x`. -/
+def structRebuild {V : Type} {T : go.type} :
+    List (StructFieldDesc (GF := GF) V T) → V → V → V
+  | [], acc, _ => acc
+  | f :: fs, acc, x => structRebuild fs (f.upd acc (f.proj x)) x
+
+theorem struct_load_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : loc) (dq : DFrac) (s : Stuckness)
+    (E : CoPset) :
+    ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
+    FieldsMatch fds fs → ∀ (e0 : expr) (acc : V) (P : IProp GF),
+    (∀ (K : List ectx_item) (Ψ : val → IProp GF),
+      iprop(P ∗ (P -∗ WP (fill K (Val #acc)) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }}) →
+    ∀ (K : List ectx_item) (Φ : val → IProp GF),
+    iprop(P ∗ structFieldsPointsto fs l x dq ∗
+      ((P ∗ structFieldsPointsto fs l x dq) -∗
+        WP (fill K (Val #(structRebuild fs acc x))) @ s; E {{ Φ }})) ⊢
+      WP (fill K (List.foldl (loadFieldExpr (go.StructType fdsT) #l) e0 fds)) @ s; E {{ Φ }} := by
+  intro fds
+  induction fds with
+  | nil =>
+    intro fs hm e0 acc P he0 K Φ
+    cases fs with
+    | nil =>
+      simp only [List.foldl_nil, structRebuild, structFieldsPointsto]
+      iintro ⟨HP, Ht, H⟩
+      iapply (he0 K Φ)
+      iframe HP
+      iintro HP
+      iapply H
+      iframe
+    | cons => exact absurd hm id
+  | cons fd fds ih =>
+    intro fs hm e0 acc P he0 K Φ
+    cases fs with
+    | nil => exact absurd hm id
+    | cons f fs =>
+      obtain ⟨hn, ht, hm'⟩ := hm
+      simp only [List.foldl_cons, structRebuild, structFieldsPointsto]
+      iintro ⟨HP, ⟨Hf, Hfs⟩, H⟩
+      iapply (ih fs hm' (loadFieldExpr (go.StructType fdsT) #l e0 fd) (f.upd acc (f.proj x))
+        iprop(P ∗ @typed_pointsto GF f.F f.tpt (struct_field_ref V f.name l) (f.proj x) dq) ?_ K Φ)
+      · intro K' Ψ
+        simp only [loadFieldExpr, hn, ht]
+        iintro ⟨⟨HP, Hf⟩, H⟩
+        have h2 : iprop(P ∗ (P -∗ WP (fill K' (App (Val (GoInstruction (StructFieldSet (go.StructType fdsT) f.name)))
+              (Pair (Val #acc) (App (Val (GoInstruction (GoLoad f.ty)))
+                (App (Val (GoInstruction (StructFieldRef (go.StructType fdsT) f.name))) (Val #l))))))
+              @ s; E {{ Ψ }})) ⊢
+            WP (fill K' (App (Val (GoInstruction (StructFieldSet (go.StructType fdsT) f.name)))
+              (Pair e0 (App (Val (GoInstruction (GoLoad f.ty)))
+                (App (Val (GoInstruction (StructFieldRef (go.StructType fdsT) f.name))) (Val #l))))))
+              @ s; E {{ Ψ }} :=
+          he0 (ectx_item.PairLCtx (App (Val (GoInstruction (GoLoad f.ty)))
+              (App (Val (GoInstruction (StructFieldRef (go.StructType fdsT) f.name))) (Val #l))) ::
+            ectx_item.AppRCtx (Val (GoInstruction (StructFieldSet (go.StructType fdsT) f.name))) :: K') Ψ
+        iapply h2
+        iframe HP
+        iintro HP
+        have _zv := f.zv
+        have _tpt := f.tpt
+        have _ivt := f.ivt
+        have _set := f.set
+        wp_pures
+        wp_apply +noauto (IntoValTyped.wp_load (V := f.F) (t := f.ty) _ dq (f.proj x)) $$ Hf as Hf
+        wp_pures
+        iapply H
+        iframe
+      · iframe HP Hf Hfs
+        iintro ⟨⟨HP, Hf⟩, Hfs⟩
+        iapply H
+        iframe
+
+theorem struct_load_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : loc) (dq : DFrac) (s : Stuckness)
+    (E : CoPset) (fds : List go.field_decl)
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
+    (e0 : expr) (acc : V) (P : IProp GF)
+    (he0 : ∀ (K : List ectx_item) (Ψ : val → IProp GF),
+      iprop(P ∗ (P -∗ WP (fill K (Val #acc)) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }})
+    (Φ : val → IProp GF) :
+    iprop(P ∗ structFieldsPointsto fs l x dq ∗
+      ((P ∗ structFieldsPointsto fs l x dq) -∗
+        WP (Val #(structRebuild fs acc x)) @ s; E {{ Φ }})) ⊢
+      WP (List.foldl (loadFieldExpr (go.StructType fdsT) #l) e0 fds) @ s; E {{ Φ }} :=
+  struct_load_fields x l dq s E fds fs hm e0 acc P he0 [] Φ
+
+theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
+    {fds fds_unsealed : List go.field_decl} [EqualsUnfold fds fds_unsealed]
+    [go.TypeReprUnderlying (go.StructType fds) V]
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fds)))
+    (hfs : FieldsMatch fds_unsealed fs)
+    (hdef : ∀ l v dq, typed_pointsto_def l v dq ⊣⊢ structFieldsPointsto fs l v dq)
+    (hrebuild : ∀ x, structRebuild fs (zero_val V) x = x)
+    {s : Stuckness} {E : CoPset} {t : go.type} [t ↓u go.StructType fds] (l : loc) (dq : DFrac)
+    (v : V) :
+    {{ (l ↦{dq} v : IProp GF) }} (App (Val (GoInstruction (GoLoad t))) (Val #l)) @ s; E
+    {{ RET #v; l ↦{dq} v }} := by
+  iintro %Φ Hl HΦ
+  rw [typed_pointsto_unseal]
+  unfold typed_pointsto_wrap
+  icases Hl with ⟨Hl, %Hnn⟩
+  ihave Hl := (hdef l v dq).1 $$ Hl
+  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoLoad t))) (Val #l))
+      (loadStructRaw fds #l fds_unsealed) := by
+    have _tagged := @go.tagged_internal_inst
+    infer_instance
+  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  inext
+  rw [loadStructRaw_eq]
+  have he0 : ∀ (K : List ectx_item) (Ψ : val → IProp GF),
+      iprop(emp ∗ (emp -∗ WP (fill K (Val #(zero_val V))) @ s; E {{ Ψ }})) ⊢
+        WP (fill K gl(GoZeroVal (go.StructType fds) #())) @ s; E {{ Ψ }} := by
+    intro K Ψ
+    iintro ⟨-, H⟩
+    wp_pure
+    iapply H
+    itrivial
+  iapply (struct_load_fields' v l dq s E fds_unsealed fs hfs _ (zero_val V) emp he0 Φ)
+  iframe Hl
+  iintro ⟨-, Hl⟩
+  rw [hrebuild]
+  wp_pures
+  iapply HΦ
+  isplitl [Hl]
+  · iapply (hdef l v dq).2
+    iexact Hl
+  · ipureintro; exact Hnn
+
+/-! ### Store -/
+
+/-- The expansion of `GoStore (go.StructType fds) (l, v)` (`go.store_struct`). -/
+def storeStructRaw (fds : List go.field_decl) (l v : val) (fds_unsealed : List go.field_decl) :
+    expr :=
+  gl(List.foldl (fun store_so_far fd =>
+                gl(store_so_far ;;
+                  (let (field_name, field_type) := match fd with
+                                                  | go.FieldDecl n t => (n, t)
+                                                  | go.EmbeddedField n t => (n, t)
+                   let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
+                   let field_val := gl(StructFieldGet (go.StructType fds) field_name v)
+                   gl(GoStore field_type (field_addr, field_val))))
+         ) (#() : expr) fds_unsealed)
+
+
+/-- One field of the expansion of `GoStore (go.StructType fds) (l, v)`. -/
+def storeFieldExpr (T : go.type) (l v : val) (so_far : expr) (fd : go.field_decl) : expr :=
+  gl(so_far ;; GoStore (fieldDeclType fd)
+    (StructFieldRef T (fieldDeclName fd) l, StructFieldGet T (fieldDeclName fd) v))
+
+theorem storeStructRaw_eq (fds : List go.field_decl) (l v : val)
+    (fds_unsealed : List go.field_decl) :
+    storeStructRaw fds l v fds_unsealed =
+      List.foldl (storeFieldExpr (go.StructType fds) l v) (Val #()) fds_unsealed := by
+  have h : (fun store_so_far fd =>
+                gl(store_so_far ;;
+                  (let (field_name, field_type) := match fd with
+                                                  | go.FieldDecl n t => (n, t)
+                                                  | go.EmbeddedField n t => (n, t)
+                   let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
+                   let field_val := gl(StructFieldGet (go.StructType fds) field_name v)
+                   gl(GoStore field_type (field_addr, field_val))))) =
+      storeFieldExpr (go.StructType fds) l v := by
+    funext so_far fd; cases fd <;> rfl
+  unfold storeStructRaw
+  rw [h]
+
+theorem struct_store_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : loc) (s : Stuckness)
+    (E : CoPset) :
+    ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
+    FieldsMatch fds fs → ∀ (e0 : expr) (Pin Pout : IProp GF),
+    (∀ (K : List ectx_item) (Ψ : val → IProp GF),
+      iprop(Pin ∗ (Pout -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }}) →
+    ∀ (K : List ectx_item) (Φ : val → IProp GF),
+    iprop(Pin ∗ structFieldsPointsto fs l x (DFrac.own 1) ∗
+      ((Pout ∗ structFieldsPointsto fs l y (DFrac.own 1)) -∗
+        WP (fill K (Val #())) @ s; E {{ Φ }})) ⊢
+      WP (fill K (List.foldl (storeFieldExpr (go.StructType fdsT) #l #y) e0 fds)) @ s; E {{ Φ }} := by
+  intro fds
+  induction fds with
+  | nil =>
+    intro fs hm e0 Pin Pout he0 K Φ
+    cases fs with
+    | nil =>
+      simp only [List.foldl_nil, structFieldsPointsto]
+      iintro ⟨HP, Ht, H⟩
+      iapply (he0 K Φ)
+      iframe HP
+      iintro HP
+      iapply H
+      iframe
+    | cons => exact absurd hm id
+  | cons fd fds ih =>
+    intro fs hm e0 Pin Pout he0 K Φ
+    cases fs with
+    | nil => exact absurd hm id
+    | cons f fs =>
+      obtain ⟨hn, ht, hm'⟩ := hm
+      simp only [List.foldl_cons, structFieldsPointsto]
+      iintro ⟨HP, ⟨Hf, Hfs⟩, H⟩
+      iapply (ih fs hm' (storeFieldExpr (go.StructType fdsT) #l #y e0 fd)
+        iprop(Pin ∗ @typed_pointsto GF f.F f.tpt (struct_field_ref V f.name l) (f.proj x) (DFrac.own 1))
+        iprop(Pout ∗ @typed_pointsto GF f.F f.tpt (struct_field_ref V f.name l) (f.proj y) (DFrac.own 1))
+        ?_ K Φ)
+      · intro K' Ψ
+        simp only [storeFieldExpr, hn, ht]
+        iintro ⟨⟨HP, Hf⟩, H⟩
+        have h2 : iprop(Pin ∗ (Pout -∗ WP (fill K' gl(#() ;; GoStore f.ty
+              (StructFieldRef (go.StructType fdsT) f.name #l,
+                StructFieldGet (go.StructType fdsT) f.name #y))) @ s; E {{ Ψ }})) ⊢
+            WP (fill K' gl(e0 ;; GoStore f.ty
+              (StructFieldRef (go.StructType fdsT) f.name #l,
+                StructFieldGet (go.StructType fdsT) f.name #y))) @ s; E {{ Ψ }} :=
+          he0 (ectx_item.AppRCtx (Rec BAnon BAnon gl(GoStore f.ty
+              (StructFieldRef (go.StructType fdsT) f.name #l,
+                StructFieldGet (go.StructType fdsT) f.name #y))) :: K') Ψ
+        iapply h2
+        iframe HP
+        iintro HP
+        have _zv := f.zv
+        have _tpt := f.tpt
+        have _ivt := f.ivt
+        have _get := f.get
+        wp_pures
+        wp_apply +noauto (wp_store (V := f.F) (t := f.ty) _ (f.proj x) (f.proj y)) $$ Hf as Hf
+        iapply H
+        iframe
+      · iframe HP Hf Hfs
+        iintro ⟨⟨HP, Hf⟩, Hfs⟩
+        iapply H
+        iframe
+
+theorem struct_store_fields_nil {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : loc) (s : Stuckness)
+    (E : CoPset) (fds : List go.field_decl)
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
+    (e0 : expr) (Pin Pout : IProp GF)
+    (he0 : ∀ (K : List ectx_item) (Ψ : val → IProp GF),
+      iprop(Pin ∗ (Pout -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }})
+    (Φ : val → IProp GF) :
+    iprop(Pin ∗ structFieldsPointsto fs l x (DFrac.own 1) ∗
+      ((Pout ∗ structFieldsPointsto fs l y (DFrac.own 1)) -∗ WP (Val #()) @ s; E {{ Φ }})) ⊢
+      WP (List.foldl (storeFieldExpr (go.StructType fdsT) #l #y) e0 fds) @ s; E {{ Φ }} :=
+  struct_store_fields x y l s E fds fs hm e0 Pin Pout he0 [] Φ
+
+theorem struct_store_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : loc) (s : Stuckness)
+    (E : CoPset) (fds : List go.field_decl)
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
+    (Φ : val → IProp GF) :
+    iprop(structFieldsPointsto fs l x (DFrac.own 1) ∗
+      (structFieldsPointsto fs l y (DFrac.own 1) -∗ WP (Val #()) @ s; E {{ Φ }})) ⊢
+      WP (List.foldl (storeFieldExpr (go.StructType fdsT) #l #y) (Val #()) fds) @ s; E {{ Φ }} := by
+  have he0 : ∀ (K : List ectx_item) (Ψ : val → IProp GF),
+      iprop(emp ∗ (emp -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢
+        WP (fill K (Val #())) @ s; E {{ Ψ }} := by
+    intro K Ψ
+    iintro ⟨-, H⟩
+    iapply H
+    itrivial
+  iintro ⟨Hx, H⟩
+  iapply (struct_store_fields_nil x y l s E fds fs hm (Val #()) emp emp he0 Φ)
+  iframe Hx
+  iintro ⟨-, Hy⟩
+  iapply H
+  iexact Hy
+
+theorem struct_wp_store {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
+    {fds fds_unsealed : List go.field_decl} [EqualsUnfold fds fds_unsealed]
+    [go.TypeReprUnderlying (go.StructType fds) V]
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fds)))
+    (hfs : FieldsMatch fds_unsealed fs)
+    (hdef : ∀ l v dq, typed_pointsto_def l v dq ⊣⊢ structFieldsPointsto fs l v dq)
+    {s : Stuckness} {E : CoPset} {t : go.type} [t ↓u go.StructType fds] (l : loc) (v w : V) :
+    {{ (l ↦ v : IProp GF) }} (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
+    {{ RET #(); l ↦ w }} := by
+  iintro %Φ Hl HΦ
+  rw [typed_pointsto_unseal]
+  unfold typed_pointsto_wrap
+  icases Hl with ⟨Hl, %Hnn⟩
+  ihave Hl := (hdef l v _).1 $$ Hl
+  have hpw : PureWp (hlc := hlc) (GF := GF) True
+      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w)))
+      (storeStructRaw fds #l #w fds_unsealed) := by
+    have _tagged := @go.tagged_internal_inst
+    infer_instance
+  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  inext
+  rw [storeStructRaw_eq]
+  iapply (struct_store_fields' v w l s E fds_unsealed fs hfs Φ)
+  iframe Hl
+  iintro Hl
+  wp_pures
+  iapply HΦ
+  isplitl [Hl]
+  · iapply (hdef l w _).2
+    iexact Hl
+  · ipureintro; exact Hnn
+
+/-! ### The instance -/
+
+theorem struct_into_val_typed {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
+    {fds fds_unsealed : List go.field_decl} [EqualsUnfold fds fds_unsealed]
+    [hrepr : go.TypeReprUnderlying (go.StructType fds) V]
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fds)))
+    (hfs : FieldsMatch fds_unsealed fs)
+    (hdef : ∀ l v dq, typed_pointsto_def l v dq ⊣⊢ structFieldsPointsto fs l v dq)
+    (hrebuild : ∀ x, structRebuild fs (zero_val V) x = x) :
+    IntoValTypedUnderlying (GF := GF) V (go.StructType fds) where
+  wp_alloc_def v := struct_wp_alloc fs hfs hdef v
+  wp_load_def l dq v := struct_wp_load fs hfs hdef hrebuild l dq v
+  wp_store_def l v w := struct_wp_store fs hfs hdef l v w
+  type_repr_def := hrepr
+
+end struct_generic
+
+section struct_tac
+open Lean Elab Tactic Meta
+
+/-- A literal list. -/
+partial def structListLit? (e : Expr) : MetaM (Option (List Expr)) := do
+  let e ← whnfR e
+  if e.isAppOfArity ``List.nil 1 then return some []
+  unless e.isAppOfArity ``List.cons 3 do return none
+  let some t ← structListLit? (e.getArg! 2) | return none
+  return some (e.getArg! 1 :: t)
+
+/-- Prove `IntoValTypedUnderlying V T` for a struct type `T = go.StructType fds` from
+the generic lemma `struct_into_val_typed`: the field descriptions are built from
+the field list, their projections and updates are determined by the
+`StructFieldGet`/`StructFieldSet` step instances. -/
+elab "solve_into_val_typed_struct_gen" : tactic => withMainContext do
+  evalTactic (← `(tactic| refine struct_into_val_typed ?fs ?hfs ?hdef ?hrebuild))
+  let [gfs, ghfs, ghdef, ghreb] ← getGoals
+    | throwError "solve_into_val_typed_struct_gen: unexpected goals"
+  -- the field list `fds_unsealed`, from `FieldsMatch fds_unsealed ?fs`
+  let hfsTy ← instantiateMVars (← ghfs.getType)
+  let fdsU := hfsTy.getAppArgs[hfsTy.getAppNumArgs - 2]!
+  let some fds ← structListLit? fdsU | throwError "solve_into_val_typed_struct_gen: fields {fdsU}"
+  let fsTy ← whnfR (← instantiateMVars (← gfs.getType))
+  let descTy := fsTy.appArg!
+  let V := descTy.getAppArgs[descTy.getAppNumArgs - 2]!
+  let T := descTy.getAppArgs[descTy.getAppNumArgs - 1]!
+  gfs.withContext do
+    let mut elems := #[]
+    for fd in fds do
+      let fd ← whnfR fd
+      let n := fd.getAppArgs[fd.getAppNumArgs - 2]!
+      let ty := fd.getAppArgs[fd.getAppNumArgs - 1]!
+      elems := elems.push (← `(StructFieldDesc.mk (V := $(← Term.exprToSyntax V))
+        (T := $(← Term.exprToSyntax T)) $(← Term.exprToSyntax n) $(← Term.exprToSyntax ty) _ _ _
+        (fun _ => inferInstance) (fun _ _ => inferInstance)))
+    let fsStx ← `([$elems,*])
+    setGoals [gfs]
+    evalTactic (← `(tactic| exact $fsStx))
+  setGoals [ghfs]
+  evalTactic (← `(tactic| simp only [FieldsMatch, fieldDeclName, fieldDeclType, and_self]))
+  setGoals [ghdef]
+  evalTactic (← `(tactic| (intro _ _ _; exact .rfl)))
+  setGoals [ghreb]
+  evalTactic (← `(tactic| (intro x; cases x; rfl)))
+
+end struct_tac
+
+
+section frame_exact
+open Lean Elab Tactic Meta Qq Iris.ProofMode
+
+theorem tac_frame_exact_hyp {PROP : Type _} [BI PROP] {Δ Δ' A Q : PROP}
+    (h : Δ ⊣⊢ Δ' ∗ A) (h' : Δ' ⊢ Q) : Δ ⊢ A ∗ Q :=
+  h.1.trans (sep_comm.1.trans (sep_mono_right h'))
+
+theorem tac_frame_exact_assoc {PROP : Type _} [BI PROP] {Δ A B Q : PROP}
+    (h : Δ ⊢ A ∗ (B ∗ Q)) : Δ ⊢ (A ∗ B) ∗ Q := h.trans sep_assoc.2
+
+theorem tac_frame_exact_true_l {PROP : Type _} [BI PROP] {Δ Q : PROP}
+    (h : Δ ⊢ Q) : Δ ⊢ True ∗ Q := h.trans true_sep_mpr
+
+theorem tac_frame_exact_true {PROP : Type _} [BI PROP] {Δ : PROP} : Δ ⊢ True := true_intro
+
+/-- Is `P` the proposition `True`? -/
+def isTrueProp (P : Expr) : Bool :=
+  let P := P.consumeMData
+  P.isAppOfArity ``BIBase.pure 3 && (P.getArg! 2).consumeMData.isConstOf ``True
+
+/-- Frame, along the `∗`-spine of the goal, the conjuncts that are equal to spatial
+hypotheses (`avail`; syntactically, or else definitionally for a hypothesis with
+the same head, tried in order), and `True`; stops at the first conjunct that is
+neither, leaving the rest as a new goal. Typically linear in the size of the goal
+(`iframe` searches a `Frame` instance per hypothesis and conjunct). -/
+partial def frameExactCore {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+    (hyps : Hyps bi ehyps) (goal : Q($prop)) (avail : List (IVarId × Expr)) :
+    ProofModeM Expr := do
+  let goal ← instantiateMVars goal
+  let g := goal.consumeMData
+  if isTrueProp g then
+    return ← mkAppNamed ``tac_frame_exact_true [("PROP", prop), ("Δ", ehyps)]
+  unless g.isAppOfArity ``BIBase.sep 4 do return ← addBIGoal hyps goal
+  let A := (g.getArg! 2).consumeMData
+  let Q := g.getArg! 3
+  if A.isAppOfArity ``BIBase.sep 4 then
+    let goal' := mkApp4 g.getAppFn (g.getArg! 0) (g.getArg! 1) (A.getArg! 2)
+      (mkApp4 g.getAppFn (g.getArg! 0) (g.getArg! 1) (A.getArg! 3) Q)
+    let pf ← frameExactCore hyps goal' avail
+    return ← mkAppNamed ``tac_frame_exact_assoc
+      [("PROP", prop), ("Δ", ehyps), ("A", A.getArg! 2), ("B", A.getArg! 3), ("Q", Q), ("!h", pf)]
+  if isTrueProp A then
+    let pf ← frameExactCore hyps Q avail
+    return ← mkAppNamed ``tac_frame_exact_true_l
+      [("PROP", prop), ("Δ", ehyps), ("Q", Q), ("!h", pf)]
+  -- a hypothesis equal to `A`, or else (in order) one with the same head that is
+  -- definitionally equal (e.g. up to instances or the form of a projection)
+  let found ← match avail.find? (·.2 == A) with
+    | some (ivar, _) => pure (some ivar)
+    | none => avail.findSomeM? fun (ivar, ty) => do
+      unless ty.getAppFn == A.getAppFn && ty.getAppNumArgs == A.getAppNumArgs do return none
+      if A.hasMVar || ty.hasMVar then return none
+      let ok ← tryCatchRuntimeEx (Core.withCurrHeartbeats <|
+        withTheReader Core.Context (fun c => { c with maxHeartbeats := 20000 * 1000 }) <|
+        withNewMCtxDepth <| withTransparency .default <| isDefEq ty A) fun _ => pure false
+      return if ok then some ivar else none
+  let some ivar := found | return ← addBIGoal hyps goal
+  let r := hyps.remove false ivar
+  let pf ← frameExactCore r.hyps' Q (avail.filter (·.1 != ivar))
+  mkAppNamed ``tac_frame_exact_hyp
+    [("PROP", prop), ("Δ", ehyps), ("Δ'", r.e'), ("A", r.out), ("Q", Q), ("h", r.pf), ("!h'", pf)]
+
+/-- Internal (`solve_into_val_typed_struct`): frame the conjuncts of the goal that
+are equal to spatial hypotheses, in one pass along the goal (see
+`frameExactCore`); the remaining goal is left to `iframe`. -/
+elab "iframe_exact" : tactic => do
+  ProofModeM.runTactic `iframe_exact fun mvar g => do
+    let mut avail := []
+    for (_, ivar, p, ty) in (hypsList g.hyps).reverse do
+      unless isTrue p do avail := (ivar, (← instantiateMVars ty).consumeMData) :: avail
+    mvar.assign (← frameExactCore g.hyps g.goal avail)
+
+end frame_exact
+
+/-- Internal (`solve_into_val_typed_struct`): prove `IntoValTypedUnderlying V T`
+by executing the struct code symbolically. -/
+macro "solve_into_val_typed_struct_steps" : tactic => `(tactic| (
   constructor
   all_goals try simp only [typed_pointsto_unseal, typed_pointsto_wrap]
   · intro s E t _ v
@@ -987,7 +1687,7 @@ macro "solve_into_val_typed_struct" : tactic => `(tactic| (
     subst_vars
     iapply HΦ
     try simp only [TypedPointsto.typed_pointsto_def, named]
-    iframe
+    (try iframe_exact); (try iframe)
     ipureintro; (try simp only [and_self]); exact Hnotnull
   · intro s E t _ l dq v
     iintro %Φ Hl HΦ
@@ -1002,7 +1702,7 @@ macro "solve_into_val_typed_struct" : tactic => `(tactic| (
     try simp only
     iapply HΦ
     try simp only [TypedPointsto.typed_pointsto_def, named]
-    iframe
+    (try iframe_exact); (try iframe)
     ipureintro; (try simp only [and_self]); exact Hnn
   · intro s E t _ l v w
     iintro %Φ Hl HΦ
@@ -1016,9 +1716,18 @@ macro "solve_into_val_typed_struct" : tactic => `(tactic| (
     cases w
     iapply HΦ
     try simp only [TypedPointsto.typed_pointsto_def, named]
-    iframe
+    (try iframe_exact); (try iframe)
     ipureintro; (try simp only [and_self]); exact Hnn
   · infer_instance))
+
+/-- Rocq `solve_into_val_typed_struct`: prove `IntoValTypedUnderlying V T` for
+a struct type `T` whose typed points-to is the conjunction of its (named)
+field points-tos: with the generic lemma `struct_into_val_typed`
+(`solve_into_val_typed_struct_gen`), or else by symbolic execution. -/
+macro "solve_into_val_typed_struct" : tactic =>
+  `(tactic| first
+    | (solve_into_val_typed_struct_gen; done)
+    | solve_into_val_typed_struct_steps)
 
 instance equals_unfold_nil (A : Type) : EqualsUnfold (@List.nil A) (@List.nil A) := ⟨rfl⟩
 
