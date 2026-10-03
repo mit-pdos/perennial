@@ -184,22 +184,18 @@ theorem wp_GroveOp (op : GroveOp) (v : val) (Φ : val → IProp GF) :
     ⊢ WP (ExternalOp op (Val v)) @ s; E {{ Φ }} := by
   iloeb as IH
   iintro HΦ
-  iapply wp_lift_step rfl
+  iapply goose_wp_lift_base_step rfl rfl
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
-  have Hred : BaseStep.Reducible (ExternalOp op (Val v), σ₁) :=
-    ⟨[], _, _, [], base_step.ExternalOpS op v _ σ₁ _
-      ⟨σ₁.1.world, σ₁.2.global_world, rfl, .inl ⟨rfl, rfl, rfl⟩⟩⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
   · ipureintro
-    cases s <;> simp only [Stuckness.MaybeReducible]
-    exact primStep_reducible_of_baseStep_reducible Hred
+    exact ⟨[], _, _, [], base_step.ExternalOpS op v _ σ₁ _
+      ⟨σ₁.1.world, σ₁.2.global_world, rfl, .inl ⟨rfl, rfl, rfl⟩⟩⟩
   inext
-  iintro %e₂ %σ₂ %eₜ %Hstep Hcred
-  have Hbs := baseStep_of_primStep_of_baseStep_reducible Hred Hstep
+  iintro %e₂ %σ₂ %eₜ %Hbs Hcred
   cases Hbs with
   | ExternalOpS _ _ _ _ _ Hffi_step =>
   obtain ⟨s', w', rfl, Hcase⟩ := Hffi_step
@@ -492,6 +488,8 @@ theorem wp_time_acc (e : expr) (Φ : val → IProp GF) (h : to_val e = none) :
   rw [h']
   dsimp only
   iintro %σ₁ %ns %obs %obs' %nt Hσ
+  rcases σ₁ with ⟨σ₁, c⟩
+  icases (goose_bstateInterp_eq σ₁ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
   icases (grove_global_ctx_eq _).mp $$ Hgffi with ⟨Hnet, Htime⟩
@@ -500,7 +498,9 @@ theorem wp_time_acc (e : expr) (Φ : val → IProp GF) (h : to_val e = none) :
   unfold wp.pre
   rw [h']
   dsimp only
-  iapply Hwp $$ %σ₁ %ns %obs %obs' %nt
+  iapply Hwp $$ %(σ₁, c) %ns %obs %obs' %nt
+  iapply (goose_bstateInterp_eq σ₁ c _ _ _).2
+  iframe Hc
   iapply (goose_stateInterp_eq _ _ _ _).mpr
   iframe
   isplitr

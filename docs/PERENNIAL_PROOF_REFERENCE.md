@@ -646,6 +646,122 @@ a fancy update: `imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with H
 `Perennial/Proof/github_com/goose_lang/primitive.lean` and the proof of
 `wp_for` in `Loop.lean`).
 
+### Time receipts
+
+Time receipts (Mével, Jourdan, Pottier, "Time credits and time receipts in
+Iris", ESOP 2019) let a proof assume that a program runs for fewer than
+`N = receipt_bound = 2^48` steps, e.g. to show that a 64-bit counter that is
+incremented once per call never overflows. Files:
+`Perennial/GooseLang/BoundedLang.lean` (semantics),
+`Perennial/GooseLang/Receipts.lean` (ghost state and laws),
+`Perennial/GooseLang/Lifting.lean` (`wp_GoInstruction_receipt`),
+`Perennial/GooseLang/Adequacy.lean` (adequacy),
+`Perennial/ProgramLogic/TimeReceiptsTest.lean` (laws and the paper's clock).
+
+**Semantics.** The trusted `base_step` is unchanged. The registered language
+instance `goose_ectxi_lang` is a layer on top of it whose state is
+`cfg_state × Nat`; the number counts the *Go instruction* steps
+(`App (Val (GoInstruction op)) (Val v)`: function/method resolution, typed
+loads, stores and allocations, struct operations, ...). Below the bound a Go
+instruction takes its real step and increments the counter; once
+`counter + 1 = N` it *stutters* (expression and state unchanged), the paper's
+"`tick` diverges at the limit". All other steps are real steps that leave the
+counter alone. Only Go instructions are counted because a step that can stutter
+is neither pure (`PureExec`) nor atomic (`Language.Atomic`), and the heap
+primitives must stay atomic for invariant opening; Go instructions have a
+single lifting lemma (`wp_GoInstruction`) that handles the stutter by Löb
+induction.
+
+**Assertions and laws.** `⧗ n` (`receipt n`): `n` exclusive receipts; `⧖ n`
+(`preceipt n`): persistent, "at least `n` counted steps happened". The state
+interpretation owns the authoritative counter (`receipt_auth`).
+
+| law | lemma |
+|-----|-------|
+| `⧗ (m + n) ⊣⊢ ⧗ m ∗ ⧗ n` | `receipt_add` |
+| `⊢ \|==> ⧗ 0`, `⧗ n ⊢ ⧗ 0 ∗ ⧗ n` | `receipt_zero`, `receipt_zero_of` |
+| `⧖ n` persistent, `⧖ (max m n) ⊣⊢ ⧖ m ∗ ⧖ n`, `⧖ n ⊢ ⧖ m` (`m ≤ n`), `⊢ \|==> ⧖ 0` | `preceipt_persistent`, `preceipt_max`, `preceipt_mono`, `preceipt_zero` |
+| `⧗ n ⊢ \|==> (⧗ n ∗ ⧖ n)` (snapshot) | `receipt_snapshot` |
+| `⧗ N ⊢ False`, `⧖ N ⊢ False` (hence `\|={E}=> False` for any `E`) | `receipt_bound_elim`, `preceipt_bound_elim`, `receipt_bound_fupd` |
+| `⧗ n ⊢ ⌜n < N⌝`, `⧗ 1 ∗ ⧗ n ⊢ ⌜n + 1 < N⌝ ∗ ⧗ (n + 1)` | `receipt_lt`, `receipt_add_one_lt` |
+
+`⧗ N ⊢ False` holds without any invariant or mask (the paper needs
+`TRInv` and its namespace): a fragment of the receipt camera is only valid
+below the bound. `receipt_bound_eq : receipt_bound = 2 ^ 48`.
+
+**Getting receipts.** Every Go instruction step yields `⧗ 1` (and turns a
+`⧖ m` into `⧖ (m + 1)`):
+
+* `wp_GoInstruction_receipt` / `wp_GoInstruction_preceipt` (`Lifting.lean`),
+  the general lifting lemmas;
+* `wp_go_step_receipt K`, `wp_go_step_receipt'` (empty context),
+  `wp_go_step_preceipt` (`PostLifting.lean`), for deterministic pure Go
+  instructions (`⟦i, v⟧ ⤳ e`): `▷ (⧗ 1 -∗ £ 1 -∗ WP K[e] {{ Φ }}) ⊢ WP K[i v] {{ Φ }}`.
+  Since `wp_auto` takes such steps silently, take the step by hand:
+  `wp_bind (App (Val (GoInstruction (GoZeroVal _))) (Val _))`,
+  `iapply wp_go_step_receipt'`, `inext`, `iintro Hr _`;
+* `sync.atomic.wp_AddUint64_receipt`: `wp_AddUint64` for the unresolved call
+  `atomic.AddUint64(addr, v)` as goose emits it; resolving the function is a
+  Go instruction, and the atomic update receives its `⧗ 1`.
+
+The heap primitives (`wp_load`, `wp_atomic_add`, `wp_cmpxchg_*`, ...) do not
+produce receipts (they must stay atomic); every Go-level operation reaches them
+through at least one Go instruction (a call or a typed access), whose receipt
+can be used instead.
+
+**Adequacy.** `goose_adequacy` (and `grove_ffi_single_node_adequacy`,
+`disk_adequacy`) is stated for the real semantics, with the step bound as a
+hypothesis:
+
+```
+theorem goose_adequacy [hPre : gooseGpreS ffi GF] (e σ g φ) (Hinitg) (Hinit) (Hwp : ...)
+    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
+    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2))
+    (Hbound : n < receipt_bound) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2)
+```
+
+`real_nsteps`/`real_not_stuck` are iris-lean's `Language.NSteps`/`NotStuck` for
+`goose_real_ectxi_lang`. The proof applies iris-lean adequacy to the bounded
+language (`goose_adequacy_blang`) and the simulation `bounded_nsteps_of_real`
+(a real execution of fewer than `N` steps is a bounded one; no Go instruction
+stutters) and `real_not_stuck_of_bounded` (every bounded step is backed by a
+real one). `goose_invariance` is analogous.
+
+**Example: `idutil.Generator.Next`** (`Perennial/Proof/go_etcd_io/etcd/pkg/v3/idutil.lean`).
+The invariant of `is_Generator g R` owns one receipt per completed call,
+`⧗ num_used`, next to the `2^48 - num_used` remaining `R` tokens. `Next` takes a
+receipt from an early Go instruction and adds it to the invariant when the
+atomic increment opens it; `receipt_add_one_lt` gives `num_used + 1 < 2^48`, so
+a token is left. The specs are Rocq's, with no ticket:
+
+```
+theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
+    {{ is_pkg_init pkg ∗ is_Generator g R }}
+      (App (Val (g @!! go.type.PointerType Generator @!! go!"Next")) (Val #()))
+    {{ (i : w64), RET #i; R i }}
+```
+
+The proof starts with
+
+```
+  wp_start as H
+  ...
+  wp_alloc g_ptr as Hg
+  wp_pure
+  wp_pure
+  wp_bind (App (Val (GoInstruction (GoZeroVal _))) (Val _))
+  iapply wp_go_step_receipt'
+  inext
+  iintro Htk _
+  wp_auto
+```
+
+and later, inside the atomic update of `AddUint64`,
+`icases receipt_add_one_lt _ $$ [Htk Hused] with ⟨%Hbound, Hused⟩`.
+`TimeReceiptsTest.lean` has the same pattern for the paper's clock
+(`wp_clock_incr`).
+
 ### Package initialization
 
 ```lean

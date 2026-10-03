@@ -10,8 +10,16 @@ Differences from the Rocq version:
   two. `heapGS` does *not* contain the `GoGlobalContext` (the language instance
   itself depends on it, so it must be a separate instance argument), nor the
   `New.ghost` `allG` ghost state.
-* `numLatersPerStep` is `0` (Rocq: `3^(n+1)`); the state interpretation does not
-  track the step count. Every step still yields one later credit (`£ 1`).
+* `numLatersPerStep` is `0` (Rocq: `3^(n+1)`). Every step still yields one
+  later credit (`£ 1`).
+* (Lean addition) The language instance is the step-bounded layer of
+  `BoundedLang.lean`, whose state is `bcfg_state = cfg_state × Nat`; the state
+  interpretation (`goose_bstate_interp`) adds the authoritative counter of time
+  receipts (`receipt_auth`, `Receipts.lean`) to `goose_state_interp`. The
+  lifting lemmas `goose_wp_lift_*` restate iris-lean's for the real `base_step`
+  and `goose_state_interp` (as `goose_cfg_interp`); Go instructions, the only
+  counted steps, have their own lemma `wp_GoInstruction_receipt`, which handles
+  the stutter by Löb induction and hands out a time receipt.
 * The state interpretation is that of Rocq's `goose_generationGS` (`na_heap_ctx`,
   `ffi_local_ctx`, `own_go_state_ctx`, `go_lctx` equality) plus the global part
   (`ffi_global_ctx`, iris-lean's prophecy map `prophMapInterp`).
@@ -27,6 +35,8 @@ import Iris.Instances.Lib.GhostVar
 import Iris.Std.GenSets
 import Perennial.Algebra.NaHeap
 import Perennial.GooseLang.Lang
+import Perennial.GooseLang.BoundedLang
+import Perennial.GooseLang.Receipts
 import Perennial.GooseLang.Countable
 
 noncomputable section
@@ -295,6 +305,8 @@ class gooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   goose_invGS : InvGS_gen hlc GF
   goose_prophGS : prophMapGS proph_id val GF (gmap proph_id)
   goose_ffiGlobalGS : @ffiGlobalGS ffi _ GF
+  /-- (Lean addition) time receipts, tied to the step counter of the bounded semantics -/
+  goose_receiptGS : receiptGS GF
 
 /-- Per-generation ("local") ghost state. -/
 class gooseLocalGS (GF : BundledGFunctors) where
@@ -303,7 +315,8 @@ class gooseLocalGS (GF : BundledGFunctors) where
   goose_na_heapGS : na_heapGS loc val GF
   goose_go_stateGS : go_stateGS GF
 
-attribute [reducible, instance] gooseGlobalGS.goose_prophGS gooseLocalGS.goose_go_local_context
+attribute [reducible, instance] gooseGlobalGS.goose_prophGS gooseGlobalGS.goose_receiptGS
+  gooseLocalGS.goose_go_local_context
   gooseLocalGS.goose_na_heapGS gooseLocalGS.goose_go_stateGS
 
 /-- Bundles the global and local ghost state (Rocq `heapGS`, minus `allG` and
@@ -338,9 +351,15 @@ def goose_state_interp [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
     ffi_global_ctx G.goose_ffiGlobalGS σ.2.global_world ∗
     prophMapInterp κs σ.2.used_proph_id)
 
+/-- The state interpretation of the bounded language: `goose_state_interp` of
+the real configuration and the authoritative receipt counter (Lean addition). -/
+def goose_bstate_interp [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+    (σ : bcfg_state) (κs : List observation) : IProp GF :=
+  iprop(goose_state_interp σ.1 κs ∗ receipt_auth σ.2)
+
 instance goose_stateInterp [gooseGlobalGS hlc GF] [gooseLocalGS GF] :
-    StateInterp cfg_state observation GF where
-  stateInterp σ _ κs _ := goose_state_interp σ κs
+    StateInterp bcfg_state observation GF where
+  stateInterp σ _ κs _ := goose_bstate_interp σ κs
 
 variable [ffi_semantics ext ffi] [GoGlobalContext]
 
@@ -360,12 +379,17 @@ section atomic
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
 
 open EctxLanguage in
+/-- Atomicity from the real base step. Counted redexes (Go instructions) may
+stutter in the bounded semantics and are not atomic, hence `hnc`. -/
 theorem goose_atomic {e : expr} (a : Language.Atomicity)
     (h : ∀ σ κ e' σ' efs, base_step e σ κ e' σ' efs → (to_val e').isSome)
-    (hsub : ∀ Ki e', e = fill_item Ki e' → (to_val e').isSome) :
+    (hsub : ∀ Ki e', e = fill_item Ki e' → (to_val e').isSome)
+    (hnc : is_counted e = false := by rfl) :
     Language.Atomic a e :=
   Language.stronglyAtomic_atomic
-    (Atomic.ofBaseAtomic _ (fun σ obs e' σ' efs hs => h σ obs e' σ' efs hs)
+    (Atomic.ofBaseAtomic _ (fun σ obs e' σ' efs hs => by
+        obtain ⟨_, _, hs⟩ := (bounded_base_step_uncounted (σ := σ.1) (c := σ.2) hnc).1 hs
+        exact h _ obs e' _ efs hs)
       (EctxItemLanguage.subredexes_are_values hsub))
 
 /-- Discharges the `hsub` side condition of `goose_atomic`. -/
@@ -426,16 +450,22 @@ section pure
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
 
 open EctxLanguage in
+/-- A one-step `PureExec` from the real base step relation (for an uncounted
+redex, which steps in the bounded semantics exactly as in the real one). -/
 theorem pureExec_of_base_step {φ : Prop} {e₁ e₂ : expr}
     (Hsafe : φ → ∀ σ, base_step e₁ σ [] e₂ σ [])
     (Hdet : φ → ∀ σ κ e' σ' efs, base_step e₁ σ κ e' σ' efs →
-      κ = [] ∧ σ' = σ ∧ e' = e₂ ∧ efs = []) :
+      κ = [] ∧ σ' = σ ∧ e' = e₂ ∧ efs = [])
+    (hnc : is_counted e₁ = false := by rfl) :
     Language.PureExec φ 1 e₁ e₂ where
   pureExec hφ := by
-    refine .tail e₁ (.rfl _) (purePrimStep_of_pureBaseStep ⟨fun σ => ⟨_, _, _, Hsafe hφ σ⟩, ?_⟩)
+    refine .tail e₁ (.rfl _) (purePrimStep_of_pureBaseStep
+      ⟨fun σ => ⟨_, _, _, bounded_base_step.step (c := σ.2) hnc (Hsafe hφ σ.1)⟩, ?_⟩)
     intro σ₁ σ₂ obs e₂' eₜ h
-    obtain ⟨h1, h2, h3, h4⟩ := Hdet hφ _ _ _ _ _ h
-    exact ⟨h1, h2.symm, h3.symm, h4⟩
+    obtain ⟨σ', rfl, h'⟩ := (bounded_base_step_uncounted (σ := σ₁.1) (c := σ₁.2) hnc).1 h
+    obtain ⟨h1, h2, h3, h4⟩ := Hdet hφ _ _ _ _ _ h'
+    subst h2
+    exact ⟨h1, rfl, h3.symm, h4⟩
 
 instance pure_recc (f x : binder) (e : expr) :
     Language.PureExec True 1 (Rec f x e) (Val (RecV f x e)) :=
@@ -589,12 +619,18 @@ variable {s : Stuckness} {E : CoPset}
 
 open EctxLanguage ProofMode
 
-theorem goose_baseStep_iff {e e' : expr} {σ σ' : cfg_state} {κ : List observation}
-    {efs : List expr} :
-    BaseStep.baseStep (e, σ) κ (e', σ', efs) ↔ base_step e σ κ e' σ' efs := Iff.rfl
+/-- Real base reducibility. -/
+def goose_base_reducible (e : expr) (σ : cfg_state) : Prop :=
+  ∃ κ e' σ' efs, base_step e σ κ e' σ' efs
+
+/-- `goose_state_interp` with the (unused) step and thread counts of iris-lean's
+`stateInterp`, so that the `goose_wp_lift_*` lemmas have the shape of
+iris-lean's lifting lemmas. -/
+def goose_cfg_interp (σ : cfg_state) (_ns : Nat) (κs : List observation) (_nt : Nat) : IProp GF :=
+  goose_state_interp σ κs
 
 theorem goose_stateInterp_eq (σ : cfg_state) (ns : Nat) (κs : List observation) (nt : Nat) :
-    stateInterp (GF := GF) σ ns κs nt ⊣⊢
+    goose_cfg_interp (GF := GF) σ ns κs nt ⊣⊢
       iprop(na_heap_ctx tls σ.1.heap ∗
         ffi_local_ctx L.goose_ffiLocalGS σ.1.world ∗
         own_go_state_ctx σ.1.go_state.package_state ∗
@@ -602,17 +638,110 @@ theorem goose_stateInterp_eq (σ : cfg_state) (ns : Nat) (κs : List observation
         ffi_global_ctx G.goose_ffiGlobalGS σ.2.global_world ∗
         prophMapInterp κs σ.2.used_proph_id) := .rfl
 
+theorem goose_bstateInterp_eq (σ : cfg_state) (c : Nat) (ns : Nat) (κs : List observation)
+    (nt : Nat) :
+    stateInterp (GF := GF) ((σ, c) : bcfg_state) ns κs nt ⊣⊢
+      iprop(goose_cfg_interp σ ns κs nt ∗ receipt_auth c) := .rfl
+
+theorem goose_baseReducible_of {e : expr} {σ : cfg_state} {c : Nat} (hnc : is_counted e = false)
+    (h : goose_base_reducible e σ) : BaseStep.Reducible (e, ((σ, c) : bcfg_state)) := by
+  obtain ⟨κ, e', σ', efs, h⟩ := h
+  exact ⟨κ, e', (σ', c), efs, .step hnc h⟩
+
+/-- iris-lean's `wp_lift_base_step` for an uncounted redex, in terms of the real
+`base_step` and `goose_state_interp`. -/
+theorem goose_wp_lift_base_step {e₁ : expr} {Φ : val → IProp GF} (h : to_val e₁ = none)
+    (hnc : is_counted e₁ = false) :
+    (∀ σ₁ ns obs obs' nt, goose_cfg_interp σ₁ ns (obs ++ obs') nt ={E,∅}=∗
+      ⌜goose_base_reducible e₁ σ₁⌝ ∗
+      ▷ ∀ e₂ σ₂ eₜ, ⌜base_step e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={∅,E}=∗
+        goose_cfg_interp σ₂ (ns + 1) obs' (nt + eₜ.length) ∗
+        WP e₂ @ s; E {{ Φ }} ∗
+        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ _v, True }})
+    ⊢ WP e₁ @ s; E {{ Φ }} := by
+  iintro H
+  iapply wp_lift_base_step h
+  iintro %σ₁ %ns %obs %obs' %nt Hσ
+  rcases σ₁ with ⟨σ, c⟩
+  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
+  imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
+  imodintro
+  isplitr
+  · ipureintro; exact goose_baseReducible_of hnc Hred
+  inext
+  iintro %e₂ %s₂ %eₜ %Hstep Hcred
+  obtain ⟨σ₂, rfl, Hstep'⟩ := (bounded_base_step_uncounted hnc).1 Hstep
+  imod H $$ %e₂ %σ₂ %eₜ %Hstep' Hcred with ⟨Hσ, Hwp, Hefs⟩
+  imodintro
+  iframe Hwp Hefs
+  iapply (goose_bstateInterp_eq σ₂ c _ _ _).2
+  iframe
+
+/-- iris-lean's `wp_lift_atomic_base_step` for an uncounted redex. -/
+theorem goose_wp_lift_atomic_base_step {e₁ : expr} {Φ : val → IProp GF} (h : to_val e₁ = none)
+    (hnc : is_counted e₁ = false) :
+    (∀ σ₁ ns obs obs' nt, goose_cfg_interp σ₁ ns (obs ++ obs') nt ={E}=∗
+      ⌜goose_base_reducible e₁ σ₁⌝ ∗
+      ▷ ∀ e₂ σ₂ eₜ, ⌜base_step e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
+        goose_cfg_interp σ₂ (ns + 1) obs' (nt + eₜ.length) ∗
+        (∃ v, ⌜to_val e₂ = some v⌝ ∧ Φ v) ∗
+        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ _v, True }})
+    ⊢ WP e₁ @ s; E {{ Φ }} := by
+  iintro H
+  iapply wp_lift_atomic_base_step h
+  iintro %σ₁ %ns %obs %obs' %nt Hσ
+  rcases σ₁ with ⟨σ, c⟩
+  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
+  imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
+  imodintro
+  isplitr
+  · ipureintro; exact goose_baseReducible_of hnc Hred
+  inext
+  iintro %e₂ %s₂ %eₜ %Hstep Hcred
+  obtain ⟨σ₂, rfl, Hstep'⟩ := (bounded_base_step_uncounted hnc).1 Hstep
+  imod H $$ %e₂ %σ₂ %eₜ %Hstep' Hcred with ⟨Hσ, HΦ, Hefs⟩
+  imodintro
+  iframe HΦ Hefs
+  iapply (goose_bstateInterp_eq σ₂ c _ _ _).2
+  iframe
+
+/-- iris-lean's `wp_lift_atomic_base_step_no_fork` for an uncounted redex. -/
+theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : expr} {Φ : val → IProp GF}
+    (h : to_val e₁ = none) (hnc : is_counted e₁ = false) :
+    (∀ σ₁ ns obs obs' nt, goose_cfg_interp σ₁ ns (obs ++ obs') nt ={E}=∗
+      ⌜goose_base_reducible e₁ σ₁⌝ ∗
+      ▷ ∀ e₂ σ₂ eₜ, ⌜base_step e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
+        ⌜eₜ = []⌝ ∗ goose_cfg_interp σ₂ (ns + 1) obs' nt ∗ (∃ v, ⌜to_val e₂ = some v⌝ ∧ Φ v))
+    ⊢ WP e₁ @ s; E {{ Φ }} := by
+  iintro H
+  iapply goose_wp_lift_atomic_base_step h hnc
+  iintro %σ₁ %ns %obs %obs' %nt Hσ
+  imod H $$ %σ₁ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
+  imodintro
+  isplitr
+  · ipureintro; exact Hred
+  inext
+  iintro %e₂ %σ₂ %eₜ %Hstep Hcred
+  imod H $$ %e₂ %σ₂ %eₜ %Hstep Hcred with ⟨%Hefs, Hσ, HΦ⟩
+  subst Hefs
+  imodintro
+  simp only [List.length_nil, Nat.add_zero]
+  iframe Hσ HΦ
+  iapply BigSepL.bigSepL_nil.2
+  itrivial
+
 /-- A lifting lemma for atomic steps that only change the heap. -/
-theorem wp_lift_atomic_heap_step {e₁ : expr} {Φ : val → IProp GF} (h : to_val e₁ = none) :
+theorem wp_lift_atomic_heap_step {e₁ : expr} {Φ : val → IProp GF} (h : to_val e₁ = none)
+    (hnc : is_counted e₁ = false) :
     (∀ σ₁ : cfg_state, na_heap_ctx tls σ₁.1.heap ={E}=∗
-      ⌜BaseStep.Reducible (e₁, σ₁)⌝ ∗
+      ⌜goose_base_reducible e₁ σ₁⌝ ∗
       ▷ ∀ κ e₂ σ₂ eₜ, ⌜base_step e₁ σ₁ κ e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
         ⌜κ = [] ∧ eₜ = []⌝ ∗
         (∃ h', ⌜σ₂ = set_heap (fun _ => h') σ₁⌝ ∗ na_heap_ctx tls h') ∗
         (∃ v, ⌜to_val e₂ = some v⌝ ∧ Φ v))
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
-  iapply wp_lift_atomic_base_step_no_fork h
+  iapply goose_wp_lift_atomic_base_step_no_fork h hnc
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -640,7 +769,7 @@ theorem wp_panic (msg : String) (Φ : val → IProp GF) :
 theorem wp_ArbitraryInt :
     {{ (True : IProp GF) }} ArbitraryInt @ s; E {{ (x : w64), RET #x; True }} := by
   iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   imodintro
   isplitr
@@ -664,7 +793,7 @@ theorem wp_load (l : loc) (q : DFrac) (v : val) :
     {{ ▷ heap_pointsto (GF := GF) l q v }} (Load (Val #l)) @ s; E
     {{ RET v; heap_pointsto l q v }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   icases heap_pointsto_na_acc l q v $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read tls σ₁.1.heap l q v $$ Hσ Hl with %⟨lk, n, Heq, Hlock⟩
@@ -695,7 +824,7 @@ theorem wp_prepare_write (l : loc) (v : val) :
     {{ RET #(); na_heap_pointsto_st WSt l (.own 1) v ∗
         (∀ v', na_heap_pointsto l (.own 1) v' -∗ heap_pointsto l (.own 1) v') }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   icases heap_pointsto_na_acc l (.own 1) v $$ Hl with ⟨Hl, Hl_rest⟩
   imod na_heap_write_prepare tls σ₁.1.heap l v Writing rfl $$ Hσ Hl
@@ -729,7 +858,7 @@ theorem wp_finish_store (l : loc) (v v' : val) :
       (FinishStore (Val #l) (Val v)) @ s; E
     {{ RET #(); heap_pointsto l (.own 1) v }} := by
   iintro %Φ ⟨>Hl, Hl_rest⟩ HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   imod na_heap_write_finish_vs tls l v' v (Reading 0) rfl $$ Hl %σ₁.1.heap Hσ
     with ⟨%lkw, %⟨Hlookup, Hlock⟩, Hσ, Hl⟩
@@ -778,7 +907,7 @@ theorem wp_start_read (l : loc) (q : DFrac) (v : val) :
     {{ RET v; na_heap_pointsto_st (RSt 1) l q v ∗
         (∀ v', na_heap_pointsto l q v' -∗ heap_pointsto l q v') }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   icases heap_pointsto_na_acc l q v $$ Hl with ⟨Hl, Hl_rest⟩
   imod na_heap_read_prepare tls naMode_rl σ₁.1.heap l q v naMode_rl_is_read_lock $$ Hσ Hl
@@ -811,7 +940,7 @@ theorem wp_finish_read (l : loc) (q : DFrac) (v : val) :
       (FinishRead (Val #l)) @ s; E
     {{ RET #(); heap_pointsto l q v }} := by
   iintro %Φ ⟨>Hl, Hl_rest⟩ HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   imod na_heap_read_finish_vs tls naMode_url l q v naMode_url_is_read_unlock $$ Hl %σ₁.1.heap Hσ
     with ⟨%lk1, %n1, %⟨Hlookup, Hlock⟩, Hσ, Hl⟩
@@ -842,7 +971,7 @@ theorem wp_atomic_swap (l : loc) (v0 v : val) :
     {{ ▷ heap_pointsto (GF := GF) l (.own 1) v0 }} (AtomicSwap (Val #l) (Val v)) @ s; E
     {{ RET v0; heap_pointsto l (.own 1) v }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   icases heap_pointsto_na_acc l (.own 1) v0 $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v0 $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -874,7 +1003,7 @@ theorem wp_atomic_add (l : loc) (v0 v1 v : val) (Hev : atomic_add_eval v0 v1 = s
     {{ ▷ heap_pointsto (GF := GF) l (.own 1) v0 }} (AtomicAdd (Val #l) (Val v1)) @ s; E
     {{ RET v; heap_pointsto l (.own 1) v }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   icases heap_pointsto_na_acc l (.own 1) v0 $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v0 $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -907,7 +1036,7 @@ theorem wp_cmpxchg_fail (l : loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1)
     {{ ▷ heap_pointsto (GF := GF) l q v' }} (CmpXchg (Val #l) (Val v1) (Val v2)) @ s; E
     {{ RET (PairV v' #false); heap_pointsto l q v' }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   icases heap_pointsto_na_acc l q v' $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read tls σ₁.1.heap l q v' $$ Hσ Hl with %⟨lk, n, Hlookup, Hlock⟩
@@ -941,7 +1070,7 @@ theorem wp_cmpxchg_suc (l : loc) (v1 v2 v' : val) (Heq : v' = v1) :
     {{ ▷ heap_pointsto (GF := GF) l (.own 1) v' }} (CmpXchg (Val #l) (Val v1) (Val v2)) @ s; E
     {{ RET (PairV v' #true); heap_pointsto l (.own 1) v2 }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   icases heap_pointsto_na_acc l (.own 1) v' $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v' $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -998,7 +1127,7 @@ theorem wp_allocN_seq (v : val) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E
     {{ l, RET #l; pointsto_vals l (.own 1) [v] }} := by
   iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl
+  iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
   imodintro
   isplitr
@@ -1045,7 +1174,7 @@ theorem wp_alloc_untyped (v : val) :
 theorem wp_fork (e : expr) (Φ : val → IProp GF) :
     ⊢ ▷ WP e @ s; ⊤ {{ _v, True }} -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
-  iapply wp_lift_atomic_base_step rfl
+  iapply goose_wp_lift_atomic_base_step rfl rfl
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   imodintro
   isplitr
@@ -1068,20 +1197,31 @@ theorem wp_fork (e : expr) (Φ : val → IProp GF) :
 
 /-! ### Go instructions -/
 
-/-- WP for go instructions. -/
-theorem wp_GoInstruction (K : List ectx_item) (op : go_instruction) (arg : val)
-    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', is_go_step op arg e' s s') :
-    ▷ (∀ e' gs gs', ⌜is_go_step op arg e' gs gs'⌝ →
-        (£ 1 -∗ own_go_state_ctx gs ={E}=∗ own_go_state_ctx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
+/-- WP for go instructions, with time receipts (Lean addition). Go instructions
+are the counted steps of the bounded semantics: below the bound the step yields
+an exclusive receipt `⧗ 1` and increments a persistent receipt `⧖ m` (the
+paper's `{⧖ m} tick v {⧗ 1 ∗ ⧖ (m + 1)}`); at the bound the step stutters,
+which is handled by Löb induction. -/
+theorem wp_GoInstruction_preceipt (K : List ectx_item) (op : go_instruction) (arg : val)
+    (Φ : val → IProp GF) (m : Nat) (Hok : ∀ s, ∃ e' s', is_go_step op arg e' s s') :
+    ⧖ m ∗ ▷ (∀ e' gs gs', ⌜is_go_step op arg e' gs gs'⌝ →
+        (£ 1 -∗ ⧗ 1 -∗ ⧖ (m + 1) -∗ own_go_state_ctx gs ={E}=∗
+          own_go_state_ctx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
     ⊢ WP (fill K (App (Val (GoInstruction op)) (Val arg))) @ s; E {{ Φ }} := by
-  iintro HΦ
+  iloeb as IH
+  iintro ⟨#Hm, HΦ⟩
   iapply wp_lift_step (EctxLanguage.fill_not_val K _ rfl)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
+  rcases σ₁ with ⟨σ₁, c⟩
+  icases (goose_bstateInterp_eq σ₁ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
-  have Hred : BaseStep.Reducible (App (Val (GoInstruction op)) (Val arg), σ₁) := by
-    obtain ⟨e', s', h⟩ := Hok σ₁.1.go_state.package_state
-    exact ⟨[], e', _, [], base_step.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h)⟩
+  obtain ⟨e', s', h⟩ := Hok σ₁.1.go_state.package_state
+  have Hreal := base_step.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h)
+  have Hred : BaseStep.Reducible (App (Val (GoInstruction op)) (Val arg), ((σ₁, c) : bcfg_state)) := by
+    by_cases hc : c + 1 < receipt_bound
+    · exact ⟨[], e', (_, c + 1), [], .tick rfl hc Hreal⟩
+    · exact ⟨[], _, (σ₁, c), [], .stutter rfl (by omega) Hreal⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
@@ -1092,19 +1232,70 @@ theorem wp_GoInstruction (K : List ectx_item) (op : go_instruction) (arg : val)
   iintro %e₂ %σ₂ %eₜ %Hstep Hcred
   obtain ⟨e₂', rfl, Hbs⟩ :=
     exists_baseStep_of_primStep_fill_of_redex_baseStep_reducible Hred Hstep
-  obtain ⟨s', Hgo, rfl, rfl, rfl⟩ := base_step_GoInstruction_inv Hbs
-  rw [Hlctx] at Hgo
-  imod Hclose
-  imod HΦ $$ %e₂' %_ %s' %Hgo Hcred Hgs with ⟨Hgs, Hwp⟩
-  imodintro
-  isplitl [Hheap Hffi Hgs Hgffi Hproph]
-  · iapply (goose_stateInterp_eq _ _ _ _).mpr
-    dsimp only [List.nil_append]
-    iframe
-    ipureintro; exact Hlctx
-  iframe Hwp
-  iapply BigSepL.bigSepL_nil.2
-  itrivial
+  cases Hbs with
+  | step hnc _ => cases hnc
+  | tick _ hc Hbs =>
+    obtain ⟨s', Hgo, rfl, rfl, rfl⟩ := base_step_GoInstruction_inv Hbs
+    rw [Hlctx] at Hgo
+    imod Hclose
+    imod receipt_auth_tick' c m hc $$ [Hc] with ⟨Hc, Hr, Hm'⟩
+    · iframe Hc; iexact Hm
+    imod HΦ $$ %e₂' %_ %s' %Hgo Hcred Hr Hm' Hgs with ⟨Hgs, Hwp⟩
+    imodintro
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc]
+    · iapply (goose_bstateInterp_eq _ _ _ _ _).2
+      iframe Hc
+      iapply (goose_stateInterp_eq _ _ _ _).mpr
+      dsimp only [List.nil_append]
+      iframe
+      ipureintro; exact Hlctx
+    iframe Hwp
+    iapply BigSepL.bigSepL_nil.2
+    itrivial
+  | stutter _ _ _ =>
+    imod Hclose
+    imodintro
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc]
+    · iapply (goose_bstateInterp_eq _ _ _ _ _).2
+      iframe Hc
+      iapply (goose_stateInterp_eq _ _ _ _).mpr
+      dsimp only [List.nil_append]
+      iframe
+      ipureintro; exact Hlctx
+    isplitl [IH HΦ]
+    · iapply IH
+      iframe Hm
+      inext
+      iexact HΦ
+    iapply BigSepL.bigSepL_nil.2
+    itrivial
+
+/-- `wp_GoInstruction_preceipt` without persistent receipts: a Go instruction
+step yields an exclusive time receipt `⧗ 1`. -/
+theorem wp_GoInstruction_receipt (K : List ectx_item) (op : go_instruction) (arg : val)
+    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', is_go_step op arg e' s s') :
+    ▷ (∀ e' gs gs', ⌜is_go_step op arg e' gs gs'⌝ →
+        (£ 1 -∗ ⧗ 1 -∗ own_go_state_ctx gs ={E}=∗ own_go_state_ctx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
+    ⊢ WP (fill K (App (Val (GoInstruction op)) (Val arg))) @ s; E {{ Φ }} := by
+  iintro HΦ
+  imod preceipt_zero (GF := GF) with #H0
+  iapply wp_GoInstruction_preceipt K op arg Φ 0 Hok
+  iframe H0
+  inext
+  iintro %e' %gs %gs' %Hstep Hlc Hr _ Hgs
+  iapply HΦ $$ %e' %gs %gs' %Hstep Hlc Hr Hgs
+
+/-- WP for go instructions. -/
+theorem wp_GoInstruction (K : List ectx_item) (op : go_instruction) (arg : val)
+    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', is_go_step op arg e' s s') :
+    ▷ (∀ e' gs gs', ⌜is_go_step op arg e' gs gs'⌝ →
+        (£ 1 -∗ own_go_state_ctx gs ={E}=∗ own_go_state_ctx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
+    ⊢ WP (fill K (App (Val (GoInstruction op)) (Val arg))) @ s; E {{ Φ }} := by
+  iintro HΦ
+  iapply wp_GoInstruction_receipt K op arg Φ Hok
+  inext
+  iintro %e' %gs %gs' %Hstep Hlc _ Hgs
+  iapply HΦ $$ %e' %gs %gs' %Hstep Hlc Hgs
 
 /-- `wp_GoInstruction` with an empty evaluation context. -/
 theorem wp_GoInstruction' (op : go_instruction) (arg : val)
@@ -1126,7 +1317,7 @@ theorem wp_new_proph :
     {{ (True : IProp GF) }} NewProph @ s; E
     {{ (pvs : List val) (p : proph_id), RET #p; proph p pvs }} := by
   iintro %Φ _ HΦ
-  iapply wp_lift_atomic_base_step_no_fork rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -1157,7 +1348,7 @@ theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val) :
     {{ proph (GF := GF) p pvs }} (ResolveProph (Val #p) (Val v)) @ s; E
     {{ (pvs' : List val), RET #(); ⌜pvs = v :: pvs'⌝ ∗ proph p pvs' }} := by
   iintro %Φ Hp HΦ
-  iapply wp_lift_atomic_base_step_no_fork rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩

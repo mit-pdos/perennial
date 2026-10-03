@@ -278,6 +278,54 @@ instance pure_wp_go_step_det (i : go_instruction) (v : val) (e : expr)
     iframe Hctx
     iapply HΦ $$ Hlc
 
+/-- (Lean addition, time receipts) A deterministic pure Go instruction step
+that also yields an exclusive time receipt `⧗ 1` (`wp_GoInstruction_receipt`).
+Use it with `wp_bind` on the instruction, before `wp_auto` takes the step. -/
+theorem wp_go_step_receipt (i : go_instruction) (v : val) (e : expr)
+    [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
+    (K : List ectx_item) :
+    ▷ (⧗ 1 -∗ £ 1 -∗ WP (fill K e) @ s; E {{ Φ }})
+    ⊢ WP (fill K (App (Val (GoInstruction i)) (Val v))) @ s; E {{ Φ }} := by
+  have hdet := h.is_go_step_det
+  have hpure := h.is_go_step_pure_det
+  iintro HΦ
+  iapply wp_GoInstruction_receipt K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
+  inext
+  iintro %e' %gs %gs' %Hstep Hlc Hr Hctx
+  obtain ⟨Hp, rfl⟩ := (hdet gs gs' e').1 Hstep
+  rw [hpure] at Hp
+  subst Hp
+  imodintro
+  iframe Hctx
+  iapply HΦ $$ Hr Hlc
+
+/-- `wp_go_step_receipt` with an empty evaluation context (use after `wp_bind`). -/
+theorem wp_go_step_receipt' (i : go_instruction) (v : val) (e : expr)
+    [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF) :
+    ▷ (⧗ 1 -∗ £ 1 -∗ WP e @ s; E {{ Φ }})
+    ⊢ WP (App (Val (GoInstruction i)) (Val v)) @ s; E {{ Φ }} :=
+  wp_go_step_receipt i v e Φ []
+
+/-- `wp_go_step_receipt` that also increments a persistent time receipt. -/
+theorem wp_go_step_preceipt (i : go_instruction) (v : val) (e : expr)
+    [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
+    (K : List ectx_item) (m : Nat) :
+    ⧖ m ∗ ▷ (⧗ 1 -∗ ⧖ (m + 1) -∗ £ 1 -∗ WP (fill K e) @ s; E {{ Φ }})
+    ⊢ WP (fill K (App (Val (GoInstruction i)) (Val v))) @ s; E {{ Φ }} := by
+  have hdet := h.is_go_step_det
+  have hpure := h.is_go_step_pure_det
+  iintro ⟨Hm, HΦ⟩
+  iapply wp_GoInstruction_preceipt K i v Φ m (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
+  iframe Hm
+  inext
+  iintro %e' %gs %gs' %Hstep Hlc Hr Hm' Hctx
+  obtain ⟨Hp, rfl⟩ := (hdet gs gs' e').1 Hstep
+  rw [hpure] at Hp
+  subst Hp
+  imodintro
+  iframe Hctx
+  iapply HΦ $$ Hr Hm' Hlc
+
 variable {s : Stuckness} {E : CoPset}
 
 theorem wp_GoPrealloc :

@@ -41,7 +41,9 @@ instance disk_interp_adequacy : ffi_interp_adequacy disk_model where
     iexact H2
 
 open disk_ffi in
-/-- Adequacy for GooseLang with the disk FFI. -/
+/-- Adequacy for GooseLang with the disk FFI: in every real execution of fewer
+than `receipt_bound` steps, no thread is stuck and a final value of the main
+thread satisfies `φ` (see `goose_adequacy`). -/
 theorem disk_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     [hPre : gooseGpreS disk_model GF] (e : expr) (σ : state) (g : global_state)
     (φ : val → Prop)
@@ -49,9 +51,12 @@ theorem disk_adequacy [GoGlobalContext] {GF : BundledGFunctors}
       hG.goose_localGS.goose_go_local_context = σ.go_state.go_lctx →
       ⊢ ([∗map] a ↦ b ∈ disk_world σ, disk_pointsto (goose_diskGS (GF := GF)) a (.own 1) b) -∗
         own_go_state σ.go_state.package_state ={⊤}=∗
-        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }}) :
-    adequate Stuckness.NotStuck e ((σ, g) : cfg_state) (fun v _ => φ v) := by
-  refine goose_adequacy (GF := GF) e σ g φ trivial trivial ?_
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
+    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2))
+    (Hbound : n < receipt_bound) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2) := by
+  refine goose_adequacy (GF := GF) e σ g φ trivial trivial ?_ n κs t2 σ2 Hsteps Hbound
   intro hG Hlctx
   iintro _ Hd Hgs
   iapply Hwp Hlctx $$ Hd Hgs

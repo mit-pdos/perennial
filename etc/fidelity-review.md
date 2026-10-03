@@ -101,7 +101,7 @@ None found.
   - Every wp lemma has an identical pre/postcondition: panic, ArbitraryInt, GoInstruction, fork, allocN_seq, alloc_untyped, load, prepare_write, finish_store, start_read, finish_read, atomic_swap, atomic_add, cmpxchg_fail/suc, new_proph, resolve_proph.
   - No `sorry`. `numLatersPerStep = 0` only reduces proof power and is documented.
 - **Adequacy.lean:**
-  - `goose_adequacy` concludes iris-lean `adequate NotStuck e (σ,g) φ`, which means no thread gets stuck and the main thread's result satisfies φ.
+  - (Updated for time receipts.) The program logic is built for the step-bounded language `goose_ectxi_lang` (`BoundedLang.lean`: counter of Go-instruction steps, stutter at `receipt_bound = 2^48`); `goose_adequacy_blang` concludes iris-lean `adequate NotStuck` for it. The main theorem `goose_adequacy` is about the real semantics `goose_real_ectxi_lang` (the former instance, unchanged `base_step`): for every real execution of `n < receipt_bound` steps (`real_nsteps`), no thread is stuck (`real_not_stuck`) and a value of the main thread satisfies φ. The step bound is an explicit hypothesis; the transfer is the simulation `bounded_nsteps_of_real` plus `real_not_stuck_of_bounded`.
   - The hypothesis is a WP under *every* `heapGS` matching the initial `go_lctx`. This is meaningful and matches `goose_recv_adequacy_failstop` minus crashes.
   - `goose_invariance` is also faithful. There are no `sorry`s in iris-lean ProgramLogic.
 - **Grove FFI** `is_grove_ffi_step`/`ffi_step`: identical, including stuttering.

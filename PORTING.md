@@ -18,6 +18,18 @@ reasoning, `program_proof/`) is out of scope.
   instance of iris-lean's `Language`, and proofs use iris-lean's `wp`, which
   already has later credits and `numLatersPerStep`. Perennial's
   `state * global_state` pair becomes a single iris-lean `State`.
+* **Bounded-step layer and time receipts.** The trusted semantics `base_step`
+  (and its iris-lean language `goose_real_ectxi_lang`, `GooseLang/Lang.lean`)
+  is unchanged, but the language instance used by the program logic is a
+  separate step-bounded layer (`GooseLang/BoundedLang.lean`): its state adds a
+  counter of Go-instruction steps, and once the counter reaches
+  `receipt_bound - 1` (`receipt_bound = 2^48`) Go instructions stutter instead
+  of stepping. This supports *time receipts* (Mével, Jourdan, Pottier, ESOP
+  2019; `GooseLang/Receipts.lean`): `⧗ n`/`⧖ n`, with `⧗ receipt_bound ⊢ False`.
+  Consequently the adequacy theorems (`goose_adequacy`, `goose_invariance`,
+  and the grove/disk ones) are about real executions of *fewer than
+  `receipt_bound` steps*, an explicit hypothesis. See
+  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts".
 * **Iris/stdpp substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. stdpp-style helpers that iris-lean lacks
   live in `Perennial/Std`.

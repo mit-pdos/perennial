@@ -55,7 +55,8 @@ instance grove_interp_adequacy : ffi_interp_adequacy grove_model where
 open grove_ffi in
 /-- Adequacy for a single Grove node (Rocq
 `grove_ffi_single_node_adequacy_failstop`). The proof gets ownership of the
-initial network and of the node's initial files. -/
+initial network and of the node's initial files. As for `goose_adequacy`, the
+conclusion is about real executions of fewer than `receipt_bound` steps. -/
 theorem grove_ffi_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     [hPre : gooseGpreS grove_model GF] (e : expr) (σ : state) (g : global_state)
     (φ : val → Prop)
@@ -64,8 +65,11 @@ theorem grove_ffi_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
       ⊢ ([∗map] e ↦ ms ∈ g.global_world.grove_net, (e c↦ ms : IProp GF)) -∗
         ([∗map] f ↦ c ∈ σ.world.grove_node_files, (f f↦ c : IProp GF)) -∗
         own_go_state σ.go_state.package_state ={⊤}=∗
-        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }}) :
-    adequate Stuckness.NotStuck e ((σ, g) : cfg_state) (fun v _ => φ v) :=
-  goose_adequacy e σ g φ trivial trivial Hwp
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
+    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2))
+    (Hbound : n < receipt_bound) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2) :=
+  goose_adequacy e σ g φ trivial trivial Hwp n κs t2 σ2 Hsteps Hbound
 
 end Perennial

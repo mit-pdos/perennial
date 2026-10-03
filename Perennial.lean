@@ -4,6 +4,8 @@
 import Perennial.Std.All
 import Perennial.GooseLang.Lang
 import Perennial.GooseLang.Countable
+import Perennial.GooseLang.BoundedLang
+import Perennial.GooseLang.Receipts
 import Perennial.GooseLang.Lifting
 import Perennial.GooseLang.IPersist
 import Perennial.GooseLang.Adequacy

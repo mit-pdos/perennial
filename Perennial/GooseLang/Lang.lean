@@ -9,8 +9,13 @@ Differences from the Rocq version:
 * The base step is an inductive relation (`base_step`) instead of being written
   with the `Transitions` monad, and FFI steps (`ffi_semantics.ffi_step`) are a
   plain relation.
-* The language is an instance of iris-lean's `EctxItemLanguage` whose state is
-  the pair `state × global_state` (`cfg_state`).
+* The real semantics is `goose_real_ectxi_lang`, an iris-lean
+  `EctxItemLanguage` whose state is the pair `state × global_state`
+  (`cfg_state`). It is a `def`, not an instance: the registered language
+  instance (used by the program logic) is the step-bounded layer
+  `goose_ectxi_lang` of `Perennial/GooseLang/BoundedLang.lean`, which adds a
+  step counter on top of `base_step` for time receipts. The adequacy theorems
+  are transferred back to `goose_real_ectxi_lang` (`goose_adequacy`).
 * Equality on the syntax is decided classically. Rocq proves it with an
   encoding into trees; nothing downstream computes with it.
 -/
@@ -710,7 +715,10 @@ instance goose_toVal : ToVal expr val where
   coe_of_toVal_eq_some := of_to_val
   toVal_coe _ := rfl
 
-instance goose_ectxi_lang : EctxItemLanguage expr ectx_item cfg_state observation val where
+/-- The real GooseLang semantics as an iris-lean `EctxItemLanguage` (the trusted
+model). Not an instance: the program logic uses the bounded layer
+`goose_ectxi_lang` (`BoundedLang.lean`). -/
+@[reducible] def goose_real_ectxi_lang : EctxItemLanguage expr ectx_item cfg_state observation val where
   toVal := to_val
   ofVal := Val
   coe_of_toVal_eq_some := of_to_val

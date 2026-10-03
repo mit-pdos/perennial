@@ -97,6 +97,26 @@ theorem wp_AddUint64 (addr : loc) (v : w64) :
   iframe
   ipureintro; exact Hnn
 
+/-- (Lean addition, time receipts) `wp_AddUint64` for the call
+`atomic.AddUint64(addr, v)` before the function is resolved, i.e. in the form
+in which goose emits it. Resolving `AddUint64` is a Go instruction, which yields
+a time receipt `⧗ 1`; the atomic update receives it (so it can, e.g., be stored
+in an invariant opened by the update). -/
+theorem wp_AddUint64_receipt (addr : loc) (v : w64) :
+    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (⧗ 1 -∗ |={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗
+        (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
+      WP (App (App (App (Val (GoInstruction (FuncResolve AddUint64 []))) (Val #())) (Val #addr))
+        (Val #v)) {{ Φ }} := by
+  iintro %Φ #Hpkg HΦ
+  wp_bind (App (Val (GoInstruction _)) (Val _))
+  iapply wp_go_step_receipt'
+  inext
+  iintro Hr _
+  iapply wp_value'
+  iapply wp_AddUint64 addr v $$ %Φ Hpkg
+  iapply HΦ $$ Hr
+
 theorem wp_CompareAndSwapUint64 (addr : loc) (old new : w64) :
     ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), addr ↦{dq} v ∗

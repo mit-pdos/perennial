@@ -12,6 +12,14 @@ Differences from the Rocq version:
 * iris-lean has no `gFunctors` lists: `heapΣ`/`subG_heapPreG` have no
   counterpart; `gooseGpreS GF` is assumed directly.
 * Later credits are part of iris-lean's `InvGpreS`.
+* (Lean addition, time receipts) The program logic is built for the step-bounded
+  language of `BoundedLang.lean`; `goose_adequacy_blang` is its adequacy
+  theorem. The main theorems `goose_adequacy` and `goose_invariance` are about
+  the *real* semantics (`real_nsteps`, `goose_real_ectxi_lang`) and assume
+  explicitly that the execution has fewer than `receipt_bound` (`= 2^48`)
+  steps; they follow from the bounded ones by the simulation
+  `bounded_nsteps_of_real`. `gooseGpreS` also allocates the receipt ghost
+  state (`goose_preG_receipt`).
 -/
 import Iris.ProgramLogic.Adequacy
 import Perennial.GooseLang.Lifting
@@ -54,9 +62,10 @@ class gooseGpreS [ext : ffi_syntax] (ffi : ffi_model) [ffi_interp ffi] [ffi_inte
   goose_preG_proph : prophMapPreS proph_id val GF (gmap proph_id)
   goose_preG_ffi : ffiGpreS (ffi := ffi) GF
   goose_preG_go_state : go_state_preG GF
+  goose_preG_receipt : receiptGpreS GF
 
 attribute [reducible, instance] gooseGpreS.goose_preG_iris gooseGpreS.goose_preG_heap
-  gooseGpreS.goose_preG_proph gooseGpreS.goose_preG_go_state
+  gooseGpreS.goose_preG_proph gooseGpreS.goose_preG_go_state gooseGpreS.goose_preG_receipt
 
 section adequacy
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_interp_adequacy ffi]
@@ -77,7 +86,7 @@ theorem goose_init [hPre : gooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
         own_go_state σ.go_state.package_state ={⊤}=∗ P hG) :
     ⊢@{IProp GF} |={⊤}=> ∃ hG : heapGS .hasLC GF,
       ⌜hG.goose_globalGS.goose_invGS = Hinv⌝ ∗
-      goose_state_interp (σ, g) κs ∗ P hG := by
+      goose_bstate_interp (((σ, g), 0) : bcfg_state) κs ∗ P hG := by
   imod na_heap_init (L := loc) (V := val)
     (hG := ⟨hPre.goose_preG_heap.na_heap_preG_inG, default⟩) tls σ.heap with ⟨%hHeap, Hh⟩
   imod ProphMap.init (H := gmap proph_id) (V := val) κs g.used_proph_id with ⟨%hProph, Hp⟩
@@ -85,7 +94,8 @@ theorem goose_init [hPre : gooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   imod ffi_global_init GF hPre.goose_preG_ffi g.global_world Hinitg with ⟨%hFG, Hgctx, Hgstart⟩
   imod ffi_local_init GF hPre.goose_preG_ffi σ.world g.global_world Hinit
     with ⟨%hFL, Hlctx, Hlstart⟩
-  let G : gooseGlobalGS .hasLC GF := ⟨Hinv, hProph, hFG⟩
+  imod receipt_init (hPre := hPre.goose_preG_receipt) with ⟨%γR, HR⟩
+  let G : gooseGlobalGS .hasLC GF := ⟨Hinv, hProph, hFG, ⟨hPre.goose_preG_receipt.receipt_preG_inG, γR⟩⟩
   let L : gooseLocalGS GF :=
     ⟨hFL, σ.go_state.go_lctx, hHeap, go_stateGS_update_pre GF hPre.goose_preG_go_state γ⟩
   let hG : heapGS .hasLC GF := ⟨G, L⟩
@@ -95,15 +105,17 @@ theorem goose_init [hPre : gooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   isplitr
   · ipureintro; rfl
   iframe HP
-  unfold goose_state_interp
+  unfold goose_bstate_interp goose_state_interp
   iframe
   ipureintro; rfl
 
-/-- Adequacy of GooseLang: a WP proved for `e` under any instantiation of the
-GooseLang ghost state (given the FFI's start resources and the initial package
-state) implies that `e` does not get stuck and its result satisfies `φ`
-(Rocq `goose_recv_adequacy_failstop`). -/
-theorem goose_adequacy [hPre : gooseGpreS ffi GF]
+/-- Adequacy of the bounded GooseLang language (the one the program logic is
+built for): a WP proved for `e` under any instantiation of the GooseLang ghost
+state (given the FFI's start resources and the initial package state) implies
+that `e` does not get stuck and its result satisfies `φ`, in the bounded
+semantics started with counter `0` (Rocq `goose_recv_adequacy_failstop`). See
+`goose_adequacy` for the real semantics. -/
+theorem goose_adequacy_blang [hPre : gooseGpreS ffi GF]
     (e : expr) (σ : state) (g : global_state) (φ : val → Prop)
     (Hinitg : ffi_initgP g.global_world) (Hinit : ffi_initP σ.world g.global_world)
     (Hwp : ∀ [hG : heapGS .hasLC GF],
@@ -112,23 +124,87 @@ theorem goose_adequacy [hPre : gooseGpreS ffi GF]
         ffi_local_start (goose_ffiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
         own_go_state σ.go_state.package_state ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }}) :
-    adequate Stuckness.NotStuck e ((σ, g) : cfg_state) (fun v _ => φ v) := by
-  refine wp_adequacy (GF := GF) Stuckness.NotStuck e ((σ, g) : cfg_state) φ ?_
+    adequate Stuckness.NotStuck e (((σ, g), 0) : bcfg_state) (fun v _ => φ v) := by
+  refine wp_adequacy (GF := GF) Stuckness.NotStuck e (((σ, g), 0) : bcfg_state) φ ?_
   intro Hinv κs
   imod goose_init (Hinv := Hinv) σ g κs Hinitg Hinit
     (fun (_ : heapGS .hasLC GF) => iprop(WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }}))
     (@fun hG HinvEq Hlctx => by subst HinvEq; exact Hwp (hG := hG) Hlctx) with ⟨%hG, %HinvEq, Hσ, Hwp⟩
   imodintro
-  iexists (fun σ κs => goose_state_interp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
+  iexists (fun σ κs => goose_bstate_interp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
   iexists (fun _ => iprop(True))
   iframe Hσ
-  obtain ⟨⟨Ginv, Gproph, Gffi⟩, L⟩ := hG
+  obtain ⟨⟨Ginv, Gproph, Gffi, Grcpt⟩, L⟩ := hG
   cases HinvEq
   iexact Hwp
 
-/-- Invariance: under the same hypotheses as `goose_adequacy`, a state
-property that follows from the FFI's global interpretation holds in every
-reachable configuration. -/
+/-- Adequacy of GooseLang (Rocq `goose_recv_adequacy_failstop`), for the real
+semantics, under the time-receipt assumption: in every real execution of `e`
+of fewer than `receipt_bound` (`= 2^48`) steps, every thread is a value or can
+take a step, and if the main thread has terminated with `v` then `φ v`. -/
+theorem goose_adequacy [hPre : gooseGpreS ffi GF]
+    (e : expr) (σ : state) (g : global_state) (φ : val → Prop)
+    (Hinitg : ffi_initgP g.global_world) (Hinit : ffi_initP σ.world g.global_world)
+    (Hwp : ∀ [hG : heapGS .hasLC GF],
+      hG.goose_localGS.goose_go_local_context = σ.go_state.go_lctx →
+      ⊢ ffi_global_start (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g.global_world -∗
+        ffi_local_start (goose_ffiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        own_go_state σ.go_state.package_state ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
+    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2))
+    (Hbound : n < receipt_bound) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2) := by
+  have Hadeq := goose_adequacy_blang e σ g φ Hinitg Hinit Hwp
+  obtain ⟨c, Hb⟩ := bounded_nsteps_of_real Hsteps 0 (by omega)
+  have Hreach : ([e], (((σ, g), 0) : bcfg_state)) -·->ₜₚ* (t2, (σ2, c)) :=
+    (Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩
+  refine ⟨?_, ?_⟩
+  · rintro v t2' rfl
+    exact Hadeq.adequate_result t2' (σ2, c) v Hreach
+  · intro e2 he2
+    exact real_not_stuck_of_bounded (Hadeq.adequate_not_stuck t2 (σ2, c) e2 rfl Hreach he2)
+
+/-- Invariance for the bounded language: under the same hypotheses as
+`goose_adequacy`, a state property that follows from the FFI's global
+interpretation holds in every reachable configuration of the bounded semantics. -/
+theorem goose_invariance_blang [hPre : gooseGpreS ffi GF]
+    (e : expr) (σ : state) (g : global_state) (φinv : ffi_global_state → Prop)
+    (Hinitg : ffi_initgP g.global_world) (Hinit : ffi_initP σ.world g.global_world)
+    (Hwp : ∀ [hG : heapGS .hasLC GF],
+      hG.goose_localGS.goose_go_local_context = σ.go_state.go_lctx →
+      ⊢ ffi_global_start (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g.global_world -∗
+        ffi_local_start (goose_ffiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        own_go_state σ.go_state.package_state ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
+        (∀ g', ffi_global_ctx (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g' ={⊤,∅}=∗ ⌜φinv g'⌝))
+    {t2 : List expr} {σ2 : bcfg_state}
+    (Hsteps : ([e], (((σ, g), 0) : bcfg_state)) -·->ₜₚ* (t2, σ2)) :
+    φinv σ2.1.2.global_world := by
+  refine wp_invariance (GF := GF) Stuckness.NotStuck e (((σ, g), 0) : bcfg_state) σ2 t2 _ ?_ Hsteps
+  intro Hinv κs
+  imod goose_init (Hinv := Hinv) σ g κs Hinitg Hinit
+    (fun (_ : heapGS .hasLC GF) => iprop(WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
+        (∀ g', ffi_global_ctx (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g' ={⊤,∅}=∗ ⌜φinv g'⌝)))
+    (@fun hG HinvEq Hlctx => by subst HinvEq; exact Hwp (hG := hG) Hlctx) with ⟨%hG, %HinvEq, Hσ, Hwp, Hφ⟩
+  imodintro
+  iexists (fun σ κs _ => goose_bstate_interp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
+  iexists (fun _ => iprop(True))
+  iframe Hσ
+  obtain ⟨⟨Ginv, Gproph, Gffi, Grcpt⟩, L⟩ := hG
+  cases HinvEq
+  isplitl [Hwp]
+  · iexact Hwp
+  iintro Hσ2
+  iexists ∅
+  unfold goose_bstate_interp goose_state_interp
+  icases Hσ2 with ⟨⟨-, -, -, -, Hg, -⟩, -⟩
+  iapply Hφ $$ Hg
+
+/-- Invariance (real semantics): under the same hypotheses as `goose_adequacy`,
+a state property that follows from the FFI's global interpretation holds in
+every configuration reachable by a real execution of fewer than
+`receipt_bound` steps. -/
 theorem goose_invariance [hPre : gooseGpreS ffi GF]
     (e : expr) (σ : state) (g : global_state) (φinv : ffi_global_state → Prop)
     (Hinitg : ffi_initgP g.global_world) (Hinit : ffi_initP σ.world g.global_world)
@@ -139,28 +215,13 @@ theorem goose_invariance [hPre : gooseGpreS ffi GF]
         own_go_state σ.go_state.package_state ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
         (∀ g', ffi_global_ctx (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g' ={⊤,∅}=∗ ⌜φinv g'⌝))
-    {t2 : List expr} {σ2 : cfg_state}
-    (Hsteps : ([e], ((σ, g) : cfg_state)) -·->ₜₚ* (t2, σ2)) :
+    {n : Nat} {κs : List observation} {t2 : List expr} {σ2 : cfg_state}
+    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2))
+    (Hbound : n < receipt_bound) :
     φinv σ2.2.global_world := by
-  refine wp_invariance (GF := GF) Stuckness.NotStuck e ((σ, g) : cfg_state) σ2 t2 _ ?_ Hsteps
-  intro Hinv κs
-  imod goose_init (Hinv := Hinv) σ g κs Hinitg Hinit
-    (fun (_ : heapGS .hasLC GF) => iprop(WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
-        (∀ g', ffi_global_ctx (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g' ={⊤,∅}=∗ ⌜φinv g'⌝)))
-    (@fun hG HinvEq Hlctx => by subst HinvEq; exact Hwp (hG := hG) Hlctx) with ⟨%hG, %HinvEq, Hσ, Hwp, Hφ⟩
-  imodintro
-  iexists (fun σ κs _ => goose_state_interp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
-  iexists (fun _ => iprop(True))
-  iframe Hσ
-  obtain ⟨⟨Ginv, Gproph, Gffi⟩, L⟩ := hG
-  cases HinvEq
-  isplitl [Hwp]
-  · iexact Hwp
-  iintro Hσ2
-  iexists ∅
-  unfold goose_state_interp
-  icases Hσ2 with ⟨-, -, -, -, Hg, -⟩
-  iapply Hφ $$ Hg
+  obtain ⟨c, Hb⟩ := bounded_nsteps_of_real Hsteps 0 (by omega)
+  exact goose_invariance_blang (σ2 := (σ2, c)) e σ g φinv Hinitg Hinit Hwp
+    ((Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩)
 
 end adequacy
 
