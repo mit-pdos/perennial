@@ -100,6 +100,11 @@ def isNamed? (e : Expr) : Option (String × Expr) :=
 def isBIExists (e : Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.exists 4
 def isBISep (e : Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.sep 4
 
+/-- `▷ Q` as `(▷ ·, Q)`. -/
+def isLater? (e : Expr) : Option (Expr × Expr) :=
+  let e := e.consumeMData
+  if e.isAppOfArity ``BIBase.later 3 then some (e.appFn!, e.appArg!) else none
+
 /-- Unfold definitions at the head of `e` until it is a `named`, `∃` or `∗`
 (or nothing can be unfolded). Irreducible definitions are not unfolded. -/
 partial def unfoldNamedHead (e : Expr) (fuel : Nat := 64) : MetaM Expr := do
@@ -170,7 +175,13 @@ def collectNamedHyps {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (names : List Str
   | _, .hyp _ name ivar _ ty _ =>
     match isNamed? ty with
     | some (_, P) => if names.contains name.toString then [(ivar, P)] else []
-    | none => []
+    | none =>
+      -- `▷ (n ∷ P)` (from destructing a hypothesis under a later)
+      match isLater? ty with
+      | some (lf, Q) => match isNamed? Q with
+        | some (_, P) => if names.contains name.toString then [(ivar, mkApp lf P)] else []
+        | none => []
+      | none => []
   | _, .sep _ _ _ _ lhs rhs => collectNamedHyps names lhs ++ collectNamedHyps names rhs
 
 /-- Strip the `named` wrapper from every hypothesis `H : "H" ∷ P`. -/
@@ -186,7 +197,12 @@ def stripNamedHyps (names : List String) : TacticM Unit := do
 /-- Unfold the head of hypothesis `h`'s type (see `unfoldNamedHead`). -/
 def unfoldHypHead (h : Name) : TacticM Expr := do
   let (g, ivar, ty) ← findIrisHyp h
-  let ty' ← unfoldNamedHead ty
+  -- under a later `▷ Q`: unfold `Q`
+  let ty' ← match isLater? ty with
+    | some (lf, Q) => do
+      let Q' ← unfoldNamedHead Q
+      pure (if Q' == Q then ty else mkApp lf Q')
+    | none => unfoldNamedHead ty
   if ty' != ty then
     let ⟨e', hyps'⟩ := changeHypType (bi := g.bi) ivar ty' g.hyps
     let mvar ← getMainGoal
@@ -211,7 +227,23 @@ partial def iNamedCore (h : Name) (f : String → String) (deex : Bool) : Tactic
   -- may introduce new Lean variables (`%x`): all inspection of hypothesis types
   -- must happen in the main goal's context
   withMainContext do
-  let ty ← unfoldHypHead h
+  let ty0 ← unfoldHypHead h
+  -- a hypothesis `▷ Q` is destructed according to `Q` (`icases` distributes the
+  -- later); if that fails (e.g. an `∃` of a type that is not `Inhabited`), it is
+  -- left alone
+  let underLater := (isLater? ty0).isSome
+  let ty := match isLater? ty0 with | some (_, Q) => Q | none => ty0
+  if underLater then
+    unless (isNamed? ty).isSome || isBIExists ty || isBISep ty do return
+    let saved ← saveState
+    try iNamedCore' h f deex ty catch _ => saved.restore
+    return
+  iNamedCore' h f deex ty
+
+/-- `iNamedCore` on the hypothesis `h` whose (unfolded, possibly under a later)
+type is `ty`. -/
+partial def iNamedCore' (h : Name) (f : String → String) (deex : Bool) (ty : Expr) : TacticM Unit :=
+  withMainContext do
   -- a single named hypothesis
   if let some (n, _) := isNamed? ty then
     nameOne h n f

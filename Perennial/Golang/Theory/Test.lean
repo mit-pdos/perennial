@@ -213,6 +213,15 @@ example (P Q : IProp GF) :
   iNamed H
   iexact H
 
+/-- `iNamed` destructs a hypothesis under a later (e.g. an invariant just opened
+with `iinv`); it used to do nothing. -/
+example (P : Nat → IProp GF) : (▷ ∃ n m : Nat, "Ha" ∷ P n ∗ "Hb" ∷ P m) ⊢ ▷ ∃ n, P n := by
+  iintro H
+  iNamed H
+  inext
+  iexists n
+  iexact Ha
+
 /-- `solve_ndisj` proves namespace mask conditions. -/
 example (N : Namespace) : (↑(N.@"inv") : CoPset) ⊆ ⊤ \ ↑(N.@"sema") := by solve_ndisj
 example (N : Namespace) : (⊤ \ ↑N : CoPset) ⊆ ⊤ \ ↑(N.@"x") := by solve_ndisj

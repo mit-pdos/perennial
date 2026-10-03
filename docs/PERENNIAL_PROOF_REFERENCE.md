@@ -334,7 +334,7 @@ the old behaviour).
 
 | Tactic | Description | File |
 |:--|:--|:--|
-| `iNamed H` | destruct existentials and the `∗`-spine of named conjuncts of `H`, naming them; unfolds the head definition unless `@[irreducible]` (but never an `if`/`match`: case split first); `"*"` destructs a conjunct recursively; the unnamed rest keeps the name `H` unless a conjunct is called `H` (then `Hrest`) | `Helpers/NamedProps.lean` |
+| `iNamed H` | destruct existentials and the `∗`-spine of named conjuncts of `H`, naming them; unfolds the head definition unless `@[irreducible]` (but never an `if`/`match`: case split first); works under a `▷` (e.g. after `iinv`; the conjuncts keep the `▷`); `"*"` destructs a conjunct recursively; the unnamed rest keeps the name `H` unless a conjunct is called `H` (then `Hrest`) | `Helpers/NamedProps.lean` |
 | `iNamed 1` | introduce the premise of a wand and `iNamed` it | same |
 | `iNamedPrefix H "pre"`, `iNamedSuffix H "suf"` | `iNamed`, renaming | same |
 | `iNamedDestruct H` | `iNamed` without destructing existentials | same |
