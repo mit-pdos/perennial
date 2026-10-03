@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -17,7 +18,11 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-type PackageTranslator func(io.Writer, *packages.Package, string, bool, declfilter.DeclFilter)
+// PackageTranslator writes the translation of a package to the writer. It may
+// return extra files, as a map from names (without extension) to contents,
+// which are written in a directory named after the package file (Lean
+// backend: chunks of a large generated proof, see proofgen.Package).
+type PackageTranslator func(io.Writer, *packages.Package, string, bool, declfilter.DeclFilter) map[string]string
 
 func NewPackageConfig(modDir string, needDeps bool) *packages.Config {
 	mode := packages.NeedName | packages.NeedCompiledGoFiles
@@ -157,7 +162,7 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 		filter := ExtendFilter(pkg, config, declfilter.New(config))
 
 		ffi := GetFfi(pkg)
-		translatePkg(w, pkg, ffi, config.Bootstrap.Enabled, filter)
+		extra := translatePkg(w, pkg, ffi, config.Bootstrap.Enabled, filter)
 
 		filePath := path.Join(outRootDir, glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkg.PkgPath))
 		outDir := path.Dir(filePath)
@@ -177,5 +182,38 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 			fmt.Fprintln(os.Stderr, red("could not write output"))
 			os.Exit(1)
 		}
+		if glang.Lean {
+			if err := writeChunks(filePath, extra); err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+				fmt.Fprintln(os.Stderr, red("could not write output"))
+				os.Exit(1)
+			}
+		}
 	}
+}
+
+// writeChunks writes the extra files of a package to the directory dir and
+// removes stale chunk files (named chunk*.lean) there.
+func writeChunks(dir string, files map[string]string) error {
+	old, _ := filepath.Glob(path.Join(dir, "chunk*.lean"))
+	for _, f := range old {
+		name := strings.TrimSuffix(path.Base(f), ".lean")
+		if _, ok := files[name]; !ok {
+			if err := os.Remove(f); err != nil {
+				return err
+			}
+		}
+	}
+	if len(files) == 0 {
+		return nil
+	}
+	if err := os.MkdirAll(dir, 0777); err != nil {
+		return err
+	}
+	for name, contents := range files {
+		if err := WriteFileIfChanged(path.Join(dir, name+".lean"), []byte(contents), 0666); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -106,7 +106,23 @@ func (tr *typesTranslator) Decl(d ast.Decl) {
 	}
 }
 
+// translatedType is a type declaration with the (same-package) type
+// declarations its generated proofs depend on.
+type translatedType struct {
+	decl tmpl.TypeDecl
+	name string
+	deps []string
+}
+
 func translateTypes(pkg *packages.Package, filter declfilter.DeclFilter) []tmpl.TypeDecl {
+	var decls []tmpl.TypeDecl
+	for _, t := range translateTypesDeps(pkg, filter) {
+		decls = append(decls, t.decl)
+	}
+	return decls
+}
+
+func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []translatedType {
 	tr := &typesTranslator{
 		pkg:            pkg,
 		filter:         filter,
@@ -118,7 +134,20 @@ func translateTypes(pkg *packages.Package, filter declfilter.DeclFilter) []tmpl.
 		}
 	}
 
-	var decls []tmpl.TypeDecl
+	var decls []translatedType
+
+	depsOf := func(s *ast.TypeSpec) []string {
+		var deps []string
+		if tr.filter.GetAction(s.Name.Name) == declfilter.Axiomatize {
+			return nil
+		}
+		for n := range util.TypeGetDependencies(pkg.PkgPath, pkg.TypesInfo.TypeOf(s.Type)) {
+			if _, ok := tr.nameToTypeSpec[n]; ok && n != s.Name.Name {
+				deps = append(deps, n)
+			}
+		}
+		return deps
+	}
 
 	for t := range toposort.ToposortSeq(slices.Values(tr.specs),
 		func(s *ast.TypeSpec) iter.Seq[*ast.TypeSpec] {
@@ -144,7 +173,9 @@ func translateTypes(pkg *packages.Package, filter declfilter.DeclFilter) []tmpl.
 			}
 			log.Fatal(cycle[0], "%s", s)
 		}) {
-		decls = append(decls, tr.translateType(t)...)
+		for _, d := range tr.translateType(t) {
+			decls = append(decls, translatedType{decl: d, name: t.Name.Name, deps: depsOf(t)})
+		}
 	}
 	return decls
 }

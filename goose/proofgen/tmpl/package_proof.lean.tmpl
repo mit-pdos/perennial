@@ -13,6 +13,9 @@ import Perennial.Golang.Theory.Pre
 import Perennial.Golang.Theory
 {{ end -}}
 import Perennial.Code.{{ .ImportPath }}
+{{- range .ExtraImports }}
+import {{ . }}
+{{- end }}
 
 set_option autoImplicit false
 set_option linter.unusedVariables false

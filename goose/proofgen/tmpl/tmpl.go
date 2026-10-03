@@ -24,6 +24,8 @@ type PackageProof struct {
 	TrustProofGen bool
 	Imports       []Import
 	Types         []TypeDecl
+	// Lean modules to import in addition (chunks of the package's proofs)
+	ExtraImports []string
 }
 
 type TypeDecl struct {
