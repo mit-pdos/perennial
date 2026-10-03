@@ -10,6 +10,28 @@ Lean notes:
 * The `rpctypes` init instance here carries `is_rpctypes_init` (as in Rocq's
   `cache/v3.v`); Rocq's `leasing.v` declares a `True` one, so (as in Rocq) the
   two files should not be imported together.
+* `wp_Cache__Get` (Rocq: `Admitted`, after the `LatestRev` call) is proved, with
+  two statement changes:
+  - Old (Rocq): precondition `is_pkg_init cache ∗ opts_sl ↦* opts ∗ own_Cache c`.
+    New: also `is_OpOptions opts pfx fk` (`client/v3_proof/op.lean`) for some
+    `pfx fk` with `¬ (pfx ∧ fk)`. Why: `Get` calls `clientv3.OpGet(key, opts...)`,
+    which runs every option closure three times (`IsOptsWithPrefix`,
+    `IsOptsWithFromKey`, `applyOpts`), so the closures need a spec; and `OpGet`
+    panics if both a `WithPrefix` and a `WithFromKey` option are given.
+  - New hypothesis `Hspecs : Cache_Get_callee_specs`: specs of `Cache.WaitReady`,
+    `Cache.validateGet`, `Cache.serverRevision`, `Cache.waitTillRevision` and
+    `store.Get`. Why: goose does not translate these methods (`cache/v3.toml`
+    does not list them), so `cache.v3.Assumptions` has no `MethodUnfold` for them
+    and their calls have no semantics; their specs cannot be proved here, and
+    they are taken as a hypothesis rather than as axioms. Each spec takes and
+    returns `own_Cache c` (resp. `own_store`) and returns arbitrary results;
+    `validateGet` also gets `is_Op op (.Get req)`, and `store.Get` the persistent
+    slices `startKey ↦*□ _ ∗ endKey ↦*□ _`.
+  The postcondition (`True`) is unchanged. `wp_Cache__Get` depends (through
+  `own_Cache`'s `c ↦ cv`, i.e. `TypedPointsto cache.v3.Cache.t`) on the
+  generated `sorry` instances `Config_typed_pointsto`/`Config_into_val_typed`
+  and `progressRequestor_typed_pointsto`/`progressRequestor_into_val_typed` of
+  `Perennial/GeneratedProof/go_etcd_io/etcd/cache/v3.lean`.
 -/
 import Perennial.Code.go_etcd_io.etcd.cache.v3
 import Perennial.GeneratedProof.go_etcd_io.etcd.cache.v3
@@ -420,19 +442,149 @@ def own_Cache (c_ptr : loc) : IProp GF :=
     "c" ∷ c_ptr ↦ c ∗
     "store" ∷ own_store c.store' γstore c.prefix')
 
-theorem wp_Cache__Get (c : loc) (ctx : interface.t) (key : go_string) (opts_sl : slice.t)
-    (opts : List client.v3.OpOption.t) :
+/-- Lean addition: specs of the methods that `Cache.Get` calls but that goose does
+not translate (`Perennial/Code/go_etcd_io/etcd/cache/v3.toml` does not list
+`Cache.WaitReady`, `Cache.validateGet`, `Cache.serverRevision`,
+`Cache.waitTillRevision` and `store.Get`, so `cache.v3.Assumptions` has no
+`MethodUnfold` for them and a call of one has no semantics). `wp_Cache__Get` takes
+them as a hypothesis instead of axioms. Each spec only asks for the cache's (or
+store's) representation predicate and gives it back, with an arbitrary result; the
+`Cache` methods are stated over `own_Cache`. -/
+structure Cache_Get_callee_specs : Prop where
+  wp_Cache__WaitReady : ∀ (c : loc) (ctx : interface.t),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
+      (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"WaitReady")) (Val #ctx))
+    {{ (err : error.t), RET #err; own_Cache c }}
+  wp_Cache__validateGet : ∀ (c : loc) (key : go_string) (op : client.v3.Op.t)
+      (req : RangeRequest.t),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c ∗ is_Op op (.Get req) }}
+      (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"validateGet")) (Val #key))
+        (Val #op))
+    {{ (pred : func.t) (err : error.t), RET (PairV #pred #err); own_Cache c }}
+  wp_Cache__serverRevision : ∀ (c : loc) (ctx : interface.t),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
+      (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"serverRevision")) (Val #ctx))
+    {{ (rev : w64) (err : error.t), RET (PairV #rev #err); own_Cache c }}
+  wp_Cache__waitTillRevision : ∀ (c : loc) (ctx : interface.t) (rev : w64),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
+      (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"waitTillRevision"))
+        (Val #ctx)) (Val #rev))
+    {{ (err : error.t), RET #err; own_Cache c }}
+  wp_store__Get : ∀ (s : loc) (γstore : store_names) («prefix» : go_string)
+      (start_sl end_sl : slice.t) (start_key end_key : List w8) (rev : w64),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_store s γstore «prefix» ∗
+        start_sl ↦*□ start_key ∗ end_sl ↦*□ end_key }}
+      (App (App (App (Val (s @!! go.type.PointerType cache.v3.store @!! go!"Get")) (Val #start_sl))
+        (Val #end_sl)) (Val #rev))
+    {{ (kvs : slice.t) (latest_rev : w64) (err : error.t),
+        RET (PairV (PairV #kvs #latest_rev) #err); own_store s γstore «prefix» }}
+
+/-- Lean deviations from Rocq: the precondition also asks that every option in `opts`
+satisfies the client-supplied `is_OpOptions opts pfx fk` (not both `WithPrefix` and
+`WithFromKey`: else `OpGet` panics), and the theorem takes the specs of the
+untranslated callees (`Cache_Get_callee_specs`) as a hypothesis. -/
+theorem wp_Cache__Get (Hspecs : Cache_Get_callee_specs (GF := GF))
+    (c : loc) (ctx : interface.t) (key : go_string) (opts_sl : slice.t)
+    (opts : List client.v3.OpOption.t) (pfx fk : Bool) (Hpfx_fk : ¬ (pfx = true ∧ fk = true)) :
     {{ is_pkg_init (PROP := IProp GF) pkg ∗
         "opts_sl" ∷ opts_sl ↦* opts ∗
+        "#Hopts" ∷ is_OpOptions opts pfx fk ∗
         "cache" ∷ own_Cache c }}
       (App (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"Get")) (Val #ctx))
         (Val #key)) (Val #opts_sl))
     {{ (resp : loc) (err : error.t), RET (PairV #resp #err); True }} := by
-  -- Unprovable as stated: calls `clientv3.OpGet` with arbitrary `opts`, i.e. unspecified
-  -- `OpOption` closures that `IsOptsWithPrefix`/`IsOptsWithFromKey`/`applyOpts` call
-  -- (`wp_OpGet` only covers an empty opts list), and needs specs that do not exist (in Rocq
-  -- either) for `WaitReady`, `validateGet`, `serverRevision`, `waitTillRevision`, `store.Get`.
-  sorry -- Rocq: Admitted
+  wp_start as ⟨opts_sl, #Hopts, cache⟩
+  unfold own_Cache
+  icases cache with ⟨%cv, %γ, Hc, Hstore⟩
+  wp_auto
+  wp_apply wp_store__LatestRev $$ [$Hstore] as %r Hstore
+  ihave cache : own_Cache c $$ [Hc Hstore]
+  · unfold own_Cache; iexists cv, γ; iframe
+  -- `if c.store.LatestRev() == 0 { if err := c.WaitReady(ctx); err != nil { return nil, err } }`
+  wp_join (Q := fun v => iprop((⌜v = execute_val⌝ ∗ own_Cache c ∗ c_ptr ↦ c ∗ ctx_ptr ↦ ctx) ∨
+      ∃ (resp : loc) (err : error.t), ⌜v = return_val (PairV #resp #err)⌝)) with [cache c ctx]
+  · wp_apply (Hspecs.wp_Cache__WaitReady c ctx) $$ [$cache] as %err cache
+    cases err
+    · wp_auto
+      iright; iexists _, _; ipureintro; rfl
+    · wp_auto
+      ileft; iframe
+      ipureintro; rfl
+  · ileft; iframe
+  iintro HQ
+  icases HQ with (⟨%Hv, cache, c, ctx⟩ | ⟨%resp, %err, %Hv⟩)
+  · subst Hv
+    wp_auto
+    wp_apply wp_OpGet_opts key opts_sl opts (DFrac.own 1) pfx fk Hpfx_fk $$ [$opts_sl $Hopts]
+      as %op %req ⟨opts_sl, #Hop⟩
+    wp_apply (Hspecs.wp_Cache__validateGet c key op req) $$ [$cache $Hop] as %pred %err cache
+    cases err
+    · wp_auto
+      wp_end
+    wp_auto
+    wp_apply wp_string_to_bytes as %start_sl ⟨start_sl, -⟩
+    ipersist start_sl
+    -- `op.RangeBytes()`, `op.Rev()`, `op.IsSerializable()` (pointer and value methods)
+    iterate 6
+      wp_method_call
+      wp_call
+      wp_auto
+    -- `if !op.IsSerializable() { ... }`
+    wp_join (Q := fun v => iprop((⌜v = execute_val⌝ ∗ own_Cache c ∗ c_ptr ↦ c ∗
+          requestedRev_ptr ↦ op.rev') ∨
+        ∃ (resp : loc) (err : error.t), ⌜v = return_val (PairV #resp #err)⌝)) at next
+        with [cache c ctx requestedRev]
+    · cases op.serializable'
+      case' true =>
+        wp_auto
+        ileft; iframe
+        ipureintro; rfl
+      wp_auto
+      wp_apply (Hspecs.wp_Cache__serverRevision c ctx) $$ [$cache] as %srev %err cache
+      cases err
+      · wp_auto
+        iright; iexists _, _; ipureintro; rfl
+      wp_auto
+      wp_if_destruct
+      · ihave #Hpkg' : is_pkg_init (PROP := IProp GF) pkg_id.go_etcd_io.etcd.api.v3.v3rpc.rpctypes $$ []
+        · iPkgInit
+        ihave #Hi := is_rpctypes_init_access $$ Hpkg'
+        icases Hi with ⟨%e1, %e2, #HErr1, #HErr2⟩
+        wp_auto
+        iright; iexists _, _; ipureintro; rfl
+      wp_apply (Hspecs.wp_Cache__waitTillRevision c ctx srev) $$ [$cache] as %err cache
+      cases err
+      · wp_auto
+        iright; iexists _, _; ipureintro; rfl
+      · wp_auto
+        ileft; iframe
+        ipureintro; rfl
+    iintro HQ
+    icases HQ with (⟨%Hv, cache, c, requestedRev⟩ | ⟨%resp, %err, %Hv⟩)
+    · subst Hv
+      wp_auto
+      -- `kvs, latestRev, err := c.store.Get(startKey, endKey, requestedRev)`
+      unfold own_Cache
+      icases cache with ⟨%cv', %γ', Hc, Hstore⟩
+      ihave #Hend : op.end' ↦*□ req.range_end $$ [Hop]
+      · simp only [is_Op_unseal, is_Op_def, is_Op_RangeRequest]
+        icases Hop with ⟨-, -, Hend, -⟩
+        iexact Hend
+      wp_auto
+      wp_apply (Hspecs.wp_store__Get cv'.store' γ' cv'.prefix' start_sl op.end' key req.range_end
+        op.rev') $$ [$Hstore $start_sl $Hend] as %kvs_sl %latest_rev %err Hstore
+      cases err
+      · wp_auto
+        wp_end
+      wp_auto
+      wp_alloc resp as Hresp
+      wp_end
+    · subst Hv
+      wp_auto
+      wp_end
+  · subst Hv
+    wp_auto
+    wp_end
 
 end store
 

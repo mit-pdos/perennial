@@ -14,6 +14,12 @@ Lean notes:
   an `Op` with nil `sort`). `wp_OpGet` is now proved.
 * New helper specs (not in Rocq): `wp_NewOp`, `wp_IsOptsWithPrefix_nil`,
   `wp_IsOptsWithFromKey_nil`. `wp_Op__applyOpts` is moved before `wp_OpGet`.
+* New (not in Rocq), for `OpGet` with options (used by `cache.wp_Cache__Get`):
+  `is_OpOption f pfx fk` (a client-supplied spec of an `OpOption` closure: it
+  sets `isOptsWithPrefix`/`isOptsWithFromKey` only if `pfx`/`fk`, and maps a
+  `Get` op to a `Get` op), `is_OpOptions`, and the specs `wp_IsOptsWithPrefix`,
+  `wp_IsOptsWithFromKey`, `wp_Op__applyOpts_Get`, `wp_OpGet_opts` (for
+  `¬ (pfx ∧ fk)`; the request is existential).
 -/
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.base
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.definitions
@@ -173,6 +179,211 @@ theorem wp_OpGet (key : go_string) :
   · ileft; ipureintro; simp
   ipureintro
   simp
+
+/-- Lean addition: a client-supplied spec of an `OpOption` closure `f` (`OpGet`,
+`IsOptsWithPrefix` and `IsOptsWithFromKey` call the options on arbitrary `*Op`s).
+Calling `f` on `l ↦ op` returns with `l ↦ op'`, where
+* `op'` has `isOptsWithPrefix` (resp. `isOptsWithFromKey`) set only if `op` had,
+  or `pfx` (resp. `fk`) holds: `pfx`/`fk` say whether `f` may be a
+  `WithPrefix`/`WithFromKey` option;
+* a `Get` op stays a `Get` op (for some request).
+Every option of `op.go` used with `OpGet` satisfies it (`WithPrefix` with
+`pfx = true`, `WithFromKey` with `fk = true`, the others for all `pfx fk`). -/
+abbrev is_OpOption (f : func.t) (pfx fk : Bool) : IProp GF :=
+  iprop(□ (∀ (l : loc) (op : v3.Op.t) (Φ : val → IProp GF),
+    l ↦ op -∗
+    ▷ (∀ op' : v3.Op.t,
+        (l ↦ op' ∗
+         ⌜(op'.isOptsWithPrefix' = true → op.isOptsWithPrefix' = true ∨ pfx = true) ∧
+          (op'.isOptsWithFromKey' = true → op.isOptsWithFromKey' = true ∨ fk = true)⌝ ∗
+         (∀ req, is_Op op (.Get req) -∗ ∃ req', is_Op op' (.Get req'))) -∗ Φ #()) -∗
+    WP (App (Val #f) (Val #l)) {{ Φ }}))
+
+instance is_OpOption_persistent (f : func.t) (pfx fk : Bool) :
+    Persistent (is_OpOption (GF := GF) f pfx fk) := by
+  unfold is_OpOption; infer_instance
+
+/-- Lean addition: every option in `opts` satisfies `is_OpOption _ pfx fk`. -/
+abbrev is_OpOptions (opts : List func.t) (pfx fk : Bool) : IProp GF :=
+  iprop(□ (∀ f : func.t, ⌜f ∈ opts⌝ -∗ is_OpOption f pfx fk))
+
+instance is_OpOptions_persistent (opts : List func.t) (pfx fk : Bool) :
+    Persistent (is_OpOptions (GF := GF) opts pfx fk) := by
+  unfold is_OpOptions; infer_instance
+
+theorem is_OpOptions_nil (pfx fk : Bool) : ⊢ is_OpOptions (GF := GF) [] pfx fk := by
+  unfold is_OpOptions
+  imodintro
+  iintro %f %Hf
+  simp at Hf
+
+/-- Lean addition (generalizes `wp_IsOptsWithPrefix_nil`). -/
+theorem wp_IsOptsWithPrefix (opts_sl : slice.t) (opts : List func.t) (dq : DFrac) (pfx fk : Bool) :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ opts_sl ↦*{dq} opts ∗ is_OpOptions opts pfx fk }}
+      (App (Val (@! v3.IsOptsWithPrefix)) (Val #opts_sl))
+    {{ (b : Bool), RET #b; opts_sl ↦*{dq} opts ∗ ⌜b = true → pfx = true⌝ }} := by
+  wp_start as ⟨Hs, #Hopts⟩
+  ihave %Hlen := own_slice_len _ _ _ $$ Hs
+  wp_auto
+  wp_apply wp_NewOp with %l ⟨%op0, Hl, %Hop0⟩
+  ihave HI : (∃ (i : w64) (op : v3.Op.t) (f : func.t),
+      "i" ∷ i_ptr ↦ i ∗ "opt" ∷ opt_ptr ↦ f ∗ "Hl" ∷ l ↦ op ∗
+      "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z opts_sl.len⌝ ∗
+      "%Hpfx" ∷ ⌜op.isOptsWithPrefix' = true → pfx = true⌝ : IProp GF) $$ [i opt Hl]
+  · iexists (W64 0), op0, _
+    iframe
+    ipureintro
+    refine ⟨by word, ?_⟩
+    intro h; rw [Hop0.1] at h; cases h
+  wp_for HI
+  simp only [decide_eq_true_eq]
+  by_cases Hif : sint.Z i < sint.Z opts_sl.len
+  · simp only [Hif, ↓reduceIte]
+    wp_auto
+    rw [ite_eq_left ⟨Hi.1, Hif⟩]
+    list_elem opts (sint.nat i) as g
+    wp_apply wp_load_slice_index opts_sl (sint.Z i) opts dq g Hi.1 $$ [Hs] with Hs
+    · iframe Hs; ipureintro; exact Hg_lookup
+    ihave #Hg := Hopts $$ %g %(List.mem_of_getElem? Hg_lookup)
+    wp_apply Hg $$ Hl as %op' ⟨Hl, %Hop', -⟩
+    wp_for_post
+    iframe
+    iexists (i + W64 1), op', g
+    iframe
+    ipureintro
+    refine ⟨by word, ?_⟩
+    intro h
+    rcases Hop'.1 h with h' | h'
+    · exact Hpfx h'
+    · exact h'
+  · simp only [Hif, ↓reduceIte]
+    wp_auto
+    iapply HΦ
+    iframe
+    ipureintro; exact Hpfx
+
+/-- Lean addition (generalizes `wp_IsOptsWithFromKey_nil`). -/
+theorem wp_IsOptsWithFromKey (opts_sl : slice.t) (opts : List func.t) (dq : DFrac) (pfx fk : Bool) :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ opts_sl ↦*{dq} opts ∗ is_OpOptions opts pfx fk }}
+      (App (Val (@! v3.IsOptsWithFromKey)) (Val #opts_sl))
+    {{ (b : Bool), RET #b; opts_sl ↦*{dq} opts ∗ ⌜b = true → fk = true⌝ }} := by
+  wp_start as ⟨Hs, #Hopts⟩
+  ihave %Hlen := own_slice_len _ _ _ $$ Hs
+  wp_auto
+  wp_apply wp_NewOp with %l ⟨%op0, Hl, %Hop0⟩
+  ihave HI : (∃ (i : w64) (op : v3.Op.t) (f : func.t),
+      "i" ∷ i_ptr ↦ i ∗ "opt" ∷ opt_ptr ↦ f ∗ "Hl" ∷ l ↦ op ∗
+      "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z opts_sl.len⌝ ∗
+      "%Hfk" ∷ ⌜op.isOptsWithFromKey' = true → fk = true⌝ : IProp GF) $$ [i opt Hl]
+  · iexists (W64 0), op0, _
+    iframe
+    ipureintro
+    refine ⟨by word, ?_⟩
+    intro h; rw [Hop0.2] at h; cases h
+  wp_for HI
+  simp only [decide_eq_true_eq]
+  by_cases Hif : sint.Z i < sint.Z opts_sl.len
+  · simp only [Hif, ↓reduceIte]
+    wp_auto
+    rw [ite_eq_left ⟨Hi.1, Hif⟩]
+    list_elem opts (sint.nat i) as g
+    wp_apply wp_load_slice_index opts_sl (sint.Z i) opts dq g Hi.1 $$ [Hs] with Hs
+    · iframe Hs; ipureintro; exact Hg_lookup
+    ihave #Hg := Hopts $$ %g %(List.mem_of_getElem? Hg_lookup)
+    wp_apply Hg $$ Hl as %op' ⟨Hl, %Hop', -⟩
+    wp_for_post
+    iframe
+    iexists (i + W64 1), op', g
+    iframe
+    ipureintro
+    refine ⟨by word, ?_⟩
+    intro h
+    rcases Hop'.2 h with h' | h'
+    · exact Hfk h'
+    · exact h'
+  · simp only [Hif, ↓reduceIte]
+    wp_auto
+    iapply HΦ
+    iframe
+    ipureintro; exact Hfk
+
+/-- Lean addition (generalizes `wp_Op__applyOpts`): applying options to a `Get` op
+gives a `Get` op. -/
+theorem wp_Op__applyOpts_Get (l : loc) (op : v3.Op.t) (req : RangeRequest.t) (opts_sl : slice.t)
+    (opts : List func.t) (dq : DFrac) (pfx fk : Bool) :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ l ↦ op ∗ is_Op op (.Get req) ∗
+        opts_sl ↦*{dq} opts ∗ is_OpOptions opts pfx fk }}
+      (App (Val (l @!! go.type.PointerType v3.Op @!! go!"applyOpts")) (Val #opts_sl))
+    {{ (op' : v3.Op.t) (req' : RangeRequest.t), RET #();
+        l ↦ op' ∗ is_Op op' (.Get req') ∗ opts_sl ↦*{dq} opts }} := by
+  wp_start as ⟨Hl, #Hop, Hs, #Hopts⟩
+  ihave %Hlen := own_slice_len _ _ _ $$ Hs
+  wp_auto
+  ihave HI : (∃ (i : w64) (op : v3.Op.t) (req : RangeRequest.t) (f : func.t),
+      "i" ∷ i_ptr ↦ i ∗ "opt" ∷ opt_ptr ↦ f ∗ "Hl" ∷ l ↦ op ∗ "#Hop" ∷ is_Op op (.Get req) ∗
+      "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z opts_sl.len⌝ : IProp GF) $$ [i opt Hl]
+  · iexists (W64 0), op, req, _
+    iframe # ∗
+    ipureintro; word
+  wp_for HI
+  simp only [decide_eq_true_eq]
+  by_cases Hif : sint.Z i < sint.Z opts_sl.len
+  · simp only [Hif, ↓reduceIte]
+    wp_auto
+    rw [ite_eq_left ⟨Hi.1, Hif⟩]
+    list_elem opts (sint.nat i) as g
+    wp_apply wp_load_slice_index opts_sl (sint.Z i) opts dq g Hi.1 $$ [Hs] with Hs
+    · iframe Hs; ipureintro; exact Hg_lookup
+    ihave #Hg := Hopts $$ %g %(List.mem_of_getElem? Hg_lookup)
+    wp_apply Hg $$ Hl as %op' ⟨Hl, %-, Hget⟩
+    icases Hget $$ Hop with ⟨%req', #Hop'⟩
+    wp_for_post
+    iframe
+    iexists (i + W64 1), op', req', g
+    iframe # ∗
+    ipureintro; word
+  · simp only [Hif, ↓reduceIte]
+    wp_auto
+    iapply HΦ
+    iframe # ∗
+
+/-- Lean addition: `OpGet` with options (generalizes `wp_OpGet`). The options may not
+be both a `WithPrefix` and a `WithFromKey` (else `OpGet` panics). -/
+theorem wp_OpGet_opts (key : go_string) (opts_sl : slice.t) (opts : List func.t) (dq : DFrac)
+    (pfx fk : Bool) (Hpfx_fk : ¬ (pfx = true ∧ fk = true)) :
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ opts_sl ↦*{dq} opts ∗ is_OpOptions opts pfx fk }}
+      (App (App (Val (@! v3.OpGet)) (Val #key)) (Val #opts_sl))
+    {{ (op : v3.Op.t) (req : RangeRequest.t), RET #op; opts_sl ↦*{dq} opts ∗
+        is_Op op (.Get req) }} := by
+  wp_start as ⟨Hs, #Hopts⟩
+  wp_auto
+  wp_apply wp_IsOptsWithPrefix opts_sl opts dq pfx fk $$ [$Hs $Hopts] as %b1 ⟨Hs, %Hb1⟩
+  cases b1
+  case' true =>
+    wp_auto
+    wp_apply wp_IsOptsWithFromKey opts_sl opts dq pfx fk $$ [$Hs $Hopts] as %b2 ⟨Hs, %Hb2⟩
+    cases b2
+    case true =>
+      exact absurd ⟨Hb1 rfl, Hb2 rfl⟩ Hpfx_fk
+  all_goals
+    wp_auto
+    wp_apply wp_string_to_bytes as %key_sl ⟨key_sl, -⟩
+    ipersist key_sl
+    wp_apply wp_Op__applyOpts_Get _ _ { RangeRequest.default with key := key } opts_sl opts dq
+      pfx fk $$ [ret Hs] as %op' %req' ⟨ret, #Hop', Hs⟩
+    · iframe # ∗
+      simp only [is_Op_unseal, is_Op_def, is_Op_RangeRequest, RangeRequest.default, named]
+      iframe key_sl
+      isplit
+      · iapply own_slice_nil
+      isplit
+      · ipureintro; rfl
+      isplitl []
+      · ileft; ipureintro; simp
+      ipureintro
+      simp
+    iapply HΦ
+    iframe # ∗
 
 theorem wp_OpPut (key v : go_string) :
     {{ is_pkg_init (PROP := IProp GF) pkg }}
