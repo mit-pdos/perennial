@@ -76,62 +76,6 @@ macro "load_at' " H:ident : tactic => `(tactic| (
   wp_apply wp_load_slice_index _ _ _ _ _ (by iomega) $$ [Hxs] with Hxs
   all_goals try (iframe Hxs; ipureintro; exact lookup_idx_eq $H (by iomega))))
 
-set_option hygiene false in
-/-- The rest of the `siftDown` loop body, once the greatest child `c` is chosen
-(`Hsel`). -/
-macro "sift_rest" : tactic => `(tactic| (
-  obtain ⟨cN, hcN, hcZ, hcsel, hcH, Hmax, hcidx⟩ := Hsel
-  obtain ⟨xrt, Hxrt⟩ := list_lookup_lt xs' (sint.nat a + sint.nat root_val) (by omega)
-  obtain ⟨xc, Hxc⟩ := list_lookup_lt xs' (sint.nat a + cN) (by omega)
-  load_at' Hxrt
-  load_at' Hxc
-  wp_apply Hcmp with %r2 %Hr2'
-  by_cases hlt : sint.Z r2 < sint.Z (W64 0)
-  · -- the root is smaller than the child: swap and continue
-    simp only [decide_eq_true hlt, Bool.not_true]
-    wp_auto
-    load_at' Hxc
-    load_at' Hxrt
-    hslice_index_if'
-    wp_pures
-    wp_apply wp_store_slice_index (t := Et) data _ xs' xc $$ [Hxs] with Hxs
-    · iframe Hxs; ipureintro; constructor <;> iomega
-    rw [hridx]
-    hslice_index_if'
-    wp_pures
-    wp_apply wp_store_slice_index (t := Et) data _ (xs'.set (sint.nat a + sint.nat root_val) xc) xrt $$ [Hxs]
-      with Hxs
-    · iframe Hxs; ipureintro; refine ⟨by iomega, ?_⟩; rw [List.length_set]; iomega
-    rw [hcidx]
-    wp_for_post
-    iframe
-    iexists _, _
-    iframe
-    ipureintro
-    rw [hcN]
-    have Hlt' : R xrt xc := Hr2'.1 (by iomega)
-    have Hstep := sift_inv_step R xs' (sint.nat a) (sint.nat lo) (sint.nat hi) (sint.nat root_val)
-      cN xrt xc (by iomega) hrH hcsel hcH hHlen Hxrt Hxc Hlt'
-      (fun c' xc' h1 h2 h3 => Hmax c' xc xc' h1 h2 Hxc h3) He Hp
-    refine ⟨HPerm1.trans (swap_perm xs' _ _ xc xrt Hxc Hxrt), ⟨by iomega, by iomega⟩, ?_,
-      Hstep.1, Hstep.2, ?_⟩
-    · exact seg_sorted_swap R xs' _ _ _ _ _ xc xrt ⟨by omega, by omega⟩ ⟨by omega, by omega⟩
-        (by iomega) (by iomega) Hxc Hxrt HSeg1
-    · exact outside_same_trans _ _ _ _ _ Hout
-        (outside_same_swap xs' _ _ xc xrt _ _ ⟨by omega, by iomega⟩ ⟨by omega, by iomega⟩)
-  · -- the root dominates its children: return
-    simp only [decide_eq_false hlt, Bool.not_false]
-    wp_auto
-    wp_for_post
-    iapply HΦ
-    iframe
-    ipureintro
-    refine ⟨HPerm1, HSeg1, ?_, Hout⟩
-    exact sift_inv_close R xs' _ _ _ _ _ He (fun c' x1 x2 hc' hc'H h1 h2 => by
-      rw [Hxrt] at h1; cases h1
-      have h3 : ¬ R xrt xc := fun h => hlt (by have := Hr2'.2 h; iomega)
-      exact notR_trans R x2 xc xrt h3 (Hmax c' xc x2 hc' hc'H Hxc h2))))
-
 section heap
 variable {E : Type} (R : E → E → Prop)
 
@@ -395,7 +339,6 @@ variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.type}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop) [StrictWeakOrder R]
 
-set_option maxHeartbeats 500000 in
 theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t) (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
@@ -469,34 +412,106 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
     have hhi : (sint.nat hi : Int) = sint.Z hi := by iomega
     have hridx : (sint.Z (a + root_val)).toNat = sint.nat a + sint.nat root_val := by iomega
     obtain ⟨xl, Hxl⟩ := list_lookup_lt xs' _ hrA
-    wp_if_destruct
-    · -- the right child is in bounds: compare the children
-      obtain ⟨xr', Hxr'⟩ := list_lookup_lt xs' (sint.nat a + (2 * sint.nat root_val + 2)) (by iomega)
-      load_at' Hxl
-      load_at' Hxr'
-      wp_apply Hcmp with %r1 %Hr1
-      wp_if_destruct
-      · -- the right child is greater
-        have Hsel : ∃ cN : Nat, sint.nat (W64 2 * root_val + W64 1 + W64 1) = cN ∧ sint.Z (W64 2 * root_val + W64 1 + W64 1) = cN ∧
-            (cN = 2 * sint.nat root_val + 1 ∨ cN = 2 * sint.nat root_val + 2) ∧ cN < sint.nat hi ∧
-            max_child R xs' (sint.nat a) (sint.nat root_val) (sint.nat hi) cN ∧
-            (sint.Z (a + (W64 2 * root_val + W64 1 + W64 1))).toNat = sint.nat a + cN :=
-          ⟨2 * sint.nat root_val + 2, by iomega, by iomega, by omega, by iomega, max_child_right R xs' _ _ _ xl xr' Hxl Hxr' (Hr1.1 (by iomega)), by iomega⟩
-        sift_rest
-      · -- the left child is not smaller
-        have Hsel : ∃ cN : Nat, sint.nat (W64 2 * root_val + W64 1) = cN ∧ sint.Z (W64 2 * root_val + W64 1) = cN ∧
-            (cN = 2 * sint.nat root_val + 1 ∨ cN = 2 * sint.nat root_val + 2) ∧ cN < sint.nat hi ∧
-            max_child R xs' (sint.nat a) (sint.nat root_val) (sint.nat hi) cN ∧
-            (sint.Z (a + (W64 2 * root_val + W64 1))).toNat = sint.nat a + cN :=
-          ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega, max_child_left R xs' _ _ _ xl xr' Hxl Hxr' (fun h => Hif (by have := Hr1.2 h; iomega)), by iomega⟩
-        sift_rest
-    · -- the right child is out of bounds: only the left child
-      have Hsel : ∃ cN : Nat, sint.nat (W64 2 * root_val + W64 1) = cN ∧ sint.Z (W64 2 * root_val + W64 1) = cN ∧
-            (cN = 2 * sint.nat root_val + 1 ∨ cN = 2 * sint.nat root_val + 2) ∧ cN < sint.nat hi ∧
-            max_child R xs' (sint.nat a) (sint.nat root_val) (sint.nat hi) cN ∧
-            (sint.Z (a + (W64 2 * root_val + W64 1))).toNat = sint.nat a + cN :=
-          ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega, max_child_only R xs' _ _ _ (by iomega), by iomega⟩
-      sift_rest
+    -- choose the greatest child `c` (three cases), joined at `Hsel`
+    wp_bind (if: _ then _ else _)
+    iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗ ∃ (c : w64),
+        "child" ∷ child_ptr ↦ c ∗
+        "Hxs" ∷ data ↦* xs' ∗
+        "cmp" ∷ cmp_ptr ↦ cmp_code ∗
+        "first" ∷ first_ptr ↦ a ∗
+        "data" ∷ data_ptr ↦ data ∗
+        "%Hsel" ∷ ⌜∃ cN : Nat, sint.nat c = cN ∧ sint.Z c = cN ∧
+          (cN = 2 * sint.nat root_val + 1 ∨ cN = 2 * sint.nat root_val + 2) ∧ cN < sint.nat hi ∧
+          max_child R xs' (sint.nat a) (sint.nat root_val) (sint.nat hi) cN ∧
+          (sint.Z (a + c)).toNat = sint.nat a + cN⌝))) $$ [child Hxs cmp first data]
+    · wp_if_destruct
+      · -- the right child is in bounds: compare the children
+        obtain ⟨xr', Hxr'⟩ := list_lookup_lt xs' (sint.nat a + (2 * sint.nat root_val + 2)) (by iomega)
+        load_at' Hxl
+        load_at' Hxr'
+        wp_apply Hcmp with %r1 %Hr1
+        wp_if_destruct
+        · -- the right child is greater
+          isplitr
+          · ipureintro; first | rfl | trivial
+          iexists _
+          iframe
+          ipureintro
+          exact ⟨2 * sint.nat root_val + 2, by iomega, by iomega, by omega, by iomega,
+            max_child_right R xs' _ _ _ xl xr' Hxl Hxr' (Hr1.1 (by iomega)), by iomega⟩
+        · -- the left child is not smaller
+          isplitr
+          · ipureintro; first | rfl | trivial
+          iexists _
+          iframe
+          ipureintro
+          exact ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega,
+            max_child_left R xs' _ _ _ xl xr' Hxl Hxr' (fun h => Hif (by have := Hr1.2 h; iomega)),
+            by iomega⟩
+      · -- the right child is out of bounds: only the left child
+        isplitr
+        · ipureintro; first | rfl | trivial
+        iexists _
+        iframe
+        ipureintro
+        exact ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega,
+          max_child_only R xs' _ _ _ (by iomega), by iomega⟩
+    iintro %v ⟨%Hv, %c, Hpost⟩
+    subst Hv
+    iNamed Hpost
+    clear Hr2 Halr Har Hal Hchild Hxl xl
+    wp_auto
+    obtain ⟨cN, hcN, hcZ, hcsel, hcH, Hmax, hcidx⟩ := Hsel
+    obtain ⟨xrt, Hxrt⟩ := list_lookup_lt xs' (sint.nat a + sint.nat root_val) (by omega)
+    obtain ⟨xc, Hxc⟩ := list_lookup_lt xs' (sint.nat a + cN) (by omega)
+    load_at' Hxrt
+    load_at' Hxc
+    wp_apply Hcmp with %r2 %Hr2'
+    by_cases hlt : sint.Z r2 < sint.Z (W64 0)
+    · -- the root is smaller than the child: swap and continue
+      simp only [decide_eq_true hlt, Bool.not_true]
+      wp_auto
+      load_at' Hxc
+      load_at' Hxrt
+      hslice_index_if'
+      wp_pures
+      wp_apply wp_store_slice_index (t := Et) data _ xs' xc $$ [Hxs] with Hxs
+      · iframe Hxs; ipureintro; constructor <;> iomega
+      rw [hridx]
+      hslice_index_if'
+      wp_pures
+      wp_apply wp_store_slice_index (t := Et) data _ (xs'.set (sint.nat a + sint.nat root_val) xc) xrt $$ [Hxs]
+        with Hxs
+      · iframe Hxs; ipureintro; refine ⟨by iomega, ?_⟩; rw [List.length_set]; iomega
+      rw [hcidx]
+      wp_for_post
+      iframe
+      iexists _, _
+      iframe
+      ipureintro
+      rw [hcN]
+      have Hlt' : R xrt xc := Hr2'.1 (by iomega)
+      have Hstep := sift_inv_step R xs' (sint.nat a) (sint.nat lo) (sint.nat hi) (sint.nat root_val)
+        cN xrt xc (by iomega) hrH hcsel hcH hHlen Hxrt Hxc Hlt'
+        (fun c' xc' h1 h2 h3 => Hmax c' xc xc' h1 h2 Hxc h3) He Hp
+      refine ⟨HPerm1.trans (swap_perm xs' _ _ xc xrt Hxc Hxrt), ⟨by iomega, by iomega⟩, ?_,
+        Hstep.1, Hstep.2, ?_⟩
+      · exact seg_sorted_swap R xs' _ _ _ _ _ xc xrt ⟨by omega, by omega⟩ ⟨by omega, by omega⟩
+          (by iomega) (by iomega) Hxc Hxrt HSeg1
+      · exact outside_same_trans _ _ _ _ _ Hout
+          (outside_same_swap xs' _ _ xc xrt _ _ ⟨by omega, by iomega⟩ ⟨by omega, by iomega⟩)
+    · -- the root dominates its children: return
+      simp only [decide_eq_false hlt, Bool.not_false]
+      wp_auto
+      wp_for_post
+      iapply HΦ
+      iframe
+      ipureintro
+      refine ⟨HPerm1, HSeg1, ?_, Hout⟩
+      exact sift_inv_close R xs' _ _ _ _ _ He (fun c' x1 x2 hc' hc'H h1 h2 => by
+        rw [Hxrt] at h1; cases h1
+        have h3 : ¬ R xrt xc := fun h => hlt (by have := Hr2'.2 h; iomega)
+        exact notR_trans R x2 xc xrt h3 (Hmax c' xc x2 hc' hc'H Hxc h2))
 
 theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func.t)
     (xs : List E) :
@@ -515,7 +530,7 @@ theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func
   iapply HΦ
   iframe
 
-set_option maxHeartbeats 500000 in
+set_option maxHeartbeats 300000 in
 theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗

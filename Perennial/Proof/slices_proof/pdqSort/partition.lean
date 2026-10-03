@@ -297,53 +297,160 @@ def part_inv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : 
     "%HBr2" ∷ ⌜br2 = true → sint.Z i_val > sint.Z j_val ∨
                  ∀ xj, xs1[sint.nat j_val]? = some xj → ¬ R xp xj⌝)
 
+
+/-- The first inner loop of `partitionCmpFunc`
+(`for i <= j && cmp(data[i], data[a]) < 0 { i++ }`), which the Go code contains twice. -/
+theorem wp_part_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
+    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : loc) (cmp_code : func.t)
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
+    (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
+    ⊢ is_pkg_init (PROP := IProp GF) pkg_id.slices -∗ cmp_implements R cmp_code -∗
+      a_ptr ↦□ a -∗ data_ptr ↦□ data -∗ cmp_ptr ↦□ cmp_code -∗
+      part_inv R data a b xp xs i_ptr j_ptr false false -∗
+      WP (App (App (App (Val do_for)
+          (Val glv(λ: <>,
+            if: ![go.int] #i_ptr ≤⟨go.int⟩ ![go.int] #j_ptr then
+              (let: "$a0" :=
+                  ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #i_ptr)) in
+                let: "$a1" :=
+                  ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #a_ptr)) in
+                  (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0")
+                    "$a1") <⟨go.int⟩
+                #(W64 0) else
+              #false)))
+          (Val glv(λ: <>, do: #i_ptr <-[go.int] ![go.int] #i_ptr +⟨go.int⟩ #(W64 1))))
+          (Val glv(λ: <>, #())))
+      {{ fun v => iprop(⌜v = execute_val⌝ ∗
+        part_inv R data a b xp xs i_ptr j_ptr true false) }} := by
+  iintro #Hpkg #Hcmp #a #data #cmp HI
+  unfold cmp_implements
+  unfold part_inv
+  wp_for HI
+  have Hlen2 := HPerm1.length_eq
+  wp_if_destruct
+  · list_elem xs1 (sint.nat i_val) as xi
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z i_val) xs1 _ xi (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hxi_lookup
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hpivot
+    wp_apply Hcmp with %r %Hr
+    wp_if_destruct
+    · have hP := dec_val_true Hif
+      wp_for_post
+      iframe
+      iexists xs1, (i_val + W64 1), j_val
+      iframe
+      ipureintro
+      refine ⟨by word, ?_, Hpivot, HPerm1, Houtside1, fun h => h.elim, fun h => h.elim⟩
+      rw [show sint.nat (i_val + W64 1) = sint.nat i_val + 1 by word]
+      exact is_partitioned_pre_advance_left R _ _ _ _ _ xp xi Hpart Hpivot Hxi_lookup
+        (R_antisym R _ _ (Hr.1 (by word)))
+    · have hP := dec_val_false Hif
+      simp only [hP, decide_false, Bool.false_eq_true, ↓reduceIte]
+      isplitl []
+      · itrivial
+      iexists xs1, i_val, j_val
+      iframe
+      ipureintro
+      refine ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => Or.inr ?_, fun h => h.elim⟩
+      intro xi' hxi'
+      rw [Hxi_lookup] at hxi'; cases hxi'
+      exact fun h => hP (by have := Hr.2 h; word)
+  · isplitl []
+    · itrivial
+    iexists xs1, i_val, j_val
+    iframe
+    ipureintro
+    exact ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => Or.inl (by omega),
+      fun h => h.elim⟩
+
+/-- The second inner loop of `partitionCmpFunc`
+(`for i <= j && !(cmp(data[j], data[a]) < 0) { j-- }`), which the Go code contains twice. -/
+theorem wp_part_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
+    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : loc) (cmp_code : func.t)
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
+    (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
+    ⊢ is_pkg_init (PROP := IProp GF) pkg_id.slices -∗ cmp_implements R cmp_code -∗
+      a_ptr ↦□ a -∗ data_ptr ↦□ data -∗ cmp_ptr ↦□ cmp_code -∗
+      part_inv R data a b xp xs i_ptr j_ptr true false -∗
+      WP (App (App (App (Val do_for)
+          (Val glv(λ: <>,
+            if: ![go.int] #i_ptr ≤⟨go.int⟩ ![go.int] #j_ptr then
+              (GoUnOp GoNot go.bool)
+                ((let: "$a0" :=
+                    ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                    let: "$a1" :=
+                      ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #a_ptr)) in
+                      (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0")
+                        "$a1") <⟨go.int⟩
+                  #(W64 0)) else
+              #false)))
+          (Val glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))))
+          (Val glv(λ: <>, #())))
+      {{ fun v => iprop(⌜v = execute_val⌝ ∗
+        part_inv R data a b xp xs i_ptr j_ptr true true) }} := by
+  iintro #Hpkg #Hcmp #a #data #cmp HI
+  unfold cmp_implements
+  unfold part_inv
+  wp_for HI
+  have Hlen2 := HPerm1.length_eq
+  wp_if_destruct
+  · list_elem xs1 (sint.nat j_val) as xj
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hxj_lookup
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hpivot
+    wp_apply Hcmp with %r %Hr
+    by_cases hP : sint.Z r < sint.Z (W64 0)
+    · -- `data[j] < data[a]`: exit
+      simp only [hP, decide_true, Bool.not_true]
+      cleanup_bool_decide
+      wp_pures
+      isplitl []
+      · itrivial
+      iexists xs1, i_val, j_val
+      iframe
+      ipureintro
+      refine ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => HBr1 rfl, fun _ => Or.inr ?_⟩
+      intro xj' hxj'
+      rw [Hxj_lookup] at hxj'; cases hxj'
+      exact R_antisym R _ _ (Hr.1 (by word))
+    · simp only [hP, decide_false, Bool.not_false]
+      cleanup_bool_decide
+      wp_auto
+      wp_for_post
+      iframe
+      iexists xs1, i_val, (j_val - W64 1)
+      iframe
+      ipureintro
+      refine ⟨by word, ?_, Hpivot, HPerm1, Houtside1, fun _ => ?_, fun h => h.elim⟩
+      · rw [show sint.nat (j_val - W64 1) = sint.nat j_val - 1 by word]
+        exact is_partitioned_pre_advance_right R _ _ _ _ _ xp xj Hpart Hpivot Hxj_lookup
+          (fun h => hP (by have := Hr.2 h; word))
+      · rcases HBr1 rfl with h | h
+        · left; word
+        · right; exact h
+  · isplitl []
+    · itrivial
+    iexists xs1, i_val, j_val
+    iframe
+    ipureintro
+    exact ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => HBr1 rfl,
+      fun _ => Or.inl (by omega)⟩
+
+
 set_option hygiene false in
 /-- Proof script shared by the two copies in `partitionCmpFunc`. -/
 macro "part_loop1" : tactic => `(tactic| (
   wp_bind (App (App (App (Val do_for) _) _) _)
   iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
     part_inv R data a b xp xs i_ptr j_ptr true false))) $$ [HI]
-  · unfold part_inv
-    wp_for HI
-    have Hlen2 := HPerm1.length_eq
-    wp_if_destruct
-    · list_elem xs1 (sint.nat i_val) as xi
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z i_val) xs1 _ xi (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hxi_lookup
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hpivot
-      wp_apply Hcmp with %r %Hr
-      wp_if_destruct
-      · have hP := dec_val_true Hif
-        wp_for_post
-        iframe
-        iexists xs1, (i_val + W64 1), j_val
-        iframe
-        ipureintro
-        refine ⟨by word, ?_, Hpivot, HPerm1, Houtside1, fun h => h.elim, fun h => h.elim⟩
-        rw [show sint.nat (i_val + W64 1) = sint.nat i_val + 1 by word]
-        exact is_partitioned_pre_advance_left R _ _ _ _ _ xp xi Hpart Hpivot Hxi_lookup
-          (R_antisym R _ _ (Hr.1 (by word)))
-      · have hP := dec_val_false Hif
-        simp only [hP, decide_false, Bool.false_eq_true, ↓reduceIte]
-        isplitl []
-        · itrivial
-        iexists xs1, i_val, j_val
-        iframe
-        ipureintro
-        refine ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => Or.inr ?_, fun h => h.elim⟩
-        intro xi' hxi'
-        rw [Hxi_lookup] at hxi'; cases hxi'
-        exact fun h => hP (by have := Hr.2 h; word)
-    · isplitl []
-      · itrivial
-      iexists xs1, i_val, j_val
-      iframe
-      ipureintro
-      exact ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => Or.inl (by omega),
-        fun h => h.elim⟩
+  · iapply (wp_part_loop1 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
+      cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
   iintro %v ⟨%Hv, HI⟩
   subst Hv
   wp_auto))
@@ -354,54 +461,8 @@ macro "part_loop2" : tactic => `(tactic| (
   wp_bind (App (App (App (Val do_for) _) _) _)
   iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
     part_inv R data a b xp xs i_ptr j_ptr true true))) $$ [HI]
-  · unfold part_inv
-    wp_for HI
-    have Hlen2 := HPerm1.length_eq
-    wp_if_destruct
-    · list_elem xs1 (sint.nat j_val) as xj
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hxj_lookup
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hpivot
-      wp_apply Hcmp with %r %Hr
-      by_cases hP : sint.Z r < sint.Z (W64 0)
-      · -- `data[j] < data[a]`: exit
-        simp only [hP, decide_true, Bool.not_true]
-        cleanup_bool_decide
-        wp_pures
-        isplitl []
-        · itrivial
-        iexists xs1, i_val, j_val
-        iframe
-        ipureintro
-        refine ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => HBr1 rfl, fun _ => Or.inr ?_⟩
-        intro xj' hxj'
-        rw [Hxj_lookup] at hxj'; cases hxj'
-        exact R_antisym R _ _ (Hr.1 (by word))
-      · simp only [hP, decide_false, Bool.not_false]
-        cleanup_bool_decide
-        wp_auto
-        wp_for_post
-        iframe
-        iexists xs1, i_val, (j_val - W64 1)
-        iframe
-        ipureintro
-        refine ⟨by word, ?_, Hpivot, HPerm1, Houtside1, fun _ => ?_, fun h => h.elim⟩
-        · rw [show sint.nat (j_val - W64 1) = sint.nat j_val - 1 by word]
-          exact is_partitioned_pre_advance_right R _ _ _ _ _ xp xj Hpart Hpivot Hxj_lookup
-            (fun h => hP (by have := Hr.2 h; word))
-        · rcases HBr1 rfl with h | h
-          · left; word
-          · right; exact h
-    · isplitl []
-      · itrivial
-      iexists xs1, i_val, j_val
-      iframe
-      ipureintro
-      exact ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => HBr1 rfl,
-        fun _ => Or.inl (by omega)⟩
+  · iapply (wp_part_loop2 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
+      cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
   iintro %v ⟨%Hv, HI⟩
   subst Hv
   wp_auto))
@@ -488,7 +549,6 @@ macro "part_swap" : tactic => `(tactic| (
     · exact outside_same_trans _ _ _ _ _ Houtside1
         (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))))
 
-set_option maxHeartbeats 600000 in
 theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
     (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
@@ -529,7 +589,6 @@ theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.
   ipersist a
   ipersist data
   ipersist cmp
-  unfold cmp_implements
   ihave HI : part_inv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
   · unfold part_inv
     iexists _, _, _
@@ -726,7 +785,6 @@ def peq_inv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : l
     "%HBr2" ∷ ⌜br2 = true → sint.Z i_val > sint.Z j_val ∨
                  ∀ xj, xs1[sint.nat j_val]? = some xj → ¬ R xp xj⌝)
 
-set_option maxHeartbeats 600000 in
 theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
     (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗

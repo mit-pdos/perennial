@@ -168,11 +168,16 @@ def run_one(path, args):
             if msg.get("severity") == "error":
                 errors.append(f"{msg['pos']['line']}: {msg['data'].strip()[:200]}")
                 continue
-            m = MSG_RE.match(msg.get("data", "").strip())
-            if m and msg.get("severity") == "information":
+            if msg.get("severity") != "information":
+                continue
+            # one message per declaration, one "X took T" line per profiled item
+            for dl in msg.get("data", "").splitlines():
+                m = MSG_RE.match(dl.strip())
+                if not m:
+                    continue
                 secs = float(m.group(2)) / (1000 if m.group(3) == "ms" else 1)
                 cat = m.group(1)
-                cat = re.sub(r"^tactic execution of .*", "tactic", cat)
+                cat = re.sub(r"^tactic execution of (?:\S*\.)?(\S+)$", r"tactic \1", cat)
                 decls[lookup(msg["pos"]["line"])][cat] += secs
             continue
         if line.startswith("cumulative profiling times"):

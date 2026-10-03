@@ -161,9 +161,11 @@ local macro "rw_reestablish " wl:term:max pos:term:max o:term:max : tactic => `(
   (try iframe Hwriter)
   rw_pure_finish))
 
+-- (`dsimp`: the `match`es reduce definitionally, so no rewriting proofs through the
+-- whole Iris context are built.)
 local macro "rw_unfold_cases" : tactic => `(tactic| (
   cases ‹rwmutex› <;> cases ‹wlock_state› <;>
-  simp only [rw_inv_readers, rw_inv_outstanding, rw_inv_writer, rw_inv_main,
+  dsimp only [rw_inv_readers, rw_inv_outstanding, rw_inv_writer, rw_inv_main,
     rw_reader_count_rel] at *))
 
 theorem step_RLock_readerCount_Add (γ : RWMutex_protocol_names) (ws rs rc rwt : w32)
