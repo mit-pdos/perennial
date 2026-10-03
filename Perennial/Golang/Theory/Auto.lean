@@ -455,6 +455,11 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     if let some (wp', k) ← wp.focus? ehyps then
       let (pf, lc', p) ← iWpAuto hyps wp' lc lcIdx (simpFirst := false)
       return (← k pf, lc', p)
+  -- a run of `let:`s of values: step through it at once
+  if lc == 0 then
+    if let some (some ⟨_, hyps', e', k⟩) ← observing? (iWpLetRun? hyps wp) then
+      let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx (simpFirst := false)
+      return (← k pf', lc', true)
   let saved ← saveState
   -- pure step
   if let some (st, hφ) ← observing? (iWpPureStepFind wp (failOnUnsolved := true) (multi := true)) then

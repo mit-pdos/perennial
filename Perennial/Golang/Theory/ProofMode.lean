@@ -26,6 +26,7 @@ import Perennial.GooseLang.Lifting
 import Perennial.GooseLang.Countable
 import Perennial.Golang.Theory.SimpAttr
 import Perennial.Golang.Theory.SubstSimp
+import Perennial.Golang.Theory.SubstEnv
 import Perennial.Golang.Theory.TacticsSimpAttr
 import Perennial.Golang.Theory.IrisTactics
 import Perennial.GooseLang.Notation
@@ -142,6 +143,42 @@ instance pure_wp_SelectStmtClauses (d : Option expr) (cs : List comm_clause) :
 -- `PostLifting.lean`, so that this file does not wait for `Golang/Defn`.
 
 end instances
+
+/-! ## Runs of `let:`s of values
+
+`wp_auto`/`wp_pures` step through a run `let: x₀ := #v₀ in let: x₁ := #v₁ in ... e`
+with an environment `σ` (`SubstEnv.lean`): the goal `WP (fill K (substEnv σ e))`
+with `e` a subterm of the original expression is stepped (two pure steps per
+`let:`) by extending `σ`, in constant size per `let:`, and only the body after the
+run is substituted, once. (Substituting each `let:` into the rest of the run
+instead costs the size of the rest of the run per `let:`.) -/
+
+section let_env
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+
+theorem tac_wp_let_env {σ : String → Option val} {b : binder} {v : val} {e : expr}
+    {K : List ectx_item} {Δ Δ1 Δ2 : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    (h1 : Δ ⊢ ▷ Δ1) (h2 : Δ1 ⊢ ▷ Δ2)
+    (h : Δ2 ⊢ WP (fill K (substEnv (envInsB b v σ) e)) @ s; E {{ Φ }}) :
+    Δ ⊢ WP (fill K (substEnv σ (App (Rec BAnon b e) (Val v)))) @ s; E {{ Φ }} := by
+  have he : substEnv σ (App (Rec BAnon b e) (Val v)) =
+      App (Rec BAnon b (substEnv (envDel BAnon (envDel b σ)) e)) (Val v) := by
+    simp only [substEnv]
+  rw [he]
+  refine tac_wp_pure_wp (K := ectx_item.AppLCtx v :: K) (Hwp := wp_recc _ _ _) trivial h1 ?_
+  refine tac_wp_pure_wp (K := K) (Hwp := wp_call _ _ _ _) trivial h2 ?_
+  rw [subst'_substEnv]
+  exact h
+
+theorem tac_wp_env_enter {e : expr} {K : List ectx_item} {Δ : IProp GF} {s : Stuckness}
+    {E : CoPset} {Φ : val → IProp GF}
+    (h : Δ ⊢ WP (fill K (substEnv envNil e)) @ s; E {{ Φ }}) :
+    Δ ⊢ WP (fill K e) @ s; E {{ Φ }} := by
+  rwa [substEnv_nil] at h
+
+end let_env
 
 /-! ## Lemmas used by the tactics -/
 
@@ -382,16 +419,25 @@ returned. -/
 section closed
 variable [ext : ffi_syntax]
 
-/-- Substituting any variable not in `S` does not change `e`. -/
-def ClosedUnder (S : List String) (e : expr) : Prop := ∀ x v, x ∉ S → subst x v e = e
+/-- `simp` (e.g. `goose_wp_simp` over the whole WP expression) only rewrites the
+annotated term, not the variable set of an annotation. -/
+@[congr] theorem fvClosed_congr {S : List String} {e e' : expr} (h : e = e') :
+    fvClosed S e = fvClosed S e' := h ▸ rfl
+
+/-- The environment `σ` binds none of the variables in `S`. -/
+def EnvAvoids (S : List String) (σ : String → Option val) : Prop := ∀ s ∈ S, σ s = none
+
+/-- Substituting any environment that binds no variable of `S` does not change `e`
+(so in particular substituting a variable not in `S`, `subst_pf_fvClosed`). -/
+def ClosedUnder (S : List String) (e : expr) : Prop := ∀ σ, EnvAvoids S σ → substEnv σ e = e
 def ClosedKEs (S : List String) (l : List keyed_element) : Prop :=
-  ∀ x v, x ∉ S → subst_keyed_elements x v l = l
+  ∀ σ, EnvAvoids S σ → substEnv_kes σ l = l
 def ClosedKE (S : List String) (ke : keyed_element) : Prop :=
-  ∀ x v, x ∉ S → subst_keyed_element x v ke = ke
+  ∀ σ, EnvAvoids S σ → substEnv_ke σ ke = ke
 def ClosedOKey (S : List String) (k : Option key) : Prop :=
-  ∀ x v, x ∉ S → subst_opt_key x v k = k
+  ∀ σ, EnvAvoids S σ → substEnv_okey σ k = k
 def ClosedElem (S : List String) (el : element) : Prop :=
-  ∀ x v, x ∉ S → subst_element x v el = el
+  ∀ σ, EnvAvoids S σ → substEnv_el σ el = el
 
 /-- The variable names bound by binders `f`, `y`. -/
 def bnames : binder → List String
@@ -400,72 +446,71 @@ def bnames : binder → List String
 
 variable {S : List String}
 
-theorem closed_val (w : val) : ClosedUnder S (Val w) := fun _ _ _ => rfl
+theorem closed_val (w : val) : ClosedUnder S (Val w) := fun _ _ => by simp only [substEnv]
 theorem closed_var {y : String} (h : y ∈ S) : ClosedUnder S (Var y) := by
-  intro x v hx; simp only [subst]; rw [if_neg]; intro e; subst e; exact hx h
+  intro σ hσ; simp only [substEnv, hσ y h]
 theorem closed_rec {f y : binder} {e : expr} (h : ClosedUnder (bnames f ++ bnames y ++ S) e) :
     ClosedUnder S (Rec f y e) := by
-  intro x v hx; simp only [subst]
-  split
-  · rename_i hb
-    rw [h x v]
-    intro hm
-    simp only [List.mem_append] at hm
-    rcases hm with (hm | hm) | hm
-    · cases f <;> simp [bnames] at hm; subst hm; exact hb.1 rfl
-    · cases y <;> simp [bnames] at hm; subst hm; exact hb.2 rfl
-    · exact hx hm
-  · rfl
+  intro σ hσ; simp only [substEnv]
+  rw [h]
+  intro s hs
+  simp only [envDel_apply]
+  simp only [List.mem_append] at hs
+  rcases hs with (hm | hm) | hm
+  · cases f <;> simp [bnames] at hm; subst hm; simp
+  · cases y <;> simp [bnames] at hm; subst hm; simp
+  · simp [hσ s hm]
 theorem closed_app {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
-    ClosedUnder S (App a b) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx]
+    ClosedUnder S (App a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
 theorem closed_if {a b c : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) (hc : ClosedUnder S c) :
-    ClosedUnder S (If a b c) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx, hc x v hx]
+    ClosedUnder S (If a b c) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ, hc σ hσ]
 theorem closed_pair {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
-    ClosedUnder S (Pair a b) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx]
+    ClosedUnder S (Pair a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
 theorem closed_fst {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Fst a) := by
-  intro x v hx; simp only [subst, ha x v hx]
+  intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_snd {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Snd a) := by
-  intro x v hx; simp only [subst, ha x v hx]
+  intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_fork {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Fork a) := by
-  intro x v hx; simp only [subst, ha x v hx]
-theorem closed_prim0 (op : prim_op0) : ClosedUnder S (Primitive0 op) := fun _ _ _ => rfl
+  intro σ hσ; simp only [substEnv, ha σ hσ]
+theorem closed_prim0 (op : prim_op0) : ClosedUnder S (Primitive0 op) := fun _ _ => by
+  simp only [substEnv]
 theorem closed_prim1 (op : prim_op1) {a : expr} (ha : ClosedUnder S a) :
-    ClosedUnder S (Primitive1 op a) := by intro x v hx; simp only [subst, ha x v hx]
+    ClosedUnder S (Primitive1 op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_prim2 (op : prim_op2) {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
-    ClosedUnder S (Primitive2 op a b) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx]
+    ClosedUnder S (Primitive2 op a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
 theorem closed_extop (op : ffi_opcode) {a : expr} (ha : ClosedUnder S a) :
-    ClosedUnder S (ExternalOp op a) := by intro x v hx; simp only [subst, ha x v hx]
+    ClosedUnder S (ExternalOp op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_cmpxchg {a b c : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b)
     (hc : ClosedUnder S c) : ClosedUnder S (CmpXchg a b c) := by
-  intro x v hx; simp only [subst, ha x v hx, hb x v hx, hc x v hx]
-theorem closed_newproph : ClosedUnder S (NewProph : expr) := fun _ _ _ => rfl
+  intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ, hc σ hσ]
+theorem closed_newproph : ClosedUnder S (NewProph : expr) := fun _ _ => by simp only [substEnv]
 theorem closed_resolve {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
-    ClosedUnder S (ResolveProph a b) := by intro x v hx; simp only [subst, ha x v hx, hb x v hx]
+    ClosedUnder S (ResolveProph a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
 theorem closed_litval {l : List keyed_element} (h : ClosedKEs S l) : ClosedUnder S (LiteralValue l) := by
-  intro x v hx; simp only [subst, h x v hx]
-theorem closed_kes_nil : ClosedKEs S [] := by intro x v _; simp only [subst_keyed_elements]
+  intro σ hσ; simp only [substEnv, h σ hσ]
+theorem closed_kes_nil : ClosedKEs S [] := by intro σ _; simp only [substEnv_kes]
 theorem closed_kes_cons {ke : keyed_element} {l : List keyed_element} (h1 : ClosedKE S ke)
     (h2 : ClosedKEs S l) : ClosedKEs S (ke :: l) := by
-  intro x v hx; simp only [subst_keyed_elements, h1 x v hx, h2 x v hx]
+  intro σ hσ; simp only [substEnv_kes, h1 σ hσ, h2 σ hσ]
 theorem closed_ke {k : Option key} {el : element} (h1 : ClosedOKey S k) (h2 : ClosedElem S el) :
     ClosedKE S (KeyedElement k el) := by
-  intro x v hx; simp only [subst_keyed_element, h1 x v hx, h2 x v hx]
-theorem closed_okey_none : ClosedOKey S none := by intro x v _; simp only [subst_opt_key]
+  intro σ hσ; simp only [substEnv_ke, h1 σ hσ, h2 σ hσ]
+theorem closed_okey_none : ClosedOKey S none := by intro σ _; simp only [substEnv_okey]
 theorem closed_okey_field (f : go_string) : ClosedOKey S (some (KeyField f)) := by
-  intro x v _; simp only [subst_opt_key]
+  intro σ _; simp only [substEnv_okey]
 theorem closed_okey_int (i : Int) : ClosedOKey S (some (KeyInteger i)) := by
-  intro x v _; simp only [subst_opt_key]
+  intro σ _; simp only [substEnv_okey]
 theorem closed_okey_expr (t : go.type) {e : expr} (h : ClosedUnder S e) :
-    ClosedOKey S (some (KeyExpression t e)) := by intro x v hx; simp only [subst_opt_key, h x v hx]
+    ClosedOKey S (some (KeyExpression t e)) := by intro σ hσ; simp only [substEnv_okey, h σ hσ]
 theorem closed_okey_lv {l : List keyed_element} (h : ClosedKEs S l) :
-    ClosedOKey S (some (KeyLiteralValue l)) := by intro x v hx; simp only [subst_opt_key, h x v hx]
+    ClosedOKey S (some (KeyLiteralValue l)) := by intro σ hσ; simp only [substEnv_okey, h σ hσ]
 theorem closed_el_expr (t : go.type) {e : expr} (h : ClosedUnder S e) :
-    ClosedElem S (ElementExpression t e) := by intro x v hx; simp only [subst_element, h x v hx]
+    ClosedElem S (ElementExpression t e) := by intro σ hσ; simp only [substEnv_el, h σ hσ]
 theorem closed_el_lv {l : List keyed_element} (h : ClosedKEs S l) :
-    ClosedElem S (ElementLiteralValue l) := by intro x v hx; simp only [subst_element, h x v hx]
+    ClosedElem S (ElementLiteralValue l) := by intro σ hσ; simp only [substEnv_el, h σ hσ]
 /-- A nested annotation with a smaller set. -/
 theorem closed_fv {T : List String} {e : expr} (h : ClosedUnder T e) (hsub : ∀ s ∈ T, s ∈ S) :
-    ClosedUnder S (fvClosed T e) := fun x v hx => h x v (fun hm => hx (hsub x hm))
+    ClosedUnder S (fvClosed T e) := fun σ hσ => h σ (fun s hs => hσ s (hsub s hs))
 theorem subset_nil : ∀ s ∈ ([] : List String), s ∈ S := by simp
 theorem subset_cons {a : String} {T : List String} (h1 : a ∈ S) (h2 : ∀ s ∈ T, s ∈ S) :
     ∀ s ∈ a :: T, s ∈ S := by
@@ -476,7 +521,21 @@ theorem not_mem_cons' {x a : String} {l : List String} (h1 : x ≠ a) (h2 : x �
 
 /-- The substitution of a variable `x ∉ S` into an annotated term. -/
 theorem subst_pf_fvClosed {x : String} {v : val} {e : expr} (h : ClosedUnder S e) (hx : x ∉ S) :
-    subst x v (fvClosed S e) = fvClosed S e := h x v hx
+    subst x v (fvClosed S e) = fvClosed S e := by
+  rw [fvClosed, subst_eq_substEnv]
+  apply h
+  intro s hs
+  have : x ≠ s := fun h' => hx (h' ▸ hs)
+  simp [envIns, envNil, this]
+
+theorem env_avoids_nil {σ : String → Option val} : EnvAvoids [] σ := by simp [EnvAvoids]
+theorem env_avoids_cons {σ : String → Option val} {a : String} {l : List String}
+    (h1 : σ a = none) (h2 : EnvAvoids l σ) : EnvAvoids (a :: l) σ := by
+  intro s hs; simp only [List.mem_cons] at hs; rcases hs with rfl | hs; exact h1; exact h2 s hs
+
+/-- The substitution of an environment avoiding `S` into an annotated term. -/
+theorem substEnv_pf_fvClosed {σ : String → Option val} {e : expr} (h : ClosedUnder S e)
+    (hσ : EnvAvoids S σ) : substEnv σ (fvClosed S e) = fvClosed S e := h σ hσ
 
 end closed
 
@@ -991,6 +1050,8 @@ def needsGooseSimp (e : Expr) (known : Array Expr := #[]) : MetaM Bool := do
     let b ← do
       if ← localNeeds s then pure true
       else match s with
+        -- (the variable set of a closedness annotation is a list of string literals)
+        | .app (.app (.app (.const ``fvClosed _) _) _) b => go b
         | .app f a => do if ← go f then pure true else go a
         | .lam _ t b _ | .forallE _ t b _ => do if ← go t then pure true else go b
         | .mdata _ b => go b
@@ -1782,6 +1843,229 @@ partial def substKEPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bo
 
 end
 
+/-! ### Substitution of an environment (meta level)
+
+Used to step through a run of `let:`s of values at once (`iWpLetRun?`). The
+environment `σ` is a stack of layers (`envInsB b v` for a `let:`, `envDel b` under
+a binder), newest first; the lookup of a variable walks the stack. -/
+
+/-- A layer of an environment: `envInsB b v` (`ins`) or `envDel b` (`del`), with
+the name of `b` (`none` for `BAnon`) and the binder `b` itself. -/
+inductive EnvLayer where
+  | ins (x : Option String) (b v : Expr)
+  | del (x : Option String) (b : Expr)
+
+/-- An environment: its layers (newest first, each with the environment below
+it) and the environment expression. -/
+structure MEnv where
+  layers : List (EnvLayer × Expr)
+  σ : Expr
+
+/-- Push a layer. -/
+def MEnv.push (ext : Expr) (env : MEnv) (l : EnvLayer) : MEnv :=
+  let σ' := match l with
+    | .ins _ b v => mkApp4 (mkConst ``envInsB) ext b v env.σ
+    | .del _ b => mkApp3 (mkConst ``envDel) ext b env.σ
+  { layers := (l, env.σ) :: env.layers, σ := σ' }
+
+/-- The string literal of a binder `BNamed x`. -/
+def binderStrExpr (b : Expr) : MetaM Expr := do
+  return (← whnfR b).getArg! 0
+
+/-- Look up `y` in the environment: the result (`some v`, or `none`) and a proof of
+`σ y = result`. Cached on `(σ, y)`. -/
+partial def envLookupPf (ext : Expr) (cache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
+    (y : String) (ye : Expr) (layers : List (EnvLayer × Expr)) (σ : Expr) :
+    MetaM (Option Expr × Expr) := do
+  if let some r := (← cache.get)[(σ, y)]? then return r
+  let valTy := mkApp (mkConst ``Perennial.val) ext
+  let optE (r : Option Expr) : Expr := match r with
+    | some v => mkApp2 (mkConst ``Option.some [0]) valTy v
+    | none => mkApp (mkConst ``Option.none [0]) valTy
+  let r ← match layers with
+    | [] => pure (none, mkApp2 (mkConst ``env_nil) ext ye)
+    | (l, σ') :: rest =>
+      match l with
+      | .ins (some x) b v =>
+        let xe ← binderStrExpr b
+        if x == y then pure (some v, mkApp4 (mkConst ``env_insB_eq) ext xe v σ')
+        else
+          let (r, p) ← envLookupPf ext cache y ye rest σ'
+          pure (r, mkAppN (mkConst ``env_insB_ne) #[ext, xe, ye, v, σ', optE r, strNeProof x y xe ye, p])
+      | .ins none _ v =>
+        let (r, p) ← envLookupPf ext cache y ye rest σ'
+        pure (r, mkAppN (mkConst ``env_insB_anon) #[ext, ye, v, σ', optE r, p])
+      | .del (some x) b =>
+        let xe ← binderStrExpr b
+        if x == y then pure (none, mkApp3 (mkConst ``env_del_named_eq) ext xe σ')
+        else
+          let (r, p) ← envLookupPf ext cache y ye rest σ'
+          pure (r, mkAppN (mkConst ``env_del_named_ne) #[ext, xe, ye, σ', optE r, strNeProof x y xe ye, p])
+      | .del none _ =>
+        let (r, p) ← envLookupPf ext cache y ye rest σ'
+        pure (r, mkAppN (mkConst ``env_del_anon) #[ext, ye, σ', optE r, p])
+  cache.modify (·.insert (σ, y) r)
+  return r
+
+mutual
+
+/-- `substEnv σ e` with a proof `substEnv σ e = e'`, for `e` built from
+constructors (`none` otherwise). Closedness annotations `fvClosed S b` with no
+variable of `S` bound by `σ` are kept as they are. -/
+partial def substEnvPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
+    (env : MEnv) (e : Expr) : MetaM (Option (Expr × Expr)) := do
+  let σ := env.σ
+  let rec' := substEnvPf ext lcache env
+  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, σ] ++ args)
+  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
+  -- a closedness annotation `fvClosed S b`
+  if e.isAppOfArity ``fvClosed 3 then
+    let Se := e.getArg! 1; let b := e.getArg! 2
+    if let some S ← strList? Se then
+      -- the lookups of the variables of `S`
+      let mut bound := false
+      let mut lookups := #[]
+      for s in S do
+        let (r, p) ← envLookupPf ext lcache s (mkStrLit s) env.layers σ
+        if r.isSome then bound := true
+        lookups := lookups.push (s, r, p)
+      if !bound then
+        if let some h ← closedPf ext S Se b then
+          -- `EnvAvoids S σ`
+          let mut hσ := mkApp2 (mkConst ``env_avoids_nil) ext σ
+          let mut tl := mkApp (mkConst ``List.nil [0]) (mkConst ``String)
+          for (s, _, p) in lookups.reverse do
+            hσ := mkAppN (mkConst ``env_avoids_cons) #[ext, σ, mkStrLit s, tl, p, hσ]
+            tl := mkApp3 (mkConst ``List.cons [0]) (mkConst ``String) (mkStrLit s) tl
+          return some (e, mkAppN (mkConst ``substEnv_pf_fvClosed) #[ext, Se, σ, b, h, hσ])
+      -- some variable of `S` is bound: substitute into the body (definitionally the
+      -- same), keeping the annotation with the bound variables removed
+      let some (b', pb) ← rec' b | return none
+      let S' := (lookups.filter (·.2.1.isNone)).toList.map (·.1)
+      return some (mkApp3 (mkConst ``fvClosed) ext (strListExpr S') b', pb)
+  let e ← whnfR e
+  match e.getAppFn.constName?, e.getAppArgs with
+  | some ``Perennial.expr.Val, #[_, w] => return some (e, lem ``substEnv_pf_val #[w])
+  | some ``Perennial.expr.Var, #[_, y] =>
+    let some y' ← strLit? y | return none
+    let (r, p) ← envLookupPf ext lcache y' y env.layers σ
+    match r with
+    | some w => return some (mk ``Perennial.expr.Val #[w], lem ``substEnv_pf_var_some #[y, w, p])
+    | none => return some (e, lem ``substEnv_pf_var_none #[y, p])
+  | some ``Perennial.expr.Rec, #[_, f, y, body] =>
+    let some fb ← binderLit? f | return none
+    let some yb ← binderLit? y | return none
+    let f ← whnfR f; let y ← whnfR y
+    let env' := (env.push ext (.del yb y)).push ext (.del fb f)
+    let some (body', pb) ← substEnvPf ext lcache env' body | return none
+    return some (mk ``Perennial.expr.Rec #[f, y, body'], lem ``substEnv_pf_rec #[f, y, body, body', pb])
+  | some ``Perennial.expr.App, #[_, a, b] =>
+    let some (a', pa) ← rec' a | return none
+    let some (b', pb) ← rec' b | return none
+    return some (mk ``Perennial.expr.App #[a', b'], lem ``substEnv_pf_app #[a, b, a', b', pa, pb])
+  | some ``Perennial.expr.If, #[_, a, b, c] =>
+    let some (a', pa) ← rec' a | return none
+    let some (b', pb) ← rec' b | return none
+    let some (c', pc) ← rec' c | return none
+    return some (mk ``Perennial.expr.If #[a', b', c'], lem ``substEnv_pf_if #[a, b, c, a', b', c', pa, pb, pc])
+  | some ``Perennial.expr.Pair, #[_, a, b] =>
+    let some (a', pa) ← rec' a | return none
+    let some (b', pb) ← rec' b | return none
+    return some (mk ``Perennial.expr.Pair #[a', b'], lem ``substEnv_pf_pair #[a, b, a', b', pa, pb])
+  | some ``Perennial.expr.Fst, #[_, a] =>
+    let some (a', pa) ← rec' a | return none
+    return some (mk ``Perennial.expr.Fst #[a'], lem ``substEnv_pf_fst #[a, a', pa])
+  | some ``Perennial.expr.Snd, #[_, a] =>
+    let some (a', pa) ← rec' a | return none
+    return some (mk ``Perennial.expr.Snd #[a'], lem ``substEnv_pf_snd #[a, a', pa])
+  | some ``Perennial.expr.Fork, #[_, a] =>
+    let some (a', pa) ← rec' a | return none
+    return some (mk ``Perennial.expr.Fork #[a'], lem ``substEnv_pf_fork #[a, a', pa])
+  | some ``Perennial.expr.Primitive0, #[_, op] => return some (e, lem ``substEnv_pf_prim0 #[op])
+  | some ``Perennial.expr.Primitive1, #[_, op, a] =>
+    let some (a', pa) ← rec' a | return none
+    return some (mk ``Perennial.expr.Primitive1 #[op, a'], lem ``substEnv_pf_prim1 #[op, a, a', pa])
+  | some ``Perennial.expr.Primitive2, #[_, op, a, b] =>
+    let some (a', pa) ← rec' a | return none
+    let some (b', pb) ← rec' b | return none
+    return some (mk ``Perennial.expr.Primitive2 #[op, a', b'],
+      lem ``substEnv_pf_prim2 #[op, a, b, a', b', pa, pb])
+  | some ``Perennial.expr.ExternalOp, #[_, op, a] =>
+    let some (a', pa) ← rec' a | return none
+    return some (mk ``Perennial.expr.ExternalOp #[op, a'], lem ``substEnv_pf_extop #[op, a, a', pa])
+  | some ``Perennial.expr.CmpXchg, #[_, a, b, c] =>
+    let some (a', pa) ← rec' a | return none
+    let some (b', pb) ← rec' b | return none
+    let some (c', pc) ← rec' c | return none
+    return some (mk ``Perennial.expr.CmpXchg #[a', b', c'],
+      lem ``substEnv_pf_cmpxchg #[a, b, c, a', b', c', pa, pb, pc])
+  | some ``Perennial.expr.NewProph, #[_] => return some (e, lem ``substEnv_pf_newproph #[])
+  | some ``Perennial.expr.ResolveProph, #[_, a, b] =>
+    let some (a', pa) ← rec' a | return none
+    let some (b', pb) ← rec' b | return none
+    return some (mk ``Perennial.expr.ResolveProph #[a', b'], lem ``substEnv_pf_resolve #[a, b, a', b', pa, pb])
+  | some ``Perennial.expr.LiteralValue, #[_, l] =>
+    let some (l', pl) ← substEnvKEsPf ext lcache env l | return none
+    return some (mk ``Perennial.expr.LiteralValue #[l'], lem ``substEnv_pf_litval #[l, l', pl])
+  | _, _ => return none
+
+/-- `substEnv_kes σ l` with a proof (see `substEnvPf`). -/
+partial def substEnvKEsPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
+    (env : MEnv) (l : Expr) : MetaM (Option (Expr × Expr)) := do
+  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
+  let l ← whnfR l
+  if l.isAppOfArity ``List.nil 1 then return some (l, lem ``substEnv_pf_kes_nil #[])
+  unless l.isAppOfArity ``List.cons 3 do return none
+  let ke := l.getArg! 1; let tl := l.getArg! 2
+  let some (ke', p1) ← substEnvKEPf ext lcache env ke | return none
+  let some (tl', p2) ← substEnvKEsPf ext lcache env tl | return none
+  return some (mkApp3 (mkConst ``List.cons [0]) (l.getArg! 0) ke' tl',
+    lem ``substEnv_pf_kes_cons #[ke, ke', tl, tl', p1, p2])
+
+/-- `substEnv_ke σ ke` with a proof (see `substEnvPf`). -/
+partial def substEnvKEPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
+    (env : MEnv) (ke : Expr) : MetaM (Option (Expr × Expr)) := do
+  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
+  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
+  let ke ← whnfR ke
+  unless ke.isAppOfArity ``Perennial.keyed_element.KeyedElement 3 do return none
+  let k ← whnfR (ke.getArg! 1)
+  let el ← whnfR (ke.getArg! 2)
+  let key? : MetaM (Option (Expr × Expr)) := do
+    if k.isAppOfArity ``Option.none 1 then return some (k, lem ``substEnv_pf_okey_none #[])
+    unless k.isAppOfArity ``Option.some 2 do return none
+    let kk ← whnfR (k.getArg! 1)
+    let some' (e : Expr) := mkApp2 (mkConst ``Option.some [0]) (k.getArg! 0) e
+    match kk.getAppFn.constName?, kk.getAppArgs with
+    | some ``Perennial.key.KeyField, #[_, f] => return some (k, lem ``substEnv_pf_okey_field #[f])
+    | some ``Perennial.key.KeyInteger, #[_, i] => return some (k, lem ``substEnv_pf_okey_int #[i])
+    | some ``Perennial.key.KeyExpression, #[_, t, e] =>
+      let some (e', pe) ← substEnvPf ext lcache env e | return none
+      return some (some' (mk ``Perennial.key.KeyExpression #[t, e']),
+        lem ``substEnv_pf_okey_expr #[t, e, e', pe])
+    | some ``Perennial.key.KeyLiteralValue, #[_, l] =>
+      let some (l', pl) ← substEnvKEsPf ext lcache env l | return none
+      return some (some' (mk ``Perennial.key.KeyLiteralValue #[l']),
+        lem ``substEnv_pf_okey_lv #[l, l', pl])
+    | _, _ => return none
+  let elem? : MetaM (Option (Expr × Expr)) := do
+    match el.getAppFn.constName?, el.getAppArgs with
+    | some ``Perennial.element.ElementExpression, #[_, t, e] =>
+      let some (e', pe) ← substEnvPf ext lcache env e | return none
+      return some (mk ``Perennial.element.ElementExpression #[t, e'],
+        lem ``substEnv_pf_el_expr #[t, e, e', pe])
+    | some ``Perennial.element.ElementLiteralValue, #[_, l] =>
+      let some (l', pl) ← substEnvKEsPf ext lcache env l | return none
+      return some (mk ``Perennial.element.ElementLiteralValue #[l'],
+        lem ``substEnv_pf_el_lv #[l, l', pl])
+    | _, _ => return none
+  let some (k', p1) ← key? | return none
+  let some (el', p2) ← elem? | return none
+  return some (mk ``Perennial.keyed_element.KeyedElement #[k', el'],
+    lem ``substEnv_pf_ke #[k, k', el, el', p1, p2])
+
+end
+
 /-- Annotate the continuations (bodies of `let:`/`;;` lambdas and of the
 `exception_seq` continuation) of a large expression with their free variables
 (`fvClosed`); the result is definitionally equal to `e`. -/
@@ -2082,6 +2366,109 @@ def iWpPureStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   let (st, hφ) ← iWpPureStepFind wp failOnUnsolved pred
   iWpPureStepTake hyps wp st hφ lc
 
+register_option goose.wp.letRun : Nat := {
+  defValue := 2
+  descr := "the minimal length of a run of `let:`s of values that `wp_pures`/`wp_auto` step \
+    through at once, substituting an environment into the body after the run once \
+    (`tac_wp_let_env`); 0 disables this"
+}
+
+/-- A `let:` (or `;;`) of a value: `App (Rec BAnon b body) (Val v)`, possibly under a
+closedness annotation; returns `(b, name of b, v, body)`. -/
+def valueLet? (e : Expr) : MetaM (Option (Expr × Option String × Expr × Expr)) := do
+  let e ← whnfR e
+  let_expr Perennial.expr.App _ f a := e | return none
+  let f ← whnfR f
+  let_expr Perennial.expr.Rec _ fb b body := f | return none
+  unless (← whnfR fb).isConstOf ``binder.BAnon do return none
+  let some bl ← binderLit? b | return none
+  let some v ← isGooseVal? a | return none
+  return some (← whnfR b, bl, v, body)
+
+/-- The evaluation context `K` (innermost first) and the run of `let:`s of values
+`(b, name, v, body)` at the head of the WP expression `e`, if there is one. -/
+def findLetRun (e : Expr) :
+    MetaM (Option (List Expr × Expr × Array (Expr × Option String × Expr × Expr))) := do
+  let mut cur := e
+  let mut K := []
+  for _ in [0:64] do
+    if let some l ← valueLet? cur then
+      let mut run := #[l]
+      let mut body := l.2.2.2
+      repeat
+        let some l ← valueLet? body | break
+        run := run.push l
+        body := l.2.2.2
+      return some (K, cur, run)
+    let some (Ki, h) ← extractEctxItem cur | return none
+    if (← isGooseVal? h).isSome then return none
+    K := Ki :: K
+    cur := h
+  return none
+
+/-- Step through a run of at least `goose.wp.letRun` `let:`s of values at the head of
+the WP goal `hyps ⊢ wp` at once (`tac_wp_let_env`; two pure steps per `let:`, each
+introducing a `▷` as `iLaterIntro`). Returns the new context, the new expression,
+and a function turning a proof of the new goal into a proof
+of the old one; `none` if there is no such run, or if the body after the run is not
+built from constructors. -/
+def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
+    ProofModeM (Option ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr))) := do
+  let minRun := goose.wp.letRun.get (← getOptions)
+  if minRun == 0 then return none
+  let some (K, c0, run) ← findLetRun wp.e | return none
+  if run.size < minRun then return none
+  let ext := wp.ext
+  -- the environments `σ₀ = envNil, ..., σₖ`
+  let mut env : MEnv := { layers := [], σ := mkApp (mkConst ``envNil) ext }
+  let mut sigmas := #[env.σ]
+  for (b, bl, v, _) in run do
+    env := env.push ext (.ins bl b v)
+    sigmas := sigmas.push env.σ
+  let body := run.back!.2.2.2
+  let lcache ← IO.mkRef {}
+  let some (body', pbody) ← substEnvPf ext lcache env body | return none
+  -- as `simpReduct`: the body is in `goose_wp_simp` normal form, only the substituted
+  -- values may not be
+  let (body', pbody) ← if ← run.anyM (needsGooseSimp ·.2.2.1) then
+      match ← gooseExprSimp body' with
+      | (body'', some p2) => pure (body'', ← mkEqTrans pbody p2)
+      | (body'', none) => pure (body'', pbody)
+    else pure (body', pbody)
+  -- the `▷`s of the steps
+  let mut cur : (e : Q($prop)) × Hyps bi e := ⟨ehyps, hyps⟩
+  let mut deltas := #[ehyps]
+  let mut laters := #[]
+  for _ in [0:2 * run.size] do
+    let ⟨_, h⟩ := cur
+    let ⟨e', h', pf⟩ ← iLaterIntro h
+    cur := ⟨e', h'⟩
+    deltas := deltas.push e'
+    laters := laters.push pf
+  let ⟨ehyps', hyps'⟩ := cur
+  let e' ← fillExpr K body'
+  let Kq := wp.quoteK K
+  let gs ← gooseGSArgs wp.ι
+  let exprTy := mkApp (mkConst ``Perennial.expr) ext
+  let k := fun (h : Expr) => do
+    -- `Δ₂ₖ ⊢ WP (fill K (substEnv σₖ body))`
+    let f ← withLocalDeclD `x exprTy fun x => do mkLambdaFVars #[x] (← fillExpr K x)
+    let heq ← wp.wrapEq e' (some (← mkCongrArg f pbody))
+    let mut pf ← wp.mkAppNamed ``tac_wp_expr_simp
+      [("Δ", deltas[2 * run.size]!), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ),
+       ("e", wp.wrap (← fillExpr K (mkApp3 (mkConst ``substEnv) ext sigmas[run.size]! body))),
+       ("e'", wp.wrap e'), ("!h", h), ("!heq", heq)]
+    -- the `let:`s, last first
+    for i' in [0:run.size] do
+      let i := run.size - 1 - i'
+      let (b, _, v, bd) := run[i]!
+      pf := mkAppN (mkConst ``tac_wp_let_env) (gs ++ #[sigmas[i]!, b, v, bd, Kq,
+        deltas[2 * i]!, deltas[2 * i + 1]!, deltas[2 * i + 2]!, wp.s, wp.E, wp.Φ,
+        laters[2 * i]!, laters[2 * i + 1]!, pf])
+    return mkAppN (mkConst ``tac_wp_env_enter) (gs ++ #[c0, Kq, ehyps, wp.s, wp.E, wp.Φ, pf])
+  return some ⟨ehyps', hyps', e', k⟩
+
 /-- Simplify the expression of the WP goal with `goose_wp_simp`. Returns the new
 (inner) expression and a function turning a proof of the new goal into a proof
 of the old one, or `none` if nothing changed. -/
@@ -2270,6 +2657,9 @@ partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)
       else addBIGoal hyps goal
   if let some (wp', k) ← wp.focus? ehyps then
     return ← k (← iWpPures hyps wp' (simpFirst := false))
+  -- a run of `let:`s of values: step through it at once
+  if let some (some ⟨_, hyps', e', k⟩) ← observing? (iWpLetRun? hyps wp) then
+    return ← k (← iWpPures hyps' { wp with e := e' } (simpFirst := false))
   let saved ← saveState
   -- only the search is allowed to fail; errors while taking the step (e.g. in
   -- `simp`) are reported

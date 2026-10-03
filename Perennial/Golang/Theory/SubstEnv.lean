@@ -1,0 +1,377 @@
+/-
+Parallel substitution of an environment (`substEnv`), used by the WP tactics
+(`Perennial/Golang/Theory/ProofMode.lean`) to step through a run of `let:`s of
+values at once: the environment is extended by one binding per `let:` (in
+constant size), and only the body after the run is traversed, once.
+
+`substEnv σ e` replaces each free variable `y` of `e` with `Val v` when
+`σ y = some v` (values are closed, so this is capture-free). Substitution of one
+variable is the special case `σ = envIns x v envNil` (`subst_eq_substEnv`), and
+substituting into the result of a substitution extends the environment
+(`subst_substEnv`).
+
+This is a separate module only for build parallelism (it only needs `Lang`).
+-/
+import Perennial.GooseLang.Lang
+
+namespace Perennial
+
+section substEnv
+variable [ext : ffi_syntax]
+
+/-- The empty environment. -/
+def envNil : String → Option val := fun _ => none
+
+/-- Bind `x` to `v` in `σ`. -/
+def envIns (x : String) (v : val) (σ : String → Option val) : String → Option val :=
+  fun y => if x = y then some v else σ y
+
+/-- Remove the binder `b` from `σ` (under a `rec:` binding `b`). -/
+def envDel (b : binder) (σ : String → Option val) : String → Option val :=
+  match b with
+  | BAnon => σ
+  | BNamed x => fun y => if x = y then none else σ y
+
+/-- Bind the binder `b` (nothing for `BAnon`), as a `let:` does. -/
+def envInsB (b : binder) (v : val) (σ : String → Option val) : String → Option val :=
+  match b with
+  | BAnon => σ
+  | BNamed x => envIns x v σ
+
+mutual
+/-- Substitute the environment `σ` into `e`. -/
+def substEnv (σ : String → Option val) : expr → expr
+  | Val v' => Val v'
+  | Var y => match σ y with
+    | some v => Val v
+    | none => Var y
+  | Rec f y e => Rec f y (substEnv (envDel f (envDel y σ)) e)
+  | App e1 e2 => App (substEnv σ e1) (substEnv σ e2)
+  | If e0 e1 e2 => If (substEnv σ e0) (substEnv σ e1) (substEnv σ e2)
+  | Pair e1 e2 => Pair (substEnv σ e1) (substEnv σ e2)
+  | Fst e => Fst (substEnv σ e)
+  | Snd e => Snd (substEnv σ e)
+  | Fork e => Fork (substEnv σ e)
+  | Primitive0 op => Primitive0 op
+  | Primitive1 op e => Primitive1 op (substEnv σ e)
+  | Primitive2 op e1 e2 => Primitive2 op (substEnv σ e1) (substEnv σ e2)
+  | ExternalOp op e => ExternalOp op (substEnv σ e)
+  | CmpXchg e0 e1 e2 => CmpXchg (substEnv σ e0) (substEnv σ e1) (substEnv σ e2)
+  | NewProph => NewProph
+  | ResolveProph e1 e2 => ResolveProph (substEnv σ e1) (substEnv σ e2)
+  | LiteralValue l => LiteralValue (substEnv_kes σ l)
+  | SelectStmtClauses d l => SelectStmtClauses (substEnv_opt σ d) (substEnv_ccs σ l)
+
+def substEnv_opt (σ : String → Option val) : Option expr → Option expr
+  | none => none
+  | some e => some (substEnv σ e)
+
+def substEnv_kes (σ : String → Option val) : List keyed_element → List keyed_element
+  | [] => []
+  | ke :: l => substEnv_ke σ ke :: substEnv_kes σ l
+
+def substEnv_ke (σ : String → Option val) : keyed_element → keyed_element
+  | KeyedElement k el => KeyedElement (substEnv_okey σ k) (substEnv_el σ el)
+
+def substEnv_okey (σ : String → Option val) : Option key → Option key
+  | none => none
+  | some (KeyExpression t e) => some (KeyExpression t (substEnv σ e))
+  | some (KeyLiteralValue l) => some (KeyLiteralValue (substEnv_kes σ l))
+  | some k => some k
+
+def substEnv_el (σ : String → Option val) : element → element
+  | ElementExpression t e => ElementExpression t (substEnv σ e)
+  | ElementLiteralValue l => ElementLiteralValue (substEnv_kes σ l)
+
+def substEnv_ccs (σ : String → Option val) : List comm_clause → List comm_clause
+  | [] => []
+  | c :: l => substEnv_cc σ c :: substEnv_ccs σ l
+
+def substEnv_cc (σ : String → Option val) : comm_clause → comm_clause
+  | CommClause (SendCase t b e) body =>
+    CommClause (SendCase t (substEnv σ b) (substEnv σ e)) (substEnv σ body)
+  | CommClause (RecvCase t e) body => CommClause (RecvCase t (substEnv σ e)) (substEnv σ body)
+end
+
+theorem envDel_apply (b : binder) (σ : String → Option val) (s : String) :
+    envDel b σ s = if BNamed s = b then none else σ s := by
+  cases b with
+  | BAnon => simp [envDel]
+  | BNamed x =>
+    by_cases h : x = s
+    · subst h; simp [envDel]
+    · simp [envDel, h, Ne.symm h]
+
+/-- Substituting `x` into the result of substituting `σ` (without `x`) extends `σ`. -/
+theorem envDel_comm_named (x : String) (f y : binder) (σ : String → Option val)
+    (hf : BNamed x ≠ f) (hy : BNamed x ≠ y) :
+    envDel f (envDel y (envDel (BNamed x) σ)) = envDel (BNamed x) (envDel f (envDel y σ)) := by
+  funext s
+  simp only [envDel_apply]
+  by_cases h : s = x
+  · subst h; simp [hf, hy]
+  · simp [h]
+
+theorem envDel_ins_comm (x : String) (v : val) (f y : binder) (σ : String → Option val)
+    (hf : BNamed x ≠ f) (hy : BNamed x ≠ y) :
+    envDel f (envDel y (envIns x v σ)) = envIns x v (envDel f (envDel y σ)) := by
+  funext s
+  simp only [envDel_apply, envIns]
+  by_cases h : s = x
+  · subst h; simp [hf, hy]
+  · simp [Ne.symm h]
+
+theorem envDel_ins_shadow (x : String) (v : val) (f y : binder) (σ : String → Option val)
+    (h : ¬(BNamed x ≠ f ∧ BNamed x ≠ y)) :
+    envDel f (envDel y (envDel (BNamed x) σ)) = envDel f (envDel y (envIns x v σ)) := by
+  funext s
+  simp only [envDel_apply, envIns]
+  by_cases hs : s = x
+  · subst hs
+    have : BNamed s = f ∨ BNamed s = y := by
+      by_cases h1 : BNamed s = f
+      · exact Or.inl h1
+      · exact Or.inr (by simpa [h1] using h)
+    rcases this with h1 | h1 <;> simp [h1]
+  · simp [hs, Ne.symm hs]
+
+mutual
+theorem subst_substEnv (x : String) (v : val) (σ : String → Option val) :
+    ∀ e : expr, subst x v (substEnv (envDel (BNamed x) σ) e) = substEnv (envIns x v σ) e
+  | Val _ => by simp only [substEnv, subst]
+  | Var y => by
+    by_cases h : x = y
+    · subst h; simp [substEnv, envDel, envIns, subst]
+    · cases hσ : σ y <;> simp [substEnv, envDel, envIns, subst, h, hσ]
+  | Rec f y e => by
+    simp only [substEnv, subst]
+    by_cases hc : BNamed x ≠ f ∧ BNamed x ≠ y
+    · rw [ite_eq_left_of_eq_true _ _ (eq_true hc), envDel_comm_named x f y σ hc.1 hc.2, envDel_ins_comm x v f y σ hc.1 hc.2,
+        subst_substEnv x v _ e]
+    · rw [ite_eq_right_of_eq_false _ _ (eq_false hc), envDel_ins_shadow x v f y σ hc]
+  | App a b => by simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b]
+  | If a b c => by
+    simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b, subst_substEnv x v σ c]
+  | Pair a b => by simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b]
+  | Fst a => by simp only [substEnv, subst, subst_substEnv x v σ a]
+  | Snd a => by simp only [substEnv, subst, subst_substEnv x v σ a]
+  | Fork a => by simp only [substEnv, subst, subst_substEnv x v σ a]
+  | Primitive0 _ => by simp only [substEnv, subst]
+  | Primitive1 _ a => by simp only [substEnv, subst, subst_substEnv x v σ a]
+  | Primitive2 _ a b => by simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b]
+  | ExternalOp _ a => by simp only [substEnv, subst, subst_substEnv x v σ a]
+  | CmpXchg a b c => by
+    simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b, subst_substEnv x v σ c]
+  | NewProph => by simp only [substEnv, subst]
+  | ResolveProph a b => by simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b]
+  | LiteralValue l => by simp only [substEnv, subst, subst_substEnv_kes x v σ l]
+  | SelectStmtClauses d l => by
+    simp only [substEnv, subst, subst_substEnv_opt x v σ d, subst_substEnv_ccs x v σ l]
+
+theorem subst_substEnv_opt (x : String) (v : val) (σ : String → Option val) :
+    ∀ d : Option expr, subst_opt x v (substEnv_opt (envDel (BNamed x) σ) d) = substEnv_opt (envIns x v σ) d
+  | none => by simp only [substEnv_opt, subst_opt]
+  | some e => by simp only [substEnv_opt, subst_opt, subst_substEnv x v σ e]
+
+theorem subst_substEnv_kes (x : String) (v : val) (σ : String → Option val) :
+    ∀ l : List keyed_element,
+      subst_keyed_elements x v (substEnv_kes (envDel (BNamed x) σ) l) = substEnv_kes (envIns x v σ) l
+  | [] => by simp only [substEnv_kes, subst_keyed_elements]
+  | ke :: l => by
+    simp only [substEnv_kes, subst_keyed_elements, subst_substEnv_ke x v σ ke, subst_substEnv_kes x v σ l]
+
+theorem subst_substEnv_ke (x : String) (v : val) (σ : String → Option val) :
+    ∀ ke : keyed_element,
+      subst_keyed_element x v (substEnv_ke (envDel (BNamed x) σ) ke) = substEnv_ke (envIns x v σ) ke
+  | KeyedElement k el => by
+    simp only [substEnv_ke, subst_keyed_element, subst_substEnv_okey x v σ k, subst_substEnv_el x v σ el]
+
+theorem subst_substEnv_okey (x : String) (v : val) (σ : String → Option val) :
+    ∀ k : Option key, subst_opt_key x v (substEnv_okey (envDel (BNamed x) σ) k) = substEnv_okey (envIns x v σ) k
+  | none => by simp only [substEnv_okey, subst_opt_key]
+  | some (KeyField _) => by simp only [substEnv_okey, subst_opt_key]
+  | some (KeyInteger _) => by simp only [substEnv_okey, subst_opt_key]
+  | some (KeyExpression _ e) => by simp only [substEnv_okey, subst_opt_key, subst_substEnv x v σ e]
+  | some (KeyLiteralValue l) => by simp only [substEnv_okey, subst_opt_key, subst_substEnv_kes x v σ l]
+
+theorem subst_substEnv_el (x : String) (v : val) (σ : String → Option val) :
+    ∀ el : element, subst_element x v (substEnv_el (envDel (BNamed x) σ) el) = substEnv_el (envIns x v σ) el
+  | ElementExpression _ e => by simp only [substEnv_el, subst_element, subst_substEnv x v σ e]
+  | ElementLiteralValue l => by simp only [substEnv_el, subst_element, subst_substEnv_kes x v σ l]
+
+theorem subst_substEnv_ccs (x : String) (v : val) (σ : String → Option val) :
+    ∀ l : List comm_clause,
+      subst_comm_clauses x v (substEnv_ccs (envDel (BNamed x) σ) l) = substEnv_ccs (envIns x v σ) l
+  | [] => by simp only [substEnv_ccs, subst_comm_clauses]
+  | c :: l => by
+    simp only [substEnv_ccs, subst_comm_clauses, subst_substEnv_cc x v σ c, subst_substEnv_ccs x v σ l]
+
+theorem subst_substEnv_cc (x : String) (v : val) (σ : String → Option val) :
+    ∀ c : comm_clause, subst_comm_clause x v (substEnv_cc (envDel (BNamed x) σ) c) = substEnv_cc (envIns x v σ) c
+  | CommClause (SendCase _ b e) body => by
+    simp only [substEnv_cc, subst_comm_clause, subst_substEnv x v σ b, subst_substEnv x v σ e,
+      subst_substEnv x v σ body]
+  | CommClause (RecvCase _ e) body => by
+    simp only [substEnv_cc, subst_comm_clause, subst_substEnv x v σ e, subst_substEnv x v σ body]
+end
+
+theorem envDel_nil (b : binder) : envDel b (envNil : String → Option val) = envNil := by
+  funext s; simp [envDel_apply, envNil]
+
+mutual
+theorem substEnv_nil : ∀ e : expr, substEnv envNil e = e
+  | Val _ => by simp only [substEnv]
+  | Var y => by simp only [substEnv, envNil]
+  | Rec f y e => by simp only [substEnv, envDel_nil, substEnv_nil e]
+  | App a b => by simp only [substEnv, substEnv_nil a, substEnv_nil b]
+  | If a b c => by simp only [substEnv, substEnv_nil a, substEnv_nil b, substEnv_nil c]
+  | Pair a b => by simp only [substEnv, substEnv_nil a, substEnv_nil b]
+  | Fst a => by simp only [substEnv, substEnv_nil a]
+  | Snd a => by simp only [substEnv, substEnv_nil a]
+  | Fork a => by simp only [substEnv, substEnv_nil a]
+  | Primitive0 _ => by simp only [substEnv]
+  | Primitive1 _ a => by simp only [substEnv, substEnv_nil a]
+  | Primitive2 _ a b => by simp only [substEnv, substEnv_nil a, substEnv_nil b]
+  | ExternalOp _ a => by simp only [substEnv, substEnv_nil a]
+  | CmpXchg a b c => by simp only [substEnv, substEnv_nil a, substEnv_nil b, substEnv_nil c]
+  | NewProph => by simp only [substEnv]
+  | ResolveProph a b => by simp only [substEnv, substEnv_nil a, substEnv_nil b]
+  | LiteralValue l => by simp only [substEnv, substEnv_nil_kes l]
+  | SelectStmtClauses d l => by simp only [substEnv, substEnv_nil_opt d, substEnv_nil_ccs l]
+
+theorem substEnv_nil_opt : ∀ d : Option expr, substEnv_opt envNil d = d
+  | none => by simp only [substEnv_opt]
+  | some e => by simp only [substEnv_opt, substEnv_nil e]
+
+theorem substEnv_nil_kes : ∀ l : List keyed_element, substEnv_kes envNil l = l
+  | [] => by simp only [substEnv_kes]
+  | ke :: l => by simp only [substEnv_kes, substEnv_nil_ke ke, substEnv_nil_kes l]
+
+theorem substEnv_nil_ke : ∀ ke : keyed_element, substEnv_ke envNil ke = ke
+  | KeyedElement k el => by simp only [substEnv_ke, substEnv_nil_okey k, substEnv_nil_el el]
+
+theorem substEnv_nil_okey : ∀ k : Option key, substEnv_okey envNil k = k
+  | none => by simp only [substEnv_okey]
+  | some (KeyField _) => by simp only [substEnv_okey]
+  | some (KeyInteger _) => by simp only [substEnv_okey]
+  | some (KeyExpression _ e) => by simp only [substEnv_okey, substEnv_nil e]
+  | some (KeyLiteralValue l) => by simp only [substEnv_okey, substEnv_nil_kes l]
+
+theorem substEnv_nil_el : ∀ el : element, substEnv_el envNil el = el
+  | ElementExpression _ e => by simp only [substEnv_el, substEnv_nil e]
+  | ElementLiteralValue l => by simp only [substEnv_el, substEnv_nil_kes l]
+
+theorem substEnv_nil_ccs : ∀ l : List comm_clause, substEnv_ccs envNil l = l
+  | [] => by simp only [substEnv_ccs]
+  | c :: l => by simp only [substEnv_ccs, substEnv_nil_cc c, substEnv_nil_ccs l]
+
+theorem substEnv_nil_cc : ∀ c : comm_clause, substEnv_cc envNil c = c
+  | CommClause (SendCase _ b e) body => by
+    simp only [substEnv_cc, substEnv_nil b, substEnv_nil e, substEnv_nil body]
+  | CommClause (RecvCase _ e) body => by simp only [substEnv_cc, substEnv_nil e, substEnv_nil body]
+end
+
+/-- Substitution of one variable is a special case. -/
+theorem subst_eq_substEnv (x : String) (v : val) (e : expr) :
+    subst x v e = substEnv (envIns x v envNil) e := by
+  have := subst_substEnv x v envNil e
+  rwa [envDel_nil, substEnv_nil] at this
+
+/-- A `let:` (or `rec:` with an anonymous name) applied to a value: the reduct of
+the beta step under `σ` is the body under `σ` extended with the binding. -/
+theorem subst'_substEnv (b : binder) (v : val) (σ : String → Option val) (e : expr) :
+    subst' b v (subst' BAnon (RecV BAnon b (substEnv (envDel BAnon (envDel b σ)) e))
+      (substEnv (envDel BAnon (envDel b σ)) e)) = substEnv (envInsB b v σ) e := by
+  cases b with
+  | BAnon => rfl
+  | BNamed x => exact subst_substEnv x v σ e
+
+/-! ### Equations used to build proofs of `substEnv σ e = e'` -/
+
+theorem substEnv_pf_val (σ : String → Option val) (w : val) : substEnv σ (Val w) = Val w := by
+  simp only [substEnv]
+theorem substEnv_pf_var_some {σ : String → Option val} {y : String} {w : val} (h : σ y = some w) :
+    substEnv σ (Var y) = Val w := by simp only [substEnv, h]
+theorem substEnv_pf_var_none {σ : String → Option val} {y : String} (h : σ y = none) :
+    substEnv σ (Var y) = Var y := by simp only [substEnv, h]
+
+theorem env_ins_eq (x : String) (v : val) (σ : String → Option val) : envIns x v σ x = some v := by
+  simp [envIns]
+theorem env_ins_ne {x y : String} {v : val} {σ : String → Option val} {r : Option val}
+    (hne : x ≠ y) (h : σ y = r) : envIns x v σ y = r := by simp [envIns, hne, h]
+theorem env_del_named_eq (x : String) (σ : String → Option val) : envDel (BNamed x) σ x = none := by
+  simp [envDel]
+theorem env_del_named_ne {x y : String} {σ : String → Option val} {r : Option val}
+    (hne : x ≠ y) (h : σ y = r) : envDel (BNamed x) σ y = r := by simp [envDel, hne, h]
+theorem env_del_anon {y : String} {σ : String → Option val} {r : Option val} (h : σ y = r) :
+    envDel BAnon σ y = r := h
+theorem env_nil (y : String) : (envNil : String → Option val) y = none := rfl
+theorem env_insB_eq (x : String) (v : val) (σ : String → Option val) :
+    envInsB (BNamed x) v σ x = some v := by simp [envInsB, envIns]
+theorem env_insB_ne {x y : String} {v : val} {σ : String → Option val} {r : Option val}
+    (hne : x ≠ y) (h : σ y = r) : envInsB (BNamed x) v σ y = r := by simp [envInsB, envIns, hne, h]
+theorem env_insB_anon {y : String} {v : val} {σ : String → Option val} {r : Option val}
+    (h : σ y = r) : envInsB BAnon v σ y = r := h
+
+section pf
+variable {σ : String → Option val}
+
+theorem substEnv_pf_rec {f y : binder} {e e' : expr} (h : substEnv (envDel f (envDel y σ)) e = e') :
+    substEnv σ (Rec f y e) = Rec f y e' := by simp only [substEnv, h]
+theorem substEnv_pf_app {a b a' b' : expr} (ha : substEnv σ a = a') (hb : substEnv σ b = b') :
+    substEnv σ (App a b) = App a' b' := by simp only [substEnv, ha, hb]
+theorem substEnv_pf_if {a b c a' b' c' : expr} (ha : substEnv σ a = a') (hb : substEnv σ b = b')
+    (hc : substEnv σ c = c') : substEnv σ (If a b c) = If a' b' c' := by simp only [substEnv, ha, hb, hc]
+theorem substEnv_pf_pair {a b a' b' : expr} (ha : substEnv σ a = a') (hb : substEnv σ b = b') :
+    substEnv σ (Pair a b) = Pair a' b' := by simp only [substEnv, ha, hb]
+theorem substEnv_pf_fst {a a' : expr} (ha : substEnv σ a = a') : substEnv σ (Fst a) = Fst a' := by
+  simp only [substEnv, ha]
+theorem substEnv_pf_snd {a a' : expr} (ha : substEnv σ a = a') : substEnv σ (Snd a) = Snd a' := by
+  simp only [substEnv, ha]
+theorem substEnv_pf_fork {a a' : expr} (ha : substEnv σ a = a') : substEnv σ (Fork a) = Fork a' := by
+  simp only [substEnv, ha]
+theorem substEnv_pf_prim0 (op : prim_op0) : substEnv σ (Primitive0 op) = Primitive0 op := by
+  simp only [substEnv]
+theorem substEnv_pf_prim1 (op : prim_op1) {a a' : expr} (ha : substEnv σ a = a') :
+    substEnv σ (Primitive1 op a) = Primitive1 op a' := by simp only [substEnv, ha]
+theorem substEnv_pf_prim2 (op : prim_op2) {a b a' b' : expr} (ha : substEnv σ a = a')
+    (hb : substEnv σ b = b') : substEnv σ (Primitive2 op a b) = Primitive2 op a' b' := by
+  simp only [substEnv, ha, hb]
+theorem substEnv_pf_extop (op : ffi_opcode) {a a' : expr} (ha : substEnv σ a = a') :
+    substEnv σ (ExternalOp op a) = ExternalOp op a' := by simp only [substEnv, ha]
+theorem substEnv_pf_cmpxchg {a b c a' b' c' : expr} (ha : substEnv σ a = a') (hb : substEnv σ b = b')
+    (hc : substEnv σ c = c') : substEnv σ (CmpXchg a b c) = CmpXchg a' b' c' := by
+  simp only [substEnv, ha, hb, hc]
+theorem substEnv_pf_newproph : substEnv σ (NewProph : expr) = NewProph := by simp only [substEnv]
+theorem substEnv_pf_resolve {a b a' b' : expr} (ha : substEnv σ a = a') (hb : substEnv σ b = b') :
+    substEnv σ (ResolveProph a b) = ResolveProph a' b' := by simp only [substEnv, ha, hb]
+theorem substEnv_pf_litval {l l' : List keyed_element} (h : substEnv_kes σ l = l') :
+    substEnv σ (LiteralValue l) = LiteralValue l' := by simp only [substEnv, h]
+theorem substEnv_pf_kes_nil : substEnv_kes σ [] = [] := by simp only [substEnv_kes]
+theorem substEnv_pf_kes_cons {ke ke' : keyed_element} {l l' : List keyed_element}
+    (h1 : substEnv_ke σ ke = ke') (h2 : substEnv_kes σ l = l') :
+    substEnv_kes σ (ke :: l) = ke' :: l' := by simp only [substEnv_kes, h1, h2]
+theorem substEnv_pf_ke {k k' : Option key} {el el' : element} (h1 : substEnv_okey σ k = k')
+    (h2 : substEnv_el σ el = el') : substEnv_ke σ (KeyedElement k el) = KeyedElement k' el' := by
+  simp only [substEnv_ke, h1, h2]
+theorem substEnv_pf_okey_none : substEnv_okey σ none = none := by simp only [substEnv_okey]
+theorem substEnv_pf_okey_field (f : go_string) :
+    substEnv_okey σ (some (KeyField f)) = some (KeyField f) := by simp only [substEnv_okey]
+theorem substEnv_pf_okey_int (i : Int) :
+    substEnv_okey σ (some (KeyInteger i)) = some (KeyInteger i) := by simp only [substEnv_okey]
+theorem substEnv_pf_okey_expr (t : go.type) {e e' : expr} (h : substEnv σ e = e') :
+    substEnv_okey σ (some (KeyExpression t e)) = some (KeyExpression t e') := by
+  simp only [substEnv_okey, h]
+theorem substEnv_pf_okey_lv {l l' : List keyed_element} (h : substEnv_kes σ l = l') :
+    substEnv_okey σ (some (KeyLiteralValue l)) = some (KeyLiteralValue l') := by
+  simp only [substEnv_okey, h]
+theorem substEnv_pf_el_expr (t : go.type) {e e' : expr} (h : substEnv σ e = e') :
+    substEnv_el σ (ElementExpression t e) = ElementExpression t e' := by simp only [substEnv_el, h]
+theorem substEnv_pf_el_lv {l l' : List keyed_element} (h : substEnv_kes σ l = l') :
+    substEnv_el σ (ElementLiteralValue l) = ElementLiteralValue l' := by simp only [substEnv_el, h]
+
+end pf
+
+end substEnv
+
+end Perennial
