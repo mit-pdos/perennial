@@ -175,6 +175,21 @@ theorem partition__header (xs : List E) (a b r : Nat) :
 
 end pure
 
+section hide
+variable {GF : BundledGFunctors}
+
+/-- `P` under an opaque name, to keep the Löb induction hypothesis of
+`wp_pdqsortCmpFunc` (which contains `▷`s) away from the later stripping that the
+proof mode does for every hypothesis mentioning `▷` at every symbolic execution
+step. -/
+def pdq_hide (P : IProp GF) : IProp GF := P
+
+theorem pdq_hide_intro {P Q : IProp GF} : (□ pdq_hide P -∗ Q) ⊢ (□ P -∗ Q) := .rfl
+
+theorem pdq_hide_elim {P Q : IProp GF} : (□ P -∗ Q) ⊢ (□ pdq_hide P -∗ Q) := .rfl
+
+end hide
+
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
@@ -271,6 +286,9 @@ theorem wp_pdqsortCmpFunc (data : slice.t) (a b limit : w64) (cmp_code : func.t)
         "%Hsorted" ∷ ⌜is_sorted_seg R xs' (sint.nat a) (sint.nat b)⌝ ∗
         "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
   iloeb as IH generalizing %data %a %b %limit %xs
+  irevert IH
+  iapply pdq_hide_intro
+  iintro #IH
   wp_start as H
   iNamed H
   wp_auto
@@ -518,6 +536,7 @@ theorem wp_pdqsortCmpFunc (data : slice.t) (a b limit : w64) (cmp_code : func.t)
       · iframe Hxs; ipureintro; exact Hxr_lookup
       ihave #Hcmp' := cmp_implements_elim R cmp_code $$ Hcmp
       wp_apply Hcmp' with %c %Hc
+      iclear Hcmp'
       wp_if_destruct
       · iexists xs4, a_val
         iframe
@@ -591,6 +610,11 @@ theorem wp_pdqsortCmpFunc (data : slice.t) (a b limit : w64) (cmp_code : func.t)
     Houtside6 (by word)
   have Header6 := header__preserve R _ _ _ _ Header4 Hperm6 Houtside6 (by word)
   have Hlen6 := HPerm6'.length_eq
+  have Hr1 : sint.nat (r1 + W64 1) = sint.nat r1 + 1 := by word
+  -- (unhidden before the pure steps of the `if`, which strip its `▷`)
+  irevert IH
+  iapply pdq_hide_elim
+  iintro #IH
   wp_if_destruct
   · -- recurse on the (smaller) left part
     rw [func_unfold]
@@ -609,7 +633,6 @@ theorem wp_pdqsortCmpFunc (data : slice.t) (a b limit : w64) (cmp_code : func.t)
     iexists (r1 + W64 1), b_val, limit1, bl, _, xs7
     iframe
     ipureintro
-    have Hr1 : sint.nat (r1 + W64 1) = sint.nat r1 + 1 := by word
     rw [Hr1]
     refine ⟨by word, HPerm6'.trans Hperm7, ?_, ?_, ?_⟩
     · unfold header one_le_seg
@@ -627,11 +650,9 @@ theorem wp_pdqsortCmpFunc (data : slice.t) (a b limit : w64) (cmp_code : func.t)
       with %xs7 ⟨Hxs, %Hperm7, %Hsorted7, %Houtside7⟩
     · iframe Hxs; iframe #; ipureintro
       refine ⟨by word, ?_⟩
-      have Hr1 : sint.nat (r1 + W64 1) = sint.nat r1 + 1 := by word
       rw [Hr1]
       exact partition__header R _ _ _ _ Hpart6
     have Hl67 := Hperm7.length_eq
-    have Hr1 : sint.nat (r1 + W64 1) = sint.nat r1 + 1 := by word
     rw [Hr1] at Hsorted7 Houtside7
     wp_for_post
     iframe

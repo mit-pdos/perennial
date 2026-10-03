@@ -54,6 +54,13 @@ structure RWMutex_protocol_names where
   writer_sem_tok_gn : GName
   state_gn : GName
 
+-- (declared before the proofs: the kernel check of a `structure` waits for the
+-- proofs elaborated asynchronously before it, which serialized this file)
+structure RWMutex_names where
+  prot_gn : RWMutex_protocol_names
+  reader_sem_gn : GName
+  writer_sem_gn : GName
+
 section protocol
 variable {GF : BundledGFunctors} [allG GF]
 
@@ -610,11 +617,6 @@ theorem step_Unlock_readerSem_Semrelease (γ : RWMutex_protocol_names) (ws rs rc
     iexfalso; iexact Hmain
 
 end protocol
-
-structure RWMutex_names where
-  prot_gn : RWMutex_protocol_names
-  reader_sem_gn : GName
-  writer_sem_gn : GName
 
 theorem mask_inv_sema (N : Namespace) : (↑(N.@"inv") : CoPset) ⊆ ⊤ \ ↑(N.@"sema") := by
   intro p hp

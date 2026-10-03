@@ -19,7 +19,7 @@ import Perennial.Proof.ProofPrelude
 import Perennial.Proof.context
 import Perennial.Proof.sync
 import Perennial.Proof.fmt
-import Perennial.Proof.slices
+import Perennial.Proof.slices_proof.slices_init
 import Perennial.Proof.cmp
 import Perennial.Proof.encoding.binary
 import Perennial.Proof.strings

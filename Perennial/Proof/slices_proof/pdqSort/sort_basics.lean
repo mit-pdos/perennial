@@ -17,6 +17,14 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 namespace slices
 
+-- (declared before the proofs: a command such as `structure`, `macro` or `notation`
+-- declared after asynchronously elaborated proofs waits for them)
+/-- Discharge the bounds check of a slice index: rewrite the first
+`if c then _ else _` in the goal to its `then` branch, proving `c` (a conjunction
+of word inequalities) with `word`. -/
+macro "slice_index_if" : tactic =>
+  `(tactic| (rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]))
+
 class WeakOrder {A : Type} (R : A → A → Prop) : Prop where
   weak_order_irrefl : ∀ x, ¬ R x x
   weak_order_anti_symm : ∀ x y, R x y ↔ ¬ R y x
@@ -183,12 +191,6 @@ theorem header__preserve (xs xs' : List E) (a b : Nat) :
   exact H xi i0 xj Hi0b Hxi Hi0
 
 end sorted
-
-/-- Discharge the bounds check of a slice index: rewrite the first
-`if c then _ else _` in the goal to its `then` branch, proving `c` (a conjunction
-of word inequalities) with `word`. -/
-macro "slice_index_if" : tactic =>
-  `(tactic| (rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]))
 
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]

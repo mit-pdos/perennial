@@ -19,6 +19,14 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
 
 namespace sync
 
+-- (declared before the proofs: a command such as `structure`, `macro` or `notation`
+-- declared after asynchronously elaborated proofs waits for them)
+structure WaitGroup_names where
+  counter_gn : GName
+  sema_gn : GName
+  waiter_gn : GName
+  zerostate_gn : GName
+
 /-- Rocq `waitGroupBubbleFlag` (local). -/
 abbrev waitGroupBubbleFlag_Z : Int := 2147483648
 
@@ -118,12 +126,6 @@ theorem enc_inj (wait counter wait' counter' : w32) :
 
 theorem enc_0 : (0#64 : w64) = enc (W32 0) (W32 0) := by
   unfold enc; decide
-
-structure WaitGroup_names where
-  counter_gn : GName
-  sema_gn : GName
-  waiter_gn : GName
-  zerostate_gn : GName
 
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]

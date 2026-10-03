@@ -31,6 +31,11 @@ def signum (cmp_r : Int) : Int :=
   else if cmp_r = 0 then 0
   else 1
 
+-- (declared before the proofs: a command such as `structure`, `macro` or `notation`
+-- declared after asynchronously elaborated proofs waits for them)
+/-- Formerly `word` plus literal normalization; `word` now does that itself. -/
+macro "word'" : tactic => `(tactic| word)
+
 theorem signum_n1 : signum (-1) = (-1) := by decide
 theorem signum_0 : signum 0 = 0 := by decide
 theorem signum_1 : signum 1 = 1 := by decide
@@ -82,9 +87,6 @@ theorem shiftr_1_eq_div (x : w64) : x >>> W64 1 = x / (2 : w64) := by
   simp only [BitVec.ushiftRight_eq', show (W64 1).toNat = 1 from rfl, BitVec.toNat_ushiftRight,
     Nat.shiftRight_eq_div_pow, BitVec.toNat_udiv]
   rfl
-
-/-- Formerly `word` plus literal normalization; `word` now does that itself. -/
-macro "word'" : tactic => `(tactic| word)
 
 theorem find_prefix (cmp : Int → Int) (n i : Int)
     (Hmono : ∀ i j, -1 ≤ i ∧ i < j ∧ j ≤ n →

@@ -24,6 +24,97 @@ namespace slices
 /-- Formerly `word` plus literal normalization; `word` now does that itself. -/
 macro "word_p" : tactic => `(tactic| word)
 
+-- (the proof-script macros come before all proofs: a command such as `macro`
+-- declared after asynchronously elaborated proofs waits for them)
+set_option hygiene false in
+/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
+macro "part_loop1" : tactic => `(tactic| (
+  wp_bind (App (App (App (Val do_for) _) _) _)
+  iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
+    part_inv R data a b xp xs i_ptr j_ptr true false))) $$ [HI]
+  · iapply (wp_part_loop1 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
+      cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
+  iintro %v ⟨%Hv, HI⟩
+  subst Hv
+  wp_auto))
+
+set_option hygiene false in
+/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
+macro "part_loop2" : tactic => `(tactic| (
+  wp_bind (App (App (App (Val do_for) _) _) _)
+  iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
+    part_inv R data a b xp xs i_ptr j_ptr true true))) $$ [HI]
+  · iapply (wp_part_loop2 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
+      cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
+  iintro %v ⟨%Hv, HI⟩
+  subst Hv
+  wp_auto))
+
+set_option hygiene false in
+/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
+macro "part_load_j" : tactic => `(tactic| (
+  unfold part_inv
+  iNamed HI
+  have Hlen2 := HPerm1.length_eq
+  list_elem xs1 (sint.nat j_val) as xj
+  wp_auto))
+
+set_option hygiene false in
+/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
+macro "part_finish" : tactic => `(tactic| (
+  slice_index_if
+  wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; exact Hpivot
+  slice_index_if
+  wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; exact Hxj_lookup
+  slice_index_if
+  wp_pures
+  wp_apply wp_store_slice_index data (sint.Z j_val) xs1 xp $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; omega
+  slice_index_if
+  wp_pures
+  wp_apply wp_store_slice_index data (sint.Z a) _ xj $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; simp; omega
+  wp_auto
+  iapply HΦ
+  iframe Hxs
+  ipureintro
+  simp only [sint_toNat]
+  exact part_finish_pure R xs xs1 a b i_val j_val xp xj Hab_bound ij_bound Hpart Hpivot HPerm1
+    Houtside1 Hlen2 Hxj_lookup Hif))
+
+set_option hygiene false in
+/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
+macro "part_swap" : tactic => `(tactic| (
+  have Hle : sint.Z i_val ≤ sint.Z j_val := by word
+  obtain ⟨xi, Hxi_lookup⟩ := lookup_lt_is_Some_2 (l := xs1) (i := sint.nat i_val) (by word)
+  have HBr1' := HBr1 rfl
+  have HBr2' := HBr2 rfl
+  slice_index_if
+  wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; exact Hxj_lookup
+  slice_index_if
+  wp_apply wp_load_slice_index data (sint.Z i_val) xs1 _ xi (by omega) $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; exact Hxi_lookup
+  slice_index_if
+  wp_pures
+  wp_apply wp_store_slice_index data (sint.Z i_val) xs1 xj $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; omega
+  slice_index_if
+  wp_pures
+  wp_apply wp_store_slice_index data (sint.Z j_val) _ xi $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; simp; omega
+  try wp_auto
+  ihave HI : part_inv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
+  · unfold part_inv
+    iexists _, (i_val + W64 1), (j_val - W64 1)
+    iframe
+    ipureintro
+    simp only [sint_toNat]
+    exact part_swap_pure R xs xs1 a b i_val j_val xp xi xj Hab_bound ij_bound Hpart Hpivot HPerm1
+      Houtside1 Hlen2 Hxj_lookup Hle Hxi_lookup HBr1' HBr2'))
+
 theorem sdiv4_nonneg (x : w64) (h : 0 ≤ sint.Z x) : BitVec.sdiv x (W64 4) = x / (4 : w64) := by
   have hm : x.msb = false := BitVec.msb_eq_false_iff_two_mul_lt.mpr (by word)
   simp only [W64]
@@ -444,111 +535,75 @@ theorem wp_part_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
       fun _ => Or.inl (by omega)⟩
 
 
-set_option hygiene false in
-/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
-macro "part_loop1" : tactic => `(tactic| (
-  wp_bind (App (App (App (Val do_for) _) _) _)
-  iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
-    part_inv R data a b xp xs i_ptr j_ptr true false))) $$ [HI]
-  · iapply (wp_part_loop1 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
-      cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
-  iintro %v ⟨%Hv, HI⟩
-  subst Hv
-  wp_auto))
-
-set_option hygiene false in
-/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
-macro "part_loop2" : tactic => `(tactic| (
-  wp_bind (App (App (App (Val do_for) _) _) _)
-  iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
-    part_inv R data a b xp xs i_ptr j_ptr true true))) $$ [HI]
-  · iapply (wp_part_loop2 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
-      cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
-  iintro %v ⟨%Hv, HI⟩
-  subst Hv
-  wp_auto))
-
-set_option hygiene false in
-/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
-macro "part_load_j" : tactic => `(tactic| (
-  unfold part_inv
-  iNamed HI
-  have Hlen2 := HPerm1.length_eq
-  list_elem xs1 (sint.nat j_val) as xj
-  wp_auto))
-
-set_option hygiene false in
-/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
-macro "part_finish" : tactic => `(tactic| (
-  slice_index_if
-  wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
-  · iframe Hxs; ipureintro; exact Hpivot
-  slice_index_if
-  wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
-  · iframe Hxs; ipureintro; exact Hxj_lookup
-  slice_index_if
-  wp_pures
-  wp_apply wp_store_slice_index data (sint.Z j_val) xs1 xp $$ [Hxs] with Hxs
-  · iframe Hxs; ipureintro; omega
-  slice_index_if
-  wp_pures
-  wp_apply wp_store_slice_index data (sint.Z a) _ xj $$ [Hxs] with Hxs
-  · iframe Hxs; ipureintro; simp; omega
-  wp_auto
-  iapply HΦ
-  iframe Hxs
-  ipureintro
-  simp only [sint_toNat]
+omit [StrictWeakOrder R] ext ffi [ffi_interp ffi] [ffi_semantics ext ffi] go_gctx [ZeroVal E] in
+/-- The pure part of `part_finish`. -/
+theorem part_finish_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val : w64) (xp xj : E)
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ ↑xs.length ∧ xs.length ≤ 2 ^ 62)
+    (ij_bound : (sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) ∧
+      sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z b - 1)
+    (Hpart : is_partitioned_pre R xs1 (sint.nat a) (sint.nat b) (sint.nat i_val) (sint.nat j_val))
+    (Hpivot : xs1[sint.nat a]? = some xp) (HPerm1 : xs ≡ₚ xs1)
+    (Houtside1 : outside_same xs xs1 (sint.nat a) (sint.nat b)) (_Hlen2 : xs.length = xs1.length)
+    (Hxj_lookup : xs1[sint.nat j_val]? = some xj) (Hif : sint.Z j_val < sint.Z i_val) :
+    (sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val < sint.Z b) ∧
+    xs ≡ₚ (xs1.set (sint.nat j_val) xp).set (sint.nat a) xj ∧
+      is_partitioned R ((xs1.set (sint.nat j_val) xp).set (sint.nat a) xj) (sint.nat a) (sint.nat b)
+        (sint.nat j_val) ∧
+        outside_same xs ((xs1.set (sint.nat j_val) xp).set (sint.nat a) xj) (sint.nat a)
+          (sint.nat b) := by
   refine ⟨by omega, HPerm1.trans (swap_perm xs1 _ _ xp xj Hpivot Hxj_lookup), ?_, ?_⟩
   · exact partition_conclude R xs1 _ _ (sint.nat i_val) _ xp xj (by word) ⟨by word, by word⟩
       Hpart Hpivot Hxj_lookup
   · exact outside_same_trans _ _ _ _ _ Houtside1
-      (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))))
+      (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))
 
-set_option hygiene false in
-/-- Proof script shared by the two copies in `partitionCmpFunc`. -/
-macro "part_swap" : tactic => `(tactic| (
-  have Hle : sint.Z i_val ≤ sint.Z j_val := by word
-  obtain ⟨xi, Hxi_lookup⟩ := lookup_lt_is_Some_2 (l := xs1) (i := sint.nat i_val) (by word)
-  have HBr1' := HBr1 rfl
-  have HBr2' := HBr2 rfl
-  slice_index_if
-  wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
-  · iframe Hxs; ipureintro; exact Hxj_lookup
-  slice_index_if
-  wp_apply wp_load_slice_index data (sint.Z i_val) xs1 _ xi (by omega) $$ [Hxs] with Hxs
-  · iframe Hxs; ipureintro; exact Hxi_lookup
-  slice_index_if
-  wp_pures
-  wp_apply wp_store_slice_index data (sint.Z i_val) xs1 xj $$ [Hxs] with Hxs
-  · iframe Hxs; ipureintro; omega
-  slice_index_if
-  wp_pures
-  wp_apply wp_store_slice_index data (sint.Z j_val) _ xi $$ [Hxs] with Hxs
-  · iframe Hxs; ipureintro; simp; omega
-  try wp_auto
-  ihave HI : part_inv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
-  · unfold part_inv
-    iexists _, (i_val + W64 1), (j_val - W64 1)
-    iframe
-    ipureintro
-    simp only [sint_toNat]
-    refine ⟨by word, ?_, ?_, HPerm1.trans (swap_perm xs1 _ _ xj xi Hxj_lookup Hxi_lookup), ?_,
-      nofun, nofun⟩
-    · rw [show sint.nat (i_val + W64 1) = sint.nat i_val + 1 by word,
-        show sint.nat (j_val - W64 1) = sint.nat j_val - 1 by word]
-      refine partition_restore_invariant R xs1 _ _ _ _ xi xj xp ⟨⟨by word, by word⟩, by word, by word⟩
-        Hpart Hpivot Hxi_lookup Hxj_lookup ?_ ?_
-      · rcases HBr1' with h | h
-        · omega
-        · exact h xi Hxi_lookup
-      · rcases HBr2' with h | h
-        · omega
-        · exact h xj Hxj_lookup
-    · rw [list_lookup_insert_ne _ _ (by word), list_lookup_insert_ne _ _ (by word)]
-      exact Hpivot
-    · exact outside_same_trans _ _ _ _ _ Houtside1
-        (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))))
+omit [StrictWeakOrder R] ext ffi [ffi_interp ffi] [ffi_semantics ext ffi] go_gctx [ZeroVal E] in
+/-- The pure part of `part_swap`. -/
+theorem part_swap_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val : w64) (xp xi xj : E)
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ ↑xs.length ∧ xs.length ≤ 2 ^ 62)
+    (ij_bound : (sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) ∧
+      sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z b - 1)
+    (Hpart : is_partitioned_pre R xs1 (sint.nat a) (sint.nat b) (sint.nat i_val) (sint.nat j_val))
+    (Hpivot : xs1[sint.nat a]? = some xp) (HPerm1 : xs ≡ₚ xs1)
+    (Houtside1 : outside_same xs xs1 (sint.nat a) (sint.nat b)) (Hlen2 : xs.length = xs1.length)
+    (Hxj_lookup : xs1[sint.nat j_val]? = some xj) (Hle : sint.Z i_val ≤ sint.Z j_val)
+    (Hxi_lookup : xs1[sint.nat i_val]? = some xi)
+    (HBr1' : sint.Z i_val > sint.Z j_val ∨ ∀ (xi : E), xs1[sint.nat i_val]? = some xi → ¬R xi xp)
+    (HBr2' : sint.Z i_val > sint.Z j_val ∨ ∀ (xj : E), xs1[sint.nat j_val]? = some xj → ¬R xp xj) :
+    ((sint.Z a + 1 ≤ sint.Z (i_val + W64 1) ∧ sint.Z (i_val + W64 1) ≤ sint.Z b) ∧
+      sint.Z a ≤ sint.Z (j_val - W64 1) ∧ sint.Z (j_val - W64 1) ≤ sint.Z b - 1) ∧
+    is_partitioned_pre R ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi) (sint.nat a)
+        (sint.nat b) (sint.nat (i_val + W64 1)) (sint.nat (j_val - W64 1)) ∧
+      ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi)[sint.nat a]? = some xp ∧
+        xs ≡ₚ (xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi ∧
+          outside_same xs ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi) (sint.nat a)
+            (sint.nat b) ∧
+            (false = true →
+                sint.Z (i_val + W64 1) > sint.Z (j_val - W64 1) ∨
+                  ∀ (xi_1 : E),
+                    ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi)[sint.nat (i_val + W64 1)]? =
+                      some xi_1 → ¬R xi_1 xp) ∧
+              (false = true →
+                sint.Z (i_val + W64 1) > sint.Z (j_val - W64 1) ∨
+                  ∀ (xj_1 : E),
+                    ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi)[sint.nat (j_val - W64 1)]? =
+                      some xj_1 → ¬R xp xj_1) := by
+  refine ⟨by word, ?_, ?_, HPerm1.trans (swap_perm xs1 _ _ xj xi Hxj_lookup Hxi_lookup), ?_,
+    nofun, nofun⟩
+  · rw [show sint.nat (i_val + W64 1) = sint.nat i_val + 1 by word,
+      show sint.nat (j_val - W64 1) = sint.nat j_val - 1 by word]
+    refine partition_restore_invariant R xs1 _ _ _ _ xi xj xp ⟨⟨by word, by word⟩, by word, by word⟩
+      Hpart Hpivot Hxi_lookup Hxj_lookup ?_ ?_
+    · rcases HBr1' with h | h
+      · omega
+      · exact h xi Hxi_lookup
+    · rcases HBr2' with h | h
+      · omega
+      · exact h xj Hxj_lookup
+  · rw [list_lookup_insert_ne _ _ (by word), list_lookup_insert_ne _ _ (by word)]
+    exact Hpivot
+  · exact outside_same_trans _ _ _ _ _ Houtside1
+      (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))
 
 theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
     (xs : List E) :
@@ -700,6 +755,15 @@ theorem wp_medianAdjacentCmpFunc (data : slice.t) (a : w64) (swaps_l : loc) (cmp
   iapply HΦ; iframe; ipureintro
   rcases Hr with rfl | rfl | rfl <;> word
 
+omit ext ffi [ffi_interp ffi] [ffi_semantics ext ffi] go_gctx in
+/-- The three sample positions `a + d * k` of `choosePivotCmpFunc` do not overflow. -/
+theorem part_choosePivot_idx (a b d : w64) (n : Nat)
+    (Hab : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ n ∧ n ≤ 2 ^ 62)
+    (Hd : sint.Z d = (sint.Z b - sint.Z a) / 4) :
+    sint.Z (a + d * 1) = sint.Z a + sint.Z d ∧ sint.Z (a + d * 2) = sint.Z a + 2 * sint.Z d ∧
+    sint.Z (a + d * 3) = sint.Z a + 3 * sint.Z d := by
+  refine ⟨?_, ?_, ?_⟩ <;> word_p
+
 theorem wp_choosePivotCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
@@ -719,11 +783,9 @@ theorem wp_choosePivotCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (
   rw [Hl] at Hd
   generalize BitVec.sdiv (b - a) (W64 4) = d at Hd ⊢
   simp only [W64_1, W64_2, W64_3]
-  have Hi : sint.Z (a + d * 1) = sint.Z a + sint.Z d := by word_p
-  have Hj : sint.Z (a + d * 2) = sint.Z a + 2 * sint.Z d := by word_p
-  have Hk : sint.Z (a + d * 3) = sint.Z a + 3 * sint.Z d := by word_p
+  obtain ⟨Hi, Hj, Hk⟩ := part_choosePivot_idx a b d xs.length Hab_bound Hd
   wp_if_destruct
-  · have h8 : 8 ≤ sint.Z b - sint.Z a := by word
+  · have h8 : 8 ≤ sint.Z b - sint.Z a := by rw [← Hl]; exact Hif
     wp_if_destruct
     · wp_apply wp_medianAdjacentCmpFunc R data (a + d * 1) swaps_ptr cmp_code (DFrac.own 1)
         xs _ $$ [Hxs swaps] with %ri %sw1 ⟨Hxs, %Hri, swaps⟩
@@ -832,77 +894,49 @@ theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
         have := Nat.and_le_right (n := n.toNat) (m := (m - W64 1).toNat)
         simp only [uint.Z, BitVec.toNat_and]; omega
       have hm1 : uint.Z (m - W64 1) = uint.Z m - 1 := by word
-      have ho : sint.Z (n &&& (m - W64 1)) = uint.Z (n &&& (m - W64 1)) := by word
+      have ho : sint.Z (n &&& (m - W64 1)) = uint.Z (n &&& (m - W64 1)) := by
+        have h63 : uint.Z (n &&& (m - W64 1)) < 2 ^ 63 := by omega
+        exact BitVec.toInt_eq_toNat_of_lt (by unfold uint.Z at h63; omega)
       have Hl := HPerm1.length_eq
-      wp_if_destruct
-      · have hj : sint.Z a ≤ sint.Z (a + ((n &&& m - W64 1) - (b - a))) ∧
-            sint.Z (a + ((n &&& m - W64 1) - (b - a))) < sint.Z b := by
-          constructor <;> word
-        generalize hjdef : (a + ((n &&& m - W64 1) - (b - a))) = j at *
-        ihave %Hlen := own_slice_len _ _ _ $$ Hxs
-        have hi : sint.Z a ≤ sint.Z idx_val ∧ sint.Z idx_val < sint.Z b := by
-          have := hd; constructor <;> word
-        list_elem xs1 (sint.nat j) as xo
-        list_elem xs1 (sint.nat idx_val) as xi
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z j) xs1 _ xo (by word) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hxo_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z idx_val) xs1 _ xi (by word) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hxi_lookup
-        slice_index_if
-        wp_pures
-        wp_apply wp_store_slice_index data (sint.Z idx_val) xs1 xo $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; constructor <;> word
-        slice_index_if
-        wp_pures
-        rw [hjdef]
-        wp_apply wp_store_slice_index data (sint.Z j) _ xi $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; simp only [List.length_set]; constructor <;> word
-        wp_for_post
-        iframe
-        iexists _, _, _
-        iframe
-        ipureintro
-        refine ⟨by have := hd; word, ?_, ?_⟩
-        · exact HPerm1.trans (swap_perm xs1 (sint.nat j) (sint.nat idx_val) xo xi
-            Hxo_lookup Hxi_lookup)
-        · exact outside_same_trans _ _ _ _ _ Houtside1
-            (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
-      · have hj : sint.Z a ≤ sint.Z (a + (n &&& m - W64 1)) ∧
-            sint.Z (a + (n &&& m - W64 1)) < sint.Z b := by
-          constructor <;> word
-        generalize hjdef : (a + (n &&& m - W64 1)) = j at *
-        ihave %Hlen := own_slice_len _ _ _ $$ Hxs
-        have hi : sint.Z a ≤ sint.Z idx_val ∧ sint.Z idx_val < sint.Z b := by
-          have := hd; constructor <;> word
-        list_elem xs1 (sint.nat j) as xo
-        list_elem xs1 (sint.nat idx_val) as xi
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z j) xs1 _ xo (by word) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hxo_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z idx_val) xs1 _ xi (by word) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hxi_lookup
-        slice_index_if
-        wp_pures
-        wp_apply wp_store_slice_index data (sint.Z idx_val) xs1 xo $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; constructor <;> word
-        slice_index_if
-        wp_pures
-        rw [hjdef]
-        wp_apply wp_store_slice_index data (sint.Z j) _ xi $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; simp only [List.length_set]; constructor <;> word
-        wp_for_post
-        iframe
-        iexists _, _, _
-        iframe
-        ipureintro
-        refine ⟨by have := hd; word, ?_, ?_⟩
-        · exact HPerm1.trans (swap_perm xs1 (sint.nat j) (sint.nat idx_val) xo xi
-            Hxo_lookup Hxi_lookup)
-        · exact outside_same_trans _ _ _ _ _ Houtside1
-            (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+      -- `if other >= length { other -= length }`, joined
+      wp_join iprop(∃ o : w64, "other" ∷ other_ptr ↦ o ∗ "length" ∷ length_ptr ↦ (b - a) ∗
+          "%Ho" ∷ ⌜0 ≤ sint.Z o ∧ sint.Z o < sint.Z b - sint.Z a⌝) with [other length]
+          as ⟨%o, other, length, %Ho⟩
+      · (try wp_auto); iexists _; iframe; ipureintro; constructor <;> word
+      · (try wp_auto); iexists _; iframe; ipureintro; constructor <;> word
+      have hj : sint.Z a ≤ sint.Z (a + o) ∧ sint.Z (a + o) < sint.Z b := by
+        constructor <;> word
+      generalize hjdef : (a + o) = j at *
+      ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+      have hi : sint.Z a ≤ sint.Z idx_val ∧ sint.Z idx_val < sint.Z b := by
+        have := hd; constructor <;> word
+      list_elem xs1 (sint.nat j) as xo
+      list_elem xs1 (sint.nat idx_val) as xi
+      slice_index_if
+      wp_apply wp_load_slice_index data (sint.Z j) xs1 _ xo (by word) $$ [Hxs] with Hxs
+      · iframe Hxs; ipureintro; exact Hxo_lookup
+      slice_index_if
+      wp_apply wp_load_slice_index data (sint.Z idx_val) xs1 _ xi (by word) $$ [Hxs] with Hxs
+      · iframe Hxs; ipureintro; exact Hxi_lookup
+      slice_index_if
+      wp_pures
+      wp_apply wp_store_slice_index data (sint.Z idx_val) xs1 xo $$ [Hxs] with Hxs
+      · iframe Hxs; ipureintro; constructor <;> word
+      slice_index_if
+      wp_pures
+      rw [hjdef]
+      wp_apply wp_store_slice_index data (sint.Z j) _ xi $$ [Hxs] with Hxs
+      · iframe Hxs; ipureintro; simp only [List.length_set]; constructor <;> word
+      wp_for_post
+      iframe
+      iexists _, _, _
+      iframe
+      ipureintro
+      refine ⟨by have := hd; word, ?_, ?_⟩
+      · exact HPerm1.trans (swap_perm xs1 (sint.nat j) (sint.nat idx_val) xo xi
+          Hxo_lookup Hxi_lookup)
+      · exact outside_same_trans _ _ _ _ _ Houtside1
+          (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
     · iapply HΦ
       iframe
       ipureintro
@@ -930,6 +964,151 @@ def peq_inv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : l
                  ∀ xi, xs1[sint.nat i_val]? = some xi → ¬ R xi xp⌝ ∗
     "%HBr2" ∷ ⌜br2 = true → sint.Z i_val > sint.Z j_val ∨
                  ∀ xj, xs1[sint.nat j_val]? = some xj → ¬ R xp xj⌝)
+
+omit package_sem in
+/-- The first inner loop of `partitionEqualCmpFunc` (`for i <= j && !less(data[a], data[i]) { i++ }`). -/
+theorem wp_peq_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
+    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : loc) (cmp_code : func.t)
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
+    (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
+    ⊢ is_pkg_init (PROP := IProp GF) pkg_id.slices -∗ cmp_implements R cmp_code -∗
+      a_ptr ↦□ a -∗ data_ptr ↦□ data -∗ cmp_ptr ↦□ cmp_code -∗
+      peq_inv R data a b xp xs i_ptr j_ptr false false -∗
+      WP (App (App (App (Val do_for)
+          (Val glv(λ: <>,
+            if: ![go.int] #i_ptr ≤⟨go.int⟩ ![go.int] #j_ptr then
+              (GoUnOp GoNot go.bool)
+                ((let: "$a0" :=
+                    ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #a_ptr)) in
+                    let: "$a1" :=
+                      ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #i_ptr)) in
+                      (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0")
+                        "$a1") <⟨go.int⟩
+                  #(W64 0)) else
+              #false)))
+          (Val glv(λ: <>, do: #i_ptr <-[go.int] ![go.int] #i_ptr +⟨go.int⟩ #(W64 1))))
+          (Val glv(λ: <>, #())))
+      {{ fun v => iprop(⌜v = execute_val⌝ ∗
+        peq_inv R data a b xp xs i_ptr j_ptr true false) }} := by
+  iintro #Hpkg #Hcmp #a #data #cmp HI
+  unfold cmp_implements
+  unfold peq_inv
+  wp_for HI
+  have Hlen2 := HPerm1.length_eq
+  wp_if_destruct
+  · list_elem xs1 (sint.nat i_val) as xi
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hpivot
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z i_val) xs1 _ xi (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hxi_lookup
+    wp_apply Hcmp with %r %Hr
+    by_cases hP : sint.Z r < sint.Z (W64 0)
+    · -- `data[a] < data[i]`: exit
+      simp only [hP, decide_true, Bool.not_true]
+      cleanup_bool_decide
+      wp_pures
+      isplitl []
+      · itrivial
+      iexists xs1, i_val, j_val
+      iframe
+      ipureintro
+      refine ⟨ij_bound, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => Or.inr ?_, nofun⟩
+      intro xi' hxi'
+      rw [Hxi_lookup] at hxi'; cases hxi'
+      exact R_antisym R _ _ (Hr.1 (by word))
+    · simp only [hP, decide_false, Bool.not_false]
+      cleanup_bool_decide
+      wp_auto
+      wp_for_post
+      iframe
+      iexists xs1, (i_val + W64 1), j_val
+      iframe
+      ipureintro
+      refine ⟨by word, ?_, Hpivot, Hmin, HPerm1, Houtside1, nofun, nofun⟩
+      rw [show sint.nat (i_val + W64 1) = sint.nat i_val + 1 by word]
+      exact is_eq_seg_extend R xs1 _ _ xp xi Hpivot Hsorted Hxi_lookup
+        ⟨Hmin xp _ xi ⟨by word, by word⟩ Hpivot Hxi_lookup,
+         fun h => hP (by have := Hr.2 h; word)⟩
+  · isplitl []
+    · itrivial
+    iexists xs1, i_val, j_val
+    iframe
+    ipureintro
+    exact ⟨ij_bound, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => Or.inl (by omega),
+      nofun⟩
+
+
+omit package_sem [StrictWeakOrder R] in
+/-- The second inner loop of `partitionEqualCmpFunc` (`for i <= j && less(data[a], data[j]) { j-- }`). -/
+theorem wp_peq_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
+    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : loc) (cmp_code : func.t)
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
+    (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
+    ⊢ is_pkg_init (PROP := IProp GF) pkg_id.slices -∗ cmp_implements R cmp_code -∗
+      a_ptr ↦□ a -∗ data_ptr ↦□ data -∗ cmp_ptr ↦□ cmp_code -∗
+      peq_inv R data a b xp xs i_ptr j_ptr true false -∗
+      WP (App (App (App (Val do_for)
+          (Val glv(λ: <>,
+            if: ![go.int] #i_ptr ≤⟨go.int⟩ ![go.int] #j_ptr then
+              (let: "$a0" :=
+                  ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #a_ptr)) in
+                let: "$a1" :=
+                  ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                  (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0")
+                    "$a1") <⟨go.int⟩
+                #(W64 0) else
+              #false)))
+          (Val glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))))
+          (Val glv(λ: <>, #())))
+      {{ fun v => iprop(⌜v = execute_val⌝ ∗
+        peq_inv R data a b xp xs i_ptr j_ptr true true) }} := by
+  iintro #Hpkg #Hcmp #a #data #cmp HI
+  unfold cmp_implements
+  unfold peq_inv
+  wp_for HI
+  have Hlen2 := HPerm1.length_eq
+  wp_if_destruct
+  · list_elem xs1 (sint.nat j_val) as xj
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hpivot
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hxj_lookup
+    wp_apply Hcmp with %r %Hr
+    wp_if_destruct
+    · have hP := dec_val_true Hif
+      wp_for_post
+      iframe
+      iexists xs1, i_val, (j_val - W64 1)
+      iframe
+      ipureintro
+      refine ⟨by word, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => ?_, nofun⟩
+      rcases HBr1 rfl with h | h
+      · left; word
+      · right; exact h
+    · have hP := dec_val_false Hif
+      simp only [hP, decide_false, Bool.false_eq_true, ↓reduceIte]
+      isplitl []
+      · itrivial
+      iexists xs1, i_val, j_val
+      iframe
+      ipureintro
+      refine ⟨ij_bound, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => HBr1 rfl,
+        fun _ => Or.inr ?_⟩
+      intro xj' hxj'
+      rw [Hxj_lookup] at hxj'; cases hxj'
+      exact fun h => hP (by have := Hr.2 h; word)
+  · isplitl []
+    · itrivial
+    iexists xs1, i_val, j_val
+    iframe
+    ipureintro
+    exact ⟨ij_bound, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => HBr1 rfl,
+      fun _ => Or.inl (by omega)⟩
+
 
 theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
     (xs : List E) :
@@ -972,7 +1151,6 @@ theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : 
   ipersist a
   ipersist data
   ipersist cmp
-  unfold cmp_implements
   ihave HI : peq_inv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
   · unfold peq_inv
     iexists _, _, _
@@ -992,52 +1170,8 @@ theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : 
   wp_bind (App (App (App (Val do_for) _) _) _)
   iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
     peq_inv R data a b xp xs i_ptr j_ptr true false))) $$ [HI]
-  · unfold peq_inv
-    wp_for HI
-    have Hlen2 := HPerm1.length_eq
-    wp_if_destruct
-    · list_elem xs1 (sint.nat i_val) as xi
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hpivot
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z i_val) xs1 _ xi (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hxi_lookup
-      wp_apply Hcmp with %r %Hr
-      by_cases hP : sint.Z r < sint.Z (W64 0)
-      · -- `data[a] < data[i]`: exit
-        simp only [hP, decide_true, Bool.not_true]
-        cleanup_bool_decide
-        wp_pures
-        isplitl []
-        · itrivial
-        iexists xs1, i_val, j_val
-        iframe
-        ipureintro
-        refine ⟨ij_bound, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => Or.inr ?_, nofun⟩
-        intro xi' hxi'
-        rw [Hxi_lookup] at hxi'; cases hxi'
-        exact R_antisym R _ _ (Hr.1 (by word))
-      · simp only [hP, decide_false, Bool.not_false]
-        cleanup_bool_decide
-        wp_auto
-        wp_for_post
-        iframe
-        iexists xs1, (i_val + W64 1), j_val
-        iframe
-        ipureintro
-        refine ⟨by word, ?_, Hpivot, Hmin, HPerm1, Houtside1, nofun, nofun⟩
-        rw [show sint.nat (i_val + W64 1) = sint.nat i_val + 1 by word]
-        exact is_eq_seg_extend R xs1 _ _ xp xi Hpivot Hsorted Hxi_lookup
-          ⟨Hmin xp _ xi ⟨by word, by word⟩ Hpivot Hxi_lookup,
-           fun h => hP (by have := Hr.2 h; word)⟩
-    · isplitl []
-      · itrivial
-      iexists xs1, i_val, j_val
-      iframe
-      ipureintro
-      exact ⟨ij_bound, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => Or.inl (by omega),
-        nofun⟩
+  · iapply (wp_peq_loop1 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
+      cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
   iintro %v ⟨%Hv, HI⟩
   subst Hv
   wp_auto
@@ -1045,48 +1179,8 @@ theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : 
   wp_bind (App (App (App (Val do_for) _) _) _)
   iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
     peq_inv R data a b xp xs i_ptr j_ptr true true))) $$ [HI]
-  · unfold peq_inv
-    wp_for HI
-    have Hlen2 := HPerm1.length_eq
-    wp_if_destruct
-    · list_elem xs1 (sint.nat j_val) as xj
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z a) xs1 _ xp (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hpivot
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hxj_lookup
-      wp_apply Hcmp with %r %Hr
-      wp_if_destruct
-      · have hP := dec_val_true Hif
-        wp_for_post
-        iframe
-        iexists xs1, i_val, (j_val - W64 1)
-        iframe
-        ipureintro
-        refine ⟨by word, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => ?_, nofun⟩
-        rcases HBr1 rfl with h | h
-        · left; word
-        · right; exact h
-      · have hP := dec_val_false Hif
-        simp only [hP, decide_false, Bool.false_eq_true, ↓reduceIte]
-        isplitl []
-        · itrivial
-        iexists xs1, i_val, j_val
-        iframe
-        ipureintro
-        refine ⟨ij_bound, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => HBr1 rfl,
-          fun _ => Or.inr ?_⟩
-        intro xj' hxj'
-        rw [Hxj_lookup] at hxj'; cases hxj'
-        exact fun h => hP (by have := Hr.2 h; word)
-    · isplitl []
-      · itrivial
-      iexists xs1, i_val, j_val
-      iframe
-      ipureintro
-      exact ⟨ij_bound, Hsorted, Hpivot, Hmin, HPerm1, Houtside1, fun _ => HBr1 rfl,
-        fun _ => Or.inl (by omega)⟩
+  · iapply (wp_peq_loop2 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
+      cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
   iintro %v ⟨%Hv, HI⟩
   subst Hv
   wp_auto

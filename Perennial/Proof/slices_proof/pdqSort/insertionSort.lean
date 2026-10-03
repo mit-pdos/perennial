@@ -124,6 +124,122 @@ variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.type}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop) [StrictWeakOrder R]
 
+omit [ZeroVal E] [TypedPointsto (GF := GF) E] [IntoValTyped (GF := GF) E Et] [StrictWeakOrder R]
+  package_sem sem in
+/-- A call of the comparison function, with `cmp_implements` kept folded in the
+caller's context: unfolded, its `▷` makes every symbolic execution step search
+for laters to strip in all hypotheses. -/
+private theorem ins_wp_cmp (cmp_code : func.t) (x y : E) :
+    {{ cmp_implements (GF := GF) R cmp_code }}
+      (App (App (Val #cmp_code) (Val #x)) (Val #y))
+    {{ (r : w64), RET #r; ⌜sint.Z r < 0 ↔ R x y⌝ }} := by
+  iintro %Φ #Hc HΦ
+  unfold cmp_implements
+  iapply Hc $$ [] HΦ
+  itrivial
+
+omit package_sem in
+/-- The inner loop of `insertionSortCmpFunc` (a separate theorem, so that it
+elaborates in parallel). -/
+private theorem ins_wp_insertion_inner (data : slice.t) (a b i_val : w64) (cmp : func.t)
+    (xs : List E) (cmp_ptr a_ptr data_ptr j_ptr : loc) (Φ : val → IProp GF)
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
+    (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
+    (irange : sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ max (sint.Z a + 1) (sint.Z b))
+    (Hif : sint.Z i_val < sint.Z b) :
+    ⊢ cmp_implements R cmp -∗ cmp_ptr ↦ cmp -∗ a_ptr ↦ a -∗ data_ptr ↦ data -∗
+      (∃ (j_val : w64) (xs'' : List E),
+        "j" ∷ j_ptr ↦ j_val ∗
+        "Hxs" ∷ data ↦* xs'' ∗
+        "%jrange" ∷ ⌜sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z i_val⌝ ∗
+        "%Hperm2" ∷ ⌜xs ≡ₚ xs''⌝ ∗
+        "%HsortedBr" ∷ ⌜ins_br R xs'' (sint.nat a) (sint.nat i_val) (sint.nat j_val)⌝ ∗
+        "%Houtside2" ∷ ⌜outside_same xs xs'' (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
+      (∀ xs'' : List E, data ↦* xs'' ∗ cmp_ptr ↦ cmp ∗ a_ptr ↦ a ∗ data_ptr ↦ data ∗
+        ⌜xs ≡ₚ xs'' ∧ is_sorted_seg R xs'' (sint.nat a) (sint.nat i_val + 1) ∧
+          outside_same xs xs'' (sint.nat a) (sint.nat b)⌝ -∗ Φ execute_val) -∗
+      WP (((do_for
+          glv(λ: <>,
+              if: ![go.int] #j_ptr >⟨go.int⟩ ![go.int] #a_ptr then
+                (let: "$a0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                    let: "$a1" :=
+                      ![Et]
+                        ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+                      (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0") "$a1") <⟨go.int⟩
+                  #(W64 0) else
+                #false))
+        glv(λ: <>,
+            let: "$r0" :=
+              ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+              let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                do: (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) <-[Et] "$r0" ;;;
+                  do:
+                    (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) <-[Et]
+                      "$r1"))
+      glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) {{ Φ }} := by
+  iintro #Hcmp cmp a data HI2 HΦ
+  wp_for HI2
+  have hlen'' := Hperm2.length_eq
+  wp_if_destruct
+  · list_elem xs'' (sint.nat j_val) as x0
+    list_elem xs'' (sint.nat (j_val - W64 1)) as x1
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z j_val) xs'' _ x0 (by omega) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hx0_lookup
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z (j_val - W64 1)) xs'' _ x1 (by word) $$ [Hxs]
+      with Hxs
+    · iframe Hxs; ipureintro; exact Hx1_lookup
+    wp_apply ins_wp_cmp R cmp $$ Hcmp with %r %Hr
+    cleanup_bool_decide
+    by_cases hc : sint.Z r < sint.Z (W64 0)
+    · simp only [hc, _root_.decide_true, ↓reduceIte]
+      wp_auto
+      slice_index_if
+      wp_apply wp_load_slice_index data (sint.Z (j_val - W64 1)) xs'' _ x1 (by word) $$ [Hxs]
+        with Hxs
+      · iframe Hxs; ipureintro; exact Hx1_lookup
+      slice_index_if
+      wp_apply wp_load_slice_index data (sint.Z j_val) xs'' _ x0 (by omega) $$ [Hxs] with Hxs
+      · iframe Hxs; ipureintro; exact Hx0_lookup
+      slice_index_if
+      wp_pures
+      wp_apply wp_store_slice_index data (sint.Z j_val) xs'' x1 $$ [Hxs] with Hxs
+      · iframe Hxs; ipureintro; omega
+      slice_index_if
+      wp_pures
+      wp_apply wp_store_slice_index data (sint.Z (j_val - W64 1)) _ x0 $$ [Hxs] with Hxs
+      · iframe Hxs; ipureintro; simp only [List.length_set]; word
+      wp_for_post
+      iframe
+      iexists (j_val - W64 1), _
+      iframe
+      ipureintro
+      have hj1 : sint.nat (j_val - W64 1) = sint.nat j_val - 1 := by word
+      rw [show (sint.Z (j_val - W64 1)).toNat = sint.nat j_val - 1 from hj1,
+        show (sint.Z j_val).toNat = sint.nat j_val from rfl]
+      rw [hj1] at Hx1_lookup ⊢
+      have hR := Hr.1 (by word)
+      refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
+      · exact Hperm2.trans (swap_perm _ _ _ _ _ Hx1_lookup Hx0_lookup)
+      · exact ins_br_swap R _ _ _ _ _ _ HsortedBr (by word) (by word) Hx0_lookup Hx1_lookup hR
+      · exact outside_same_trans _ _ _ _ _ Houtside2
+          (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+    · simp only [hc, decide_false, Bool.false_eq_true, ↓reduceIte]
+      iapply HΦ
+      iframe
+      ipureintro
+      have hj1 : sint.nat (j_val - W64 1) = sint.nat j_val - 1 := by word
+      rw [hj1] at Hx1_lookup
+      have hR : ¬ R x0 x1 := fun h => hc (Hr.2 h)
+      refine ⟨Hperm2, ?_, Houtside2⟩
+      exact ins_br_done_cmp R _ _ _ _ _ _ HsortedBr (by word) (by word) Hx0_lookup Hx1_lookup hR
+  · iapply HΦ
+    iframe
+    ipureintro
+    refine ⟨Hperm2, ?_, Houtside2⟩
+    exact ins_br_done_a R _ _ _ _ HsortedBr (by word)
+
 theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
@@ -171,76 +287,17 @@ theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs 
       iframe
       ipureintro
       exact ⟨⟨by omega, by omega⟩, HPerm1, ins_br_init R _ _ _ Hsorted, Houtside1⟩
-    wp_for HI2
-    have hlen'' := Hperm2.length_eq
-    wp_if_destruct
-    · list_elem xs'' (sint.nat j_val) as x0
-      list_elem xs'' (sint.nat (j_val - W64 1)) as x1
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z j_val) xs'' _ x0 (by omega) $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; exact Hx0_lookup
-      slice_index_if
-      wp_apply wp_load_slice_index data (sint.Z (j_val - W64 1)) xs'' _ x1 (by word) $$ [Hxs]
-        with Hxs
-      · iframe Hxs; ipureintro; exact Hx1_lookup
-      unfold cmp_implements
-      wp_apply Hcmp with %r %Hr
-      cleanup_bool_decide
-      by_cases hc : sint.Z r < sint.Z (W64 0)
-      · simp only [hc, _root_.decide_true, ↓reduceIte]
-        wp_auto
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z (j_val - W64 1)) xs'' _ x1 (by word) $$ [Hxs]
-          with Hxs
-        · iframe Hxs; ipureintro; exact Hx1_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z j_val) xs'' _ x0 (by omega) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hx0_lookup
-        slice_index_if
-        wp_pures
-        wp_apply wp_store_slice_index data (sint.Z j_val) xs'' x1 $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; omega
-        slice_index_if
-        wp_pures
-        wp_apply wp_store_slice_index data (sint.Z (j_val - W64 1)) _ x0 $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; simp only [List.length_set]; word
-        wp_for_post
-        iframe
-        iexists (j_val - W64 1), _
-        iframe
-        ipureintro
-        have hj1 : sint.nat (j_val - W64 1) = sint.nat j_val - 1 := by word
-        rw [show (sint.Z (j_val - W64 1)).toNat = sint.nat j_val - 1 from hj1,
-          show (sint.Z j_val).toNat = sint.nat j_val from rfl]
-        rw [hj1] at Hx1_lookup ⊢
-        have hR := Hr.1 (by word)
-        refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
-        · exact Hperm2.trans (swap_perm _ _ _ _ _ Hx1_lookup Hx0_lookup)
-        · exact ins_br_swap R _ _ _ _ _ _ HsortedBr (by word) (by word) Hx0_lookup Hx1_lookup hR
-        · exact outside_same_trans _ _ _ _ _ Houtside2
-            (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
-      · simp only [hc, decide_false, Bool.false_eq_true, ↓reduceIte]
-        wp_for_post
-        iframe
-        iexists (i_val + W64 1), xs''
-        iframe
-        ipureintro
-        have hi1 : sint.nat (i_val + W64 1) = sint.nat i_val + 1 := by word
-        rw [hi1]
-        have hj1 : sint.nat (j_val - W64 1) = sint.nat j_val - 1 := by word
-        rw [hj1] at Hx1_lookup
-        have hR : ¬ R x0 x1 := fun h => hc (Hr.2 h)
-        refine ⟨⟨by word, by word⟩, Hperm2, ?_, Houtside2⟩
-        exact ins_br_done_cmp R _ _ _ _ _ _ HsortedBr (by word) (by word) Hx0_lookup Hx1_lookup hR
-    · wp_for_post
-      iframe
-      iexists (i_val + W64 1), xs''
-      iframe
-      ipureintro
-      have hi1 : sint.nat (i_val + W64 1) = sint.nat i_val + 1 := by word
-      rw [hi1]
-      refine ⟨⟨by word, by word⟩, Hperm2, ?_, Houtside2⟩
-      exact ins_br_done_a R _ _ _ _ HsortedBr (by word)
+    iapply (ins_wp_insertion_inner R data a b i_val cmp xs cmp_ptr a_ptr data_ptr j_ptr _
+      Hab_bound Hlen irange Hif) $$ Hcmp cmp a data HI2
+    iintro %xs'' ⟨Hxs, cmp, a, data, %Hpost⟩
+    wp_for_post
+    iframe
+    iexists (i_val + W64 1), xs''
+    iframe
+    ipureintro
+    have hi1 : sint.nat (i_val + W64 1) = sint.nat i_val + 1 := by word
+    rw [hi1]
+    exact ⟨⟨by word, by word⟩, Hpost⟩
   · simp only [Hif, decide_false, Bool.false_eq_true, ↓reduceIte]
     wp_auto
     iapply HΦ
@@ -248,7 +305,241 @@ theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs 
     ipureintro
     exact ⟨HPerm1, is_sorted_seg_mono R _ _ _ _ (by word) Hsorted, Houtside1⟩
 
-set_option maxHeartbeats 1000000 in
+omit package_sem in
+/-- The loop of `partialInsertionSortCmpFunc` that shifts the smaller element
+`data[i-1]` to the left (a separate theorem, so that it elaborates in parallel). -/
+private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code : func.t)
+    (xs : List E) (cmp_ptr a_ptr data_ptr i_ptr j_ptr : loc)
+    (Header : header R xs (sint.nat a) (sint.nat b))
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
+    (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
+    (irange : sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b)
+    (Hib : sint.Z i_val < sint.Z b) :
+    ⊢ cmp_implements R cmp_code -∗ cmp_ptr ↦ cmp_code -∗ a_ptr ↦ a -∗ data_ptr ↦ data -∗
+      i_ptr ↦ i_val -∗
+      (∃ (jl : w64) (xs3 : List E),
+        "jl" ∷ j_ptr ↦ jl ∗
+        "Hxs" ∷ data ↦* xs3 ∗
+        "%jrange" ∷ ⌜sint.Z a ≤ sint.Z jl ∧ sint.Z jl ≤ sint.Z i_val - 1⌝ ∗
+        "%Hperm3" ∷ ⌜xs ≡ₚ xs3⌝ ∗
+        "%HsortedBr" ∷ ⌜ins_br R xs3 (sint.nat a) (sint.nat i_val - 1) (sint.nat jl)⌝ ∗
+        "%Houtside3" ∷ ⌜outside_same xs xs3 (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
+      WP (((do_for glv(λ: <>, ![go.int] #j_ptr ≥⟨go.int⟩ #(W64 1)))
+        glv(λ: <>,
+            (if:
+                (Convert go.untyped_bool go.bool)
+                  ((GoUnOp GoNot go.bool)
+                    ((let: "$a0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                        let: "$a1" :=
+                          ![Et]
+                            ((IndexRef Et.SliceType)
+                              (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+                          (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0") "$a1") <⟨go.int⟩
+                      #(W64 0))) then
+                do_break #() else do: #()) ;;;
+              let: "$r0" :=
+                ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+                let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                  do: (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) <-[Et] "$r0" ;;;
+                    do:
+                      (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) <-[Et]
+                        "$r1"))
+      glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)))
+      {{ v, ⌜v = execute_val⌝ ∗ ∃ xs3,
+        "Hxs" ∷ data ↦* xs3 ∗ "i" ∷ i_ptr ↦ i_val ∗ "a" ∷ a_ptr ↦ a ∗
+        "data" ∷ data_ptr ↦ data ∗ "cmp" ∷ cmp_ptr ↦ cmp_code ∗
+        "%Hperm3" ∷ ⌜xs ≡ₚ xs3⌝ ∗
+        "%Hsorted3" ∷ ⌜is_sorted_seg R xs3 (sint.nat a) (sint.nat i_val)⌝ ∗
+        "%Houtside3" ∷ ⌜outside_same xs xs3 (sint.nat a) (sint.nat b)⌝ }} := by
+  iintro #Hcmp cmp a data i HL
+  have hi1 : sint.nat (i_val - W64 1) = sint.nat i_val - 1 := by word
+  wp_for HL
+  have Header2' := header__preserve R xs xs3 _ _ Header Hperm3 Houtside3 (by word)
+  have hlen3 := Hperm3.length_eq
+  have hsi : sint.nat i_val - 1 + 1 = sint.nat i_val := by word
+  by_cases Hjl : sint.Z (W64 1) ≤ sint.Z jl
+  case neg =>
+    simp only [Hjl, decide_false, Bool.false_eq_true, ↓reduceIte]
+    isplitl []
+    · itrivial
+    iexists xs3
+    iframe
+    ipureintro
+    refine ⟨Hperm3, ?_, Houtside3⟩
+    rw [← hsi]
+    exact ins_br_done_a R _ _ _ _ HsortedBr (by word)
+  simp only [Hjl, _root_.decide_true, ↓reduceIte]
+  wp_auto
+  list_elem xs3 (sint.nat jl) as y0
+  list_elem xs3 (sint.nat (jl - W64 1)) as y1
+  have hj1 : sint.nat (jl - W64 1) = sint.nat jl - 1 := by word
+  have hjdx : (sint.Z (jl - W64 1)).toNat = sint.nat jl - 1 := hj1
+  rw [hj1] at Hy1_lookup
+  slice_index_if
+  wp_apply wp_load_slice_index data (sint.Z jl) xs3 _ y0 (by word) $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; exact Hy0_lookup
+  slice_index_if
+  wp_apply wp_load_slice_index data (sint.Z (jl - W64 1)) xs3 _ y1 (by word) $$ [Hxs]
+    with Hxs
+  · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
+  wp_apply ins_wp_cmp R cmp_code $$ Hcmp with %r' %Hr'
+  by_cases hc' : sint.Z r' < sint.Z (W64 0)
+  case neg =>
+    -- break
+    simp only [hc', decide_false, Bool.not_false]
+    cleanup_bool_decide
+    wp_auto
+    wp_for_post
+    isplitl []
+    · itrivial
+    iexists xs3
+    iframe
+    ipureintro
+    refine ⟨Hperm3, ?_, Houtside3⟩
+    rw [← hsi]
+    by_cases hja : sint.nat jl = sint.nat a
+    · exact ins_br_done_a R _ _ _ _ HsortedBr hja
+    · exact ins_br_done_cmp R _ _ _ _ _ _ HsortedBr (by word) (by word) Hy0_lookup Hy1_lookup
+        (fun h => hc' (Hr'.2 h))
+  simp only [hc', _root_.decide_true, Bool.not_true]
+  cleanup_bool_decide
+  wp_auto
+  have hRy := Hr'.1 hc'
+  have hja : sint.nat a < sint.nat jl := by
+    by_cases hja : sint.nat jl = sint.nat a
+    · exfalso
+      rw [hja] at Hy0_lookup Hy1_lookup
+      exact header_contra R _ _ _ _ _ Header2' (by word) (by word) Hy0_lookup Hy1_lookup hRy
+    · word
+  slice_index_if
+  wp_apply wp_load_slice_index data (sint.Z (jl - W64 1)) xs3 _ y1 (by word) $$ [Hxs]
+    with Hxs
+  · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
+  slice_index_if
+  wp_apply wp_load_slice_index data (sint.Z jl) xs3 _ y0 (by word) $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; exact Hy0_lookup
+  slice_index_if
+  wp_pures
+  wp_apply wp_store_slice_index data (sint.Z jl) xs3 y1 $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; word
+  slice_index_if
+  wp_pures
+  wp_apply wp_store_slice_index data (sint.Z (jl - W64 1)) _ y0 $$ [Hxs] with Hxs
+  · iframe Hxs; ipureintro; simp only [List.length_set]; word
+  wp_for_post
+  iframe
+  iexists (jl - W64 1), _
+  iframe
+  ipureintro
+  rw [hjdx, show (sint.Z jl).toNat = sint.nat jl from rfl, hj1]
+  refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
+  · exact Hperm3.trans (swap_perm _ _ _ _ _ Hy1_lookup Hy0_lookup)
+  · exact ins_br_swap R _ _ _ _ _ _ HsortedBr hja (by word) Hy0_lookup Hy1_lookup hRy
+  · exact outside_same_trans _ _ _ _ _ Houtside3
+      (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+
+omit package_sem [StrictWeakOrder R] in
+/-- The loop of `partialInsertionSortCmpFunc` that shifts the greater element
+`data[i]` to the right (a separate theorem, so that it elaborates in parallel). -/
+private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code : func.t)
+    (xs : List E) (cmp_ptr b_ptr data_ptr j_ptr : loc) (Φ : val → IProp GF)
+    (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
+    (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
+    (irange : sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) :
+    ⊢ cmp_implements R cmp_code -∗ cmp_ptr ↦ cmp_code -∗ b_ptr ↦ b -∗ data_ptr ↦ data -∗
+      (∃ (jr : w64) (xs4 : List E),
+        "jr" ∷ j_ptr ↦ jr ∗
+        "Hxs" ∷ data ↦* xs4 ∗
+        "%jrange" ∷ ⌜sint.Z i_val < sint.Z jr ∧ sint.Z jr ≤ sint.Z b⌝ ∗
+        "%Hperm4" ∷ ⌜xs ≡ₚ xs4⌝ ∗
+        "%Hsorted4" ∷ ⌜is_sorted_seg R xs4 (sint.nat a) (sint.nat i_val)⌝ ∗
+        "%Houtside4" ∷ ⌜outside_same xs xs4 (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
+      (∀ xs4 : List E, data ↦* xs4 ∗ cmp_ptr ↦ cmp_code ∗ b_ptr ↦ b ∗ data_ptr ↦ data ∗
+        ⌜xs ≡ₚ xs4 ∧ is_sorted_seg R xs4 (sint.nat a) (sint.nat i_val) ∧
+          outside_same xs xs4 (sint.nat a) (sint.nat b)⌝ -∗ Φ execute_val) -∗
+      WP (((do_for glv(λ: <>, ![go.int] #j_ptr <⟨go.int⟩ ![go.int] #b_ptr))
+        glv(λ: <>,
+            (if:
+                (Convert go.untyped_bool go.bool)
+                  ((GoUnOp GoNot go.bool)
+                    ((let: "$a0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                        let: "$a1" :=
+                          ![Et]
+                            ((IndexRef Et.SliceType)
+                              (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+                          (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0") "$a1") <⟨go.int⟩
+                      #(W64 0))) then
+                do_break #() else do: #()) ;;;
+              let: "$r0" :=
+                ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+                let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                  do: (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) <-[Et] "$r0" ;;;
+                    do:
+                      (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) <-[Et]
+                        "$r1"))
+      glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr +⟨go.int⟩ #(W64 1))) {{ Φ }} := by
+  iintro #Hcmp cmp b data HRt HΦ
+  wp_for HRt
+  have hlen4 := Hperm4.length_eq
+  wp_if_destruct
+  · list_elem xs4 (sint.nat jr) as y0
+    list_elem xs4 (sint.nat (jr - W64 1)) as y1
+    have hj1 : sint.nat (jr - W64 1) = sint.nat jr - 1 := by word
+    have hjdx : (sint.Z (jr - W64 1)).toNat = sint.nat jr - 1 := hj1
+    rw [hj1] at Hy1_lookup
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z jr) xs4 _ y0 (by word) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hy0_lookup
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z (jr - W64 1)) xs4 _ y1 (by word) $$ [Hxs]
+      with Hxs
+    · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
+    wp_apply ins_wp_cmp R cmp_code $$ Hcmp with %r' %Hr'
+    by_cases hc' : sint.Z r' < sint.Z (W64 0)
+    case neg =>
+      -- break
+      simp only [hc', decide_false, Bool.not_false]
+      cleanup_bool_decide
+      wp_auto
+      wp_for_post
+      iapply HΦ
+      iframe
+      ipureintro
+      exact ⟨Hperm4, Hsorted4, Houtside4⟩
+    simp only [hc', _root_.decide_true, Bool.not_true]
+    cleanup_bool_decide
+    wp_auto
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z (jr - W64 1)) xs4 _ y1 (by word) $$ [Hxs]
+      with Hxs
+    · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
+    slice_index_if
+    wp_apply wp_load_slice_index data (sint.Z jr) xs4 _ y0 (by word) $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; exact Hy0_lookup
+    slice_index_if
+    wp_pures
+    wp_apply wp_store_slice_index data (sint.Z jr) xs4 y1 $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; word
+    slice_index_if
+    wp_pures
+    wp_apply wp_store_slice_index data (sint.Z (jr - W64 1)) _ y0 $$ [Hxs] with Hxs
+    · iframe Hxs; ipureintro; simp only [List.length_set]; word
+    wp_for_post
+    iframe
+    iexists (jr + W64 1), _
+    iframe
+    ipureintro
+    rw [hjdx, show (sint.Z jr).toNat = sint.nat jr from rfl]
+    refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
+    · exact Hperm4.trans (swap_perm _ _ _ _ _ Hy1_lookup Hy0_lookup)
+    · exact is_sorted_seg_swap_hi R _ _ _ _ _ _ _ Hsorted4 (by word) (by word)
+    · exact outside_same_trans _ _ _ _ _ Houtside4
+        (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+  · iapply HΦ
+    iframe
+    ipureintro
+    exact ⟨Hperm4, Hsorted4, Houtside4⟩
+
 theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
     (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
@@ -317,8 +608,7 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
     wp_apply wp_load_slice_index data (sint.Z (i_val - W64 1)) xs' _ x1 (by word) $$ [Hxs]
       with Hxs
     · iframe Hxs; ipureintro; exact Hx1_lookup
-    unfold cmp_implements
-    wp_apply Hcmp with %r %Hr
+    wp_apply ins_wp_cmp R cmp_code $$ Hcmp with %r %Hr
     have hi1 : sint.nat (i_val - W64 1) = sint.nat i_val - 1 := by word
     rw [hi1] at Hx1_lookup
     by_cases hc : sint.Z r < sint.Z (W64 0)
@@ -404,90 +694,8 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
           rw [hi1]
           exact ⟨⟨by word, by word⟩, Hperm2, ins_br_init R _ _ _ Hsorted2, Houtside2⟩
         clear Hperm2 Houtside2 Hsorted2 hlen2
-        wp_for HL
-        have Header2' := header__preserve R xs xs3 _ _ Header Hperm3 Houtside3 (by word)
-        have hlen3 := Hperm3.length_eq
-        have hsi : sint.nat i_val - 1 + 1 = sint.nat i_val := by word
-        by_cases Hjl : sint.Z (W64 1) ≤ sint.Z jl
-        case neg =>
-          simp only [Hjl, decide_false, Bool.false_eq_true, ↓reduceIte]
-          isplitl []
-          · itrivial
-          iexists xs3
-          iframe
-          ipureintro
-          refine ⟨Hperm3, ?_, Houtside3⟩
-          rw [← hsi]
-          exact ins_br_done_a R _ _ _ _ HsortedBr (by word)
-        simp only [Hjl, _root_.decide_true, ↓reduceIte]
-        wp_auto
-        list_elem xs3 (sint.nat jl) as y0
-        list_elem xs3 (sint.nat (jl - W64 1)) as y1
-        have hj1 : sint.nat (jl - W64 1) = sint.nat jl - 1 := by word
-        have hjdx : (sint.Z (jl - W64 1)).toNat = sint.nat jl - 1 := hj1
-        rw [hj1] at Hy1_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z jl) xs3 _ y0 (by word) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hy0_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z (jl - W64 1)) xs3 _ y1 (by word) $$ [Hxs]
-          with Hxs
-        · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
-        wp_apply Hcmp with %r' %Hr'
-        by_cases hc' : sint.Z r' < sint.Z (W64 0)
-        case neg =>
-          -- break
-          simp only [hc', decide_false, Bool.not_false]
-          cleanup_bool_decide
-          wp_auto
-          wp_for_post
-          isplitl []
-          · itrivial
-          iexists xs3
-          iframe
-          ipureintro
-          refine ⟨Hperm3, ?_, Houtside3⟩
-          rw [← hsi]
-          by_cases hja : sint.nat jl = sint.nat a
-          · exact ins_br_done_a R _ _ _ _ HsortedBr hja
-          · exact ins_br_done_cmp R _ _ _ _ _ _ HsortedBr (by word) (by word) Hy0_lookup Hy1_lookup
-              (fun h => hc' (Hr'.2 h))
-        simp only [hc', _root_.decide_true, Bool.not_true]
-        cleanup_bool_decide
-        wp_auto
-        have hRy := Hr'.1 hc'
-        have hja : sint.nat a < sint.nat jl := by
-          by_cases hja : sint.nat jl = sint.nat a
-          · exfalso
-            rw [hja] at Hy0_lookup Hy1_lookup
-            exact header_contra R _ _ _ _ _ Header2' (by word) (by word) Hy0_lookup Hy1_lookup hRy
-          · word
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z (jl - W64 1)) xs3 _ y1 (by word) $$ [Hxs]
-          with Hxs
-        · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z jl) xs3 _ y0 (by word) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hy0_lookup
-        slice_index_if
-        wp_pures
-        wp_apply wp_store_slice_index data (sint.Z jl) xs3 y1 $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; word
-        slice_index_if
-        wp_pures
-        wp_apply wp_store_slice_index data (sint.Z (jl - W64 1)) _ y0 $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; simp only [List.length_set]; word
-        wp_for_post
-        iframe
-        iexists (jl - W64 1), _
-        iframe
-        ipureintro
-        rw [hjdx, show (sint.Z jl).toNat = sint.nat jl from rfl, hj1]
-        refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
-        · exact Hperm3.trans (swap_perm _ _ _ _ _ Hy1_lookup Hy0_lookup)
-        · exact ins_br_swap R _ _ _ _ _ _ HsortedBr hja (by word) Hy0_lookup Hy1_lookup hRy
-        · exact outside_same_trans _ _ _ _ _ Houtside3
-            (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+        iapply (ins_wp_shift_left R data a b i_val cmp_code xs cmp_ptr a_ptr data_ptr i_ptr j_ptr
+          Header Hab_bound Hlen irange (by assumption)) $$ Hcmp cmp a data i HL
       · isplitl []
         · itrivial
         iexists xs2
@@ -515,70 +723,15 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
         ipureintro
         exact ⟨⟨by word, by word⟩, Hperm3, Hsorted3, Houtside3⟩
       clear Hperm3 Hsorted3 Houtside3
-      wp_for HRt
-      have hlen4 := Hperm4.length_eq
-      wp_if_destruct
-      · list_elem xs4 (sint.nat jr) as y0
-        list_elem xs4 (sint.nat (jr - W64 1)) as y1
-        have hj1 : sint.nat (jr - W64 1) = sint.nat jr - 1 := by word
-        have hjdx : (sint.Z (jr - W64 1)).toNat = sint.nat jr - 1 := hj1
-        rw [hj1] at Hy1_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z jr) xs4 _ y0 (by word) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hy0_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z (jr - W64 1)) xs4 _ y1 (by word) $$ [Hxs]
-          with Hxs
-        · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
-        wp_apply Hcmp with %r' %Hr'
-        by_cases hc' : sint.Z r' < sint.Z (W64 0)
-        case neg =>
-          -- break
-          simp only [hc', decide_false, Bool.not_false]
-          cleanup_bool_decide
-          wp_auto
-          wp_for_post
-          wp_for_post
-          iframe
-          iexists (jc + W64 1), i_val, xs4
-          iframe
-          ipureintro
-          exact ⟨irange, Hperm4, Hsorted4, Houtside4⟩
-        simp only [hc', _root_.decide_true, Bool.not_true]
-        cleanup_bool_decide
-        wp_auto
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z (jr - W64 1)) xs4 _ y1 (by word) $$ [Hxs]
-          with Hxs
-        · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
-        slice_index_if
-        wp_apply wp_load_slice_index data (sint.Z jr) xs4 _ y0 (by word) $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; exact Hy0_lookup
-        slice_index_if
-        wp_pures
-        wp_apply wp_store_slice_index data (sint.Z jr) xs4 y1 $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; word
-        slice_index_if
-        wp_pures
-        wp_apply wp_store_slice_index data (sint.Z (jr - W64 1)) _ y0 $$ [Hxs] with Hxs
-        · iframe Hxs; ipureintro; simp only [List.length_set]; word
-        wp_for_post
-        iframe
-        iexists (jr + W64 1), _
-        iframe
-        ipureintro
-        rw [hjdx, show (sint.Z jr).toNat = sint.nat jr from rfl]
-        refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
-        · exact Hperm4.trans (swap_perm _ _ _ _ _ Hy1_lookup Hy0_lookup)
-        · exact is_sorted_seg_swap_hi R _ _ _ _ _ _ _ Hsorted4 (by word) (by word)
-        · exact outside_same_trans _ _ _ _ _ Houtside4
-            (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
-      · wp_for_post
-        iframe
-        iexists (jc + W64 1), i_val, xs4
-        iframe
-        ipureintro
-        exact ⟨irange, Hperm4, Hsorted4, Houtside4⟩
+      iapply (ins_wp_shift_right R data a b i_val cmp_code xs cmp_ptr b_ptr data_ptr j_ptr _
+        Hab_bound Hlen irange) $$ Hcmp cmp b data HRt
+      iintro %xs4 ⟨Hxs, cmp, b, data, %Hpost⟩
+      wp_for_post
+      iframe
+      iexists (jc + W64 1), i_val, xs4
+      iframe
+      ipureintro
+      exact ⟨irange, Hpost⟩
     · wp_for_post
       iframe
       iexists (jc + W64 1), i_val, xs3

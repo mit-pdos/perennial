@@ -42,22 +42,6 @@ macro "iomega" : tactic => `(tactic| ((try simp only [sint_nat_toNat] at *); ome
 macro "hslice_index_if'" : tactic =>
   `(tactic| (rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> iomega))]))
 
-theorem sift_arith1 (a lo root hi b : w64) (ha : 0 ≤ sint.Z a) (hlo : 0 ≤ sint.Z lo)
-    (hr : sint.Z lo ≤ sint.Z root ∧ sint.Z root < sint.Z hi)
-    (hb : sint.Z a + sint.Z hi ≤ sint.Z b) (hb2 : sint.Z b ≤ 2 ^ 62) :
-    sint.Z (W64 2 * root + W64 1) = 2 * sint.Z root + 1 ∧
-    sint.Z (a + root) = sint.Z a + sint.Z root ∧
-    sint.Z (a + (W64 2 * root + W64 1)) = sint.Z a + 2 * sint.Z root + 1 := by
-  refine ⟨?_, ?_, ?_⟩ <;> hword
-
-theorem sift_arith2 (a lo root hi b : w64) (ha : 0 ≤ sint.Z a) (hlo : 0 ≤ sint.Z lo)
-    (hr : sint.Z lo ≤ sint.Z root ∧ 2 * sint.Z root + 1 < sint.Z hi)
-    (hb : sint.Z a + sint.Z hi ≤ sint.Z b) (hb2 : sint.Z b ≤ 2 ^ 62) :
-    sint.Z (W64 2 * root + W64 1 + W64 1) = 2 * sint.Z root + 2 ∧
-    sint.Z (a + (W64 2 * root + W64 1) + W64 1) = sint.Z a + 2 * sint.Z root + 2 ∧
-    sint.Z (a + (W64 2 * root + W64 1 + W64 1)) = sint.Z a + 2 * sint.Z root + 2 := by
-  refine ⟨?_, ?_, ?_⟩ <;> hword
-
 theorem lookup_idx_eq {T : Type} {l : List T} {n m : Nat} {x : T} (h : l[n]? = some x)
     (e : m = n) : l[m]? = some x := e ▸ h
 
@@ -75,6 +59,85 @@ macro "load_at' " H:ident : tactic => `(tactic| (
   hslice_index_if'
   wp_apply wp_load_slice_index _ _ _ _ _ (by iomega) $$ [Hxs] with Hxs
   all_goals try (iframe Hxs; ipureintro; exact lookup_idx_eq $H (by iomega))))
+
+/-- `hslice_index_if` with an explicit proof `k` of a `heap_idx` fact. -/
+macro "heap_slice_index_k " k:term:max : tactic =>
+  `(tactic| (rw [ite_eq_left_of_eq_true _ _ (eq_true ($k).1)]))
+
+set_option hygiene false in
+/-- `load_at` with `word` instead of `hword` (whose `rfl` attempt is slow when it fails). -/
+macro "heap_load_atw " H:ident : tactic => `(tactic| (
+  rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]
+  wp_apply wp_load_slice_index _ _ _ _ _ (by word) $$ [Hxs] with Hxs
+  all_goals try (iframe Hxs; ipureintro; exact lookup_idx_eq $H (by word))))
+
+set_option hygiene false in
+/-- `load_at'` with an explicit `heap_idx` fact `k` for the index. -/
+macro "heap_load_k " H:ident k:term:max : tactic => `(tactic| (
+  heap_slice_index_k $k
+  wp_apply wp_load_slice_index _ _ _ _ _ ($k).1.1 $$ [Hxs] with Hxs
+  all_goals try (iframe Hxs; ipureintro; exact lookup_idx_eq $H ($k).2.1)))
+
+-- (the lemmas below come after the macros: a `macro` declared after
+-- asynchronously elaborated proofs waits for them)
+theorem sift_arith1 (a lo root hi b : w64) (ha : 0 ≤ sint.Z a) (hlo : 0 ≤ sint.Z lo)
+    (hr : sint.Z lo ≤ sint.Z root ∧ sint.Z root < sint.Z hi)
+    (hb : sint.Z a + sint.Z hi ≤ sint.Z b) (hb2 : sint.Z b ≤ 2 ^ 62) :
+    sint.Z (W64 2 * root + W64 1) = 2 * sint.Z root + 1 ∧
+    sint.Z (a + root) = sint.Z a + sint.Z root ∧
+    sint.Z (a + (W64 2 * root + W64 1)) = sint.Z a + 2 * sint.Z root + 1 := by
+  refine ⟨?_, ?_, ?_⟩ <;> word
+
+theorem sift_arith2 (a lo root hi b : w64) (ha : 0 ≤ sint.Z a) (hlo : 0 ≤ sint.Z lo)
+    (hr : sint.Z lo ≤ sint.Z root ∧ 2 * sint.Z root + 1 < sint.Z hi)
+    (hb : sint.Z a + sint.Z hi ≤ sint.Z b) (hb2 : sint.Z b ≤ 2 ^ 62) :
+    sint.Z (W64 2 * root + W64 1 + W64 1) = 2 * sint.Z root + 2 ∧
+    sint.Z (a + (W64 2 * root + W64 1) + W64 1) = sint.Z a + 2 * sint.Z root + 2 ∧
+    sint.Z (a + (W64 2 * root + W64 1 + W64 1)) = sint.Z a + 2 * sint.Z root + 2 := by
+  refine ⟨?_, ?_, ?_⟩ <;> word
+
+theorem heap_sint_nat_cast (x : w64) (h : 0 ≤ sint.Z x) : (sint.nat x : Int) = sint.Z x :=
+  Int.toNat_of_nonneg h
+
+/-! Index facts of the `siftDown` proof, proved in a small context (`omega` in the
+large context of the WP proof is slow). -/
+
+theorem heap_idx (e lw : w64) (n L : Nat) (he : sint.Z e = (n : Int)) (hlw : sint.Z lw = (L : Int))
+    (hn : n < L) :
+    (0 ≤ sint.Z e ∧ sint.Z e < sint.Z lw) ∧ (sint.Z e).toNat = n ∧
+      (0 ≤ sint.Z e ∧ sint.Z e < (L : Int)) := by
+  refine ⟨⟨?_, ?_⟩, ?_, ?_, ?_⟩ <;> omega
+
+theorem heap_nat_eq (e : w64) (n : Nat) (he : sint.Z e = (n : Int)) : sint.nat e = n := by
+  show (sint.Z e).toNat = n
+  omega
+
+theorem heap_child_facts (a root : w64) (A RT : Nat) (ca : (A : Int) = sint.Z a)
+    (cr : (RT : Int) = sint.Z root)
+    (hchild : sint.Z (W64 2 * root + W64 1) = 2 * sint.Z root + 1)
+    (hal : sint.Z (a + (W64 2 * root + W64 1)) = sint.Z a + 2 * sint.Z root + 1)
+    (haroot : sint.Z (a + root) = sint.Z a + sint.Z root) :
+    sint.Z (W64 2 * root + W64 1) = ((2 * RT + 1 : Nat) : Int) ∧
+    sint.Z (a + (W64 2 * root + W64 1)) = ((A + (2 * RT + 1) : Nat) : Int) ∧
+    sint.Z (a + root) = ((A + RT : Nat) : Int) := by
+  refine ⟨?_, ?_, ?_⟩ <;> omega
+
+theorem heap_rchild_facts (a root : w64) (A RT : Nat) (ca : (A : Int) = sint.Z a)
+    (cr : (RT : Int) = sint.Z root)
+    (hr2 : sint.Z (W64 2 * root + W64 1 + W64 1) = 2 * sint.Z root + 2)
+    (halr : sint.Z (a + (W64 2 * root + W64 1) + W64 1) = sint.Z a + 2 * sint.Z root + 2)
+    (har : sint.Z (a + (W64 2 * root + W64 1 + W64 1)) = sint.Z a + 2 * sint.Z root + 2) :
+    sint.Z (W64 2 * root + W64 1 + W64 1) = ((2 * RT + 2 : Nat) : Int) ∧
+    sint.Z (a + (W64 2 * root + W64 1) + W64 1) = ((A + (2 * RT + 2) : Nat) : Int) ∧
+    sint.Z (a + (W64 2 * root + W64 1 + W64 1)) = ((A + (2 * RT + 2) : Nat) : Int) := by
+  refine ⟨?_, ?_, ?_⟩ <;> omega
+
+theorem heap_new_root_bounds {lo hi root c : w64} {cN : Nat} (clo : (sint.nat lo : Int) = sint.Z lo)
+    (chi : (sint.nat hi : Int) = sint.Z hi) (cr : (sint.nat root : Int) = sint.Z root)
+    (hcZ : sint.Z c = cN) (hcsel : cN = 2 * sint.nat root + 1 ∨ cN = 2 * sint.nat root + 2)
+    (hcH : cN < sint.nat hi) (hLR : sint.nat lo ≤ sint.nat root) :
+    sint.Z lo ≤ sint.Z c ∧ sint.Z c < sint.Z hi := by
+  omega
 
 section heap
 variable {E : Type} (R : E → E → Prop)
@@ -393,6 +456,17 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
     (by omega) (by omega)
   have h0 : sint.Z (W64 0) = 0 := by decide
   have hdl : sint.Z data.len = xs'.length := by iomega
+  have ca := heap_sint_nat_cast a H_bounds.1
+  have clo := heap_sint_nat_cast lo (by omega)
+  have chi := heap_sint_nat_cast hi (by omega)
+  have cb := heap_sint_nat_cast b (by omega)
+  have croot := heap_sint_nat_cast root_val (by omega)
+  have hHlen : sint.nat a + sint.nat hi ≤ xs'.length := by omega
+  have hHB : sint.nat a + sint.nat hi ≤ sint.nat b := by omega
+  have hBL : sint.nat b ≤ xs'.length := by omega
+  have hLR : sint.nat lo ≤ sint.nat root_val := by omega
+  have hrH : sint.nat root_val < sint.nat hi := by omega
+  clear Hlen Hlen0 HlenEq Hinit HSegSorted Heap
   wp_if_destruct
   · -- `child ≥ hi`: break
     wp_for_post
@@ -401,16 +475,19 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
     ipureintro
     refine ⟨HPerm1, HSeg1, ?_, Hout⟩
     exact sift_inv_close R xs' _ _ _ _ _ He (fun c _ _ hc hcH => by
-      exfalso; iomega)
-  · obtain ⟨Hr2, Halr, Har⟩ := sift_arith2 a lo root_val hi b H_bounds.1 (by omega)
+      exfalso; omega)
+  · have hrc : 2 * sint.nat root_val + 1 < sint.nat hi := by omega
+    obtain ⟨Hr2, Halr, Har⟩ := sift_arith2 a lo root_val hi b H_bounds.1 (by omega)
       ⟨Hbound1.1, by omega⟩ (by omega) (by omega)
-    have hA : 0 ≤ sint.Z a := H_bounds.1
-    have hrA : sint.nat a + (2 * sint.nat root_val + 1) < xs'.length := by iomega
-    have hHlen : sint.nat a + sint.nat hi ≤ xs'.length := by iomega
-    have hrH : sint.nat root_val < sint.nat hi := by iomega
-    have hroot : (sint.nat root_val : Int) = sint.Z root_val := by iomega
-    have hhi : (sint.nat hi : Int) = sint.Z hi := by iomega
-    have hridx : (sint.Z (a + root_val)).toNat = sint.nat a + sint.nat root_val := by iomega
+    obtain ⟨kc1, kal, karoot⟩ := heap_child_facts a root_val _ _ ca croot Hchild Hal Haroot
+    obtain ⟨kc2, kalr, kar⟩ := heap_rchild_facts a root_val _ _ ca croot Hr2 Halr Har
+    have hrA : sint.nat a + (2 * sint.nat root_val + 1) < xs'.length :=
+      Nat.lt_of_lt_of_le (Nat.add_lt_add_left hrc _) hHlen
+    have hrtL : sint.nat a + sint.nat root_val < xs'.length :=
+      Nat.lt_of_lt_of_le (Nat.add_lt_add_left hrH _) hHlen
+    have kxl := heap_idx _ _ _ _ kal hdl hrA
+    have kxrt := heap_idx _ _ _ _ karoot hdl hrtL
+    have hridx : (sint.Z (a + root_val)).toNat = sint.nat a + sint.nat root_val := kxrt.2.1
     obtain ⟨xl, Hxl⟩ := list_lookup_lt xs' _ hrA
     -- choose the greatest child `c` (three cases), joined at `Hsel`
     wp_join iprop(∃ (c : w64),
@@ -422,12 +499,16 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
         "%Hsel" ∷ ⌜∃ cN : Nat, sint.nat c = cN ∧ sint.Z c = cN ∧
           (cN = 2 * sint.nat root_val + 1 ∨ cN = 2 * sint.nat root_val + 2) ∧ cN < sint.nat hi ∧
           max_child R xs' (sint.nat a) (sint.nat root_val) (sint.nat hi) cN ∧
-          (sint.Z (a + c)).toNat = sint.nat a + cN⌝)
+          sint.Z (a + c) = ((sint.nat a + cN : Nat) : Int)⌝)
       with [child Hxs cmp first data] as ⟨%c, child, Hxs, cmp, first, data, %Hsel⟩
     · -- the right child is in bounds: compare the children
-      obtain ⟨xr', Hxr'⟩ := list_lookup_lt xs' (sint.nat a + (2 * sint.nat root_val + 2)) (by iomega)
-      load_at' Hxl
-      load_at' Hxr'
+      have hrc2 : 2 * sint.nat root_val + 2 < sint.nat hi := by omega
+      have hrR : sint.nat a + (2 * sint.nat root_val + 2) < xs'.length :=
+        Nat.lt_of_lt_of_le (Nat.add_lt_add_left hrc2 _) hHlen
+      have kxr := heap_idx _ _ _ _ kalr hdl hrR
+      obtain ⟨xr', Hxr'⟩ := list_lookup_lt xs' (sint.nat a + (2 * sint.nat root_val + 2)) hrR
+      heap_load_k Hxl kxl
+      heap_load_k Hxr' kxr
       wp_apply Hcmp with %r1 %Hr1
       wp_if_destruct
       · -- the right child is greater
@@ -435,62 +516,70 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
         iexists _
         iframe
         ipureintro
-        exact ⟨2 * sint.nat root_val + 2, by iomega, by iomega, by omega, by iomega,
-          max_child_right R xs' _ _ _ xl xr' Hxl Hxr' (Hr1.1 (by iomega)), by iomega⟩
+        exact ⟨2 * sint.nat root_val + 2, heap_nat_eq _ _ kc2, kc2, Or.inr rfl, hrc2,
+          max_child_right R xs' _ _ _ xl xr' Hxl Hxr' (Hr1.1 (by omega)), kar⟩
       · -- the left child is not smaller
         wp_join_done
         iexists _
         iframe
         ipureintro
-        exact ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega,
-          max_child_left R xs' _ _ _ xl xr' Hxl Hxr' (fun h => Hif (by have := Hr1.2 h; iomega)),
-          by iomega⟩
+        exact ⟨2 * sint.nat root_val + 1, heap_nat_eq _ _ kc1, kc1, Or.inl rfl, hrc,
+          max_child_left R xs' _ _ _ xl xr' Hxl Hxr' (fun h => Hif (by have := Hr1.2 h; omega)),
+          kal⟩
     · -- the right child is out of bounds: only the left child
       iexists _
       iframe
       ipureintro
-      exact ⟨2 * sint.nat root_val + 1, by iomega, by iomega, by omega, by iomega,
-        max_child_only R xs' _ _ _ (by iomega), by iomega⟩
-    clear Hr2 Halr Har Hal Hchild Hxl xl
+      exact ⟨2 * sint.nat root_val + 1, heap_nat_eq _ _ kc1, kc1, Or.inl rfl, hrc,
+        max_child_only R xs' _ _ _ (by omega), kal⟩
+    clear Hr2 Halr Har Hal Hchild Hxl xl kc1 kal kc2 kalr kar kxl
     obtain ⟨cN, hcN, hcZ, hcsel, hcH, Hmax, hcidx⟩ := Hsel
-    obtain ⟨xrt, Hxrt⟩ := list_lookup_lt xs' (sint.nat a + sint.nat root_val) (by omega)
-    obtain ⟨xc, Hxc⟩ := list_lookup_lt xs' (sint.nat a + cN) (by omega)
-    load_at' Hxrt
-    load_at' Hxc
+    have hcL : sint.nat a + cN < xs'.length := Nat.lt_of_lt_of_le (Nat.add_lt_add_left hcH _) hHlen
+    have kxc := heap_idx _ _ _ _ hcidx hdl hcL
+    obtain ⟨xrt, Hxrt⟩ := list_lookup_lt xs' (sint.nat a + sint.nat root_val) hrtL
+    obtain ⟨xc, Hxc⟩ := list_lookup_lt xs' (sint.nat a + cN) hcL
+    heap_load_k Hxrt kxrt
+    heap_load_k Hxc kxc
     wp_apply Hcmp with %r2 %Hr2'
     by_cases hlt : sint.Z r2 < sint.Z (W64 0)
     · -- the root is smaller than the child: swap and continue
       simp only [decide_eq_true hlt, Bool.not_true]
       wp_auto
-      load_at' Hxc
-      load_at' Hxrt
-      hslice_index_if'
+      heap_load_k Hxc kxc
+      heap_load_k Hxrt kxrt
+      heap_slice_index_k kxrt
       wp_pures
       wp_apply wp_store_slice_index (t := Et) data _ xs' xc $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; constructor <;> iomega
+      · iframe Hxs; ipureintro; exact kxrt.2.2
       rw [hridx]
-      hslice_index_if'
+      heap_slice_index_k kxc
       wp_pures
       wp_apply wp_store_slice_index (t := Et) data _ (xs'.set (sint.nat a + sint.nat root_val) xc) xrt $$ [Hxs]
         with Hxs
-      · iframe Hxs; ipureintro; refine ⟨by iomega, ?_⟩; rw [List.length_set]; iomega
-      rw [hcidx]
+      · iframe Hxs; ipureintro; refine ⟨kxc.2.2.1, ?_⟩; rw [List.length_set]; exact kxc.2.2.2
+      rw [kxc.2.1]
       wp_for_post
       iframe
       iexists _, _
       iframe
       ipureintro
       rw [hcN]
-      have Hlt' : R xrt xc := Hr2'.1 (by iomega)
+      have Hlt' : R xrt xc := Hr2'.1 (by omega)
       have Hstep := sift_inv_step R xs' (sint.nat a) (sint.nat lo) (sint.nat hi) (sint.nat root_val)
-        cN xrt xc (by iomega) hrH hcsel hcH hHlen Hxrt Hxc Hlt'
+        cN xrt xc hLR hrH hcsel hcH hHlen Hxrt Hxc Hlt'
         (fun c' xc' h1 h2 h3 => Hmax c' xc xc' h1 h2 Hxc h3) He Hp
-      refine ⟨HPerm1.trans (swap_perm xs' _ _ xc xrt Hxc Hxrt), ⟨by iomega, by iomega⟩, ?_,
-        Hstep.1, Hstep.2, ?_⟩
-      · exact seg_sorted_swap R xs' _ _ _ _ _ xc xrt ⟨by omega, by omega⟩ ⟨by omega, by omega⟩
-          (by iomega) (by iomega) Hxc Hxrt HSeg1
+      have hAc : sint.nat a ≤ sint.nat a + cN := Nat.le_add_right _ _
+      have hAr : sint.nat a ≤ sint.nat a + sint.nat root_val := Nat.le_add_right _ _
+      have hrj : sint.nat a + sint.nat root_val < sint.nat a + sint.nat hi :=
+        Nat.add_lt_add_left hrH _
+      have hcj : sint.nat a + cN < sint.nat a + sint.nat hi := Nat.add_lt_add_left hcH _
+      refine ⟨HPerm1.trans (swap_perm xs' _ _ xc xrt Hxc Hxrt), heap_new_root_bounds clo chi croot
+          hcZ hcsel hcH hLR, ?_, Hstep.1, Hstep.2, ?_⟩
+      · exact seg_sorted_swap R xs' _ _ _ _ _ xc xrt ⟨hAc, hcj⟩ ⟨hAr, hrj⟩
+          hHB hBL Hxc Hxrt HSeg1
       · exact outside_same_trans _ _ _ _ _ Hout
-          (outside_same_swap xs' _ _ xc xrt _ _ ⟨by omega, by iomega⟩ ⟨by omega, by iomega⟩)
+          (outside_same_swap xs' _ _ xc xrt _ _ ⟨hAc, Nat.lt_of_lt_of_le hcj hHB⟩
+            ⟨hAr, Nat.lt_of_lt_of_le hrj hHB⟩)
     · -- the root dominates its children: return
       simp only [decide_eq_false hlt, Bool.not_false]
       wp_auto
@@ -501,7 +590,7 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
       refine ⟨HPerm1, HSeg1, ?_, Hout⟩
       exact sift_inv_close R xs' _ _ _ _ _ He (fun c' x1 x2 hc' hc'H h1 h2 => by
         rw [Hxrt] at h1; cases h1
-        have h3 : ¬ R xrt xc := fun h => hlt (by have := Hr2'.2 h; iomega)
+        have h3 : ¬ R xrt xc := fun h => hlt (by have := Hr2'.2 h; omega)
         exact notR_trans R x2 xc xrt h3 (Hmax c' xc x2 hc' hc'H Hxc h2))
 
 theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func.t)
@@ -521,7 +610,6 @@ theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func
   iapply HΦ
   iframe
 
-set_option maxHeartbeats 300000 in
 theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
@@ -538,10 +626,10 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
   wp_start as H
   iNamed H
   wp_auto
-  have hn : sint.Z (b - a) = sint.Z b - sint.Z a := by hword
-  have hnn : sint.nat (b - a) = sint.nat b - sint.nat a := by hword
+  have hn : sint.Z (b - a) = sint.Z b - sint.Z a := by word
+  have hnn : sint.nat (b - a) = sint.nat b - sint.nat a := by word
   have hi0 : sint.Z (BitVec.sdiv (b - a - W64 1) (W64 2)) = (sint.Z b - sint.Z a - 1) / 2 := by
-    rw [sdiv2_nonneg _ (by hword)]; hword
+    rw [sdiv2_nonneg _ (by word)]; word
   -- the outer (heapify) loop
   ihave HI1 : (∃ (i_val : w64) (xs' : List E),
       "i" ∷ i_ptr ↦ i_val ∗
@@ -555,30 +643,30 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
   · iexists _, xs
     iframe
     ipureintro
-    refine ⟨⟨by hword, by hword⟩, List.Perm.refl _, heap_seg_vacuous R _ _ _ _ _ (by hword), ?_,
+    refine ⟨⟨by word, by word⟩, List.Perm.refl _, heap_seg_vacuous R _ _ _ _ _ (by word), ?_,
       outside_same_refl _ _ _⟩
     intro i j xi xj Hij _ _; omega
   wp_for HI1
   wp_if_destruct
   · -- sift down from `i`
-    have e1 : sint.nat (i_val + W64 1) = sint.nat i_val + 1 := by hword
+    have e1 : sint.nat (i_val + W64 1) = sint.nat i_val + 1 := by word
     rw [e1] at Heap1
     have hl1 := HPerm1.length_eq
     wp_apply wp_siftDownCmpFunc R data i_val (b - a) a b cmp_code xs' $$ [Hxs]
       with %xs'' ⟨Hxs, %HPermPost, %HSegPost, %HeapPost, %HoutPost⟩
     · iframe Hxs; iframe #; ipureintro
-      exact ⟨⟨by hword, by hword, by hword, by hword, by hword, by hword⟩, HSeg1, Heap1⟩
+      exact ⟨⟨by word, by word, by word, by word, by word, by word⟩, HSeg1, Heap1⟩
     wp_for_post
     iframe
     iexists (i_val - W64 1), xs''
     iframe
     ipureintro
-    have e2 : sint.nat (i_val - W64 1 + W64 1) = sint.nat i_val := by hword
+    have e2 : sint.nat (i_val - W64 1 + W64 1) = sint.nat i_val := by word
     rw [e2]
-    exact ⟨⟨by hword, by hword⟩, HPerm1.trans HPermPost, HeapPost, HSegPost,
+    exact ⟨⟨by word, by word⟩, HPerm1.trans HPermPost, HeapPost, HSegPost,
       outside_same_trans _ _ _ _ _ Hout1 HoutPost⟩
   · -- the heap is built
-    have e1 : sint.nat (i_val + W64 1) = 0 := by hword
+    have e1 : sint.nat (i_val + W64 1) = 0 := by word
     rw [e1] at Heap1
     have hl1 := HPerm1.length_eq
     -- the sorting loop
@@ -594,39 +682,39 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
     · iexists _, xs'
       iframe
       ipureintro
-      have e3 : sint.nat (b - a - W64 1 + W64 1) = sint.nat (b - a) := by hword
-      have e4 : sint.nat a + sint.nat (b - a - W64 1) + 1 = sint.nat a + sint.nat (b - a) := by hword
+      have e3 : sint.nat (b - a - W64 1 + W64 1) = sint.nat (b - a) := by word
+      have e4 : sint.nat a + sint.nat (b - a - W64 1) + 1 = sint.nat a + sint.nat (b - a) := by word
       rw [e3, e4]
-      exact ⟨⟨by hword, by hword⟩, HPerm1, Heap1, HSeg1, Hout1⟩
+      exact ⟨⟨by word, by word⟩, HPerm1, Heap1, HSeg1, Hout1⟩
     wp_for HI2
     have hl2 := HPerm2.length_eq
     wp_if_destruct
     · ihave %Hlen := own_slice_len _ _ _ $$ Hxs
-      obtain ⟨xi, Hxi⟩ := list_lookup_lt xs' (sint.nat a + sint.nat i_val) (by hword)
-      obtain ⟨x0, Hx0⟩ := list_lookup_lt xs' (sint.nat a) (by hword)
-      load_at Hxi
-      load_at Hx0
-      hslice_index_if
+      obtain ⟨xi, Hxi⟩ := list_lookup_lt xs' (sint.nat a + sint.nat i_val) (by word)
+      obtain ⟨x0, Hx0⟩ := list_lookup_lt xs' (sint.nat a) (by word)
+      heap_load_atw Hxi
+      heap_load_atw Hx0
+      rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]
       wp_pures
       wp_apply wp_store_slice_index (t := Et) data _ xs' xi $$ [Hxs] with Hxs
-      · iframe Hxs; ipureintro; constructor <;> hword
-      hslice_index_if
+      · iframe Hxs; ipureintro; constructor <;> word
+      rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]
       wp_pures
       wp_apply wp_store_slice_index (t := Et) data _ (xs'.set (sint.Z a).toNat xi) x0 $$ [Hxs]
         with Hxs
-      · iframe Hxs; ipureintro; refine ⟨by hword, ?_⟩; rw [List.length_set]; hword
-      rw [show (sint.Z (a + i_val)).toNat = sint.nat a + sint.nat i_val by hword,
+      · iframe Hxs; ipureintro; refine ⟨by word, ?_⟩; rw [List.length_set]; word
+      rw [show (sint.Z (a + i_val)).toNat = sint.nat a + sint.nat i_val by word,
         show (sint.Z a).toNat = sint.nat a from rfl]
       by_cases hz : sint.Z i_val = 0
       · -- `i = 0`: the swap is trivial
-        have hz' : i_val = W64 0 := by hword
+        have hz' : i_val = W64 0 := BitVec.toInt_inj.mp (hz.trans (by decide))
         subst hz'
         have e0 : sint.nat (W64 0) = 0 := by decide
         rw [e0, Nat.add_zero] at Hxi
         rw [Hx0] at Hxi; cases Hxi
-        rw [e0, Nat.add_zero, list_insert_id (list_lookup_insert_eq _ (by hword)), list_insert_id Hx0]
+        rw [e0, Nat.add_zero, list_insert_id (list_lookup_insert_eq _ (by word)), list_insert_id Hx0]
         wp_apply wp_siftDownCmpFunc_Trivial R data a b cmp_code xs' $$ [Hxs] with Hxs
-        · iframe Hxs; iframe #; ipureintro; exact ⟨by hword, by hword, by hword⟩
+        · iframe Hxs; iframe #; ipureintro; exact ⟨by word, by word, by word⟩
         wp_for_post
         iframe
         iexists (W64 0 - W64 1), xs'
@@ -636,36 +724,36 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
         have e6 : sint.nat (W64 0 - W64 1) = 0 := by decide
         rw [e5, e6]
         rw [e0] at HSeg2
-        exact ⟨⟨by hword, by hword⟩, HPerm2, heap_seg_vacuous R _ _ _ _ _ (by omega), HSeg2, Hout2⟩
+        exact ⟨⟨by word, by word⟩, HPerm2, heap_seg_vacuous R _ _ _ _ _ (by omega), HSeg2, Hout2⟩
       · -- `i ≥ 1`: sift the new root down in `[0, i)`
-        have e1 : sint.nat (i_val + W64 1) = sint.nat i_val + 1 := by hword
+        have e1 : sint.nat (i_val + W64 1) = sint.nat i_val + 1 := by word
         rw [e1] at Heap2
         wp_apply wp_siftDownCmpFunc R data (W64 0) i_val a b cmp_code
           ((xs'.set (sint.nat a) xi).set (sint.nat a + sint.nat i_val) x0) $$ [Hxs]
           with %xs3 ⟨Hxs, %HP, %HS, %HH, %HO⟩
         · iframe Hxs; iframe #; ipureintro
-          refine ⟨⟨by hword, by hword, by hword, by hword, by rw [List.length_set, List.length_set]; hword,
-            by rw [List.length_set, List.length_set]; hword⟩, ?_, ?_⟩
-          · exact heap_pop_seg R xs' _ _ _ x0 xi Heap2 Hx0 Hxi (by hword) (by hword) HSeg2
+          refine ⟨⟨by word, by word, by word, by word, by rw [List.length_set, List.length_set]; word,
+            by rw [List.length_set, List.length_set]; word⟩, ?_, ?_⟩
+          · exact heap_pop_seg R xs' _ _ _ x0 xi Heap2 Hx0 Hxi (by word) (by word) HSeg2
           · rw [show sint.nat (W64 0) + 1 = 1 from rfl]
-            exact heap_pop_heap R xs' _ _ _ x0 xi (by hword) Heap2
+            exact heap_pop_heap R xs' _ _ _ x0 xi (by word) Heap2
         wp_for_post
         iframe
         iexists (i_val - W64 1), xs3
         iframe
         ipureintro
-        have e2 : sint.nat (i_val - W64 1 + W64 1) = sint.nat i_val := by hword
-        have e3 : sint.nat a + sint.nat (i_val - W64 1) + 1 = sint.nat a + sint.nat i_val := by hword
+        have e2 : sint.nat (i_val - W64 1 + W64 1) = sint.nat i_val := by word
+        have e3 : sint.nat a + sint.nat (i_val - W64 1) + 1 = sint.nat a + sint.nat i_val := by word
         rw [e2, e3]
-        refine ⟨⟨by hword, by hword⟩,
+        refine ⟨⟨by word, by word⟩,
           HPerm2.trans ((swap_perm xs' _ _ xi x0 Hxi Hx0).trans HP), HH, HS, ?_⟩
         exact outside_same_trans _ _ _ _ _ Hout2 (outside_same_trans _ _ _ _ _
-          (outside_same_swap xs' _ _ xi x0 _ _ ⟨by omega, by hword⟩ ⟨by omega, by hword⟩) HO)
+          (outside_same_swap xs' _ _ xi x0 _ _ ⟨by omega, by word⟩ ⟨by omega, by word⟩) HO)
     · -- done
       iapply HΦ
       iframe
       ipureintro
-      have e0 : sint.nat i_val = 0 := by hword
+      have e0 : sint.nat i_val = 0 := by word
       rw [e0] at HSeg2
       refine ⟨HPerm2, ?_, Hout2⟩
       intro i j xi xj Hij hxi hxj

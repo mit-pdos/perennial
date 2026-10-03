@@ -32,6 +32,14 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 
 /-! ### Pure helper lemmas -/
 
+-- (declared before the proofs: a command such as `structure`, `macro` or `notation`
+-- declared after asynchronously elaborated proofs waits for them)
+local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
+
+structure workq_names where
+  docs : List go_string
+  task_gn : GName
+
 theorem map_seq_size {A : Type} (start : Nat) (xs : List A) :
     gmap.size (gmap.map_seq start xs : gmap Nat A) = xs.length := by
   induction xs generalizing start with
@@ -163,7 +171,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : workq.Assumptions]
 
-local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 
 instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg := define_is_pkg_init iprop(True)
 instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg := build_get_is_pkg_init_wf
@@ -185,17 +192,12 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
 
 end init
 
-structure workq_names where
-  docs : List go_string
-  task_gn : GName
-
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
 variable [sem : go.Semantics] [package_sem : workq.Assumptions]
 
-local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 
 def own_task (γ : workq_names) (doc : go_string) : IProp GF :=
   iprop(∃ i : Nat, i ↪[γ.task_gn] (some doc))

@@ -190,7 +190,17 @@ instance is_error_tree_persistent (S : error.t → Prop) (T' : Type) [ZeroVal T'
     Persistent (is_error_tree (GF := GF) S T' T) := by
   unfold is_error_tree; infer_instance
 
-set_option maxHeartbeats 1000000 in
+/-- `P` under an opaque name, to keep the Löb induction hypothesis of `wp_asType`
+(which contains `▷`s) away from the later stripping that the proof mode does for
+every hypothesis mentioning `▷` at every symbolic execution step. -/
+def asType_hide (P : IProp GF) : IProp GF := P
+
+omit ffi [ffi_interp ffi] [ffi_semantics ext ffi] go_gctx hG sem package_sem in
+theorem asType_hide_intro {P Q : IProp GF} : (□ asType_hide P -∗ Q) ⊢ (□ P -∗ Q) := .rfl
+
+omit ffi [ffi_interp ffi] [ffi_semantics ext ffi] go_gctx hG sem package_sem in
+theorem asType_hide_elim {P Q : IProp GF} : (□ P -∗ Q) ⊢ (□ asType_hide P -∗ Q) := .rfl
+
 /-- Spec of the recursive helper `asType(err, ppe)`. `ppe` points to the
 lazily allocated `*E` target passed to `As` methods. (New in Lean.) -/
 theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
@@ -203,6 +213,9 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
     {{ (e : T') (found : Bool) (pe' : loc), RET (PairV #e #found);
         ppe ↦ pe' ∗ (⌜pe' = loc.null⌝ ∨ ∃ v : T', pe' ↦ v) }} := by
   iloeb as IH generalizing %err %pe
+  irevert IH
+  iapply asType_hide_intro
+  iintro #IH
   wp_start as H
   iNamed H
   wp_alloc r1 as Hr1
@@ -241,6 +254,14 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
       wp_for_post
       iapply HΦ
       iframe
+    wp_store; wp_pures; wp_store; wp_pures; wp_load; wp_pures
+    -- the `As` statement, joined before the `Unwrap` switch: it either returns
+    -- or falls through with an updated `*ppe`
+    wp_join (Q := fun v => iprop(
+        (⌜v = execute_val⌝ ∗ ∃ q : loc, "ppe" ∷ ppe_ptr ↦ ppe ∗ "err" ∷ err_ptr ↦ interface.ok ii ∗
+          "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = loc.null⌝ ∨ ∃ v : T', q ↦ v)) ∨
+        (∃ (e : T') (q : loc), ⌜v = return_val (PairV #e #true)⌝ ∗ ppe ↦ q ∗
+          (⌜q = loc.null⌝ ∨ ∃ v : T', q ↦ v)))) at next with [ppe err Hppe Hpe]
     wp_auto
     have hu : underlying (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])]) =
         go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])] :=
@@ -261,12 +282,11 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
         cases b
         case true =>
           wp_auto
-          wp_for_post
-          iapply HΦ
-          iframe
+          iright; iexists _, _; iframe; ipureintro; rfl
         wp_auto
         ihave Hpe : (⌜«$r0_ptr» = loc.null⌝ ∨ ∃ v : T', «$r0_ptr» ↦ v : IProp GF) $$ [Hv]
         · iright; iexists _; iexact Hv
+        ileft; iframe; ipureintro; rfl
       case' neg =>
         icases Hpe with (%h | ⟨%v, Hv⟩)
         · exact absurd h hnull
@@ -276,110 +296,122 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
         cases b
         case true =>
           wp_auto
-          wp_for_post
-          iapply HΦ
-          iframe
+          iright; iexists _, _; iframe; ipureintro; rfl
         wp_auto
         ihave Hpe : (⌜pe' = loc.null⌝ ∨ ∃ v : T', pe' ↦ v : IProp GF) $$ [Hv]
         · iright; iexists _; iexact Hv
+        ileft; iframe; ipureintro; rfl
     case' false =>
       simp only [Bool.false_eq_true, ↓reduceIte]
       wp_auto
-    all_goals
-      have hu1 : underlying (go.InterfaceType
-          [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])]) =
-          go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])] :=
-        go.is_underlying
-      have hu2 : underlying (go.InterfaceType
-          [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])]) =
-          go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])] :=
-        go.is_underlying
-      cases hU : go.type_set_contains ii.ty
-        (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])])
+      ileft; iframe; ipureintro; rfl
+    iintro HQ
+    icases HQ with (⟨%Hv, %pe', ppe, err, Hppe, Hpe⟩ | ⟨%e0, %q, %Hv, Hppe, Hpe⟩)
+    rotate_left
+    · subst Hv
+      wp_auto
+      wp_for_post
+      iapply HΦ
+      iframe
+    subst Hv
+    wp_auto
+    have hu1 : underlying (go.InterfaceType
+        [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])]) =
+        go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])] :=
+      go.is_underlying
+    have hu2 : underlying (go.InterfaceType
+        [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])]) =
+        go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])] :=
+      go.is_underlying
+    cases hU : go.type_set_contains ii.ty
+      (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])])
+    case true =>
+      simp only [go.type_set_contains, hu1, go.type_set_elems_contains, go.type_set_elem_contains,
+        List.all_cons, List.all_nil, Bool.and_true, decide_eq_true_eq] at hU
+      simp only [hU, ↓reduceIte]
+      wp_auto
+      wp_apply HUnwrap as %e' %HSe'
+      cases e' with
+      | nil =>
+        wp_auto
+        wp_for_post
+        iapply HΦ
+        iframe
+      | ok ii' =>
+        wp_auto
+        wp_for_post
+        iframe
+        iexists _, _
+        iframe
+        ipureintro
+        exact HSe'
+    case false =>
+      simp only [go.type_set_contains, hu1, go.type_set_elems_contains, go.type_set_elem_contains,
+        List.all_cons, List.all_nil, Bool.and_true, decide_eq_false_iff_not] at hU
+      simp only [Bool.false_eq_true, ↓reduceIte]
+      wp_auto
+      cases hU2 : go.type_set_contains ii.ty
+        (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])])
       case true =>
-        simp only [go.type_set_contains, hu1, go.type_set_elems_contains, go.type_set_elem_contains,
-          List.all_cons, List.all_nil, Bool.and_true, decide_eq_true_eq] at hU
+        simp only [go.type_set_contains, hu2, go.type_set_elems_contains, go.type_set_elem_contains,
+          List.all_cons, List.all_nil, Bool.and_true, decide_eq_true_eq] at hU2
         simp only [hU, ↓reduceIte]
+        simp only [hU2, ↓reduceIte]
         wp_auto
-        wp_apply HUnwrap as %e' %HSe'
-        cases e' with
-        | nil =>
-          wp_auto
-          wp_for_post
-          iapply HΦ
+        wp_apply HUnwrap as %s %dq %es ⟨Hs, %Hes⟩
+        ihave %Hlen := own_slice_len _ _ _ $$ Hs
+        ihave HI2 : (∃ (j : w64) (q : loc) (e2 : error.t),
+            "i" ∷ i_ptr ↦ j ∗ "Hs" ∷ s ↦*{dq} es ∗ "err" ∷ err_ptr ↦ e2 ∗
+            "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = loc.null⌝ ∨ ∃ v : T', q ↦ v) ∗
+            "%Hj" ∷ ⌜0 ≤ sint.Z j ∧ sint.Z j ≤ sint.Z s.len⌝ : IProp GF) $$ [i Hs err Hppe Hpe]
+        · iexists W64 0, _, _
           iframe
-        | ok ii' =>
-          wp_auto
-          wp_for_post
-          iframe
-          iexists _, _
-          iframe
-          ipureintro
-          exact HSe'
-      case false =>
-        simp only [go.type_set_contains, hu1, go.type_set_elems_contains, go.type_set_elem_contains,
-          List.all_cons, List.all_nil, Bool.and_true, decide_eq_false_iff_not] at hU
-        simp only [Bool.false_eq_true, ↓reduceIte]
-        wp_auto
-        cases hU2 : go.type_set_contains ii.ty
-          (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])])
-        case true =>
-          simp only [go.type_set_contains, hu2, go.type_set_elems_contains, go.type_set_elem_contains,
-            List.all_cons, List.all_nil, Bool.and_true, decide_eq_true_eq] at hU2
-          simp only [hU, ↓reduceIte]
-          simp only [hU2, ↓reduceIte]
-          wp_auto
-          wp_apply HUnwrap as %s %dq %es ⟨Hs, %Hes⟩
-          ihave %Hlen := own_slice_len _ _ _ $$ Hs
-          ihave HI2 : (∃ (j : w64) (q : loc) (e2 : error.t),
-              "i" ∷ i_ptr ↦ j ∗ "Hs" ∷ s ↦*{dq} es ∗ "err" ∷ err_ptr ↦ e2 ∗
-              "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = loc.null⌝ ∨ ∃ v : T', q ↦ v) ∗
-              "%Hj" ∷ ⌜0 ≤ sint.Z j ∧ sint.Z j ≤ sint.Z s.len⌝ : IProp GF) $$ [i Hs err Hppe Hpe]
-          · iexists W64 0, _, _
+          ipureintro; word
+        wp_for HI2
+        wp_if_destruct
+        · simp only [Hj.1, Hif, _root_.and_self, ↓reduceIte]
+          list_elem es (sint.nat j) as e2'
+          wp_apply wp_load_slice_index s (sint.Z j) es dq e2' Hj.1 $$ [Hs] with Hs
+          · iframe; ipureintro; exact He2'_lookup
+          have HSe2' : S e2' := Hes e2' (List.mem_of_getElem? He2'_lookup)
+          cases e2' with
+          | nil =>
+            wp_auto
+            wp_for_post
+            iframe
+            iexists j + W64 1, _, _
             iframe
             ipureintro; word
-          wp_for HI2
-          wp_if_destruct
-          · simp only [Hj.1, Hif, _root_.and_self, ↓reduceIte]
-            list_elem es (sint.nat j) as e2'
-            wp_apply wp_load_slice_index s (sint.Z j) es dq e2' Hj.1 $$ [Hs] with Hs
-            · iframe; ipureintro; exact He2'_lookup
-            have HSe2' : S e2' := Hes e2' (List.mem_of_getElem? He2'_lookup)
-            cases e2' with
-            | nil =>
+          | ok ii2 =>
+            irevert IH
+            iapply asType_hide_elim
+            iintro #IH
+            wp_auto
+            wp_apply IH $$ %(interface.ok ii2) %q [Hppe Hpe] as %x0 %ok0 %q' ⟨Hppe, Hpe⟩
+            · iframe; iframe #; ipureintro; exact HSe2'
+            cases ok0
+            case true =>
+              wp_auto
+              wp_for_post
+              wp_for_post
+              iapply HΦ
+              iframe
+            case false =>
               wp_auto
               wp_for_post
               iframe
               iexists j + W64 1, _, _
               iframe
               ipureintro; word
-            | ok ii2 =>
-              wp_auto
-              wp_apply IH $$ %(interface.ok ii2) %q [Hppe Hpe] as %x0 %ok0 %q' ⟨Hppe, Hpe⟩
-              · iframe; iframe #; ipureintro; exact HSe2'
-              cases ok0
-              case true =>
-                wp_auto
-                wp_for_post
-                wp_for_post
-                iapply HΦ
-                iframe
-              case false =>
-                wp_auto
-                wp_for_post
-                iframe
-                iexists j + W64 1, _, _
-                iframe
-                ipureintro; word
-          · wp_for_post
-            iapply HΦ
-            iframe
-        case false =>
-          simp only [Bool.false_eq_true, ↓reduceIte]
-          wp_auto
-          wp_for_post
+        · wp_for_post
           iapply HΦ
           iframe
+      case false =>
+        simp only [Bool.false_eq_true, ↓reduceIte]
+        wp_auto
+        wp_for_post
+        iapply HΦ
+        iframe
 
 /-- Lean deviation from Rocq: new parameter `S` and precondition
 `is_error_tree S T' T ∗ ⌜S err⌝` (Rocq: `True`); see the section comment. -/

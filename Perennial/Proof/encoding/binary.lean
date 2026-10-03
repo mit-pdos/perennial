@@ -3,7 +3,7 @@ Port of `new/proof/encoding/binary.v`: `encoding/binary` little-endian
 `Uint64`/`PutUint64`/`Uint32`/`PutUint32`.
 -/
 import Perennial.Proof.sync
-import Perennial.Proof.slices
+import Perennial.Proof.slices_proof.slices_init
 import Perennial.Proof.math
 import Perennial.Proof.io
 import Perennial.Proof.errors

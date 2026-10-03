@@ -18,17 +18,21 @@ def blen8 (i : Nat) : Nat :=
   if i < 1 then 0 else if i < 2 then 1 else if i < 4 then 2 else if i < 8 then 3 else
   if i < 16 then 4 else if i < 32 then 5 else if i < 64 then 6 else if i < 128 then 7 else 8
 
-set_option maxRecDepth 100000 in
+theorem len8tab_lookup {s : go_string} (h : s = (List.range 256).map (fun i => W8 (blen8 i))) :
+    ∀ i < 256, s[i]? = some (W8 (blen8 i)) := by
+  intro i hi; subst h; simp [hi]
+
+-- (one list comparison instead of 256 lookups)
+set_option maxRecDepth 10000 in
 theorem len8tab_exact [ffi_syntax] [GoGlobalContext] :
     ∃ s : go_string, len8tab = #s ∧ s.length = 256 ∧
       ∀ i < 256, s[i]? = some (W8 (blen8 i)) :=
-  ⟨_, rfl, rfl, by decide⟩
+  ⟨_, rfl, rfl, len8tab_lookup (by decide)⟩
 
+set_option maxRecDepth 10000 in
 theorem blen8_spec (i : Nat) (h : i < 256) :
     i < 2 ^ blen8 i ∧ (i = 0 ∨ 2 ^ blen8 i ≤ 2 * i) ∧ blen8 i ≤ 8 := by
-  unfold blen8
-  repeat' split
-  all_goals (simp only [Nat.reducePow]; omega)
+  revert i; decide
 
 theorem len_fin (x l : w64) (n i : Nat) (hi : i = uint.nat x / 2 ^ n) (hi256 : i < 256)
     (hn : n ≤ 56) (hpos : n = 0 ∨ 2 ^ n ≤ uint.nat x) (hl : uint.nat l = n + blen8 i) :
@@ -69,10 +73,33 @@ theorem len_fin' (x l : w64) (b : w8) (n i : Nat) (heq : W8 (blen8 i) = b)
   refine len_fin x l n i hi hi256 hn hpos ?_
   rw [hl, ← heq]; word
 
-set_option hygiene false in
-/-- Finish a branch of `Len64` that returned `n + len8tab[...]`. -/
-macro "len_finish " n:num : tactic =>
-  `(tactic| (refine len_fin' _ _ _ $n _ heq ?_ (by decide) ?_ ?_ ?_ <;> word))
+/-- The state of `Len64` after shifting `x` (initially `X`) right by `n` bits: `x < 2 ^ b`. -/
+def len_inv (X b : Nat) (x n : w64) : Prop :=
+  uint.nat x = X / 2 ^ uint.nat n ∧ uint.nat x < 2 ^ b ∧ uint.nat n + b ≤ 64 ∧
+    (uint.nat n = 0 ∨ 2 ^ uint.nat n ≤ X)
+
+theorem len_inv_init (X : Nat) (x : w64) (hX : uint.nat x = X) :
+    len_inv X 64 x (zero_val w64) := by
+  have := x.isLt
+  simp only [len_inv, zero_val, ZeroVal.zero_val_def]
+  refine ⟨?_, ?_, ?_, Or.inl ?_⟩ <;> simp [uint.nat] at * <;> omega
+
+theorem len_inv_yes (X s : Nat) (x n x' n' : w64) (h : len_inv X (2 * s) x n)
+    (hge : 2 ^ s ≤ uint.nat x) (hx' : uint.nat x' = uint.nat x / 2 ^ s)
+    (hn' : uint.nat n' = uint.nat n + s) : len_inv X s x' n' := by
+  obtain ⟨h1, h2, h3, h4⟩ := h
+  refine ⟨?_, ?_, by omega, Or.inr ?_⟩
+  · rw [hx', hn', h1, Nat.div_div_eq_div_mul, ← Nat.pow_add]
+  · rw [hx', Nat.div_lt_iff_lt_mul (Nat.two_pow_pos s), ← Nat.pow_add,
+      show s + s = 2 * s by omega]
+    exact h2
+  · rw [hn', Nat.pow_add, Nat.mul_comm]
+    rw [h1] at hge
+    exact (Nat.le_div_iff_mul_le (Nat.two_pow_pos _)).1 hge
+
+theorem len_inv_no (X s : Nat) (x n : w64) (h : len_inv X (2 * s) x n)
+    (hlt : uint.nat x < 2 ^ s) : len_inv X s x n :=
+  ⟨h.1, hlt, by have := h.2.2.1; omega, h.2.2.2⟩
 
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
@@ -81,7 +108,6 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : math.bits.Assumptions]
 
-set_option maxRecDepth 100000 in
 theorem wp_Len64_exact (x : w64) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.math.bits }}
       (App (Val (@! Len64)) (Val #x))
@@ -92,25 +118,36 @@ theorem wp_Len64_exact (x : w64) :
   rw [hs]
   clear hs
   wp_auto
-  wp_if_destruct <;> wp_if_destruct <;> wp_if_destruct
-  all_goals wp_pures
-  all_goals split
-  all_goals rename_i heq
-  all_goals (first
-    | (rw [htab _ (by word)] at heq)
-    | (have := (htab _ (by word)); rw [this] at heq))
-  all_goals (try simp only [Option.some.injEq] at heq)
-  all_goals (try (exfalso; exact heq _ rfl))
-  all_goals (wp_auto; wp_end; ipureintro; (try simp only [zero_val, ZeroVal.zero_val_def]))
-  -- the branches, in order, shifted `x` by 32+16+8, 32+16, 32+8, 32, 16+8, 16, 8, 0 bits
-  · len_finish 56
-  · len_finish 48
-  · len_finish 40
-  · len_finish 32
-  · len_finish 24
-  · len_finish 16
-  · len_finish 8
-  · len_finish 0
+  -- the three `if x >= 1<<k { x >>= k; n += k }` statements, joined at `len_inv`
+  wp_join iprop(∃ (x' n' : w64), "x" ∷ x_ptr ↦ x' ∗ "n" ∷ n_ptr ↦ n' ∗
+      "%Hinv" ∷ ⌜len_inv (uint.nat x) 32 x' n'⌝) with [x n] as ⟨%x1, %n1, x, n, %Hinv⟩
+  · iexists _, _; iframe; ipureintro
+    exact len_inv_yes _ 32 x (zero_val w64) _ _ (len_inv_init _ x rfl) (by word) (by word)
+      (by simp only [zero_val, ZeroVal.zero_val_def]; word)
+  · iexists _, _; iframe; ipureintro
+    exact len_inv_no _ 32 x _ (len_inv_init _ x rfl) (by word)
+  wp_join iprop(∃ (x' n' : w64), "x" ∷ x_ptr ↦ x' ∗ "n" ∷ n_ptr ↦ n' ∗
+      "%Hinv" ∷ ⌜len_inv (uint.nat x) 16 x' n'⌝) with [x n] as ⟨%x2, %n2, x, n, %Hinv⟩
+  · iexists _, _; iframe; ipureintro
+    exact len_inv_yes _ 16 x1 n1 _ _ Hinv (by word) (by word) (by have := Hinv.2.2.1; word)
+  · iexists _, _; iframe; ipureintro
+    exact len_inv_no _ 16 x1 n1 Hinv (by word)
+  wp_join iprop(∃ (x' n' : w64), "x" ∷ x_ptr ↦ x' ∗ "n" ∷ n_ptr ↦ n' ∗
+      "%Hinv" ∷ ⌜len_inv (uint.nat x) 8 x' n'⌝) with [x n] as ⟨%x3, %n3, x, n, %Hinv⟩
+  · iexists _, _; iframe; ipureintro
+    exact len_inv_yes _ 8 x2 n2 _ _ Hinv (by word) (by word) (by have := Hinv.2.2.1; word)
+  · iexists _, _; iframe; ipureintro
+    exact len_inv_no _ 8 x2 n2 Hinv (by word)
+  -- `return n + int(len8tab[x])`
+  obtain ⟨hi, hx3, hn3, hpos⟩ := Hinv
+  have hx3' : uint.nat x3 < 256 := hx3
+  have hidx : sint.nat (W64 (uint.Z (W8 (uint.Z x3)))) = uint.nat x3 := by word
+  rw [hidx, htab _ hx3']
+  wp_auto
+  wp_end
+  ipureintro
+  have := (blen8_spec _ hx3').2.2
+  exact len_fin' x _ _ (uint.nat n3) (uint.nat x3) rfl (by word) (by omega) hi hx3' hpos
 
 theorem wp_Len_exact (x : w64) :
     {{ is_pkg_init (PROP := IProp GF) pkg_id.math.bits }}

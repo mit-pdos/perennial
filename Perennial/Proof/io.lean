@@ -1,7 +1,7 @@
 /-
 Port of `new/proof/io.v`: package initialization of `io`.
 -/
-import Perennial.Proof.sync
+import Perennial.Proof.sync_proof.base
 import Perennial.Proof.errors
 import Perennial.Code.io
 import Perennial.GeneratedProof.io

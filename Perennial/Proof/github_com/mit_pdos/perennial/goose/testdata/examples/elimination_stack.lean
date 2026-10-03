@@ -47,6 +47,15 @@ end init
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
 
+-- (declared before the proofs: a command such as `structure`, `macro` or `notation`
+-- declared after asynchronously elaborated proofs waits for them)
+structure EliminationStack_names where
+  spec_gn : GName
+  ls_gn : GName
+  ch_gn : chan_names
+  s_gn : GName
+  r_gn : GName
+
 section locked_stack_proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
@@ -202,13 +211,6 @@ theorem wp_LockedStack__Pop (γ : GName) (s : loc) :
 end locked_stack_proof
 
 section elimination_stack_proof
-
-structure EliminationStack_names where
-  spec_gn : GName
-  ls_gn : GName
-  ch_gn : chan_names
-  s_gn : GName
-  r_gn : GName
 
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]

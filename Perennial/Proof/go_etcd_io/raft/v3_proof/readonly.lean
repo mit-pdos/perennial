@@ -51,6 +51,10 @@ open scoped gmap
 
 namespace go_etcd_io.raft.v3_proof.readonly
 
+-- (once, before the proofs: a notation declared after asynchronously elaborated
+-- proofs waits for them)
+local notation "raft" => pkg_id.go_etcd_io.raft.v3
+
 /-- Rocq `raft_names`. -/
 structure raft_names where
   mk ::
@@ -596,7 +600,6 @@ variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
-local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
 /-- Lean addition: `array_acc`, putting back the same element. -/
 theorem array_acc_same {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] (p : loc) (i : Int)
@@ -929,7 +932,6 @@ variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
-local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
 /-- Rocq `MsgReadIndex`. -/
 def MsgReadIndex : w32 := W32 15

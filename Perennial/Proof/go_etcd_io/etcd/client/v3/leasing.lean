@@ -99,6 +99,12 @@ instance get_is_pkg_init_wf_inst :
 
 end init
 
+-- (declared before the proofs: a command such as `structure`, `macro` or `notation`
+-- declared after asynchronously elaborated proofs waits for them)
+structure leasingKV_names where
+  etcd_gn : clientv3_names
+  entries_ready_gn : GName
+
 theorem seq_replicate_fmap {A : Type} (y n : Nat) (a : A) :
     (List.range' y n).map (fun _ => a) = List.replicate n a := by
   induction n generalizing y with
@@ -175,10 +181,6 @@ theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : loc) (γ : sync.
     isplitl [Htok]
     · iapply one $$ His Hinv Htok
     · iapply IH $$ Htoks
-
-structure leasingKV_names where
-  etcd_gn : clientv3_names
-  entries_ready_gn : GName
 
 def own_leaseKey (lk : leaseKey.t) (_γ : leasingKV_names) (_key : go_string) : IProp GF :=
   iprop(

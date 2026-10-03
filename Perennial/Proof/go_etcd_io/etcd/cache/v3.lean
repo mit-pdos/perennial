@@ -271,6 +271,50 @@ def own_store (s : loc) (γstore : store_names) («prefix» : go_string) : IProp
            is_etcd_kvs revision «prefix» (ordered_kvs_to_map s.2)))) ∗
   "_" ∷ True)
 
+-- (`own_Cache` and the `structure` below come before the proofs: the kernel check
+-- of a `structure` waits for the proofs elaborated asynchronously before it)
+def own_Cache (c_ptr : loc) : IProp GF :=
+  iprop(∃ (c : cache.v3.Cache.t) (γstore : store_names),
+    "c" ∷ c_ptr ↦ c ∗
+    "store" ∷ own_store c.store' γstore c.prefix')
+
+/-- Lean addition: specs of the methods that `Cache.Get` calls but that goose does
+not translate (`Perennial/Code/go_etcd_io/etcd/cache/v3.toml` does not list
+`Cache.WaitReady`, `Cache.validateGet`, `Cache.serverRevision`,
+`Cache.waitTillRevision` and `store.Get`, so `cache.v3.Assumptions` has no
+`MethodUnfold` for them and a call of one has no semantics). `wp_Cache__Get` takes
+them as a hypothesis instead of axioms. Each spec only asks for the cache's (or
+store's) representation predicate and gives it back, with an arbitrary result; the
+`Cache` methods are stated over `own_Cache`. -/
+structure Cache_Get_callee_specs : Prop where
+  wp_Cache__WaitReady : ∀ (c : loc) (ctx : interface.t),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
+      (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"WaitReady")) (Val #ctx))
+    {{ (err : error.t), RET #err; own_Cache c }}
+  wp_Cache__validateGet : ∀ (c : loc) (key : go_string) (op : client.v3.Op.t)
+      (req : RangeRequest.t),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c ∗ is_Op op (.Get req) }}
+      (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"validateGet")) (Val #key))
+        (Val #op))
+    {{ (pred : func.t) (err : error.t), RET (PairV #pred #err); own_Cache c }}
+  wp_Cache__serverRevision : ∀ (c : loc) (ctx : interface.t),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
+      (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"serverRevision")) (Val #ctx))
+    {{ (rev : w64) (err : error.t), RET (PairV #rev #err); own_Cache c }}
+  wp_Cache__waitTillRevision : ∀ (c : loc) (ctx : interface.t) (rev : w64),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
+      (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"waitTillRevision"))
+        (Val #ctx)) (Val #rev))
+    {{ (err : error.t), RET #err; own_Cache c }}
+  wp_store__Get : ∀ (s : loc) (γstore : store_names) («prefix» : go_string)
+      (start_sl end_sl : slice.t) (start_key end_key : List w8) (rev : w64),
+    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_store s γstore «prefix» ∗
+        start_sl ↦*□ start_key ∗ end_sl ↦*□ end_key }}
+      (App (App (App (Val (s @!! go.type.PointerType cache.v3.store @!! go!"Get")) (Val #start_sl))
+        (Val #end_sl)) (Val #rev))
+    {{ (kvs : slice.t) (latest_rev : w64) (err : error.t),
+        RET (PairV (PairV #kvs #latest_rev) #err); own_store s γstore «prefix» }}
+
 set_option maxHeartbeats 1600000 in
 theorem wp_store__getSnapshot (rev_lb : Nat) (s : loc) (γstore : store_names) (rev : w64)
     («prefix» : go_string) :
@@ -436,48 +480,6 @@ theorem wp_store__LatestRev (s : loc) (γstore : store_names) («prefix» : go_s
   wp_apply sync.wp_RWMutex__RUnlock $$ [$Hrlocked latest latest_tree history Hrev] as Hmu
   · inext; iexists snapshot, kvs_ordered, history; iframe # ∗
   wp_end
-
-def own_Cache (c_ptr : loc) : IProp GF :=
-  iprop(∃ (c : cache.v3.Cache.t) (γstore : store_names),
-    "c" ∷ c_ptr ↦ c ∗
-    "store" ∷ own_store c.store' γstore c.prefix')
-
-/-- Lean addition: specs of the methods that `Cache.Get` calls but that goose does
-not translate (`Perennial/Code/go_etcd_io/etcd/cache/v3.toml` does not list
-`Cache.WaitReady`, `Cache.validateGet`, `Cache.serverRevision`,
-`Cache.waitTillRevision` and `store.Get`, so `cache.v3.Assumptions` has no
-`MethodUnfold` for them and a call of one has no semantics). `wp_Cache__Get` takes
-them as a hypothesis instead of axioms. Each spec only asks for the cache's (or
-store's) representation predicate and gives it back, with an arbitrary result; the
-`Cache` methods are stated over `own_Cache`. -/
-structure Cache_Get_callee_specs : Prop where
-  wp_Cache__WaitReady : ∀ (c : loc) (ctx : interface.t),
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
-      (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"WaitReady")) (Val #ctx))
-    {{ (err : error.t), RET #err; own_Cache c }}
-  wp_Cache__validateGet : ∀ (c : loc) (key : go_string) (op : client.v3.Op.t)
-      (req : RangeRequest.t),
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c ∗ is_Op op (.Get req) }}
-      (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"validateGet")) (Val #key))
-        (Val #op))
-    {{ (pred : func.t) (err : error.t), RET (PairV #pred #err); own_Cache c }}
-  wp_Cache__serverRevision : ∀ (c : loc) (ctx : interface.t),
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
-      (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"serverRevision")) (Val #ctx))
-    {{ (rev : w64) (err : error.t), RET (PairV #rev #err); own_Cache c }}
-  wp_Cache__waitTillRevision : ∀ (c : loc) (ctx : interface.t) (rev : w64),
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_Cache c }}
-      (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"waitTillRevision"))
-        (Val #ctx)) (Val #rev))
-    {{ (err : error.t), RET #err; own_Cache c }}
-  wp_store__Get : ∀ (s : loc) (γstore : store_names) («prefix» : go_string)
-      (start_sl end_sl : slice.t) (start_key end_key : List w8) (rev : w64),
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ own_store s γstore «prefix» ∗
-        start_sl ↦*□ start_key ∗ end_sl ↦*□ end_key }}
-      (App (App (App (Val (s @!! go.type.PointerType cache.v3.store @!! go!"Get")) (Val #start_sl))
-        (Val #end_sl)) (Val #rev))
-    {{ (kvs : slice.t) (latest_rev : w64) (err : error.t),
-        RET (PairV (PairV #kvs #latest_rev) #err); own_store s γstore «prefix» }}
 
 /-- Lean deviations from Rocq: the precondition also asks that every option in `opts`
 satisfies the client-supplied `is_OpOptions opts pfx fk` (not both `WithPrefix` and
