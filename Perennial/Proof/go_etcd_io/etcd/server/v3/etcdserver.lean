@@ -21,6 +21,9 @@ import Perennial.Proof.go_etcd_io.etcd.pkg.v3.idutil
 import Perennial.Proof.go_etcd_io.etcd.pkg.v3.wait
 import Perennial.Proof.go_etcd_io.etcd.api.v3.etcdserverpb
 import Perennial.Proof.go_etcd_io.raft.v3
+import Perennial.Proof.go_etcd_io.etcd.api.v3.authpb
+import Perennial.Proof.go_opentelemetry_io.otel.trace.embedded
+import Perennial.Proof.github_com.prometheus.client_model.go
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSectionVars false

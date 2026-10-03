@@ -1,6 +1,6 @@
 translate = ["!*"]
 
-imports = ["!*"]
+imports = ["!*", "internal/runtime/atomic", "internal/runtime/sys"]
 
 trusted = ["Gosched"]
 

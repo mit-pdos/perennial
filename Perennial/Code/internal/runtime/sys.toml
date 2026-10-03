@@ -1,0 +1,5 @@
+translate = ["!*"]
+imports = ["!*"]
+
+# only the type declarations are translated (for runtime)
+translate_types = true

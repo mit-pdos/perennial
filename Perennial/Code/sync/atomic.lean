@@ -73,8 +73,6 @@ def efaceWords [ffi_syntax] [GoGlobalContext] : go.type :=
 
 attribute [irreducible] efaceWords
 
-axiom «Uintptrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 noncomputable def firstStoreInProgress [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"sync/atomic.firstStoreInProgress"
 
@@ -1556,19 +1554,43 @@ attribute [instance] Uint64_Assumptions.Uint64_type_repr
   Uint64_Assumptions.Uint64'ptr_Swap_unfold
 
 namespace Uintptr
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  _0' : noCopy.t
+  v' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def⟩
 end Uintptr
+
+@[reducible] def Uintptr'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_0" noCopy),
+(go.field_decl.FieldDecl go!"v" go.uintptr)]
+
+@[irreducible] def Uintptr'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  Uintptr'fds_unsealed
+
+instance equals_unfold_Uintptr [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold Uintptr'fds Uintptr'fds_unsealed :=
+  ⟨by unfold Uintptr'fds; rfl⟩
+
+@[reducible] def «Uintptrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType Uintptr'fds)
 
 class Uintptr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Uintptr_type_repr : go.TypeReprUnderlying «Uintptrⁱᵐᵖˡ» Uintptr.t
   Uintptr_underlying : go.UnderlyingDirectedEq Uintptr «Uintptrⁱᵐᵖˡ»
-  «Uintptrⁱᵐᵖˡ_underlying» : go.IsUnderlying «Uintptrⁱᵐᵖˡ» «Uintptrⁱᵐᵖˡ»
+  Uintptr_get__0 : ∀ (x : Uintptr.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uintptrⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
+  Uintptr_set__0 : ∀ (x : Uintptr.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Uintptrⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uintptr.t)))
+  Uintptr_get_v : ∀ (x : Uintptr.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uintptrⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
+  Uintptr_set_v : ∀ (x : Uintptr.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Uintptrⁱᵐᵖˡ» go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uintptr.t)))
 
 attribute [instance] Uintptr_Assumptions.Uintptr_type_repr
   Uintptr_Assumptions.Uintptr_underlying
-  Uintptr_Assumptions.«Uintptrⁱᵐᵖˡ_underlying»
+  Uintptr_Assumptions.Uintptr_get__0
+  Uintptr_Assumptions.Uintptr_set__0
+  Uintptr_Assumptions.Uintptr_get_v
+  Uintptr_Assumptions.Uintptr_set_v
 
 namespace Value
 structure t [ffi_syntax] where

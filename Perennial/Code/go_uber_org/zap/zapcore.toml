@@ -1,5 +1,5 @@
 translate = ["Field", "FieldType"]
-imports = ["!*"]
+imports = ["!*", "io", "sync", "sync/atomic", "time"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

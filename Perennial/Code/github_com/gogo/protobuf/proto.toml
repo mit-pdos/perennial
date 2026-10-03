@@ -1,5 +1,5 @@
 translate = ["!*"]
-imports = ["!*"]
+imports = ["!*", "io", "sync"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

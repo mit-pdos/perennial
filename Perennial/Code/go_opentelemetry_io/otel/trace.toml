@@ -1,5 +1,5 @@
 translate = ["!*"]
-imports = ["!*"]
+imports = ["!*", "time", "go.opentelemetry.io/otel/trace/embedded"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

@@ -1,5 +1,5 @@
 translate = ["!*"]
-imports = ["!*"]
+imports = ["!*", "github.com/gogo/protobuf/proto", "go.etcd.io/etcd/pkg/v3/traceutil"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

@@ -5,6 +5,8 @@ import Perennial.Code.time
 import Perennial.Code.go_etcd_io.etcd.server.v3.config
 import Perennial.Code.go_etcd_io.etcd.server.v3.etcdserver.errors
 import Perennial.Code.go_etcd_io.raft.v3
+import Perennial.Code.go_etcd_io.raft.v3.raftpb
+import Perennial.Code.sync
 import Perennial.Code.github_com.prometheus.client_golang.prometheus
 import Perennial.Code.go_etcd_io.etcd.pkg.v3.idutil
 import Perennial.Code.go_etcd_io.etcd.pkg.v3.traceutil
@@ -230,8 +232,6 @@ axiom «peerInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «hashKVHandlerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «toApplyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «raftNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «raftNodeConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
@@ -250,11 +250,7 @@ axiom «ServerPeerV2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «downgradeEnabledHandlerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «etcdProgressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «confChangeResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «AccessControllerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom «Lessorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
@@ -931,7 +927,7 @@ noncomputable def «EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ» [ffi
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "ai") (Var "$r0")))))))))))))))
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.etcdserver where
-  pkg_imported_pkgs := [pkg_id.context, pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb, pkg_id.time, pkg_id.go_etcd_io.etcd.server.v3.config, pkg_id.go_etcd_io.etcd.server.v3.etcdserver.errors, pkg_id.go_etcd_io.raft.v3, pkg_id.github_com.prometheus.client_golang.prometheus, pkg_id.go_etcd_io.etcd.pkg.v3.idutil, pkg_id.go_etcd_io.etcd.pkg.v3.traceutil, pkg_id.go_etcd_io.etcd.pkg.v3.wait, pkg_id.go_etcd_io.etcd.server.v3.auth, pkg_id.go_etcd_io.etcd.server.v3.etcdserver.apply, pkg_id.go_etcd_io.etcd.server.v3.features, pkg_id.github_com.gogo.protobuf.proto, pkg_id.go_opentelemetry_io.otel.«attribute», pkg_id.go_opentelemetry_io.otel.trace]
+  pkg_imported_pkgs := [pkg_id.context, pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb, pkg_id.time, pkg_id.go_etcd_io.etcd.server.v3.config, pkg_id.go_etcd_io.etcd.server.v3.etcdserver.errors, pkg_id.go_etcd_io.raft.v3, pkg_id.go_etcd_io.raft.v3.raftpb, pkg_id.sync, pkg_id.github_com.prometheus.client_golang.prometheus, pkg_id.go_etcd_io.etcd.pkg.v3.idutil, pkg_id.go_etcd_io.etcd.pkg.v3.traceutil, pkg_id.go_etcd_io.etcd.pkg.v3.wait, pkg_id.go_etcd_io.etcd.server.v3.auth, pkg_id.go_etcd_io.etcd.server.v3.etcdserver.apply, pkg_id.go_etcd_io.etcd.server.v3.features, pkg_id.github_com.gogo.protobuf.proto, pkg_id.go_opentelemetry_io.otel.«attribute», pkg_id.go_opentelemetry_io.otel.trace]
 
 axiom _'init [ffi_syntax] [GoGlobalContext] : val
 
@@ -939,6 +935,8 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.etcdserver)) (Lam BAnon
   (App (Val exception_do)
+  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exception_seq) (Lam BAnon
   (App (App (Val exception_seq) (Lam BAnon
   (App (App (Val exception_seq) (Lam BAnon
   (App (App (Val exception_seq) (Lam BAnon
@@ -1038,6 +1036,10 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.errors.initialize') (Val #()))))))
   (App (Val do_execute)
   (App (Val _root_.Perennial.go_etcd_io.raft.v3.initialize') (Val #()))))))
+  (App (Val do_execute)
+  (App (Val _root_.Perennial.go_etcd_io.raft.v3.raftpb.initialize') (Val #()))))))
+  (App (Val do_execute)
+  (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val do_execute)
   (App (Val _root_.Perennial.github_com.prometheus.client_golang.prometheus.initialize') (Val #()))))))
   (App (Val do_execute)
@@ -1354,19 +1356,55 @@ attribute [instance] hashKVHandler_Assumptions.hashKVHandler_type_repr
   hashKVHandler_Assumptions.«hashKVHandlerⁱᵐᵖˡ_underlying»
 
 namespace toApply
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  entries' : slice.t
+  snapshot' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.t
+  notifyc' : chan.t
+  raftAdvancedC' : chan.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end toApply
+
+@[reducible] def toApply'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"entries" (go.type.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)),
+(go.field_decl.FieldDecl go!"snapshot" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot),
+(go.field_decl.FieldDecl go!"notifyc" (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))),
+(go.field_decl.FieldDecl go!"raftAdvancedC" (go.type.ChannelType go.chan_dir.recvonly (go.type.StructType [])))]
+
+@[irreducible] def toApply'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  toApply'fds_unsealed
+
+instance equals_unfold_toApply [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold toApply'fds toApply'fds_unsealed :=
+  ⟨by unfold toApply'fds; rfl⟩
+
+@[reducible] def «toApplyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType toApply'fds)
 
 class toApply_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   toApply_type_repr : go.TypeReprUnderlying «toApplyⁱᵐᵖˡ» toApply.t
   toApply_underlying : go.UnderlyingDirectedEq toApply «toApplyⁱᵐᵖˡ»
-  «toApplyⁱᵐᵖˡ_underlying» : go.IsUnderlying «toApplyⁱᵐᵖˡ» «toApplyⁱᵐᵖˡ»
+  toApply_get_entries : ∀ (x : toApply.t), go.IsGoStepPureDetTagged under (StructFieldGet «toApplyⁱᵐᵖˡ» go!"entries") #x (Val #(x.entries'))
+  toApply_set_entries : ∀ (x : toApply.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «toApplyⁱᵐᵖˡ» go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : toApply.t)))
+  toApply_get_snapshot : ∀ (x : toApply.t), go.IsGoStepPureDetTagged under (StructFieldGet «toApplyⁱᵐᵖˡ» go!"snapshot") #x (Val #(x.snapshot'))
+  toApply_set_snapshot : ∀ (x : toApply.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.t), go.IsGoStepPureDetTagged under (StructFieldSet «toApplyⁱᵐᵖˡ» go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : toApply.t)))
+  toApply_get_notifyc : ∀ (x : toApply.t), go.IsGoStepPureDetTagged under (StructFieldGet «toApplyⁱᵐᵖˡ» go!"notifyc") #x (Val #(x.notifyc'))
+  toApply_set_notifyc : ∀ (x : toApply.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «toApplyⁱᵐᵖˡ» go!"notifyc") (PairV #x #y) (Val #(({ x with notifyc' := y } : toApply.t)))
+  toApply_get_raftAdvancedC : ∀ (x : toApply.t), go.IsGoStepPureDetTagged under (StructFieldGet «toApplyⁱᵐᵖˡ» go!"raftAdvancedC") #x (Val #(x.raftAdvancedC'))
+  toApply_set_raftAdvancedC : ∀ (x : toApply.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «toApplyⁱᵐᵖˡ» go!"raftAdvancedC") (PairV #x #y) (Val #(({ x with raftAdvancedC' := y } : toApply.t)))
 
 attribute [instance] toApply_Assumptions.toApply_type_repr
   toApply_Assumptions.toApply_underlying
-  toApply_Assumptions.«toApplyⁱᵐᵖˡ_underlying»
+  toApply_Assumptions.toApply_get_entries
+  toApply_Assumptions.toApply_set_entries
+  toApply_Assumptions.toApply_get_snapshot
+  toApply_Assumptions.toApply_set_snapshot
+  toApply_Assumptions.toApply_get_notifyc
+  toApply_Assumptions.toApply_set_notifyc
+  toApply_Assumptions.toApply_get_raftAdvancedC
+  toApply_Assumptions.toApply_set_raftAdvancedC
 
 namespace raftNode
 axiom t : Type
@@ -1532,19 +1570,61 @@ attribute [instance] downgradeEnabledHandler_Assumptions.downgradeEnabledHandler
   downgradeEnabledHandler_Assumptions.«downgradeEnabledHandlerⁱᵐᵖˡ_underlying»
 
 namespace etcdProgress
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  confState' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState.t
+  diskSnapshotIndex' : w64
+  memorySnapshotIndex' : w64
+  appliedt' : w64
+  appliedi' : w64
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end etcdProgress
+
+@[reducible] def etcdProgress'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"confState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState),
+(go.field_decl.FieldDecl go!"diskSnapshotIndex" go.uint64),
+(go.field_decl.FieldDecl go!"memorySnapshotIndex" go.uint64),
+(go.field_decl.FieldDecl go!"appliedt" go.uint64),
+(go.field_decl.FieldDecl go!"appliedi" go.uint64)]
+
+@[irreducible] def etcdProgress'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  etcdProgress'fds_unsealed
+
+instance equals_unfold_etcdProgress [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold etcdProgress'fds etcdProgress'fds_unsealed :=
+  ⟨by unfold etcdProgress'fds; rfl⟩
+
+@[reducible] def «etcdProgressⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType etcdProgress'fds)
 
 class etcdProgress_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   etcdProgress_type_repr : go.TypeReprUnderlying «etcdProgressⁱᵐᵖˡ» etcdProgress.t
   etcdProgress_underlying : go.UnderlyingDirectedEq etcdProgress «etcdProgressⁱᵐᵖˡ»
-  «etcdProgressⁱᵐᵖˡ_underlying» : go.IsUnderlying «etcdProgressⁱᵐᵖˡ» «etcdProgressⁱᵐᵖˡ»
+  etcdProgress_get_confState : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet «etcdProgressⁱᵐᵖˡ» go!"confState") #x (Val #(x.confState'))
+  etcdProgress_set_confState : ∀ (x : etcdProgress.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState.t), go.IsGoStepPureDetTagged under (StructFieldSet «etcdProgressⁱᵐᵖˡ» go!"confState") (PairV #x #y) (Val #(({ x with confState' := y } : etcdProgress.t)))
+  etcdProgress_get_diskSnapshotIndex : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet «etcdProgressⁱᵐᵖˡ» go!"diskSnapshotIndex") #x (Val #(x.diskSnapshotIndex'))
+  etcdProgress_set_diskSnapshotIndex : ∀ (x : etcdProgress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «etcdProgressⁱᵐᵖˡ» go!"diskSnapshotIndex") (PairV #x #y) (Val #(({ x with diskSnapshotIndex' := y } : etcdProgress.t)))
+  etcdProgress_get_memorySnapshotIndex : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet «etcdProgressⁱᵐᵖˡ» go!"memorySnapshotIndex") #x (Val #(x.memorySnapshotIndex'))
+  etcdProgress_set_memorySnapshotIndex : ∀ (x : etcdProgress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «etcdProgressⁱᵐᵖˡ» go!"memorySnapshotIndex") (PairV #x #y) (Val #(({ x with memorySnapshotIndex' := y } : etcdProgress.t)))
+  etcdProgress_get_appliedt : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet «etcdProgressⁱᵐᵖˡ» go!"appliedt") #x (Val #(x.appliedt'))
+  etcdProgress_set_appliedt : ∀ (x : etcdProgress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «etcdProgressⁱᵐᵖˡ» go!"appliedt") (PairV #x #y) (Val #(({ x with appliedt' := y } : etcdProgress.t)))
+  etcdProgress_get_appliedi : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet «etcdProgressⁱᵐᵖˡ» go!"appliedi") #x (Val #(x.appliedi'))
+  etcdProgress_set_appliedi : ∀ (x : etcdProgress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «etcdProgressⁱᵐᵖˡ» go!"appliedi") (PairV #x #y) (Val #(({ x with appliedi' := y } : etcdProgress.t)))
 
 attribute [instance] etcdProgress_Assumptions.etcdProgress_type_repr
   etcdProgress_Assumptions.etcdProgress_underlying
-  etcdProgress_Assumptions.«etcdProgressⁱᵐᵖˡ_underlying»
+  etcdProgress_Assumptions.etcdProgress_get_confState
+  etcdProgress_Assumptions.etcdProgress_set_confState
+  etcdProgress_Assumptions.etcdProgress_get_diskSnapshotIndex
+  etcdProgress_Assumptions.etcdProgress_set_diskSnapshotIndex
+  etcdProgress_Assumptions.etcdProgress_get_memorySnapshotIndex
+  etcdProgress_Assumptions.etcdProgress_set_memorySnapshotIndex
+  etcdProgress_Assumptions.etcdProgress_get_appliedt
+  etcdProgress_Assumptions.etcdProgress_set_appliedt
+  etcdProgress_Assumptions.etcdProgress_get_appliedi
+  etcdProgress_Assumptions.etcdProgress_set_appliedi
 
 namespace raftReadyHandler
 structure t [ffi_syntax] where
@@ -1613,19 +1693,55 @@ attribute [instance] confChangeResponse_Assumptions.confChangeResponse_type_repr
   confChangeResponse_Assumptions.«confChangeResponseⁱᵐᵖˡ_underlying»
 
 namespace AccessController
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  corsMu' : _root_.Perennial.sync.RWMutex.t
+  CORS' : map.t
+  hostWhitelistMu' : _root_.Perennial.sync.RWMutex.t
+  HostWhitelist' : map.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end AccessController
+
+@[reducible] def AccessController'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"corsMu" _root_.Perennial.sync.RWMutex),
+(go.field_decl.FieldDecl go!"CORS" (go.type.MapType go.string (go.type.StructType []))),
+(go.field_decl.FieldDecl go!"hostWhitelistMu" _root_.Perennial.sync.RWMutex),
+(go.field_decl.FieldDecl go!"HostWhitelist" (go.type.MapType go.string (go.type.StructType [])))]
+
+@[irreducible] def AccessController'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  AccessController'fds_unsealed
+
+instance equals_unfold_AccessController [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold AccessController'fds AccessController'fds_unsealed :=
+  ⟨by unfold AccessController'fds; rfl⟩
+
+@[reducible] def «AccessControllerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType AccessController'fds)
 
 class AccessController_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   AccessController_type_repr : go.TypeReprUnderlying «AccessControllerⁱᵐᵖˡ» AccessController.t
   AccessController_underlying : go.UnderlyingDirectedEq AccessController «AccessControllerⁱᵐᵖˡ»
-  «AccessControllerⁱᵐᵖˡ_underlying» : go.IsUnderlying «AccessControllerⁱᵐᵖˡ» «AccessControllerⁱᵐᵖˡ»
+  AccessController_get_corsMu : ∀ (x : AccessController.t), go.IsGoStepPureDetTagged under (StructFieldGet «AccessControllerⁱᵐᵖˡ» go!"corsMu") #x (Val #(x.corsMu'))
+  AccessController_set_corsMu : ∀ (x : AccessController.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «AccessControllerⁱᵐᵖˡ» go!"corsMu") (PairV #x #y) (Val #(({ x with corsMu' := y } : AccessController.t)))
+  AccessController_get_CORS : ∀ (x : AccessController.t), go.IsGoStepPureDetTagged under (StructFieldGet «AccessControllerⁱᵐᵖˡ» go!"CORS") #x (Val #(x.CORS'))
+  AccessController_set_CORS : ∀ (x : AccessController.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «AccessControllerⁱᵐᵖˡ» go!"CORS") (PairV #x #y) (Val #(({ x with CORS' := y } : AccessController.t)))
+  AccessController_get_hostWhitelistMu : ∀ (x : AccessController.t), go.IsGoStepPureDetTagged under (StructFieldGet «AccessControllerⁱᵐᵖˡ» go!"hostWhitelistMu") #x (Val #(x.hostWhitelistMu'))
+  AccessController_set_hostWhitelistMu : ∀ (x : AccessController.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «AccessControllerⁱᵐᵖˡ» go!"hostWhitelistMu") (PairV #x #y) (Val #(({ x with hostWhitelistMu' := y } : AccessController.t)))
+  AccessController_get_HostWhitelist : ∀ (x : AccessController.t), go.IsGoStepPureDetTagged under (StructFieldGet «AccessControllerⁱᵐᵖˡ» go!"HostWhitelist") #x (Val #(x.HostWhitelist'))
+  AccessController_set_HostWhitelist : ∀ (x : AccessController.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «AccessControllerⁱᵐᵖˡ» go!"HostWhitelist") (PairV #x #y) (Val #(({ x with HostWhitelist' := y } : AccessController.t)))
 
 attribute [instance] AccessController_Assumptions.AccessController_type_repr
   AccessController_Assumptions.AccessController_underlying
-  AccessController_Assumptions.«AccessControllerⁱᵐᵖˡ_underlying»
+  AccessController_Assumptions.AccessController_get_corsMu
+  AccessController_Assumptions.AccessController_set_corsMu
+  AccessController_Assumptions.AccessController_get_CORS
+  AccessController_Assumptions.AccessController_set_CORS
+  AccessController_Assumptions.AccessController_get_hostWhitelistMu
+  AccessController_Assumptions.AccessController_set_hostWhitelistMu
+  AccessController_Assumptions.AccessController_get_HostWhitelist
+  AccessController_Assumptions.AccessController_set_HostWhitelist
 
 namespace notifier
 structure t [ffi_syntax] where
@@ -1762,6 +1878,8 @@ class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFu
   import_config_Assumption : _root_.Perennial.go_etcd_io.etcd.server.v3.config.Assumptions
   import_errors_Assumption : _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.errors.Assumptions
   import_raft_Assumption : _root_.Perennial.go_etcd_io.raft.v3.Assumptions
+  import_raftpb_Assumption : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Assumptions
+  import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_prometheus_Assumption : _root_.Perennial.github_com.prometheus.client_golang.prometheus.Assumptions
   import_idutil_Assumption : _root_.Perennial.go_etcd_io.etcd.pkg.v3.idutil.Assumptions
   import_traceutil_Assumption : _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.Assumptions
@@ -1814,6 +1932,8 @@ attribute [instance] Assumptions.serverVersionAdapter_instance
   Assumptions.import_config_Assumption
   Assumptions.import_errors_Assumption
   Assumptions.import_raft_Assumption
+  Assumptions.import_raftpb_Assumption
+  Assumptions.import_sync_Assumption
   Assumptions.import_prometheus_Assumption
   Assumptions.import_idutil_Assumption
   Assumptions.import_traceutil_Assumption

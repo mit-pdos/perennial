@@ -1,5 +1,5 @@
-translate = ["!*"]
-imports = ["!*", "io"]
+translate = ["!*", "ppFree", "ssFree", "errBool", "errComplex", "space"]
+imports = ["!*", "io", "errors", "sync"]
 trusted = ["Print", "Printf"]
 
 # translate the definitions of all type declarations goose supports

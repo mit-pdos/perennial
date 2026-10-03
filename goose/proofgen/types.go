@@ -171,7 +171,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 	switch t := types.Unalias(t).(type) {
 	case *types.Basic:
 		switch t.Name() {
-		case "uint64", "int64", "uint", "int", "float64":
+		case "uint64", "int64", "uint", "int", "float64", "uintptr":
 			return "w64"
 		case "uint32", "int32", "float32":
 			return "w32"
@@ -183,7 +183,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 			return "Bool"
 		case "string", "untyped string":
 			return "go_string"
-		case "Pointer", "uintptr":
+		case "Pointer":
 			return "loc"
 		}
 		log.Fatalf("unknown basic type %s", t.Name())

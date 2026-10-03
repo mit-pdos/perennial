@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
+	"github.com/mit-pdos/perennial/goose/glang"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -42,9 +43,8 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 			"uint8", "int8", "byte", "uint", "int", "float64", "float32",
 			"bool", "string", "Pointer":
 		case "uintptr":
-			// goose models uintptr values as locations, but there is no
-			// TypeRepr for go.uintptr
-			if byValue {
+			// Rocq has no semantics for uintptr values
+			if byValue && !glang.Lean {
 				c.fail("uintptr value")
 			}
 		default:

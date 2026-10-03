@@ -118,11 +118,7 @@ attribute [irreducible] WaitGroup
 
 axiom «Mapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
-axiom «Poolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
 axiom «poolChainEltⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
-
-axiom «notifyListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
 
 axiom dequeueBits [ffi_syntax] [GoGlobalContext] : val
 
@@ -1236,19 +1232,61 @@ class Locker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSema
 attribute [instance] Locker_Assumptions.Locker_underlying
 
 namespace notifyList
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  wait' : w32
+  notify' : w32
+  lock' : w64
+  head' : loc
+  tail' : loc
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end notifyList
+
+@[reducible] def notifyList'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"wait" go.uint32),
+(go.field_decl.FieldDecl go!"notify" go.uint32),
+(go.field_decl.FieldDecl go!"lock" go.uintptr),
+(go.field_decl.FieldDecl go!"head" «unsafe».Pointer),
+(go.field_decl.FieldDecl go!"tail" «unsafe».Pointer)]
+
+@[irreducible] def notifyList'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  notifyList'fds_unsealed
+
+instance equals_unfold_notifyList [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold notifyList'fds notifyList'fds_unsealed :=
+  ⟨by unfold notifyList'fds; rfl⟩
+
+@[reducible] def «notifyListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType notifyList'fds)
 
 class notifyList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   notifyList_type_repr : go.TypeReprUnderlying «notifyListⁱᵐᵖˡ» notifyList.t
   notifyList_underlying : go.UnderlyingDirectedEq notifyList «notifyListⁱᵐᵖˡ»
-  «notifyListⁱᵐᵖˡ_underlying» : go.IsUnderlying «notifyListⁱᵐᵖˡ» «notifyListⁱᵐᵖˡ»
+  notifyList_get_wait : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"wait") #x (Val #(x.wait'))
+  notifyList_set_wait : ∀ (x : notifyList.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"wait") (PairV #x #y) (Val #(({ x with wait' := y } : notifyList.t)))
+  notifyList_get_notify : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"notify") #x (Val #(x.notify'))
+  notifyList_set_notify : ∀ (x : notifyList.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : notifyList.t)))
+  notifyList_get_lock : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"lock") #x (Val #(x.lock'))
+  notifyList_set_lock : ∀ (x : notifyList.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : notifyList.t)))
+  notifyList_get_head : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"head") #x (Val #(x.head'))
+  notifyList_set_head : ∀ (x : notifyList.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"head") (PairV #x #y) (Val #(({ x with head' := y } : notifyList.t)))
+  notifyList_get_tail : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"tail") #x (Val #(x.tail'))
+  notifyList_set_tail : ∀ (x : notifyList.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : notifyList.t)))
 
 attribute [instance] notifyList_Assumptions.notifyList_type_repr
   notifyList_Assumptions.notifyList_underlying
-  notifyList_Assumptions.«notifyListⁱᵐᵖˡ_underlying»
+  notifyList_Assumptions.notifyList_get_wait
+  notifyList_Assumptions.notifyList_set_wait
+  notifyList_Assumptions.notifyList_get_notify
+  notifyList_Assumptions.notifyList_set_notify
+  notifyList_Assumptions.notifyList_get_lock
+  notifyList_Assumptions.notifyList_set_lock
+  notifyList_Assumptions.notifyList_get_head
+  notifyList_Assumptions.notifyList_set_head
+  notifyList_Assumptions.notifyList_get_tail
+  notifyList_Assumptions.notifyList_set_tail
 
 class copyChecker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   copyChecker_underlying : go.UnderlyingDirectedEq copyChecker «copyCheckerⁱᵐᵖˡ»
@@ -1392,19 +1430,67 @@ attribute [instance] Once_Assumptions.Once_type_repr
   Once_Assumptions.Once'ptr_doSlow_unfold
 
 namespace Pool
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
+structure t [ffi_syntax] where
+  mk ::
+  noCopy' : noCopy.t
+  local' : loc
+  localSize' : w64
+  victim' : loc
+  victimSize' : w64
+  New' : func.t
+
+instance zero_val [ffi_syntax] : ZeroVal t :=
+  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
 end Pool
+
+@[reducible] def Pool'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"noCopy" noCopy),
+(go.field_decl.FieldDecl go!"local" «unsafe».Pointer),
+(go.field_decl.FieldDecl go!"localSize" go.uintptr),
+(go.field_decl.FieldDecl go!"victim" «unsafe».Pointer),
+(go.field_decl.FieldDecl go!"victimSize" go.uintptr),
+(go.field_decl.FieldDecl go!"New" (go.type.FunctionType (go.signature.Signature [] false [go.any])))]
+
+@[irreducible] def Pool'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+  Pool'fds_unsealed
+
+instance equals_unfold_Pool [ffi_syntax] [GoGlobalContext] :
+    EqualsUnfold Pool'fds Pool'fds_unsealed :=
+  ⟨by unfold Pool'fds; rfl⟩
+
+@[reducible] def «Poolⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+  (go.type.StructType Pool'fds)
 
 class Pool_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Pool_type_repr : go.TypeReprUnderlying «Poolⁱᵐᵖˡ» Pool.t
   Pool_underlying : go.UnderlyingDirectedEq Pool «Poolⁱᵐᵖˡ»
-  «Poolⁱᵐᵖˡ_underlying» : go.IsUnderlying «Poolⁱᵐᵖˡ» «Poolⁱᵐᵖˡ»
+  Pool_get_noCopy : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
+  Pool_set_noCopy : ∀ (x : Pool.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Pool.t)))
+  Pool_get_local : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"local") #x (Val #(x.local'))
+  Pool_set_local : ∀ (x : Pool.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"local") (PairV #x #y) (Val #(({ x with local' := y } : Pool.t)))
+  Pool_get_localSize : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"localSize") #x (Val #(x.localSize'))
+  Pool_set_localSize : ∀ (x : Pool.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"localSize") (PairV #x #y) (Val #(({ x with localSize' := y } : Pool.t)))
+  Pool_get_victim : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"victim") #x (Val #(x.victim'))
+  Pool_set_victim : ∀ (x : Pool.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"victim") (PairV #x #y) (Val #(({ x with victim' := y } : Pool.t)))
+  Pool_get_victimSize : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"victimSize") #x (Val #(x.victimSize'))
+  Pool_set_victimSize : ∀ (x : Pool.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"victimSize") (PairV #x #y) (Val #(({ x with victimSize' := y } : Pool.t)))
+  Pool_get_New : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"New") #x (Val #(x.New'))
+  Pool_set_New : ∀ (x : Pool.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool.t)))
 
 attribute [instance] Pool_Assumptions.Pool_type_repr
   Pool_Assumptions.Pool_underlying
-  Pool_Assumptions.«Poolⁱᵐᵖˡ_underlying»
+  Pool_Assumptions.Pool_get_noCopy
+  Pool_Assumptions.Pool_set_noCopy
+  Pool_Assumptions.Pool_get_local
+  Pool_Assumptions.Pool_set_local
+  Pool_Assumptions.Pool_get_localSize
+  Pool_Assumptions.Pool_set_localSize
+  Pool_Assumptions.Pool_get_victim
+  Pool_Assumptions.Pool_set_victim
+  Pool_Assumptions.Pool_get_victimSize
+  Pool_Assumptions.Pool_set_victimSize
+  Pool_Assumptions.Pool_get_New
+  Pool_Assumptions.Pool_set_New
 
 namespace poolChainElt
 axiom t : Type

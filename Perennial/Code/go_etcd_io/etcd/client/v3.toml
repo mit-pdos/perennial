@@ -52,8 +52,7 @@ imports = [
   "go.etcd.io/etcd/api/v3/etcdserverpb",
   "go.etcd.io/etcd/api/v3/mvccpb",
   "go.uber.org/zap",
-  "context",
-]
+  "context", "io", "sync", "time", "go.etcd.io/etcd/api/v3/authpb"]
 
 trust_proofgen = true
 

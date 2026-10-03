@@ -38,6 +38,11 @@ instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "LeanTypedPo
     TypedPointsto (GF := GF) {{template "LeanGallinaType" $t}} :=
   sorry -- Rocq: Admitted
 {{- else -}}
+{{ if gt (len $t.LeanFields) 48 -}}
+-- many fields: the instance search for the points-to's DFractional/Timeless is large
+set_option synthInstance.maxSize 1024 in
+set_option synthInstance.maxHeartbeats 200000 in
+{{ end -}}
 instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}:
     TypedPointsto (GF := GF) {{template "LeanGallinaType" $t}} where
   typed_pointsto_def l v dq := iprop(

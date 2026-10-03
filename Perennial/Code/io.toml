@@ -12,6 +12,7 @@ translate = [
   "multiReader",
   "multiWriter",
   "_",
+  "blackHolePool",
 ]
 
 # translate the definitions of all type declarations goose supports

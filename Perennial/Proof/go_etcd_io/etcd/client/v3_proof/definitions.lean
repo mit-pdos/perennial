@@ -13,6 +13,8 @@ import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.base
 import Perennial.Proof.go_etcd_io.etcd.api.v3.membershippb
 import Perennial.Proof.go_etcd_io.etcd.api.v3.mvccpb
 import Perennial.Proof.go_etcd_io.etcd.api.v3.etcdserverpb
+import Perennial.Proof.io
+import Perennial.Proof.go_etcd_io.etcd.api.v3.authpb
 
 set_option linter.iris.style.nameCheck false
 

@@ -235,8 +235,6 @@ noncomputable def Discard [ffi_syntax] [GoGlobalContext] : go_string :=
 noncomputable def blackHolePool [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.blackHolePool"
 
-axiom blackHolePool'init [ffi_syntax] [GoGlobalContext] : val
-
 noncomputable def ErrClosedPipe [ffi_syntax] [GoGlobalContext] : go_string :=
   go!"io.ErrClosedPipe"
 
@@ -307,6 +305,7 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (App (Val exception_seq) (Lam BAnon
   (App (App (Val exception_seq) (Lam BAnon
   (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exception_seq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"short write"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exception_seq) (Lam BAnon
@@ -334,6 +333,16 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val (GoInstruction (Convert discard Writer))) (App (Val (GoInstruction (CompositeLiteral discard))) (LiteralValue [])))
   (App (App (Val exception_seq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert discard ReaderFrom))) (App (Val (GoInstruction (CompositeLiteral discard))) (LiteralValue [])))
+  (Let "$r0" (Let "$v0" (Lam BAnon
+  (App (Val exception_do)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 8192)))
+  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val do_return)
+  (App (Val (GoInstruction (Convert (go.type.PointerType (go.type.SliceType go.byte)) go.any))) (Var "b")))))
+  (App (Val do_execute)
+  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Pool))) (LiteralValue [(KeyedElement (some (KeyField go!"New")) (ElementExpression (go.type.FunctionType (go.signature.Signature [] false [go.any])) (Var "$v0")))])))
   (App (App (Val exception_seq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert (go.type.PointerType multiReader) WriterTo))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType multiReader)))) (Val UntypedNil)))
   (Let "$r0" (App (Val (GoInstruction (Convert (go.type.PointerType multiWriter) StringWriter))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType multiWriter)))) (Val UntypedNil)))
@@ -342,7 +351,7 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrClosedPipe))) (Val #())) (Var "$r0")))))))))
   (App (Val do_execute)
-  (App (Val blackHolePool'init) (Val #())))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.sync.Pool))) (Pair (App (Val (GoInstruction (GlobalVarAddr blackHolePool))) (Val #())) (Var "$r0")))))))))
   (App (Val do_execute)
   (App (Val (GoInstruction (GoStore Writer))) (Pair (App (Val (GoInstruction (GlobalVarAddr Discard))) (Val #())) (Var "$r0"))))))))
   (App (Val do_execute)
@@ -383,6 +392,8 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc errOffset go.error)) (Val #()))))))
   (App (Val do_execute)
   (App (Val (go.GlobalAlloc Discard Writer)) (Val #()))))))
+  (App (Val do_execute)
+  (App (Val (go.GlobalAlloc blackHolePool _root_.Perennial.sync.Pool)) (Val #()))))))
   (App (Val do_execute)
   (App (Val (go.GlobalAlloc ErrClosedPipe go.error)) (Val #()))))))))
 

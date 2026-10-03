@@ -6,6 +6,11 @@ translate = [
   "store.LatestRev",
   "Cache",
   "Cache.Get",
+  "Cache.WaitReady",
+  "Cache.validateGet",
+  "Cache.serverRevision",
+  "Cache.waitTillRevision",
+  "store.Get",
 ]
 
 imports = [
@@ -14,6 +19,9 @@ imports = [
   "go.etcd.io/etcd/client/v3",
   "fmt",
   "sync",
+  "context",
+  "go.etcd.io/etcd/api/v3/mvccpb",
+  "time",
 ]
 
 # translate the definitions of all type declarations goose supports

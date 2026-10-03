@@ -1,5 +1,5 @@
 translate = ["!*"]
-imports = ["!*"]
+imports = ["!*", "sync", "time", "github.com/prometheus/client_model/go"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

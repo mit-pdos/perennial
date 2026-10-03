@@ -49,12 +49,101 @@ variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
 instance notifyList_typed_pointsto :
-    TypedPointsto (GF := GF) sync.notifyList.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) sync.notifyList.t where
+  typed_pointsto_def l v dq := iprop(
+    "wait" ∷ typed_pointsto (struct_field_ref sync.notifyList.t go!"wait" l) v.wait' dq ∗
+    "notify" ∷ typed_pointsto (struct_field_ref sync.notifyList.t go!"notify" l) v.notify' dq ∗
+    "lock" ∷ typed_pointsto (struct_field_ref sync.notifyList.t go!"lock" l) v.lock' dq ∗
+    "head" ∷ typed_pointsto (struct_field_ref sync.notifyList.t go!"head" l) v.head' dq ∗
+    "tail" ∷ typed_pointsto (struct_field_ref sync.notifyList.t go!"tail" l) v.tail' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance notifyList_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.notifyList.t sync.«notifyListⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) sync.notifyList.t sync.«notifyListⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance notifyList_access_load_wait (l : loc) (v : sync.notifyList.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"wait" l) v.wait' dq)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"wait" l) v.wait' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_store_wait (l : loc) (v : sync.notifyList.t) (wait' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"wait" l) v.wait' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"wait" l) wait' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wait' := wait' } : sync.notifyList.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_load_notify (l : loc) (v : sync.notifyList.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"notify" l) v.notify' dq)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"notify" l) v.notify' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_store_notify (l : loc) (v : sync.notifyList.t) (notify' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"notify" l) v.notify' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"notify" l) notify' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with notify' := notify' } : sync.notifyList.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_load_lock (l : loc) (v : sync.notifyList.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"lock" l) v.lock' dq)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"lock" l) v.lock' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_store_lock (l : loc) (v : sync.notifyList.t) (lock' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"lock" l) v.lock' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"lock" l) lock' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lock' := lock' } : sync.notifyList.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_load_head (l : loc) (v : sync.notifyList.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"head" l) v.head' dq)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"head" l) v.head' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_store_head (l : loc) (v : sync.notifyList.t) (head' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"head" l) v.head' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"head" l) head' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with head' := head' } : sync.notifyList.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_load_tail (l : loc) (v : sync.notifyList.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"tail" l) v.tail' dq)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"tail" l) v.tail' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance notifyList_access_store_tail (l : loc) (v : sync.notifyList.t) (tail' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"tail" l) v.tail' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.notifyList.t go!"tail" l) tail' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tail' := tail' } : sync.notifyList.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end notifyList
@@ -252,12 +341,118 @@ variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
 instance Pool_typed_pointsto :
-    TypedPointsto (GF := GF) sync.Pool.t :=
-  sorry -- Rocq: Admitted
+    TypedPointsto (GF := GF) sync.Pool.t where
+  typed_pointsto_def l v dq := iprop(
+    "noCopy" ∷ typed_pointsto (struct_field_ref sync.Pool.t go!"noCopy" l) v.noCopy' dq ∗
+    "local'" ∷ typed_pointsto (struct_field_ref sync.Pool.t go!"local" l) v.local' dq ∗
+    "localSize" ∷ typed_pointsto (struct_field_ref sync.Pool.t go!"localSize" l) v.localSize' dq ∗
+    "victim" ∷ typed_pointsto (struct_field_ref sync.Pool.t go!"victim" l) v.victim' dq ∗
+    "victimSize" ∷ typed_pointsto (struct_field_ref sync.Pool.t go!"victimSize" l) v.victimSize' dq ∗
+    "New" ∷ typed_pointsto (struct_field_ref sync.Pool.t go!"New" l) v.New' dq ∗
+    "_" ∷ True)
+  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
+  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
+  typed_pointsto_agree := by solve_typed_pointsto_agree
 
 instance Pool_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.Pool.t sync.«Poolⁱᵐᵖˡ» :=
-  sorry -- Rocq: Admitted
+    IntoValTypedUnderlying (GF := GF) sync.Pool.t sync.«Poolⁱᵐᵖˡ» := by
+  solve_into_val_typed_struct
+
+instance Pool_access_load_noCopy (l : loc) (v : sync.Pool.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"noCopy" l) v.noCopy' dq)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"noCopy" l) v.noCopy' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_store_noCopy (l : loc) (v : sync.Pool.t) (noCopy' : sync.noCopy.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"noCopy" l) noCopy' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : sync.Pool.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_load_local (l : loc) (v : sync.Pool.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"local" l) v.local' dq)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"local" l) v.local' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_store_local (l : loc) (v : sync.Pool.t) (local' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"local" l) v.local' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"local" l) local' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with local' := local' } : sync.Pool.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_load_localSize (l : loc) (v : sync.Pool.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"localSize" l) v.localSize' dq)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"localSize" l) v.localSize' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_store_localSize (l : loc) (v : sync.Pool.t) (localSize' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"localSize" l) v.localSize' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"localSize" l) localSize' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with localSize' := localSize' } : sync.Pool.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_load_victim (l : loc) (v : sync.Pool.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"victim" l) v.victim' dq)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"victim" l) v.victim' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_store_victim (l : loc) (v : sync.Pool.t) (victim' : loc) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"victim" l) v.victim' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"victim" l) victim' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with victim' := victim' } : sync.Pool.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_load_victimSize (l : loc) (v : sync.Pool.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"victimSize" l) v.victimSize' dq)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"victimSize" l) v.victimSize' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_store_victimSize (l : loc) (v : sync.Pool.t) (victimSize' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"victimSize" l) v.victimSize' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"victimSize" l) victimSize' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with victimSize' := victimSize' } : sync.Pool.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_load_New (l : loc) (v : sync.Pool.t) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"New" l) v.New' dq)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"New" l) v.New' dq)
+      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Pool_access_store_New (l : loc) (v : sync.Pool.t) (New' : func.t) :
+    AccessStrict (PROP := IProp GF)
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"New" l) v.New' (DFrac.own 1))
+      (typed_pointsto (struct_field_ref sync.Pool.t go!"New" l) New' (DFrac.own 1))
+      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with New' := New' } : sync.Pool.t) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Pool

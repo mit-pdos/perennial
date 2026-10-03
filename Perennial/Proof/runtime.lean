@@ -5,6 +5,8 @@ Port of `new/proof/runtime.v`: package initialization of `runtime` and
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.runtime
 import Perennial.GeneratedProof.runtime
+import Perennial.Proof.internal.runtime.atomic
+import Perennial.Proof.internal.runtime.sys
 
 noncomputable section
 

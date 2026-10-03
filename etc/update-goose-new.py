@@ -336,6 +336,19 @@ def main():
             proj_dir(proj.name),
             *proj.pkgs,
         )
+    if args.lean:
+        # Lean only: packages whose types (only) are translated, so that the
+        # types of the packages above that refer to them can be translated
+        if args.std_lib:
+            run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys")
+        etcd = proj_dir("etcd")
+        if etcd is not None:
+            run_goose(
+                etcd,
+                "go.etcd.io/etcd/api/v3/authpb",
+                "github.com/prometheus/client_model/go",
+                "go.opentelemetry.io/otel/trace/embedded",
+            )
     pm.wait_all()
 
 

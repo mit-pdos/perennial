@@ -6,6 +6,8 @@ import (
 	"go/types"
 	"iter"
 	"strings"
+
+	"github.com/mit-pdos/perennial/goose/glang"
 )
 
 func TypeGetDependencies(pkgPath string, ty types.Type) iter.Seq[string] {
@@ -64,7 +66,12 @@ func BasicTypeToCoq(t *types.Basic) (error, string) {
 		return nil, "bool"
 	case "string", "untyped string":
 		return nil, "go_string"
-	case "Pointer", "uintptr":
+	case "uintptr":
+		if glang.Lean {
+			return nil, "w64"
+		}
+		return nil, "loc"
+	case "Pointer":
 		return nil, "loc"
 	default:
 		return errors.New("Unknown basic type " + t.Name()), ""

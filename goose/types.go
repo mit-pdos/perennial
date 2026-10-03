@@ -696,7 +696,13 @@ func (ctx *Ctx) basicTypeToGallina(n locatable, t *types.Basic) string {
 		return "bool"
 	case "string", "untyped string":
 		return "go_string"
-	case "Pointer", "uintptr":
+	case "uintptr":
+		if glang.Lean {
+			// the Lean semantics models uintptr as a 64-bit unsigned integer
+			return "w64"
+		}
+		return "loc"
+	case "Pointer":
 		return "loc"
 	}
 	ctx.unsupported(n, "Unknown basic type %s,", t.Name())
