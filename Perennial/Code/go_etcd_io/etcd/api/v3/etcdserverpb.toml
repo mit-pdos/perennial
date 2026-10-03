@@ -38,5 +38,3 @@ trust_proofgen = true
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
-# but not structs: their generated instance proofs would add ~2 minutes to the build
-translate_types_except_structs = true
