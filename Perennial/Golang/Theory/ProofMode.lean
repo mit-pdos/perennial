@@ -1137,6 +1137,105 @@ def directPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × 
       mkAppN (mkConst ``wp_pair) (gs ++ #[v1, v2]))
   | _ => return none
 
+/-- Apply the constant `c` (without universe parameters) to `gs` (its first
+arguments) and then to one argument per remaining binder: instance-implicit ones
+are synthesized, the others are `args` in order (each given the binder type).
+Built directly, without unification: the kernel checks it. -/
+def mkAppPositional? (c : Name) (gs : Array Expr) (args : Array (Expr → MetaM Expr)) :
+    MetaM (Option Expr) := do
+  let some info := (← getEnv).find? c | return none
+  unless info.levelParams.isEmpty do return none
+  let mut ty := info.type
+  let mut out := #[]
+  let mut j := 0
+  repeat
+    let .forallE _ d b bi := ty | break
+    let v ← if h : out.size < gs.size then pure gs[out.size]
+      else if bi == .instImplicit then
+        match ← synthInstance? d with
+        | some v => pure v
+        | none => return none
+      else if h : j < args.size then do
+        j := j + 1
+        args[j - 1] d
+      else return none
+    out := out.push v
+    ty := b.instantiate1 v
+  return some (mkAppN (mkConst c) out)
+
+/-- The step of an array literal whose elements are all values of the element
+type, `App (Val (GoInstruction (CompositeLiteral (go.ArrayType n t)))) (Val
+(LiteralValueV kvs))` with `kvs = [KeyedElement none (ElementExpression t (Val #x)), ...]`
+and `n` a literal: one `PureWp` step to the array value (`pure_wp_array_lit` of
+`Golang/Theory/ArrayLit.lean`, if it is imported), instead of the `ArraySet` chain of
+`go.composite_literal_array`, whose stepping is quadratic in the length.
+Returns the same as `synthPureWp`. -/
+def arrayLitPureWp? (gs : Array Expr) (e : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+  unless gs.size == 9 do return none
+  let e ← whnfR e
+  let_expr Perennial.expr.App _ f a := e | return none
+  let some fv ← isGooseVal? f | return none
+  let fv ← whnfR fv
+  let_expr Perennial.val.GoInstruction _ i := fv | return none
+  let i ← whnfR i
+  let_expr Perennial.go_instruction.CompositeLiteral ty := i | return none
+  let ty ← whnfR ty
+  let_expr Perennial.go.type.ArrayType nE t := ty | return none
+  let some lv ← isGooseVal? a | return none
+  let lv ← whnfR lv
+  let_expr Perennial.val.LiteralValueV _ kvs := lv | return none
+  unless (← getEnv).contains `Perennial.pure_wp_array_lit do return none
+  let some n ← getIntValue? nE | return none
+  -- the elements `#x`, all of the same type `V`
+  let mut V? : Option Expr := none
+  let mut xs := #[]
+  let mut l ← whnfR kvs
+  repeat
+    match_expr l with
+    | List.cons _ ke rest =>
+      let ke ← whnfR ke
+      let_expr Perennial.keyed_element.KeyedElement _ k el := ke | return none
+      unless (← whnfR k).isAppOfArity ``Option.none 1 do return none
+      let el ← whnfR el
+      let_expr Perennial.element.ElementExpression _ t' ee := el | return none
+      unless t' == t do return none
+      let some v ← isGooseVal? ee | return none
+      unless v.isAppOfArity ``GoGlobalContext.into_val 4 do return none
+      let V := v.getArg! 2
+      if let some V0 := V? then
+        unless V0 == V do return none
+      else V? := some V
+      xs := xs.push (v.getArg! 3)
+      l ← whnfR rest
+    | List.nil _ => break
+    | _ => return none
+  let some V := V? | return none
+  if V.hasLooseBVars || xs.any (·.hasLooseBVars) then return none
+  let N := n.toNat
+  unless xs.size ≤ N && N < 2 ^ 63 do return none
+  let some zv ← synthInstance? (mkApp (mkConst ``ZeroVal) V) | return none
+  let m := N - xs.size
+  let xsE ← mkListLit V xs.toList
+  let ofDecide (d : Expr) : MetaM Expr := do
+    let inst ← synthInstance (mkApp (mkConst ``Decidable) d)
+    return mkApp3 (mkConst ``of_decide_eq_true) d inst
+      (mkApp2 (mkConst ``Eq.refl [1]) (mkConst ``Bool) (mkConst ``Bool.true))
+  let hlen : Expr → MetaM Expr := fun _ => mkEqRefl (mkNatLit N)
+  let common : Array (Expr → MetaM Expr) := #[fun _ => pure nE, fun _ => pure t, fun _ => pure V,
+    fun _ => pure zv, fun _ => pure xsE]
+  let rest : Array (Expr → MetaM Expr) := #[fun _ => pure kvs, fun _ => mkEqRefl kvs, hlen,
+    ofDecide]
+  let r? : Option Expr ← if m == 0 then
+      mkAppPositional? `Perennial.pure_wp_array_lit_full gs (common ++ rest)
+    else
+      mkAppPositional? `Perennial.pure_wp_array_lit gs
+        (common.push (fun _ => pure (mkNatLit m)) ++ rest)
+  let some inst := r? | return none
+  let iTy ← inferType inst
+  let args := iTy.getAppArgs
+  unless args.size == gs.size + 3 do return none
+  return some (args[gs.size]!, args[gs.size + 2]!, inst)
+
 /-- Is `e` an application of a constructor of `go.type` (e.g. a struct type with its
 field list)? Such subterms are treated as atoms by the keys of `synthPureWp`. -/
 def isGoTypeApp (e : Expr) : Bool :=
@@ -1264,6 +1363,7 @@ references of a struct, share one search; a failed generic search is final. A
 redex without such payloads is cached up to its free variables. -/
 def synthPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
   if let some r ← directPureWp gs e1 then return some r
+  if let some r ← arrayLitPureWp? gs e1 then return some r
   let e1 ← instantiateMVars e1
   -- (only small redexes: the key is built at every step)
   if e1.hasMVar.or !(exprSmall e1 400 (modPayloads := true)) then return ← synthPureWpCore gs e1
@@ -1464,6 +1564,10 @@ free-variable sets and closedness proofs (set up by `wp_auto`). -/
 initialize fvAnnotMode : IO.Ref Bool ← IO.mkRef false
 initialize fvCache : IO.Ref (Std.HashMap Expr (Option (List String))) ← IO.mkRef {}
 initialize closedCache : IO.Ref (Std.HashMap (Expr × Expr) (Option Expr)) ← IO.mkRef {}
+/-- Terms that `assignHoisted` may hoist out of binders (`hoistClosed`): the closedness
+annotations `fvClosed S e` and their proofs, which are shared by the steps below
+binders. In creation order: a term comes after the ones it contains. -/
+initialize hoistCandidates : IO.Ref (Array Expr) ← IO.mkRef #[]
 
 /-- A literal `List String` expression. -/
 def strListExpr (l : List String) : Expr :=
@@ -1581,6 +1685,7 @@ partial def closedPf (ext : Expr) (S : List String) (Se : Expr) (e : Expr) : Met
       let Te := e.getArg! 1; let b := e.getArg! 2
       let some T ← strList? Te | pure none
       let some hb ← closedPf ext T Te b | pure none
+      hoistCandidates.modify (·.push hb)
       let some hsub ← subsetPf T Te | pure none
       pure (some (lem ``closed_fv #[Te, b, hb, hsub]))
     else
@@ -1709,6 +1814,7 @@ partial def substPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool
     if let some S ← strList? Se then
       if !S.contains x then
         if let some h ← closedPf ext S Se b then
+          hoistCandidates.modify (·.push h)
           return (e, mkAppN (mkConst ``subst_pf_fvClosed) #[ext, Se, xe, v, b, h, notMemPf ext x xe S])
       -- `x` may occur: substitute into the body (definitionally the same), keeping
       -- the annotation with `x` removed
@@ -1931,6 +2037,7 @@ partial def substEnvPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × Strin
         lookups := lookups.push (s, r, p)
       if !bound then
         if let some h ← closedPf ext S Se b then
+          hoistCandidates.modify (·.push h)
           -- `EnvAvoids S σ`
           let mut hσ := mkApp2 (mkConst ``env_avoids_nil) ext σ
           let mut tl := mkApp (mkConst ``List.nil [0]) (mkConst ``String)
@@ -2083,8 +2190,9 @@ where
       return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y body'
     match ← fvOf body' with
     | some S =>
-      return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y
-        (mkApp3 (mkConst ``fvClosed) ext (strListExpr S) body')
+      let ann := mkApp3 (mkConst ``fvClosed) ext (strListExpr S) body'
+      hoistCandidates.modify (·.push ann)
+      return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y ann
     | none => return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y body'
   go (cache : IO.Ref (Std.HashMap Expr Expr)) (e : Expr) : MetaM Expr := do
     if let some r := (← cache.get)[e]? then return r
@@ -2747,6 +2855,122 @@ def elabGoosePattern (stx : Term) (ext : Expr) : TermElabM Expr := do
   Term.synthesizeSyntheticMVarsNoPostponing (ignoreStuckTC := true)
   instantiateMVars e
 
+/-! ### Hoisting closed subterms out of binders
+
+A proof built by `wp_auto` has a binder per allocation (the location), and the rest
+of the function (its closedness annotations `fvClosed S e`, nested: each contains the
+next one) and the closedness proofs of these annotations are referenced below a
+growing number of them. These terms mention the section variables (`ext`, the
+`GoGlobalContext`, ...), which the declaration abstracts as bound variables, so a
+term shared at `k` binder depths is stored (and checked by the kernel) `k` times:
+the proof had size `O(n²)` for `n` allocations. `assignHoisted` turns the proof into
+`let h₁ := t₁; ...; let hₘ := tₘ; p`, where the `tᵢ` are these terms
+(`hoistCandidates`, registered when they are built), each with the earlier `hⱼ`
+replaced in it: each is then stored and checked once.
+
+(The hypotheses of the proof mode context mention the locations, i.e. the bound
+variables, so they cannot be hoisted: a context with `n` live points-to facts still
+gives a proof of size `O(n²)`.) -/
+
+/-- Replace the subterms of `e` in `map` (by pointer), except `e` itself. -/
+unsafe def replacePtrs (map : PtrMap Expr Expr) (e : Expr) : Expr :=
+  e.replace fun t => if ptrEq t e then none else map.find? t
+
+/-- See "Hoisting closed subterms out of binders": the occurrences in `e` of the terms
+`cands` (in creation order, by pointer) are replaced by `let`-bound variables, and the
+free variables `zs` by `Rs`. `e` is fully instantiated. -/
+unsafe def hoistClosedImpl (e : Expr) (cands : Array Expr) (zs Rs : Array Expr) :
+    MetaM Expr := do
+  if cands.isEmpty then return e.replaceFVars zs Rs
+  -- (each candidate with the earlier ones replaced)
+  let mut map : PtrMap Expr Expr := mkPtrMap
+  let mut vals : Array (FVarId × Expr) := #[]
+  for t in cands do
+    if map.contains t then continue
+    let v := replacePtrs map t
+    let fvarId ← mkFreshFVarId
+    map := map.insert t (mkFVar fvarId)
+    vals := vals.push (fvarId, v)
+  -- (a term less deep than all the candidates contains none of them)
+  let minDepth := cands.foldl (fun d t => min d t.approxDepth) cands[0]!.approxDepth
+  let body := e.replace fun t => if t.approxDepth < minDepth then some t else map.find? t
+  let body := if zs.isEmpty then body else body.replaceFVars zs Rs
+  -- the candidates that occur (possibly in another one that occurs)
+  let mut need := (collectFVars {} body).fvarSet
+  for i' in [0:vals.size] do
+    let (fvarId, v) := vals[vals.size - 1 - i']!
+    if need.contains fvarId then
+      need := (collectFVars { fvarSet := need } v).fvarSet
+  let mut lctx ← getLCtx
+  let insts ← getLocalInstances
+  let mut fvars := #[]
+  for (fvarId, v) in vals do
+    unless need.contains fvarId do continue
+    let ty ← withLCtx lctx insts (inferType v)
+    lctx := lctx.mkLetDecl fvarId `h ty v
+    fvars := fvars.push (mkFVar fvarId)
+  if fvars.isEmpty then return body
+  withLCtx lctx insts (mkLetFVars fvars body (usedLetOnly := false))
+
+@[implemented_by hoistClosedImpl]
+opaque hoistClosed (e : Expr) (cands : Array Expr) (zs Rs : Array Expr) : MetaM Expr
+
+/-- The number of steps that introduced a binder in the proof (allocations), for
+`assignHoisted`. -/
+initialize binderSteps : IO.Ref Nat ← IO.mkRef 0
+
+/-- `assignHoisted` only hoists when there are at least this many binders. -/
+def hoistMinBinders : Nat := 4
+
+/-- Assign the goal `mvar` the proof `pf`, built by a tactic below binders (e.g.
+allocations; `binderSteps`), with the closed terms `cands` hoisted out of the binders
+(`hoistClosed`).
+
+`pf` cannot be instantiated as it is: its remaining goals `?g` (`goals`, in contexts
+with the variables `ys` of the binders, or with some variables cleared) block the
+instantiation of the delayed assignments of the binders. They are temporarily
+assigned `z ys`, for a new free variable `z : ∀ ys, T` (`T` the type of `?g`);
+after instantiating and hoisting, `z` is replaced by a new metavariable `?R` of the
+outer context, assigned `fun ys => ?g` (`?g` itself if there is no `ys`). -/
+def assignHoisted (mvar : MVarId) (pf : Expr) (cands : Array Expr) (goals : Array MVarId) :
+    MetaM Unit := do
+  -- (with few binders, the duplication is small: not worth the traversals)
+  if cands.isEmpty || (← binderSteps.get) < hoistMinBinders then
+    mvar.assign pf
+    return
+  let outer ← mvar.getDecl
+  let saved ← getMCtx
+  -- the remaining goals: `(g, ys, z, type of z)`
+  let mut pending : Array (MVarId × Array Expr × Expr × Expr) := #[]
+  for g in goals do
+    if ← g.isAssignedOrDelayedAssigned then continue
+    let gd ← g.getDecl
+    let ys := gd.lctx.foldl (init := #[]) fun acc d =>
+      if outer.lctx.contains d.fvarId then acc else acc.push d.toExpr
+    let T ← withLCtx gd.lctx gd.localInstances (mkForallFVars ys gd.type)
+    let z := mkFVar (← mkFreshFVarId)
+    g.assign (mkAppN z ys)
+    pending := pending.push (g, ys, z, T)
+  let P ← instantiateMVars pf
+  setMCtx saved
+  if P.hasExprMVar then
+    -- (another metavariable blocks the instantiation)
+    mvar.assign pf
+    return
+  let mut zs := #[]
+  let mut Rs := #[]
+  let mut lctx := outer.lctx
+  for (g, ys, z, T) in pending do
+    zs := zs.push z
+    lctx := lctx.mkLocalDecl z.fvarId! `z T
+    if ys.isEmpty then
+      Rs := Rs.push (mkMVar g)
+    else
+      let R ← mkFreshExprMVarAt outer.lctx outer.localInstances T
+      let gd ← g.getDecl
+      R.mvarId!.assign (← withLCtx gd.lctx gd.localInstances (mkLambdaFVars ys (mkMVar g)))
+      Rs := Rs.push R
+  mvar.assign (← withLCtx lctx outer.localInstances (hoistClosed P cands zs Rs))
 end tactics
 
 /-! ## The tactics -/

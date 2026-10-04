@@ -46,6 +46,7 @@ import Perennial.Golang.Theory.Loop
 import Perennial.Golang.Theory.Assume
 import Perennial.Golang.Theory.Mem
 import Perennial.Golang.Theory.Predeclared
+import Perennial.Golang.Theory.ArrayLit
 
 namespace Perennial
 
@@ -390,7 +391,9 @@ where addGoalCleaningCore {ehyps : Q($prop)} (hyps : Hyps bi ehyps) (goal : Expr
     ProofModeM Expr := do
   let unused ← unusedPointsto hyps goal
   if unused.isEmpty then return ← addBIGoal hyps goal
-  -- remove the hypotheses one by one, building the proof
+  -- remove the hypotheses one by one, building the proof (newest first: `unused` is in
+  -- context order, and removing the last hypothesis of the context is `O(1)`, while
+  -- removing the first one rebuilds the context)
   let rec go {ehyps : Q($prop)} (hyps : Hyps bi ehyps) (us : List (IVarId × FVarId)) :
       ProofModeM Expr := do
     match us with
@@ -401,7 +404,7 @@ where addGoalCleaningCore {ehyps : Q($prop)} (hyps : Hyps bi ehyps) (goal : Expr
       mkAppNamed ``tac_clear_hyp
         [("PROP", prop), ("Δ", ehyps), ("Δ'", r.e'), ("P", r.out), ("Q", goal), ("h", r.pf),
          ("!h'", pf)]
-  go hyps unused
+  go hyps unused.reverse
 
 /-- Rocq `wp_auto_lc`: repeatedly take pure steps (the first `lc` of them
 keeping their later credit, introduced as `Hlc1`, `Hlc2`, ...), loads, stores
@@ -420,8 +423,11 @@ continuation proof (`iWpAllocStep`); the proof terms of the steps are built
 without unification (`mkAppNamedDirect?`); structural steps (`rec`, beta, pairs)
 get their `PureWp` instance directly and the other searches are shared between
 redexes of the same shape (`synthPureWp`); a redex deep inside its evaluation
-context is focused on (`GooseWpGoal.focus?`). Together these make `wp_auto`
-roughly linear in the length of straight-line code and in the depth of
+context is focused on (`GooseWpGoal.focus?`); the continuations and their
+closedness proofs, which are shared below the binders of the allocations, are
+`let`-bound once at the top of the proof (`assignHoisted`; otherwise the declaration
+stores and the kernel checks a copy per binder depth). Together these make
+`wp_auto` roughly linear in the length of straight-line code and in the depth of
 evaluation contexts.
 
 Only the search for the next step may fail silently; an error while taking a
@@ -523,6 +529,7 @@ partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   -- (`solve_into_val_typed_struct`) an `if:` with an angelic `else` branch
   if ← autoAngelicIf.get then
     if let some ((P, e1), K, _) ← findAngelicIf wp.e then
+      binderSteps.modify (· + 1)
       let pf ← withLocalDeclD (← mkFreshUserName `Hif) P fun h => do
         let (pf', lc', _) ← iWpAuto hyps { wp with e := ← fillExpr K e1 } lc lcIdx
         res0.set lc'
@@ -556,7 +563,7 @@ steps were taken. -/
 elab "wp_auto_lc " n:num : tactic =>
   runTacticGooseWp `wp_auto fun mvar g wp => do
     -- annotate the continuations with their free variables (see `fvClosed`)
-    fvCache.set {}; closedCache.set {}
+    fvCache.set {}; closedCache.set {}; hoistCandidates.set #[]; binderSteps.set 0
     let eA ← if goose.wp.fvAnnot.get (← getOptions) then annotateFv wp.ext wp.e else pure wp.e
     let (pf, lc, progress) ← iWpAuto g.hyps { wp with e := eA } n.getNat
     let pf ← if eA == wp.e then pure pf else
@@ -567,7 +574,9 @@ elab "wp_auto_lc " n:num : tactic =>
     fvCache.set {}; closedCache.set {}
     unless progress do throwIPMError "no progress"
     if lc > 0 then throwIPMError "unable to generate enough later credits"
-    mvar.assign pf
+    let cands ← hoistCandidates.get
+    hoistCandidates.set #[]
+    assignHoisted mvar pf cands (← getThe ProofModeM.State).goals
 
 /-- `wp_auto` (Rocq `wp_auto`) repeatedly takes pure steps, loads (`wp_load`),
 stores (`wp_store`) and allocations of local variables (`wp_alloc_auto`, which

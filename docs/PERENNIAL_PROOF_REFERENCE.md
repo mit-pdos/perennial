@@ -176,7 +176,9 @@ local variables (`x_ptr`), not of other locations.
 `Perennial/Golang/Theory/ProofMode.lean`. `wp_pures` takes all pure steps
 (`PureWp` instances: beta, `if:` on literals, pair projections, deterministic
 Go instructions, `exception_seq`, ...) and simplifies substitutions; never
-fails. `wp_pure` takes one step, leaving unsolved side conditions as goals;
+fails. An array literal `[n]T{v₀, v₁, ...}` whose elements are all values of the
+element type `T` becomes `#(array.mk n [v₀, v₁, ...])` (padded with zero values
+up to `n`) in one step (`pure_wp_array_lit`, `Golang/Theory/ArrayLit.lean`). `wp_pure` takes one step, leaving unsolved side conditions as goals;
 `wp_pure (if: _ then _ else _)` steps a redex matching a GooseLang pattern.
 `wp_pure_lc H` keeps the later credit as `H : £ 1`. `wp_expr_simp` only
 simplifies the expression.

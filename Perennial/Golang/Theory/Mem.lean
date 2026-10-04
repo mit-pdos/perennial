@@ -446,6 +446,7 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       (← mkAppOptM ``BIBase.Entails #[some prop, none, some lhs, some (wp.mk' filled wp.Φ)])
     mkForallFVars #[l] T
   let m ← mkFreshExprSyntheticOpaqueMVar hTy
+  binderSteps.modify (· + 1)
   let (l, m') ← m.mvarId!.intro lName
   m'.withContext do
     let l := mkFVar l
