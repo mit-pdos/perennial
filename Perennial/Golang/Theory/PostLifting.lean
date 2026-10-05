@@ -21,7 +21,6 @@ import Perennial.Golang.Theory.ProofMode
 import Perennial.Golang.Theory.Display
 import Perennial.Golang.Defn.Pre
 import Perennial.Helpers.NamedProps
-import Perennial.Experiments.Glob
 import Perennial.IrisLib.DFractional
 
 namespace Perennial

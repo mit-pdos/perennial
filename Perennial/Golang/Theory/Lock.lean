@@ -12,7 +12,6 @@ import Perennial.Proof.ProofPrelude
 import Perennial.Golang.Defn.Lock
 import Perennial.Golang.Theory.Pre
 import Perennial.Proof.TokSet
-import Perennial.Experiments.Glob
 
 noncomputable section
 

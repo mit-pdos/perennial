@@ -8,7 +8,7 @@
 #                  closure of Perennial.lean); code = Perennial/Code/**;
 #                  genproof = Perennial/GeneratedProof/**; proof = Perennial/Proof/**;
 #                  other = every remaining Perennial/**/*.lean not reached from
-#                  Perennial.lean (ManualProof, TrustedCode, Experiments, ...).
+#                  Perennial.lean (ManualProof, TrustedCode, ...).
 #   -o LOG         full lake log (default: .lake/lean-ci.log)
 #   --mem-cap GB   kill any single `lean` child whose RSS exceeds this (default 20)
 #   --min-avail GB kill the largest `lean` child when MemAvailable drops below

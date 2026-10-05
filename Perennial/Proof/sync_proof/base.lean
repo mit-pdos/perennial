@@ -10,7 +10,6 @@ import Perennial.Proof.internal.race
 import Perennial.Proof.internal.synctest
 import Perennial.Proof.TokSet
 import Perennial.Algebra.AuthProp
-import Perennial.Experiments.Glob
 
 noncomputable section
 
