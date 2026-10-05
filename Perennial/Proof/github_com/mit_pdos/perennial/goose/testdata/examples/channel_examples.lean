@@ -3,7 +3,6 @@ Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel
 imports all channel example proofs.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_dsp
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_fibonacci
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_google
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_higher_order

@@ -9,4 +9,3 @@ import Perennial.Golang.Theory.Chan.Idioms.Handshake
 import Perennial.Golang.Theory.Chan.Idioms.Lock
 import Perennial.Golang.Theory.Chan.Idioms.Mpmc
 import Perennial.Golang.Theory.Chan.Idioms.Spsc
-import Perennial.Golang.Theory.Chan.Idioms.Dsp.Dsp

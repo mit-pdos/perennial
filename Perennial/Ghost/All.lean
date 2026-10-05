@@ -1,6 +1,5 @@
 import Iris
 import Perennial.Std.GMap
-import Perennial.Golang.Theory.Chan.Idioms.Dsp.ProtoModel
 
 /-!
 Port of `new/ghost/all.v`: a universal camera and an `own` that needs no
@@ -78,8 +77,6 @@ inductive ofe where
   | laterO
   | discrete_funO (t : ty) (o : ofe)
   | prodO (a b : ofe)
-  /-- `Later (proto V PROP PROP)` (Actris protocols, `Dsp/ProtoModel.lean`) with `V = t.El`. -/
-  | protoO (t : ty)
 
 mutual
 inductive cmra where
@@ -164,7 +161,6 @@ def intO : Syntax.ofe → OFunctorB
   | .prodO a b =>
     letI := (intO a).2; letI := (intO b).2
     ⟨ProdOF (intO a).1 (intO b).1, inferInstance⟩
-  | .protoO t => ⟨LaterOF (protoOF t.El IdOF IdOF), inferInstance⟩
 
 instance (o : Syntax.ofe) : OFunctorContractive (intO o).1 := (intO o).2
 
@@ -284,8 +280,6 @@ instance is_laterO : IsOfe PROP (Later PROP) .laterO := ⟨rfl⟩
 instance is_discrete_funO [ht : IsTy A t] [OFE B] [hB : IsOfe PROP B o] :
     IsOfe PROP (A → B) (.discrete_funO t o) := by
   obtain ⟨rfl⟩ := ht; is_subst hB; exact ⟨rfl⟩
-instance is_protoO [h : IsTy V t] : IsOfe PROP (Later (proto V PROP PROP)) (.protoO t) := by
-  obtain ⟨rfl⟩ := h; exact ⟨rfl⟩
 instance is_prodO [OFE A] [OFE B] [hA : IsOfe PROP A a] [hB : IsOfe PROP B b] :
     IsOfe PROP (A × B) (.prodO a b) := by
   is_subst hA; is_subst hB; exact ⟨rfl⟩
