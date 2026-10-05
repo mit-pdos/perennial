@@ -1,5 +1,6 @@
 import Iris
 import Perennial.Std.GMap
+import Perennial.Algebra.TimeReceipt
 
 /-!
 Port of `new/ghost/all.v`: a universal camera and an `own` that needs no
@@ -94,6 +95,8 @@ inductive cmra where
   | dfracR
   /-- Rocq `positiveR`: positive naturals under addition (`Perennial.positive`). -/
   | positiveR
+  /-- The time-receipt camera `TRView` (`Perennial/Algebra/TimeReceipt.lean`). -/
+  | receiptR
 inductive ucmra where
   | unitUR
   | natUR
@@ -181,6 +184,7 @@ def intF : Syntax.cmra → RFunctorB
   | .fracR => ⟨constOF Qp, inferInstance⟩
   | .dfracR => ⟨constOF DFrac, inferInstance⟩
   | .positiveR => ⟨constOF positive, inferInstance⟩
+  | .receiptR => ⟨constOF TRView, inferInstance⟩
 def intUF : Syntax.ucmra → URFunctorB
   | .unitUR => ⟨constOF Unit, inferInstance⟩
   | .natUR => ⟨constOF Nat, inferInstance⟩
@@ -309,6 +313,7 @@ instance is_max_natR : IsCmra PROP MaxNat .max_natR := ⟨rfl⟩
 instance is_fracR : IsCmra PROP Qp .fracR := ⟨rfl⟩
 instance is_dfracR : IsCmra PROP DFrac .dfracR := ⟨rfl⟩
 instance is_positiveR : IsCmra PROP positive .positiveR := ⟨rfl⟩
+instance is_receiptR : IsCmra PROP TRView .receiptR := ⟨rfl⟩
 
 instance is_unitUR : IsUcmra PROP Unit .unitUR := ⟨rfl⟩
 instance is_natUR : IsUcmra PROP Nat .natUR := ⟨rfl⟩
