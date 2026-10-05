@@ -4,7 +4,7 @@ defaultTargets = ["Perennial"]
 [[require]]
 name = "iris"
 git = "https://github.com/leanprover-community/iris-lean"
-rev = "0c5829537e056c2bda37ffbafdce1bec0bc169c0"
+rev = "6d6544a4394c1f89ce43b26a35f09de9b2158bc9"
 subDir = "Iris"
 
 # Port of Perennial's new-goose framework (Rocq `new/` plus the parts of `src/`
