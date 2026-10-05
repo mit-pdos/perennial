@@ -23,13 +23,13 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : runtime.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.runtime :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.runtime :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.runtime :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.runtime :=
   build_get_is_pkg_init_wf
 
 theorem wp_Gosched :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.runtime ∗ True }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.runtime ∗ True }}
       (App (Val (@! Gosched)) (Val #()))
     {{ RET #(); True }} := by
   wp_start

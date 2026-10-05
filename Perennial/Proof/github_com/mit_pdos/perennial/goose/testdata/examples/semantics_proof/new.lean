@@ -18,10 +18,10 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-theorem wp_testNilDefault : test_fun_ok (GF := GF) testNilDefault := by
+theorem wp_testNilDefault : TestFunOk (GF := GF) testNilDefault := by
   semantics_auto
 
-theorem wp_testNilVal : test_fun_ok (GF := GF) testNilVal := by
+theorem wp_testNilVal : TestFunOk (GF := GF) testNilVal := by
   semantics_auto
 
 end wps

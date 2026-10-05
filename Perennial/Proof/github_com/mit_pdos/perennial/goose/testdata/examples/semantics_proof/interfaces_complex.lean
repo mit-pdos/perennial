@@ -18,13 +18,13 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-theorem wp_testParamsInterface : test_fun_ok (GF := GF) testParamsInterface := by
+theorem wp_testParamsInterface : TestFunOk (GF := GF) testParamsInterface := by
   semantics_auto
 
-theorem wp_testEmptyInterface : test_fun_ok (GF := GF) testEmptyInterface := by
+theorem wp_testEmptyInterface : TestFunOk (GF := GF) testEmptyInterface := by
   semantics_auto
 
-theorem wp_testTypeAssertionInterface : test_fun_ok (GF := GF) testTypeAssertionInterface := by
+theorem wp_testTypeAssertionInterface : TestFunOk (GF := GF) testTypeAssertionInterface := by
   semantics_auto
 
 end wps

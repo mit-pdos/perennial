@@ -35,14 +35,14 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 section instances
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance wp_call_go_func (v2 : val) (f x : binder) (e : expr) :
     PureWp (G := G) (L := L) True (App (Val #(func.mk f x e)) (Val v2))
       (subst' x v2 (subst' f #(func.mk f x e) e)) := by
   have h : (#(func.mk f x e) : val) = RecV f x e := by
-    rw [go.into_val_unfold func.t]
+    rw [go.intoVal_unfold func.t]
   rw [h]
   exact pure_exec_pure_wp (pure_beta f x e v2)
 
@@ -95,9 +95,9 @@ instance notNamed_SliceType (t : go.type) : go.NotNamed (go.SliceType t) := ⟨t
 instance notNamed_MapType (k v : go.type) : go.NotNamed (go.MapType k v) := ⟨trivial⟩
 instance notNamed_ChannelType (d : go.chan_dir) (t : go.type) :
     go.NotNamed (go.ChannelType d t) := ⟨trivial⟩
-instance notNamed_UntypedType (n : go.type_name) : go.NotNamed (go.UntypedType n) := ⟨trivial⟩
+instance notNamed_UntypedType (n : go.TypeName) : go.NotNamed (go.UntypedType n) := ⟨trivial⟩
 
-instance notInterface_Named (n : go.type_name) (args : List go.type) :
+instance notInterface_Named (n : go.TypeName) (args : List go.type) :
     go.NotInterface (go.Named n args) := ⟨trivial⟩
 instance notInterface_ArrayType (n : Int) (t : go.type) : go.NotInterface (go.ArrayType n t) :=
   ⟨trivial⟩
@@ -110,7 +110,7 @@ instance notInterface_SliceType (t : go.type) : go.NotInterface (go.SliceType t)
 instance notInterface_MapType (k v : go.type) : go.NotInterface (go.MapType k v) := ⟨trivial⟩
 instance notInterface_ChannelType (d : go.chan_dir) (t : go.type) :
     go.NotInterface (go.ChannelType d t) := ⟨trivial⟩
-instance notInterface_UntypedType (n : go.type_name) : go.NotInterface (go.UntypedType n) :=
+instance notInterface_UntypedType (n : go.TypeName) : go.NotInterface (go.UntypedType n) :=
   ⟨trivial⟩
 end not_named
 
@@ -132,17 +132,17 @@ class TypedPointsto (V : Type) where
 export TypedPointsto (typed_pointsto_def typed_pointsto_def_dfractional
   typed_pointsto_def_timeless typed_pointsto_agree)
 
-def typed_pointsto_wrap {V : Type} [TypedPointsto (GF := GF) V] (l : loc) (v : V) (dq : DFrac) :
+def typedPointstoWrap {V : Type} [TypedPointsto (GF := GF) V] (l : loc) (v : V) (dq : DFrac) :
     IProp GF :=
   iprop(typed_pointsto_def (GF := GF) l v dq ∗ ⌜l ≠ null⌝)
 
 /-- The typed points-to `l ↦{dq} v` (sealed). -/
 @[irreducible] def typed_pointsto {V : Type} [TypedPointsto (GF := GF) V] (l : loc) (v : V)
     (dq : DFrac) : IProp GF :=
-  typed_pointsto_wrap l v dq
+  typedPointstoWrap l v dq
 
 theorem typed_pointsto_unseal :
-    @typed_pointsto GF = @typed_pointsto_wrap GF := by
+    @typed_pointsto GF = @typedPointstoWrap GF := by
   funext V _ l v dq; with_unfolding_all rfl
 
 theorem typed_pointsto_unseal_eq {V : Type} [TypedPointsto (GF := GF) V] (l : loc) (v : V)
@@ -175,14 +175,14 @@ instance typed_pointsto_dfractional (l : loc) (v : V) :
     DFractional (fun dq => typed_pointsto (GF := GF) l v dq) := by
   rw [typed_pointsto_unseal]
   have := typed_pointsto_def_dfractional (GF := GF) l v
-  unfold typed_pointsto_wrap
+  unfold typedPointstoWrap
   infer_instance
 
 instance typed_pointsto_timeless (l : loc) (dq : DFrac) (v : V) :
     Timeless (typed_pointsto (GF := GF) l v dq) := by
   rw [typed_pointsto_unseal]
   have := typed_pointsto_def_timeless (GF := GF) l v dq
-  unfold typed_pointsto_wrap
+  unfold typedPointstoWrap
   infer_instance
 
 instance typed_pointsto_as_dfractional (l : loc) (dq : DFrac) (v : V) :
@@ -197,24 +197,24 @@ instance typed_pointsto_combine_sep_gives (l : loc) (dq1 dq2 : DFrac) (v1 v2 : V
     CombineSepGives (typed_pointsto (GF := GF) l v1 dq1) (typed_pointsto l v2 dq2)
       iprop(⌜v1 = v2⌝) where
   combine_sep_gives := by
-    rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+    rw [typed_pointsto_unseal]; unfold typedPointstoWrap
     iintro ⟨⟨H1, _⟩, ⟨H2, _⟩⟩
     icases typed_pointsto_agree l dq1 dq2 v1 v2 $$ H1 H2 with %Heq
     imodintro; ipureintro; exact Heq
 
 theorem typed_pointsto_split (l : loc) (v : V) (dq : DFrac) :
     typed_pointsto (GF := GF) l v dq ⊢ typed_pointsto_def l v dq := by
-  rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
   iintro ⟨H, _⟩; iexact H
 
 theorem typed_pointsto_combine (l : loc) (v : V) (dq : DFrac) (h : l ≠ null) :
     typed_pointsto_def (GF := GF) l v dq ⊢ typed_pointsto l v dq := by
-  rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
   iintro H; iframe H; ipureintro; exact h
 
 theorem typed_pointsto_not_null (l : loc) (v : V) (dq : DFrac) :
     typed_pointsto (GF := GF) l v dq ⊢ ⌜l ≠ null⌝ := by
-  rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
   iintro ⟨_, %h⟩; ipureintro; exact h
 
 end typed_pointsto_props
@@ -280,15 +280,15 @@ end into_val_defs
 section go_wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance pure_wp_go_step_det (i : go_instruction) (v : val) (e : expr)
     [h : go.IsGoStepPureDet i v e] :
     PureWp (G := G) (L := L) True (App (Val (GoInstruction i)) (Val v)) e where
   pure_wp_wp s E Φ K _ := by
-    have hdet := h.is_go_step_det
-    have hpure := h.is_go_step_pure_det
+    have hdet := h.isGoStep_det
+    have hpure := h.isGoStep_pure_det
     iintro HΦ
     iapply wp_GoInstruction K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
     inext
@@ -305,11 +305,11 @@ that also yields an exclusive time receipt `⧗ 1` (`wp_GoInstruction_receipt`).
 Use it with `wp_bind` on the instruction, before `wp_auto` takes the step. -/
 theorem wp_go_step_receipt (i : go_instruction) (v : val) (e : expr)
     [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
-    (K : List ectx_item) :
+    (K : List EctxItem) :
     ▷ (⧗ 1 -∗ £ 1 -∗ WP (fill K e) @ s; E {{ Φ }})
     ⊢ WP (fill K (App (Val (GoInstruction i)) (Val v))) @ s; E {{ Φ }} := by
-  have hdet := h.is_go_step_det
-  have hpure := h.is_go_step_pure_det
+  have hdet := h.isGoStep_det
+  have hpure := h.isGoStep_pure_det
   iintro HΦ
   iapply wp_GoInstruction_receipt K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
   inext
@@ -331,11 +331,11 @@ theorem wp_go_step_receipt' (i : go_instruction) (v : val) (e : expr)
 /-- `wp_go_step_receipt` that also increments a persistent time receipt. -/
 theorem wp_go_step_preceipt (i : go_instruction) (v : val) (e : expr)
     [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
-    (K : List ectx_item) (m : Nat) :
+    (K : List EctxItem) (m : Nat) :
     ⧖ m ∗ ▷ (⧗ 1 -∗ ⧖ (m + 1) -∗ £ 1 -∗ WP (fill K e) @ s; E {{ Φ }})
     ⊢ WP (fill K (App (Val (GoInstruction i)) (Val v))) @ s; E {{ Φ }} := by
-  have hdet := h.is_go_step_det
-  have hpure := h.is_go_step_pure_det
+  have hdet := h.isGoStep_det
+  have hpure := h.isGoStep_pure_det
   iintro ⟨Hm, HΦ⟩
   iapply wp_GoInstruction_preceipt K i v Φ m (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
   iframe Hm
@@ -391,9 +391,9 @@ theorem wp_AngelicExit (Φ : val → IProp GF) :
   iframe Hctx
   iexact IH
 
-theorem wp_PackageInitCheck (pkg : go_string) (σ : gmap go_string Bool) :
-    {{ own_go_state (GF := GF) σ }} (App (Val (GoInstruction (PackageInitCheck pkg))) (Val #())) @ s; E
-    {{ RET #((σ !! pkg).getD false); own_go_state σ }} := by
+theorem wp_PackageInitCheck (pkg : go_string) (σ : GMap go_string Bool) :
+    {{ ownGoState (GF := GF) σ }} (App (Val (GoInstruction (PackageInitCheck pkg))) (Val #())) @ s; E
+    {{ RET #((σ !! pkg).getD false); ownGoState σ }} := by
   iintro %Φ Hown HΦ
   iapply wp_GoInstruction' (s := s) (E := E) (PackageInitCheck pkg) #() Φ
     (fun gs => ⟨_, gs, rfl, rfl, rfl⟩)
@@ -407,9 +407,9 @@ theorem wp_PackageInitCheck (pkg : go_string) (σ : gmap go_string Bool) :
   iapply wp_value'
   iapply HΦ $$ Hown
 
-theorem wp_PackageInitStart (pkg : go_string) (σ : gmap go_string Bool) :
-    {{ own_go_state (GF := GF) σ }} (App (Val (GoInstruction (PackageInitStart pkg))) (Val #())) @ s; E
-    {{ RET #(); own_go_state (<[pkg := false]> σ) }} := by
+theorem wp_PackageInitStart (pkg : go_string) (σ : GMap go_string Bool) :
+    {{ ownGoState (GF := GF) σ }} (App (Val (GoInstruction (PackageInitStart pkg))) (Val #())) @ s; E
+    {{ RET #(); ownGoState (<[pkg := false]> σ) }} := by
   iintro %Φ Hown HΦ
   iapply wp_GoInstruction' (s := s) (E := E) (PackageInitStart pkg) #() Φ
     (fun gs => ⟨_, _, rfl, rfl, rfl⟩)
@@ -418,15 +418,15 @@ theorem wp_PackageInitStart (pkg : go_string) (σ : gmap go_string Bool) :
   obtain ⟨-, rfl, rfl⟩ := Hstep
   icombine Hauth Hown gives %Heq
   subst Heq
-  imod own_go_state_update _ _ (<[pkg := false]> gs) $$ Hown Hauth with ⟨Hown, Hauth⟩
+  imod ownGoState_update _ _ (<[pkg := false]> gs) $$ Hown Hauth with ⟨Hown, Hauth⟩
   imodintro
   iframe Hauth
   iapply wp_value'
   iapply HΦ $$ Hown
 
-theorem wp_PackageInitFinish (pkg : go_string) (σ : gmap go_string Bool) :
-    {{ own_go_state (GF := GF) σ }} (App (Val (GoInstruction (PackageInitFinish pkg))) (Val #())) @ s; E
-    {{ RET #(); own_go_state (<[pkg := true]> σ) }} := by
+theorem wp_PackageInitFinish (pkg : go_string) (σ : GMap go_string Bool) :
+    {{ ownGoState (GF := GF) σ }} (App (Val (GoInstruction (PackageInitFinish pkg))) (Val #())) @ s; E
+    {{ RET #(); ownGoState (<[pkg := true]> σ) }} := by
   iintro %Φ Hown HΦ
   iapply wp_GoInstruction' (s := s) (E := E) (PackageInitFinish pkg) #() Φ
     (fun gs => ⟨_, _, rfl, rfl, rfl⟩)
@@ -435,7 +435,7 @@ theorem wp_PackageInitFinish (pkg : go_string) (σ : gmap go_string Bool) :
   obtain ⟨-, rfl, rfl⟩ := Hstep
   icombine Hauth Hown gives %Heq
   subst Heq
-  imod own_go_state_update _ _ (<[pkg := true]> gs) $$ Hown Hauth with ⟨Hown, Hauth⟩
+  imod ownGoState_update _ _ (<[pkg := true]> gs) $$ Hown Hauth with ⟨Hown, Hauth⟩
   imodintro
   iframe Hauth
   iapply wp_value'
@@ -453,14 +453,14 @@ variable {s : Stuckness} {E : CoPset}
 theorem wp_GlobalAlloc (v : go_string) (t : go.type) {V : Type} [ZeroVal V]
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V t] :
     {{ (True : IProp GF) }} (App (Val (go.GlobalAlloc v t)) (Val #())) @ s; E
-    {{ RET #(); global_addr v ↦ zero_val V }} := by
+    {{ RET #(); globalAddr v ↦ zero_val V }} := by
   rw [go.GlobalAlloc_unseal]
   iintro %Φ _ HΦ
   wp_call
   wp_apply_core wp_alloc (zero_val V)
   iintro %l Hl
   wp_pures
-  by_cases h : l = global_addr v
+  by_cases h : l = globalAddr v
   · subst h
     simp only [decide_true]
     wp_pures
@@ -480,8 +480,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable {s : Stuckness} {E : CoPset}
 
 theorem _internal_wp_untyped_read (l : loc) (dq : DFrac) (v : val) :
-    {{ ▷ heap_pointsto (GF := GF) l dq v }} (App (Val Read) (Val #l)) @ s; E
-    {{ RET v; heap_pointsto l dq v }} := by
+    {{ ▷ heapPointsto (GF := GF) l dq v }} (App (Val Read) (Val #l)) @ s; E
+    {{ RET v; heapPointsto l dq v }} := by
   iintro %Φ Hl HΦ
   wp_call
   wp_apply_core wp_start_read l dq v $$ Hl
@@ -494,8 +494,8 @@ theorem _internal_wp_untyped_read (l : loc) (dq : DFrac) (v : val) :
   iapply HΦ $$ Hl
 
 theorem _internal_wp_untyped_store (l : loc) (v v' : val) :
-    {{ ▷ heap_pointsto (GF := GF) l (.own 1) v }} (App (App (Val Store) (Val #l)) (Val v')) @ s; E
-    {{ RET #(); heap_pointsto l (.own 1) v' }} := by
+    {{ ▷ heapPointsto (GF := GF) l (.own 1) v }} (App (App (Val Store) (Val #l)) (Val v')) @ s; E
+    {{ RET #(); heapPointsto l (.own 1) v' }} := by
   iintro %Φ Hl HΦ
   wp_call
   wp_apply_core wp_prepare_write l v $$ Hl
@@ -524,51 +524,51 @@ instance typed_pointsto_unit : TypedPointsto (GF := GF) Unit where
   typed_pointsto_agree _ _ _ v1 v2 := by
     iintro _ _; ipureintro; cases v1; cases v2; rfl
 
-/-- A typed points-to given by `heap_pointsto l dq #v`, for `V` with an injective
-`into_val`. -/
-def heapTypedPointsto (V : Type) (hinj : Function.Injective (into_val (V := V))) :
+/-- A typed points-to given by `heapPointsto l dq #v`, for `V` with an injective
+`intoVal`. -/
+def heapTypedPointsto (V : Type) (hinj : Function.Injective (intoVal (V := V))) :
     TypedPointsto (GF := GF) V where
-  typed_pointsto_def l v dq := heap_pointsto l dq #v
-  typed_pointsto_def_dfractional l v := heap_pointsto_dfractional l #v
-  typed_pointsto_def_timeless l v dq := heap_pointsto_timeless l dq #v
+  typed_pointsto_def l v dq := heapPointsto l dq #v
+  typed_pointsto_def_dfractional l v := heapPointsto_dfractional l #v
+  typed_pointsto_def_timeless l v dq := heapPointsto_timeless l dq #v
   typed_pointsto_agree l dq1 dq2 v1 v2 := by
     iintro H1 H2
     icombine H1 H2 gives % ⟨_, Heq⟩
     ipureintro; exact hinj Heq
 
-theorem typed_pointsto_def_heap (V : Type) (hinj : Function.Injective (into_val (V := V)))
+theorem typed_pointsto_def_heap (V : Type) (hinj : Function.Injective (intoVal (V := V)))
     (l : loc) (v : V) (dq : DFrac) :
-    @typed_pointsto_def GF V (heapTypedPointsto V hinj) l v dq = heap_pointsto l dq #v := rfl
+    @typed_pointsto_def GF V (heapTypedPointsto V hinj) l v dq = heapPointsto l dq #v := rfl
 
 instance typed_pointsto_loc : TypedPointsto (GF := GF) loc :=
-  heapTypedPointsto loc go.into_val_inj
+  heapTypedPointsto loc go.intoVal_inj
 instance typed_pointsto_w64 : TypedPointsto (GF := GF) w64 :=
-  heapTypedPointsto w64 go.into_val_inj
+  heapTypedPointsto w64 go.intoVal_inj
 instance typed_pointsto_w32 : TypedPointsto (GF := GF) w32 :=
-  heapTypedPointsto w32 go.into_val_inj
+  heapTypedPointsto w32 go.intoVal_inj
 instance typed_pointsto_w16 : TypedPointsto (GF := GF) w16 :=
-  heapTypedPointsto w16 go.into_val_inj
+  heapTypedPointsto w16 go.intoVal_inj
 instance typed_pointsto_w8 : TypedPointsto (GF := GF) w8 :=
-  heapTypedPointsto w8 go.into_val_inj
+  heapTypedPointsto w8 go.intoVal_inj
 instance typed_pointsto_bool : TypedPointsto (GF := GF) Bool :=
-  heapTypedPointsto Bool go.into_val_inj
+  heapTypedPointsto Bool go.intoVal_inj
 instance typed_pointsto_string : TypedPointsto (GF := GF) go_string :=
-  heapTypedPointsto go_string go.into_val_inj
+  heapTypedPointsto go_string go.intoVal_inj
 instance typed_pointsto_slice : TypedPointsto (GF := GF) slice.t :=
-  heapTypedPointsto slice.t go.into_val_inj
+  heapTypedPointsto slice.t go.intoVal_inj
 instance typed_pointsto_interface : TypedPointsto (GF := GF) interface.t :=
-  heapTypedPointsto interface.t go.into_val_inj
+  heapTypedPointsto interface.t go.intoVal_inj
 instance typed_pointsto_proph_id : TypedPointsto (GF := GF) proph_id :=
-  heapTypedPointsto proph_id go.into_val_inj
+  heapTypedPointsto proph_id go.intoVal_inj
 
 include hG in
-theorem into_val_inj_func : Function.Injective (into_val (V := func.t)) := by
+theorem intoVal_inj_func : Function.Injective (intoVal (V := func.t)) := by
   intro f1 f2 h
-  rw [go.into_val_unfold func.t] at h
+  rw [go.intoVal_unfold func.t] at h
   cases f1; cases f2; cases h; rfl
 
 instance typed_pointsto_func : TypedPointsto (GF := GF) func.t :=
-  heapTypedPointsto func.t (into_val_inj_func (hG := hG))
+  heapTypedPointsto func.t (intoVal_inj_func (hG := hG))
 
 end typed_pointsto_instances
 
@@ -579,7 +579,7 @@ instance to prove `IntoValTyped` instances (Rocq: `pose proof (go.tagged_steps i
 theorem go.tagged_internal_inst [ffi_syntax] [GoLocalContext] [GoGlobalContext]
     {instr : go_instruction} {args : val} {e : expr} [h : ⟦instr, args⟧ ⤳[internal] e] :
     ⟦instr, args⟧ ⤳ e :=
-  h.is_go_step_det_internal
+  h.isGoStep_det_internal
 
 section into_val_typed_instances
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
@@ -590,25 +590,25 @@ open ProofMode
 
 attribute [local instance] go.tagged_internal_inst
 
-theorem heap_pointsto_non_null_dup (l : loc) (dq : DFrac) (v : val) :
-    heap_pointsto (GF := GF) l dq v ⊢ heap_pointsto l dq v ∗ ⌜l ≠ null⌝ := by
-  unfold heap_pointsto
+theorem heapPointsto_non_null_dup (l : loc) (dq : DFrac) (v : val) :
+    heapPointsto (GF := GF) l dq v ⊢ heapPointsto l dq v ∗ ⌜l ≠ null⌝ := by
+  unfold heapPointsto
   iintro ⟨%Hl, H⟩
   iframe H
   isplit <;> ipureintro <;> exact Hl
 
 /-- Prove `IntoValTypedUnderlying V t` for a type whose typed points-to is
-`heap_pointsto l dq #v` and which is allocated, loaded and stored with the
+`heapPointsto l dq #v` and which is allocated, loaded and stored with the
 untyped primitives (Rocq `solve_into_val_typed`). -/
 macro "solve_into_val_typed" : tactic => `(tactic| (
   constructor
-  all_goals try simp only [typed_pointsto_unseal, typed_pointsto_wrap, typed_pointsto_def_heap]
+  all_goals try simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap]
   · intro s E t _ v
     iintro %Φ _ HΦ
     wp_pures
     wp_apply_core wp_alloc_untyped _
     iintro %l Hl
-    icases heap_pointsto_non_null_dup l _ _ $$ Hl with ⟨Hl, %Hnn⟩
+    icases heapPointsto_non_null_dup l _ _ $$ Hl with ⟨Hl, %Hnn⟩
     iapply HΦ
     iframe Hl
     ipureintro; exact Hnn
@@ -632,27 +632,27 @@ macro "solve_into_val_typed" : tactic => `(tactic| (
     ipureintro; exact Hnn
   · infer_instance))
 
-instance into_val_typed_loc (t : go.type) :
+instance intoVal_typed_loc (t : go.type) :
     IntoValTypedUnderlying (GF := GF) loc (go.PointerType t) := by
   solve_into_val_typed
 
-instance into_val_typed_func (sig : go.signature) :
+instance intoVal_typed_func (sig : go.signature) :
     IntoValTypedUnderlying (GF := GF) func.t (go.FunctionType sig) := by
   solve_into_val_typed
 
-instance into_val_typed_slice (t : go.type) :
+instance intoVal_typed_slice (t : go.type) :
     IntoValTypedUnderlying (GF := GF) slice.t (go.SliceType t) := by
   solve_into_val_typed
 
-instance into_val_typed_interface (elems : List go.interface_elem) :
+instance intoVal_typed_interface (elems : List go.interface_elem) :
     IntoValTypedUnderlying (GF := GF) interface.t (go.InterfaceType elems) := by
   solve_into_val_typed
 
-instance into_val_typed_chan (t : go.type) (b : go.chan_dir) :
+instance intoVal_typed_chan (t : go.type) (b : go.chan_dir) :
     IntoValTypedUnderlying (GF := GF) chan.t (go.ChannelType b t) := by
   solve_into_val_typed
 
-instance into_val_typed_map (k v : go.type) :
+instance intoVal_typed_map (k v : go.type) :
     IntoValTypedUnderlying (GF := GF) map.t (go.MapType k v) := by
   solve_into_val_typed
 
@@ -683,7 +683,7 @@ macro "iStructNamedPrefix " H:ident pref:str : tactic =>
 theorem typed_pointsto_not_null_dup [ffi_syntax] {GF : BundledGFunctors} {V : Type}
     [TypedPointsto (GF := GF) V] (l : loc) (v : V) (dq : DFrac) :
     typed_pointsto (GF := GF) l v dq ⊢ typed_pointsto l v dq ∗ ⌜l ≠ null⌝ := by
-  rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
   iintro ⟨H, %h⟩
   iframe H
   isplit <;> ipureintro <;> exact h

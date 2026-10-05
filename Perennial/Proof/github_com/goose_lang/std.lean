@@ -35,17 +35,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.goose_lang.std.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.github_com.goose_lang.std :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.github_com.goose_lang.std :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.github_com.goose_lang.std :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.github_com.goose_lang.std :=
   build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.github_com.goose_lang.std get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.github_com.goose_lang.std get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -61,7 +61,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   is_pkg_init_finish
 
 theorem wp_Assert (cond : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ ⌜cond = true⌝ }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ ⌜cond = true⌝ }}
       (App (Val (@! Assert)) (Val #cond))
     {{ RET #(); True }} := by
   wp_start as %Hc
@@ -70,7 +70,7 @@ theorem wp_Assert (cond : Bool) :
   wp_end
 
 theorem wp_SumNoOverflow (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std }}
       (App (App (Val (@! SumNoOverflow)) (Val #x)) (Val #y))
     {{ RET #(decide (uint.Z (x + y) = uint.Z x + uint.Z y)); True }} := by
   wp_start
@@ -79,7 +79,7 @@ theorem wp_SumNoOverflow (x y : w64) :
   wp_end
 
 theorem wp_SumAssumeNoOverflow (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std }}
       (App (App (Val (@! SumAssumeNoOverflow)) (Val #x)) (Val #y))
     {{ RET #(x + y); ⌜uint.Z (x + y) = uint.Z x + uint.Z y⌝ }} := by
   wp_start
@@ -88,7 +88,7 @@ theorem wp_SumAssumeNoOverflow (x y : w64) :
   wp_end
 
 theorem wp_SignedSumAssumeNoOverflow (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std }}
       (App (App (Val (@! SignedSumAssumeNoOverflow)) (Val #x)) (Val #y))
     {{ RET #(x + y); ⌜sint.Z (x + y) = sint.Z x + sint.Z y⌝ }} := by
   wp_start
@@ -116,14 +116,14 @@ theorem wp_SignedSumAssumeNoOverflow (x y : w64) :
       cases h
 
 theorem wp_BytesEqual (s1 s2 : slice.t) (xs1 xs2 : List w8) (dq1 dq2 : DFrac) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗
         s1 ↦*{dq1} xs1 ∗ s2 ↦*{dq2} xs2 }}
       (App (App (Val (@! BytesEqual)) (Val #s1)) (Val #s2))
     {{ RET #(decide (xs1 = xs2)); s1 ↦*{dq1} xs1 ∗ s2 ↦*{dq2} xs2 }} := by
   wp_start as ⟨Hs1, Hs2⟩
   wp_auto
-  ihave %Hl1 := own_slice_len _ _ _ $$ Hs1
-  ihave %Hl2 := own_slice_len _ _ _ $$ Hs2
+  ihave %Hl1 := ownSlice_len _ _ _ $$ Hs1
+  ihave %Hl2 := ownSlice_len _ _ _ $$ Hs2
   by_cases hlen : s1.len = s2.len
   · simp only [hlen, _root_.decide_true, Bool.not_true]
     wp_auto
@@ -188,22 +188,22 @@ theorem wp_BytesEqual (s1 s2 : slice.t) (xs1 xs2 : List w8) (dq1 dq2 : DFrac) :
     wp_end
 
 theorem wp_BytesClone (b : slice.t) (xs : List w8) (dq : DFrac) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ b ↦*{dq} xs }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ b ↦*{dq} xs }}
       (App (Val (@! BytesClone)) (Val #b))
-    {{ (b' : slice.t), RET #b'; b' ↦* xs ∗ own_slice_cap w8 b' (DFrac.own 1) }} := by
+    {{ (b' : slice.t), RET #b'; b' ↦* xs ∗ ownSliceCap w8 b' (DFrac.own 1) }} := by
   wp_start as Hb
   wp_auto
   by_cases Hif : b = slice.nil
   · subst Hif
     simp only [_root_.decide_true]
     wp_auto
-    ihave %Hlen := own_slice_len _ _ _ $$ Hb
+    ihave %Hlen := ownSlice_len _ _ _ $$ Hb
     have hb : xs = [] := List.eq_nil_of_length_eq_zero (by rw [Hlen.1]; rfl)
     subst hb
     iapply HΦ
     isplitl []
-    · iapply own_slice_nil
-    · iapply own_slice_cap_nil
+    · iapply ownSlice_nil
+    · iapply ownSliceCap_nil
   · simp only [decide_eq_false Hif]
     wp_pure; wp_pure; wp_pure; wp_pure; wp_pure; wp_pure
     wp_bind (App (Val (GoInstruction (CompositeLiteral (go.SliceType go.byte)))) (Val (LiteralValueV _)))
@@ -222,28 +222,28 @@ theorem wp_BytesClone (b : slice.t) (xs : List w8) (dq : DFrac) :
 
 /-- `if done_b then P else True` (a `def`, so that the proof mode does not
 unfold the `if`). -/
-def jh_P (done_b : Bool) (P : IProp GF) : IProp GF := if done_b then P else iprop(True)
+def jhP (done_b : Bool) (P : IProp GF) : IProp GF := if done_b then P else iprop(True)
 
-abbrev jh_inv (l : loc) (P : IProp GF) : IProp GF :=
+abbrev jhInv (l : loc) (P : IProp GF) : IProp GF :=
   iprop(∃ done_b : Bool,
     "done_b" ∷ typed_pointsto (struct_field_ref JoinHandle.t go!"done" l) done_b (DFrac.own 1) ∗
-    "HP" ∷ jh_P done_b P)
+    "HP" ∷ jhP done_b P)
 
-def is_JoinHandle (l : loc) (P : IProp GF) : IProp GF :=
+def isJoinHandle (l : loc) (P : IProp GF) : IProp GF :=
   iprop(∃ (mu_l cond_l : loc),
     "#mu" ∷ typed_pointsto (struct_field_ref JoinHandle.t go!"mu" l) mu_l DFrac.discard ∗
     "#cond" ∷ typed_pointsto (struct_field_ref JoinHandle.t go!"cond" l) cond_l DFrac.discard ∗
-    "#Hcond" ∷ sync.is_Cond cond_l (interface.mk (go.type.PointerType sync.Mutex) #mu_l) ∗
-    "#Hlock" ∷ sync.is_Mutex mu_l (jh_inv l P))
+    "#Hcond" ∷ sync.isCond cond_l (interface.mk (go.type.PointerType sync.Mutex) #mu_l) ∗
+    "#Hlock" ∷ sync.isMutex mu_l (jhInv l P))
 
-instance is_JoinHandle_persistent (l : loc) (P : IProp GF) :
-    Persistent (is_JoinHandle (GF := GF) l P) := by
-  unfold is_JoinHandle named; infer_instance
+instance isJoinHandle_persistent (l : loc) (P : IProp GF) :
+    Persistent (isJoinHandle (GF := GF) l P) := by
+  unfold isJoinHandle named; infer_instance
 
 theorem wp_newJoinHandle (P : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std }}
       (App (Val (@! newJoinHandle)) (Val #()))
-    {{ (l : loc), RET #l; is_JoinHandle l P }} := by
+    {{ (l : loc), RET #l; isJoinHandle l P }} := by
   wp_start
   wp_auto
   wp_apply sync.wp_NewCond as %cond_l #Hcond
@@ -251,37 +251,37 @@ theorem wp_newJoinHandle (P : IProp GF) :
   iStructNamed Hjh
   ipersist mu
   ipersist cond
-  imod sync.init_Mutex (jh_inv jh_l P) ⊤ «$r0_ptr» $$ «$r0» [done] with #Hlock
-  · inext; iexists false; iframe; unfold jh_P; simp only [Bool.false_eq_true, ↓reduceIte]
+  imod sync.init_Mutex (jhInv jh_l P) ⊤ «$r0_ptr» $$ «$r0» [done] with #Hlock
+  · inext; iexists false; iframe; unfold jhP; simp only [Bool.false_eq_true, ↓reduceIte]
     itrivial
   wp_auto
   iapply HΦ
-  unfold is_JoinHandle
+  unfold isJoinHandle
   iexists «$r0_ptr», cond_l
   iframe #
 
-theorem wp_JoinHandle__finish (l : loc) (P : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ is_JoinHandle l P ∗ P }}
+theorem JoinHandle.wp_finish (l : loc) (P : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ isJoinHandle l P ∗ P }}
       (App (Val (l @!! go.type.PointerType JoinHandle @!! go!"finish")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hhandle, HPin⟩
-  unfold is_JoinHandle
+  unfold isJoinHandle
   iNamed Hhandle
   wp_auto
-  wp_apply sync.wp_Mutex__Lock $$ [$Hlock] as ⟨locked, Hinv⟩
+  wp_apply sync.Mutex.wp_Lock $$ [$Hlock] as ⟨locked, Hinv⟩
   iNamed Hinv
   wp_auto
-  wp_apply sync.wp_Cond__Signal $$ [$Hcond]
-  wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $locked done_b HPin HP]
+  wp_apply sync.Cond.wp_Signal $$ [$Hcond]
+  wp_apply sync.Mutex.wp_Unlock $$ [$Hlock $locked done_b HPin HP]
   · iclear HP
-    inext; iexists true; iframe done_b; unfold jh_P; simp only [↓reduceIte]; iframe HPin
+    inext; iexists true; iframe done_b; unfold jhP; simp only [↓reduceIte]; iframe HPin
   wp_end
 
 theorem wp_Spawn (P : IProp GF) (f : func.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗
         (∀ Φ : val → IProp GF, ▷ (P -∗ Φ #()) -∗ WP (App (Val #f) (Val #())) {{ Φ }}) }}
       (App (Val (@! Spawn)) (Val #f))
-    {{ (l : loc), RET #l; is_JoinHandle l P }} := by
+    {{ (l : loc), RET #l; isJoinHandle l P }} := by
   wp_start as Hwp
   wp_auto
   wp_apply wp_newJoinHandle P as %l #Hhandle
@@ -294,34 +294,34 @@ theorem wp_Spawn (P : IProp GF) (f : func.t) :
     wp_apply Hwp
     iintro HP
     wp_auto
-    wp_apply wp_JoinHandle__finish $$ [$Hhandle $HP]
+    wp_apply JoinHandle.wp_finish $$ [$Hhandle $HP]
     itrivial
   · inext
     wp_auto
     iapply HΦ $$ Hhandle
 
-theorem wp_JoinHandle__Join (l : loc) (P : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ is_JoinHandle l P }}
+theorem JoinHandle.wp_Join (l : loc) (P : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ isJoinHandle l P }}
       (App (Val (l @!! go.type.PointerType JoinHandle @!! go!"Join")) (Val #()))
     {{ RET #(); P }} := by
   wp_start as #Hjh
-  unfold is_JoinHandle
+  unfold isJoinHandle
   iNamed Hjh
   wp_auto
-  wp_apply sync.wp_Mutex__Lock $$ [$Hlock] as ⟨Hlocked, Hinv⟩
+  wp_apply sync.Mutex.wp_Lock $$ [$Hlock] as ⟨Hlocked, Hinv⟩
   iNamed Hinv
   ihave HI : (∃ done_b : Bool,
-      "locked" ∷ sync.own_Mutex mu_l ∗
+      "locked" ∷ sync.ownMutex mu_l ∗
       "done" ∷ typed_pointsto (struct_field_ref JoinHandle.t go!"done" l) done_b (DFrac.own 1) ∗
-      "HP" ∷ jh_P done_b P : IProp GF) $$ [Hlocked done_b HP]
+      "HP" ∷ jhP done_b P : IProp GF) $$ [Hlocked done_b HP]
   · iexists done_b; iframe
   wp_for HI
   cases done_b with
   | false =>
     wp_auto
-    ihave #Hlk := sync.Mutex_is_Locker mu_l (jh_inv l P) $$ [] Hlock
+    ihave #Hlk := sync.Mutex_is_Locker mu_l (jhInv l P) $$ [] Hlock
     · iPkgInit
-    wp_apply sync.wp_Cond__Wait cond_l _ iprop(sync.own_Mutex mu_l ∗ jh_inv l P)
+    wp_apply sync.Cond.wp_Wait cond_l _ iprop(sync.ownMutex mu_l ∗ jhInv l P)
       $$ [$Hcond $Hlk locked done HP] as ⟨Hlocked, Hlinv⟩
     · iframe locked; iexists false; iframe
     iNamed Hlinv
@@ -332,11 +332,11 @@ theorem wp_JoinHandle__Join (l : loc) (P : IProp GF) :
   | true =>
     wp_auto
     wp_for_post
-    wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $locked done]
-    · inext; iexists false; iframe done; unfold jh_P; simp only [Bool.false_eq_true, ↓reduceIte]
+    wp_apply sync.Mutex.wp_Unlock $$ [$Hlock $locked done]
+    · inext; iexists false; iframe done; unfold jhP; simp only [Bool.false_eq_true, ↓reduceIte]
       itrivial
     iapply HΦ
-    unfold jh_P
+    unfold jhP
     simp only [↓reduceIte]
     iexact HP
 

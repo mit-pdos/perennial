@@ -18,13 +18,13 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-theorem wp_testOrCompare : test_fun_ok (GF := GF) testOrCompare := by
+theorem wp_testOrCompare : TestFunOk (GF := GF) testOrCompare := by
   semantics_auto
 
-theorem wp_testAndCompare : test_fun_ok (GF := GF) testAndCompare := by
+theorem wp_testAndCompare : TestFunOk (GF := GF) testAndCompare := by
   semantics_auto
 
-theorem wp_testShiftMod : test_fun_ok (GF := GF) testShiftMod := by
+theorem wp_testShiftMod : TestFunOk (GF := GF) testShiftMod := by
   semantics_auto
 
 end wps

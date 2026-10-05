@@ -18,19 +18,19 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-theorem wp_testU64ToU32 : test_fun_ok (GF := GF) testU64ToU32 := by
+theorem wp_testU64ToU32 : TestFunOk (GF := GF) testU64ToU32 := by
   semantics_auto
 
-theorem wp_testU32ToU64 : test_fun_ok (GF := GF) testU32ToU64 := by
+theorem wp_testU32ToU64 : TestFunOk (GF := GF) testU32ToU64 := by
   semantics_auto
 
-theorem wp_testU32Len : test_fun_ok (GF := GF) testU32Len := by
+theorem wp_testU32Len : TestFunOk (GF := GF) testU32Len := by
   semantics_auto
 
-theorem wp_testU32NewtypeLen : test_fun_ok (GF := GF) testU32NewtypeLen := by
+theorem wp_testU32NewtypeLen : TestFunOk (GF := GF) testU32NewtypeLen := by
   semantics_auto
 
-theorem wp_testUint32Untyped : test_fun_ok (GF := GF) testUint32Untyped := by
+theorem wp_testUint32Untyped : TestFunOk (GF := GF) testUint32Untyped := by
   semantics_auto
 
 end wps

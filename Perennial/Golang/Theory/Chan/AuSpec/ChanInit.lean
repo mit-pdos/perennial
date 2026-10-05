@@ -21,10 +21,10 @@ variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ex
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 
-instance is_pkg_init_inst :
+instance isPkgInit_inst :
     IsPkgInit (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.model.channel :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst :
+instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.model.channel :=
   build_get_is_pkg_init_wf
 

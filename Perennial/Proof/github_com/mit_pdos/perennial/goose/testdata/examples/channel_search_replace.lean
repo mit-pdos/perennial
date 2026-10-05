@@ -26,65 +26,65 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : parallel_search_replace.Assumptions]
 
-instance is_pkg_init_inst :
+instance isPkgInit_inst :
     IsPkgInit (IProp GF)
       pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst :
+instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF)
       pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace :=
   build_get_is_pkg_init_wf
 
 end init
 
-structure SearchReplace_names where
-  wg : sync.WaitGroup_names
-  wg_added : GName
+structure SearchReplaceNames where
+  wg : sync.WaitGroupNames
+  wgAdded : GName
 
-def search_replace (x y : w64) (l : List w64) : List w64 :=
+def searchReplace (x y : w64) (l : List w64) : List w64 :=
   l.map (fun a => if a = x then y else a)
 
-@[simp] theorem search_replace_length (x y : w64) (l : List w64) :
-    (search_replace x y l).length = l.length := by
-  simp [search_replace]
+@[simp] theorem searchReplace_length (x y : w64) (l : List w64) :
+    (searchReplace x y l).length = l.length := by
+  simp [searchReplace]
 
-theorem search_replace_lookup (x y : w64) (xs : List w64) (i : Nat) (x' : w64)
+theorem searchReplace_lookup (x y : w64) (xs : List w64) (i : Nat) (x' : w64)
     (h : xs[i]? = some x') :
-    (search_replace x y (xs.take i) ++ xs.drop i)[i]? = some x' := by
+    (searchReplace x y (xs.take i) ++ xs.drop i)[i]? = some x' := by
   have hi : i < xs.length := (List.getElem?_eq_some_iff.1 h).1
-  have h3 : (search_replace x y (xs.take i)).length = i := by simp; omega
+  have h3 : (searchReplace x y (xs.take i)).length = i := by simp; omega
   rw [List.getElem?_append_right (by omega), h3, Nat.sub_self, List.getElem?_drop, Nat.add_zero, h]
 
-theorem search_replace_step (x y : w64) (xs : List w64) (i : Nat) (x' : w64)
+theorem searchReplace_step (x y : w64) (xs : List w64) (i : Nat) (x' : w64)
     (h : xs[i]? = some x') :
-    (search_replace x y (xs.take i) ++ xs.drop i).set i (if x' = x then y else x') =
-      search_replace x y (xs.take (i + 1)) ++ xs.drop (i + 1) := by
+    (searchReplace x y (xs.take i) ++ xs.drop i).set i (if x' = x then y else x') =
+      searchReplace x y (xs.take (i + 1)) ++ xs.drop (i + 1) := by
   have hi : i < xs.length := (List.getElem?_eq_some_iff.1 h).1
-  have h3 : (search_replace x y (xs.take i)).length = i := by simp; omega
+  have h3 : (searchReplace x y (xs.take i)).length = i := by simp; omega
   rw [List.set_append_right _ _ (by omega), h3, Nat.sub_self, List.take_add_one, h,
     List.drop_eq_getElem_cons hi]
-  simp only [Option.toList_some, List.set_cons_zero, search_replace, List.map_append, List.map_cons,
+  simp only [Option.toList_some, List.set_cons_zero, searchReplace, List.map_append, List.map_cons,
     List.map_nil, List.append_assoc, List.singleton_append]
 
-theorem search_replace_step_ne (x y : w64) (xs : List w64) (i : Nat) (x' : w64)
+theorem searchReplace_step_ne (x y : w64) (xs : List w64) (i : Nat) (x' : w64)
     (h : xs[i]? = some x') (hne : ¬ x' = x) :
-    search_replace x y (xs.take i) ++ xs.drop i =
-      search_replace x y (xs.take (i + 1)) ++ xs.drop (i + 1) := by
-  rw [← search_replace_step x y xs i x' h, ite_eq_right_iff.2 (fun h => absurd h hne),
-    list_set_lookup_self _ _ _ (search_replace_lookup x y xs i x' h)]
+    searchReplace x y (xs.take i) ++ xs.drop i =
+      searchReplace x y (xs.take (i + 1)) ++ xs.drop (i + 1) := by
+  rw [← searchReplace_step x y xs i x' h, ite_eq_right_iff.2 (fun h => absurd h hne),
+    list_set_lookup_self _ _ _ (searchReplace_lookup x y xs i x' h)]
 
-theorem search_replace_take_append (x y : w64) (xs : List w64) (o n : Nat) (h : o ≤ n) :
-    (search_replace x y xs).take o ++ search_replace x y ((xs.drop o).take (n - o)) =
-      (search_replace x y xs).take n := by
+theorem searchReplace_take_append (x y : w64) (xs : List w64) (o n : Nat) (h : o ≤ n) :
+    (searchReplace x y xs).take o ++ searchReplace x y ((xs.drop o).take (n - o)) =
+      (searchReplace x y xs).take n := by
   have hn : n = o + (n - o) := by omega
   conv => rhs; rw [hn]
-  unfold search_replace
+  unfold searchReplace
   rw [← List.map_take, ← List.map_take, ← List.map_append, ← List.take_add]
 
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : parallel_search_replace.Assumptions]
 
 local notation "pkg" =>
@@ -93,15 +93,15 @@ local notation "pkg" =>
 def chanP (wg : loc) (x y : w64) (s : slice.t) : IProp GF :=
   iprop(∃ xs : List w64,
     "Hxs" ∷ s ↦* xs ∗
-    "Hwg_done" ∷ sync.join.own_Done wg (s ↦* (search_replace x y xs)))
+    "Hwg_done" ∷ sync.join.ownDone wg (s ↦* (searchReplace x y xs)))
 
 def waitgroupN : Namespace := nroot.@"waitgroup"
 
 /-- (Rocq: TODO: put this in slice.v) -/
-theorem own_slice_slice_empty (index : w64) (s : slice.t) (xs : List w64)
+theorem ownSlice_slice_empty (index : w64) (s : slice.t) (xs : List w64)
     (h : 0 ≤ sint.Z index ∧ sint.Z index ≤ sint.Z s.cap) :
     (s ↦* xs : IProp GF) ⊢ □ (slice.slice s w64 index index ↦* ([] : List w64)) := by
-  rw [own_slice_unseal]; unfold own_slice_def
+  rw [ownSlice_unseal]; unfold ownSliceDef
   iintro (%H | ⟨H, %Hc⟩)
   · obtain ⟨rfl, rfl⟩ := H
     have hi : index = W64 0 := by simp only [slice.nil] at h; word
@@ -110,16 +110,16 @@ theorem own_slice_slice_empty (index : w64) (s : slice.t) (xs : List w64)
     ileft
     ipureintro
     refine ⟨?_, rfl⟩
-    simp only [slice.slice, slice_index_ref, slice.nil]
-    rw [show sint.Z (W64 0) = 0 from rfl, go.array_index_ref_0]
+    simp only [slice.slice, sliceIndexRef, slice.nil]
+    rw [show sint.Z (W64 0) = 0 from rfl, go.arrayIndexRef_0]
     rfl
   · ihave %Hnn := typed_pointsto_not_null _ _ _ $$ H
     have hslice : slice.slice s w64 index index =
-        slice.mk (slice_index_ref w64 (sint.Z index) s) (W64 0) (s.cap - index) := by
+        slice.mk (sliceIndexRef w64 (sint.Z index) s) (W64 0) (s.cap - index) := by
       simp [slice.slice]
     rw [hslice]
-    have hp : slice_index_ref w64 (sint.Z index) s ≠ null :=
-      fun hn => Hnn (go.array_index_ref_null_inv _ _ _ hn)
+    have hp : sliceIndexRef w64 (sint.Z index) s ≠ null :=
+      fun hn => Hnn (go.arrayIndexRef_null_inv _ _ _ hn)
     imodintro
     iright
     isplit
@@ -128,9 +128,9 @@ theorem own_slice_slice_empty (index : w64) (s : slice.t) (xs : List w64)
 
 set_option goose.wp.extras true
 
-theorem wp_worker (γs : chan_names) (ch : loc) (wg : loc) (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
-        "#Hchan" ∷ is_chan_bag γs ch (chanP wg x y) }}
+theorem wp_worker (γs : ChanNames) (ch : loc) (wg : loc) (x y : w64) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
+        "#Hchan" ∷ isChanBag γs ch (chanP wg x y) }}
       (App (App (App (App (Val (@! worker)) (Val #ch)) (Val #wg)) (Val #x)) (Val #y))
     {{ RET #(); True }} := by
   wp_start as #Hchan
@@ -142,15 +142,15 @@ theorem wp_worker (γs : chan_names) (ch : loc) (wg : loc) (x y : w64) :
   · iexists s; iframe
   wp_for HH
   iNamed Hrcv
-  ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
   ihave HI : (∃ i : w64,
       "i" ∷ i_ptr ↦ i ∗
-      "Hxs" ∷ s ↦* (search_replace x y (xs.take (sint.nat i)) ++ xs.drop (sint.nat i)) ∗
+      "Hxs" ∷ s ↦* (searchReplace x y (xs.take (sint.nat i)) ++ xs.drop (sint.nat i)) ∗
       "%Hi_bound" ∷ ⌜0 ≤ sint.Z i ∧ sint.nat i ≤ xs.length⌝ : IProp GF) $$ [i Hxs]
   · iexists W64 0
     iframe i
     rw [show sint.nat (W64 0) = 0 from rfl, List.take_zero, List.drop_zero]
-    simp only [search_replace, List.map_nil, List.nil_append]
+    simp only [searchReplace, List.map_nil, List.nil_append]
     iframe
     ipureintro; constructor <;> word
   wp_for HI
@@ -163,7 +163,7 @@ theorem wp_worker (γs : chan_names) (ch : loc) (wg : loc) (x y : w64) :
       word
     simp only [Hi_bound.1, Hlt, and_self, ↓reduceIte]
     list_elem xs (sint.nat i) as x'
-    have Hlook := search_replace_lookup x y xs (sint.nat i) x' Hx'_lookup
+    have Hlook := searchReplace_lookup x y xs (sint.nat i) x' Hx'_lookup
     have Hi1 : sint.nat (i + W64 1) = sint.nat i + 1 := by word
     wp_apply wp_load_slice_index s (sint.Z i) _ _ x' Hi_bound.1 $$ [Hxs] with Hxs
     · iframe; ipureintro; exact Hlook
@@ -175,12 +175,12 @@ theorem wp_worker (γs : chan_names) (ch : loc) (wg : loc) (x y : w64) :
       wp_apply wp_store_slice_index s (sint.Z i) _ y $$ [Hxs] with Hxs
       · iframe; ipureintro; constructor
         · exact Hi_bound.1
-        · simp only [List.length_append, search_replace_length, List.length_take, List.length_drop]
+        · simp only [List.length_append, searchReplace_length, List.length_take, List.length_drop]
           omega
       wp_for_post
       iframe
       iexists i + W64 1
-      have := search_replace_step x y xs (sint.nat i) x' Hx'_lookup
+      have := searchReplace_step x y xs (sint.nat i) x' Hx'_lookup
       rw [ite_eq_left_of_eq_true _ _ (eq_true Hx)] at this
       rw [Hi1, ← this]
       iframe
@@ -190,7 +190,7 @@ theorem wp_worker (γs : chan_names) (ch : loc) (wg : loc) (x y : w64) :
       wp_for_post
       iframe
       iexists i + W64 1
-      rw [Hi1, ← search_replace_step_ne x y xs (sint.nat i) x' Hx'_lookup Hx]
+      rw [Hi1, ← searchReplace_step_ne x y xs (sint.nat i) x' Hx'_lookup Hx]
       iframe
       ipureintro; constructor <;> word
   · have Heq : i = s.len := by
@@ -202,7 +202,7 @@ theorem wp_worker (γs : chan_names) (ch : loc) (wg : loc) (x y : w64) :
     have Hfull : sint.nat s.len = xs.length := by omega
     rw [Hfull, List.take_of_length_le (Nat.le_refl _), List.drop_length, List.append_nil]
     wp_auto
-    wp_apply sync.join.wp_WaitGroup__Done (s ↦* search_replace x y xs) wg $$ [Hwg_done Hxs]
+    wp_apply sync.join.WaitGroup.wp_Done (s ↦* searchReplace x y xs) wg $$ [Hwg_done Hxs]
     · iframe
     wp_for_post
     wp_apply wp_bag_receive γs ch (chanP wg x y) $$ Hchan as %s' Hrcv
@@ -213,11 +213,11 @@ theorem wp_worker (γs : chan_names) (ch : loc) (wg : loc) (x y : w64) :
 
 
 theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ s ↦* xs ∗
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦* xs ∗
         ⌜(xs.length : Int) ≤ 2 ^ 63 - 1000⌝ ∗
         ⌜(xs.length : Int) ≤ (2 ^ 31 - 1) * 1000⌝ }}
       (App (App (App (Val (@! SearchReplace)) (Val #s)) (Val #x)) (Val #y))
-    {{ RET #(); s ↦* (search_replace x y xs) }} := by
+    {{ RET #(); s ↦* (searchReplace x y xs) }} := by
   -- The first overflow: implementation adds 1000 at a time, potentially
   -- surpassing the slice length before clamping. If it goes negative, then the
   -- clamping doesn't work. This inequality is technically implied by the second;
@@ -227,14 +227,14 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
   -- internal waitgroup counter.
   wp_start as ⟨Hs, %Hoverflow1, %Hoverflow2⟩
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hs
-  ihave %Hcap := own_slice_wf _ _ _ $$ Hs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hs
+  ihave %Hcap := ownSlice_wf _ _ _ $$ Hs
   wp_if_destruct
   · have : xs = [] := by
       apply List.eq_nil_of_length_eq_zero; rw [Hlen.1, Hif]; rfl
     subst this
     iapply HΦ
-    simp only [search_replace, List.map_nil]
+    simp only [searchReplace, List.map_nil]
     iexact Hs
   wp_apply chan.wp_make2 (V := slice.t) (W64 4) $$ [] as %ch %γch_names ⟨#His_chan, %Hcap4, Hoc⟩
   · ipureintro; decide
@@ -262,12 +262,12 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
   simp only [_root_.decide_true, Bool.not_true, ↓reduceIte]
   wp_auto
   -- the work-distribution loop
-  ihave #Hempty := own_slice_slice_empty (W64 0) s xs ⟨by decide, by word⟩ $$ Hs
+  ihave #Hempty := ownSlice_slice_empty (W64 0) s xs ⟨by decide, by word⟩ $$ Hs
   ihave HH : (∃ (offset : w64) (nadded : w32),
       "offset" ∷ offset_ptr ↦ offset ∗
       "Hs" ∷ slice.slice s w64 offset s.len ↦* xs.drop (sint.nat offset) ∗
-      "Hwg" ∷ sync.join.own_Adder wg_ptr nadded
-        (slice.slice s w64 (W64 0) offset ↦* (search_replace x y xs).take (sint.nat offset)) ∗
+      "Hwg" ∷ sync.join.ownAdder wg_ptr nadded
+        (slice.slice s w64 (W64 0) offset ↦* (searchReplace x y xs).take (sint.nat offset)) ∗
       "%Hoffset" ∷ ⌜0 ≤ sint.Z offset ∧ sint.nat offset ≤ xs.length⌝ ∗
       "%Hnadded" ∷ ⌜(0 ≤ sint.Z nadded ∧ 1000 * sint.Z nadded ≤ sint.Z offset) ∨
         sint.nat offset = xs.length⌝ : IProp GF) $$ [offset Hs Hwg]
@@ -275,9 +275,9 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
     rw [show sint.nat (W64 0) = 0 from rfl, List.drop_zero, List.take_zero]
     iframe offset
     isplitl [Hs]
-    · iapply (own_slice_trivial_slice s _ xs).1 $$ Hs
+    · iapply (ownSlice_trivial_slice s _ xs).1 $$ Hs
     isplitl [Hwg]
-    · iapply sync.join.own_Adder_wand $$ [] Hwg
+    · iapply sync.join.ownAdder_wand $$ [] Hwg
       iintro -
       iexact Hempty
     ipureintro
@@ -305,7 +305,7 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
     have hnoN : (sint.nat no : Int) = sint.Z no := Int.toNat_of_nonneg hno0
     have hlenN : (sint.nat s.len : Int) = sint.Z s.len := Int.toNat_of_nonneg Hlen.2
     wp_bind (If _ _ _)
-    iapply wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗ nextOffset_ptr ↦ no)) $$ [nextOffset]
+    iapply wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗ nextOffset_ptr ↦ no)) $$ [nextOffset]
     · by_cases hc : sint.Z s.len < sint.Z (offset + W64 1000)
       · simp only [hc, _root_.decide_true]
         wp_auto
@@ -329,12 +329,12 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
       · have : (xs.length : Int) = sint.Z s.len := by word
         omega
       · exfalso; apply Hne; word
-    wp_apply sync.join.wp_WaitGroup__Add
+    wp_apply sync.join.WaitGroup.wp_Add
         (slice.slice s w64 offset no ↦*
-          search_replace x y ((xs.drop (sint.nat offset)).take (sint.nat no - sint.nat offset)))
+          searchReplace x y ((xs.drop (sint.nat offset)).take (sint.nat no - sint.nat offset)))
         wg_ptr _ nadded $$ [Hwg] as ⟨Hwg, Hdone⟩
     · iframe; ipureintro; exact Hnadded'
-    icases (own_slice_split no s _ (xs.drop (sint.nat offset)) offset s.len
+    icases (ownSlice_split no s _ (xs.drop (sint.nat offset)) offset s.len
       ⟨Hoffset.1, by omega, by omega⟩).1 $$ Hs with ⟨Hsec, Hs⟩
     wp_auto
     wp_apply wp_bag_send γch_names ch (slice.slice s w64 offset no) (chanP wg_ptr x y)
@@ -349,14 +349,14 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
     rw [List.drop_drop, show sint.nat offset + (sint.nat no - sint.nat offset) = sint.nat no by omega]
     iframe offset Hs
     isplitl [Hwg]
-    · iapply sync.join.own_Adder_wand $$ [] Hwg
+    · iapply sync.join.ownAdder_wand $$ [] Hwg
       iintro ⟨Hpre, Hsuf⟩
-      ihave Hc := own_slice_combine offset s _ _ _ (W64 0) no
-        ⟨by simp only [List.length_take, search_replace_length]
+      ihave Hc := ownSlice_combine offset s _ _ _ (W64 0) no
+        ⟨by simp only [List.length_take, searchReplace_length]
             rw [show sint.nat (W64 0) = 0 from rfl]; omega,
           by decide, Hoffset.1, by omega⟩
         $$ Hpre Hsuf
-      rw [search_replace_take_append x y xs _ _ (by omega)]
+      rw [searchReplace_take_append x y xs _ _ (by omega)]
       iexact Hc
     ipureintro
     have : (xs.length : Int) = sint.Z s.len := by word
@@ -375,14 +375,14 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
     subst Heq
     simp only [_root_.decide_true, Bool.not_true, ↓reduceIte]
     wp_auto
-    wp_apply sync.join.wp_WaitGroup__Wait
-        (slice.slice s w64 (W64 0) s.len ↦* (search_replace x y xs).take (sint.nat s.len))
+    wp_apply sync.join.WaitGroup.wp_Wait
+        (slice.slice s w64 (W64 0) s.len ↦* (searchReplace x y xs).take (sint.nat s.len))
         nadded wg_ptr $$ [$Hwg] as ⟨>Hres, -⟩
-    have Hfull : sint.nat s.len = (search_replace x y xs).length := by
-      rw [search_replace_length]; omega
+    have Hfull : sint.nat s.len = (searchReplace x y xs).length := by
+      rw [searchReplace_length]; omega
     rw [Hfull, List.take_length]
     iapply HΦ
-    iapply (own_slice_trivial_slice s _ _).2 $$ Hres
+    iapply (ownSlice_trivial_slice s _ _).2 $$ Hres
 
 end proof
 

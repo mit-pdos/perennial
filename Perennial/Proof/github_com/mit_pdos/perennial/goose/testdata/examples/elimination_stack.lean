@@ -36,10 +36,10 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 
-instance is_pkg_init_inst :
+instance isPkgInit_inst :
     IsPkgInit (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst :
+instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack :=
   build_get_is_pkg_init_wf
 
@@ -49,82 +49,82 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 
 -- (declared before the proofs: a command such as `structure`, `macro` or `notation`
 -- declared after asynchronously elaborated proofs waits for them)
-structure EliminationStack_names where
-  spec_gn : GName
-  ls_gn : GName
-  ch_gn : chan_names
-  s_gn : GName
-  r_gn : GName
+structure EliminationStackNames where
+  specGn : GName
+  lsGn : GName
+  chGn : ChanNames
+  sGn : GName
+  rGn : GName
 
 section locked_stack_proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 
-def own_LockedStack (γ : GName) (σ : List go_string) : IProp GF :=
-  ghost_var γ (1 : Qp).half σ
+def ownLockedStack (γ : GName) (σ : List go_string) : IProp GF :=
+  ghostVar γ (1 : Qp).half σ
 
-instance own_LockedStack_timeless (γ : GName) (σ : List go_string) :
-    Timeless (own_LockedStack (GF := GF) γ σ) := by
-  unfold own_LockedStack; infer_instance
+instance ownLockedStack_timeless (γ : GName) (σ : List go_string) :
+    Timeless (ownLockedStack (GF := GF) γ σ) := by
+  unfold ownLockedStack; infer_instance
 
-def is_LockedStack (s : loc) (γ : GName) : IProp GF :=
-  iprop("#Hmu" ∷ sync.is_Mutex (s.[LockedStack.t, go!"mu"])
+def isLockedStack (s : loc) (γ : GName) : IProp GF :=
+  iprop("#Hmu" ∷ sync.isMutex (s.[LockedStack.t, go!"mu"])
       iprop(∃ (stack_sl : slice.t) (stack : List go_string),
         "stack" ∷ s.[LockedStack.t, go!"stack"] ↦ stack_sl ∗
         "Hsl" ∷ stack_sl ↦* stack ∗
-        "Hcap" ∷ own_slice_cap go_string stack_sl (DFrac.own 1) ∗
-        "Hauth" ∷ ghost_var γ (1 : Qp).half stack.reverse) ∗
+        "Hcap" ∷ ownSliceCap go_string stack_sl (DFrac.own 1) ∗
+        "Hauth" ∷ ghostVar γ (1 : Qp).half stack.reverse) ∗
     "_" ∷ True)
 
-instance is_LockedStack_persistent (s : loc) (γ : GName) :
-    Persistent (is_LockedStack (GF := GF) s γ) := by
-  unfold is_LockedStack; infer_instance
+instance isLockedStack_persistent (s : loc) (γ : GName) :
+    Persistent (isLockedStack (GF := GF) s γ) := by
+  unfold isLockedStack; infer_instance
 
 set_option goose.wp.extras true
 
 theorem wp_NewLockedStack :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NewLockedStack)) (Val #()))
-    {{ (s : loc) (γ : GName), RET #s; is_LockedStack s γ ∗ own_LockedStack γ [] }} := by
+    {{ (s : loc) (γ : GName), RET #s; isLockedStack s γ ∗ ownLockedStack γ [] }} := by
   wp_start
   wp_apply wp_slice_make2 (V := go_string) (t := go.string) (W64 0) as %stack_sl ⟨Hsl, Hcap⟩
   · ipureintro; decide
   wp_alloc s as Hs
   iStructNamed Hs
-  imod ghost_var_alloc ([] : List go_string) with ⟨%γ, Hγ⟩
-  icases ghost_var_split γ ([] : List go_string) (1 : Qp).half (1 : Qp).half $$ [Hγ] with ⟨Hauth, Hfrag⟩
+  imod ghostVar_alloc ([] : List go_string) with ⟨%γ, Hγ⟩
+  icases ghostVar_split γ ([] : List go_string) (1 : Qp).half (1 : Qp).half $$ [Hγ] with ⟨Hauth, Hfrag⟩
   · rw [Qp.half_add_half]; iexact Hγ
   imod sync.init_Mutex iprop(∃ (stack_sl : slice.t) (stack : List go_string),
         "stack" ∷ s.[LockedStack.t, go!"stack"] ↦ stack_sl ∗
         "Hsl" ∷ stack_sl ↦* stack ∗
-        "Hcap" ∷ own_slice_cap go_string stack_sl (DFrac.own 1) ∗
-        "Hauth" ∷ ghost_var γ (1 : Qp).half stack.reverse) ⊤ (s.[LockedStack.t, go!"mu"])
+        "Hcap" ∷ ownSliceCap go_string stack_sl (DFrac.own 1) ∗
+        "Hauth" ∷ ghostVar γ (1 : Qp).half stack.reverse) ⊤ (s.[LockedStack.t, go!"mu"])
     $$ [mu] [stack Hsl Hcap Hauth] with #Hmu
   · iexact mu
   · inext; iexists stack_sl, []; rw [List.reverse_nil]; iframe
   wp_auto
   iapply HΦ
-  unfold is_LockedStack own_LockedStack
+  unfold isLockedStack ownLockedStack
   iframe # ∗
 
-theorem wp_LockedStack__Push (v : go_string) (γ : GName) (s : loc) :
+theorem LockedStack.wp_Push (v : go_string) (γ : GName) (s : loc) :
     ⊢ ∀ Φ : val → IProp GF,
-      iprop(is_pkg_init (PROP := IProp GF) pkg ∗ is_LockedStack s γ) -∗
-      (|={⊤,∅}=> ∃ σ, own_LockedStack γ σ ∗ (own_LockedStack γ (v :: σ) ={∅,⊤}=∗ Φ #())) -∗
+      iprop(isPkgInit (PROP := IProp GF) pkg ∗ isLockedStack s γ) -∗
+      (|={⊤,∅}=> ∃ σ, ownLockedStack γ σ ∗ (ownLockedStack γ (v :: σ) ={∅,⊤}=∗ Φ #())) -∗
       WP (App (Val (s @!! go.type.PointerType LockedStack @!! go!"Push")) (Val #v)) {{ Φ }} := by
   wp_start as #His
-  unfold is_LockedStack
+  unfold isLockedStack
   iNamed His
   wp_auto
-  wp_apply sync.wp_Mutex__Lock $$ [$Hmu] as ⟨Hlocked, Hi⟩
+  wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hi⟩
   iNamed Hi
   wp_auto
   wp_bind (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.string)))) (Val (LiteralValueV _)))
   iapply wp_slice_literal (V := go_string) (t := go.string) [v]
   wp_auto
-  rw [show go.array_literal_size [KeyedElement none (ElementExpression go.string #v)] = 1 from rfl]
+  rw [show go.arrayLiteralSize [KeyedElement none (ElementExpression go.string #v)] = 1 from rfl]
   isplitl []
   · ipureintro; rfl
   iintro %sl_ptr ⟨Htmp, -⟩
@@ -134,49 +134,49 @@ theorem wp_LockedStack__Push (v : go_string) (γ : GName) (s : loc) :
   · iframe
   iapply fupd_wp
   imod HΦ with ⟨%σ, Hl, HΦ⟩
-  unfold own_LockedStack
+  unfold ownLockedStack
   icombine Hl Hauth gives % ⟨_, Heq⟩
   subst Heq
-  imod ghost_var_update_halves (v :: stack.reverse) γ _ _ $$ Hl Hauth with ⟨Hl, Hauth⟩
+  imod ghostVar_update_halves (v :: stack.reverse) γ _ _ $$ Hl Hauth with ⟨Hl, Hauth⟩
   imod HΦ $$ Hl with HΦ
   imodintro
-  wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked stack Hsl Hcap Hauth]
+  wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked stack Hsl Hcap Hauth]
   · inext; iexists sl', stack ++ [v]
     rw [List.reverse_append, List.reverse_singleton, List.singleton_append]
     iframe
   iexact HΦ
 
-theorem wp_LockedStack__Pop (γ : GName) (s : loc) :
+theorem LockedStack.wp_Pop (γ : GName) (s : loc) :
     ⊢ ∀ Φ : val → IProp GF,
-      iprop(is_pkg_init (PROP := IProp GF) pkg ∗ is_LockedStack s γ) -∗
-      (|={⊤,∅}=> ∃ σ, own_LockedStack γ σ ∗
+      iprop(isPkgInit (PROP := IProp GF) pkg ∗ isLockedStack s γ) -∗
+      (|={⊤,∅}=> ∃ σ, ownLockedStack γ σ ∗
         (match σ with
-         | [] => own_LockedStack γ [] ={∅,⊤}=∗ Φ (PairV #(go!"") #false)
-         | v :: σ => own_LockedStack γ σ ={∅,⊤}=∗ Φ (PairV #v #true))) -∗
+         | [] => ownLockedStack γ [] ={∅,⊤}=∗ Φ (PairV #(go!"") #false)
+         | v :: σ => ownLockedStack γ σ ={∅,⊤}=∗ Φ (PairV #v #true))) -∗
       WP (App (Val (s @!! go.type.PointerType LockedStack @!! go!"Pop")) (Val #())) {{ Φ }} := by
   wp_start as #His
-  unfold is_LockedStack
+  unfold isLockedStack
   iNamed His
   wp_auto
-  wp_apply sync.wp_Mutex__Lock $$ [$Hmu] as ⟨Hlocked, Hi⟩
+  wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hi⟩
   iNamed Hi
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hsl
-  ihave %Hcapwf := own_slice_cap_wf _ _ $$ Hcap
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hsl
+  ihave %Hcapwf := ownSliceCap_wf _ _ $$ Hcap
   iapply fupd_wp
   imod HΦ with ⟨%σ, Hl, HΦ⟩
-  unfold own_LockedStack
+  unfold ownLockedStack
   icombine Hl Hauth gives % ⟨_, Heq⟩
   obtain rfl : stack = σ.reverse := by rw [Heq, List.reverse_reverse]
   rcases σ with _ | ⟨v, σ⟩
   · imod HΦ $$ Hl with HΦ
     imodintro
     wp_if_destruct
-    · wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked stack Hsl Hcap Hauth]
+    · wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked stack Hsl Hcap Hauth]
       · inext; iexists stack_sl, []; simp only [List.reverse_nil]; iframe
       iexact HΦ
     · exfalso; simp at Hlen; word
-  · imod ghost_var_update_halves σ γ _ _ $$ Hl Hauth with ⟨Hl, Hauth⟩
+  · imod ghostVar_update_halves σ γ _ _ $$ Hl Hauth with ⟨Hl, Hauth⟩
     imod HΦ $$ Hl with HΦ
     imodintro
     simp only [List.reverse_cons, List.length_append, List.length_reverse, List.length_singleton] at Hlen
@@ -195,11 +195,11 @@ theorem wp_LockedStack__Pop (γ : GName) (s : loc) :
     wp_auto
     rw [ite_eq_left (show 0 ≤ sint.Z (W64 0) ∧ sint.Z (W64 0) ≤ sint.Z (stack_sl.len - W64 1) ∧
       sint.Z (stack_sl.len - W64 1) ≤ sint.Z stack_sl.cap by word)]
-    icases own_slice_slice_with_cap (W64 0) (stack_sl.len - W64 1) stack_sl (σ.reverse ++ [v])
+    icases ownSlice_slice_with_cap (W64 0) (stack_sl.len - W64 1) stack_sl (σ.reverse ++ [v])
       (by word) $$ [Hsl Hcap] with ⟨-, Hsl, Hcap⟩
     · iframe
     wp_auto
-    wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked stack Hsl Hcap Hauth]
+    wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked stack Hsl Hcap Hauth]
     · inext; iexists _, σ.reverse
       have hn : sint.nat (stack_sl.len - W64 1) = σ.reverse.length := by
         simp only [List.length_reverse]; word
@@ -214,50 +214,50 @@ section elimination_stack_proof
 
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 
-def own_EliminationStack (γ : EliminationStack_names) (σ : List go_string) : IProp GF :=
-  ghost_var γ.spec_gn (1 : Qp).half σ
+def ownEliminationStack (γ : EliminationStackNames) (σ : List go_string) : IProp GF :=
+  ghostVar γ.specGn (1 : Qp).half σ
 
-/-- (Rocq `own_exchanger_inv`) Supports atomic updates for Pop and Push that are
+/-- (Rocq `ownExchangerInv`) Supports atomic updates for Pop and Push that are
 allowed to access `⊤ ∖ N`. -/
-abbrev own_exchanger_inv (γ : EliminationStack_names) (N : Namespace)
+abbrev ownExchangerInv (γ : EliminationStackNames) (N : Namespace)
     (exstate : chanstate.t go_string) : IProp GF :=
   iprop(∃ (γs γr : GName),
-    "Hsa" ∷ ghost_var γ.s_gn (1 : Qp).half γs ∗ "Hra" ∷ ghost_var γ.r_gn (1 : Qp).half γr ∗
+    "Hsa" ∷ ghostVar γ.sGn (1 : Qp).half γs ∗ "Hra" ∷ ghostVar γ.rGn (1 : Qp).half γr ∗
     "Hexchanger" ∷ (match exstate with
-      | .Idle => iprop(ghost_var γ.s_gn (1 : Qp).half γs ∗ ghost_var γ.r_gn (1 : Qp).half γr)
+      | .Idle => iprop(ghostVar γ.sGn (1 : Qp).half γs ∗ ghostVar γ.rGn (1 : Qp).half γr)
       | .SndPending v =>
-          iprop((|={⊤ \ ↑N,∅}=> ∃ σ, own_EliminationStack γ σ ∗
-                  (own_EliminationStack γ (v :: σ) ={∅,⊤ \ ↑N}=∗ token γs)) ∗
-                ghost_var γ.r_gn (1 : Qp).half γr)
+          iprop((|={⊤ \ ↑N,∅}=> ∃ σ, ownEliminationStack γ σ ∗
+                  (ownEliminationStack γ (v :: σ) ={∅,⊤ \ ↑N}=∗ token γs)) ∗
+                ghostVar γ.rGn (1 : Qp).half γr)
       | .RcvPending =>
-          iprop((|={⊤ \ ↑N,∅}=> ∃ σ, own_EliminationStack γ σ ∗
-                  (∀ v σ', ⌜σ = v :: σ'⌝ → own_EliminationStack γ σ' ={∅,⊤ \ ↑N}=∗
-                    ghost_var γr Qp.threeQuarters v)) ∗
-                ghost_var γ.s_gn (1 : Qp).half γs)
-      | .SndCommit v => iprop(ghost_var γr Qp.threeQuarters v ∗ ghost_var γ.s_gn (1 : Qp).half γs)
-      | .RcvCommit => iprop(token γs ∗ ghost_var γ.r_gn (1 : Qp).half γr)
+          iprop((|={⊤ \ ↑N,∅}=> ∃ σ, ownEliminationStack γ σ ∗
+                  (∀ v σ', ⌜σ = v :: σ'⌝ → ownEliminationStack γ σ' ={∅,⊤ \ ↑N}=∗
+                    ghostVar γr Qp.threeQuarters v)) ∗
+                ghostVar γ.sGn (1 : Qp).half γs)
+      | .SndCommit v => iprop(ghostVar γr Qp.threeQuarters v ∗ ghostVar γ.sGn (1 : Qp).half γs)
+      | .RcvCommit => iprop(token γs ∗ ghostVar γ.rGn (1 : Qp).half γr)
       | _ => iprop(False)))
 
-abbrev elim_inv (γ : EliminationStack_names) (N : Namespace) : IProp GF :=
+abbrev elimInv (γ : EliminationStackNames) (N : Namespace) : IProp GF :=
   iprop(∃ (stack : List go_string) (exstate : chanstate.t go_string),
-    "Hls" ∷ own_LockedStack γ.ls_gn stack ∗
-    "Hauth" ∷ ghost_var γ.spec_gn (1 : Qp).half stack ∗
-    "exchanger" ∷ own_chan γ.ch_gn go_string exstate ∗
-    "Hexchanger" ∷ own_exchanger_inv γ (N.@"inv") exstate)
+    "Hls" ∷ ownLockedStack γ.lsGn stack ∗
+    "Hauth" ∷ ghostVar γ.specGn (1 : Qp).half stack ∗
+    "exchanger" ∷ ownChan γ.chGn go_string exstate ∗
+    "Hexchanger" ∷ ownExchangerInv γ (N.@"inv") exstate)
 
-def is_EliminationStack (s : loc) (γ : EliminationStack_names) (N : Namespace) : IProp GF :=
+def isEliminationStack (s : loc) (γ : EliminationStackNames) (N : Namespace) : IProp GF :=
   iprop(∃ st : EliminationStack.t,
     "#s" ∷ s ↦□ st ∗
-    "#Hbase" ∷ is_LockedStack st.base' γ.ls_gn ∗
-    "#Hch" ∷ is_chan st.exchanger' γ.ch_gn go_string ∗
-    "#Hinv" ∷ inv (N.@"inv") (elim_inv γ N))
+    "#Hbase" ∷ isLockedStack st.base' γ.lsGn ∗
+    "#Hch" ∷ isChan st.exchanger' γ.chGn go_string ∗
+    "#Hinv" ∷ inv (N.@"inv") (elimInv γ N))
 
-instance is_EliminationStack_persistent (s : loc) (γ : EliminationStack_names) (N : Namespace) :
-    Persistent (is_EliminationStack (GF := GF) s γ N) := by
-  unfold is_EliminationStack; infer_instance
+instance isEliminationStack_persistent (s : loc) (γ : EliminationStackNames) (N : Namespace) :
+    Persistent (isEliminationStack (GF := GF) s γ N) := by
+  unfold isEliminationStack; infer_instance
 
 theorem alloc_push_help_token {E : CoPset} (N : Namespace) (P : IProp GF) :
     ⊢ |={E}=> ∃ γs, (token γs ={↑N}=∗ ▷ P) ∗ (▷ P ={↑N}=∗ token γs) := by
@@ -282,16 +282,16 @@ theorem alloc_push_help_token {E : CoPset} (N : Namespace) (P : IProp GF) :
       imodintro; iexact Htok
 
 theorem alloc_pop_help_token {E : CoPset} (N : Namespace) (P : go_string → IProp GF) :
-    ⊢ |={E}=> ∃ γr, (∀ v : go_string, ghost_var γr Qp.threeQuarters v ={↑N}=∗ ▷ P v) ∗
-                   (∀ v, ▷ P v ={↑N}=∗ ghost_var γr Qp.threeQuarters v) := by
+    ⊢ |={E}=> ∃ γr, (∀ v : go_string, ghostVar γr Qp.threeQuarters v ={↑N}=∗ ▷ P v) ∗
+                   (∀ v, ▷ P v ={↑N}=∗ ghostVar γr Qp.threeQuarters v) := by
   have hq : Qp.threeQuarters + Qp.quarter = 1 := by
     rw [Qp.ext_iff, Qp.val_add, Qp.val_threeQuarters, Qp.val_quarter, Qp.val_one]; grind
   have hbad : ¬ (Qp.threeQuarters + 1 ≤ 1) := by
     rw [Qp.le_iff, Qp.val_add, Qp.val_threeQuarters, Qp.val_one]; grind
-  imod ghost_var_alloc (go!"" : go_string) with ⟨%γr, Htok⟩
+  imod ghostVar_alloc (go!"" : go_string) with ⟨%γr, Htok⟩
   imod token_alloc with ⟨%γdone, Hdone⟩
   imod inv_alloc N E iprop(∃ v : go_string,
-      (P v ∗ token γdone ∗ ghost_var γr Qp.quarter v) ∨ ghost_var γr 1 v) $$ [Htok] with #Hescrow
+      (P v ∗ token γdone ∗ ghostVar γr Qp.quarter v) ∨ ghostVar γr 1 v) $$ [Htok] with #Hescrow
   · inext; iexists _; iright; iexact Htok
   imodintro
   iexists γr
@@ -300,7 +300,7 @@ theorem alloc_pop_help_token {E : CoPset} (N : Namespace) (P : go_string → IPr
     iinv Hescrow with ⟨%v', (⟨HP, Hd, >Ht2⟩ | >Hbad)⟩ Hclose
     · icombine Ht Ht2 gives % ⟨_, Heq⟩
       subst Heq
-      ihave Hfull := (ghost_var_fractional γr v).fractional Qp.threeQuarters Qp.quarter |>.2 $$ [Ht Ht2]
+      ihave Hfull := (ghostVar_fractional γr v).fractional Qp.threeQuarters Qp.quarter |>.2 $$ [Ht Ht2]
       · iframe
       rw [hq]
       imod Hclose $$ [Hfull] with -
@@ -311,9 +311,9 @@ theorem alloc_pop_help_token {E : CoPset} (N : Namespace) (P : go_string → IPr
   · iintro %v HP
     iinv Hescrow with ⟨%v', (⟨-, >Hbad, -⟩ | >Ht)⟩ Hclose
     · icombine Hdone Hbad gives %h; exact h.elim
-    · imod ghost_var_update v γr v' $$ Ht with Ht
+    · imod ghostVar_update v γr v' $$ Ht with Ht
       rw [← hq]
-      icases (ghost_var_fractional γr v).fractional Qp.threeQuarters Qp.quarter |>.1 $$ Ht
+      icases (ghostVar_fractional γr v).fractional Qp.threeQuarters Qp.quarter |>.1 $$ Ht
         with ⟨Ht, Ht2⟩
       imod Hclose $$ [HP Hdone Ht2] with -
       · inext; iexists v; ileft; iframe
@@ -322,29 +322,29 @@ theorem alloc_pop_help_token {E : CoPset} (N : Namespace) (P : go_string → IPr
 set_option goose.wp.extras true
 
 theorem wp_NewEliminationStack (N : Namespace) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NewEliminationStack)) (Val #()))
-    {{ (s : loc) (γ : EliminationStack_names), RET #s;
-        is_EliminationStack s γ N ∗ own_EliminationStack γ [] }} := by
+    {{ (s : loc) (γ : EliminationStackNames), RET #s;
+        isEliminationStack s γ N ∗ ownEliminationStack γ [] }} := by
   wp_start
   wp_apply wp_NewLockedStack as %base %γbase ⟨#Hbase, Hls⟩
   wp_apply chan.wp_make1 (V := go_string) as %ch %γch ⟨#Hch, -, Hc⟩
   wp_alloc s as Hs
   ipersist Hs
-  imod ghost_var_alloc ([] : List go_string) with ⟨%γspec, Hspec⟩
-  icases ghost_var_split γspec ([] : List go_string) (1 : Qp).half (1 : Qp).half $$ [Hspec]
+  imod ghostVar_alloc ([] : List go_string) with ⟨%γspec, Hspec⟩
+  icases ghostVar_split γspec ([] : List go_string) (1 : Qp).half (1 : Qp).half $$ [Hspec]
     with ⟨Hauth, Hes⟩
   · rw [Qp.half_add_half]; iexact Hspec
-  imod ghost_var_alloc (0 : GName) with ⟨%γsn, Hsn⟩
-  icases ghost_var_split γsn (0 : GName) (1 : Qp).half (1 : Qp).half $$ [Hsn] with ⟨Hsa, Hsf⟩
+  imod ghostVar_alloc (0 : GName) with ⟨%γsn, Hsn⟩
+  icases ghostVar_split γsn (0 : GName) (1 : Qp).half (1 : Qp).half $$ [Hsn] with ⟨Hsa, Hsf⟩
   · rw [Qp.half_add_half]; iexact Hsn
-  imod ghost_var_alloc (0 : GName) with ⟨%γrn, Hrn⟩
-  icases ghost_var_split γrn (0 : GName) (1 : Qp).half (1 : Qp).half $$ [Hrn] with ⟨Hra, Hrf⟩
+  imod ghostVar_alloc (0 : GName) with ⟨%γrn, Hrn⟩
+  icases ghostVar_split γrn (0 : GName) (1 : Qp).half (1 : Qp).half $$ [Hrn] with ⟨Hra, Hrf⟩
   · rw [Qp.half_add_half]; iexact Hrn
-  let γ : EliminationStack_names := ⟨γspec, γbase, γch, γsn, γrn⟩
-  imod inv_alloc (N.@"inv") ⊤ (elim_inv γ N) $$ [Hls Hauth Hc Hsa Hsf Hra Hrf] with #Hinv
+  let γ : EliminationStackNames := ⟨γspec, γbase, γch, γsn, γrn⟩
+  imod inv_alloc (N.@"inv") ⊤ (elimInv γ N) $$ [Hls Hauth Hc Hsa Hsf Hra Hrf] with #Hinv
   · inext
-    unfold elim_inv own_exchanger_inv
+    unfold elimInv ownExchangerInv
     iexists [], .Idle
     iframe
     iexists 0, 0
@@ -355,20 +355,20 @@ theorem wp_NewEliminationStack (N : Namespace) :
     · iexact Hra
   wp_auto
   iapply HΦ $$ %s %γ
-  unfold is_EliminationStack own_EliminationStack
+  unfold isEliminationStack ownEliminationStack
   iframe
   iexists _
   iframe # ∗
 
-theorem wp_EliminationStack__Push (v : go_string) (γ : EliminationStack_names) (s : loc)
+theorem EliminationStack.wp_Push (v : go_string) (γ : EliminationStackNames) (s : loc)
     (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
-      iprop(is_pkg_init (PROP := IProp GF) pkg ∗ is_EliminationStack s γ N) -∗
-      (|={⊤ \ ↑N,∅}=> ∃ σ, own_EliminationStack γ σ ∗
-        (own_EliminationStack γ (v :: σ) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
+      iprop(isPkgInit (PROP := IProp GF) pkg ∗ isEliminationStack s γ N) -∗
+      (|={⊤ \ ↑N,∅}=> ∃ σ, ownEliminationStack γ σ ∗
+        (ownEliminationStack γ (v :: σ) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
       WP (App (Val (s @!! go.type.PointerType EliminationStack @!! go!"Push")) (Val #v)) {{ Φ }} := by
   wp_start as #His
-  unfold is_EliminationStack
+  unfold isEliminationStack
   iNamed His
   irename s => s1
   iStructNamed s1
@@ -378,12 +378,12 @@ theorem wp_EliminationStack__Push (v : go_string) (γ : EliminationStack_names) 
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- elimination occurs
-    simp only [chan.blocking_clause_pre]
-    iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, st.exchanger', γ.ch_gn, v
+    simp only [chan.blockingClausePre]
+    iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, st.exchanger', γ.chGn, v
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩
     iframe Hch
-    unfold send_au
+    unfold sendAu
     iinv Hinv with ⟨%stack, %exstate, Hls, Hauth, exchanger, %γs, %γr, Hsa, Hra, Hexchanger⟩ Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑(N.@"inv")) $$ Hlc1 Hexchanger with Hexchanger
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -398,7 +398,7 @@ theorem wp_EliminationStack__Push (v : go_string) (γ : EliminationStack_names) 
       iintro exchanger
       imod Hmask with -
       imod alloc_push_help_token (E := ⊤ \ ↑(N.@"inv")) (N.@"escrow") (Φ #()) with ⟨%γs', HΦtok, Htok⟩
-      imod ghost_var_update_halves γs' γ.s_gn γs γs $$ Hsf Hsa with ⟨Hsf, Hsa⟩
+      imod ghostVar_update_halves γs' γ.sGn γs γs $$ Hsf Hsa with ⟨Hsf, Hsa⟩
       imod Hclose $$ [Hls Hauth exchanger Hsa Hra Hrf HΦ Htok] with -
       · inext
         iexists stack, .SndPending v
@@ -425,7 +425,7 @@ theorem wp_EliminationStack__Push (v : go_string) (γ : EliminationStack_names) 
           imodintro; iexact Htok
         · iexact Hrf
       imodintro
-      unfold send_nested_au
+      unfold sendNestedAu
       iinv Hinv with ⟨%stack2, %exstate2, Hls, Hauth, exchanger, %γs2, %γr2, Hsa, Hra, Hexchanger⟩ Hclose
       imod lc_fupd_elim_later (E := ⊤ \ ↑(N.@"inv")) $$ Hlc2 Hexchanger with Hexchanger
       iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -467,16 +467,16 @@ theorem wp_EliminationStack__Push (v : go_string) (γ : EliminationStack_names) 
       imod Hmask with -
       imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
       imod HΦ with ⟨%σ, Hfrag, HΦ⟩
-      unfold own_EliminationStack
+      unfold ownEliminationStack
       icombine Hfrag Hauth gives % ⟨_, Heq⟩
       subst Heq
-      imod ghost_var_update_halves (v :: σ) γ.spec_gn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
+      imod ghostVar_update_halves (v :: σ) γ.specGn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
       imod HΦ $$ Hfrag with HP
       imod Hmask with -
       imod Hpop_au with ⟨%σ0, Hfrag, Hpop⟩
       icombine Hfrag Hauth gives % ⟨_, Heq⟩
       subst Heq
-      imod ghost_var_update_halves σ γ.spec_gn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
+      imod ghostVar_update_halves σ γ.specGn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
       imod Hpop $$ %v %σ [] Hfrag with Hpopwit
       · ipureintro; rfl
       imod Hclose $$ [Hls Hauth exchanger Hsa Hra Hpopwit Hsf] with -
@@ -499,7 +499,7 @@ theorem wp_EliminationStack__Push (v : go_string) (γ : EliminationStack_names) 
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- timeout: push onto the locked stack
-    simp only [chan.blocking_clause_pre]
+    simp only [chan.blockingClausePre]
     iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
     isplitr
     · ipureintro; rfl
@@ -509,15 +509,15 @@ theorem wp_EliminationStack__Push (v : go_string) (γ : EliminationStack_names) 
     inext
     iintro %t -
     wp_auto
-    wp_apply wp_LockedStack__Push v γ.ls_gn st.base' $$ [] [HΦ]
+    wp_apply LockedStack.wp_Push v γ.lsGn st.base' $$ [] [HΦ]
     · iframe #
     iinv Hinv with ⟨%stack, %exstate, >Hls, >Hauth, >exchanger, Hexchanger⟩ Hclose
     imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
     imod HΦ with ⟨%σ, Hfrag, HΦ⟩
-    unfold own_EliminationStack
+    unfold ownEliminationStack
     icombine Hfrag Hauth gives % ⟨_, Heq⟩
     subst Heq
-    imod ghost_var_update_halves (v :: σ) γ.spec_gn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
+    imod ghostVar_update_halves (v :: σ) γ.specGn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
     imod HΦ $$ Hfrag with HP
     imod Hmask with -
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -536,16 +536,16 @@ theorem wp_EliminationStack__Push (v : go_string) (γ : EliminationStack_names) 
   iapply BigAndL.bigAndL_nil.2
   itrivial
 
-theorem wp_EliminationStack__Pop (γ : EliminationStack_names) (s : loc) (N : Namespace) :
+theorem EliminationStack.wp_Pop (γ : EliminationStackNames) (s : loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
-      iprop(is_pkg_init (PROP := IProp GF) pkg ∗ is_EliminationStack s γ N) -∗
-      (|={⊤ \ ↑N,∅}=> ∃ σ, own_EliminationStack γ σ ∗
+      iprop(isPkgInit (PROP := IProp GF) pkg ∗ isEliminationStack s γ N) -∗
+      (|={⊤ \ ↑N,∅}=> ∃ σ, ownEliminationStack γ σ ∗
         (match σ with
-         | [] => own_EliminationStack γ [] ={∅,⊤ \ ↑N}=∗ Φ (PairV #(go!"") #false)
-         | v :: σ => own_EliminationStack γ σ ={∅,⊤ \ ↑N}=∗ Φ (PairV #v #true))) -∗
+         | [] => ownEliminationStack γ [] ={∅,⊤ \ ↑N}=∗ Φ (PairV #(go!"") #false)
+         | v :: σ => ownEliminationStack γ σ ={∅,⊤ \ ↑N}=∗ Φ (PairV #v #true))) -∗
       WP (App (Val (s @!! go.type.PointerType EliminationStack @!! go!"Pop")) (Val #())) {{ Φ }} := by
   wp_start as #His
-  unfold is_EliminationStack
+  unfold isEliminationStack
   iNamed His
   irename s => s1
   iStructNamed s1
@@ -555,12 +555,12 @@ theorem wp_EliminationStack__Pop (γ : EliminationStack_names) (s : loc) (N : Na
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- elimination occurs
-    simp only [chan.blocking_clause_pre]
-    iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, st.exchanger', γ.ch_gn
+    simp only [chan.blockingClausePre]
+    iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, st.exchanger', γ.chGn
     isplitr
     · ipureintro; rfl
     iframe Hch
-    unfold recv_au
+    unfold recvAu
     iinv Hinv with ⟨%stack, %exstate, Hls, Hauth, exchanger, %γs, %γr, Hsa, Hra, Hexchanger⟩ Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑(N.@"inv")) $$ Hlc1 Hexchanger with Hexchanger
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -576,7 +576,7 @@ theorem wp_EliminationStack__Pop (γ : EliminationStack_names) (s : loc) (N : Na
       imod Hmask with -
       imod alloc_pop_help_token (E := ⊤ \ ↑(N.@"inv")) (N.@"escrow")
         (fun v : go_string => Φ (PairV #v #true)) with ⟨%γr', HΦtok, Htok⟩
-      imod ghost_var_update_halves γr' γ.r_gn γr γr $$ Hrf Hra with ⟨Hrf, Hra⟩
+      imod ghostVar_update_halves γr' γ.rGn γr γr $$ Hrf Hra with ⟨Hrf, Hra⟩
       imod Hclose $$ [Hls Hauth exchanger Hsa Hra Hsf HΦ Htok] with -
       · inext
         iexists stack, .RcvPending
@@ -605,7 +605,7 @@ theorem wp_EliminationStack__Pop (γ : EliminationStack_names) (s : loc) (N : Na
           imodintro; iexact Htok
         · iexact Hsf
       imodintro
-      unfold recv_nested_au
+      unfold recvNestedAu
       iinv Hinv with ⟨%stack2, %exstate2, Hls, Hauth, exchanger, %γs2, %γr2, Hsa, Hra, Hexchanger⟩ Hclose
       imod lc_fupd_elim_later (E := ⊤ \ ↑(N.@"inv")) $$ Hlc2 Hexchanger with Hexchanger
       iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -646,16 +646,16 @@ theorem wp_EliminationStack__Pop (γ : EliminationStack_names) (s : loc) (N : Na
       iintro exchanger
       imod Hmask with -
       imod Hpush_au with ⟨%σ, Hfrag, Hpush⟩
-      unfold own_EliminationStack
+      unfold ownEliminationStack
       icombine Hfrag Hauth gives % ⟨_, Heq⟩
       subst Heq
-      imod ghost_var_update_halves (v :: σ) γ.spec_gn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
+      imod ghostVar_update_halves (v :: σ) γ.specGn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
       imod Hpush $$ Hfrag with Hpushtok
       imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
       imod HΦ with ⟨%σ0, Hfrag, HΦ⟩
       icombine Hfrag Hauth gives % ⟨_, Heq⟩
       subst Heq
-      imod ghost_var_update_halves σ γ.spec_gn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
+      imod ghostVar_update_halves σ γ.specGn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
       dsimp only
       imod HΦ $$ Hfrag with HP
       imod Hmask with -
@@ -681,7 +681,7 @@ theorem wp_EliminationStack__Pop (γ : EliminationStack_names) (s : loc) (N : Na
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- timeout: pop from the locked stack
-    simp only [chan.blocking_clause_pre]
+    simp only [chan.blockingClausePre]
     iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
     isplitr
     · ipureintro; rfl
@@ -691,12 +691,12 @@ theorem wp_EliminationStack__Pop (γ : EliminationStack_names) (s : loc) (N : Na
     inext
     iintro %t -
     wp_auto
-    wp_apply wp_LockedStack__Pop γ.ls_gn st.base' $$ [] [HΦ]
+    wp_apply LockedStack.wp_Pop γ.lsGn st.base' $$ [] [HΦ]
     · iframe #
     iinv Hinv with ⟨%stack, %exstate, >Hls, >Hauth, >exchanger, Hexchanger⟩ Hclose
     imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
     imod HΦ with ⟨%σ, Hfrag, HΦ⟩
-    unfold own_EliminationStack
+    unfold ownEliminationStack
     icombine Hfrag Hauth gives % ⟨_, Heq⟩
     subst Heq
     rcases σ with _ | ⟨v, σ⟩
@@ -717,7 +717,7 @@ theorem wp_EliminationStack__Pop (γ : EliminationStack_names) (s : loc) (N : Na
       wp_auto
       iexact HP
     · dsimp only
-      imod ghost_var_update_halves σ γ.spec_gn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
+      imod ghostVar_update_halves σ γ.specGn _ _ $$ Hfrag Hauth with ⟨Hfrag, Hauth⟩
       imod HΦ $$ Hfrag with HP
       imod Hmask with -
       iapply fupd_mask_intro Std.LawfulSet.empty_subset

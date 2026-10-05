@@ -12,7 +12,7 @@ import Perennial.Golang.Theory.SimpAttr
 
 namespace Perennial
 
-attribute [goose_wp_simp] subst subst_opt subst_keyed_elements subst_keyed_element subst_opt_key
-  subst_element subst_comm_clauses subst_comm_clause
+attribute [goose_wp_simp] subst substOpt substKeyedElements substKeyedElement substOptKey
+  substElement substCommClauses substCommClause
 
 end Perennial

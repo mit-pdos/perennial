@@ -22,37 +22,37 @@ namespace go_etcd_io.raft.v3_proof
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
 /-- Rocq `is_Node`. -/
-def is_Node (γ : raft_names) (n : interface.t_ok) : IProp GF :=
+def is_Node (γ : RaftNames) (n : interface.t_ok) : IProp GF :=
   iprop(∃ n_ptr : loc,
     "%Hn" ∷ ⌜n = interface.mk (go.type.PointerType v3.node) #n_ptr⌝ ∗
     "#Hnode" ∷ is_node γ n_ptr)
 
-instance is_Node_pers (γ : raft_names) (n : interface.t_ok) :
+instance is_Node_pers (γ : RaftNames) (n : interface.t_ok) :
     Persistent (is_Node (GF := GF) γ n) := by
   unfold is_Node; infer_instance
 
-theorem wp_Node__Propose (ctx : interface.t_ok) (ctx_desc : context.Context_desc.t (IProp GF))
-    (n : interface.t_ok) (γraft : raft_names) (data_sl : slice.t) (data : List w8) :
-    {{ is_pkg_init (PROP := IProp GF) raft ∗
-        "#Hctx" ∷ context.is_Context ctx ctx_desc ∗
+theorem Node.wp_Propose (ctx : interface.t_ok) (ctx_desc : context.Context_desc.t (IProp GF))
+    (n : interface.t_ok) (γraft : RaftNames) (data_sl : slice.t) (data : List w8) :
+    {{ isPkgInit (PROP := IProp GF) raft ∗
+        "#Hctx" ∷ context.isContext ctx ctx_desc ∗
         "#Hnode" ∷ is_Node γraft n ∗
         "#data_sl" ∷ data_sl ↦*□ data ∗
-        "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗
-          (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True)) }}
+        "Hupd" ∷ (|={⊤,∅}=> ∃ log, ownRaftLog γraft log ∗
+          (ownRaftLog γraft (log ++ [data]) ={∅,⊤}=∗ True)) }}
       (App (App (Val #(methods n.ty go!"Propose" n.v)) (Val #(interface.ok ctx))) (Val #data_sl))
     {{ (err : interface.t), RET #err; True }} := by
   wp_start_folded as Hpre
   iNamed Hpre
   iNamed Hnode
   subst Hn
-  wp_apply +noauto (wp_node__Propose γraft n_ptr ctx ctx_desc data_sl data) $$ [$]
+  wp_apply +noauto (node.wp_Propose γraft n_ptr ctx ctx_desc data_sl data) $$ [$]
   iintro %err -
   iapply HΦ
   itrivial

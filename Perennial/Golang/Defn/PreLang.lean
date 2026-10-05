@@ -6,15 +6,15 @@ import Perennial.Std.ByteString
 namespace Perennial
 namespace go
 
-abbrev identifier := go_string
-abbrev type_name := go_string
+abbrev Identifier := go_string
+abbrev TypeName := go_string
 
 mutual
 /-- https://go.dev/ref/spec#Types (see the Rocq source for the conventions).
 Parameter/result names are omitted from signatures so that `=` is Go type
 identity. -/
 inductive type where
-  | Named : type_name → List type → type
+  | Named : TypeName → List type → type
   | ArrayType : Int → type → type
   | StructType : List field_decl → type
   | PointerType : type → type
@@ -23,7 +23,7 @@ inductive type where
   | SliceType : type → type
   | MapType : type → type → type
   | ChannelType : chan_dir → type → type
-  | UntypedType : type_name → type
+  | UntypedType : TypeName → type
 
 inductive chan_dir where
   | sendrecv
@@ -38,7 +38,7 @@ inductive signature where
   | Signature : List type → Bool → List type → signature
 
 inductive interface_elem where
-  | MethodElem : identifier → signature → interface_elem
+  | MethodElem : Identifier → signature → interface_elem
   | TypeElem : List type_term → interface_elem
 
 inductive type_term where
@@ -63,12 +63,12 @@ export signature (Signature)
 export interface_elem (MethodElem TypeElem)
 export type_term (TypeTerm TypeTermUnderlying)
 
-def string_to_go_string (s : String) : go_string := Perennial.string_to_go_string s
+def stringToGoString (s : String) : go_string := Perennial.stringToGoString s
 
-/-- Rocq `type_to_string`, used for comparisons and method lookups. -/
-def type_to_string : type → go_string
+/-- Rocq `typeToString`, used for comparisons and method lookups. -/
+def typeToString : type → go_string
   | .Named n _ => n
-  | .ArrayType n elem => go!"[" ++ string_to_go_string (toString n) ++ go!"]" ++ type_to_string elem
+  | .ArrayType n elem => go!"[" ++ stringToGoString (toString n) ++ go!"]" ++ typeToString elem
   | _ => []
 
 def bool : type := .Named go!"bool" []

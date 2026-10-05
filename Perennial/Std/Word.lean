@@ -13,11 +13,11 @@ abbrev w64 := BitVec 64
 abbrev w32 := BitVec 32
 abbrev w16 := BitVec 16
 abbrev w8 := BitVec 8
-abbrev u64 := w64
-abbrev u32 := w32
-abbrev u16 := w16
-abbrev u8 := w8
-abbrev byte := w8
+abbrev U64 := w64
+abbrev U32 := w32
+abbrev U16 := w16
+abbrev U8 := w8
+abbrev Byte := w8
 
 /-- `W64 z` is `z mod 2^64` as a word. -/
 abbrev W64 (z : Int) : w64 := BitVec.ofInt 64 z

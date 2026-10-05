@@ -3,7 +3,7 @@ Time receipts: laws and an example (Lean addition, regression test).
 
 The example is the paper's "clock" (Mével, Jourdan, Pottier, ESOP 2019, §2): a
 64-bit counter that is incremented with `atomic.AddUint64` and whose value is
-matched by as many exclusive time receipts. Since `receipt_bound GF = N`
+matched by as many exclusive time receipts. Since `receiptBound GF = N`
 receipts are contradictory, the counter stays below `N`; under the premise
 `N ≤ 2^64` on the (otherwise unspecified) bound, the 64-bit addition never
 wraps around, without any precondition on the callers. A client discharges the
@@ -25,7 +25,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 /-! ## The laws (paper, Fig. 3) -/
 
 section laws
-variable {GF : BundledGFunctors} [receiptGS GF]
+variable {GF : BundledGFunctors} [ReceiptGS GF]
 
 example (m n : Nat) : ⧗ (m + n) ⊣⊢@{IProp GF} ⧗ m ∗ ⧗ n := receipt_add m n
 example : ⊢@{IProp GF} |==> ⧗ 0 := receipt_zero
@@ -33,10 +33,10 @@ example (n : Nat) : Persistent (⧖ n : IProp GF) := inferInstance
 example (m n : Nat) : ⧖ (max m n) ⊣⊢@{IProp GF} ⧖ m ∗ ⧖ n := preceipt_max m n
 example (m n : Nat) (h : m ≤ n) : ⧖ n ⊢@{IProp GF} ⧖ m := preceipt_mono h
 example (n : Nat) : ⧗ n ⊢@{IProp GF} |==> (⧗ n ∗ ⧖ n) := receipt_snapshot n
-example : ⧗ (receipt_bound GF) ⊢@{IProp GF} False := receipt_bound_elim
-example : ⧖ (receipt_bound GF) ⊢@{IProp GF} False := preceipt_bound_elim
-example (n : Nat) : ⧗ n ⊢@{IProp GF} ⌜n < receipt_bound GF⌝ := receipt_lt n
-example : 0 < receipt_bound GF := receipt_bound_pos
+example : ⧗ (receiptBound GF) ⊢@{IProp GF} False := receiptBound_elim
+example : ⧖ (receiptBound GF) ⊢@{IProp GF} False := preceipt_bound_elim
+example (n : Nat) : ⧗ n ⊢@{IProp GF} ⌜n < receiptBound GF⌝ := receipt_lt n
+example : 0 < receiptBound GF := receiptBound_pos
 
 end laws
 
@@ -51,24 +51,24 @@ variable [sem : go.Semantics] [package_sem : sync.atomic.Assumptions]
 /-- The clock invariant: the counter `l` holds `n`, and `n` receipts back it. -/
 def clockN : Namespace := nroot.@"clock"
 
-def clock_inv (l : loc) : IProp GF :=
+def clockInv (l : loc) : IProp GF :=
   iprop(∃ n : Nat, l ↦ (W64 n : w64) ∗ ⧗ n)
 
 theorem clock_alloc (l : loc) :
-    l ↦ (W64 0 : w64) ⊢@{IProp GF} |={⊤}=> inv clockN (clock_inv l) := by
+    l ↦ (W64 0 : w64) ⊢@{IProp GF} |={⊤}=> inv clockN (clockInv l) := by
   iintro Hl
   imod receipt_zero (GF := GF) with H0
-  iapply inv_alloc clockN ⊤ (clock_inv l)
+  iapply inv_alloc clockN ⊤ (clockInv l)
   inext
-  unfold clock_inv
+  unfold clockInv
   iexists 0
   iframe
 
 /-- Incrementing the clock (`atomic.AddUint64(l, 1)`, as emitted by goose)
 returns `n + 1` for some `n + 1 < 2^64`: the counter never wraps around,
 provided the time-receipt bound is at most `2^64`. -/
-theorem wp_clock_incr (Hbound : receipt_bound GF ≤ 2 ^ 64) (l : loc) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic ∗ inv clockN (clock_inv l) }}
+theorem wp_clock_incr (Hbound : receiptBound GF ≤ 2 ^ 64) (l : loc) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync.atomic ∗ inv clockN (clockInv l) }}
       (App (App (App (Val (GoInstruction (FuncResolve sync.atomic.AddUint64 []))) (Val #()))
         (Val #l)) (Val #(W64 1)))
     {{ (n : Nat), RET #(W64 (n + 1)); ⌜n + 1 < 2 ^ 64⌝ }} := by
@@ -79,7 +79,7 @@ theorem wp_clock_incr (Hbound : receipt_bound GF ≤ 2 ^ 64) (l : loc) :
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
-  unfold clock_inv
+  unfold clockInv
   icases Hi with ⟨%n, Hl, Hn⟩
   -- the fresh receipt and the `n` receipts of the invariant bound `n + 1`
   icases receipt_add_one_lt n $$ [Hr Hn] with ⟨%Hlt, Hn⟩
@@ -102,26 +102,26 @@ end clock
 
 /-! ## Picking the bound at adequacy time
 
-A client whose WP proof assumes `receipt_bound GF ≤ 2 ^ 64` (e.g. through
+A client whose WP proof assumes `receiptBound GF ≤ 2 ^ 64` (e.g. through
 `wp_clock_incr`) instantiates `goose_adequacy` with `N = 2 ^ 64` and gets
 safety for executions of fewer than `2 ^ 64` steps. -/
 
 section adequacy
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_interp_adequacy ffi]
+variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [FfiInterpAdequacy ffi]
 variable [ffi_semantics ext ffi] [GoGlobalContext] {GF : BundledGFunctors}
 
-example [gooseGpreS ffi GF] (e : expr) (σ : state) (g : global_state) (φ : val → Prop)
-    (Hinitg : ffi_initgP g.global_world) (Hinit : ffi_initP σ.world g.global_world)
+example [GooseGpreS ffi GF] (e : expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : heapGS .hasLC GF],
-      receipt_bound GF ≤ 2 ^ 64 →
-      hG.goose_localGS.goose_go_local_context = σ.go_state.go_lctx →
-      ⊢ ffi_global_start (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g.global_world -∗
-        ffi_local_start (goose_ffiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
-        own_go_state σ.go_state.package_state ={⊤}=∗
+      receiptBound GF ≤ 2 ^ 64 →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
+        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        ownGoState σ.goState.packageState ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
-    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
-    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2)) (Hn : n < 2 ^ 64) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2) :=
+    (n : Nat) (κs : List Observation) (t2 : List expr) (σ2 : CfgState)
+    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2)) (Hn : n < 2 ^ 64) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) :=
   goose_adequacy (2 ^ 64) e σ g φ Hinitg Hinit
     (@fun hG HN Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
 

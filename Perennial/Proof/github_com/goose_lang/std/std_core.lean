@@ -57,18 +57,18 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [sem : go.PreSemantics]
 variable [package_sem : github_com.goose_lang.std.std_core.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.github_com.goose_lang.std.std_core :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.github_com.goose_lang.std.std_core :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst :
+instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.github_com.goose_lang.std.std_core :=
   build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.github_com.goose_lang.std.std_core get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.github_com.goose_lang.std.std_core get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -79,7 +79,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   is_pkg_init_finish
 
 theorem wp_SumNoOverflow (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }}
       (App (App (Val (@! SumNoOverflow)) (Val #x)) (Val #y))
     {{ RET #(decide (uint.Z (x + y) = uint.Z x + uint.Z y)); True }} := by
   wp_start as _
@@ -92,7 +92,7 @@ theorem wp_SumNoOverflow (x y : w64) :
   itrivial
 
 theorem wp_SumAssumeNoOverflow (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }}
       (App (App (Val (@! SumAssumeNoOverflow)) (Val #x)) (Val #y))
     {{ RET #(x + y); ⌜uint.Z (x + y) = uint.Z x + uint.Z y⌝ }} := by
   wp_start
@@ -104,7 +104,7 @@ theorem wp_SumAssumeNoOverflow (x y : w64) :
   simpa using Hassume
 
 theorem wp_MulNoOverflow (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }}
       (App (App (Val (@! MulNoOverflow)) (Val #x)) (Val #y))
     {{ RET #(decide (uint.Z (x * y) = uint.Z x * uint.Z y)); True }} := by
   wp_start as _
@@ -139,7 +139,7 @@ theorem wp_MulNoOverflow (x y : w64) :
       iapply HΦ; itrivial
 
 theorem wp_MulAssumeNoOverflow (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core }}
       (App (App (Val (@! MulAssumeNoOverflow)) (Val #x)) (Val #y))
     {{ RET #(x * y); ⌜uint.Z (x * y) = uint.Z x * uint.Z y⌝ }} := by
   wp_start
@@ -151,12 +151,12 @@ theorem wp_MulAssumeNoOverflow (x y : w64) :
   simpa using Hassume
 
 theorem wp_Shuffle (s : slice.t) (xs : List w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core ∗ s ↦* xs }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core ∗ s ↦* xs }}
       (App (Val (@! Shuffle)) (Val #s))
     {{ (xs' : List w64), RET #(); ⌜xs ≡ₚ xs'⌝ ∗ s ↦* xs' }} := by
   wp_start as Hs
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hs
   wp_if_destruct
   · have hnil : xs = [] := by
       apply List.eq_nil_of_length_eq_zero; rw [Hlen.1, Hif]; rfl
@@ -205,7 +205,7 @@ theorem wp_Shuffle (s : slice.t) (xs : List w64) :
     ipureintro; exact Hperm
 
 theorem wp_Permutation (n : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core ∗ ⌜0 ≤ sint.Z n⌝ }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core ∗ ⌜0 ≤ sint.Z n⌝ }}
       (App (Val (@! Permutation)) (Val #n))
     {{ (xs : List w64) (s : slice.t), RET #s;
         ⌜xs ≡ₚ (seqZ 0 (sint.Z n)).map (fun z => W64 z)⌝ ∗ s ↦* xs }} := by
@@ -230,7 +230,7 @@ theorem wp_Permutation (n : w64) :
   by_cases Hif : uint.Z i < uint.Z n
   · simp only [Hif, _root_.decide_true, ↓reduceIte]
     wp_auto
-    ihave %Hlen := own_slice_len _ _ _ $$ Hs
+    ihave %Hlen := ownSlice_len _ _ _ $$ Hs
     have hlt : sint.nat i < sint.nat n := by simp only [sint.nat, sint.Z] at *; omega
     have hsl : sint.Z i < sint.Z s.len := by
       simp only [List.length_append, List.length_map, length_seqZ, List.length_replicate] at Hlen

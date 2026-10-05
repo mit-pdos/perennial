@@ -26,7 +26,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_ses
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : etcd_session.Assumptions]
 
 local notation "pkg" =>
@@ -34,23 +34,23 @@ local notation "pkg" =>
 
 /-- The resources protected by `mu`: half of `sessionc` and the current
 broadcast channel. -/
-abbrev mu_inv : IProp GF :=
-  iprop(∃ (ch : chan.t) (γch : chan_names),
-    "sessionc" ∷ typed_pointsto (global_addr sessionc) ch (DFrac.own (1 : Qp).half) ∗
-    "#Hsessionc" ∷ own_broadcast_chan ch γch iprop(True) broadcast.t.Unknown ∗
-    "#Hsessionc_is" ∷ is_chan ch γch Unit)
+abbrev muInv : IProp GF :=
+  iprop(∃ (ch : chan.t) (γch : ChanNames),
+    "sessionc" ∷ typed_pointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
+    "#Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Unknown ∗
+    "#Hsessionc_is" ∷ isChan ch γch Unit)
 
-abbrev is_inv : IProp GF :=
-  iprop("#Hmu" ∷ sync.is_Mutex (global_addr mu) mu_inv)
+abbrev isInv : IProp GF :=
+  iprop("#Hmu" ∷ sync.isMutex (globalAddr mu) muInv)
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg := define_is_pkg_init is_inv
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg := build_get_is_pkg_init_wf
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg := define_is_pkg_init isInv
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg := build_get_is_pkg_init_wf
 
-theorem is_inv_access :
-    is_pkg_init (PROP := IProp GF) pkg ⊢ sync.is_Mutex (global_addr mu) mu_inv := by
-  with_unfolding_all exact is_pkg_init_access (PROP := IProp GF) pkg
+theorem isInv_access :
+    isPkgInit (PROP := IProp GF) pkg ⊢ sync.isMutex (globalAddr mu) muInv := by
+  with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg
 
-omit [allG GF] in
+omit [AllG GF] in
 theorem pointsto_halves {V : Type} [TypedPointsto (GF := GF) V] (l : loc) (v : V) :
     typed_pointsto (GF := GF) l v (DFrac.own 1) ⊣⊢
       typed_pointsto l v (DFrac.own (1 : Qp).half) ∗ typed_pointsto l v (DFrac.own (1 : Qp).half) := by
@@ -62,10 +62,10 @@ set_option goose.wp.extras true
 
 set_option maxHeartbeats 400000 in
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init (PROP := IProp GF) pkg }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗ isPkgInit (PROP := IProp GF) pkg }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -81,9 +81,9 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   iapply wp_fupd
   wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#Hch, %_, Hoc⟩
   imod alloc_broadcast_chan (E := ⊤) iprop(True) γ ch $$ Hch Hoc with Hbc
-  ihave #Hbcu := own_broadcast_chan_Unknown _ _ _ _ $$ Hbc
+  ihave #Hbcu := ownBroadcastChan_Unknown _ _ _ _ $$ Hbc
   icases (pointsto_halves _ _).1 $$ Hsc with ⟨Hsc1, Hsc2⟩
-  imod sync.init_Mutex mu_inv ⊤ (global_addr mu) $$ Hmu [Hsc1] with #HisMu
+  imod sync.init_Mutex muInv ⊤ (globalAddr mu) $$ Hmu [Hsc1] with #HisMu
   · inext; iexists ch, γ; iframe; iframe #
   imodintro
   iframe Hown
@@ -101,36 +101,36 @@ theorem wp_newSession :
   · wp_end
 
 theorem wp_waitForSessionExpiration :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! waitForSessionExpiration)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
   wp_end
 
 /-- The postcondition of the nonblocking `select` in `monitorSession`. -/
-abbrev monitor_select_post (v : val) : IProp GF :=
-  iprop(⌜v = execute_val⌝ ∗
-    ∃ (ch : chan.t) (γch : chan_names),
-      "sessionc" ∷ typed_pointsto (global_addr sessionc) ch (DFrac.own 1) ∗
-      "Hsessionc" ∷ own_broadcast_chan ch γch iprop(True) broadcast.t.Pending ∗
-      "#Hsessionc_is" ∷ is_chan ch γch Unit)
+abbrev monitorSelectPost (v : val) : IProp GF :=
+  iprop(⌜v = executeVal⌝ ∗
+    ∃ (ch : chan.t) (γch : ChanNames),
+      "sessionc" ∷ typed_pointsto (globalAddr sessionc) ch (DFrac.own 1) ∗
+      "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Pending ∗
+      "#Hsessionc_is" ∷ isChan ch γch Unit)
 
 set_option maxHeartbeats 1600000 in
-theorem wp_monitorSession (ch : chan.t) (γch : chan_names) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
-        "sessionc" ∷ typed_pointsto (global_addr sessionc) ch (DFrac.own (1 : Qp).half) ∗
-        "Hsessionc" ∷ own_broadcast_chan ch γch iprop(True) broadcast.t.Pending ∗
-        "#Hsessionc_is" ∷ is_chan ch γch Unit }}
+theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
+        "sessionc" ∷ typed_pointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
+        "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Pending ∗
+        "#Hsessionc_is" ∷ isChan ch γch Unit }}
       (App (Val (@! monitorSession)) (Val #()))
     {{ RET #(); True }} := by
   wp_start as ⟨sessionc, Hsessionc, #Hsessionc_is⟩
-  ihave #Hpkg : is_pkg_init (PROP := IProp GF) pkg $$ []
+  ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg $$ []
   · iPkgInit
-  ihave #Hmu := is_inv_access $$ Hpkg
-  ihave HH : (∃ (ch : chan.t) (γch : chan_names) (cst : broadcast.t),
-      "sessionc" ∷ typed_pointsto (global_addr sessionc) ch (DFrac.own (1 : Qp).half) ∗
-      "Hsessionc" ∷ own_broadcast_chan ch γch iprop(True) cst ∗
-      "#Hsessionc_is" ∷ is_chan ch γch Unit ∗
+  ihave #Hmu := isInv_access $$ Hpkg
+  ihave HH : (∃ (ch : chan.t) (γch : ChanNames) (cst : broadcast.t),
+      "sessionc" ∷ typed_pointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
+      "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) cst ∗
+      "#Hsessionc_is" ∷ isChan ch γch Unit ∗
       "%Hcst" ∷ ⌜cst ≠ broadcast.t.Unknown⌝ : IProp GF) $$ [sessionc Hsessionc]
   · iexists ch, γch, broadcast.t.Pending
     iframe
@@ -139,27 +139,27 @@ theorem wp_monitorSession (ch : chan.t) (γch : chan_names) :
   iclear Hsessionc_is
   wp_for HH
   wp_apply wp_waitForSessionExpiration
-  wp_apply sync.wp_Mutex__Lock $$ [$Hmu] as ⟨Hlocked, Hown⟩
+  wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hown⟩
   icases Hown with ⟨%ch', %γch', sessionc_inv, #Hsessionc_inv, #Hsessionc_is_inv⟩
   icombine sessionc sessionc_inv gives %Heq
   subst Heq
   ihave sessionc := (pointsto_halves _ _).2 $$ [sessionc sessionc_inv]
   · iframe
   wp_bind (App (Val (GoInstruction SelectStmt)) _)
-  iapply wp_wand (Φ := monitor_select_post) $$ [sessionc Hsessionc] [-]
+  iapply wp_wand (Φ := monitorSelectPost) $$ [sessionc Hsessionc] [-]
   · iapply chan.wp_select_nonblocking_alt [iprop(⌜cst = broadcast.t.Pending⌝)]
-      iprop(typed_pointsto (global_addr sessionc) ch (DFrac.own 1) ∗
-        own_broadcast_chan ch γch iprop(True) cst) $$ [] [sessionc Hsessionc] []
+      iprop(typed_pointsto (globalAddr sessionc) ch (DFrac.own 1) ∗
+        ownBroadcastChan ch γch iprop(True) cst) $$ [] [sessionc Hsessionc] []
     · iapply BigSepL2.bigSepL2_cons.2
       isplitl
       · iintro ⟨sessionc, Hsessionc⟩
-        simp only [chan.nonblocking_alt_clause_pre]
+        simp only [chan.nonblockingAltClausePre]
         iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ch, γch
         isplit
         · ipureintro; rfl
         isplit
         · iexact Hsessionc_is
-        iapply own_broadcast_chan_nonblocking_receive _ _ _ _ _ cst $$ Hsessionc
+        iapply ownBroadcastChan_nonblocking_receive _ _ _ _ _ cst $$ Hsessionc
         cases cst
         · dsimp only
           isplit
@@ -199,23 +199,23 @@ theorem wp_monitorSession (ch : chan.t) (γch : chan_names) :
   wp_auto
   icases (pointsto_halves _ _).1 $$ sessionc with ⟨sessionc, sessionc_inv⟩
   -- (Rocq:) subtlety here: because we are deriving a persistent
-  -- own_broadcast_chan(ch, broadcast.Pending), the function can retain Hsessionc
+  -- ownBroadcastChan(ch, broadcast.Pending), the function can retain Hsessionc
   -- asserting that the channel is specifically Pending; this is needed after the
   -- Unlock to safely close.
-  ihave #Hunk := own_broadcast_chan_Unknown _ _ _ _ $$ Hsessionc
-  wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked sessionc_inv]
+  ihave #Hunk := ownBroadcastChan_Unknown _ _ _ _ $$ Hsessionc
+  wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked sessionc_inv]
   · inext; iexists ch2, γ2; iframe; iframe #
   wp_apply wp_newSession as %err _
   cases err with
   | nil =>
     wp_auto
-    wp_apply sync.wp_Mutex__Lock $$ [$Hmu] as ⟨Hlocked, Hown⟩
+    wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hown⟩
     icases Hown with ⟨%ch3, %γ3, sessionc_inv, #Hsessionc_inv3, #Hsessionc_is_inv3⟩
     icombine sessionc sessionc_inv gives %Heq
     subst Heq
     wp_apply wp_broadcast_chan_close ch2 γ2 iprop(True) $$ [$Hsessionc] as #Hdone
     · imodintro; itrivial
-    wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked sessionc_inv]
+    wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked sessionc_inv]
     · inext; iexists ch2, γ3; iframe; iframe #
     wp_for_post
     iframe
@@ -236,29 +236,29 @@ set_option maxHeartbeats 800000 in
 /-- Rocq `waitSession` (renamed: the Lean name `waitSession` is the function). -/
 theorem wp_waitSession {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [Pos.Countable A']
     {A : go.type} [IntoValTyped (GF := GF) A' A]
-    (cancel : loc) (γcancel : chan_names) (Pcancel : A' → IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_chan_bag γcancel cancel Pcancel }}
+    (cancel : loc) (γcancel : ChanNames) (Pcancel : A' → IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isChanBag γcancel cancel Pcancel }}
       (App (Val #(functions waitSession [A])) (Val #cancel))
     {{ (err : error.t), RET #err;
         match err with
         | interface.t.nil => iprop(True)
         | _ => iprop(∃ a, Pcancel a) }} := by
   wp_start as #Hcancel
-  ihave #Hpkg : is_pkg_init (PROP := IProp GF) pkg $$ []
+  ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg $$ []
   · iPkgInit
-  ihave #Hmu := is_inv_access $$ Hpkg
+  ihave #Hmu := isInv_access $$ Hpkg
   wp_pures
   wp_alloc cancel_ptr as Hcancel_ptr
   wp_auto_lc 2
-  wp_apply sync.wp_Mutex__Lock $$ [$Hmu] as ⟨Hlocked, Hown⟩
+  wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hown⟩
   icases Hown with ⟨%ch, %γch, sessionc, #Hsessionc, #Hsessionc_is⟩
   wp_auto
-  wp_apply sync.wp_Mutex__Unlock $$ [$Hmu $Hlocked sessionc]
+  wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked sessionc]
   · inext; iexists ch, γch; iframe; iframe #
   wp_apply_core chan.wp_select_blocking
   iapply BigAndL.bigAndL_cons.2
   isplit
-  · simp only [chan.blocking_clause_pre]
+  · simp only [chan.blockingClausePre]
     iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ch, γch
     isplit
     · ipureintro; rfl
@@ -270,7 +270,7 @@ theorem wp_waitSession {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [P
     wp_end
   iapply BigAndL.bigAndL_cons.2
   isplit
-  · simp only [chan.blocking_clause_pre]
+  · simp only [chan.blockingClausePre]
     iexists A', inferInstance, inferInstance, inferInstance, inferInstance, cancel, γcancel
     isplit
     · ipureintro; rfl

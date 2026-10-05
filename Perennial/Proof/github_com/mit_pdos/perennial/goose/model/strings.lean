@@ -42,14 +42,14 @@ theorem wp_string_len (str : go_string) {t : go.type} [t ↓u go.string] :
 theorem wp_StringToByteSlice (str : go_string) :
     {{ (True : IProp GF) }}
       (App (Val (@! StringToByteSlice)) (Val #str)) @ s; E
-    {{ (sl : slice.t), RET #sl; sl ↦* str ∗ own_slice_cap w8 sl (DFrac.own 1) }} := by
+    {{ (sl : slice.t), RET #sl; sl ↦* str ∗ ownSliceCap w8 sl (DFrac.own 1) }} := by
   wp_start
   wp_auto
   ihave H : (∃ (i : w64) (a : slice.t),
       "i" ∷ i_ptr ↦ i ∗
       "a" ∷ a_ptr ↦ a ∗
       "Ha" ∷ a ↦* str.take (sint.nat i) ∗
-      "Ha_cap" ∷ own_slice_cap w8 a (DFrac.own 1) ∗
+      "Ha_cap" ∷ ownSliceCap w8 a (DFrac.own 1) ∗
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ str.length⌝ : IProp GF) $$ [a i]
   · iexists (W64 0)
     iexists (zero_val slice.t)
@@ -57,9 +57,9 @@ theorem wp_StringToByteSlice (str : go_string) :
     rw [h0, List.take_zero]
     iframe a i
     isplitl []
-    · iapply own_slice_nil
+    · iapply ownSlice_nil
     isplitl []
-    · iapply own_slice_cap_nil
+    · iapply ownSliceCap_nil
     · ipureintro; word
   wp_for H
   wp_apply wp_string_len with %Hoverflow
@@ -77,7 +77,7 @@ theorem wp_StringToByteSlice (str : go_string) :
     wp_bind (App (Val (GoInstruction (CompositeLiteral (go.SliceType go.byte)))) (Val (LiteralValueV _)))
     iapply wp_slice_literal (V := w8) (t := go.byte) [c]
     wp_auto
-    have hsz : go.array_literal_size [KeyedElement none (ElementExpression go.byte #c)] = 1 := rfl
+    have hsz : go.arrayLiteralSize [KeyedElement none (ElementExpression go.byte #c)] = 1 := rfl
     rw [hsz]
     isplitl []
     · ipureintro; rfl
@@ -110,7 +110,7 @@ theorem wp_ByteSliceToString (sl : slice.t) (str : List w8) (dq : DFrac) :
     {{ RET #str; sl ↦*{dq} str }} := by
   wp_start as Hsl
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hsl
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hsl
   ihave H : (∃ (i : w64) (c : w8),
       "i" ∷ i_ptr ↦ i ∗
       "c" ∷ c_ptr ↦ c ∗

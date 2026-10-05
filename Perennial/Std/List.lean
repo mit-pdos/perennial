@@ -19,16 +19,16 @@ theorem last_replicate (x : A) (n : Nat) :
 
 end list_misc
 
-/-! ## `list_reln`: a relation on successive elements -/
+/-! ## `ListReln`: a relation on successive elements -/
 
-def list_reln {A : Type u} (l : List A) (R : A → A → Prop) : Prop :=
+def ListReln {A : Type u} (l : List A) (R : A → A → Prop) : Prop :=
   ∀ i x y, l !! i = some x → l !! (i + 1) = some y → R x y
 
-section list_reln
+section ListReln
 variable {A : Type u} (R : A → A → Prop)
 
-theorem list_reln_snoc (l : List A) (a : A) (h : list_reln l R)
-    (hR : ∀ x, l.getLast? = some x → R x a) : list_reln (l ++ [a]) R := by
+theorem listReln_snoc (l : List A) (a : A) (h : ListReln l R)
+    (hR : ∀ x, l.getLast? = some x → R x a) : ListReln (l ++ [a]) R := by
   intro i x y h0 h1
   have hi : i < l.length := by
     have := lookup_lt_Some h1; simp at this; omega
@@ -41,8 +41,8 @@ theorem list_reln_snoc (l : List A) (a : A) (h : list_reln l R)
     apply hR
     rw [List.getLast?_eq_getElem?, ← e, Nat.add_sub_cancel]; exact h0
 
-theorem list_reln_trans (IsTrans : ∀ a b c, R a b → R b c → R a c) (l : List A)
-    (h : list_reln l R) : ∀ i j x y, l !! i = some x → l !! j = some y → i < j → R x y := by
+theorem listReln_trans (IsTrans : ∀ a b c, R a b → R b c → R a c) (l : List A)
+    (h : ListReln l R) : ∀ i j x y, l !! i = some x → l !! j = some y → i < j → R x y := by
   intro i j x y hi hj hij
   obtain ⟨k, rfl⟩ : ∃ k, j = i + k + 1 := ⟨j - i - 1, by omega⟩
   clear hij
@@ -53,15 +53,15 @@ theorem list_reln_trans (IsTrans : ∀ a b c, R a b → R b c → R a c) (l : Li
       (by have := lookup_lt_Some hj; omega)
     exact IsTrans _ _ _ (ih z hz) (h _ z y hz hj)
 
-theorem list_reln_trans_refl (IsTrans : ∀ a b c, R a b → R b c → R a c) (hrefl : ∀ a, R a a)
-    (l : List A) (h : list_reln l R) :
+theorem listReln_trans_refl (IsTrans : ∀ a b c, R a b → R b c → R a c) (hrefl : ∀ a, R a a)
+    (l : List A) (h : ListReln l R) :
     ∀ i j x y, l !! i = some x → l !! j = some y → i ≤ j → R x y := by
   intro i j x y hi hj hij
   by_cases e : i = j
   · subst e; rw [hi] at hj; cases hj; exact hrefl x
-  · exact list_reln_trans R IsTrans l h i j x y hi hj (by omega)
+  · exact listReln_trans R IsTrans l h i j x y hi hj (by omega)
 
-end list_reln
+end ListReln
 
 section list
 variable {A : Type u} {B : Type v}
@@ -145,16 +145,16 @@ theorem length_nonzero_neq_nil (l : List A) (h : 0 < l.length) : l ≠ [] := Lis
 theorem drop_lt (l : List A) (n : Nat) (h : n < l.length) : l.drop n ≠ [] := by
   intro e; have := congrArg List.length e; simp at this; omega
 
-/-- Rocq `Forall_idx P start l`: `P (start + i) (l !! i)` for every index. -/
-def Forall_idx (P : Nat → A → Prop) (start : Nat) (l : List A) : Prop :=
+/-- Rocq `ForallIdx P start l`: `P (start + i) (l !! i)` for every index. -/
+def ForallIdx (P : Nat → A → Prop) (start : Nat) (l : List A) : Prop :=
   List.Forall₂ P (List.range' start l.length) l
 
 theorem drop_seq (n len m : Nat) : (List.range' n len).drop m = List.range' (n + m) (len - m) := by
   rw [List.drop_range']; simp
 
-theorem Forall_idx_iff (P : Nat → A → Prop) (start : Nat) (l : List A) :
-    Forall_idx P start l ↔ ∀ i x, l !! i = some x → P (start + i) x := by
-  unfold Forall_idx
+theorem forallIdx_iff (P : Nat → A → Prop) (start : Nat) (l : List A) :
+    ForallIdx P start l ↔ ∀ i x, l !! i = some x → P (start + i) x := by
+  unfold ForallIdx
   induction l generalizing start with
   | nil => simp
   | cons a l ih =>
@@ -168,18 +168,18 @@ theorem Forall_idx_iff (P : Nat → A → Prop) (start : Nat) (l : List A) :
       refine ⟨by simpa using h 0 a rfl, fun i x hx => ?_⟩
       have := h (i + 1) x (by simpa using hx); rwa [Nat.add_assoc, Nat.add_comm 1 i]
 
-theorem Forall_idx_drop (P : Nat → A → Prop) (l : List A) (start n : Nat)
-    (h : Forall_idx P start l) : Forall_idx P (start + n) (l.drop n) := by
-  rw [Forall_idx_iff] at *
+theorem forallIdx_drop (P : Nat → A → Prop) (l : List A) (start n : Nat)
+    (h : ForallIdx P start l) : ForallIdx P (start + n) (l.drop n) := by
+  rw [forallIdx_iff] at *
   intro i x hx
   rw [List.getElem?_drop] at hx
   have := h (n + i) x hx; rwa [Nat.add_assoc]
 
-theorem Forall_idx_impl (P₁ P₂ : Nat → A → Prop) (l : List A) (start : Nat)
-    (h : Forall_idx P₁ start l)
+theorem forallIdx_impl (P₁ P₂ : Nat → A → Prop) (l : List A) (start : Nat)
+    (h : ForallIdx P₁ start l)
     (himpl : ∀ i x, l !! i = some x → P₁ (start + i) x → P₂ (start + i) x) :
-    Forall_idx P₂ start l := by
-  rw [Forall_idx_iff] at *
+    ForallIdx P₂ start l := by
+  rw [forallIdx_iff] at *
   exact fun i x hx => himpl i x hx (h i x hx)
 
 theorem concat_insert_app (index : Nat) (l : List (List A)) (x : List A) (h : index < l.length) :

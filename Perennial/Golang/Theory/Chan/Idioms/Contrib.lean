@@ -22,41 +22,41 @@ namespace Perennial
 open Iris OFE CMRA BI ProofMode
 
 section contribution
-variable {GF : BundledGFunctors} [allG GF]
-variable {A : Type} [UCMRA A] [CMRA.Discrete A] {ea : Syntax.cmra} [IsCmra (IProp GF) A ea]
+variable {GF : BundledGFunctors} [AllG GF]
+variable {A : Type} [UCMRA A] [CMRA.Discrete A] {ea : Syntax.Cmra} [IsCmra (IProp GF) A ea]
 
 /-- The underlying (unital) camera `option (csum (positive * A) (excl unit))`. -/
-abbrev contribT (A : Type) [UCMRA A] : Type := Option (Csum (positive × A) (Excl Unit))
+abbrev ContribT (A : Type) [UCMRA A] : Type := Option (Csum (positive × A) (Excl Unit))
 
 /-- `Some (Cinl (q, x))`. -/
-abbrev contrib_cl (q : positive) (x : A) : contribT A := some (.inl (q, x))
+abbrev contribCl (q : positive) (x : A) : ContribT A := some (.inl (q, x))
 /-- `Some (Cinr (Excl ()))`. -/
-abbrev contrib_cr : contribT A := some (.inr (Excl.excl ()))
+abbrev contribCr : ContribT A := some (.inr (Excl.excl ()))
 
 def server (γ : GName) (n : Nat) (x : A) : IProp GF :=
   if n = 0 then
-    iprop(x ≡ UCMRA.unit ∗ own γ (Auth.auth (DFrac.own 1) (contrib_cr (A := A))) ∗
-      own γ (Auth.frag (contrib_cr (A := A))))
-  else own γ (Auth.auth (DFrac.own 1) (contrib_cl (positive.of_nat n) x))
+    iprop(x ≡ UCMRA.unit ∗ own γ (Auth.auth (DFrac.own 1) (contribCr (A := A))) ∗
+      own γ (Auth.frag (contribCr (A := A))))
+  else own γ (Auth.auth (DFrac.own 1) (contribCl (positive.ofNat n) x))
 
 def client (γ : GName) (x : A) : IProp GF :=
-  own γ (Auth.frag (contrib_cl positive.one x))
+  own γ (Auth.frag (contribCl positive.one x))
 
 /-! ### Concrete facts about the camera -/
 
 omit [CMRA.Discrete A] in
-theorem contrib_cl_op (p q : positive) (x y : A) :
-    contrib_cl p x • contrib_cl q y = contrib_cl (p + q) (x • y) := rfl
+theorem contribCl_op (p q : positive) (x y : A) :
+    contribCl p x • contribCl q y = contribCl (p + q) (x • y) := rfl
 
 omit [CMRA.Discrete A] in
-theorem contrib_cl_valid (p : positive) (x : A) : ✓ contrib_cl p x ↔ ✓ x :=
+theorem contribCl_valid (p : positive) (x : A) : ✓ contribCl p x ↔ ✓ x :=
   ⟨fun h => h.2, fun h => ⟨trivial, h⟩⟩
 
 omit [CMRA.Discrete A] in
-/-- Decomposition of `contrib_cl p x • z`. -/
-theorem contrib_cl_op_eq (p q : positive) (x y : A) (z : contribT A)
-    (h : contrib_cl q y = contrib_cl p x • z) :
-    (q = p ∧ y = x ∧ z = none) ∨ ∃ r w, q = p + r ∧ y = x • w ∧ z = contrib_cl r w := by
+/-- Decomposition of `contribCl p x • z`. -/
+theorem contribCl_op_eq (p q : positive) (x y : A) (z : ContribT A)
+    (h : contribCl q y = contribCl p x • z) :
+    (q = p ∧ y = x ∧ z = none) ∨ ∃ r w, q = p + r ∧ y = x • w ∧ z = contribCl r w := by
   rcases z with _ | (⟨r, w⟩ | b | _)
   · left; cases h; exact ⟨rfl, rfl, rfl⟩
   · right; cases h; exact ⟨r, w, rfl, rfl, rfl⟩
@@ -64,21 +64,21 @@ theorem contrib_cl_op_eq (p q : positive) (x y : A) (z : contribT A)
   · cases h
 
 omit [CMRA.Discrete A] in
-theorem contrib_cl_inc (p q : positive) (x y : A) (h : contrib_cl p x ≼ contrib_cl q y) :
+theorem contribCl_inc (p q : positive) (x y : A) (h : contribCl p x ≼ contribCl q y) :
     (q = p ∧ y = x) ∨ ∃ r, q = p + r ∧ x ≼ y := by
   obtain ⟨z, hz⟩ := h
-  rcases contrib_cl_op_eq p q x y z hz with ⟨h1, h2, _⟩ | ⟨r, w, h1, h2, _⟩
+  rcases contribCl_op_eq p q x y z hz with ⟨h1, h2, _⟩ | ⟨r, w, h1, h2, _⟩
   · exact .inl ⟨h1, h2⟩
   · exact .inr ⟨r, h1, ⟨w, h2⟩⟩
 
 theorem positive_add_ne_self (p r : positive) : p + r ≠ p := by
   intro h; have := congrArg positive.pred h; simp at this; omega
 
-theorem own_valid_pure {B : Type} [CMRA B] [CMRA.Discrete B] {eb : Syntax.cmra}
+theorem own_valid_pure {B : Type} [CMRA B] [CMRA.Discrete B] {eb : Syntax.Cmra}
     [IsCmra (IProp GF) B eb] (γ : GName) (b : B) : own γ b ⊢ ⌜✓ b⌝ :=
   (own_valid γ b).trans ((internalCmraValid_elim b).trans (pure_mono CMRA.discrete_valid))
 
-theorem own_valid_pure_2 {B : Type} [CMRA B] [CMRA.Discrete B] {eb : Syntax.cmra}
+theorem own_valid_pure_2 {B : Type} [CMRA B] [CMRA.Discrete B] {eb : Syntax.Cmra}
     [IsCmra (IProp GF) B eb] (γ : GName) (b1 b2 : B) : own γ b1 ⊢ own γ b2 -∗ ⌜✓ (b1 • b2)⌝ :=
   wand_intro ((own_op γ b1 b2).2.trans (own_valid_pure γ _))
 
@@ -93,7 +93,7 @@ instance client_ne (γ : GName) : NonExpansive (client (GF := GF) (A := A) γ) :
 theorem contribution_init : ⊢ |==> ∃ γ, server (GF := GF) γ 0 (UCMRA.unit : A) := by
   iapply (BIUpdate.mono ?_) $$ []
   rotate_left
-  · iapply (own_alloc ((Auth.auth (DFrac.own 1) (contrib_cr (A := A))) • Auth.frag contrib_cr)
+  · iapply (own_alloc ((Auth.auth (DFrac.own 1) (contribCr (A := A))) • Auth.frag contribCr)
       (Auth.auth_both_valid_2 trivial (CMRA.inc_refl _)))
   iintro ⟨%γ, H⟩
   icases (own_op γ _ _).1 $$ H with ⟨Ha, Hf⟩
@@ -120,7 +120,7 @@ theorem server_1_agree (γ : GName) (x y : A) :
   icases (own_valid_pure_2 γ _ _) $$ Hs Hc with %Hv
   ipureintro
   obtain ⟨hinc, _⟩ := Auth.auth_both_valid_discrete.mp Hv
-  rcases contrib_cl_inc _ _ _ _ hinc with ⟨_, h⟩ | ⟨r, hr, _⟩
+  rcases contribCl_inc _ _ _ _ hinc with ⟨_, h⟩ | ⟨r, hr, _⟩
   · exact h
   · exact absurd hr.symm (positive_add_ne_self _ _)
 
@@ -135,14 +135,14 @@ theorem server_valid (γ : GName) (n : Nat) (x : A) : server (GF := GF) γ n x �
   · iintro Hs
     icases (own_valid_pure γ _) $$ Hs with %Hv
     ipureintro
-    exact (contrib_cl_valid _ _).mp (Auth.auth_valid.mp Hv)
+    exact (contribCl_valid _ _).mp (Auth.auth_valid.mp Hv)
 
 theorem client_valid (γ : GName) (x : A) : client (GF := GF) γ x ⊢ ⌜✓ x⌝ := by
   unfold client
   iintro Hs
   icases (own_valid_pure γ _) $$ Hs with %Hv
   ipureintro
-  exact (contrib_cl_valid _ _).mp (Auth.frag_valid.mp Hv)
+  exact (contribCl_valid _ _).mp (Auth.frag_valid.mp Hv)
 
 theorem server_agree (γ : GName) (n : Nat) (x y : A) :
     server (GF := GF) γ n x ⊢ client γ y -∗ ⌜n ≠ 0 ∧ y ≼ x⌝ := by
@@ -158,7 +158,7 @@ theorem server_agree (γ : GName) (n : Nat) (x y : A) :
     ipureintro
     obtain ⟨hinc, _⟩ := Auth.auth_both_valid_discrete.mp Hv
     refine ⟨hn, ?_⟩
-    rcases contrib_cl_inc _ _ _ _ hinc with ⟨_, h⟩ | ⟨r, _, h⟩
+    rcases contribCl_inc _ _ _ _ hinc with ⟨_, h⟩ | ⟨r, _, h⟩
     · subst h; exact CMRA.inc_refl _
     · exact h
 
@@ -179,23 +179,23 @@ theorem alloc_client (γ : GName) (n : Nat) (x : A) :
     iintro ⟨Hx, Ha, Hf⟩
     icases discrete_eq_mp $$ Hx with %Hx
     subst Hx
-    have hlu : ((contrib_cr (A := A)), (contrib_cr (A := A))) ~l~>
-        (contrib_cl (positive.of_nat 1) UCMRA.unit, contrib_cl positive.one UCMRA.unit) :=
+    have hlu : ((contribCr (A := A)), (contribCr (A := A))) ~l~>
+        (contribCl (positive.ofNat 1) UCMRA.unit, contribCl positive.one UCMRA.unit) :=
       LocalUpdate.option (LocalUpdate.exclusive ⟨trivial, UCMRA.unit_valid⟩)
     iapply (BIUpdate.mono (own_op γ _ _).1)
     iapply (own_update_2 γ _ _ _ (Auth.auth_update hlu)) $$ Ha Hf
   · unfold server client
     simp only [hn, ↓reduceIte, Nat.add_one_ne_zero]
-    have e1 : contrib_cl positive.one (UCMRA.unit : A) • contrib_cl (positive.of_nat n) x =
-        contrib_cl (positive.of_nat (n + 1)) x := by
-      rw [contrib_cl_op, UCMRA.unit_left_id]
-      congr 3; ext; simp [positive.of_nat, positive.one]; omega
-    have hlu : (contrib_cl (positive.of_nat n) x, (UCMRA.unit : contribT A)) ~l~>
-        (contrib_cl (positive.of_nat (n + 1)) x, contrib_cl positive.one (UCMRA.unit : A)) := by
-      have := LocalUpdate.op_discrete (contrib_cl (positive.of_nat n) x) UCMRA.unit
-        (contrib_cl positive.one (UCMRA.unit : A))
-        (fun h => (contrib_cl_valid _ _).mpr (by
-          rw [UCMRA.unit_left_id]; exact (contrib_cl_valid _ _).mp h))
+    have e1 : contribCl positive.one (UCMRA.unit : A) • contribCl (positive.ofNat n) x =
+        contribCl (positive.ofNat (n + 1)) x := by
+      rw [contribCl_op, UCMRA.unit_left_id]
+      congr 3; ext; simp [positive.ofNat, positive.one]; omega
+    have hlu : (contribCl (positive.ofNat n) x, (UCMRA.unit : ContribT A)) ~l~>
+        (contribCl (positive.ofNat (n + 1)) x, contribCl positive.one (UCMRA.unit : A)) := by
+      have := LocalUpdate.op_discrete (contribCl (positive.ofNat n) x) UCMRA.unit
+        (contribCl positive.one (UCMRA.unit : A))
+        (fun h => (contribCl_valid _ _).mpr (by
+          rw [UCMRA.unit_left_id]; exact (contribCl_valid _ _).mp h))
       rwa [e1, CMRA.unit_right_id] at this
     exact (own_update γ _ _ (Auth.auth_update_alloc hlu)).trans (BIUpdate.mono (own_op γ _ _).1)
 
@@ -211,12 +211,12 @@ theorem dealloc_client (γ : GName) (n : Nat) (x : A) :
     subst Hx
     unfold server client
     simp only [Nat.one_ne_zero, ↓reduceIte, Nat.sub_self]
-    have hlu : (contrib_cl (positive.of_nat 1) (UCMRA.unit : A), contrib_cl positive.one (UCMRA.unit : A)) ~l~>
-        ((contrib_cr (A := A)), (contrib_cr (A := A))) := by
+    have hlu : (contribCl (positive.ofNat 1) (UCMRA.unit : A), contribCl positive.one (UCMRA.unit : A)) ~l~>
+        ((contribCr (A := A)), (contribCr (A := A))) := by
       refine (LocalUpdate.discrete _ _ _ _).mpr fun mz _ he => ⟨trivial, ?_⟩
       rcases mz with _ | z
       · rfl
-      · rcases contrib_cl_op_eq _ _ _ _ z he with ⟨_, _, rfl⟩ | ⟨r, w, hr, _, _⟩
+      · rcases contribCl_op_eq _ _ _ _ z he with ⟨_, _, rfl⟩ | ⟨r, w, hr, _, _⟩
         · rfl
         · exact absurd hr.symm (positive_add_ne_self _ _)
     iapply (BIUpdate.mono ?_)
@@ -237,25 +237,25 @@ theorem dealloc_client (γ : GName) (n : Nat) (x : A) :
     unfold server client
     have hn' : n - 1 ≠ 0 := by omega
     simp only [hn0, hn', ↓reduceIte]
-    have hlu : (contrib_cl (positive.of_nat n) x, contrib_cl positive.one (UCMRA.unit : A)) ~l~>
-        (contrib_cl (positive.of_nat (n - 1)) x, (UCMRA.unit : contribT A)) := by
+    have hlu : (contribCl (positive.ofNat n) x, contribCl positive.one (UCMRA.unit : A)) ~l~>
+        (contribCl (positive.ofNat (n - 1)) x, (UCMRA.unit : ContribT A)) := by
       refine (LocalUpdate.discrete _ _ _ _).mpr fun mz hv he => ?_
       rcases mz with _ | z
       · exfalso
-        have he' : contrib_cl (positive.of_nat n) x = contrib_cl positive.one (UCMRA.unit : A) := he
-        have := congrArg (fun z : contribT A => match z with
+        have he' : contribCl (positive.ofNat n) x = contribCl positive.one (UCMRA.unit : A) := he
+        have := congrArg (fun z : ContribT A => match z with
           | some (.inl (q, _)) => q.pred | _ => 0) he'
-        simp [positive.of_nat, positive.one] at this; omega
-      · rcases contrib_cl_op_eq _ _ _ _ z he with ⟨h1, _, _⟩ | ⟨r, w, hr, hw, rfl⟩
-        · have := congrArg positive.pred h1; simp [positive.of_nat, positive.one] at this; omega
+        simp [positive.ofNat, positive.one] at this; omega
+      · rcases contribCl_op_eq _ _ _ _ z he with ⟨h1, _, _⟩ | ⟨r, w, hr, hw, rfl⟩
+        · have := congrArg positive.pred h1; simp [positive.ofNat, positive.one] at this; omega
         · rw [UCMRA.unit_left_id] at hw
           subst hw
-          refine ⟨(contrib_cl_valid _ _).mpr ((contrib_cl_valid _ _).mp hv), ?_⟩
-          show contrib_cl (positive.of_nat (n - 1)) x = (UCMRA.unit : contribT A) • contrib_cl r x
+          refine ⟨(contribCl_valid _ _).mpr ((contribCl_valid _ _).mp hv), ?_⟩
+          show contribCl (positive.ofNat (n - 1)) x = (UCMRA.unit : ContribT A) • contribCl r x
           rw [UCMRA.unit_left_id]
           congr 3; ext
           have := congrArg positive.pred hr
-          simp [positive.of_nat, positive.one] at this ⊢; omega
+          simp [positive.ofNat, positive.one] at this ⊢; omega
     iapply (own_update_2 γ _ _ _ (Auth.auth_update_dealloc hlu)) $$ Hs Hc
 
 theorem update_client (γ : GName) (n : Nat) (x y x' y' : A) (Hup : (x, y) ~l~> (x', y')) :
@@ -268,8 +268,8 @@ theorem update_client (γ : GName) (n : Nat) (x y x' y' : A) (Hup : (x, y) ~l~> 
   obtain ⟨hn0, _⟩ := Hag
   unfold server client
   simp only [hn0, ↓reduceIte]
-  have hlu : (contrib_cl (positive.of_nat n) x, contrib_cl positive.one y) ~l~>
-      (contrib_cl (positive.of_nat n) x', contrib_cl positive.one y') :=
+  have hlu : (contribCl (positive.ofNat n) x, contribCl positive.one y) ~l~>
+      (contribCl (positive.ofNat n) x', contribCl positive.one y') :=
     LocalUpdate.option (Csum.local_update_l (LocalUpdate.prod_2 _ _ Hup))
   iapply (BIUpdate.mono (own_op γ _ _).1)
   iapply (own_update_2 γ _ _ _ (Auth.auth_update hlu)) $$ Hs Hc
@@ -314,10 +314,10 @@ theorem server_client_op_false (γ : GName) (x y1 y2 : A) :
   icases (own_valid_pure_2 γ _ _) $$ Hs Hc with %Hv
   ipureintro
   obtain ⟨hinc, _⟩ := Auth.auth_both_valid_discrete.mp Hv
-  rw [contrib_cl_op] at hinc
-  rcases contrib_cl_inc _ _ _ _ hinc with ⟨h, _⟩ | ⟨r, hr, _⟩
-  · exact absurd (congrArg positive.pred h) (by simp [positive.of_nat, positive.one])
-  · have := congrArg positive.pred hr; simp [positive.of_nat, positive.one] at this
+  rw [contribCl_op] at hinc
+  rcases contribCl_inc _ _ _ _ hinc with ⟨h, _⟩ | ⟨r, hr, _⟩
+  · exact absurd (congrArg positive.pred h) (by simp [positive.ofNat, positive.one])
+  · have := congrArg positive.pred hr; simp [positive.ofNat, positive.one] at this
 
 end contribution
 

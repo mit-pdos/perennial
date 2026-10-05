@@ -23,7 +23,7 @@ Main differences from Rocq at a glance:
 ```
 Hlen : vs.length = sint.nat s.len ∧ 0 ≤ sint.Z s.len     -- Lean (pure) context
 ⊢
-  □Hpkg : is_pkg_init pkg                               -- intuitionistic (□)
+  □Hpkg : isPkgInit pkg                               -- intuitionistic (□)
   ∗HΦ : s ↦* vs -∗ Φ #(sum_w64 vs)                      -- spatial (∗)
   ∗Hs : s ↦* vs
   ⊢ Φ #(sum_w64 vs)                                      -- the Iris goal
@@ -95,7 +95,7 @@ intuitionistic), `∗` (all spatial — the Unicode `∗`, not `*`). Rocq
 A *pmTerm* is `t $$ spat₁ … spatₙ`, where `t` is an Iris hypothesis or a Lean
 term (a lemma with explicit arguments, a `(lem (x := v))`, ...). It is accepted
 by `iapply`, `ispecialize`, `icases`, `ihave`, `imod`, `iinv`, `wp_apply`.
-Examples: `iapply HΦ $$ Hs`, `ihave %Hlen := own_slice_len _ _ _ $$ Hs`,
+Examples: `iapply HΦ $$ Hs`, `ihave %Hlen := ownSlice_len _ _ _ $$ Hs`,
 `imod ghost_var_update_halves (n + 1) γ n n $$ Hv Hv' with ⟨Hv, Hv'⟩`.
 
 ## 3. Tactics
@@ -315,7 +315,7 @@ example (P : PROP) : ⊢ ▷ P -∗ ▷ P := by
 
 Ordinary Lean `rw`, `simp only`, `unfold` also work on a proof mode goal: the
 hypotheses are part of the goal term, so they rewrite the whole context (this is
-how `simp only [is_Mutex_unseal, is_Mutex_def]` is used in the sync proofs). To
+how `simp only [isMutex_unseal, isMutexDef]` is used in the sync proofs). To
 change only some hypotheses use `ieval ... at H`.
 
 ## 4. Notation and precedence

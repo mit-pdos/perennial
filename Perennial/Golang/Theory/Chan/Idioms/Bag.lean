@@ -19,14 +19,14 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
   [IntoValTyped (GF := GF) V t]
 
 /-- The bag invariant. -/
-def chan_bag_inv (γ : chan_names) (P : V → IProp GF) : IProp GF :=
-  iprop(∃ (s : chanstate.t V), "Hch" ∷ own_chan γ V s ∗
+def chanBagInv (γ : ChanNames) (P : V → IProp GF) : IProp GF :=
+  iprop(∃ (s : chanstate.t V), "Hch" ∷ ownChan γ V s ∗
     (match s with
      | .Idle => iprop(True)
      | .SndPending v => P v
@@ -35,45 +35,45 @@ def chan_bag_inv (γ : chan_names) (P : V → IProp GF) : IProp GF :=
      | .Closed _ => iprop(False)
      | _ => iprop(True)))
 
-def is_chan_bag_def (γ : chan_names) (ch : loc) (P : V → IProp GF) : IProp GF :=
-  iprop("#Hch" ∷ is_chan ch γ V ∗ "#Hinv" ∷ inv nroot (chan_bag_inv γ P))
-/-- (Rocq: `Opaque is_chan_bag`) -/
-@[irreducible] def is_chan_bag (γ : chan_names) (ch : loc) (P : V → IProp GF) : IProp GF :=
-  is_chan_bag_def γ ch P
-theorem is_chan_bag_unseal : @is_chan_bag = @is_chan_bag_def := by funext; with_unfolding_all rfl
+def isChanBagDef (γ : ChanNames) (ch : loc) (P : V → IProp GF) : IProp GF :=
+  iprop("#Hch" ∷ isChan ch γ V ∗ "#Hinv" ∷ inv nroot (chanBagInv γ P))
+/-- (Rocq: `Opaque isChanBag`) -/
+@[irreducible] def isChanBag (γ : ChanNames) (ch : loc) (P : V → IProp GF) : IProp GF :=
+  isChanBagDef γ ch P
+theorem isChanBag_unseal : @isChanBag = @isChanBagDef := by funext; with_unfolding_all rfl
 
-instance is_chan_bag_pers (γ : chan_names) (ch : loc) (P : V → IProp GF) :
-    Persistent (is_chan_bag γ ch P) := by
-  rw [is_chan_bag_unseal]; unfold is_chan_bag_def; infer_instance
+instance isChanBag_pers (γ : ChanNames) (ch : loc) (P : V → IProp GF) :
+    Persistent (isChanBag γ ch P) := by
+  rw [isChanBag_unseal]; unfold isChanBagDef; infer_instance
 
-theorem start_bag (P : V → IProp GF) (s : chanstate.t V) (ch : loc) (γ : chan_names)
+theorem start_bag (P : V → IProp GF) (s : chanstate.t V) (ch : loc) (γ : ChanNames)
     (Hs : match s with | .Idle | .Buffered [] => True | _ => False) :
-    ⊢ is_chan ch γ V -∗ own_chan γ V s ={⊤}=∗ is_chan_bag γ ch P := by
+    ⊢ isChan ch γ V -∗ ownChan γ V s ={⊤}=∗ isChanBag γ ch P := by
   iintro #Hch Hoc
-  imod inv_alloc nroot ⊤ (chan_bag_inv γ P) $$ [Hoc] with #Hinv
+  imod inv_alloc nroot ⊤ (chanBagInv γ P) $$ [Hoc] with #Hinv
   · inext
-    unfold chan_bag_inv
+    unfold chanBagInv
     iexists s
     iframe
     rcases s with (_ | ⟨_, _⟩) | _ | _ | _ | _ | _ | _ <;> simp at Hs <;> dsimp only
     · iapply BigSepL.bigSepL_nil.2; iempintro
     · itrivial
   imodintro
-  rw [is_chan_bag_unseal]; unfold is_chan_bag_def
+  rw [isChanBag_unseal]; unfold isChanBagDef
   iframe #
 
-theorem is_bag_is_chan (γ : chan_names) (ch : loc) (P : V → IProp GF) :
-    ⊢ is_chan_bag γ ch P -∗ is_chan ch γ V := by
-  rw [is_chan_bag_unseal]; unfold is_chan_bag_def
+theorem is_bag_is_chan (γ : ChanNames) (ch : loc) (P : V → IProp GF) :
+    ⊢ isChanBag γ ch P -∗ isChan ch γ V := by
+  rw [isChanBag_unseal]; unfold isChanBagDef
   iintro ⟨$, -⟩
 
-theorem bag_recv_au (γ : chan_names) (ch : loc) (P : V → IProp GF) (Φ : V → Bool → IProp GF) :
-    ⊢ £ 1 ∗ £ 1 -∗ is_chan_bag γ ch P -∗ (▷ ∀ v, P v -∗ Φ v true) -∗ recv_au γ V Φ := by
-  rw [is_chan_bag_unseal]; unfold is_chan_bag_def recv_au
+theorem bag_recv_au (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Φ : V → Bool → IProp GF) :
+    ⊢ £ 1 ∗ £ 1 -∗ isChanBag γ ch P -∗ (▷ ∀ v, P v -∗ Φ v true) -∗ recvAu γ V Φ := by
+  rw [isChanBag_unseal]; unfold isChanBagDef recvAu
   iintro ⟨Hlc1, Hlc2⟩ ⟨#Hch, #Hinv⟩ HΦ
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
-  unfold chan_bag_inv
+  unfold chanBagInv
   icases Hi with ⟨%s, Hoc0, Hi⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -96,7 +96,7 @@ theorem bag_recv_au (γ : chan_names) (ch : loc) (P : V → IProp GF) (Φ : V �
     imod Hclose $$ [Hoc] with -
     · inext; iexists .RcvPending; iframe
     imodintro
-    unfold recv_nested_au
+    unfold recvNestedAu
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hoc1, Hi⟩
@@ -124,8 +124,8 @@ theorem bag_recv_au (γ : chan_names) (ch : loc) (P : V → IProp GF) (Φ : V �
     iapply HΦ $$ Hi
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_bag_receive (γ : chan_names) (ch : loc) (P : V → IProp GF) :
-    {{ is_chan_bag γ ch P }}
+theorem wp_bag_receive (γ : ChanNames) (ch : loc) (P : V → IProp GF) :
+    {{ isChanBag γ ch P }}
       (App (Val (chan.receive t)) (Val #ch))
     {{ (v : V), RET (PairV #v #true); P v }} := by
   iintro %Φ #Hbag HΦ
@@ -134,13 +134,13 @@ theorem wp_bag_receive (γ : chan_names) (ch : loc) (P : V → IProp GF) :
   iintro ⟨Hlc1, Hlc2, Hlc3, Hlc4⟩
   iapply bag_recv_au γ ch P (fun v ok => Φ (PairV #v #ok)) $$ [$Hlc1 $Hlc2] Hbag HΦ
 
-theorem bag_send_au (γ : chan_names) (ch : loc) (P : V → IProp GF) (v : V) (Φ : IProp GF) :
-    ⊢ £ 1 ∗ £ 1 -∗ is_chan_bag γ ch P -∗ P v -∗ ▷ Φ -∗ send_au γ v Φ := by
-  rw [is_chan_bag_unseal]; unfold is_chan_bag_def send_au
+theorem bag_send_au (γ : ChanNames) (ch : loc) (P : V → IProp GF) (v : V) (Φ : IProp GF) :
+    ⊢ £ 1 ∗ £ 1 -∗ isChanBag γ ch P -∗ P v -∗ ▷ Φ -∗ sendAu γ v Φ := by
+  rw [isChanBag_unseal]; unfold isChanBagDef sendAu
   iintro ⟨Hlc1, Hlc2⟩ ⟨#Hch, #Hinv⟩ HP HΦ
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
-  unfold chan_bag_inv
+  unfold chanBagInv
   icases Hi with ⟨%s, Hoc0, Hi⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -168,7 +168,7 @@ theorem bag_send_au (γ : chan_names) (ch : loc) (P : V → IProp GF) (v : V) (�
     imod Hclose $$ [Hoc HP] with -
     · inext; iexists .SndPending v; iframe
     imodintro
-    unfold send_nested_au
+    unfold sendNestedAu
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hoc1, Hi⟩
@@ -196,8 +196,8 @@ theorem bag_send_au (γ : chan_names) (ch : loc) (P : V → IProp GF) (v : V) (�
     iexact HΦ
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_bag_send (γ : chan_names) (ch : loc) (v : V) (P : V → IProp GF) :
-    {{ is_chan_bag γ ch P ∗ P v }}
+theorem wp_bag_send (γ : ChanNames) (ch : loc) (v : V) (P : V → IProp GF) :
+    {{ isChanBag γ ch P ∗ P v }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
     {{ RET #(); True }} := by
   iintro %Φ ⟨#Hbag, HP⟩ HΦ

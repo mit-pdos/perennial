@@ -41,26 +41,26 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 section classes
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
 /-- Classes that are used to tell `wp_pures` about steps it can take:
 `PureWp φ e e'` says that, under the pure side condition `φ`, `e` takes a
 step (yielding a later credit) to `e'`, in any evaluation context. -/
 class PureWp (φ : outParam Prop) (e : expr) (e' : outParam expr) : Prop where
-  pure_wp_wp : ∀ (s : Stuckness) (E : CoPset) (Φ : val → IProp GF) (K : List ectx_item), φ →
+  pure_wp_wp : ∀ (s : Stuckness) (E : CoPset) (Φ : val → IProp GF) (K : List EctxItem), φ →
     iprop(▷ (£ 1 -∗ WP (fill K e') @ s; E {{ Φ }})) ⊢ WP (fill K e) @ s; E {{ Φ }}
 
 export PureWp (pure_wp_wp)
 
 theorem tac_wp_pure_wp {φ : Prop} {e1 e2 : expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
-    {K : List ectx_item} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hφ : φ) (hlater : Δ ⊢ ▷ Δ') (h : Δ' ⊢ WP (fill K e2) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K e1) @ s; E {{ Φ }} :=
   hlater.trans <| (later_mono (wand_intro (sep_elim_left.trans h))).trans
     (Hwp.pure_wp_wp s E Φ K hφ)
 
 theorem tac_wp_pure_wp_later_credit {φ : Prop} {e1 e2 : expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
-    {K : List ectx_item} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hφ : φ) (hlater : Δ ⊢ ▷ Δ') (h : Δ' ⊢ iprop(£ 1 -∗ WP (fill K e2) @ s; E {{ Φ }})) :
     Δ ⊢ WP (fill K e1) @ s; E {{ Φ }} :=
   hlater.trans <| (later_mono h).trans (Hwp.pure_wp_wp s E Φ K hφ)
@@ -68,13 +68,13 @@ theorem tac_wp_pure_wp_later_credit {φ : Prop} {e1 e2 : expr} [Hwp : PureWp (G 
 /-- `tac_wp_pure_wp` with the reduct given up to an equation (used by the
 tactics, which simplify the reduct). -/
 theorem tac_wp_pure_wp' {φ : Prop} {e1 e2 e' : expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
-    {K : List ectx_item} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hφ : φ) (hlater : Δ ⊢ ▷ Δ') (heq : fill K e2 = e') (h : Δ' ⊢ WP e' @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K e1) @ s; E {{ Φ }} :=
   tac_wp_pure_wp (Hwp := Hwp) hφ hlater (heq ▸ h)
 
 theorem tac_wp_pure_wp_lc' {φ : Prop} {e1 e2 e' : expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
-    {K : List ectx_item} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hφ : φ) (hlater : Δ ⊢ ▷ Δ') (heq : fill K e2 = e')
     (h : Δ' ⊢ iprop(£ 1 -∗ WP e' @ s; E {{ Φ }})) :
     Δ ⊢ WP (fill K e1) @ s; E {{ Φ }} :=
@@ -103,7 +103,7 @@ end classes
 section instances
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
 instance wp_snd (v1 v2 : val) : PureWp (G := G) (L := L) True (Snd (Val (PairV v1 v2))) (Val v2) :=
   pure_exec_pure_wp (pure_snd v1 v2)
@@ -156,10 +156,10 @@ instead costs the size of the rest of the run per `let:`.) -/
 section let_env
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
 theorem tac_wp_let_env {σ : String → Option val} {b : binder} {v : val} {e : expr}
-    {K : List ectx_item} {Δ Δ1 Δ2 : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    {K : List EctxItem} {Δ Δ1 Δ2 : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (h1 : Δ ⊢ ▷ Δ1) (h2 : Δ1 ⊢ ▷ Δ2)
     (h : Δ2 ⊢ WP (fill K (substEnv (envInsB b v σ) e)) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K (substEnv σ (App (Rec BAnon b e) (Val v)))) @ s; E {{ Φ }} := by
@@ -167,12 +167,12 @@ theorem tac_wp_let_env {σ : String → Option val} {b : binder} {v : val} {e : 
       App (Rec BAnon b (substEnv (envDel BAnon (envDel b σ)) e)) (Val v) := by
     simp only [substEnv]
   rw [he]
-  refine tac_wp_pure_wp (K := ectx_item.AppLCtx v :: K) (Hwp := wp_recc _ _ _) trivial h1 ?_
+  refine tac_wp_pure_wp (K := EctxItem.AppLCtx v :: K) (Hwp := wp_recc _ _ _) trivial h1 ?_
   refine tac_wp_pure_wp (K := K) (Hwp := wp_call _ _ _ _) trivial h2 ?_
   rw [subst'_substEnv]
   exact h
 
-theorem tac_wp_env_enter {e : expr} {K : List ectx_item} {Δ : IProp GF} {s : Stuckness}
+theorem tac_wp_env_enter {e : expr} {K : List EctxItem} {Δ : IProp GF} {s : Stuckness}
     {E : CoPset} {Φ : val → IProp GF}
     (h : Δ ⊢ WP (fill K (substEnv envNil e)) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K e) @ s; E {{ Φ }} := by
@@ -186,7 +186,7 @@ section lemmas
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [ι : IrisGS_gen hlc expr GF]
 
-theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List ectx_item} {e' : expr}
+theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e' : expr}
     {Φ : val → IProp GF}
     (H : Δ ⊢ WP e' @ s; E {{ v, WP (fill K (Val v)) @ s; E {{ Φ }} }}) :
     Δ ⊢ WP (fill K e') @ s; E {{ Φ }} :=
@@ -196,27 +196,27 @@ theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List ectx_
 evaluation context `K` is moved into the postcondition, one `WP` per item. Used
 by `wp_auto`/`wp_pures` to work on a redex deep inside an evaluation context
 (e.g. in the field-by-field load of a wide struct) in constant time per step. -/
-def wpNestedPost (s : Stuckness) (E : CoPset) (K : List ectx_item) (Φ : val → IProp GF) :
+def wpNestedPost (s : Stuckness) (E : CoPset) (K : List EctxItem) (Φ : val → IProp GF) :
     val → IProp GF :=
   match K with
   | [] => Φ
-  | Ki :: K' => fun v => WP (fill_item Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}
+  | Ki :: K' => fun v => WP (fillItem Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}
 
-theorem wp_nestedPost {s : Stuckness} {E : CoPset} {K : List ectx_item} {e : expr}
+theorem wp_nestedPost {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : expr}
     {Φ : val → IProp GF} :
     WP (fill K e) @ s; E {{ Φ }} ⊣⊢ WP e @ s; E {{ wpNestedPost s E K Φ }} := by
   induction K generalizing e with
   | nil => exact .rfl
   | cons Ki K ih =>
-    refine (ih (e := fill_item Ki e)).trans ⟨?_, ?_⟩
+    refine (ih (e := fillItem Ki e)).trans ⟨?_, ?_⟩
     · exact wp_bind_inv (fill [Ki]) (e := e)
     · exact wp_bind (fill [Ki]) (e := e)
 
-theorem tac_wp_focus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List ectx_item} {e : expr}
+theorem tac_wp_focus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : expr}
     {Φ : val → IProp GF} (h : Δ ⊢ WP e @ s; E {{ wpNestedPost s E K Φ }}) :
     Δ ⊢ WP (fill K e) @ s; E {{ Φ }} := h.trans wp_nestedPost.2
 
-theorem tac_wp_unfocus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List ectx_item} {e : expr}
+theorem tac_wp_unfocus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : expr}
     {Φ : val → IProp GF} (h : Δ ⊢ WP (fill K e) @ s; E {{ Φ }}) :
     Δ ⊢ WP e @ s; E {{ wpNestedPost s E K Φ }} := h.trans wp_nestedPost.1
 
@@ -262,12 +262,12 @@ end simp_lemmas
 theorem decide_inst_eq (p : Prop) (h1 h2 : Decidable p) : @decide p h1 = @decide p h2 := by
   cases h1 <;> cases h2 <;> first | rfl | contradiction
 
-simproc [goose_wp_simp] goose_reduceStrEq (( _ : String) = _) := String.reduceEq
-simproc [goose_wp_simp] goose_reduceCtorEq (_ = _) := reduceCtorEq
+simproc [goose_wp_simp] gooseReduceStrEq (( _ : String) = _) := String.reduceEq
+simproc [goose_wp_simp] gooseReduceCtorEq (_ = _) := reduceCtorEq
 open Lean Meta in
 /-- Evaluate a closed `decide p` (e.g. comparisons of Go string literals in
 `exception_seq`), by reduction. -/
-simproc [goose_wp_simp] goose_reduceDecide (decide _) := fun e => do
+simproc [goose_wp_simp] gooseReduceDecide (decide _) := fun e => do
   let_expr Decidable.decide p inst := e | return .continue
   if p.hasMVar then return .continue
   -- free variables are only allowed if they are instances (e.g. the section
@@ -350,10 +350,10 @@ theorem subst_pf_snd {a a' : expr} (ha : subst x v a = a') : subst x v (Snd a) =
   simp only [subst, ha]
 theorem subst_pf_fork {a a' : expr} (ha : subst x v a = a') : subst x v (Fork a) = Fork a' := by
   simp only [subst, ha]
-theorem subst_pf_prim0 (op : prim_op0) : subst x v (Primitive0 op) = Primitive0 op := rfl
-theorem subst_pf_prim1 (op : prim_op1) {a a' : expr} (ha : subst x v a = a') :
+theorem subst_pf_prim0 (op : PrimOp0) : subst x v (Primitive0 op) = Primitive0 op := rfl
+theorem subst_pf_prim1 (op : PrimOp1) {a a' : expr} (ha : subst x v a = a') :
     subst x v (Primitive1 op a) = Primitive1 op a' := by simp only [subst, ha]
-theorem subst_pf_prim2 (op : prim_op2) {a b a' b' : expr} (ha : subst x v a = a')
+theorem subst_pf_prim2 (op : PrimOp2) {a b a' b' : expr} (ha : subst x v a = a')
     (hb : subst x v b = b') : subst x v (Primitive2 op a b) = Primitive2 op a' b' := by
   simp only [subst, ha, hb]
 theorem subst_pf_extop (op : ffi_opcode) {a a' : expr} (ha : subst x v a = a') :
@@ -367,33 +367,33 @@ theorem subst_pf_resolve {a b a' b' : expr} (ha : subst x v a = a') (hb : subst 
 
 -- composite literals (`LiteralValue`): without these the kernel would evaluate
 -- `subst` on the element list, deciding the `String` equality of every variable
-theorem subst_pf_litval {l l' : List keyed_element} (h : subst_keyed_elements x v l = l') :
+theorem subst_pf_litval {l l' : List keyed_element} (h : substKeyedElements x v l = l') :
     subst x v (LiteralValue l) = LiteralValue l' := by simp only [subst, h]
-theorem subst_pf_kes_nil : subst_keyed_elements x v [] = [] := by simp only [subst_keyed_elements]
+theorem subst_pf_kes_nil : substKeyedElements x v [] = [] := by simp only [substKeyedElements]
 theorem subst_pf_kes_cons {ke ke' : keyed_element} {l l' : List keyed_element}
-    (h1 : subst_keyed_element x v ke = ke') (h2 : subst_keyed_elements x v l = l') :
-    subst_keyed_elements x v (ke :: l) = ke' :: l' := by simp only [subst_keyed_elements, h1, h2]
-theorem subst_pf_ke {k k' : Option key} {el el' : element} (h1 : subst_opt_key x v k = k')
-    (h2 : subst_element x v el = el') :
-    subst_keyed_element x v (KeyedElement k el) = KeyedElement k' el' := by
-  simp only [subst_keyed_element, h1, h2]
-theorem subst_pf_okey_none : subst_opt_key x v none = none := by simp only [subst_opt_key]
+    (h1 : substKeyedElement x v ke = ke') (h2 : substKeyedElements x v l = l') :
+    substKeyedElements x v (ke :: l) = ke' :: l' := by simp only [substKeyedElements, h1, h2]
+theorem subst_pf_ke {k k' : Option key} {el el' : element} (h1 : substOptKey x v k = k')
+    (h2 : substElement x v el = el') :
+    substKeyedElement x v (KeyedElement k el) = KeyedElement k' el' := by
+  simp only [substKeyedElement, h1, h2]
+theorem subst_pf_okey_none : substOptKey x v none = none := by simp only [substOptKey]
 theorem subst_pf_okey_field (f : go_string) :
-    subst_opt_key x v (some (KeyField f)) = some (KeyField f) := by simp only [subst_opt_key]
+    substOptKey x v (some (KeyField f)) = some (KeyField f) := by simp only [substOptKey]
 theorem subst_pf_okey_int (i : Int) :
-    subst_opt_key x v (some (KeyInteger i)) = some (KeyInteger i) := by simp only [subst_opt_key]
+    substOptKey x v (some (KeyInteger i)) = some (KeyInteger i) := by simp only [substOptKey]
 theorem subst_pf_okey_expr (t : go.type) {e e' : expr} (h : subst x v e = e') :
-    subst_opt_key x v (some (KeyExpression t e)) = some (KeyExpression t e') := by
-  simp only [subst_opt_key, h]
-theorem subst_pf_okey_lv {l l' : List keyed_element} (h : subst_keyed_elements x v l = l') :
-    subst_opt_key x v (some (KeyLiteralValue l)) = some (KeyLiteralValue l') := by
-  simp only [subst_opt_key, h]
+    substOptKey x v (some (KeyExpression t e)) = some (KeyExpression t e') := by
+  simp only [substOptKey, h]
+theorem subst_pf_okey_lv {l l' : List keyed_element} (h : substKeyedElements x v l = l') :
+    substOptKey x v (some (KeyLiteralValue l)) = some (KeyLiteralValue l') := by
+  simp only [substOptKey, h]
 theorem subst_pf_el_expr (t : go.type) {e e' : expr} (h : subst x v e = e') :
-    subst_element x v (ElementExpression t e) = ElementExpression t e' := by
-  simp only [subst_element, h]
-theorem subst_pf_el_lv {l l' : List keyed_element} (h : subst_keyed_elements x v l = l') :
-    subst_element x v (ElementLiteralValue l) = ElementLiteralValue l' := by
-  simp only [subst_element, h]
+    substElement x v (ElementExpression t e) = ElementExpression t e' := by
+  simp only [substElement, h]
+theorem subst_pf_el_lv {l l' : List keyed_element} (h : substKeyedElements x v l = l') :
+    substElement x v (ElementLiteralValue l) = ElementLiteralValue l' := by
+  simp only [substElement, h]
 
 theorem subst'_pf_anon {e e' : expr} (h : e = e') : subst' BAnon v e = e' := h
 theorem subst'_pf_named {e e1 e' : expr} (h1 : e = e1) (h2 : subst x v e1 = e') :
@@ -431,13 +431,13 @@ def EnvAvoids (S : List String) (σ : String → Option val) : Prop := ∀ s ∈
 (so in particular substituting a variable not in `S`, `subst_pf_fvClosed`). -/
 def ClosedUnder (S : List String) (e : expr) : Prop := ∀ σ, EnvAvoids S σ → substEnv σ e = e
 def ClosedKEs (S : List String) (l : List keyed_element) : Prop :=
-  ∀ σ, EnvAvoids S σ → substEnv_kes σ l = l
+  ∀ σ, EnvAvoids S σ → substEnvKes σ l = l
 def ClosedKE (S : List String) (ke : keyed_element) : Prop :=
-  ∀ σ, EnvAvoids S σ → substEnv_ke σ ke = ke
+  ∀ σ, EnvAvoids S σ → substEnvKe σ ke = ke
 def ClosedOKey (S : List String) (k : Option key) : Prop :=
-  ∀ σ, EnvAvoids S σ → substEnv_okey σ k = k
+  ∀ σ, EnvAvoids S σ → substEnvOkey σ k = k
 def ClosedElem (S : List String) (el : element) : Prop :=
-  ∀ σ, EnvAvoids S σ → substEnv_el σ el = el
+  ∀ σ, EnvAvoids S σ → substEnvEl σ el = el
 
 /-- The variable names bound by binders `f`, `y`. -/
 def bnames : binder → List String
@@ -472,11 +472,11 @@ theorem closed_snd {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Snd a) := 
   intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_fork {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Fork a) := by
   intro σ hσ; simp only [substEnv, ha σ hσ]
-theorem closed_prim0 (op : prim_op0) : ClosedUnder S (Primitive0 op) := fun _ _ => by
+theorem closed_prim0 (op : PrimOp0) : ClosedUnder S (Primitive0 op) := fun _ _ => by
   simp only [substEnv]
-theorem closed_prim1 (op : prim_op1) {a : expr} (ha : ClosedUnder S a) :
+theorem closed_prim1 (op : PrimOp1) {a : expr} (ha : ClosedUnder S a) :
     ClosedUnder S (Primitive1 op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
-theorem closed_prim2 (op : prim_op2) {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+theorem closed_prim2 (op : PrimOp2) {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
     ClosedUnder S (Primitive2 op a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
 theorem closed_extop (op : ffi_opcode) {a : expr} (ha : ClosedUnder S a) :
     ClosedUnder S (ExternalOp op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
@@ -488,26 +488,26 @@ theorem closed_resolve {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b
     ClosedUnder S (ResolveProph a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
 theorem closed_litval {l : List keyed_element} (h : ClosedKEs S l) : ClosedUnder S (LiteralValue l) := by
   intro σ hσ; simp only [substEnv, h σ hσ]
-theorem closed_kes_nil : ClosedKEs S [] := by intro σ _; simp only [substEnv_kes]
+theorem closed_kes_nil : ClosedKEs S [] := by intro σ _; simp only [substEnvKes]
 theorem closed_kes_cons {ke : keyed_element} {l : List keyed_element} (h1 : ClosedKE S ke)
     (h2 : ClosedKEs S l) : ClosedKEs S (ke :: l) := by
-  intro σ hσ; simp only [substEnv_kes, h1 σ hσ, h2 σ hσ]
+  intro σ hσ; simp only [substEnvKes, h1 σ hσ, h2 σ hσ]
 theorem closed_ke {k : Option key} {el : element} (h1 : ClosedOKey S k) (h2 : ClosedElem S el) :
     ClosedKE S (KeyedElement k el) := by
-  intro σ hσ; simp only [substEnv_ke, h1 σ hσ, h2 σ hσ]
-theorem closed_okey_none : ClosedOKey S none := by intro σ _; simp only [substEnv_okey]
+  intro σ hσ; simp only [substEnvKe, h1 σ hσ, h2 σ hσ]
+theorem closed_okey_none : ClosedOKey S none := by intro σ _; simp only [substEnvOkey]
 theorem closed_okey_field (f : go_string) : ClosedOKey S (some (KeyField f)) := by
-  intro σ _; simp only [substEnv_okey]
+  intro σ _; simp only [substEnvOkey]
 theorem closed_okey_int (i : Int) : ClosedOKey S (some (KeyInteger i)) := by
-  intro σ _; simp only [substEnv_okey]
+  intro σ _; simp only [substEnvOkey]
 theorem closed_okey_expr (t : go.type) {e : expr} (h : ClosedUnder S e) :
-    ClosedOKey S (some (KeyExpression t e)) := by intro σ hσ; simp only [substEnv_okey, h σ hσ]
+    ClosedOKey S (some (KeyExpression t e)) := by intro σ hσ; simp only [substEnvOkey, h σ hσ]
 theorem closed_okey_lv {l : List keyed_element} (h : ClosedKEs S l) :
-    ClosedOKey S (some (KeyLiteralValue l)) := by intro σ hσ; simp only [substEnv_okey, h σ hσ]
+    ClosedOKey S (some (KeyLiteralValue l)) := by intro σ hσ; simp only [substEnvOkey, h σ hσ]
 theorem closed_el_expr (t : go.type) {e : expr} (h : ClosedUnder S e) :
-    ClosedElem S (ElementExpression t e) := by intro σ hσ; simp only [substEnv_el, h σ hσ]
+    ClosedElem S (ElementExpression t e) := by intro σ hσ; simp only [substEnvEl, h σ hσ]
 theorem closed_el_lv {l : List keyed_element} (h : ClosedKEs S l) :
-    ClosedElem S (ElementLiteralValue l) := by intro σ hσ; simp only [substEnv_el, h σ hσ]
+    ClosedElem S (ElementLiteralValue l) := by intro σ hσ; simp only [substEnvEl, h σ hσ]
 /-- A nested annotation with a smaller set. -/
 theorem closed_fv {T : List String} {e : expr} (h : ClosedUnder T e) (hsub : ∀ s ∈ T, s ∈ S) :
     ClosedUnder S (fvClosed T e) := fun σ hσ => h σ (fun s hs => hσ s (hsub s hs))
@@ -772,7 +772,7 @@ def runTacticGooseWp {α} (tacName : Name)
 
 /-- One evaluation-context item of a GooseLang expression: the item (as a
 `ectx_item` expression) and the sub-expression in the hole. Mirrors
-`fill_item` in `Perennial/GooseLang/Lang.lean`. -/
+`fillItem` in `Perennial/GooseLang/Lang.lean`. -/
 def extractEctxItem (e : Expr) : MetaM (Option (Expr × Expr)) := do
   let e ← whnfR (← instantiateMVars e)
   let isVal (e : Expr) : MetaM (Option Expr) := do
@@ -784,30 +784,30 @@ def extractEctxItem (e : Expr) : MetaM (Option (Expr × Expr)) := do
     mkAppN (mkConst n) (#[ext] ++ args)
   match_expr e with
   | Perennial.expr.App ext e1 e2 =>
-    if let some v ← isVal e2 then return some (mk ``ectx_item.AppLCtx ext #[v], e1)
-    else return some (mk ``ectx_item.AppRCtx ext #[e1], e2)
-  | Perennial.expr.If ext e0 e1 e2 => return some (mk ``ectx_item.IfCtx ext #[e1, e2], e0)
+    if let some v ← isVal e2 then return some (mk ``EctxItem.AppLCtx ext #[v], e1)
+    else return some (mk ``EctxItem.AppRCtx ext #[e1], e2)
+  | Perennial.expr.If ext e0 e1 e2 => return some (mk ``EctxItem.IfCtx ext #[e1, e2], e0)
   | Perennial.expr.Pair ext e1 e2 =>
-    if let some v ← isVal e1 then return some (mk ``ectx_item.PairRCtx ext #[v], e2)
-    else return some (mk ``ectx_item.PairLCtx ext #[e2], e1)
-  | Perennial.expr.Fst ext e => return some (mk ``ectx_item.FstCtx ext #[], e)
-  | Perennial.expr.Snd ext e => return some (mk ``ectx_item.SndCtx ext #[], e)
-  | Perennial.expr.Primitive1 ext op e => return some (mk ``ectx_item.Primitive1Ctx ext #[op], e)
+    if let some v ← isVal e1 then return some (mk ``EctxItem.PairRCtx ext #[v], e2)
+    else return some (mk ``EctxItem.PairLCtx ext #[e2], e1)
+  | Perennial.expr.Fst ext e => return some (mk ``EctxItem.FstCtx ext #[], e)
+  | Perennial.expr.Snd ext e => return some (mk ``EctxItem.SndCtx ext #[], e)
+  | Perennial.expr.Primitive1 ext op e => return some (mk ``EctxItem.Primitive1Ctx ext #[op], e)
   | Perennial.expr.Primitive2 ext op e1 e2 =>
-    if let some v ← isVal e1 then return some (mk ``ectx_item.Primitive2RCtx ext #[op, v], e2)
-    else return some (mk ``ectx_item.Primitive2LCtx ext #[op, e2], e1)
-  | Perennial.expr.ExternalOp ext op e => return some (mk ``ectx_item.ExternalOpCtx ext #[op], e)
+    if let some v ← isVal e1 then return some (mk ``EctxItem.Primitive2RCtx ext #[op, v], e2)
+    else return some (mk ``EctxItem.Primitive2LCtx ext #[op, e2], e1)
+  | Perennial.expr.ExternalOp ext op e => return some (mk ``EctxItem.ExternalOpCtx ext #[op], e)
   | Perennial.expr.CmpXchg ext e0 e1 e2 =>
     match ← isVal e0, ← isVal e1 with
-    | some v0, some v1 => return some (mk ``ectx_item.CmpXchgRCtx ext #[v0, v1], e2)
-    | some v0, none => return some (mk ``ectx_item.CmpXchgMCtx ext #[v0, e2], e1)
-    | none, _ => return some (mk ``ectx_item.CmpXchgLCtx ext #[e1, e2], e0)
+    | some v0, some v1 => return some (mk ``EctxItem.CmpXchgRCtx ext #[v0, v1], e2)
+    | some v0, none => return some (mk ``EctxItem.CmpXchgMCtx ext #[v0, e2], e1)
+    | none, _ => return some (mk ``EctxItem.CmpXchgLCtx ext #[e1, e2], e0)
   | Perennial.expr.ResolveProph ext e1 e2 =>
-    if let some v ← isVal e2 then return some (mk ``ectx_item.ResolveProphLCtx ext #[v], e1)
-    else return some (mk ``ectx_item.ResolveProphRCtx ext #[e1], e2)
+    if let some v ← isVal e2 then return some (mk ``EctxItem.ResolveProphLCtx ext #[v], e1)
+    else return some (mk ``EctxItem.ResolveProphRCtx ext #[e1], e2)
   | _ => return none
 
-/-- `fill_item Ki e` at the meta level, producing constructor applications. -/
+/-- `fillItem Ki e` at the meta level, producing constructor applications. -/
 def fillItemExpr (Ki e : Expr) : MetaM Expr := do
   let Ki ← whnfR Ki
   let ext := Ki.getAppArgs[0]!
@@ -815,22 +815,22 @@ def fillItemExpr (Ki e : Expr) : MetaM Expr := do
   let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
   let val (v : Expr) : Expr := mk ``Perennial.expr.Val #[v]
   match Ki.getAppFn.constName? with
-  | some ``ectx_item.AppLCtx => return mk ``Perennial.expr.App #[e, val a[1]!]
-  | some ``ectx_item.AppRCtx => return mk ``Perennial.expr.App #[a[1]!, e]
-  | some ``ectx_item.IfCtx => return mk ``Perennial.expr.If #[e, a[1]!, a[2]!]
-  | some ``ectx_item.PairLCtx => return mk ``Perennial.expr.Pair #[e, a[1]!]
-  | some ``ectx_item.PairRCtx => return mk ``Perennial.expr.Pair #[val a[1]!, e]
-  | some ``ectx_item.FstCtx => return mk ``Perennial.expr.Fst #[e]
-  | some ``ectx_item.SndCtx => return mk ``Perennial.expr.Snd #[e]
-  | some ``ectx_item.Primitive1Ctx => return mk ``Perennial.expr.Primitive1 #[a[1]!, e]
-  | some ``ectx_item.Primitive2LCtx => return mk ``Perennial.expr.Primitive2 #[a[1]!, e, a[2]!]
-  | some ``ectx_item.Primitive2RCtx => return mk ``Perennial.expr.Primitive2 #[a[1]!, val a[2]!, e]
-  | some ``ectx_item.ExternalOpCtx => return mk ``Perennial.expr.ExternalOp #[a[1]!, e]
-  | some ``ectx_item.CmpXchgLCtx => return mk ``Perennial.expr.CmpXchg #[e, a[1]!, a[2]!]
-  | some ``ectx_item.CmpXchgMCtx => return mk ``Perennial.expr.CmpXchg #[val a[1]!, e, a[2]!]
-  | some ``ectx_item.CmpXchgRCtx => return mk ``Perennial.expr.CmpXchg #[val a[1]!, val a[2]!, e]
-  | some ``ectx_item.ResolveProphLCtx => return mk ``Perennial.expr.ResolveProph #[e, val a[1]!]
-  | some ``ectx_item.ResolveProphRCtx => return mk ``Perennial.expr.ResolveProph #[a[1]!, e]
+  | some ``EctxItem.AppLCtx => return mk ``Perennial.expr.App #[e, val a[1]!]
+  | some ``EctxItem.AppRCtx => return mk ``Perennial.expr.App #[a[1]!, e]
+  | some ``EctxItem.IfCtx => return mk ``Perennial.expr.If #[e, a[1]!, a[2]!]
+  | some ``EctxItem.PairLCtx => return mk ``Perennial.expr.Pair #[e, a[1]!]
+  | some ``EctxItem.PairRCtx => return mk ``Perennial.expr.Pair #[val a[1]!, e]
+  | some ``EctxItem.FstCtx => return mk ``Perennial.expr.Fst #[e]
+  | some ``EctxItem.SndCtx => return mk ``Perennial.expr.Snd #[e]
+  | some ``EctxItem.Primitive1Ctx => return mk ``Perennial.expr.Primitive1 #[a[1]!, e]
+  | some ``EctxItem.Primitive2LCtx => return mk ``Perennial.expr.Primitive2 #[a[1]!, e, a[2]!]
+  | some ``EctxItem.Primitive2RCtx => return mk ``Perennial.expr.Primitive2 #[a[1]!, val a[2]!, e]
+  | some ``EctxItem.ExternalOpCtx => return mk ``Perennial.expr.ExternalOp #[a[1]!, e]
+  | some ``EctxItem.CmpXchgLCtx => return mk ``Perennial.expr.CmpXchg #[e, a[1]!, a[2]!]
+  | some ``EctxItem.CmpXchgMCtx => return mk ``Perennial.expr.CmpXchg #[val a[1]!, e, a[2]!]
+  | some ``EctxItem.CmpXchgRCtx => return mk ``Perennial.expr.CmpXchg #[val a[1]!, val a[2]!, e]
+  | some ``EctxItem.ResolveProphLCtx => return mk ``Perennial.expr.ResolveProph #[e, val a[1]!]
+  | some ``EctxItem.ResolveProphRCtx => return mk ``Perennial.expr.ResolveProph #[a[1]!, e]
   | _ => throwError "fillItemExpr: unknown evaluation context item {Ki}"
 
 /-- `fill K e` at the meta level (`K` innermost item first). -/
@@ -840,7 +840,7 @@ def fillExpr (K : List Expr) (e : Expr) : MetaM Expr :=
 /-- Quote a list of `ectx_item`s (innermost first), ending in the opaque tail
 `tail` (default `[]`). -/
 def quoteEctx (ext : Expr) (K : List Expr) (tail : Option Expr := none) : Expr :=
-  let ty := mkApp (mkConst ``ectx_item) ext
+  let ty := mkApp (mkConst ``EctxItem) ext
   K.foldr (fun Ki acc => mkApp3 (mkConst ``List.cons [0]) ty Ki acc)
     (tail.getD (mkApp (mkConst ``List.nil [0]) ty))
 
@@ -1200,7 +1200,7 @@ def arrayLitPureWp? (gs : Array Expr) (e : Expr) : MetaM (Option (Expr × Expr �
       let_expr Perennial.element.ElementExpression _ t' ee := el | return none
       unless t' == t do return none
       let some v ← isGooseVal? ee | return none
-      unless v.isAppOfArity ``GoGlobalContext.into_val 4 do return none
+      unless v.isAppOfArity ``GoGlobalContext.intoVal 4 do return none
       let V := v.getArg! 2
       if let some V0 := V? then
         unless V0 == V do return none
@@ -1251,7 +1251,7 @@ where
   go : Nat → Expr → Option Nat
     | 0, _ => none
     | fuel + 1, e@(.app f a) =>
-      if modPayloads && (e.isAppOfArity ``GoGlobalContext.into_val 4 || isGoTypeApp e) then
+      if modPayloads && (e.isAppOfArity ``GoGlobalContext.intoVal 4 || isGoTypeApp e) then
         go fuel f
       else do let fuel ← go fuel f; go fuel a
     | fuel + 1, .mdata _ b => go fuel b
@@ -1304,7 +1304,7 @@ def genericPayloads (e : Expr) : MetaM (Array (Expr × Expr) × Array Bool) := d
   return (acc, flags)
 where
   collectIntoVals (e : Expr) (acc : Array Expr) : Array Expr :=
-    if e.isAppOfArity ``GoGlobalContext.into_val 4 then acc.push e
+    if e.isAppOfArity ``GoGlobalContext.intoVal 4 then acc.push e
     else if isGoTypeApp e then acc
     else match e with
       | .app f a => collectIntoVals a (collectIntoVals f acc)
@@ -1318,7 +1318,7 @@ def replaceGenericPayloads (e : Expr) (isGeneric : Array Bool) (ys : Array Expr)
 where
   -- returns the new expression, the index of the next `#x` and of the next `y`
   go (e : Expr) (i j : Nat) : Expr × Nat × Nat :=
-    if e.isAppOfArity ``GoGlobalContext.into_val 4 then
+    if e.isAppOfArity ``GoGlobalContext.intoVal 4 then
       if isGeneric[i]?.getD false then
         (mkApp e.appFn! ys[j]!, i + 1, j + 1)
       else (e, i + 1, j)
@@ -1891,7 +1891,7 @@ partial def substPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool
     | none => fallback
   | _, _ => fallback
 
-/-- `subst_keyed_elements x v l` with a proof, for a list `l` built from constructors
+/-- `substKeyedElements x v l` with a proof, for a list `l` built from constructors
 (`none` otherwise). -/
 partial def substKEsPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (l : Expr) :
     MetaM (Option (Expr × Expr)) := do
@@ -1905,7 +1905,7 @@ partial def substKEsPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref B
   return some (mkApp3 (mkConst ``List.cons [0]) (l.getArg! 0) ke' tl',
     lem ``subst_pf_kes_cons #[ke, ke', tl, tl', p1, p2])
 
-/-- `subst_keyed_element x v ke` with a proof (see `substKEsPf`). -/
+/-- `substKeyedElement x v ke` with a proof (see `substKEsPf`). -/
 partial def substKEPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (ke : Expr) :
     MetaM (Option (Expr × Expr)) := do
   let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
@@ -2116,7 +2116,7 @@ partial def substEnvPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × Strin
     return some (mk ``Perennial.expr.LiteralValue #[l'], lem ``substEnv_pf_litval #[l, l', pl])
   | _, _ => return none
 
-/-- `substEnv_kes σ l` with a proof (see `substEnvPf`). -/
+/-- `substEnvKes σ l` with a proof (see `substEnvPf`). -/
 partial def substEnvKEsPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
     (env : MEnv) (l : Expr) : MetaM (Option (Expr × Expr)) := do
   let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
@@ -2129,7 +2129,7 @@ partial def substEnvKEsPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × St
   return some (mkApp3 (mkConst ``List.cons [0]) (l.getArg! 0) ke' tl',
     lem ``substEnv_pf_kes_cons #[ke, ke', tl, tl', p1, p2])
 
-/-- `substEnv_ke σ ke` with a proof (see `substEnvPf`). -/
+/-- `substEnvKe σ ke` with a proof (see `substEnvPf`). -/
 partial def substEnvKEPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
     (env : MEnv) (ke : Expr) : MetaM (Option (Expr × Expr)) := do
   let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
@@ -2611,7 +2611,7 @@ def findValConst (e : Expr) : MetaM (Option (Expr × Expr)) := do
     if (← getReducibilityStatus n) == .irreducible then return none
     let some c' ← unfoldDefinition? c | return none
     let c'' ← whnfR c'
-    let ok := c''.isAppOf ``GoGlobalContext.into_val ||
+    let ok := c''.isAppOf ``GoGlobalContext.intoVal ||
       (match c''.getAppFn with
        | .const m _ => m != ``Perennial.val.RecV && (env.find? m).any (·.isCtor)
        | _ => false)
@@ -2708,7 +2708,7 @@ def nestedPostArgs? (Φ : Expr) : Option (Expr × Expr × Expr × Expr × Expr) 
 
 /-- The goal `wpNestedPost s E K Φ v` (after the focused expression became the value
 `v`) with the innermost item `Ki` of `K = Ki :: K'` popped:
-`WP (fill_item Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}`, or `Φ v` (popped
+`WP (fillItem Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}`, or `Φ v` (popped
 again if it is of this form) if `K = []` (definitionally equal). `none` if the goal is
 not of this form. -/
 partial def popNestedPost? (wp : GooseWpGoal) (goal : Expr) : MetaM (Option Expr) := do
@@ -3081,12 +3081,12 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
 section call_lemmas
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
 /-- Rocq `tac_wp_rec`: call a function value `fv` that unfolds to
 `rec: f x := e`. The recursive occurrences of `f` are replaced by the folded `fv`. -/
 theorem tac_wp_call' {fv v2 : val} {f x : binder} {e e' : expr} (hfv : fv = RecV f x e)
-    {K : List ectx_item} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hlater : Δ ⊢ ▷ Δ') (heq : fill K (subst' x v2 (subst' f fv e)) = e')
     (h : Δ' ⊢ WP e' @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K (App (Val fv) (Val v2))) @ s; E {{ Φ }} := by
@@ -3094,7 +3094,7 @@ theorem tac_wp_call' {fv v2 : val} {f x : binder} {e e' : expr} (hfv : fv = RecV
   exact tac_wp_pure_wp' (Hwp := wp_call (G := G) (L := L) v2 f x e) trivial hlater heq h
 
 theorem tac_wp_call_lc' {fv v2 : val} {f x : binder} {e e' : expr} (hfv : fv = RecV f x e)
-    {K : List ectx_item} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hlater : Δ ⊢ ▷ Δ') (heq : fill K (subst' x v2 (subst' f fv e)) = e')
     (h : Δ' ⊢ iprop(£ 1 -∗ WP e' @ s; E {{ Φ }})) :
     Δ ⊢ WP (fill K (App (Val fv) (Val v2))) @ s; E {{ Φ }} := by
@@ -3249,7 +3249,7 @@ goals; a leading `▷` on a goal is stripped and trivial `True` goals are closed
 The last goal is the continuation, e.g. `∀ x, Q -∗ WP K[v] {{ Φ }}`.
 
 Unlike `wp_apply` (in `Perennial/Golang/Theory/Auto.lean`), this does no
-`is_pkg_init` solving, introduction or automation. -/
+`isPkgInit` solving, introduction or automation. -/
 macro "wp_apply_core " pmt:pmTerm : tactic =>
   `(tactic| focus ((wp_apply_raw $pmt) <;> wp_apply_post); wp_untag_cont)
 

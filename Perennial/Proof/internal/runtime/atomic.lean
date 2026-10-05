@@ -21,9 +21,9 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.runtime.atomic.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.internal.runtime.atomic :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.internal.runtime.atomic :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.internal.runtime.atomic :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.internal.runtime.atomic :=
   build_get_is_pkg_init_wf
 
 end init

@@ -1,6 +1,6 @@
 /-
 Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics_proof/semantics_init.v`:
-common setup for the goose semantics tests (`test_fun_ok` and the
+common setup for the goose semantics tests (`TestFunOk` and the
 `semantics_auto` tactic).
 
 Differences from Rocq:
@@ -31,15 +31,15 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 
-instance is_pkg_init_inst :
+instance isPkgInit_inst :
     IsPkgInit (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst :
+instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics :=
   build_get_is_pkg_init_wf
 
 /-- A semantics test function `name` returns `true`. -/
-def test_fun_ok (name : go_string) : Prop :=
+def TestFunOk (name : go_string) : Prop :=
   ∀ Φ : val → IProp GF, ⊢ Φ #true -∗ WP (App (Val (@! name)) (Val #())) {{ Φ }}
 
 omit go_gctx in
@@ -59,7 +59,7 @@ macro "steps" : tactic =>
   `(tactic| repeat (first | wp_call_auto | wp_auto | wp_alloc_anon))
 
 set_option hygiene false in
-/-- Rocq `semantics_auto`: start a `test_fun_ok` proof, step through the
+/-- Rocq `semantics_auto`: start a `TestFunOk` proof, step through the
 function and try to close the goal `Φ #b` with `HΦ : Φ #true`. -/
 macro "semantics_auto" : tactic => `(tactic| (
   intro Φ

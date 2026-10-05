@@ -4,7 +4,7 @@ package).
 
 Lean addition (not in Rocq): `copyChecker` and its `check` method are trusted
 here (Rocq axiomatizes them: `copyChecker.t` is an axiom type and `check` has no
-body, so `wp_copyChecker__check` was admitted, with a false statement). See
+body, so `copyChecker.wp_check` was admitted, with a false statement). See
 `«copyCheckerⁱᵐᵖˡ»` below.
 -/
 import Perennial.Golang.Defn.Pre

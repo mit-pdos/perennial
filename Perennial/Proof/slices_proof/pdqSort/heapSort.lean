@@ -142,19 +142,19 @@ theorem heap_new_root_bounds {lo hi root c : w64} {cN : Nat} (clo : (sint.nat lo
 section heap
 variable {E : Type} (R : E → E → Prop)
 
-def is_heap_seg (xs : List E) (a b : Nat) (l r : Nat) : Prop :=
+def IsHeapSeg (xs : List E) (a b : Nat) (l r : Nat) : Prop :=
   ∀ (i : Nat) (xi xls xrs : E), l ≤ i ∧ i < r → xs[a + i]? = some xi →
     ((l ≤ 2 * i + 1 ∧ 2 * i + 1 < r → xs[a + 2 * i + 1]? = some xls → ¬ R xi xls) ∧
      (l ≤ 2 * i + 2 ∧ 2 * i + 2 < r → xs[a + 2 * i + 2]? = some xrs → ¬ R xi xrs))
 
 theorem heap_seg_shrink (xs : List E) (a b l r : Nat) :
-    is_heap_seg R xs a b l (r + 1) → is_heap_seg R xs a b l r := by
+    IsHeapSeg R xs a b l (r + 1) → IsHeapSeg R xs a b l r := by
   intro H i xi xls xrs Hi Hxi
   obtain ⟨H1, H2⟩ := H i xi xls xrs ⟨Hi.1, by omega⟩ Hxi
   exact ⟨fun h => H1 ⟨h.1, by omega⟩, fun h => H2 ⟨h.1, by omega⟩⟩
 
 theorem heap_top_greatest [StrictWeakOrder R] (xs : List E) (xtop xi : E) (a b i lim : Nat) :
-    is_heap_seg R xs a b 0 (lim + 1) →
+    IsHeapSeg R xs a b 0 (lim + 1) →
     xs[a]? = some xtop →
     xs[a + i]? = some xi →
     (0 ≤ i ∧ i ≤ lim) →
@@ -180,21 +180,21 @@ theorem heap_top_greatest [StrictWeakOrder R] (xs : List E) (xtop xi : E) (a b i
 
 /-! ### Invariant of the `siftDown` loop
 
-`heap_except xs A L H r`: the heap property holds at every node of `[L, H)`
-except possibly the current root `r`; `heap_parent xs A L H r`: the parent of
+`HeapExcept xs A L H r`: the heap property holds at every node of `[L, H)`
+except possibly the current root `r`; `HeapParent xs A L H r`: the parent of
 `r` (if in `[L, H)`) dominates the children of `r`. -/
 
-def heap_except (xs : List E) (A L H r : Nat) : Prop :=
+def HeapExcept (xs : List E) (A L H r : Nat) : Prop :=
   ∀ (i c : Nat) (xi xc : E), L ≤ i → i < H → i ≠ r → (c = 2 * i + 1 ∨ c = 2 * i + 2) → c < H →
     xs[A + i]? = some xi → xs[A + c]? = some xc → ¬ R xi xc
 
-def heap_parent (xs : List E) (A L H r : Nat) : Prop :=
+def HeapParent (xs : List E) (A L H r : Nat) : Prop :=
   ∀ (p c : Nat) (xp xc : E), L ≤ p → p < H → (r = 2 * p + 1 ∨ r = 2 * p + 2) →
     (c = 2 * r + 1 ∨ c = 2 * r + 2) → c < H →
     xs[A + p]? = some xp → xs[A + c]? = some xc → ¬ R xp xc
 
 theorem sift_inv_init (xs : List E) (A B L H : Nat) :
-    is_heap_seg R xs A B (L + 1) H → heap_except R xs A L H L ∧ heap_parent R xs A L H L := by
+    IsHeapSeg R xs A B (L + 1) H → HeapExcept R xs A L H L ∧ HeapParent R xs A L H L := by
   intro Hh
   constructor
   · intro i c xi xc hLi hiH hir hc hcH hxi hxc
@@ -206,10 +206,10 @@ theorem sift_inv_init (xs : List E) (A B L H : Nat) :
 
 /-- Closing the heap once the root dominates its children. -/
 theorem sift_inv_close (xs : List E) (A B L H r : Nat) :
-    heap_except R xs A L H r →
+    HeapExcept R xs A L H r →
     (∀ (c : Nat) (xr xc : E), (c = 2 * r + 1 ∨ c = 2 * r + 2) → c < H →
       xs[A + r]? = some xr → xs[A + c]? = some xc → ¬ R xr xc) →
-    is_heap_seg R xs A B L H := by
+    IsHeapSeg R xs A B L H := by
   intro He Hr i xi xls xrs Hi Hxi
   have key : ∀ c xc, (c = 2 * i + 1 ∨ c = 2 * i + 2) → c < H → xs[A + c]? = some xc →
       ¬ R xi xc := by
@@ -241,9 +241,9 @@ theorem sift_inv_step [StrictWeakOrder R] (xs : List E) (A L H r c : Nat) (xr xc
     (Hxr : xs[A + r]? = some xr) (Hxc : xs[A + c]? = some xc) (Hlt : R xr xc)
     (Hmax : ∀ c' xc', (c' = 2 * r + 1 ∨ c' = 2 * r + 2) → c' < H → xs[A + c']? = some xc' →
       ¬ R xc xc')
-    (He : heap_except R xs A L H r) (Hp : heap_parent R xs A L H r) :
-    heap_except R (<[A + c := xr]> (<[A + r := xc]> xs)) A L H c ∧
-    heap_parent R (<[A + c := xr]> (<[A + r := xc]> xs)) A L H c := by
+    (He : HeapExcept R xs A L H r) (Hp : HeapParent R xs A L H r) :
+    HeapExcept R (<[A + c := xr]> (<[A + r := xc]> xs)) A L H c ∧
+    HeapParent R (<[A + c := xr]> (<[A + r := xc]> xs)) A L H c := by
   have hl : ∀ k, (<[A + c := xr]> (<[A + r := xc]> xs))[A + k]? =
       if k = c then some xr else if k = r then some xc else xs[A + k]? := by
     intro k
@@ -282,44 +282,44 @@ theorem sift_inv_step [StrictWeakOrder R] (xs : List E) (A L H r c : Nat) (xr xc
     simp only [show ¬ c' = c by omega, show ¬ c' = p by omega, ↓reduceIte] at hxc'
     exact He c c' xc xc' (by omega) HcH (by omega) hc' hc'H Hxc hxc'
 
-def max_child (xs : List E) (A r H cN : Nat) : Prop :=
+def MaxChild (xs : List E) (A r H cN : Nat) : Prop :=
   ∀ c' xc xc', (c' = 2 * r + 1 ∨ c' = 2 * r + 2) → c' < H → xs[A + cN]? = some xc →
     xs[A + c']? = some xc' → ¬ R xc xc'
 
-theorem max_child_right [StrictWeakOrder R] (xs : List E) (A r H : Nat) (xl xr : E)
+theorem maxChild_right [StrictWeakOrder R] (xs : List E) (A r H : Nat) (xl xr : E)
     (Hxl : xs[A + (2 * r + 1)]? = some xl) (Hxr : xs[A + (2 * r + 2)]? = some xr)
-    (h : R xl xr) : max_child R xs A r H (2 * r + 2) := by
+    (h : R xl xr) : MaxChild R xs A r H (2 * r + 2) := by
   intro c' xc xc' hc' _ hxc hxc'
   rw [Hxr] at hxc; cases hxc
   rcases hc' with h' | h' <;> subst h'
   · rw [Hxl] at hxc'; cases hxc'; exact R_antisym R _ _ h
   · rw [Hxr] at hxc'; cases hxc'; exact notR_refl R _
 
-theorem max_child_left [StrictWeakOrder R] (xs : List E) (A r H : Nat) (xl xr : E)
+theorem maxChild_left [StrictWeakOrder R] (xs : List E) (A r H : Nat) (xl xr : E)
     (Hxl : xs[A + (2 * r + 1)]? = some xl) (Hxr : xs[A + (2 * r + 2)]? = some xr)
-    (h : ¬ R xl xr) : max_child R xs A r H (2 * r + 1) := by
+    (h : ¬ R xl xr) : MaxChild R xs A r H (2 * r + 1) := by
   intro c' xc xc' hc' _ hxc hxc'
   rw [Hxl] at hxc; cases hxc
   rcases hc' with h' | h' <;> subst h'
   · rw [Hxl] at hxc'; cases hxc'; exact notR_refl R _
   · rw [Hxr] at hxc'; cases hxc'; exact h
 
-theorem max_child_only [StrictWeakOrder R] (xs : List E) (A r H : Nat)
-    (hH : H ≤ 2 * r + 2) : max_child R xs A r H (2 * r + 1) := by
+theorem maxChild_only [StrictWeakOrder R] (xs : List E) (A r H : Nat)
+    (hH : H ≤ 2 * r + 2) : MaxChild R xs A r H (2 * r + 1) := by
   intro c' xc xc' hc' hc'H hxc hxc'
   rcases hc' with h' | h' <;> subst h'
   · rw [hxc] at hxc'; cases hxc'; exact notR_refl R _
   · omega
 
-/-- `heap_except` only depends on the elements at `[A + L, A + H)`. -/
-def seg_sorted_from (xs : List E) (A B j0 : Nat) : Prop :=
+/-- `HeapExcept` only depends on the elements at `[A + L, A + H)`. -/
+def SegSortedFrom (xs : List E) (A B j0 : Nat) : Prop :=
   ∀ (i j : Nat) (xi xj : E), i < j ∧ j0 ≤ j ∧ (A ≤ j ∧ j < B) ∧ (A ≤ i ∧ i < B) →
     xs[i]? = some xi → xs[j]? = some xj → ¬ R xj xi
 
 theorem seg_sorted_swap (xs : List E) (A B j0 p q : Nat) (xp xq : E)
     (Hp : A ≤ p ∧ p < j0) (Hq : A ≤ q ∧ q < j0) (HB : j0 ≤ B) (Hlen : B ≤ xs.length)
     (Hxp : xs[p]? = some xp) (Hxq : xs[q]? = some xq) :
-    seg_sorted_from R xs A B j0 → seg_sorted_from R (<[p := xq]> (<[q := xp]> xs)) A B j0 := by
+    SegSortedFrom R xs A B j0 → SegSortedFrom R (<[p := xq]> (<[q := xp]> xs)) A B j0 := by
   intro H i j xi xj Hij hxi hxj
   rw [swap_lookup xs p q _ xp xq (by omega) (by omega)] at hxi hxj
   simp only [show ¬ j = p by omega, show ¬ j = q by omega, ↓reduceIte] at hxj
@@ -336,17 +336,17 @@ theorem seg_sorted_swap (xs : List E) (A B j0 p q : Nat) (xp xq : E)
 /-! ### Facts for `heapSort` -/
 
 theorem heap_seg_vacuous (xs : List E) (a b l r : Nat) (h : r ≤ 2 * l + 1) :
-    is_heap_seg R xs a b l r := by
+    IsHeapSeg R xs a b l r := by
   intro i xi xls xrs Hi _
   exact ⟨fun h' => by omega, fun h' => by omega⟩
 
 /-- After moving the top `x0` of the heap `[0, i]` to position `A + i`, the
 segment from `A + i` on is sorted relative to the whole `[A, B)`. -/
 theorem heap_pop_seg [StrictWeakOrder R] (xs : List E) (A B i : Nat) (x0 xi : E)
-    (Hheap : is_heap_seg R xs A B 0 (i + 1)) (Hx0 : xs[A]? = some x0)
+    (Hheap : IsHeapSeg R xs A B 0 (i + 1)) (Hx0 : xs[A]? = some x0)
     (Hxi : xs[A + i]? = some xi) (HiB : A + i < B) (HB : B ≤ xs.length)
-    (Hseg : seg_sorted_from R xs A B (A + i + 1)) :
-    seg_sorted_from R (<[A + i := x0]> (<[A := xi]> xs)) A B (A + i) := by
+    (Hseg : SegSortedFrom R xs A B (A + i + 1)) :
+    SegSortedFrom R (<[A + i := x0]> (<[A := xi]> xs)) A B (A + i) := by
   intro i' j xi' xj Hij hxi' hxj
   rw [swap_lookup xs (A + i) A _ xi x0 (by omega) (by omega)] at hxi' hxj
   by_cases hj : j = A + i
@@ -375,8 +375,8 @@ theorem heap_pop_seg [StrictWeakOrder R] (xs : List E) (A B i : Nat) (x0 xi : E)
         exact Hseg i' j _ xj ⟨Hij.1, by omega, Hij.2.2.1, Hij.2.2.2⟩ hxi' hxj
 
 theorem heap_pop_heap (xs : List E) (A B i : Nat) (x0 xi : E) (HB : A + i < xs.length)
-    (Hheap : is_heap_seg R xs A B 0 (i + 1)) :
-    is_heap_seg R (<[A + i := x0]> (<[A := xi]> xs)) A B 1 i := by
+    (Hheap : IsHeapSeg R xs A B 0 (i + 1)) :
+    IsHeapSeg R (<[A + i := x0]> (<[A := xi]> xs)) A B 1 i := by
   intro k xk xl xr Hk hxk
   have hl : ∀ m, 1 ≤ m → m < i → (<[A + i := x0]> (<[A := xi]> xs))[A + m]? = xs[A + m]? := by
     intro m h1 h2
@@ -403,9 +403,9 @@ variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.type}
 variable (R : E → E → Prop) [StrictWeakOrder R]
 
 theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t) (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code ∗
+        "#Hcmp" ∷ cmpImplements R cmp_code ∗
         "%H_bounds" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z a + sint.Z lo ∧
                         sint.Z a + sint.Z lo < sint.Z a + sint.Z hi ∧
                         sint.Z a + sint.Z hi ≤ sint.Z b ∧
@@ -416,7 +416,7 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
                     (sint.nat a ≤ i ∧ i < sint.nat b) →
                     xs[i]? = some xi →
                     xs[j]? = some xj → ¬ R xj xi⌝ ∗
-        "%Heap" ∷ ⌜is_heap_seg R xs (sint.nat a) (sint.nat b) (sint.nat lo + 1) (sint.nat hi)⌝ }}
+        "%Heap" ∷ ⌜IsHeapSeg R xs (sint.nat a) (sint.nat b) (sint.nat lo + 1) (sint.nat hi)⌝ }}
       (App (App (App (App (App (Val #(functions siftDownCmpFunc [Et])) (Val #data)) (Val #lo))
         (Val #hi)) (Val #a)) (Val #cmp_code))
     {{ (xs' : List E), RET #();
@@ -427,30 +427,30 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
                     (sint.nat a ≤ i ∧ i < sint.nat b) →
                     xs'[i]? = some xi →
                     xs'[j]? = some xj → ¬ R xj xi⌝ ∗
-        "%Heap" ∷ ⌜is_heap_seg R xs' (sint.nat a) (sint.nat b) (sint.nat lo) (sint.nat hi)⌝ ∗
-        "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
+        "%Heap" ∷ ⌜IsHeapSeg R xs' (sint.nat a) (sint.nat b) (sint.nat lo) (sint.nat hi)⌝ ∗
+        "%Houtside" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
   wp_start as H
   iNamed H
   wp_auto
-  unfold cmp_implements
-  ihave %Hlen0 := own_slice_len _ _ _ $$ Hxs
+  unfold cmpImplements
+  ihave %Hlen0 := ownSlice_len _ _ _ $$ Hxs
   have Hinit := sift_inv_init R xs (sint.nat a) (sint.nat b) (sint.nat lo) (sint.nat hi) Heap
   ihave HI : (∃ (root_val : w64) (xs' : List E),
       "root" ∷ root_ptr ↦ root_val ∗
       "Hxs" ∷ data ↦* xs' ∗
       "%HPerm1" ∷ ⌜xs ≡ₚ xs'⌝ ∗
       "%Hbound1" ∷ ⌜sint.Z lo ≤ sint.Z root_val ∧ sint.Z root_val < sint.Z hi⌝ ∗
-      "%HSeg1" ∷ ⌜seg_sorted_from R xs' (sint.nat a) (sint.nat b) (sint.nat a + sint.nat hi)⌝ ∗
-      "%He" ∷ ⌜heap_except R xs' (sint.nat a) (sint.nat lo) (sint.nat hi) (sint.nat root_val)⌝ ∗
-      "%Hp" ∷ ⌜heap_parent R xs' (sint.nat a) (sint.nat lo) (sint.nat hi) (sint.nat root_val)⌝ ∗
-      "%Hout" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [root Hxs]
+      "%HSeg1" ∷ ⌜SegSortedFrom R xs' (sint.nat a) (sint.nat b) (sint.nat a + sint.nat hi)⌝ ∗
+      "%He" ∷ ⌜HeapExcept R xs' (sint.nat a) (sint.nat lo) (sint.nat hi) (sint.nat root_val)⌝ ∗
+      "%Hp" ∷ ⌜HeapParent R xs' (sint.nat a) (sint.nat lo) (sint.nat hi) (sint.nat root_val)⌝ ∗
+      "%Hout" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [root Hxs]
   · iexists lo, xs
     iframe
     ipureintro
     exact ⟨List.Perm.refl _, ⟨by omega, by omega⟩, HSegSorted, Hinit.1, Hinit.2,
-      outside_same_refl _ _ _⟩
+      outsideSame_refl _ _ _⟩
   wp_for HI
-  ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
   have HlenEq := HPerm1.length_eq
   obtain ⟨Hchild, Haroot, Hal⟩ := sift_arith1 a lo root_val hi b H_bounds.1 (by omega) Hbound1
     (by omega) (by omega)
@@ -498,7 +498,7 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
         "data" ∷ data_ptr ↦ data ∗
         "%Hsel" ∷ ⌜∃ cN : Nat, sint.nat c = cN ∧ sint.Z c = cN ∧
           (cN = 2 * sint.nat root_val + 1 ∨ cN = 2 * sint.nat root_val + 2) ∧ cN < sint.nat hi ∧
-          max_child R xs' (sint.nat a) (sint.nat root_val) (sint.nat hi) cN ∧
+          MaxChild R xs' (sint.nat a) (sint.nat root_val) (sint.nat hi) cN ∧
           sint.Z (a + c) = ((sint.nat a + cN : Nat) : Int)⌝)
       with [child Hxs cmp first data] as ⟨%c, child, Hxs, cmp, first, data, %Hsel⟩
     · -- the right child is in bounds: compare the children
@@ -517,21 +517,21 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
         iframe
         ipureintro
         exact ⟨2 * sint.nat root_val + 2, heap_nat_eq _ _ kc2, kc2, Or.inr rfl, hrc2,
-          max_child_right R xs' _ _ _ xl xr' Hxl Hxr' (Hr1.1 (by omega)), kar⟩
+          maxChild_right R xs' _ _ _ xl xr' Hxl Hxr' (Hr1.1 (by omega)), kar⟩
       · -- the left child is not smaller
         wp_join_done
         iexists _
         iframe
         ipureintro
         exact ⟨2 * sint.nat root_val + 1, heap_nat_eq _ _ kc1, kc1, Or.inl rfl, hrc,
-          max_child_left R xs' _ _ _ xl xr' Hxl Hxr' (fun h => Hif (by have := Hr1.2 h; omega)),
+          maxChild_left R xs' _ _ _ xl xr' Hxl Hxr' (fun h => Hif (by have := Hr1.2 h; omega)),
           kal⟩
     · -- the right child is out of bounds: only the left child
       iexists _
       iframe
       ipureintro
       exact ⟨2 * sint.nat root_val + 1, heap_nat_eq _ _ kc1, kc1, Or.inl rfl, hrc,
-        max_child_only R xs' _ _ _ (by omega), kal⟩
+        maxChild_only R xs' _ _ _ (by omega), kal⟩
     clear Hr2 Halr Har Hal Hchild Hxl xl kc1 kal kc2 kalr kar kxl
     obtain ⟨cN, hcN, hcZ, hcsel, hcH, Hmax, hcidx⟩ := Hsel
     have hcL : sint.nat a + cN < xs'.length := Nat.lt_of_lt_of_le (Nat.add_lt_add_left hcH _) hHlen
@@ -577,8 +577,8 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
           hcZ hcsel hcH hLR, ?_, Hstep.1, Hstep.2, ?_⟩
       · exact seg_sorted_swap R xs' _ _ _ _ _ xc xrt ⟨hAc, hcj⟩ ⟨hAr, hrj⟩
           hHB hBL Hxc Hxrt HSeg1
-      · exact outside_same_trans _ _ _ _ _ Hout
-          (outside_same_swap xs' _ _ xc xrt _ _ ⟨hAc, Nat.lt_of_lt_of_le hcj hHB⟩
+      · exact outsideSame_trans _ _ _ _ _ Hout
+          (outsideSame_swap xs' _ _ xc xrt _ _ ⟨hAc, Nat.lt_of_lt_of_le hcj hHB⟩
             ⟨hAr, Nat.lt_of_lt_of_le hrj hHB⟩)
     · -- the root dominates its children: return
       simp only [decide_eq_false hlt, Bool.not_false]
@@ -595,9 +595,9 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
 
 theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func.t)
     (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code ∗
+        "#Hcmp" ∷ cmpImplements R cmp_code ∗
         "%H_bounds" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62⌝ }}
       (App (App (App (App (App (Val #(functions siftDownCmpFunc [Et])) (Val #data))
         (Val #(W64 0))) (Val #(W64 0))) (Val #a)) (Val #cmp_code))
@@ -611,9 +611,9 @@ theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func
   iframe
 
 theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code ∗
+        "#Hcmp" ∷ cmpImplements R cmp_code ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧
           xs.length ≤ 2 ^ 62⌝ }}
       (App (App (App (App (Val #(functions heapSortCmpFunc [Et])) (Val #data)) (Val #a))
@@ -621,8 +621,8 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
     {{ (xs' : List E), RET #();
         data ↦* xs' ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-        "%Hsorted" ∷ ⌜is_sorted_seg R xs' (sint.nat a) (sint.nat b)⌝ ∗
-        "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
+        "%Hsorted" ∷ ⌜IsSortedSeg R xs' (sint.nat a) (sint.nat b)⌝ ∗
+        "%Houtside" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
   wp_start as H
   iNamed H
   wp_auto
@@ -636,15 +636,15 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
       "Hxs" ∷ data ↦* xs' ∗
       "%Hir" ∷ ⌜-1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b - sint.Z a - 1⌝ ∗
       "%HPerm1" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-      "%Heap1" ∷ ⌜is_heap_seg R xs' (sint.nat a) (sint.nat b) (sint.nat (i_val + W64 1))
+      "%Heap1" ∷ ⌜IsHeapSeg R xs' (sint.nat a) (sint.nat b) (sint.nat (i_val + W64 1))
         (sint.nat (b - a))⌝ ∗
-      "%HSeg1" ∷ ⌜seg_sorted_from R xs' (sint.nat a) (sint.nat b) (sint.nat a + sint.nat (b - a))⌝ ∗
-      "%Hout1" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [i Hxs]
+      "%HSeg1" ∷ ⌜SegSortedFrom R xs' (sint.nat a) (sint.nat b) (sint.nat a + sint.nat (b - a))⌝ ∗
+      "%Hout1" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [i Hxs]
   · iexists _, xs
     iframe
     ipureintro
     refine ⟨⟨by word, by word⟩, List.Perm.refl _, heap_seg_vacuous R _ _ _ _ _ (by word), ?_,
-      outside_same_refl _ _ _⟩
+      outsideSame_refl _ _ _⟩
     intro i j xi xj Hij _ _; omega
   wp_for HI1
   wp_if_destruct
@@ -664,7 +664,7 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
     have e2 : sint.nat (i_val - W64 1 + W64 1) = sint.nat i_val := by word
     rw [e2]
     exact ⟨⟨by word, by word⟩, HPerm1.trans HPermPost, HeapPost, HSegPost,
-      outside_same_trans _ _ _ _ _ Hout1 HoutPost⟩
+      outsideSame_trans _ _ _ _ _ Hout1 HoutPost⟩
   · -- the heap is built
     have e1 : sint.nat (i_val + W64 1) = 0 := by word
     rw [e1] at Heap1
@@ -675,10 +675,10 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
         "Hxs" ∷ data ↦* xs' ∗
         "%Hir" ∷ ⌜-1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b - sint.Z a - 1⌝ ∗
         "%HPerm2" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-        "%Heap2" ∷ ⌜is_heap_seg R xs' (sint.nat a) (sint.nat b) 0 (sint.nat (i_val + W64 1))⌝ ∗
-        "%HSeg2" ∷ ⌜seg_sorted_from R xs' (sint.nat a) (sint.nat b)
+        "%Heap2" ∷ ⌜IsHeapSeg R xs' (sint.nat a) (sint.nat b) 0 (sint.nat (i_val + W64 1))⌝ ∗
+        "%HSeg2" ∷ ⌜SegSortedFrom R xs' (sint.nat a) (sint.nat b)
           (sint.nat a + sint.nat i_val + 1)⌝ ∗
-        "%Hout2" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [i Hxs]
+        "%Hout2" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [i Hxs]
     · iexists _, xs'
       iframe
       ipureintro
@@ -689,7 +689,7 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
     wp_for HI2
     have hl2 := HPerm2.length_eq
     wp_if_destruct
-    · ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+    · ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
       obtain ⟨xi, Hxi⟩ := list_lookup_lt xs' (sint.nat a + sint.nat i_val) (by word)
       obtain ⟨x0, Hx0⟩ := list_lookup_lt xs' (sint.nat a) (by word)
       heap_load_atw Hxi
@@ -747,8 +747,8 @@ theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs 
         rw [e2, e3]
         refine ⟨⟨by word, by word⟩,
           HPerm2.trans ((swap_perm xs' _ _ xi x0 Hxi Hx0).trans HP), HH, HS, ?_⟩
-        exact outside_same_trans _ _ _ _ _ Hout2 (outside_same_trans _ _ _ _ _
-          (outside_same_swap xs' _ _ xi x0 _ _ ⟨by omega, by word⟩ ⟨by omega, by word⟩) HO)
+        exact outsideSame_trans _ _ _ _ _ Hout2 (outsideSame_trans _ _ _ _ _
+          (outsideSame_swap xs' _ _ xi x0 _ _ ⟨by omega, by word⟩ ⟨by omega, by word⟩) HO)
     · -- done
       iapply HΦ
       iframe

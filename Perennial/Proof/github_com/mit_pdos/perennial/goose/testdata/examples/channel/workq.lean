@@ -7,7 +7,7 @@ Lean notes:
   lemmas are proved via two general lemmas `mapIdx_sum_congr`/`mapIdx_sum_update`.
 * `Pos.Countable loc` (needed for channels of channels / pointers) comes from
   `Perennial/Proof/time.lean` (`loc_countable`), hence the import.
-* The coordinator invariant is a separate definition `coordinator_inv` (Rocq inlines it).
+* The coordinator invariant is a separate definition `coordinatorInv` (Rocq inlines it).
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Proof.sync.atomic
@@ -36,16 +36,16 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 -- declared after asynchronously elaborated proofs waits for them)
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 
-structure workq_names where
+structure WorkqNames where
   docs : List go_string
-  task_gn : GName
+  taskGn : GName
 
-theorem map_seq_size {A : Type} (start : Nat) (xs : List A) :
-    gmap.size (gmap.map_seq start xs : gmap Nat A) = xs.length := by
+theorem mapSeq_size {A : Type} (start : Nat) (xs : List A) :
+    GMap.size (GMap.mapSeq start xs : GMap Nat A) = xs.length := by
   induction xs generalizing start with
-  | nil => exact gmap.map_size_empty
+  | nil => exact GMap.map_size_empty
   | cons x xs ih =>
-    rw [gmap.map_seq_cons, gmap.map_size_insert_None _ _ _ (gmap.map_seq_cons_disjoint start xs), ih]
+    rw [GMap.mapSeq_cons, GMap.map_size_insert_None _ _ _ (GMap.mapSeq_cons_disjoint start xs), ih]
     rfl
 
 theorem mapIdx_sum_congr {A : Type} (h1 h2 : Nat → A → Nat) (l : List A)
@@ -79,34 +79,34 @@ theorem mapIdx_sum_update {A : Type} (h1 h2 : Nat → A → Nat) (l : List A) (i
       omega
 
 /-- The contribution of document `i` (Rocq inlines this function in an `imap`). -/
-def counted_fn (f : go_string → Nat) (remaining_docs : gmap Nat (Option go_string))
+def countedFn (f : go_string → Nat) (remaining_docs : GMap Nat (Option go_string))
     (i : Nat) (doc : go_string) : Nat :=
   match remaining_docs !! i with
   | some (some _) => 0
   | _ => f doc
 
 /-- The total contribution of the documents not yet counted. -/
-abbrev counted_sum (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : gmap Nat (Option go_string)) : Nat :=
-  (docs.mapIdx (counted_fn f remaining_docs)).sum
+abbrev countedSum (f : go_string → Nat) (docs : List go_string)
+    (remaining_docs : GMap Nat (Option go_string)) : Nat :=
+  (docs.mapIdx (countedFn f remaining_docs)).sum
 
 /-- When all entries in `remaining_docs` are `Some (Some _)`, the imap sum is 0. -/
 theorem imap_sum_all_some (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : gmap Nat (Option go_string))
+    (remaining_docs : GMap Nat (Option go_string))
     (Hlookup : ∀ i, i < docs.length → ∃ d, remaining_docs !! i = some (some d)) :
-    counted_sum f docs remaining_docs = 0 := by
-  unfold counted_sum
+    countedSum f docs remaining_docs = 0 := by
+  unfold countedSum
   rw [mapIdx_sum_congr _ (fun _ _ => 0) docs]
   · clear Hlookup; induction docs <;> simp_all [List.mapIdx_cons]
   · intro i d hd
     obtain ⟨d', hd'⟩ := Hlookup i (List.getElem?_eq_some_iff.1 hd).1
-    simp only [counted_fn, hd']
+    simp only [countedFn, hd']
 
 theorem imap_sum_no_some_some (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : gmap Nat (Option go_string))
+    (remaining_docs : GMap Nat (Option go_string))
     (Hno_some : ∀ i, i < docs.length → ∀ d, remaining_docs !! i ≠ some (some d)) :
-    counted_sum f docs remaining_docs = (docs.map f).sum := by
-  unfold counted_sum
+    countedSum f docs remaining_docs = (docs.map f).sum := by
+  unfold countedSum
   rw [mapIdx_sum_congr _ (fun _ d => f d) docs]
   · clear Hno_some
     induction docs with
@@ -114,41 +114,41 @@ theorem imap_sum_no_some_some (f : go_string → Nat) (docs : List go_string)
     | cons a l ih => simp only [List.mapIdx_cons, List.sum_cons, List.map_cons, ← ih]
   · intro i d hd
     have Hi := (List.getElem?_eq_some_iff.1 hd).1
-    unfold counted_fn
+    unfold countedFn
     split
     · rename_i d' h; exact absurd h (Hno_some i Hi d')
     · rfl
 
 /-- Inserting `None` at position `i` changes only that position's contribution. -/
 theorem imap_sum_insert_none (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : gmap Nat (Option go_string)) (i : Nat) (doc : go_string)
+    (remaining_docs : GMap Nat (Option go_string)) (i : Nat) (doc : go_string)
     (Hlookup : remaining_docs !! i = some (some doc)) (Hdoc : docs[i]? = some doc) :
-    counted_sum f docs (<[i := none]> remaining_docs) =
-      counted_sum f docs remaining_docs + f doc := by
-  unfold counted_sum
-  have := mapIdx_sum_update (counted_fn f (<[i := none]> remaining_docs))
-    (counted_fn f remaining_docs) docs i doc Hdoc
-    (fun j x hj _ => by simp only [counted_fn, gmap.lookup_insert_eq_iff, Ne.symm hj, ↓reduceIte])
-  simp only [counted_fn, Hlookup, gmap.lookup_insert_eq_iff, ↓reduceIte] at this
+    countedSum f docs (<[i := none]> remaining_docs) =
+      countedSum f docs remaining_docs + f doc := by
+  unfold countedSum
+  have := mapIdx_sum_update (countedFn f (<[i := none]> remaining_docs))
+    (countedFn f remaining_docs) docs i doc Hdoc
+    (fun j x hj _ => by simp only [countedFn, GMap.lookup_insert_eq_iff, Ne.symm hj, ↓reduceIte])
+  simp only [countedFn, Hlookup, GMap.lookup_insert_eq_iff, ↓reduceIte] at this
   omega
 
 /-- Deleting a `None` entry doesn't change the imap sum. -/
 theorem imap_sum_delete_none (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : gmap Nat (Option go_string)) (i : Nat)
+    (remaining_docs : GMap Nat (Option go_string)) (i : Nat)
     (Hlookup : remaining_docs !! i = some none) :
-    counted_sum f docs (remaining_docs.delete i) = counted_sum f docs remaining_docs := by
-  unfold counted_sum
+    countedSum f docs (remaining_docs.delete i) = countedSum f docs remaining_docs := by
+  unfold countedSum
   apply mapIdx_sum_congr
   intro j d _
   by_cases hij : i = j
-  · subst hij; simp only [counted_fn, gmap.lookup_delete_iff, ↓reduceIte, Hlookup]
-  · simp only [counted_fn, gmap.lookup_delete_iff, hij, ↓reduceIte]
+  · subst hij; simp only [countedFn, GMap.lookup_delete_iff, ↓reduceIte, Hlookup]
+  · simp only [countedFn, GMap.lookup_delete_iff, hij, ↓reduceIte]
 
-theorem map_size1_lookup_ne {K V : Type} [DecidableEq K] (m : gmap K V) (i : K) (v : V)
+theorem map_size1_lookup_ne {K V : Type} [DecidableEq K] (m : GMap K V) (i : K) (v : V)
     (h : m !! i = some v) (hs : m.size = 1) (j : K) (hj : j ≠ i) : m !! j = none := by
-  have : (gmap.delete i m).size = 0 := by rw [gmap.map_size_delete_Some m i v h, hs]
-  have h2 := congrArg (· !! j) (gmap.map_size_empty_inv _ this)
-  simpa [gmap.lookup_delete_iff, Ne.symm hj] using h2
+  have : (GMap.delete i m).size = 0 := by rw [GMap.map_size_delete_Some m i v h, hs]
+  have h2 := congrArg (· !! j) (GMap.map_size_empty_inv _ this)
+  simpa [GMap.lookup_delete_iff, Ne.symm hj] using h2
 
 theorem sint_nat_sub1 (r : w64) (h : sint.nat r ≠ 0) : sint.nat (r + W64 (-1)) = sint.nat r - 1 := by
   word
@@ -172,14 +172,14 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : workq.Assumptions]
 
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg := define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg := build_get_is_pkg_init_wf
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg := define_is_pkg_init iprop(True)
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg := build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init (PROP := IProp GF) pkg }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗ isPkgInit (PROP := IProp GF) pkg }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -195,101 +195,101 @@ end init
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : workq.Assumptions]
 
 
-def own_task (γ : workq_names) (doc : go_string) : IProp GF :=
-  iprop(∃ i : Nat, i ↪[γ.task_gn] (some doc))
+def ownTask (γ : WorkqNames) (doc : go_string) : IProp GF :=
+  iprop(∃ i : Nat, i ↪[γ.taskGn] (some doc))
 
 /-- A task being `None` means that `total` has it, but remaining hasn't been
 decremented yet. -/
-def own_task_auth (γ : workq_names) (remaining_docs : gmap Nat (Option go_string)) : IProp GF :=
-  ghost_map_auth γ.task_gn 1 remaining_docs
+def ownTaskAuth (γ : WorkqNames) (remaining_docs : GMap Nat (Option go_string)) : IProp GF :=
+  ghostMapAuth γ.taskGn 1 remaining_docs
 
-def word_count (doc : go_string) : Nat := (strings.split_fields doc).length
+def word_count (doc : go_string) : Nat := (strings.splitFields doc).length
 
-def is_tasks_done (γ : workq_names) (sh : shared.t) : IProp GF :=
-  sync.atomic.own_Int64 sh.total' DFrac.discard (W64 ((γ.docs.map word_count).sum : Int))
+def isTasksDone (γ : WorkqNames) (sh : shared.t) : IProp GF :=
+  sync.atomic.ownInt64 sh.total' DFrac.discard (W64 ((γ.docs.map word_count).sum : Int))
 
-def coordinator_inv (γ : workq_names) (sh : shared.t) (γdone : chan_names) : IProp GF :=
-  iprop(∃ (remaining_docs : gmap Nat (Option go_string)) (remainingv : w64),
+def coordinatorInv (γ : WorkqNames) (sh : shared.t) (γdone : ChanNames) : IProp GF :=
+  iprop(∃ (remaining_docs : GMap Nat (Option go_string)) (remainingv : w64),
     "H" ∷ (if remainingv = W64 0 then iprop(True)
            else iprop(∃ totalv : w64,
-             "Htotal" ∷ sync.atomic.own_Int64 sh.total' (DFrac.own 1) totalv ∗
-             "Hdone" ∷ own_broadcast_chan sh.done' γdone (is_tasks_done γ sh) .Pending ∗
-             "%Htotal" ∷ ⌜totalv = W64 (counted_sum word_count γ.docs remaining_docs : Int)⌝)) ∗
-    "Hremaining" ∷ sync.atomic.own_Int64 sh.remaining' (DFrac.own 1) remainingv ∗
-    "Hauth" ∷ own_task_auth γ remaining_docs ∗
-    "%Hremaining_size" ∷ ⌜sint.nat remainingv = gmap.size remaining_docs⌝ ∗
+             "Htotal" ∷ sync.atomic.ownInt64 sh.total' (DFrac.own 1) totalv ∗
+             "Hdone" ∷ ownBroadcastChan sh.done' γdone (isTasksDone γ sh) .Pending ∗
+             "%Htotal" ∷ ⌜totalv = W64 (countedSum word_count γ.docs remaining_docs : Int)⌝)) ∗
+    "Hremaining" ∷ sync.atomic.ownInt64 sh.remaining' (DFrac.own 1) remainingv ∗
+    "Hauth" ∷ ownTaskAuth γ remaining_docs ∗
+    "%Hremaining_size" ∷ ⌜sint.nat remainingv = GMap.size remaining_docs⌝ ∗
     "%Hdocs_agree" ∷ ⌜∀ (i : Nat) (v : Option go_string), remaining_docs !! i = some v →
         match v with | some doc => γ.docs[i]? = some doc | none => True⌝)
 
-def is_coordinator (γ : workq_names) (sh : shared.t) : IProp GF :=
-  iprop(∃ γdone : chan_names,
-    "#Hdone" ∷ own_broadcast_chan sh.done' γdone (is_tasks_done γ sh) .Unknown ∗
-    "#Hdone_is" ∷ is_chan sh.done' γdone Unit ∗
-    "#Hi" ∷ inv nroot (coordinator_inv γ sh γdone))
+def isCoordinator (γ : WorkqNames) (sh : shared.t) : IProp GF :=
+  iprop(∃ γdone : ChanNames,
+    "#Hdone" ∷ ownBroadcastChan sh.done' γdone (isTasksDone γ sh) .Unknown ∗
+    "#Hdone_is" ∷ isChan sh.done' γdone Unit ∗
+    "#Hi" ∷ inv nroot (coordinatorInv γ sh γdone))
 
-instance is_coordinator_persistent (γ : workq_names) (sh : shared.t) :
-    Persistent (is_coordinator (GF := GF) γ sh) := by
-  unfold is_coordinator; infer_instance
+instance isCoordinator_persistent (γ : WorkqNames) (sh : shared.t) :
+    Persistent (isCoordinator (GF := GF) γ sh) := by
+  unfold isCoordinator; infer_instance
 
-def steal_reply_pred (γ : workq_names) (maybe_req : loc) : IProp GF :=
+def stealReplyPred (γ : WorkqNames) (maybe_req : loc) : IProp GF :=
   if maybe_req = null then iprop(True)
-  else iprop(∃ req : go_string, maybe_req ↦ req ∗ own_task γ req)
+  else iprop(∃ req : go_string, maybe_req ↦ req ∗ ownTask γ req)
 
-def is_Worker (γ : workq_names) (w : loc) : IProp GF :=
-  iprop(∃ (wv : Worker.t) (γsteal γqueue : chan_names),
+def isWorker (γ : WorkqNames) (w : loc) : IProp GF :=
+  iprop(∃ (wv : Worker.t) (γsteal γqueue : ChanNames),
     "#w" ∷ w ↦□ wv ∗
-    "#Hqueue" ∷ is_chan_bag γqueue wv.queue' (own_task (GF := GF) γ) ∗
-    "#Hsteal" ∷ is_chan_bag γsteal wv.steal'
-      (fun (reply : chan.t) => iprop(∃ γreply : chan_names,
-        is_chan_bag γreply reply (steal_reply_pred (GF := GF) γ))))
+    "#Hqueue" ∷ isChanBag γqueue wv.queue' (ownTask (GF := GF) γ) ∗
+    "#Hsteal" ∷ isChanBag γsteal wv.steal'
+      (fun (reply : chan.t) => iprop(∃ γreply : ChanNames,
+        isChanBag γreply reply (stealReplyPred (GF := GF) γ))))
 
-instance is_Worker_persistent (γ : workq_names) (w : loc) :
-    Persistent (is_Worker (GF := GF) γ w) := by
-  unfold is_Worker; infer_instance
+instance isWorker_persistent (γ : WorkqNames) (w : loc) :
+    Persistent (isWorker (GF := GF) γ w) := by
+  unfold isWorker; infer_instance
 
-instance is_tasks_done_persistent (γ : workq_names) (sh : shared.t) :
-    Persistent (is_tasks_done (GF := GF) γ sh) := by
-  unfold is_tasks_done
-  exact as_dfractional_persistent (Φ := fun dq => sync.atomic.own_Int64 (GF := GF) sh.total' dq
+instance isTasksDone_persistent (γ : WorkqNames) (sh : shared.t) :
+    Persistent (isTasksDone (GF := GF) γ sh) := by
+  unfold isTasksDone
+  exact as_dfractional_persistent (Φ := fun dq => sync.atomic.ownInt64 (GF := GF) sh.total' dq
     (W64 ((γ.docs.map word_count).sum : Int)))
 
 set_option goose.wp.extras true
 
-theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : shared.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
-        "#Hw" ∷ is_Worker γ w ∗
-        "#Hcoord" ∷ is_coordinator γ sh ∗
-        "Hdoc" ∷ own_task γ doc }}
+theorem Worker.wp_process (γ : WorkqNames) (w : loc) (doc : go_string) (sh : shared.t) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
+        "#Hw" ∷ isWorker γ w ∗
+        "#Hcoord" ∷ isCoordinator γ sh ∗
+        "Hdoc" ∷ ownTask γ doc }}
       (App (App (Val (w @!! go.type.PointerType Worker @!! go!"process")) (Val #doc)) (Val #sh))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hw, #Hcoord, Hdoc⟩
   wp_auto
   wp_apply strings.wp_Fields doc as %sl ⟨Hsl, Hcap⟩
-  ihave %Hlen := own_slice_len _ _ _ $$ Hsl
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hsl
   iNamed Hcoord
   iNamed Hcoord
   iNamed Hdoc
-  wp_apply_core sync.atomic.wp_Int64__Add $$ [] [-]
+  wp_apply_core sync.atomic.Int64.wp_Add $$ [] [-]
   · iPkgInit
   iinv Hi with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
-  unfold coordinator_inv
+  unfold coordinatorInv
   iNamedSuffix Hi "_inv"
-  unfold own_task
+  unfold ownTask
   icases Hdoc with ⟨%i, Hdoc⟩
-  unfold own_task_auth
+  unfold ownTaskAuth
   icombine Hauth_inv Hdoc gives %Hlookup
   have Hdoc_i : γ.docs[i]? = some doc := Hdocs_agree_inv i _ Hlookup
   by_cases Hz : remainingv = W64 0
   · exfalso
     have : remaining_docs.size = 0 := by rw [← Hremaining_size_inv, Hz]; rfl
-    rw [gmap.map_size_empty_inv _ this] at Hlookup; simp at Hlookup
+    rw [GMap.map_size_empty_inv _ this] at Hlookup; simp at Hlookup
   simp only [Hz, ↓reduceIte]
   iNamedSuffix H_inv "_inv"
   iexists totalv
@@ -313,15 +313,15 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
     iframe
     ipureintro
     refine ⟨?_, ?_⟩
-    · rw [gmap.map_size_insert_Some _ _ _ _ Hlookup]; exact Hremaining_size_inv
+    · rw [GMap.map_size_insert_Some _ _ _ _ Hlookup]; exact Hremaining_size_inv
     · intro j v hj
-      simp only [gmap.lookup_insert_eq_iff] at hj
+      simp only [GMap.lookup_insert_eq_iff] at hj
       split at hj
       · cases hj; trivial
       · exact Hdocs_agree_inv j v hj
   imodintro
   wp_auto
-  wp_apply_core sync.atomic.wp_Int64__Add $$ [] [-]
+  wp_apply_core sync.atomic.Int64.wp_Add $$ [] [-]
   · iPkgInit
   iinv Hi with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -333,8 +333,8 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
   iintro Hremaining_inv
   icombine Hauth_inv Hdoc gives %Hlookup0
   imod ghost_map_delete $$ Hauth_inv Hdoc with Hauth_inv
-  have Hne0 := gmap.map_size_ne_0_lookup_2 remaining_docs Hlookup0
-  have Hsize_del := gmap.map_size_delete_Some remaining_docs i _ Hlookup0
+  have Hne0 := GMap.map_size_ne_0_lookup_2 remaining_docs Hlookup0
+  have Hsize_del := GMap.map_size_delete_Some remaining_docs i _ Hlookup0
   by_cases Hz0 : remainingv = W64 0
   · exfalso; apply Hne0; rw [← Hremaining_size_inv, Hz0]; rfl
   simp only [Hz0, ↓reduceIte]
@@ -343,7 +343,7 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
   · -- about to close done
     have Hr1 : remainingv = W64 1 := by word
     have Hsize1 : remaining_docs.size = 1 := by rw [← Hremaining_size_inv, Hr1]; rfl
-    have Htot : counted_sum word_count γ.docs remaining_docs = (γ.docs.map word_count).sum :=
+    have Htot : countedSum word_count γ.docs remaining_docs = (γ.docs.map word_count).sum :=
       imap_sum_no_some_some _ _ _ (fun j _ d hd => by
         by_cases hj : j = i
         · subst hj; rw [Hlookup0] at hd; cases hd
@@ -358,7 +358,7 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
       refine ⟨?_, ?_⟩
       · rw [Hsize_del, ← Hremaining_size_inv, Hr1]; rfl
       · intro j v hj
-        simp only [gmap.lookup_delete_iff] at hj
+        simp only [GMap.lookup_delete_iff] at hj
         split at hj
         · cases hj
         · exact Hdocs_agree_inv j v hj
@@ -366,10 +366,10 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
     wp_auto
     wp_if_destruct
     · ipersist Htotal_inv
-      wp_apply wp_broadcast_chan_close sh.done' γdone (is_tasks_done γ sh) $$ [Hdone_inv Htotal_inv]
+      wp_apply wp_broadcast_chan_close sh.done' γdone (isTasksDone γ sh) $$ [Hdone_inv Htotal_inv]
         as -
       · iframe
-        unfold is_tasks_done
+        unfold isTasksDone
         rw [← Htot, ← Htotal_inv]
         iframe #
       iapply HΦ
@@ -392,7 +392,7 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
       · rw [Hsize_del, ← Hremaining_size_inv]
         exact sint_nat_sub1 _ (by rw [Hremaining_size_inv]; exact Hne0)
       · intro j v hj
-        simp only [gmap.lookup_delete_iff] at hj
+        simp only [GMap.lookup_delete_iff] at hj
         split at hj
         · cases hj
         · exact Hdocs_agree_inv j v hj
@@ -403,11 +403,11 @@ theorem wp_Worker__process (γ : workq_names) (w : loc) (doc : go_string) (sh : 
     · iapply HΦ
       itrivial
 
-theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
-        "#Hw" ∷ is_Worker γ w ∗
-        "#Hneighbor" ∷ is_Worker γ neighbor ∗
-        "#Hcoord" ∷ is_coordinator γ sh }}
+theorem Worker.wp_run (γ : WorkqNames) (w neighbor : loc) (sh : shared.t) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
+        "#Hw" ∷ isWorker γ w ∗
+        "#Hneighbor" ∷ isWorker γ neighbor ∗
+        "#Hcoord" ∷ isCoordinator γ sh }}
       (App (App (Val (w @!! go.type.PointerType Worker @!! go!"run")) (Val #neighbor)) (Val #sh))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hw, #Hneighbor, #Hcoord⟩
@@ -417,12 +417,12 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
   ihave #Hcoord2 := Hcoord
   iNamed Hcoord2
   ihave #Hn2 := Hneighbor
-  iunfold is_Worker at Hn2
+  iunfold isWorker at Hn2
   icases Hn2 with ⟨%nv, %γsteal_n, %γqueue_n, #Hnpt, #Hqueue_n, #Hsteal_n⟩
   wp_auto
   wp_for
   ihave #Hw2 := Hw
-  iunfold is_Worker at Hw2
+  iunfold isWorker at Hw2
   icases Hw2 with ⟨%wv, %γsteal, %γqueue, #Hwpt, #Hqueue, #Hsteal⟩
   icases Hwpt with ∗Hwpt
   iStructNamed Hwpt
@@ -432,7 +432,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
   · iapply BigAndL.bigAndL_cons.2
     isplit
     · -- done
-      dsimp only [chan.nonblocking_clause_pre]
+      dsimp only [chan.nonblockingClausePre]
       iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, sh.done', γdone
       isplitr
       · ipureintro; rfl
@@ -447,7 +447,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
     iapply BigAndL.bigAndL_cons.2
     isplit
     · -- get a request
-      dsimp only [chan.nonblocking_clause_pre]
+      dsimp only [chan.nonblockingClausePre]
       iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
       isplitr
       · ipureintro; rfl
@@ -458,7 +458,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
       inext
       iintro %v Hv
       wp_auto
-      wp_apply wp_Worker__process γ w v sh $$ [Hv]
+      wp_apply Worker.wp_process γ w v sh $$ [Hv]
       · iframe #
         iframe
       wp_for_post
@@ -466,7 +466,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
     iapply BigAndL.bigAndL_cons.2
     isplit
     · -- help a worker steal from this one
-      dsimp only [chan.nonblocking_clause_pre]
+      dsimp only [chan.nonblockingClausePre]
       iexists chan.t, inferInstance, inferInstance, inferInstance, inferInstance, wv.steal', γsteal
       isplitr
       · ipureintro; rfl
@@ -480,7 +480,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
       wp_apply_core chan.wp_select_nonblocking
       isplit
       · iapply BigAndL.bigAndL_singleton.2
-        dsimp only [chan.nonblocking_clause_pre]
+        dsimp only [chan.nonblockingClausePre]
         iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
         isplitr
         · ipureintro; rfl
@@ -491,9 +491,9 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
         inext
         iintro %v Hv
         wp_auto
-        wp_apply wp_bag_send γreply reply_ch doc_ptr (steal_reply_pred γ) $$ [Hv doc]
+        wp_apply wp_bag_send γreply reply_ch doc_ptr (stealReplyPred γ) $$ [Hv doc]
         · iframe #
-          unfold steal_reply_pred
+          unfold stealReplyPred
           split
           · itrivial
           · iexists v
@@ -501,9 +501,9 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
         wp_for_post
         iframe
       · wp_auto
-        wp_apply wp_bag_send γreply reply_ch null (steal_reply_pred γ) $$ []
+        wp_apply wp_bag_send γreply reply_ch null (stealReplyPred γ) $$ []
         · iframe #
-          unfold steal_reply_pred
+          unfold stealReplyPred
           simp only [↓reduceIte]
           itrivial
         wp_for_post
@@ -514,7 +514,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
     wp_auto
     wp_apply chan.wp_make2 (V := loc) (W64 1) $$ [] as %reply %γreply ⟨#Hreply_is, -, Hown⟩
     · ipureintro; decide
-    imod start_bag (steal_reply_pred (GF := GF) γ) _ reply γreply (by simp) $$ Hreply_is Hown with #Hreply
+    imod start_bag (stealReplyPred (GF := GF) γ) _ reply γreply (by simp) $$ Hreply_is Hown with #Hreply
     icases Hnpt with ∗Hnpt
     iStructNamed Hnpt
     wp_auto_lc 2
@@ -522,7 +522,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
     iapply BigAndL.bigAndL_cons.2
     isplit
     · -- done
-      dsimp only [chan.blocking_clause_pre]
+      dsimp only [chan.blockingClausePre]
       iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, sh.done', γdone
       isplitr
       · ipureintro; rfl
@@ -536,7 +536,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
     iapply BigAndL.bigAndL_cons.2
     isplit
     · -- request to steal was sent
-      dsimp only [chan.blocking_clause_pre]
+      dsimp only [chan.blockingClausePre]
       iexists chan.t, inferInstance, inferInstance, inferInstance, inferInstance, nv.steal', γsteal_n,
         reply
       isplitr
@@ -548,15 +548,15 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
         iframe #
       inext
       wp_auto
-      wp_apply wp_bag_receive γreply reply (steal_reply_pred γ) $$ Hreply as %v Hv
+      wp_apply wp_bag_receive γreply reply (stealReplyPred γ) $$ Hreply as %v Hv
       wp_if_destruct
       · wp_for_post
         iframe
-      · unfold steal_reply_pred
+      · unfold stealReplyPred
         simp only [Hif, ↓reduceIte]
         icases Hv with ⟨%req, Hreq, Htask⟩
         wp_auto
-        wp_apply wp_Worker__process γ w req sh $$ [Htask]
+        wp_apply Worker.wp_process γ w req sh $$ [Htask]
         · iframe #
           iframe
         wp_for_post
@@ -564,7 +564,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
     iapply BigAndL.bigAndL_cons.2
     isplit
     · -- received local work while trying to steal
-      dsimp only [chan.blocking_clause_pre]
+      dsimp only [chan.blockingClausePre]
       iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
       isplitr
       · ipureintro; rfl
@@ -574,7 +574,7 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
       inext
       iintro %v Hv
       wp_auto
-      wp_apply wp_Worker__process γ w v sh $$ [Hv]
+      wp_apply Worker.wp_process γ w v sh $$ [Hv]
       · iframe #
         iframe
       wp_for_post
@@ -582,32 +582,32 @@ theorem wp_Worker__run (γ : workq_names) (w neighbor : loc) (sh : shared.t) :
     · iapply BigAndL.bigAndL_nil.2
       itrivial
 
-theorem tasks_to_list (γ : workq_names) (start : Nat) (l : List go_string) :
-    ([∗map] k ↦ v ∈ gmap.map_seq start (l.map some), k ↪[γ.task_gn] v) ⊢
-      [∗list] d ∈ l, own_task (GF := GF) γ d := by
+theorem tasks_to_list (γ : WorkqNames) (start : Nat) (l : List go_string) :
+    ([∗map] k ↦ v ∈ GMap.mapSeq start (l.map some), k ↪[γ.taskGn] v) ⊢
+      [∗list] d ∈ l, ownTask (GF := GF) γ d := by
   induction l generalizing start with
   | nil =>
     iintro -
     iapply BigSepL.bigSepL_nil.2
     iempintro
   | cons d l ih =>
-    rw [List.map_cons, gmap.map_seq_cons]
+    rw [List.map_cons, GMap.mapSeq_cons]
     iintro H
-    icases (BigSepM.bigSepM_insert (gmap.map_seq_cons_disjoint start _)).1 $$ H with ⟨Hd, H⟩
+    icases (BigSepM.bigSepM_insert (GMap.mapSeq_cons_disjoint start _)).1 $$ H with ⟨Hd, H⟩
     iapply BigSepL.bigSepL_cons.2
     isplitl [Hd]
-    · unfold own_task; iexists start; iexact Hd
+    · unfold ownTask; iexists start; iexact Hd
     · iapply ih $$ H
 
 set_option maxHeartbeats 1000000 in
 theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ "Hdocs" ∷ docs_sl ↦* docs }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ "Hdocs" ∷ docs_sl ↦* docs }}
       (App (Val (@! wordCount)) (Val #docs_sl))
     {{ RET #(W64 ((docs.map word_count).sum : Int)); True }} := by
   wp_start as Hdocs
   iNamed Hdocs
   wp_auto
-  ihave %Hdocs_len := own_slice_len _ _ _ $$ Hdocs
+  ihave %Hdocs_len := ownSlice_len _ _ _ $$ Hdocs
   wp_if_destruct
   · have : docs = [] := List.eq_nil_of_length_eq_zero (by rw [Hdocs_len.1, Hif]; rfl)
     subst this
@@ -618,12 +618,12 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
   · ipureintro; decide
   rename_i j_ptr
   irename : (j_ptr ↦ zero_val w64 : IProp GF) => j
-  imod ghost_map_alloc (gmap.map_seq 0 (docs.map some)) with ⟨%γtask_gn, Hauth, Htasks⟩
+  imod ghost_map_alloc (GMap.mapSeq 0 (docs.map some)) with ⟨%γtask_gn, Hauth, Htasks⟩
   ihave HI : (∃ (i j : w64) (workers : List loc),
       "i" ∷ i_ptr ↦ i ∗
       "j" ∷ j_ptr ↦ j ∗
       "workers_sl" ∷ workers_sl ↦* (workers ++ List.replicate (2 - sint.nat i) null) ∗
-      "#Hworkers" ∷ □ (∀ w, ⌜w ∈ workers⌝ → is_Worker ⟨docs, γtask_gn⟩ w) ∗
+      "#Hworkers" ∷ □ (∀ w, ⌜w ∈ workers⌝ → isWorker ⟨docs, γtask_gn⟩ w) ∗
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ 2 ∧ workers.length = sint.nat i⌝ : IProp GF)
     $$ [i j workers_sl]
   · iexists W64 0, _, []
@@ -634,7 +634,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
     · imodintro; iintro %w %Hw; simp at Hw
     · ipureintro; decide
   wp_for HI
-  ihave %Hwl := own_slice_len _ _ _ $$ workers_sl
+  ihave %Hwl := ownSlice_len _ _ _ $$ workers_sl
   simp only [List.length_append, List.length_replicate] at Hwl
   by_cases hP : sint.Z i < sint.Z workers_sl.len
   · simp only [hP, decide_true, ↓reduceIte]
@@ -655,10 +655,10 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
     imod (typed_pointsto_dfractional (GF := GF) «$r0_ptr»
       ({ queue' := queue, steal' := steal } : Worker.t)).dfractional_persist _ $$ Hwr with #Hwr
     simp only [Hif, ↓reduceIte]
-    imod start_bag (own_task (GF := GF) ⟨docs, γtask_gn⟩) _ queue γqueue (by trivial)
+    imod start_bag (ownTask (GF := GF) ⟨docs, γtask_gn⟩) _ queue γqueue (by trivial)
       $$ Hq_is Hq_own with #Hqueue
-    imod start_bag (fun (reply : chan.t) => iprop(∃ γreply : chan_names,
-        is_chan_bag γreply reply (steal_reply_pred (GF := GF) ⟨docs, γtask_gn⟩))) _ steal γsteal
+    imod start_bag (fun (reply : chan.t) => iprop(∃ γreply : ChanNames,
+        isChanBag γreply reply (stealReplyPred (GF := GF) ⟨docs, γtask_gn⟩))) _ steal γsteal
       (by trivial) $$ Hs_is Hs_own with #Hsteal
     wp_apply wp_store_slice_index workers_sl (sint.Z i) _ «$r0_ptr» $$ [workers_sl] as workers_sl
     · iframe
@@ -690,7 +690,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
       · iapply Hworkers $$ %w %Hw
       · simp only [List.mem_singleton] at Hw
         subst Hw
-        unfold is_Worker
+        unfold isWorker
         iexists ({ queue' := queue, steal' := steal } : Worker.t), γsteal, γqueue
         iframe #
     · ipureintro
@@ -709,7 +709,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
       "doc" ∷ doc_ptr ↦ d ∗
       "i" ∷ i_ptr ↦ i ∗
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z docs_sl.len⌝ ∗
-      "Htasks" ∷ [∗list] d ∈ docs.drop (sint.nat i), own_task (GF := GF) ⟨docs, γtask_gn⟩ d : IProp GF)
+      "Htasks" ∷ [∗list] d ∈ docs.drop (sint.nat i), ownTask (GF := GF) ⟨docs, γtask_gn⟩ d : IProp GF)
     $$ [doc i Htasks]
   · iexists W64 0, _
     rw [show sint.nat (W64 0) = 0 from rfl, List.drop_zero]
@@ -725,7 +725,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
     obtain ⟨dc, Hdc⟩ : ∃ dc, docs[sint.nat i]? = some dc := ⟨_, List.getElem?_eq_getElem hlt⟩
     wp_apply wp_load_slice_index docs_sl (sint.Z i) docs _ dc Hi.1 $$ [Hdocs] as Hdocs
     · iframe; ipureintro; exact Hdc
-    ihave %Hwl2 := own_slice_len _ _ _ $$ workers_sl
+    ihave %Hwl2 := ownSlice_len _ _ _ $$ workers_sl
     rw [Hwlen] at Hwl2
     have hw0 : (0 : Int) < sint.Z workers_sl.len := by
       have := Hwl2.1; simp only [sint.nat, sint.Z] at this ⊢; omega
@@ -734,7 +734,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
     wp_apply wp_load_slice_index workers_sl 0 workers _ w0 (Int.le_refl _) $$ [workers_sl] as workers_sl
     · iframe; ipureintro; exact Hw0
     ihave Hw := Hworkers $$ %w0 %(List.mem_of_getElem? Hw0)
-    iunfold is_Worker at Hw
+    iunfold isWorker at Hw
     icases Hw with ⟨%wv, %γsteal, %γqueue, #Hwpt, #Hqueue, #Hsteal⟩
     icases Hwpt with ∗Hwpt
     iStructNamed Hwpt
@@ -742,7 +742,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
     rw [List.drop_eq_getElem_cons hlt]
     icases BigSepL.bigSepL_cons.1 $$ Htasks with ⟨Hdoc, Htasks⟩
     rw [(List.getElem?_eq_some_iff.1 Hdc).2]
-    wp_apply wp_bag_send γqueue wv.queue' dc (own_task (GF := GF) ⟨docs, γtask_gn⟩) $$ [Hdoc]
+    wp_apply wp_bag_send γqueue wv.queue' dc (ownTask (GF := GF) ⟨docs, γtask_gn⟩) $$ [Hdoc]
     · iframe #; iframe
     wp_for_post
     iframe
@@ -757,20 +757,20 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
   simp only [hP, decide_false, Bool.false_eq_true, ↓reduceIte]
   iclear Htasks
   wp_auto
-  ihave Hrem : sync.atomic.own_Int64 (GF := GF) «$v0_ptr» (DFrac.own 1) (W64 0) $$ [«$v0»]
-  · rw [sync.atomic.own_Int64_unseal]
-    unfold sync.atomic.own_Int64_def
+  ihave Hrem : sync.atomic.ownInt64 (GF := GF) «$v0_ptr» (DFrac.own 1) (W64 0) $$ [«$v0»]
+  · rw [sync.atomic.ownInt64_unseal]
+    unfold sync.atomic.ownInt64Def
     rw [show ({ _0' := zero_val _, _1' := zero_val _, v' := W64 0 } : sync.atomic.Int64.t) =
       zero_val _ from rfl]
     iexact «$v0»
-  ihave Htot : sync.atomic.own_Int64 (GF := GF) «$v1_ptr» (DFrac.own 1) (W64 0) $$ [«$v1»]
-  · rw [sync.atomic.own_Int64_unseal]
-    unfold sync.atomic.own_Int64_def
+  ihave Htot : sync.atomic.ownInt64 (GF := GF) «$v1_ptr» (DFrac.own 1) (W64 0) $$ [«$v1»]
+  · rw [sync.atomic.ownInt64_unseal]
+    unfold sync.atomic.ownInt64Def
     rw [show ({ _0' := zero_val _, _1' := zero_val _, v' := W64 0 } : sync.atomic.Int64.t) =
       zero_val _ from rfl]
     iexact «$v1»
   wp_apply chan.wp_make1 (V := Unit) as %done %γdone ⟨#Hdone_is, %Hdcap, Hdone⟩
-  wp_apply_core sync.atomic.wp_Int64__Store $$ [] [-]
+  wp_apply_core sync.atomic.Int64.wp_Store $$ [] [-]
   · iPkgInit
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -782,14 +782,14 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
   imodintro
   wp_auto
   imod alloc_broadcast_chan (E := ⊤)
-    (is_tasks_done (GF := GF) ⟨docs, γtask_gn⟩ ⟨«$v0_ptr», «$v1_ptr», done⟩) γdone done
+    (isTasksDone (GF := GF) ⟨docs, γtask_gn⟩ ⟨«$v0_ptr», «$v1_ptr», done⟩) γdone done
     $$ Hdone_is Hdone with Hopen
-  ihave #Hdone_unk := own_broadcast_chan_Unknown _ _ _ _ $$ Hopen
-  imod inv_alloc nroot ⊤ (coordinator_inv (GF := GF) ⟨docs, γtask_gn⟩ ⟨«$v0_ptr», «$v1_ptr», done⟩ γdone)
+  ihave #Hdone_unk := ownBroadcastChan_Unknown _ _ _ _ $$ Hopen
+  imod inv_alloc nroot ⊤ (coordinatorInv (GF := GF) ⟨docs, γtask_gn⟩ ⟨«$v0_ptr», «$v1_ptr», done⟩ γdone)
     $$ [Hopen Htot Hrem Hauth] with #Hinv
   · inext
-    unfold coordinator_inv own_task_auth
-    iexists gmap.map_seq 0 (docs.map some), docs_sl.len
+    unfold coordinatorInv ownTaskAuth
+    iexists GMap.mapSeq 0 (docs.map some), docs_sl.len
     simp only [Hif, ↓reduceIte]
     isplitl [Htot Hopen]
     · iexists W64 0
@@ -798,21 +798,21 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
       rw [imap_sum_all_some]
       · rfl
       · intro j hj
-        exact ⟨docs[j], by simp [gmap.lookup_map_seq_0, List.getElem?_eq_getElem hj]⟩
+        exact ⟨docs[j], by simp [GMap.lookup_map_seq_0, List.getElem?_eq_getElem hj]⟩
     iframe
     ipureintro
     refine ⟨?_, ?_⟩
-    · rw [map_seq_size, List.length_map, Hdocs_len.1]
+    · rw [mapSeq_size, List.length_map, Hdocs_len.1]
     · intro j v hj
-      rw [gmap.lookup_map_seq_0, List.getElem?_map] at hj
+      rw [GMap.lookup_map_seq_0, List.getElem?_map] at hj
       cases h : docs[j]? with
       | none => simp [h] at hj
       | some d' =>
         simp only [h, Option.map_some, Option.some.injEq] at hj
         subst hj
         simp
-  ihave #Hcoord : is_coordinator (GF := GF) ⟨docs, γtask_gn⟩ ⟨«$v0_ptr», «$v1_ptr», done⟩ $$ []
-  · unfold is_coordinator
+  ihave #Hcoord : isCoordinator (GF := GF) ⟨docs, γtask_gn⟩ ⟨«$v0_ptr», «$v1_ptr», done⟩ $$ []
+  · unfold isCoordinator
     iexists γdone
     iframe #
   rename_i jj_ptr
@@ -825,7 +825,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
   · iexists W64 0, _, _
     iframe
     ipureintro; decide
-  ihave %Hwl3 := own_slice_len _ _ _ $$ workers_sl
+  ihave %Hwl3 := ownSlice_len _ _ _ $$ workers_sl
   rw [Hwlen] at Hwl3
   have hwlen2 : sint.Z workers_sl.len = 2 := by
     have := Hwl3.1; simp only [sint.nat, sint.Z] at this ⊢; omega
@@ -852,7 +852,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
     ihave #Hnb := Hworkers $$ %nb %(List.mem_of_getElem? Hnb)
     wp_auto
     wp_apply wp_fork $$ []
-    · wp_apply wp_Worker__run ⟨docs, γtask_gn⟩ w nb ⟨«$v0_ptr», «$v1_ptr», done⟩ $$ []
+    · wp_apply Worker.wp_run ⟨docs, γtask_gn⟩ w nb ⟨«$v0_ptr», «$v1_ptr», done⟩ $$ []
       · iframe #
       itrivial
     wp_for_post
@@ -870,9 +870,9 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
   iapply broadcast_chan_receive _ _ _ _ _ $$ Hdone_unk
   iintro ⟨#Htotal, -⟩
   wp_auto
-  wp_apply_core sync.atomic.wp_Int64__Load $$ [] [-]
+  wp_apply_core sync.atomic.Int64.wp_Load $$ [] [-]
   · iPkgInit
-  unfold is_tasks_done
+  unfold isTasksDone
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext

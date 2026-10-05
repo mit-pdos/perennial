@@ -18,13 +18,13 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-theorem wp_testSliceRef : test_fun_ok (GF := GF) testSliceRef := by
+theorem wp_testSliceRef : TestFunOk (GF := GF) testSliceRef := by
   semantics_auto
   -- TODO: `steps` should apply `wp_slice_make2` instead of unfolding it?
-  simp only [slice_index_ref]
+  simp only [sliceIndexRef]
   icases array_acc (GF := GF) _ (sint.Z (W64 0)) _ _ _ (zero_val w64) (by decide) rfl $$ p with ⟨Hp0, p⟩
   steps
-  simp only [slice_index_ref]
+  simp only [sliceIndexRef]
   steps
   iexact HΦ
 

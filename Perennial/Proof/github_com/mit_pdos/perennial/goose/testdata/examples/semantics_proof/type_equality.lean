@@ -18,13 +18,13 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-theorem wp_testPrimitiveTypesEqual : test_fun_ok (GF := GF) testPrimitiveTypesEqual := by
+theorem wp_testPrimitiveTypesEqual : TestFunOk (GF := GF) testPrimitiveTypesEqual := by
   semantics_auto
 
-theorem wp_testDefinedStrTypesEqual : test_fun_ok (GF := GF) testDefinedStrTypesEqual := by
+theorem wp_testDefinedStrTypesEqual : TestFunOk (GF := GF) testDefinedStrTypesEqual := by
   semantics_auto
 
-theorem wp_testListTypesEqual : test_fun_ok (GF := GF) testListTypesEqual := by
+theorem wp_testListTypesEqual : TestFunOk (GF := GF) testListTypesEqual := by
   semantics_auto
 
 end wps

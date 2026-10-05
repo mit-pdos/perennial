@@ -184,10 +184,10 @@ where evalWordLitConvCore (e : Expr) : MetaM Simp.Step := do
 /-- Evaluate `sint.Z`/`uint.Z`/`sint.nat`/`uint.nat` of word literals:
 `sint.Z (W64 7) = 7`, `uint.nat 3#64 = 3` (used by `word_lit_simp`; not in the
 default simp set). -/
-simproc_decl word_lit_sintZ (sint.Z _) := fun e => evalWordLitConv e
-simproc_decl word_lit_uintZ (uint.Z _) := fun e => evalWordLitConv e
-simproc_decl word_lit_sintNat (sint.nat _) := fun e => evalWordLitConv e
-simproc_decl word_lit_uintNat (uint.nat _) := fun e => evalWordLitConv e
+simproc_decl wordLitSintZ (sint.Z _) := fun e => evalWordLitConv e
+simproc_decl wordLitUintZ (uint.Z _) := fun e => evalWordLitConv e
+simproc_decl wordLitSintNat (sint.nat _) := fun e => evalWordLitConv e
+simproc_decl wordLitUintNat (uint.nat _) := fun e => evalWordLitConv e
 
 end word
 
@@ -195,8 +195,8 @@ end word
 literals everywhere (e.g. `sint.Z (W64 7)` becomes `7`), keeping `W64 n` itself
 (unlike a bare `simp`, which also rewrites `W64 n` to `n#64`, so that the result
 no longer matches `W64 n` syntactically, e.g. for `iframe`). -/
-macro "word_lit_simp" : tactic => `(tactic| simp only [word.word_lit_sintZ, word.word_lit_uintZ,
-  word.word_lit_sintNat, word.word_lit_uintNat] at *)
+macro "word_lit_simp" : tactic => `(tactic| simp only [word.wordLitSintZ, word.wordLitUintZ,
+  word.wordLitSintNat, word.wordLitUintNat] at *)
 
 namespace word
 

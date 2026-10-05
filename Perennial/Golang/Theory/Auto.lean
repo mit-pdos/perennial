@@ -8,7 +8,7 @@ Port of `new/golang/theory/auto.v`: the user-facing automation.
 * `wp_auto`, `wp_auto_lc n`: repeatedly take pure steps, loads, stores and
   allocations of local variables, then drop points-to facts of dead locals.
 * `wp_apply lem $$ spats as pats`: apply a spec (see `wp_apply_core`), solve
-  `is_pkg_init` premises, introduce `pats` in the continuation and run
+  `isPkgInit` premises, introduce `pats` in the continuation and run
   `wp_auto` (`wp_apply +noauto` disables this; `wp_apply (lc := n)` asks for
   `n` later credits).
 * `wp_if_destruct`, `wp_for`, `wp_for hyp`, `wp_for_post`, `wp_end`.
@@ -21,7 +21,7 @@ Differences from Rocq:
 * Rocq's global `wp_apply_auto_default` switch is not ported; use
   `wp_apply +noauto`. Rocq's `--no-auto`/`--lc n` would be Lean comments and are
   rejected with an error.
-* `wp_start` names the `is_pkg_init` facts it moves to the intuitionistic
+* `wp_start` names the `isPkgInit` facts it moves to the intuitionistic
   context `Hpkg`, `Hpkg2`, ... (Rocq: anonymous).
 * `wp_if_destruct` names the case hypothesis `Hif` (Rocq leaves it anonymous)
   and substitutes it when it is an equation between a variable and a
@@ -100,7 +100,7 @@ the first `#(functions f ts)` in the expression. Returns `(#(functions f ts), f,
 def findFuncCall (e : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
   let isFn (fv : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
     let fv := (← instantiateMVars fv).consumeMData
-    unless fv.isAppOfArity ``GoGlobalContext.into_val 4 do return none
+    unless fv.isAppOfArity ``GoGlobalContext.intoVal 4 do return none
     let x ← whnfR (fv.getArg! 3)
     unless x.isAppOfArity ``functions 6 || x.getAppFn.constName? == some ``functions do return none
     let args := x.getAppArgs
@@ -114,7 +114,7 @@ def findFuncCall (e : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
     if let some r ← isFn fv then found := some r
   if found.isSome then return found
   let some fv := (← instantiateMVars e).find? (fun s =>
-      s.isAppOfArity ``GoGlobalContext.into_val 4 &&
+      s.isAppOfArity ``GoGlobalContext.intoVal 4 &&
         (s.getArg! 3).getAppFn.constName? == some ``functions) | return none
   isFn fv
 
@@ -144,7 +144,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Rocq `wp_func_call`: unfold the function value `#(functions f ts)` of the next
 call in the WP expression (see `findFuncCall`) with its `FuncUnfold` instance
 (with `goose.wp.extras`, also for type arguments `[t, ..., t]` matching an
-instance for `List.replicate n t`), then try to solve `is_pkg_init` goals. Only the WP
+instance for `List.replicate n t`), then try to solve `isPkgInit` goals. Only the WP
 expression is rewritten (all occurrences of that function value in it), not the
 hypotheses. Falls back to `rw [func_unfold]`. -/
 elab "wp_func_call" : tactic => do
@@ -156,24 +156,24 @@ elab "wp_func_call" : tactic => do
   evalTactic (← `(tactic| try iPkgInit))
 
 /-- Rocq `wp_method_call`: rewrite `#(methods t m v)` with its `MethodUnfold`
-instance and try to solve `is_pkg_init` goals. -/
+instance and try to solve `isPkgInit` goals. -/
 macro "wp_method_call" : tactic => `(tactic| (rw [method_unfold]; (try iPkgInit)))
 
 section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
-/-- Is `e` (up to `named`) `is_pkg_init _`? -/
+/-- Is `e` (up to `named`) `isPkgInit _`? -/
 def isPkgInitProp (e : Expr) : MetaM Bool := do
   let e ← whnfR (← instantiateMVars e)
-  return e.isAppOfArity ``is_pkg_init 4
+  return e.isAppOfArity ``isPkgInit 4
 
-/-- Rocq `destruct_pkg_init H`: move the `is_pkg_init` conjuncts at the front of
+/-- Rocq `destruct_pkg_init H`: move the `isPkgInit` conjuncts at the front of
 `H` to the intuitionistic context. Returns `false` if `H` was entirely an
-`is_pkg_init` (and is now gone). -/
+`isPkgInit` (and is now gone). -/
 partial def destructPkgInit (h : Name) : TacticM Bool := withMainContext do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType)) | return true
   let some (_, ty) := g.hyps.find? h | return false
-  -- the `is_pkg_init` facts are named `Hpkg`, `Hpkg2`, ... (unless taken)
+  -- the `isPkgInit` facts are named `Hpkg`, `Hpkg2`, ... (unless taken)
   let names := (hypsList g.hyps).map (·.1)
   let pkgName := (List.range 100).findSome? (fun i =>
     let n := if i == 0 then `Hpkg else Name.mkSimple s!"Hpkg{i + 1}"
@@ -193,7 +193,7 @@ partial def destructPkgInit (h : Name) : TacticM Bool := withMainContext do
     return false
   return true
 
-/-- The fields `(is_pkg_init_deps, is_pkg_init_def)` of an `IsPkgInit`
+/-- The fields `(isPkgInitDeps, isPkgInitDef)` of an `IsPkgInit`
 instance, obtained by unfolding the instance constant (e.g. one built with
 `define_is_pkg_init`) to an `IsPkgInit.mk` application. -/
 partial def pkgInitInstFields (inst : Expr) (fuel : Nat := 20) : MetaM (Option (Expr × Expr)) := do
@@ -204,25 +204,25 @@ partial def pkgInitInstFields (inst : Expr) (fuel : Nat := 20) : MetaM (Option (
   | some i => pkgInitInstFields i (fuel - 1)
   | none => return none
 
-/-- Rocq `iEval (rewrite is_pkg_init_unfold /=)`: in the conclusion of the
-Iris goal, unfold `is_pkg_init pkg` into
+/-- Rocq `iEval (rewrite isPkgInit_unfold /=)`: in the conclusion of the
+Iris goal, unfold `isPkgInit pkg` into
 `□ deps ∗ □ P`, where `deps`/`P` are the fields of the
-`IsPkgInit` instance (so the dependencies appear as `is_pkg_init dep ∗ ... ∗ True`).
+`IsPkgInit` instance (so the dependencies appear as `isPkgInit dep ∗ ... ∗ True`).
 The change is definitional (checked by the kernel). -/
-elab "is_pkg_init_unfold" : tactic => do
+elab "isPkgInit_unfold" : tactic => do
   let g ← getMainGoal
   let t ← instantiateMVars (← g.getType)
   let some #[prop, bi, P, Q] := t.consumeMData.appM? ``Entails'
-    | throwError "is_pkg_init_unfold: not an Iris goal"
+    | throwError "isPkgInit_unfold: not an Iris goal"
   let Q' ← Meta.transform Q (pre := fun e => do
-    if e.isAppOfArity ``is_pkg_init 4 then
+    if e.isAppOfArity ``isPkgInit 4 then
       let some (deps, d) ← pkgInitInstFields (e.getArg! 3) | return .continue
       let pkg := e.getArg! 2
-      let body ← mkAppOptM ``is_pkg_init_wrap #[e.getArg! 0, e.getArg! 1, pkg, e.getArg! 3]
+      let body ← mkAppOptM ``isPkgInitWrap #[e.getArg! 0, e.getArg! 1, pkg, e.getArg! 3]
       let some body ← unfoldDefinition? body | return .continue
       let body ← Meta.transform body (pre := fun x => do
-        if x.isAppOfArity ``IsPkgInit.is_pkg_init_deps 4 && x.getArg! 2 == pkg then return .done deps
-        if x.isAppOfArity ``IsPkgInit.is_pkg_init_def 4 && x.getArg! 2 == pkg then return .done d
+        if x.isAppOfArity ``IsPkgInit.isPkgInitDeps 4 && x.getArg! 2 == pkg then return .done deps
+        if x.isAppOfArity ``IsPkgInit.isPkgInitDef 4 && x.getArg! 2 == pkg then return .done d
         if x.isAppOfArity ``named 3 then return .visit (x.getArg! 2)
         return .continue)
       return .done body
@@ -233,7 +233,7 @@ elab "is_pkg_init_unfold" : tactic => do
 end tactics
 
 /-- Rocq `wp_start_folded as pat`: introduce `Φ`, the precondition `Hpre` and
-the continuation `HΦ` of a Texan triple; move `is_pkg_init` facts of the
+the continuation `HΦ` of a Texan triple; move `isPkgInit` facts of the
 precondition to the intuitionistic context; destruct the rest with `pat`.
 Does not unfold the function being called. -/
 syntax "wp_start_folded" (" as " icasesPat)? : tactic
@@ -264,11 +264,11 @@ macro_rules
     `(tactic| (wp_start_folded; (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)))
 
 /-- Finish the proof of a package's `wp_initialize'` (Rocq
-`iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".`): unfold `is_pkg_init`
-in the goal (`is_pkg_init_unfold`) and frame the dependencies' `is_pkg_init`
+`iEval (rewrite isPkgInit_unfold /=). iFrame "∗#".`): unfold `isPkgInit`
+in the goal (`isPkgInit_unfold`) and frame the dependencies' `isPkgInit`
 facts from the intuitionistic context. -/
 macro "is_pkg_init_finish" : tactic => `(tactic| (
-  is_pkg_init_unfold
+  isPkgInit_unfold
   (try imodintro)
   (try iframe #)
   (try (imodintro; itrivial))
@@ -284,7 +284,7 @@ variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- `if: #(decide P) then e else AngelicExit #()`: the `else` branch proves
 anything, so it suffices to prove the `then` branch assuming `P`. -/
-theorem tac_wp_if_angelic {P : Prop} [Decidable P] {K : List ectx_item} {e : expr}
+theorem tac_wp_if_angelic {P : Prop} [Decidable P] {K : List EctxItem} {e : expr}
     {Δ : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (h : Δ ⊢ iprop(⌜P⌝ -∗ WP (fill K e) @ s; E {{ Φ }})) :
     Δ ⊢ WP (fill K (If (Val #(decide P)) e (App (Val (GoInstruction AngelicExit)) (Val #()))))
@@ -302,7 +302,7 @@ theorem tac_wp_if_angelic {P : Prop} [Decidable P] {K : List ectx_item} {e : exp
     iapply wp_AngelicExit
 
 /-- `tac_wp_if_angelic` with the hypothesis in the Lean context. -/
-theorem tac_wp_if_angelic' {P : Prop} [Decidable P] {K : List ectx_item} {e : expr}
+theorem tac_wp_if_angelic' {P : Prop} [Decidable P] {K : List EctxItem} {e : expr}
     {Δ : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (h : P → Δ ⊢ WP (fill K e) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K (If (Val #(decide P)) e (App (Val (GoInstruction AngelicExit)) (Val #()))))
@@ -322,7 +322,7 @@ def findAngelicIf (e : Expr) : ProofModeM (Option ((Expr × Expr) × List Expr �
     let_expr Perennial.expr.If _ c e1 e2 := e | throwError "no"
     let some cv ← isGooseVal? c | throwError "no"
     let cv := (← instantiateMVars cv).consumeMData
-    unless cv.isAppOfArity ``GoGlobalContext.into_val 4 do throwError "no"
+    unless cv.isAppOfArity ``GoGlobalContext.intoVal 4 do throwError "no"
     let d ← whnfR (cv.getArg! 3)
     unless d.isAppOfArity ``Decidable.decide 2 do throwError "no"
     let e2 ← whnfR e2
@@ -600,7 +600,7 @@ elab "wp_auto_angelic" : tactic => do
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Rewrite the function literal values `RecV f x e` in the WP expression to Go
 function values `#(func.mk f x e)` (`recv_eq_func_mk`), so that specs taking a
-`func.t` argument (e.g. `wp_map_insert`, or a function with a callback
+`func.t` argument (e.g. `wp_mapInsert`, or a function with a callback
 parameter) apply. Fails if there is none. `wp_apply` tries this when the spec
 does not apply. -/
 elab "wp_func_lits" : tactic =>
@@ -690,7 +690,7 @@ elab "wp_focus_cont " tac:tactic : tactic => do
 
 /-- Simplify the types of the Iris hypotheses `ivars` with the `goose_wp_simp`
 simp set(s), so that they are in the same normal form as the WP expression
-(e.g. `W64 (go.array_literal_size [..])` from a spec's postcondition). -/
+(e.g. `W64 (go.arrayLiteralSize [..])` from a spec's postcondition). -/
 def simpIrisHyps (ivars : List IVarId) : TacticM Unit := withMainContext do
   for ivar in ivars do
     let mvar ← getMainGoal
@@ -734,7 +734,7 @@ elab "wp_intro_simp " tac:tactic : tactic => do
 end focus
 
 /-- `wp_apply lem $$ spats as pats` (Rocq `wp_apply (lem with "spats") as "pats"`):
-`wp_apply_core lem $$ spats`, then solve `is_pkg_init` premises (`iPkgInit`),
+`wp_apply_core lem $$ spats`, then solve `isPkgInit` premises (`iPkgInit`),
 introduce `pats` in the continuation, and run `wp_auto` on it. `with` is
 accepted for `as`.
 
@@ -864,9 +864,9 @@ variable [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
   [go.PreSemantics]
 
 theorem true_neq_false : (#true : val) ≠ #false := fun h =>
-  absurd (go.into_val_inj h) (by decide)
+  absurd (go.intoVal_inj h) (by decide)
 theorem false_neq_true : (#false : val) ≠ #true := fun h =>
-  absurd (go.into_val_inj h) (by decide)
+  absurd (go.intoVal_inj h) (by decide)
 
 theorem if_decide_bool_eq_true {A : Type _} (P : Prop) [Decidable P] (x y : A) :
     (if decide ((#(decide P) : val) = #true) then x else y) = (if decide P then x else y) := by
@@ -904,7 +904,7 @@ def findIfCond (e : Expr) : MetaM (Option (Sum Expr Expr)) := do
   if let some d := e.find? (fun s => s.isAppOfArity ``Decidable.decide 2 && !s.hasLooseBVars) then
     return some (.inl (d.getArg! 0))
   if let some b := e.find? (fun s =>
-      s.isAppOfArity ``GoGlobalContext.into_val 4 && (s.getArg! 2).isConstOf ``Bool &&
+      s.isAppOfArity ``GoGlobalContext.intoVal 4 && (s.getArg! 2).isConstOf ``Bool &&
         (s.getArg! 3).isFVar) then
     return some (.inr (b.getArg! 3))
   return none
@@ -916,7 +916,7 @@ def peelDecideEq (p : Expr) : MetaM Expr := do
   let_expr Eq _ a b := p | return p
   let a := a.consumeMData
   let b ← whnfR b
-  unless a.isAppOfArity ``GoGlobalContext.into_val 4 && b.isAppOfArity ``GoGlobalContext.into_val 4 do
+  unless a.isAppOfArity ``GoGlobalContext.intoVal 4 && b.isAppOfArity ``GoGlobalContext.intoVal 4 do
     return p
   let x := (a.getArg! 3).consumeMData
   let lit := (← whnfR (b.getArg! 3))
@@ -1121,7 +1121,7 @@ theorem closed_allocFields (T : go.type) (v : val) (l : loc) (fds : List go.fiel
 theorem struct_alloc_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : loc) (s : Stuckness) (E : CoPset) :
     ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
-    FieldsMatch fds fs → ∀ (K : List ectx_item) (Φ : val → IProp GF),
+    FieldsMatch fds fs → ∀ (K : List EctxItem) (Φ : val → IProp GF),
     (structFieldsPointsto fs l x (DFrac.own 1) -∗ WP (fill K (Val #())) @ s; E {{ Φ }}) ⊢
       WP (fill K (List.foldr (allocFieldExpr (go.StructType fdsT) #x (Val #l)) (Val #()) fds))
         @ s; E {{ Φ }} := by
@@ -1207,7 +1207,7 @@ theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   wp_pures
   iapply HΦ
   rw [typed_pointsto_unseal]
-  unfold typed_pointsto_wrap
+  unfold typedPointstoWrap
   isplitl [Hfs]
   · iapply (hdef l v _).2
     iexact Hfs
@@ -1260,9 +1260,9 @@ theorem struct_load_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     (E : CoPset) :
     ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
     FieldsMatch fds fs → ∀ (e0 : expr) (acc : V) (P : IProp GF),
-    (∀ (K : List ectx_item) (Ψ : val → IProp GF),
+    (∀ (K : List EctxItem) (Ψ : val → IProp GF),
       iprop(P ∗ (P -∗ WP (fill K (Val #acc)) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }}) →
-    ∀ (K : List ectx_item) (Φ : val → IProp GF),
+    ∀ (K : List EctxItem) (Φ : val → IProp GF),
     iprop(P ∗ structFieldsPointsto fs l x dq ∗
       ((P ∗ structFieldsPointsto fs l x dq) -∗
         WP (fill K (Val #(structRebuild fs acc x))) @ s; E {{ Φ }})) ⊢
@@ -1302,9 +1302,9 @@ theorem struct_load_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
               (Pair e0 (App (Val (GoInstruction (GoLoad f.ty)))
                 (App (Val (GoInstruction (StructFieldRef (go.StructType fdsT) f.name))) (Val #l))))))
               @ s; E {{ Ψ }} :=
-          he0 (ectx_item.PairLCtx (App (Val (GoInstruction (GoLoad f.ty)))
+          he0 (EctxItem.PairLCtx (App (Val (GoInstruction (GoLoad f.ty)))
               (App (Val (GoInstruction (StructFieldRef (go.StructType fdsT) f.name))) (Val #l))) ::
-            ectx_item.AppRCtx (Val (GoInstruction (StructFieldSet (go.StructType fdsT) f.name))) :: K') Ψ
+            EctxItem.AppRCtx (Val (GoInstruction (StructFieldSet (go.StructType fdsT) f.name))) :: K') Ψ
         iapply h2
         iframe HP
         iintro HP
@@ -1327,7 +1327,7 @@ theorem struct_load_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     (E : CoPset) (fds : List go.field_decl)
     (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
     (e0 : expr) (acc : V) (P : IProp GF)
-    (he0 : ∀ (K : List ectx_item) (Ψ : val → IProp GF),
+    (he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
       iprop(P ∗ (P -∗ WP (fill K (Val #acc)) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }})
     (Φ : val → IProp GF) :
     iprop(P ∗ structFieldsPointsto fs l x dq ∗
@@ -1349,7 +1349,7 @@ theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     {{ RET #v; l ↦{dq} v }} := by
   iintro %Φ Hl HΦ
   rw [typed_pointsto_unseal]
-  unfold typed_pointsto_wrap
+  unfold typedPointstoWrap
   icases Hl with ⟨Hl, %Hnn⟩
   ihave Hl := (hdef l v dq).1 $$ Hl
   have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoLoad t))) (Val #l))
@@ -1359,7 +1359,7 @@ theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   iapply (wp_pure_raw_step (Hwp := hpw) trivial)
   inext
   rw [loadStructRaw_eq]
-  have he0 : ∀ (K : List ectx_item) (Ψ : val → IProp GF),
+  have he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
       iprop(emp ∗ (emp -∗ WP (fill K (Val #(zero_val V))) @ s; E {{ Ψ }})) ⊢
         WP (fill K gl(GoZeroVal (go.StructType fds) #())) @ s; E {{ Ψ }} := by
     intro K Ψ
@@ -1421,9 +1421,9 @@ theorem struct_store_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     (E : CoPset) :
     ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
     FieldsMatch fds fs → ∀ (e0 : expr) (Pin Pout : IProp GF),
-    (∀ (K : List ectx_item) (Ψ : val → IProp GF),
+    (∀ (K : List EctxItem) (Ψ : val → IProp GF),
       iprop(Pin ∗ (Pout -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }}) →
-    ∀ (K : List ectx_item) (Φ : val → IProp GF),
+    ∀ (K : List EctxItem) (Φ : val → IProp GF),
     iprop(Pin ∗ structFieldsPointsto fs l x (DFrac.own 1) ∗
       ((Pout ∗ structFieldsPointsto fs l y (DFrac.own 1)) -∗
         WP (fill K (Val #())) @ s; E {{ Φ }})) ⊢
@@ -1463,7 +1463,7 @@ theorem struct_store_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
             WP (fill K' gl(e0 ;; GoStore f.ty
               (StructFieldRef (go.StructType fdsT) f.name #l,
                 StructFieldGet (go.StructType fdsT) f.name #y))) @ s; E {{ Ψ }} :=
-          he0 (ectx_item.AppRCtx (Rec BAnon BAnon gl(GoStore f.ty
+          he0 (EctxItem.AppRCtx (Rec BAnon BAnon gl(GoStore f.ty
               (StructFieldRef (go.StructType fdsT) f.name #l,
                 StructFieldGet (go.StructType fdsT) f.name #y))) :: K') Ψ
         iapply h2
@@ -1487,7 +1487,7 @@ theorem struct_store_fields_nil {V : Type} {fdsT : List go.field_decl} [ZeroVal 
     (E : CoPset) (fds : List go.field_decl)
     (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
     (e0 : expr) (Pin Pout : IProp GF)
-    (he0 : ∀ (K : List ectx_item) (Ψ : val → IProp GF),
+    (he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
       iprop(Pin ∗ (Pout -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }})
     (Φ : val → IProp GF) :
     iprop(Pin ∗ structFieldsPointsto fs l x (DFrac.own 1) ∗
@@ -1503,7 +1503,7 @@ theorem struct_store_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     iprop(structFieldsPointsto fs l x (DFrac.own 1) ∗
       (structFieldsPointsto fs l y (DFrac.own 1) -∗ WP (Val #()) @ s; E {{ Φ }})) ⊢
       WP (List.foldl (storeFieldExpr (go.StructType fdsT) #l #y) (Val #()) fds) @ s; E {{ Φ }} := by
-  have he0 : ∀ (K : List ectx_item) (Ψ : val → IProp GF),
+  have he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
       iprop(emp ∗ (emp -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢
         WP (fill K (Val #())) @ s; E {{ Ψ }} := by
     intro K Ψ
@@ -1528,7 +1528,7 @@ theorem struct_wp_store {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     {{ RET #(); l ↦ w }} := by
   iintro %Φ Hl HΦ
   rw [typed_pointsto_unseal]
-  unfold typed_pointsto_wrap
+  unfold typedPointstoWrap
   icases Hl with ⟨Hl, %Hnn⟩
   ihave Hl := (hdef l v _).1 $$ Hl
   have hpw : PureWp (hlc := hlc) (GF := GF) True
@@ -1693,7 +1693,7 @@ end frame_exact
 by executing the struct code symbolically. -/
 macro "solve_into_val_typed_struct_steps" : tactic => `(tactic| (
   constructor
-  all_goals try simp only [typed_pointsto_unseal, typed_pointsto_wrap]
+  all_goals try simp only [typed_pointsto_unseal, typedPointstoWrap]
   · intro s E t _ v
     iintro %Φ _ HΦ
     have _tagged := @go.tagged_internal_inst
@@ -1748,16 +1748,16 @@ macro "solve_into_val_typed_struct" : tactic =>
 
 instance equals_unfold_nil (A : Type) : EqualsUnfold (@List.nil A) (@List.nil A) := ⟨rfl⟩
 
-section into_val_typed_unit
+section intoVal_typed_unit
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-instance into_val_typed_unit : IntoValTypedUnderlying (GF := GF) Unit (go.StructType []) := by
+instance intoVal_typed_unit : IntoValTypedUnderlying (GF := GF) Unit (go.StructType []) := by
   solve_into_val_typed_struct
 
-end into_val_typed_unit
+end intoVal_typed_unit
 
 /-! ## Loops -/
 
@@ -1771,7 +1771,7 @@ macro_rules
   | `(tactic| wp_for $h:ident) =>
     `(tactic| (wp_for_core; iNamed $h:ident; (try wp_auto); cleanup_bool_decide; (try wp_auto)))
 
-/-- Rocq `wp_for_post`: prove a `for_postcondition` goal (see
+/-- Rocq `wp_for_post`: prove a `forPostcondition` goal (see
 `wp_for_post_core`), then `wp_auto`. -/
 macro "wp_for_post" : tactic => `(tactic| (wp_for_post_core; (try wp_auto)))
 

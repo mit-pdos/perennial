@@ -46,12 +46,12 @@ namespace go
 
 mutual
 def type.toTree : type → GenTree
-  | .Named n args => node 0 [of n, types_toTree args]
+  | .Named n args => node 0 [of n, typesToTree args]
   | .ArrayType n t => node 1 [of n, t.toTree]
-  | .StructType fs => node 2 [fields_toTree fs]
+  | .StructType fs => node 2 [fieldsToTree fs]
   | .PointerType t => node 3 [t.toTree]
   | .FunctionType s => node 4 [s.toTree]
-  | .InterfaceType es => node 5 [elems_toTree es]
+  | .InterfaceType es => node 5 [elemsToTree es]
   | .SliceType t => node 6 [t.toTree]
   | .MapType k v => node 7 [k.toTree, v.toTree]
   | .ChannelType d t => node 8 [d.toTree, t.toTree]
@@ -64,22 +64,22 @@ def field_decl.toTree : field_decl → GenTree
   | .FieldDecl n t => node 0 [of n, t.toTree]
   | .EmbeddedField n t => node 1 [of n, t.toTree]
 def signature.toTree : signature → GenTree
-  | .Signature ps v rs => node 0 [types_toTree ps, of v, types_toTree rs]
+  | .Signature ps v rs => node 0 [typesToTree ps, of v, typesToTree rs]
 def interface_elem.toTree : interface_elem → GenTree
   | .MethodElem n s => node 0 [of n, s.toTree]
   | .TypeElem ts => node 1 [terms_toTree ts]
 def type_term.toTree : type_term → GenTree
   | .TypeTerm t => node 0 [t.toTree]
   | .TypeTermUnderlying t => node 1 [t.toTree]
-def types_toTree : List type → GenTree
+def typesToTree : List type → GenTree
   | [] => node 0 []
-  | t :: ts => node 1 [t.toTree, types_toTree ts]
-def fields_toTree : List field_decl → GenTree
+  | t :: ts => node 1 [t.toTree, typesToTree ts]
+def fieldsToTree : List field_decl → GenTree
   | [] => node 0 []
-  | t :: ts => node 1 [t.toTree, fields_toTree ts]
-def elems_toTree : List interface_elem → GenTree
+  | t :: ts => node 1 [t.toTree, fieldsToTree ts]
+def elemsToTree : List interface_elem → GenTree
   | [] => node 0 []
-  | t :: ts => node 1 [t.toTree, elems_toTree ts]
+  | t :: ts => node 1 [t.toTree, elemsToTree ts]
 def terms_toTree : List type_term → GenTree
   | [] => node 0 []
   | t :: ts => node 1 [t.toTree, terms_toTree ts]
@@ -87,12 +87,12 @@ end
 
 mutual
 theorem type.toTree_inj : ∀ {a b : type}, a.toTree = b.toTree → a = b
-  | .Named n a, b, h => by inj_ty b; exact ⟨h.1, types_toTree_inj h.2⟩
+  | .Named n a, b, h => by inj_ty b; exact ⟨h.1, typesToTree_inj h.2⟩
   | .ArrayType n t, b, h => by inj_ty b; exact ⟨h.1, type.toTree_inj h.2⟩
-  | .StructType fs, b, h => by inj_ty b; exact fields_toTree_inj h
+  | .StructType fs, b, h => by inj_ty b; exact fieldsToTree_inj h
   | .PointerType t, b, h => by inj_ty b; exact type.toTree_inj h
   | .FunctionType s, b, h => by inj_ty b; exact signature.toTree_inj h
-  | .InterfaceType es, b, h => by inj_ty b; exact elems_toTree_inj h
+  | .InterfaceType es, b, h => by inj_ty b; exact elemsToTree_inj h
   | .SliceType t, b, h => by inj_ty b; exact type.toTree_inj h
   | .MapType k v, b, h => by inj_ty b; exact ⟨type.toTree_inj h.1, type.toTree_inj h.2⟩
   | .ChannelType d t, b, h => by inj_ty b; exact ⟨chan_dir.toTree_inj h.1, type.toTree_inj h.2⟩
@@ -106,7 +106,7 @@ theorem field_decl.toTree_inj : ∀ {a b : field_decl}, a.toTree = b.toTree → 
 termination_by structural a _ _ => a
 theorem signature.toTree_inj : ∀ {a b : signature}, a.toTree = b.toTree → a = b
   | .Signature ps v rs, b, h => by
-    inj_ty b; exact ⟨types_toTree_inj h.1, h.2.1, types_toTree_inj h.2.2⟩
+    inj_ty b; exact ⟨typesToTree_inj h.1, h.2.1, typesToTree_inj h.2.2⟩
 termination_by structural a _ _ => a
 theorem interface_elem.toTree_inj : ∀ {a b : interface_elem}, a.toTree = b.toTree → a = b
   | .MethodElem n s, b, h => by inj_ty b; exact ⟨h.1, signature.toTree_inj h.2⟩
@@ -116,17 +116,17 @@ theorem type_term.toTree_inj : ∀ {a b : type_term}, a.toTree = b.toTree → a 
   | .TypeTerm t, b, h => by inj_ty b; exact type.toTree_inj h
   | .TypeTermUnderlying t, b, h => by inj_ty b; exact type.toTree_inj h
 termination_by structural a _ _ => a
-theorem types_toTree_inj : ∀ {a b : List type}, types_toTree a = types_toTree b → a = b
+theorem typesToTree_inj : ∀ {a b : List type}, typesToTree a = typesToTree b → a = b
   | [], b, h => by inj_ty b
-  | t :: ts, b, h => by inj_ty b; exact ⟨type.toTree_inj h.1, types_toTree_inj h.2⟩
+  | t :: ts, b, h => by inj_ty b; exact ⟨type.toTree_inj h.1, typesToTree_inj h.2⟩
 termination_by structural a _ _ => a
-theorem fields_toTree_inj : ∀ {a b : List field_decl}, fields_toTree a = fields_toTree b → a = b
+theorem fieldsToTree_inj : ∀ {a b : List field_decl}, fieldsToTree a = fieldsToTree b → a = b
   | [], b, h => by inj_ty b
-  | t :: ts, b, h => by inj_ty b; exact ⟨field_decl.toTree_inj h.1, fields_toTree_inj h.2⟩
+  | t :: ts, b, h => by inj_ty b; exact ⟨field_decl.toTree_inj h.1, fieldsToTree_inj h.2⟩
 termination_by structural a _ _ => a
-theorem elems_toTree_inj : ∀ {a b : List interface_elem}, elems_toTree a = elems_toTree b → a = b
+theorem elemsToTree_inj : ∀ {a b : List interface_elem}, elemsToTree a = elemsToTree b → a = b
   | [], b, h => by inj_ty b
-  | t :: ts, b, h => by inj_ty b; exact ⟨interface_elem.toTree_inj h.1, elems_toTree_inj h.2⟩
+  | t :: ts, b, h => by inj_ty b; exact ⟨interface_elem.toTree_inj h.1, elemsToTree_inj h.2⟩
 termination_by structural a _ _ => a
 theorem terms_toTree_inj : ∀ {a b : List type_term}, terms_toTree a = terms_toTree b → a = b
   | [], b, h => by inj_ty b
@@ -141,7 +141,7 @@ end go
 /-! ## Locations, slices and base literals -/
 
 instance loc.countable : Pos.Countable loc :=
-  countableOfLeftInverse (fun l : loc => (l.loc_car, l.loc_off)) (fun p => ⟨p.1, p.2⟩)
+  countableOfLeftInverse (fun l : loc => (l.locCar, l.locOff)) (fun p => ⟨p.1, p.2⟩)
     (fun _ => rfl)
 
 instance slice.countable : Pos.Countable slice.t :=
@@ -152,38 +152,38 @@ instance binder.countable : Pos.Countable binder :=
   countableOfLeftInverse (fun b : binder => match b with | .BAnon => none | .BNamed s => some s)
     (fun | none => .BAnon | some s => .BNamed s) (by intro b; cases b <;> rfl)
 
-private local instance : Inhabited prim_op0 := ⟨.ArbitraryIntOp⟩
+private local instance : Inhabited PrimOp0 := ⟨.ArbitraryIntOp⟩
 private local instance : Inhabited go_operator := ⟨.GoEquals⟩
 private local instance : Inhabited go_unary_operator := ⟨.GoPos⟩
 private local instance : Inhabited go_instruction := ⟨.AngelicExit⟩
 
-def prim_op1.toNat : prim_op1 → Nat
+def PrimOp1.toNat : PrimOp1 → Nat
   | .PrepareWriteOp => 0
   | .StartReadOp => 1
   | .FinishReadOp => 2
   | .LoadOp => 3
   | .AllocOp => 4
-def prim_op1.fromNat : Nat → prim_op1
+def PrimOp1.fromNat : Nat → PrimOp1
   | 0 => .PrepareWriteOp
   | 1 => .StartReadOp
   | 2 => .FinishReadOp
   | 3 => .LoadOp
   | 4 => .AllocOp
   | _ => .PrepareWriteOp
-instance prim_op1.countable : Pos.Countable prim_op1 :=
-  countableOfLeftInverse prim_op1.toNat prim_op1.fromNat (by intro x; cases x <;> rfl)
+instance PrimOp1.countable : Pos.Countable PrimOp1 :=
+  countableOfLeftInverse PrimOp1.toNat PrimOp1.fromNat (by intro x; cases x <;> rfl)
 
-def prim_op2.toNat : prim_op2 → Nat
+def PrimOp2.toNat : PrimOp2 → Nat
   | .FinishStoreOp => 0
   | .AtomicSwapOp => 1
   | .AtomicAddOp => 2
-def prim_op2.fromNat : Nat → prim_op2
+def PrimOp2.fromNat : Nat → PrimOp2
   | 0 => .FinishStoreOp
   | 1 => .AtomicSwapOp
   | 2 => .AtomicAddOp
   | _ => .FinishStoreOp
-instance prim_op2.countable : Pos.Countable prim_op2 :=
-  countableOfLeftInverse prim_op2.toNat prim_op2.fromNat (by intro x; cases x <;> rfl)
+instance PrimOp2.countable : Pos.Countable PrimOp2 :=
+  countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by intro x; cases x <;> rfl)
 
 def go_operator.toNat : go_operator → Nat
   | .GoEquals => 0
@@ -237,18 +237,18 @@ def go_unary_operator.fromNat : Nat → go_unary_operator
 instance go_unary_operator.countable : Pos.Countable go_unary_operator :=
   countableOfLeftInverse go_unary_operator.toNat go_unary_operator.fromNat (by intro x; cases x <;> rfl)
 
-def prim_op0.toTree : prim_op0 → GenTree
+def PrimOp0.toTree : PrimOp0 → GenTree
   | .PanicOp x0 => node 0 [of x0]
   | .ArbitraryIntOp => node 1 []
-def prim_op0.ofTree : GenTree → prim_op0
+def PrimOp0.ofTree : GenTree → PrimOp0
   | node 0 [x0] => .PanicOp (decLeaf x0)
   | node 1 [] => .ArbitraryIntOp
   | _ => default
-instance prim_op0.countable : Pos.Countable prim_op0 :=
-  countableOfLeftInverse prim_op0.toTree prim_op0.ofTree
+instance PrimOp0.countable : Pos.Countable PrimOp0 :=
+  countableOfLeftInverse PrimOp0.toTree PrimOp0.ofTree
     (by intro x; cases x <;> (conv => lhs; whnf) <;> simp only [decLeaf_of])
 
-def base_lit.toTree : base_lit → GenTree
+def BaseLit.toTree : BaseLit → GenTree
   | .LitInt x0 => node 0 [of x0]
   | .LitInt32 x0 => node 1 [of x0]
   | .LitInt16 x0 => node 2 [of x0]
@@ -260,7 +260,7 @@ def base_lit.toTree : base_lit → GenTree
   | .LitLoc x0 => node 8 [of x0]
   | .LitProphecy x0 => node 9 [of x0]
   | .LitSlice x0 => node 10 [of x0]
-def base_lit.ofTree : GenTree → base_lit
+def BaseLit.ofTree : GenTree → BaseLit
   | node 0 [x0] => .LitInt (decLeaf x0)
   | node 1 [x0] => .LitInt32 (decLeaf x0)
   | node 2 [x0] => .LitInt16 (decLeaf x0)
@@ -273,8 +273,8 @@ def base_lit.ofTree : GenTree → base_lit
   | node 9 [x0] => .LitProphecy (decLeaf x0)
   | node 10 [x0] => .LitSlice (decLeaf x0)
   | _ => default
-instance base_lit.countable : Pos.Countable base_lit :=
-  countableOfLeftInverse base_lit.toTree base_lit.ofTree
+instance BaseLit.countable : Pos.Countable BaseLit :=
+  countableOfLeftInverse BaseLit.toTree BaseLit.ofTree
     (by intro x; cases x <;> (conv => lhs; whnf) <;> simp only [decLeaf_of])
 
 def go_instruction.toTree : go_instruction → GenTree
@@ -404,8 +404,8 @@ def expr.toTree : expr → GenTree
   | .ExternalOp op e => node 13 [of op, e.toTree]
   | .NewProph => node 14 []
   | .ResolveProph e1 e2 => node 15 [e1.toTree, e2.toTree]
-  | .LiteralValue l => node 16 [kes_toTree l]
-  | .SelectStmtClauses d l => node 17 [optexpr_toTree d, clauses_toTree l]
+  | .LiteralValue l => node 16 [kesToTree l]
+  | .SelectStmtClauses d l => node 17 [optexprToTree d, clausesToTree l]
 def val.toTree : val → GenTree
   | .LitV l => node 0 [of l]
   | .RecV f x e => node 1 [of f, of x, e.toTree]
@@ -414,45 +414,45 @@ def val.toTree : val → GenTree
   | .InjRV v => node 4 [v.toTree]
   | .ExtV ev => node 5 [of ev]
   | .GoInstruction o => node 6 [of o]
-  | .ArrayV vs => node 7 [vals_toTree vs]
-  | .InterfaceV t => node 8 [optiface_toTree t]
-  | .LiteralValueV l => node 9 [kes_toTree l]
-  | .SelectStmtClausesV d l => node 10 [optexpr_toTree d, clauses_toTree l]
+  | .ArrayV vs => node 7 [valsToTree vs]
+  | .InterfaceV t => node 8 [optifaceToTree t]
+  | .LiteralValueV l => node 9 [kesToTree l]
+  | .SelectStmtClausesV d l => node 10 [optexprToTree d, clausesToTree l]
   | .UntypedNil => node 11 []
 def keyed_element.toTree : keyed_element → GenTree
-  | .KeyedElement k v => node 0 [optkey_toTree k, v.toTree]
+  | .KeyedElement k v => node 0 [optkeyToTree k, v.toTree]
 def key.toTree : key → GenTree
   | .KeyField f => node 0 [of f]
   | .KeyInteger s => node 1 [of s]
   | .KeyExpression t e => node 2 [of t, e.toTree]
-  | .KeyLiteralValue l => node 3 [kes_toTree l]
+  | .KeyLiteralValue l => node 3 [kesToTree l]
 def element.toTree : element → GenTree
   | .ElementExpression t e => node 0 [of t, e.toTree]
-  | .ElementLiteralValue l => node 1 [kes_toTree l]
+  | .ElementLiteralValue l => node 1 [kesToTree l]
 def comm_clause.toTree : comm_clause → GenTree
   | .CommClause c body => node 0 [c.toTree, body.toTree]
 def comm_case.toTree : comm_case → GenTree
   | .SendCase t ch e => node 0 [of t, ch.toTree, e.toTree]
   | .RecvCase t ch => node 1 [of t, ch.toTree]
-def kes_toTree : List keyed_element → GenTree
+def kesToTree : List keyed_element → GenTree
   | [] => node 0 []
-  | k :: ks => node 1 [k.toTree, kes_toTree ks]
-def clauses_toTree : List comm_clause → GenTree
+  | k :: ks => node 1 [k.toTree, kesToTree ks]
+def clausesToTree : List comm_clause → GenTree
   | [] => node 0 []
-  | c :: cs => node 1 [c.toTree, clauses_toTree cs]
-def vals_toTree : List val → GenTree
+  | c :: cs => node 1 [c.toTree, clausesToTree cs]
+def valsToTree : List val → GenTree
   | [] => node 0 []
-  | v :: vs => node 1 [v.toTree, vals_toTree vs]
-def optexpr_toTree : Option expr → GenTree
+  | v :: vs => node 1 [v.toTree, valsToTree vs]
+def optexprToTree : Option expr → GenTree
   | none => node 0 []
   | some e => node 1 [e.toTree]
-def optkey_toTree : Option key → GenTree
+def optkeyToTree : Option key → GenTree
   | none => node 0 []
   | some k => node 1 [k.toTree]
-def optiface_toTree : Option (go.type × val) → GenTree
+def optifaceToTree : Option (go.type × val) → GenTree
   | none => node 0 []
-  | some tv => node 1 [tyval_toTree tv]
-def tyval_toTree : go.type × val → GenTree
+  | some tv => node 1 [tyvalToTree tv]
+def tyvalToTree : go.type × val → GenTree
   | (t, v) => node 0 [of t, v.toTree]
 end
 
@@ -477,9 +477,9 @@ theorem expr.toTree_inj : ∀ {a b : expr}, a.toTree = b.toTree → a = b
   | .ExternalOp .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
   | .NewProph, b, h => by inj_ex b
   | .ResolveProph .., b, h => by inj_ex b; exact ⟨expr.toTree_inj h.1, expr.toTree_inj h.2⟩
-  | .LiteralValue _, b, h => by inj_ex b; exact kes_toTree_inj h
+  | .LiteralValue _, b, h => by inj_ex b; exact kesToTree_inj h
   | .SelectStmtClauses .., b, h => by
-    inj_ex b; exact ⟨optexpr_toTree_inj h.1, clauses_toTree_inj h.2⟩
+    inj_ex b; exact ⟨optexprToTree_inj h.1, clausesToTree_inj h.2⟩
 termination_by structural a _ _ => a
 theorem val.toTree_inj : ∀ {a b : val}, a.toTree = b.toTree → a = b
   | .LitV _, b, h => by inj_ex b; exact h
@@ -489,26 +489,26 @@ theorem val.toTree_inj : ∀ {a b : val}, a.toTree = b.toTree → a = b
   | .InjRV _, b, h => by inj_ex b; exact val.toTree_inj h
   | .ExtV _, b, h => by inj_ex b; exact h
   | .GoInstruction _, b, h => by inj_ex b; exact h
-  | .ArrayV _, b, h => by inj_ex b; exact vals_toTree_inj h
-  | .InterfaceV _, b, h => by inj_ex b; exact optiface_toTree_inj h
-  | .LiteralValueV _, b, h => by inj_ex b; exact kes_toTree_inj h
+  | .ArrayV _, b, h => by inj_ex b; exact valsToTree_inj h
+  | .InterfaceV _, b, h => by inj_ex b; exact optifaceToTree_inj h
+  | .LiteralValueV _, b, h => by inj_ex b; exact kesToTree_inj h
   | .SelectStmtClausesV .., b, h => by
-    inj_ex b; exact ⟨optexpr_toTree_inj h.1, clauses_toTree_inj h.2⟩
+    inj_ex b; exact ⟨optexprToTree_inj h.1, clausesToTree_inj h.2⟩
   | .UntypedNil, b, h => by inj_ex b
 termination_by structural a _ _ => a
 theorem keyed_element.toTree_inj : ∀ {a b : keyed_element}, a.toTree = b.toTree → a = b
   | .KeyedElement .., b, h => by
-    inj_ex b; exact ⟨optkey_toTree_inj h.1, element.toTree_inj h.2⟩
+    inj_ex b; exact ⟨optkeyToTree_inj h.1, element.toTree_inj h.2⟩
 termination_by structural a _ _ => a
 theorem key.toTree_inj : ∀ {a b : key}, a.toTree = b.toTree → a = b
   | .KeyField _, b, h => by inj_ex b; exact h
   | .KeyInteger _, b, h => by inj_ex b; exact h
   | .KeyExpression .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
-  | .KeyLiteralValue _, b, h => by inj_ex b; exact kes_toTree_inj h
+  | .KeyLiteralValue _, b, h => by inj_ex b; exact kesToTree_inj h
 termination_by structural a _ _ => a
 theorem element.toTree_inj : ∀ {a b : element}, a.toTree = b.toTree → a = b
   | .ElementExpression .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
-  | .ElementLiteralValue _, b, h => by inj_ex b; exact kes_toTree_inj h
+  | .ElementLiteralValue _, b, h => by inj_ex b; exact kesToTree_inj h
 termination_by structural a _ _ => a
 theorem comm_clause.toTree_inj : ∀ {a b : comm_clause}, a.toTree = b.toTree → a = b
   | .CommClause .., b, h => by
@@ -519,32 +519,32 @@ theorem comm_case.toTree_inj : ∀ {a b : comm_case}, a.toTree = b.toTree → a 
     inj_ex b; exact ⟨h.1, expr.toTree_inj h.2.1, expr.toTree_inj h.2.2⟩
   | .RecvCase .., b, h => by inj_ex b; exact ⟨h.1, expr.toTree_inj h.2⟩
 termination_by structural a _ _ => a
-theorem kes_toTree_inj : ∀ {a b : List keyed_element}, kes_toTree a = kes_toTree b → a = b
+theorem kesToTree_inj : ∀ {a b : List keyed_element}, kesToTree a = kesToTree b → a = b
   | [], b, h => by inj_ex b
-  | _ :: _, b, h => by inj_ex b; exact ⟨keyed_element.toTree_inj h.1, kes_toTree_inj h.2⟩
+  | _ :: _, b, h => by inj_ex b; exact ⟨keyed_element.toTree_inj h.1, kesToTree_inj h.2⟩
 termination_by structural a _ _ => a
-theorem clauses_toTree_inj : ∀ {a b : List comm_clause}, clauses_toTree a = clauses_toTree b → a = b
+theorem clausesToTree_inj : ∀ {a b : List comm_clause}, clausesToTree a = clausesToTree b → a = b
   | [], b, h => by inj_ex b
-  | _ :: _, b, h => by inj_ex b; exact ⟨comm_clause.toTree_inj h.1, clauses_toTree_inj h.2⟩
+  | _ :: _, b, h => by inj_ex b; exact ⟨comm_clause.toTree_inj h.1, clausesToTree_inj h.2⟩
 termination_by structural a _ _ => a
-theorem vals_toTree_inj : ∀ {a b : List val}, vals_toTree a = vals_toTree b → a = b
+theorem valsToTree_inj : ∀ {a b : List val}, valsToTree a = valsToTree b → a = b
   | [], b, h => by inj_ex b
-  | _ :: _, b, h => by inj_ex b; exact ⟨val.toTree_inj h.1, vals_toTree_inj h.2⟩
+  | _ :: _, b, h => by inj_ex b; exact ⟨val.toTree_inj h.1, valsToTree_inj h.2⟩
 termination_by structural a _ _ => a
-theorem optexpr_toTree_inj : ∀ {a b : Option expr}, optexpr_toTree a = optexpr_toTree b → a = b
+theorem optexprToTree_inj : ∀ {a b : Option expr}, optexprToTree a = optexprToTree b → a = b
   | none, b, h => by inj_ex b
   | some _, b, h => by inj_ex b; exact expr.toTree_inj h
 termination_by structural a _ _ => a
-theorem optkey_toTree_inj : ∀ {a b : Option key}, optkey_toTree a = optkey_toTree b → a = b
+theorem optkeyToTree_inj : ∀ {a b : Option key}, optkeyToTree a = optkeyToTree b → a = b
   | none, b, h => by inj_ex b
   | some _, b, h => by inj_ex b; exact key.toTree_inj h
 termination_by structural a _ _ => a
-theorem optiface_toTree_inj : ∀ {a b : Option (go.type × val)},
-    optiface_toTree a = optiface_toTree b → a = b
+theorem optifaceToTree_inj : ∀ {a b : Option (go.type × val)},
+    optifaceToTree a = optifaceToTree b → a = b
   | none, b, h => by inj_ex b
-  | some _, b, h => by inj_ex b; exact tyval_toTree_inj h
+  | some _, b, h => by inj_ex b; exact tyvalToTree_inj h
 termination_by structural a _ _ => a
-theorem tyval_toTree_inj : ∀ {a b : go.type × val}, tyval_toTree a = tyval_toTree b → a = b
+theorem tyvalToTree_inj : ∀ {a b : go.type × val}, tyvalToTree a = tyvalToTree b → a = b
   | (_, _), (_, _), h => by
     injection h with _ h
     simp only [List.cons.injEq, GenTree.leaf.injEq, Pos.encode_eq_iff, and_true,

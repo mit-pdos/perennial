@@ -28,7 +28,7 @@ instance Result.countable [ffi_syntax] : Pos.Countable Result.t :=
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
@@ -38,7 +38,7 @@ set_option goose.wp.extras true
 /-! ### Hedged requests -/
 
 theorem wp_GetPrimary (q : go_string) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! GetPrimary)) (Val #q))
     {{ RET #(q ++ go!"_primary.html"); True }} := by
   wp_start
@@ -46,7 +46,7 @@ theorem wp_GetPrimary (q : go_string) :
   wp_end
 
 theorem wp_GetSecondary (q : go_string) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! GetSecondary)) (Val #q))
     {{ RET #(q ++ go!"_secondary.html"); True }} := by
   wp_start
@@ -56,18 +56,18 @@ theorem wp_GetSecondary (q : go_string) :
 /-! ### Hello world -/
 
 theorem wp_sys_hello_world :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! sys_hello_world)) (Val #()))
     {{ RET #(go!"Hello, World!"); True }} := by
   wp_start
   wp_end
 
 theorem wp_HelloWorldAsync :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! HelloWorldAsync)) (Val #()))
-    {{ (ch : loc) (γfut : chan_names), RET #ch;
-        is_chan ch γfut go_string ∗
-        is_chan_bag γfut ch (fun (v : go_string) => iprop(⌜v = go!"Hello, World!"⌝)) }} := by
+    {{ (ch : loc) (γfut : ChanNames), RET #ch;
+        isChan ch γfut go_string ∗
+        isChanBag γfut ch (fun (v : go_string) => iprop(⌜v = go!"Hello, World!"⌝)) }} := by
   wp_start
   wp_auto
   wp_apply chan.wp_make2 (V := go_string) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
@@ -85,7 +85,7 @@ theorem wp_HelloWorldAsync :
   iframe #
 
 theorem wp_HelloWorldSync :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! HelloWorldSync)) (Val #()))
     {{ RET #(go!"Hello, World!"); True }} := by
   wp_start
@@ -97,7 +97,7 @@ theorem wp_HelloWorldSync :
 /-! ### Joins -/
 
 theorem wp_simple_join :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! simple_join)) (Val #()))
     {{ RET #(go!"Hello, World!"); True }} := by
   wp_start
@@ -124,7 +124,7 @@ theorem wp_simple_join :
   · simp at Hsplit
 
 theorem wp_simple_multi_join :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! simple_multi_join)) (Val #()))
     {{ RET #(go!"Hello World"); True }} := by
   wp_start
@@ -179,7 +179,7 @@ theorem wp_simple_multi_join :
 /-! ### Exchanging pointers through a handshake -/
 
 theorem wp_exchangePointer :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! exchangePointer)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -198,7 +198,7 @@ theorem wp_exchangePointer :
 /-! ### Broadcast -/
 
 theorem wp_BroadcastExample :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! BroadcastExample)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -212,7 +212,7 @@ theorem wp_BroadcastExample :
     with #Hbag2
   imod alloc_broadcast_chan (E := ⊤) iprop(sharedValue_ptr ↦□ W64 2) γdone done_ch
     $$ Hdone_ch Hdone_own with Hown_done
-  ihave #Hdone_bc := own_broadcast_chan_Unknown _ _ _ _ $$ Hown_done
+  ihave #Hdone_bc := ownBroadcastChan_Unknown _ _ _ _ $$ Hown_done
   ipersist done
   ipersist result1
   ipersist result2
@@ -249,14 +249,14 @@ theorem wp_BroadcastExample :
 /-! ### Cancellation -/
 
 theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : go_string)
-    (γdone : chan_names) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
-        own_broadcast_chan done_ch γdone iprop(err_ptr1 ↦□ err_msg) .Unknown }}
+    (γdone : ChanNames) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
+        ownBroadcastChan done_ch γdone iprop(err_ptr1 ↦□ err_msg) .Unknown }}
       (App (App (Val (@! HelloWorldCancellable)) (Val #done_ch)) (Val #err_ptr1))
     {{ (result : go_string), RET #result;
         ⌜result = err_msg ∨ result = go!"Hello, World!"⌝ }} := by
   wp_start as #Hdone_bc
-  ihave #Hdone_chan := own_broadcast_chan_is_chan _ _ _ _ $$ Hdone_bc
+  ihave #Hdone_chan := ownBroadcastChan_is_chan _ _ _ _ $$ Hdone_bc
   wp_pures
   wp_alloc l as Hl
   wp_pures
@@ -268,7 +268,7 @@ theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : 
   wp_apply_core chan.wp_select_blocking
   iapply BigAndL.bigAndL_cons.2
   isplit
-  · dsimp only [chan.blocking_clause_pre]
+  · dsimp only [chan.blockingClausePre]
     iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, ch, γfut
     isplitr
     · ipureintro; rfl
@@ -282,7 +282,7 @@ theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : 
     ipureintro; exact .inr rfl
   iapply BigAndL.bigAndL_cons.2
   isplit
-  · dsimp only [chan.blocking_clause_pre]
+  · dsimp only [chan.blockingClausePre]
     iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, done_ch, γdone
     isplitr
     · ipureintro; rfl
@@ -296,7 +296,7 @@ theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : 
     itrivial
 
 theorem wp_HelloWorldWithTimeout :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! HelloWorldWithTimeout)) (Val #()))
     {{ (result : go_string), RET #result;
         ⌜result = go!"Hello, World!" ∨ result = go!"operation timed out"⌝ }} := by
@@ -307,7 +307,7 @@ theorem wp_HelloWorldWithTimeout :
   wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#Hchan, -, Hoc⟩
   imod alloc_broadcast_chan (E := ⊤) iprop(errMsg_ptr ↦□ go!"operation timed out") γ ch
     $$ Hchan Hoc with Hown
-  ihave #Hdone_bc := own_broadcast_chan_Unknown _ _ _ _ $$ Hown
+  ihave #Hdone_bc := ownBroadcastChan_Unknown _ _ _ _ $$ Hown
   ipersist done
   wp_apply wp_fork $$ [Hown errMsg]
   · wp_auto
@@ -322,9 +322,9 @@ theorem wp_HelloWorldWithTimeout :
   rcases Hres with h | h <;> simp [h]
 
 theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.Duration.t)
-    (errStr_ptr' : loc) (done_ch : chan.t) (γdone : chan_names) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
-        own_broadcast_chan done_ch γdone iprop(True) .Unknown ∗
+    (errStr_ptr' : loc) (done_ch : chan.t) (γdone : ChanNames) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
+        ownBroadcastChan done_ch γdone iprop(True) .Unknown ∗
         errStr_ptr' ↦ go!"" }}
       (App (App (App (App (Val (@! CancellableHedgedRequest)) (Val #query)) (Val #hedgeThreshold))
         (Val #errStr_ptr')) (Val #done_ch))
@@ -336,7 +336,7 @@ theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.D
         -- into `errStr_ptr'` and the zero `Result` is returned
         iprop(errStr_ptr' ↦ go!"cancelled" ∗ ⌜v = go!"" ∧ b = false⌝) }} := by
   wp_start as ⟨#Hdone_bc, HerrStr⟩
-  ihave #Hdone_chan := own_broadcast_chan_is_chan _ _ _ _ $$ Hdone_bc
+  ihave #Hdone_chan := ownBroadcastChan_is_chan _ _ _ _ $$ Hdone_bc
   wp_pures
   wp_alloc done_ptr as done
   wp_pures
@@ -365,7 +365,7 @@ theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.D
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- the primary responded before the hedge threshold
-    dsimp only [chan.blocking_clause_pre]
+    dsimp only [chan.blockingClausePre]
     iexists Result.t, inferInstance, inferInstance, inferInstance, inferInstance, c, γc
     isplitr
     · ipureintro; rfl
@@ -380,7 +380,7 @@ theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.D
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- the hedge threshold fired: launch the secondary and wait again
-    dsimp only [chan.blocking_clause_pre]
+    dsimp only [chan.blockingClausePre]
     ihave #Hhedge_chan := is_bag_is_chan _ _ _ $$ Hhedge
     iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, hedge_ch, γhedge
     isplitr
@@ -400,7 +400,7 @@ theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.D
     wp_apply_core chan.wp_select_blocking
     iapply BigAndL.bigAndL_cons.2
     isplit
-    · dsimp only [chan.blocking_clause_pre]
+    · dsimp only [chan.blockingClausePre]
       iexists Result.t, inferInstance, inferInstance, inferInstance, inferInstance, c, γc
       isplitr
       · ipureintro; rfl
@@ -414,7 +414,7 @@ theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.D
       · iapply HΦ; ileft; ipureintro; exact .inr ⟨rfl, rfl⟩
     iapply BigAndL.bigAndL_cons.2
     isplit
-    · dsimp only [chan.blocking_clause_pre]
+    · dsimp only [chan.blockingClausePre]
       iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, done_ch, γdone
       isplitr
       · ipureintro; rfl
@@ -431,7 +431,7 @@ theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.D
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- `done` was closed first
-    dsimp only [chan.blocking_clause_pre]
+    dsimp only [chan.blockingClausePre]
     iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, done_ch, γdone
     isplitr
     · ipureintro; rfl

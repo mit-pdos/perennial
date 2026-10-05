@@ -25,27 +25,27 @@ variable {E : Type} (R : E → E → Prop)
 
 /-- Inner-loop invariant of insertion sort: `xs[a..i]` is sorted except for
 pairs whose larger index is the hole `j`. -/
-def ins_br (xs : List E) (a i j : Nat) : Prop :=
+def InsBr (xs : List E) (a i j : Nat) : Prop :=
   ∀ (i' j' : Nat) xi xj, (a ≤ i' ∧ i' < j') ∧ j' ≤ i → j' ≠ j →
     xs[i']? = some xi → xs[j']? = some xj → ¬ R xj xi
 
-theorem ins_br_init (xs : List E) (a i : Nat) :
-    is_sorted_seg R xs a i → ins_br R xs a i i := by
+theorem insBr_init (xs : List E) (a i : Nat) :
+    IsSortedSeg R xs a i → InsBr R xs a i i := by
   intro H i' j' xi xj hb hne hi hj
   exact H i' j' xi xj ⟨hb.1, by omega⟩ hi hj
 
-theorem is_sorted_seg_mono (xs : List E) (a i b : Nat) (h : b ≤ i) :
-    is_sorted_seg R xs a i → is_sorted_seg R xs a b := by
+theorem isSortedSeg_mono (xs : List E) (a i b : Nat) (h : b ≤ i) :
+    IsSortedSeg R xs a i → IsSortedSeg R xs a b := by
   intro H i' j' xi xj hb hi hj
   exact H i' j' xi xj ⟨hb.1, by omega⟩ hi hj
 
-theorem is_sorted_seg_one (xs : List E) (a : Nat) : is_sorted_seg R xs a (a + 1) := by
+theorem isSortedSeg_one (xs : List E) (a : Nat) : IsSortedSeg R xs a (a + 1) := by
   intro i' j' xi xj hb; omega
 
-theorem ins_br_swap [StrictWeakOrder R] (xs : List E) (a i j : Nat) (x0 x1 : E)
-    (H : ins_br R xs a i j) (haj : a < j) (hji : j ≤ i)
+theorem insBr_swap [StrictWeakOrder R] (xs : List E) (a i j : Nat) (x0 x1 : E)
+    (H : InsBr R xs a i j) (haj : a < j) (hji : j ≤ i)
     (h0 : xs[j]? = some x0) (h1 : xs[j - 1]? = some x1) (hR : R x0 x1) :
-    ins_br R ((xs.set j x1).set (j - 1) x0) a i (j - 1) := by
+    InsBr R ((xs.set j x1).set (j - 1) x0) a i (j - 1) := by
   have hj := lookup_lt_Some h0
   have hy1 : ((xs.set j x1).set (j - 1) x0)[j - 1]? = some x0 := by
     rw [List.getElem?_set_self (by simp; omega)]
@@ -73,15 +73,15 @@ theorem ins_br_swap [StrictWeakOrder R] (xs : List E) (a i j : Nat) (x0 x1 : E)
     · rw [hy3 _ hii hii2] at hi
       exact H i' j' xi xj hb hjj hi hj'
 
-theorem ins_br_done_a (xs : List E) (a i j : Nat) (H : ins_br R xs a i j) (hj : j = a) :
-    is_sorted_seg R xs a (i + 1) := by
+theorem insBr_done_a (xs : List E) (a i j : Nat) (H : InsBr R xs a i j) (hj : j = a) :
+    IsSortedSeg R xs a (i + 1) := by
   intro i' j' xi xj hb hi hj'
   exact H i' j' xi xj ⟨hb.1, by omega⟩ (by omega) hi hj'
 
-theorem ins_br_done_cmp [StrictWeakOrder R] (xs : List E) (a i j : Nat) (x0 x1 : E)
-    (H : ins_br R xs a i j) (haj : a < j) (hji : j ≤ i)
+theorem insBr_done_cmp [StrictWeakOrder R] (xs : List E) (a i j : Nat) (x0 x1 : E)
+    (H : InsBr R xs a i j) (haj : a < j) (hji : j ≤ i)
     (h0 : xs[j]? = some x0) (h1 : xs[j - 1]? = some x1) (hR : ¬ R x0 x1) :
-    is_sorted_seg R xs a (i + 1) := by
+    IsSortedSeg R xs a (i + 1) := by
   intro i' j' xi xj hb hi hj'
   by_cases hjj : j' = j
   · subst hjj
@@ -92,18 +92,18 @@ theorem ins_br_done_cmp [StrictWeakOrder R] (xs : List E) (a i j : Nat) (x0 x1 :
       exact notR_trans R xi x1 x0 hR this
   · exact H i' j' xi xj ⟨hb.1, by omega⟩ hjj hi hj'
 
-theorem is_sorted_seg_swap_hi (xs : List E) (a i k1 k2 : Nat) (v1 v2 : E)
-    (H : is_sorted_seg R xs a i) (h1 : i ≤ k1) (h2 : i ≤ k2) :
-    is_sorted_seg R ((xs.set k1 v1).set k2 v2) a i := by
+theorem isSortedSeg_swap_hi (xs : List E) (a i k1 k2 : Nat) (v1 v2 : E)
+    (H : IsSortedSeg R xs a i) (h1 : i ≤ k1) (h2 : i ≤ k2) :
+    IsSortedSeg R ((xs.set k1 v1).set k2 v2) a i := by
   intro i' j' xi xj hb hi hj
   rw [List.getElem?_set_ne (by omega), List.getElem?_set_ne (by omega)] at hi hj
   exact H i' j' xi xj hb hi hj
 
-theorem is_sorted_seg_scan [StrictWeakOrder R] (xs : List E) (a i : Nat) (x0 x1 : E)
-    (H : is_sorted_seg R xs a i) (hai : a < i)
+theorem isSortedSeg_scan [StrictWeakOrder R] (xs : List E) (a i : Nat) (x0 x1 : E)
+    (H : IsSortedSeg R xs a i) (hai : a < i)
     (h0 : xs[i]? = some x0) (h1 : xs[i - 1]? = some x1) (hR : ¬ R x0 x1) :
-    is_sorted_seg R xs a (i + 1) :=
-  ins_br_done_cmp R xs a i i x0 x1 (ins_br_init R xs a i H) hai (Nat.le_refl _) h0 h1 hR
+    IsSortedSeg R xs a (i + 1) :=
+  insBr_done_cmp R xs a i i x0 x1 (insBr_init R xs a i H) hai (Nat.le_refl _) h0 h1 hR
 
 theorem header_contra (xs : List E) (a b : Nat) (x0 x1 : E)
     (H : header R xs a b) (ha : 0 < a) (hab : a < b)
@@ -126,15 +126,15 @@ variable (R : E → E → Prop) [StrictWeakOrder R]
 
 omit [ZeroVal E] [TypedPointsto (GF := GF) E] [IntoValTyped (GF := GF) E Et] [StrictWeakOrder R]
   package_sem sem in
-/-- A call of the comparison function, with `cmp_implements` kept folded in the
+/-- A call of the comparison function, with `cmpImplements` kept folded in the
 caller's context: unfolded, its `▷` makes every symbolic execution step search
 for laters to strip in all hypotheses. -/
 private theorem ins_wp_cmp (cmp_code : func.t) (x y : E) :
-    {{ cmp_implements (GF := GF) R cmp_code }}
+    {{ cmpImplements (GF := GF) R cmp_code }}
       (App (App (Val #cmp_code) (Val #x)) (Val #y))
     {{ (r : w64), RET #r; ⌜sint.Z r < 0 ↔ R x y⌝ }} := by
   iintro %Φ #Hc HΦ
-  unfold cmp_implements
+  unfold cmpImplements
   iapply Hc $$ [] HΦ
   itrivial
 
@@ -147,17 +147,17 @@ private theorem ins_wp_insertion_inner (data : slice.t) (a b i_val : w64) (cmp :
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
     (irange : sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ max (sint.Z a + 1) (sint.Z b))
     (Hif : sint.Z i_val < sint.Z b) :
-    ⊢ cmp_implements R cmp -∗ cmp_ptr ↦ cmp -∗ a_ptr ↦ a -∗ data_ptr ↦ data -∗
+    ⊢ cmpImplements R cmp -∗ cmp_ptr ↦ cmp -∗ a_ptr ↦ a -∗ data_ptr ↦ data -∗
       (∃ (j_val : w64) (xs'' : List E),
         "j" ∷ j_ptr ↦ j_val ∗
         "Hxs" ∷ data ↦* xs'' ∗
         "%jrange" ∷ ⌜sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z i_val⌝ ∗
         "%Hperm2" ∷ ⌜xs ≡ₚ xs''⌝ ∗
-        "%HsortedBr" ∷ ⌜ins_br R xs'' (sint.nat a) (sint.nat i_val) (sint.nat j_val)⌝ ∗
-        "%Houtside2" ∷ ⌜outside_same xs xs'' (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
+        "%HsortedBr" ∷ ⌜InsBr R xs'' (sint.nat a) (sint.nat i_val) (sint.nat j_val)⌝ ∗
+        "%Houtside2" ∷ ⌜OutsideSame xs xs'' (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
       (∀ xs'' : List E, data ↦* xs'' ∗ cmp_ptr ↦ cmp ∗ a_ptr ↦ a ∗ data_ptr ↦ data ∗
-        ⌜xs ≡ₚ xs'' ∧ is_sorted_seg R xs'' (sint.nat a) (sint.nat i_val + 1) ∧
-          outside_same xs xs'' (sint.nat a) (sint.nat b)⌝ -∗ Φ execute_val) -∗
+        ⌜xs ≡ₚ xs'' ∧ IsSortedSeg R xs'' (sint.nat a) (sint.nat i_val + 1) ∧
+          OutsideSame xs xs'' (sint.nat a) (sint.nat b)⌝ -∗ Φ executeVal) -∗
       WP (((do_for
           glv(λ: <>,
               if: ![go.int] #j_ptr >⟨go.int⟩ ![go.int] #a_ptr then
@@ -222,9 +222,9 @@ private theorem ins_wp_insertion_inner (data : slice.t) (a b i_val : w64) (cmp :
       have hR := Hr.1 (by word)
       refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
       · exact Hperm2.trans (swap_perm _ _ _ _ _ Hx1_lookup Hx0_lookup)
-      · exact ins_br_swap R _ _ _ _ _ _ HsortedBr (by word) (by word) Hx0_lookup Hx1_lookup hR
-      · exact outside_same_trans _ _ _ _ _ Houtside2
-          (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+      · exact insBr_swap R _ _ _ _ _ _ HsortedBr (by word) (by word) Hx0_lookup Hx1_lookup hR
+      · exact outsideSame_trans _ _ _ _ _ Houtside2
+          (outsideSame_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
     · simp only [hc, decide_false, Bool.false_eq_true, ↓reduceIte]
       iapply HΦ
       iframe
@@ -233,17 +233,17 @@ private theorem ins_wp_insertion_inner (data : slice.t) (a b i_val : w64) (cmp :
       rw [hj1] at Hx1_lookup
       have hR : ¬ R x0 x1 := fun h => hc (Hr.2 h)
       refine ⟨Hperm2, ?_, Houtside2⟩
-      exact ins_br_done_cmp R _ _ _ _ _ _ HsortedBr (by word) (by word) Hx0_lookup Hx1_lookup hR
+      exact insBr_done_cmp R _ _ _ _ _ _ HsortedBr (by word) (by word) Hx0_lookup Hx1_lookup hR
   · iapply HΦ
     iframe
     ipureintro
     refine ⟨Hperm2, ?_, Houtside2⟩
-    exact ins_br_done_a R _ _ _ _ HsortedBr (by word)
+    exact insBr_done_a R _ _ _ _ HsortedBr (by word)
 
 theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
-        "#Hcmp" ∷ cmp_implements R cmp ∗
+        "#Hcmp" ∷ cmpImplements R cmp ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z b ∧ sint.Z b ≤ xs.length ∧
           xs.length ≤ 2 ^ 62⌝ }}
       (App (App (App (App (Val #(functions insertionSortCmpFunc [Et])) (Val #data)) (Val #a))
@@ -251,26 +251,26 @@ theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs 
     {{ (xs' : List E), RET #();
         data ↦* xs' ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-        "%Hsorted" ∷ ⌜is_sorted_seg R xs' (sint.nat a) (sint.nat b)⌝ ∗
-        "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
+        "%Hsorted" ∷ ⌜IsSortedSeg R xs' (sint.nat a) (sint.nat b)⌝ ∗
+        "%Houtside" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
   wp_start as H
   iNamed H
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
   ihave HI1 : (∃ (i_val : w64) (xs' : List E),
       "i" ∷ i_ptr ↦ i_val ∗
       "Hxs" ∷ data ↦* xs' ∗
       "%irange" ∷ ⌜sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ max (sint.Z a + 1) (sint.Z b)⌝ ∗
       "%HPerm1" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-      "%Hsorted" ∷ ⌜is_sorted_seg R xs' (sint.nat a) (sint.nat i_val)⌝ ∗
-      "%Houtside1" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [i Hxs]
+      "%Hsorted" ∷ ⌜IsSortedSeg R xs' (sint.nat a) (sint.nat i_val)⌝ ∗
+      "%Houtside1" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [i Hxs]
   · iexists _, xs
     iframe
     ipureintro
     have : sint.Z (a + W64 1) = sint.Z a + 1 := by word
-    refine ⟨⟨by omega, by omega⟩, List.Perm.refl _, ?_, outside_same_refl _ _ _⟩
+    refine ⟨⟨by omega, by omega⟩, List.Perm.refl _, ?_, outsideSame_refl _ _ _⟩
     rw [show sint.nat (a + W64 1) = sint.nat a + 1 by word]
-    exact is_sorted_seg_one R xs _
+    exact isSortedSeg_one R xs _
   wp_for HI1
   by_cases Hif : sint.Z i_val < sint.Z b
   · simp only [Hif, _root_.decide_true, ↓reduceIte]
@@ -281,12 +281,12 @@ theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs 
         "Hxs" ∷ data ↦* xs'' ∗
         "%jrange" ∷ ⌜sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z i_val⌝ ∗
         "%Hperm2" ∷ ⌜xs ≡ₚ xs''⌝ ∗
-        "%HsortedBr" ∷ ⌜ins_br R xs'' (sint.nat a) (sint.nat i_val) (sint.nat j_val)⌝ ∗
-        "%Houtside2" ∷ ⌜outside_same xs xs'' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [j Hxs]
+        "%HsortedBr" ∷ ⌜InsBr R xs'' (sint.nat a) (sint.nat i_val) (sint.nat j_val)⌝ ∗
+        "%Houtside2" ∷ ⌜OutsideSame xs xs'' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [j Hxs]
     · iexists _, xs'
       iframe
       ipureintro
-      exact ⟨⟨by omega, by omega⟩, HPerm1, ins_br_init R _ _ _ Hsorted, Houtside1⟩
+      exact ⟨⟨by omega, by omega⟩, HPerm1, insBr_init R _ _ _ Hsorted, Houtside1⟩
     iapply (ins_wp_insertion_inner R data a b i_val cmp xs cmp_ptr a_ptr data_ptr j_ptr _
       Hab_bound Hlen irange Hif) $$ Hcmp cmp a data HI2
     iintro %xs'' ⟨Hxs, cmp, a, data, %Hpost⟩
@@ -303,7 +303,7 @@ theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs 
     iapply HΦ
     iframe
     ipureintro
-    exact ⟨HPerm1, is_sorted_seg_mono R _ _ _ _ (by word) Hsorted, Houtside1⟩
+    exact ⟨HPerm1, isSortedSeg_mono R _ _ _ _ (by word) Hsorted, Houtside1⟩
 
 omit package_sem in
 /-- The loop of `partialInsertionSortCmpFunc` that shifts the smaller element
@@ -315,15 +315,15 @@ private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code :
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
     (irange : sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b)
     (Hib : sint.Z i_val < sint.Z b) :
-    ⊢ cmp_implements R cmp_code -∗ cmp_ptr ↦ cmp_code -∗ a_ptr ↦ a -∗ data_ptr ↦ data -∗
+    ⊢ cmpImplements R cmp_code -∗ cmp_ptr ↦ cmp_code -∗ a_ptr ↦ a -∗ data_ptr ↦ data -∗
       i_ptr ↦ i_val -∗
       (∃ (jl : w64) (xs3 : List E),
         "jl" ∷ j_ptr ↦ jl ∗
         "Hxs" ∷ data ↦* xs3 ∗
         "%jrange" ∷ ⌜sint.Z a ≤ sint.Z jl ∧ sint.Z jl ≤ sint.Z i_val - 1⌝ ∗
         "%Hperm3" ∷ ⌜xs ≡ₚ xs3⌝ ∗
-        "%HsortedBr" ∷ ⌜ins_br R xs3 (sint.nat a) (sint.nat i_val - 1) (sint.nat jl)⌝ ∗
-        "%Houtside3" ∷ ⌜outside_same xs xs3 (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
+        "%HsortedBr" ∷ ⌜InsBr R xs3 (sint.nat a) (sint.nat i_val - 1) (sint.nat jl)⌝ ∗
+        "%Houtside3" ∷ ⌜OutsideSame xs xs3 (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
       WP (((do_for glv(λ: <>, ![go.int] #j_ptr ≥⟨go.int⟩ #(W64 1)))
         glv(λ: <>,
             (if:
@@ -345,16 +345,16 @@ private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code :
                       (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) <-[Et]
                         "$r1"))
       glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)))
-      {{ v, ⌜v = execute_val⌝ ∗ ∃ xs3,
+      {{ v, ⌜v = executeVal⌝ ∗ ∃ xs3,
         "Hxs" ∷ data ↦* xs3 ∗ "i" ∷ i_ptr ↦ i_val ∗ "a" ∷ a_ptr ↦ a ∗
         "data" ∷ data_ptr ↦ data ∗ "cmp" ∷ cmp_ptr ↦ cmp_code ∗
         "%Hperm3" ∷ ⌜xs ≡ₚ xs3⌝ ∗
-        "%Hsorted3" ∷ ⌜is_sorted_seg R xs3 (sint.nat a) (sint.nat i_val)⌝ ∗
-        "%Houtside3" ∷ ⌜outside_same xs xs3 (sint.nat a) (sint.nat b)⌝ }} := by
+        "%Hsorted3" ∷ ⌜IsSortedSeg R xs3 (sint.nat a) (sint.nat i_val)⌝ ∗
+        "%Houtside3" ∷ ⌜OutsideSame xs xs3 (sint.nat a) (sint.nat b)⌝ }} := by
   iintro #Hcmp cmp a data i HL
   have hi1 : sint.nat (i_val - W64 1) = sint.nat i_val - 1 := by word
   wp_for HL
-  have Header2' := header__preserve R xs xs3 _ _ Header Hperm3 Houtside3 (by word)
+  have Header2' := header_preserve R xs xs3 _ _ Header Hperm3 Houtside3 (by word)
   have hlen3 := Hperm3.length_eq
   have hsi : sint.nat i_val - 1 + 1 = sint.nat i_val := by word
   by_cases Hjl : sint.Z (W64 1) ≤ sint.Z jl
@@ -367,7 +367,7 @@ private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code :
     ipureintro
     refine ⟨Hperm3, ?_, Houtside3⟩
     rw [← hsi]
-    exact ins_br_done_a R _ _ _ _ HsortedBr (by word)
+    exact insBr_done_a R _ _ _ _ HsortedBr (by word)
   simp only [Hjl, _root_.decide_true, ↓reduceIte]
   wp_auto
   list_elem xs3 (sint.nat jl) as y0
@@ -398,8 +398,8 @@ private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code :
     refine ⟨Hperm3, ?_, Houtside3⟩
     rw [← hsi]
     by_cases hja : sint.nat jl = sint.nat a
-    · exact ins_br_done_a R _ _ _ _ HsortedBr hja
-    · exact ins_br_done_cmp R _ _ _ _ _ _ HsortedBr (by word) (by word) Hy0_lookup Hy1_lookup
+    · exact insBr_done_a R _ _ _ _ HsortedBr hja
+    · exact insBr_done_cmp R _ _ _ _ _ _ HsortedBr (by word) (by word) Hy0_lookup Hy1_lookup
         (fun h => hc' (Hr'.2 h))
   simp only [hc', _root_.decide_true, Bool.not_true]
   cleanup_bool_decide
@@ -434,9 +434,9 @@ private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code :
   rw [hjdx, show (sint.Z jl).toNat = sint.nat jl from rfl, hj1]
   refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
   · exact Hperm3.trans (swap_perm _ _ _ _ _ Hy1_lookup Hy0_lookup)
-  · exact ins_br_swap R _ _ _ _ _ _ HsortedBr hja (by word) Hy0_lookup Hy1_lookup hRy
-  · exact outside_same_trans _ _ _ _ _ Houtside3
-      (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+  · exact insBr_swap R _ _ _ _ _ _ HsortedBr hja (by word) Hy0_lookup Hy1_lookup hRy
+  · exact outsideSame_trans _ _ _ _ _ Houtside3
+      (outsideSame_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
 
 omit package_sem [StrictWeakOrder R] in
 /-- The loop of `partialInsertionSortCmpFunc` that shifts the greater element
@@ -446,17 +446,17 @@ private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code 
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
     (irange : sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) :
-    ⊢ cmp_implements R cmp_code -∗ cmp_ptr ↦ cmp_code -∗ b_ptr ↦ b -∗ data_ptr ↦ data -∗
+    ⊢ cmpImplements R cmp_code -∗ cmp_ptr ↦ cmp_code -∗ b_ptr ↦ b -∗ data_ptr ↦ data -∗
       (∃ (jr : w64) (xs4 : List E),
         "jr" ∷ j_ptr ↦ jr ∗
         "Hxs" ∷ data ↦* xs4 ∗
         "%jrange" ∷ ⌜sint.Z i_val < sint.Z jr ∧ sint.Z jr ≤ sint.Z b⌝ ∗
         "%Hperm4" ∷ ⌜xs ≡ₚ xs4⌝ ∗
-        "%Hsorted4" ∷ ⌜is_sorted_seg R xs4 (sint.nat a) (sint.nat i_val)⌝ ∗
-        "%Houtside4" ∷ ⌜outside_same xs xs4 (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
+        "%Hsorted4" ∷ ⌜IsSortedSeg R xs4 (sint.nat a) (sint.nat i_val)⌝ ∗
+        "%Houtside4" ∷ ⌜OutsideSame xs xs4 (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
       (∀ xs4 : List E, data ↦* xs4 ∗ cmp_ptr ↦ cmp_code ∗ b_ptr ↦ b ∗ data_ptr ↦ data ∗
-        ⌜xs ≡ₚ xs4 ∧ is_sorted_seg R xs4 (sint.nat a) (sint.nat i_val) ∧
-          outside_same xs xs4 (sint.nat a) (sint.nat b)⌝ -∗ Φ execute_val) -∗
+        ⌜xs ≡ₚ xs4 ∧ IsSortedSeg R xs4 (sint.nat a) (sint.nat i_val) ∧
+          OutsideSame xs xs4 (sint.nat a) (sint.nat b)⌝ -∗ Φ executeVal) -∗
       WP (((do_for glv(λ: <>, ![go.int] #j_ptr <⟨go.int⟩ ![go.int] #b_ptr))
         glv(λ: <>,
             (if:
@@ -532,9 +532,9 @@ private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code 
     rw [hjdx, show (sint.Z jr).toNat = sint.nat jr from rfl]
     refine ⟨⟨by word, by word⟩, ?_, ?_, ?_⟩
     · exact Hperm4.trans (swap_perm _ _ _ _ _ Hy1_lookup Hy0_lookup)
-    · exact is_sorted_seg_swap_hi R _ _ _ _ _ _ _ Hsorted4 (by word) (by word)
-    · exact outside_same_trans _ _ _ _ _ Houtside4
-        (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+    · exact isSortedSeg_swap_hi R _ _ _ _ _ _ _ Hsorted4 (by word) (by word)
+    · exact outsideSame_trans _ _ _ _ _ Houtside4
+        (outsideSame_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
   · iapply HΦ
     iframe
     ipureintro
@@ -542,9 +542,9 @@ private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code 
 
 theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
     (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code ∗
+        "#Hcmp" ∷ cmpImplements R cmp_code ∗
         "%Header" ∷ ⌜header R xs (sint.nat a) (sint.nat b)⌝ ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧
           xs.length ≤ 2 ^ 62⌝ }}
@@ -553,26 +553,26 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
     {{ (xs' : List E) (bl : Bool), RET #bl;
         data ↦* xs' ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-        "%Hsorted" ∷ ⌜if bl then is_sorted_seg R xs' (sint.nat a) (sint.nat b) else True⌝ ∗
-        "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
+        "%Hsorted" ∷ ⌜if bl then IsSortedSeg R xs' (sint.nat a) (sint.nat b) else True⌝ ∗
+        "%Houtside" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
   wp_start as H
   iNamed H
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
   ihave HI : (∃ (jc i_val : w64) (xs' : List E),
       "jc" ∷ j_ptr ↦ jc ∗
       "i" ∷ i_ptr ↦ i_val ∗
       "Hxs" ∷ data ↦* xs' ∗
       "%irange" ∷ ⌜sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b⌝ ∗
       "%HPerm1" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-      "%Hsorted" ∷ ⌜is_sorted_seg R xs' (sint.nat a) (sint.nat i_val)⌝ ∗
-      "%Houtside1" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [j i Hxs]
+      "%Hsorted" ∷ ⌜IsSortedSeg R xs' (sint.nat a) (sint.nat i_val)⌝ ∗
+      "%Houtside1" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [j i Hxs]
   · iexists _, _, xs
     iframe
     ipureintro
     have : sint.nat (a + W64 1) = sint.nat a + 1 := by word
     rw [this]
-    exact ⟨⟨by word, by word⟩, List.Perm.refl _, is_sorted_seg_one R xs _, outside_same_refl _ _ _⟩
+    exact ⟨⟨by word, by word⟩, List.Perm.refl _, isSortedSeg_one R xs _, outsideSame_refl _ _ _⟩
   wp_for HI
   by_cases Hjc : sint.Z jc < sint.Z (W64 5)
   case neg =>
@@ -589,8 +589,8 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
       "Hxs" ∷ data ↦* xs' ∗
       "%irange" ∷ ⌜sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b⌝ ∗
       "%HPerm1" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-      "%Hsorted" ∷ ⌜is_sorted_seg R xs' (sint.nat a) (sint.nat i_val)⌝ ∗
-      "%Houtside1" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [i Hxs]
+      "%Hsorted" ∷ ⌜IsSortedSeg R xs' (sint.nat a) (sint.nat i_val)⌝ ∗
+      "%Houtside1" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [i Hxs]
   · iexists _, _
     iframe
     ipureintro
@@ -625,7 +625,7 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
       have hi2 : sint.nat (i_val + W64 1) = sint.nat i_val + 1 := by word
       rw [hi2]
       exact ⟨⟨by word, by word⟩, HPerm1,
-        is_sorted_seg_scan R _ _ _ _ _ Hsorted (by word) Hx0_lookup Hx1_lookup
+        isSortedSeg_scan R _ _ _ _ _ Hsorted (by word) Hx0_lookup Hx1_lookup
           (fun h => hc (Hr.2 h)), Houtside1⟩
     simp only [hc, _root_.decide_true, Bool.not_true]
     cleanup_bool_decide
@@ -659,40 +659,40 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
     rw [hidx, hidx']
     have Hperm2 : xs ≡ₚ (xs'.set (sint.nat i_val) x1).set (sint.nat i_val - 1) x0 :=
       HPerm1.trans (swap_perm _ _ _ _ _ Hx1_lookup Hx0_lookup)
-    have Houtside2 : outside_same xs ((xs'.set (sint.nat i_val) x1).set (sint.nat i_val - 1) x0)
+    have Houtside2 : OutsideSame xs ((xs'.set (sint.nat i_val) x1).set (sint.nat i_val - 1) x0)
         (sint.nat a) (sint.nat b) :=
-      outside_same_trans _ _ _ _ _ Houtside1
-        (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
-    have Hsorted2 : is_sorted_seg R ((xs'.set (sint.nat i_val) x1).set (sint.nat i_val - 1) x0)
+      outsideSame_trans _ _ _ _ _ Houtside1
+        (outsideSame_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+    have Hsorted2 : IsSortedSeg R ((xs'.set (sint.nat i_val) x1).set (sint.nat i_val - 1) x0)
         (sint.nat a) (sint.nat i_val - 1) :=
-      is_sorted_seg_swap_hi R _ _ _ _ _ _ _
-        (is_sorted_seg_mono R _ _ _ _ (by omega) Hsorted) (by omega) (by omega)
+      isSortedSeg_swap_hi R _ _ _ _ _ _ _
+        (isSortedSeg_mono R _ _ _ _ (by omega) Hsorted) (by omega) (by omega)
     have hlen2 := Hperm2.length_eq
     generalize (xs'.set (sint.nat i_val) x1).set (sint.nat i_val - 1) x0 = xs2
       at Hperm2 Houtside2 Hsorted2 hlen2 ⊢
-    have Header2 := header__preserve R xs xs2 _ _ Header Hperm2 Houtside2 (by word)
+    have Header2 := header_preserve R xs xs2 _ _ Header Hperm2 Houtside2 (by word)
     clear Hx0_lookup Hx1_lookup Hr hc x0 x1 Hsorted Houtside1 HPerm1 xs' hlen'
     -- join point after shifting the smaller element to the left
     wp_bind (If _ _ _)
-    iapply wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗ ∃ xs3,
+    iapply wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗ ∃ xs3,
         "Hxs" ∷ data ↦* xs3 ∗ "i" ∷ i_ptr ↦ i_val ∗ "a" ∷ a_ptr ↦ a ∗
         "data" ∷ data_ptr ↦ data ∗ "cmp" ∷ cmp_ptr ↦ cmp_code ∗
         "%Hperm3" ∷ ⌜xs ≡ₚ xs3⌝ ∗
-        "%Hsorted3" ∷ ⌜is_sorted_seg R xs3 (sint.nat a) (sint.nat i_val)⌝ ∗
-        "%Houtside3" ∷ ⌜outside_same xs xs3 (sint.nat a) (sint.nat b)⌝)) $$ [Hxs i a data cmp]
+        "%Hsorted3" ∷ ⌜IsSortedSeg R xs3 (sint.nat a) (sint.nat i_val)⌝ ∗
+        "%Houtside3" ∷ ⌜OutsideSame xs xs3 (sint.nat a) (sint.nat b)⌝)) $$ [Hxs i a data cmp]
     · wp_if_destruct
       · ihave HL : (∃ (jl : w64) (xs3 : List E),
             "jl" ∷ j_ptr ↦ jl ∗
             "Hxs" ∷ data ↦* xs3 ∗
             "%jrange" ∷ ⌜sint.Z a ≤ sint.Z jl ∧ sint.Z jl ≤ sint.Z i_val - 1⌝ ∗
             "%Hperm3" ∷ ⌜xs ≡ₚ xs3⌝ ∗
-            "%HsortedBr" ∷ ⌜ins_br R xs3 (sint.nat a) (sint.nat i_val - 1) (sint.nat jl)⌝ ∗
-            "%Houtside3" ∷ ⌜outside_same xs xs3 (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [j Hxs]
+            "%HsortedBr" ∷ ⌜InsBr R xs3 (sint.nat a) (sint.nat i_val - 1) (sint.nat jl)⌝ ∗
+            "%Houtside3" ∷ ⌜OutsideSame xs xs3 (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [j Hxs]
         · iexists _, xs2
           iframe
           ipureintro
           rw [hi1]
-          exact ⟨⟨by word, by word⟩, Hperm2, ins_br_init R _ _ _ Hsorted2, Houtside2⟩
+          exact ⟨⟨by word, by word⟩, Hperm2, insBr_init R _ _ _ Hsorted2, Houtside2⟩
         clear Hperm2 Houtside2 Hsorted2 hlen2
         iapply (ins_wp_shift_left R data a b i_val cmp_code xs cmp_ptr a_ptr data_ptr i_ptr j_ptr
           Header Hab_bound Hlen irange (by assumption)) $$ Hcmp cmp a data i HL
@@ -703,7 +703,7 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
         ipureintro
         have : sint.nat i_val = sint.nat a + 1 := by word
         rw [this]
-        exact ⟨Hperm2, is_sorted_seg_one R _ _, Houtside2⟩
+        exact ⟨Hperm2, isSortedSeg_one R _ _, Houtside2⟩
     clear Hperm2 Houtside2 Hsorted2 hlen2 Header2
     iintro %v ⟨%Hv, HQ⟩
     subst Hv
@@ -716,8 +716,8 @@ theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : 
           "Hxs" ∷ data ↦* xs4 ∗
           "%jrange" ∷ ⌜sint.Z i_val < sint.Z jr ∧ sint.Z jr ≤ sint.Z b⌝ ∗
           "%Hperm4" ∷ ⌜xs ≡ₚ xs4⌝ ∗
-          "%Hsorted4" ∷ ⌜is_sorted_seg R xs4 (sint.nat a) (sint.nat i_val)⌝ ∗
-          "%Houtside4" ∷ ⌜outside_same xs xs4 (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [j Hxs]
+          "%Hsorted4" ∷ ⌜IsSortedSeg R xs4 (sint.nat a) (sint.nat i_val)⌝ ∗
+          "%Houtside4" ∷ ⌜OutsideSame xs xs4 (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [j Hxs]
       · iexists _, xs3
         iframe
         ipureintro

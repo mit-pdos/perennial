@@ -1,17 +1,17 @@
 /-
 Port of `new/proof/go_etcd_io/etcd/pkg/v3/idutil.v`.
 
-The specs are Rocq's (`is_Generator g R`, `wp_Generator__Next` without
+The specs are Rocq's (`isGenerator g R`, `Generator.wp_Next` without
 precondition, `wp_NewGenerator`), except that `Next`'s postcondition gives the
 token `R i` under a premise on the time-receipt bound:
-`⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i` (Rocq: `R i`). Calling `Next` and
+`⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i` (Rocq: `R i`). Calling `Next` and
 `NewGenerator` is always safe (the specs hold for every bound); only the token
-is conditional. Deviation from Rocq: `wp_Generator__Next`, admitted in Rocq
+is conditional. Deviation from Rocq: `Generator.wp_Next`, admitted in Rocq
 (after `2^48` calls the IDs wrap around and the invariant has no `R` tokens
 left), is proved using *time receipts* (`Perennial/GooseLang/Receipts.lean`):
 every call of `Next` collects one exclusive receipt `⧗ 1` (from its first Go
-instruction) into the invariant of `is_Generator`, so the invariant owns
-`⧗ num_used`, and `⧗ (num_used + 1)` bounds `num_used + 1 < receipt_bound GF`.
+instruction) into the invariant of `isGenerator`, so the invariant owns
+`⧗ num_used`, and `⧗ (num_used + 1)` bounds `num_used + 1 < receiptBound GF`.
 The bound is an unspecified parameter `N` of the program logic; when
 `N ≤ 2^48` a token is left, and otherwise (no token left) the premise of the
 postcondition is contradictory. A client of the adequacy theorem
@@ -90,17 +90,17 @@ variable [package_sem : idutil.Assumptions]
 
 local notation "pkg" => pkg_id.go_etcd_io.etcd.pkg.v3.idutil
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg :=
   build_get_is_pkg_init_wf
 
 /-! ### Time receipts for `Next` (Lean addition)
 
-Rocq's `is_Generator g R` lets any number of callers run `Next`, but its
+Rocq's `isGenerator g R` lets any number of callers run `Next`, but its
 invariant owns only `2^48` of the `R` tokens. Here the invariant also owns one
-time receipt per call made so far; since `receipt_bound GF` receipts are
-contradictory, under the premise `receipt_bound GF ≤ 2^48` fewer than
+time receipt per call made so far; since `receiptBound GF` receipts are
+contradictory, under the premise `receiptBound GF ≤ 2^48` fewer than
 `2^48 - 1` calls have completed when a new one starts, so a token is left
 (`take_token`). Without the premise `Next` still runs; the invariant then
 just keeps an empty token list. -/
@@ -113,7 +113,7 @@ the code.
 Lean deviation: the invariant additionally owns the time receipts of the
 `num_used` calls made so far (`"Hused"`, with `"%Hnum_used" : 0 ≤ num_used`).
 Rocq: invariant `suffix ∗ HR` only. -/
-def is_Generator_def (g : loc) (R : w64 → IProp GF) : IProp GF :=
+def isGeneratorDef (g : loc) (R : w64 → IProp GF) : IProp GF :=
   iprop(∃ («prefix» : Int),
     "#prefix" ∷ g.[Generator.t, go!"prefix"] ↦□ (W64 («prefix» * 2^48)) ∗
     "#Hinv" ∷
@@ -124,15 +124,15 @@ def is_Generator_def (g : loc) (R : w64 → IProp GF) : IProp GF :=
           "HR" ∷ ([∗list] i ∈ seqZ (init + num_used + 1) (2^48 - num_used),
                     R (W64 («prefix» * 2^48 + i % 2^48)))) ∗
     "_" ∷ True)
-/-- (Rocq: `Opaque is_Generator`) -/
-@[irreducible] def is_Generator (g : loc) (R : w64 → IProp GF) : IProp GF :=
-  is_Generator_def g R
-theorem is_Generator_unseal : @is_Generator = @is_Generator_def := by
+/-- (Rocq: `Opaque isGenerator`) -/
+@[irreducible] def isGenerator (g : loc) (R : w64 → IProp GF) : IProp GF :=
+  isGeneratorDef g R
+theorem isGenerator_unseal : @isGenerator = @isGeneratorDef := by
   funext; with_unfolding_all rfl
 
-instance is_Generator_pers (g : loc) (R : w64 → IProp GF) :
-    Persistent (is_Generator g R) := by
-  rw [is_Generator_unseal]; unfold is_Generator_def; infer_instance
+instance isGenerator_pers (g : loc) (R : w64 → IProp GF) :
+    Persistent (isGenerator g R) := by
+  rw [isGenerator_unseal]; unfold isGeneratorDef; infer_instance
 
 theorem lowbit_eq (x n : w64) (H : 0 < uint.Z n ∧ uint.Z n < 64) :
     x &&& (W64 18446744073709551615 >>> (W64 64 - n)) = W64 (uint.Z x % 2 ^ uint.nat n) := by
@@ -167,7 +167,7 @@ theorem lowbit_eq (x n : w64) (H : 0 < uint.Z n ∧ uint.Z n < 64) :
 /-- Specialized to 48 low bits. (NOTE (Rocq): need `0 < uint.Z n` because
 there's no guarantees about `word.sru` when the shift amount is the width.) -/
 theorem wp_lowbit (x n : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ ⌜0 < uint.Z n ∧ uint.Z n < 64⌝ }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ ⌜0 < uint.Z n ∧ uint.Z n < 64⌝ }}
       (App (App (Val (@! lowbit)) (Val #x)) (Val #n))
     {{ RET #(W64 (uint.Z x % 2 ^ uint.nat n)); True }} := by
   wp_start as %H
@@ -217,13 +217,13 @@ theorem take_token (Φ : Int → IProp GF) (a n : Int) (M : Nat) (hlt : n.toNat 
 
 /-- Lean deviation: proved (Rocq: admitted) using time receipts, for every
 time-receipt bound; the postcondition gives `R i` under the premise
-`receipt_bound GF ≤ 2^48` (Rocq: `R i`), see the module docstring. -/
-theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_Generator g R }}
+`receiptBound GF ≤ 2^48` (Rocq: `R i`), see the module docstring. -/
+theorem Generator.wp_Next (g : loc) (R : w64 → IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isGenerator g R }}
       (App (Val (g @!! go.type.PointerType Generator @!! go!"Next")) (Val #()))
-    {{ (i : w64), RET #i; ⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i }} := by
+    {{ (i : w64), RET #i; ⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i }} := by
   wp_start as H
-  rw [is_Generator_unseal]; unfold is_Generator_def
+  rw [isGenerator_unseal]; unfold isGeneratorDef
   icases H with ⟨%pfx, #Hpfx, #Hinv, -⟩
   wp_alloc g_ptr as Hg
   wp_pure
@@ -247,7 +247,7 @@ theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
   iframe suffix'
   iintro suffix'
   icases take_token (fun i => R (W64 (pfx * 2 ^ 48 + i % 2 ^ 48))) (init + num_used) num_used
-    (receipt_bound GF) Hlt $$ HR with ⟨HRi, HR⟩
+    (receiptBound GF) Hlt $$ HR with ⟨HRi, HR⟩
   imod Hmask with -
   imod Hclose $$ [suffix' Hused HR] with -
   · inext
@@ -268,14 +268,14 @@ theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
   rw [e, or_prefix]
   iapply HΦ $$ HRi
 
-/-- Allocating the invariant of `is_Generator` (`2^48` is kept abstract as `N`,
+/-- Allocating the invariant of `isGenerator` (`2^48` is kept abstract as `N`,
 see `ids_bigSepL_sub`). -/
-theorem is_Generator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 0 (2^64)) (g : loc)
+theorem isGenerator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 0 (2^64)) (g : loc)
     (memberID : w16) (sv : w64) :
     ⊢ g.[Generator.t, go!"prefix"] ↦ W64 (uint.Z memberID * 2 ^ 48) -∗
       g.[Generator.t, go!"suffix"] ↦ sv -∗
       ([∗list] i ∈ L, R (W64 i)) ={⊤}=∗
-      is_Generator g R := by
+      isGenerator g R := by
   iintro prefix' suffix HR
   imod receipt_zero (GF := GF) with H0
   have hp : 0 ≤ uint.Z memberID ∧ uint.Z memberID < 2 ^ 16 := by word
@@ -299,7 +299,7 @@ theorem is_Generator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 
     iapply (ids_bigSepL_sub R _ _ hp L hL N hN)
     iexact HR
   imodintro
-  rw [is_Generator_unseal]; unfold is_Generator_def
+  rw [isGenerator_unseal]; unfold isGeneratorDef
   rw [← hN]
   iexists (uint.Z memberID)
   iframe #
@@ -307,13 +307,13 @@ theorem is_Generator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 
 /-- `wp_NewGenerator` with the list `seqZ 0 (2^64)` abstracted as `L`. -/
 theorem wp_NewGenerator' (R : w64 → IProp GF)
     (memberID : w16) (now : time.Time.t) (L : List Int) (hL : L = seqZ 0 (2^64)) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ L, R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
-    {{ (g : loc), RET #g; is_Generator g R }} := by
+    {{ (g : loc), RET #g; isGenerator g R }} := by
   wp_start as HR
   wp_auto
-  wp_apply time.wp_Time__UnixNano $$ [$now] as %nowNano now
+  wp_apply time.Time.wp_UnixNano $$ [$now] as %nowNano now
   wp_apply wp_lowbit
   · ipureintro; word
   wp_alloc g as Hg
@@ -323,7 +323,7 @@ theorem wp_NewGenerator' (R : w64 → IProp GF)
   have hpre : (W64 (uint.Z memberID) <<< W64 48 : w64) = W64 (uint.Z memberID * 2 ^ 48) := by
     word
   rw [hpre]
-  imod is_Generator_alloc R L hL g memberID
+  imod isGenerator_alloc R L hL g memberID
     (W64 (uint.Z (nowNano / BitVec.sdiv (W64 1000000) (W64 1)) % 2 ^ 40) <<< W64 8 : w64)
     $$ prefix' suffix HR with Hgen
   iapply HΦ $$ Hgen
@@ -333,10 +333,10 @@ the range of IDs with future timestamps, since the old ones might've been used
 before a crash+restart. -/
 theorem wp_NewGenerator (R : w64 → IProp GF)
     (memberID : w16) (now : time.Time.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
-    {{ (g : loc), RET #g; is_Generator g R }} :=
+    {{ (g : loc), RET #g; isGenerator g R }} :=
   wp_NewGenerator' R memberID now _ rfl
 
 end wps

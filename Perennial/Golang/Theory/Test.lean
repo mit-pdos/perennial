@@ -324,7 +324,7 @@ example (l : loc) (v : w64) (Φ : val → IProp GF) :
 bounds check `0 ≤ 0` of `wp_load_slice_index`). -/
 example (sl : slice.t) (x : w64) (Φ : val → IProp GF) :
     sl ↦* [x] ∗ (sl ↦* [x] -∗ Φ #x) ⊢
-      WP (App (Val (GoInstruction (GoLoad go.uint64))) (Val #(slice_index_ref w64 0 sl))) {{ Φ }} := by
+      WP (App (Val (GoInstruction (GoLoad go.uint64))) (Val #(sliceIndexRef w64 0 sl))) {{ Φ }} := by
   iintro ⟨Hs, H⟩
   wp_apply wp_load_slice_index sl 0 [x] _ x $$ [$Hs] as Hs
   · ipureintro; rfl

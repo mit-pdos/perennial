@@ -2,79 +2,79 @@
 Port of `src/Helpers/Word/LittleEndian.v`: little-endian encodings of `w64`
 and `w32`.
 
-Rocq seals these definitions (`u64_le := sealed u64_le_def`); here they are
+Rocq seals these definitions (`u64Le := sealed u64LeDef`); here they are
 plain definitions with the same `_def`/`_unseal` names, so that
-`rw [u64_le_unseal]` still works.
+`rw [u64Le_unseal]` still works.
 -/
 import Perennial.Std.LittleEndian
 import Perennial.Std.ListLen
 
 namespace Perennial
 
-def u64_le_def (x : u64) : List byte := LittleEndian.split 8 x.toNat
-def u64_le (x : u64) : List byte := u64_le_def x
-theorem u64_le_unseal : @u64_le = @u64_le_def := rfl
+def u64LeDef (x : U64) : List Byte := LittleEndian.split 8 x.toNat
+def u64Le (x : U64) : List Byte := u64LeDef x
+theorem u64Le_unseal : @u64Le = @u64LeDef := rfl
 
-def u32_le_def (x : u32) : List byte := LittleEndian.split 4 x.toNat
-def u32_le (x : u32) : List byte := u32_le_def x
-theorem u32_le_unseal : @u32_le = @u32_le_def := rfl
+def u32LeDef (x : U32) : List Byte := LittleEndian.split 4 x.toNat
+def u32Le (x : U32) : List Byte := u32LeDef x
+theorem u32Le_unseal : @u32Le = @u32LeDef := rfl
 
-def le_to_u64_def (l : List byte) : u64 := BitVec.ofNat 64 (LittleEndian.combine l)
-def le_to_u64 (l : List byte) : u64 := le_to_u64_def l
-theorem le_to_u64_unseal : @le_to_u64 = @le_to_u64_def := rfl
+def leToU64Def (l : List Byte) : U64 := BitVec.ofNat 64 (LittleEndian.combine l)
+def leToU64 (l : List Byte) : U64 := leToU64Def l
+theorem leToU64_unseal : @leToU64 = @leToU64Def := rfl
 
-def le_to_u32_def (l : List byte) : u32 := BitVec.ofNat 32 (LittleEndian.combine l)
-def le_to_u32 (l : List byte) : u32 := le_to_u32_def l
-theorem le_to_u32_unseal : @le_to_u32 = @le_to_u32_def := rfl
+def leToU32Def (l : List Byte) : U32 := BitVec.ofNat 32 (LittleEndian.combine l)
+def leToU32 (l : List Byte) : U32 := leToU32Def l
+theorem leToU32_unseal : @leToU32 = @leToU32Def := rfl
 
 /-! ### 64-bit -/
 
-theorem u64_le_0 : u64_le (W64 0) = List.replicate 8 (W8 0) := by decide
+theorem u64Le_0 : u64Le (W64 0) = List.replicate 8 (W8 0) := by decide
 
-@[len] theorem u64_le_length (x : u64) : (u64_le x).length = 8 := LittleEndian.length_split _ _
+@[len] theorem u64Le_length (x : U64) : (u64Le x).length = 8 := LittleEndian.length_split _ _
 
-theorem u64_le_to_word (x : u64) : le_to_u64 (u64_le x) = x := by
-  simp only [le_to_u64, le_to_u64_def, u64_le, u64_le_def, LittleEndian.combine_split]
+theorem u64Le_to_word (x : U64) : leToU64 (u64Le x) = x := by
+  simp only [leToU64, leToU64Def, u64Le, u64LeDef, LittleEndian.combine_split]
   apply BitVec.eq_of_toNat_eq
   simp only [BitVec.toNat_ofNat]
   have := x.isLt; omega
 
-theorem le_to_u64_le (bs : List byte) (h : bs.length = 8) : u64_le (le_to_u64 bs) = bs := by
-  simp only [le_to_u64, le_to_u64_def, u64_le, u64_le_def, BitVec.toNat_ofNat]
+theorem leToU64_le (bs : List Byte) (h : bs.length = 8) : u64Le (leToU64 bs) = bs := by
+  simp only [leToU64, leToU64Def, u64Le, u64LeDef, BitVec.toNat_ofNat]
   have := LittleEndian.combine_bound bs
   rw [h] at this
   rw [Nat.mod_eq_of_lt this]
   exact LittleEndian.split_combine 8 bs h
 
-theorem u64_le_inj {x y : u64} (h : u64_le x = u64_le y) : x = y := by
-  have := congrArg le_to_u64 h; rwa [u64_le_to_word, u64_le_to_word] at this
+theorem u64Le_inj {x y : U64} (h : u64Le x = u64Le y) : x = y := by
+  have := congrArg leToU64 h; rwa [u64Le_to_word, u64Le_to_word] at this
 
 /-! ### 32-bit -/
 
-theorem u32_le_0 : u32_le (W32 0) = List.replicate 4 (W8 0) := by decide
+theorem u32Le_0 : u32Le (W32 0) = List.replicate 4 (W8 0) := by decide
 
-@[len] theorem u32_le_length (x : u32) : (u32_le x).length = 4 := LittleEndian.length_split _ _
+@[len] theorem u32Le_length (x : U32) : (u32Le x).length = 4 := LittleEndian.length_split _ _
 
-theorem u32_le_to_word (x : u32) : le_to_u32 (u32_le x) = x := by
-  simp only [le_to_u32, le_to_u32_def, u32_le, u32_le_def, LittleEndian.combine_split]
+theorem u32Le_to_word (x : U32) : leToU32 (u32Le x) = x := by
+  simp only [leToU32, leToU32Def, u32Le, u32LeDef, LittleEndian.combine_split]
   apply BitVec.eq_of_toNat_eq
   simp only [BitVec.toNat_ofNat]
   have := x.isLt; omega
 
-theorem le_to_u32_le (bs : List byte) (h : bs.length = 4) : u32_le (le_to_u32 bs) = bs := by
-  simp only [le_to_u32, le_to_u32_def, u32_le, u32_le_def, BitVec.toNat_ofNat]
+theorem leToU32_le (bs : List Byte) (h : bs.length = 4) : u32Le (leToU32 bs) = bs := by
+  simp only [leToU32, leToU32Def, u32Le, u32LeDef, BitVec.toNat_ofNat]
   have := LittleEndian.combine_bound bs
   rw [h] at this
   rw [Nat.mod_eq_of_lt this]
   exact LittleEndian.split_combine 4 bs h
 
-theorem u32_le_inj {x y : u32} (h : u32_le x = u32_le y) : x = y := by
-  have := congrArg le_to_u32 h; rwa [u32_le_to_word, u32_le_to_word] at this
+theorem u32Le_inj {x y : U32} (h : u32Le x = u32Le y) : x = y := by
+  have := congrArg leToU32 h; rwa [u32Le_to_word, u32Le_to_word] at this
 
-theorem combine_bound (bs : List byte) : LittleEndian.combine bs < 2 ^ (8 * bs.length) :=
+theorem combine_bound (bs : List Byte) : LittleEndian.combine bs < 2 ^ (8 * bs.length) :=
   LittleEndian.combine_bound bs
 
-theorem combine_unfold (b : byte) (bs : List byte) :
+theorem combine_unfold (b : Byte) (bs : List Byte) :
     LittleEndian.combine (b :: bs) = uint.nat b + 256 * LittleEndian.combine bs := rfl
 
 end Perennial

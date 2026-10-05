@@ -125,43 +125,43 @@ section defs
 variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
 
 /-- These are the predeclareds that are modeled as taking up a single heap
-location. A `class` (Rocq: plain inductive) so that the `[is_predeclared u]`
+location. A `class` (Rocq: plain inductive) so that the `[IsPredeclared u]`
 premises below are found by typeclass search. -/
-class inductive is_predeclared : go.type → Prop
-  | is_predeclared_uint : is_predeclared go.uint
-  | is_predeclared_uint8 : is_predeclared go.uint8
-  | is_predeclared_uint16 : is_predeclared go.uint16
-  | is_predeclared_uint32 : is_predeclared go.uint32
-  | is_predeclared_uint64 : is_predeclared go.uint64
-  | is_predeclared_uintptr : is_predeclared go.uintptr
-  | is_predeclared_int : is_predeclared go.int
-  | is_predeclared_int8 : is_predeclared go.int8
-  | is_predeclared_int16 : is_predeclared go.int16
-  | is_predeclared_int32 : is_predeclared go.int32
-  | is_predeclared_int64 : is_predeclared go.int64
-  | is_predeclared_string : is_predeclared go.string
-  | is_predeclared_bool : is_predeclared go.bool
-  | is_predeclared_Pointer : is_predeclared unsafe.Pointer
-  | is_predeclared_float32 : is_predeclared go.float32
-  | is_predeclared_float64 : is_predeclared go.float64
+class inductive IsPredeclared : go.type → Prop
+  | isPredeclared_uint : IsPredeclared go.uint
+  | isPredeclared_uint8 : IsPredeclared go.uint8
+  | isPredeclared_uint16 : IsPredeclared go.uint16
+  | isPredeclared_uint32 : IsPredeclared go.uint32
+  | isPredeclared_uint64 : IsPredeclared go.uint64
+  | isPredeclared_uintptr : IsPredeclared go.uintptr
+  | isPredeclared_int : IsPredeclared go.int
+  | isPredeclared_int8 : IsPredeclared go.int8
+  | isPredeclared_int16 : IsPredeclared go.int16
+  | isPredeclared_int32 : IsPredeclared go.int32
+  | isPredeclared_int64 : IsPredeclared go.int64
+  | isPredeclared_string : IsPredeclared go.string
+  | isPredeclared_bool : IsPredeclared go.bool
+  | isPredeclared_Pointer : IsPredeclared unsafe.Pointer
+  | isPredeclared_float32 : IsPredeclared go.float32
+  | isPredeclared_float64 : IsPredeclared go.float64
   -- Treating this like a predeclared too.
-  | is_predeclared_proph_id : is_predeclared go.proph_id
+  | isPredeclared_proph_id : IsPredeclared go.proph_id
 
-attribute [instance] is_predeclared.is_predeclared_uint is_predeclared.is_predeclared_uint8
-  is_predeclared.is_predeclared_uint16 is_predeclared.is_predeclared_uint32
-  is_predeclared.is_predeclared_uint64 is_predeclared.is_predeclared_uintptr
-  is_predeclared.is_predeclared_int
-  is_predeclared.is_predeclared_int8 is_predeclared.is_predeclared_int16
-  is_predeclared.is_predeclared_int32 is_predeclared.is_predeclared_int64
-  is_predeclared.is_predeclared_string is_predeclared.is_predeclared_bool
-  is_predeclared.is_predeclared_Pointer is_predeclared.is_predeclared_float32
-  is_predeclared.is_predeclared_float64 is_predeclared.is_predeclared_proph_id
-export is_predeclared (is_predeclared_uint is_predeclared_uint8 is_predeclared_uint16
-  is_predeclared_uint32 is_predeclared_uint64 is_predeclared_uintptr is_predeclared_int
-  is_predeclared_int8
-  is_predeclared_int16 is_predeclared_int32 is_predeclared_int64 is_predeclared_string
-  is_predeclared_bool is_predeclared_Pointer is_predeclared_float32 is_predeclared_float64
-  is_predeclared_proph_id)
+attribute [instance] IsPredeclared.isPredeclared_uint IsPredeclared.isPredeclared_uint8
+  IsPredeclared.isPredeclared_uint16 IsPredeclared.isPredeclared_uint32
+  IsPredeclared.isPredeclared_uint64 IsPredeclared.isPredeclared_uintptr
+  IsPredeclared.isPredeclared_int
+  IsPredeclared.isPredeclared_int8 IsPredeclared.isPredeclared_int16
+  IsPredeclared.isPredeclared_int32 IsPredeclared.isPredeclared_int64
+  IsPredeclared.isPredeclared_string IsPredeclared.isPredeclared_bool
+  IsPredeclared.isPredeclared_Pointer IsPredeclared.isPredeclared_float32
+  IsPredeclared.isPredeclared_float64 IsPredeclared.isPredeclared_proph_id
+export IsPredeclared (isPredeclared_uint isPredeclared_uint8 isPredeclared_uint16
+  isPredeclared_uint32 isPredeclared_uint64 isPredeclared_uintptr isPredeclared_int
+  isPredeclared_int8
+  isPredeclared_int16 isPredeclared_int32 isPredeclared_int64 isPredeclared_string
+  isPredeclared_bool isPredeclared_Pointer isPredeclared_float32 isPredeclared_float64
+  isPredeclared_proph_id)
 
 class ProphIdSemantics [GoSemanticsFunctions] : Prop where
   underlying_proph_id : go.proph_id ↓u go.proph_id
@@ -764,7 +764,7 @@ assumption, not a separate choice. So `uintptr` is modelled exactly like `uint`/
 
 * values are `w64` (it shares the `TypeReprUnderlying _ w64` representation with
   `uint`/`uint64`/`int`/`int64`), the zero value is `W64 0`, and it is strictly comparable;
-* it occupies one heap location (`is_predeclared_uintptr`);
+* it occupies one heap location (`isPredeclared_uintptr`);
 * arithmetic, bitwise operations and shifts are the unsigned `w64` ones (wrapping mod 2^64,
   `>>` logical), comparisons are unsigned (`uint.Z`), as for `uint64`;
 * conversions to and from the other integer types (and from untyped integer constants) are
@@ -862,7 +862,7 @@ class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_float : go.untyped_float ↓u go.untyped_float
   convert_untyped_float64 (v : w64) : ⟦Convert go.untyped_float go.float64, #v⟧ ⤳[under] #v
   convert_untyped_float32 (v : w64) : ⟦Convert go.untyped_float go.float32, #v⟧
-    ⤳[under] #(float64_to_float32 v)
+    ⤳[under] #(float64ToFloat32 v)
 
 attribute [instance] UntypedFloatSemantics.underlying_untyped_float
   UntypedFloatSemantics.convert_untyped_float64 UntypedFloatSemantics.convert_untyped_float32
@@ -874,16 +874,16 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
   comparable_float64 : ⟦CheckComparable go.float64, #()⟧ ⤳[under] #()
   underlying_float64 : go.float64 ↓u go.float64
   go_eq_float64 : IsStrictlyComparable go.float64 w64
-  le_float64 (v1 v2 : w64) : ⟦GoOp GoLe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_leb v1 v2)
+  le_float64 (v1 v2 : w64) : ⟦GoOp GoLe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Leb v1 v2)
   lt_float64 (v1 v2 : w64) : ⟦GoOp GoLt go.float64, (#v1, #v2)⟧
-    ⤳[under] #(float64_leb v1 v2 && decide (v1 ≠ v2))
-  ge_float64 (v1 v2 : w64) : ⟦GoOp GoGe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_leb v2 v1)
+    ⤳[under] #(float64Leb v1 v2 && decide (v1 ≠ v2))
+  ge_float64 (v1 v2 : w64) : ⟦GoOp GoGe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Leb v2 v1)
   gt_float64 (v1 v2 : w64) : ⟦GoOp GoGt go.float64, (#v1, #v2)⟧
-    ⤳[under] #(float64_leb v2 v1 && decide (v1 ≠ v2))
-  plus_float64 (v1 v2 : w64) : ⟦GoOp GoPlus go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_add v1 v2)
-  sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_sub v1 v2)
-  mul_float64 (v1 v2 : w64) : ⟦GoOp GoMul go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_mul v1 v2)
-  div_float64 (v1 v2 : w64) : ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_div v1 v2)
+    ⤳[under] #(float64Leb v2 v1 && decide (v1 ≠ v2))
+  plus_float64 (v1 v2 : w64) : ⟦GoOp GoPlus go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Add v1 v2)
+  sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Sub v1 v2)
+  mul_float64 (v1 v2 : w64) : ⟦GoOp GoMul go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Mul v1 v2)
+  div_float64 (v1 v2 : w64) : ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Div v1 v2)
 
 attribute [instance] Float64Semantics.go_zero_val_float64 Float64Semantics.comparable_float64
   Float64Semantics.underlying_float64 Float64Semantics.go_eq_float64 Float64Semantics.le_float64
@@ -898,16 +898,16 @@ class Float32Semantics [GoSemanticsFunctions] : Prop where
   comparable_float32 : ⟦CheckComparable go.float32, #()⟧ ⤳[under] #()
   underlying_float32 : go.float32 ↓u go.float32
   go_eq_float32 : IsStrictlyComparable go.float32 w32
-  le_float32 (v1 v2 : w32) : ⟦GoOp GoLe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_leb v1 v2)
+  le_float32 (v1 v2 : w32) : ⟦GoOp GoLe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Leb v1 v2)
   lt_float32 (v1 v2 : w32) : ⟦GoOp GoLt go.float32, (#v1, #v2)⟧
-    ⤳[under] #(float32_leb v1 v2 && decide (v1 ≠ v2))
-  ge_float32 (v1 v2 : w32) : ⟦GoOp GoGe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_leb v2 v1)
+    ⤳[under] #(float32Leb v1 v2 && decide (v1 ≠ v2))
+  ge_float32 (v1 v2 : w32) : ⟦GoOp GoGe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Leb v2 v1)
   gt_float32 (v1 v2 : w32) : ⟦GoOp GoGt go.float32, (#v1, #v2)⟧
-    ⤳[under] #(float32_leb v2 v1 && decide (v1 ≠ v2))
-  plus_float32 (v1 v2 : w32) : ⟦GoOp GoPlus go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_add v1 v2)
-  sub_float32 (v1 v2 : w32) : ⟦GoOp GoSub go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_sub v1 v2)
-  mul_float32 (v1 v2 : w32) : ⟦GoOp GoMul go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_mul v1 v2)
-  div_float32 (v1 v2 : w32) : ⟦GoOp GoDiv go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_div v1 v2)
+    ⤳[under] #(float32Leb v2 v1 && decide (v1 ≠ v2))
+  plus_float32 (v1 v2 : w32) : ⟦GoOp GoPlus go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Add v1 v2)
+  sub_float32 (v1 v2 : w32) : ⟦GoOp GoSub go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Sub v1 v2)
+  mul_float32 (v1 v2 : w32) : ⟦GoOp GoMul go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Mul v1 v2)
+  div_float32 (v1 v2 : w32) : ⟦GoOp GoDiv go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Div v1 v2)
 
 attribute [instance] Float32Semantics.go_zero_val_float32 Float32Semantics.comparable_float32
   Float32Semantics.underlying_float32 Float32Semantics.go_eq_float32 Float32Semantics.le_float32
@@ -918,14 +918,14 @@ export Float32Semantics (go_zero_val_float32 comparable_float32 underlying_float
   le_float32 lt_float32 ge_float32 gt_float32 plus_float32 sub_float32 mul_float32 div_float32)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
-  alloc_predeclared (u : go.type) [H : is_predeclared u] (v : val) :
-    ⟦GoAlloc u, v⟧ ⤳[internal_under] Alloc v
-  load_predeclared (u : go.type) [H : is_predeclared u] (l : val) :
-    ⟦GoLoad u, l⟧ ⤳[internal_under] Read l
-  store_predeclared (u : go.type) [H : is_predeclared u] (l v : val) :
-    ⟦GoStore u, (l, v)⟧ ⤳[internal_under] Store l v
+  alloc_predeclared (u : go.type) [H : IsPredeclared u] (v : val) :
+    ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
+  load_predeclared (u : go.type) [H : IsPredeclared u] (l : val) :
+    ⟦GoLoad u, l⟧ ⤳[internalUnder] Read l
+  store_predeclared (u : go.type) [H : IsPredeclared u] (l v : val) :
+    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
 
-  predeclared_underlying (t : go.type) (H : is_predeclared t) : underlying t = t
+  predeclared_underlying (t : go.type) (H : IsPredeclared t) : underlying t = t
 
   len_underlying (t : go.type) : functions len [t] = functions len [underlying t]
   cap_underlying (t : go.type) : functions cap [t] = functions cap [underlying t]

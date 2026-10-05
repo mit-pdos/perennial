@@ -59,28 +59,28 @@ theorem swap_perm {T : Type} (xs : List T) (i j : Nat) (xi xj : T)
     xs ≡ₚ (<[i := xj]> (<[j := xi]> xs)) :=
   (Permutation_insert_swap xs j i xj xi hj hi).symm
 
-def outside_same {T : Type} (xs xs' : List T) (a b : Nat) : Prop :=
+def OutsideSame {T : Type} (xs xs' : List T) (a b : Nat) : Prop :=
   ∀ i, i < a ∨ i ≥ b → xs[i]? = xs'[i]?
 
-theorem outside_same_refl {T : Type} (xs : List T) (a b : Nat) : outside_same xs xs a b :=
+theorem outsideSame_refl {T : Type} (xs : List T) (a b : Nat) : OutsideSame xs xs a b :=
   fun _ _ => rfl
 
-theorem outside_same_trans {T : Type} (a b : Nat) (xs0 xs1 xs2 : List T) :
-    outside_same xs0 xs1 a b → outside_same xs1 xs2 a b → outside_same xs0 xs2 a b :=
+theorem outsideSame_trans {T : Type} (a b : Nat) (xs0 xs1 xs2 : List T) :
+    OutsideSame xs0 xs1 a b → OutsideSame xs1 xs2 a b → OutsideSame xs0 xs2 a b :=
   fun h1 h2 i hi => (h1 i hi).trans (h2 i hi)
 
-theorem outside_same_swap {T : Type} (xs : List T) (i j : Nat) (xi xj : T) (a b : Nat)
+theorem outsideSame_swap {T : Type} (xs : List T) (i j : Nat) (xi xj : T) (a b : Nat)
     (hi : a ≤ i ∧ i < b) (hj : a ≤ j ∧ j < b) :
-    outside_same xs (<[i := xj]> (<[j := xi]> xs)) a b := by
+    OutsideSame xs (<[i := xj]> (<[j := xi]> xs)) a b := by
   intro k hk
   rw [list_lookup_insert_ne _ _ (by omega), list_lookup_insert_ne _ _ (by omega)]
 
-theorem outside_same_loosen {T : Type} (xs xs' : List T) (a b a1 b1 : Nat) :
-    outside_same xs xs' a b → a1 ≤ a → b1 ≥ b → outside_same xs xs' a1 b1 :=
+theorem outsideSame_loosen {T : Type} (xs xs' : List T) (a b a1 b1 : Nat) :
+    OutsideSame xs xs' a b → a1 ≤ a → b1 ≥ b → OutsideSame xs xs' a1 b1 :=
   fun h ha hb i hi => h i (by omega)
 
-theorem outside_same__decompose {T : Type} (xsa xsb : List T) (a b : Nat)
-    (H : outside_same xsa xsb a b) (hab : a ≤ b) :
+theorem outsideSame_decompose {T : Type} (xsa xsb : List T) (a b : Nat)
+    (H : OutsideSame xsa xsb a b) (hab : a ≤ b) :
     xsa = xsa.take a ++ (xsa.drop a).take (b - a) ++ xsa.drop b ∧
     xsb = xsa.take a ++ (xsb.drop a).take (b - a) ++ xsa.drop b := by
   have split : ∀ (l : List T), l = l.take a ++ (l.drop a).take (b - a) ++ l.drop b := by
@@ -103,10 +103,10 @@ theorem outside_same__decompose {T : Type} (xsa xsb : List T) (a b : Nat)
   rw [ht, hd]; exact split xsb
 
 theorem Permutation_existsIndex {T : Type} (xs xs' : List T) (i a b : Nat) (x : T)
-    (Hperm : xs ≡ₚ xs') (Hsame : outside_same xs xs' a b)
+    (Hperm : xs ≡ₚ xs') (Hsame : OutsideSame xs xs' a b)
     (Hb : (a ≤ i ∧ i < b) ∧ b ≤ xs.length) (Hx : xs[i]? = some x) :
     ∃ i0, xs'[i0]? = some x ∧ (a ≤ i0 ∧ i0 < b) := by
-  obtain ⟨Hxs, Hxs'⟩ := outside_same__decompose xs xs' a b Hsame (by omega)
+  obtain ⟨Hxs, Hxs'⟩ := outsideSame_decompose xs xs' a b Hsame (by omega)
   have Hmid : (xs.drop a).take (b - a) ≡ₚ (xs'.drop a).take (b - a) := by
     have h := Hperm
     rw [Hxs, Hxs'] at h
@@ -161,25 +161,25 @@ variable {E : Type} (R : E → E → Prop)
 def is_sorted (l : List E) : Prop :=
   ∀ (i j : Nat) xi xj, i < j → l[i]? = some xi → l[j]? = some xj → ¬ R xj xi
 
-def is_sorted_seg (l : List E) (st ed : Nat) : Prop :=
+def IsSortedSeg (l : List E) (st ed : Nat) : Prop :=
   ∀ (i j : Nat) xi xj, (st ≤ i ∧ i < j) ∧ j < ed →
     l[i]? = some xi → l[j]? = some xj → ¬ R xj xi
 
-theorem is_sorted_seg__is_sorted (l : List E) :
-    is_sorted_seg R l 0 l.length → is_sorted R l := by
+theorem isSortedSeg_is_sorted (l : List E) :
+    IsSortedSeg R l 0 l.length → is_sorted R l := by
   intro H i j xi xj hij hi hj
   exact H i j xi xj ⟨⟨by omega, hij⟩, lookup_lt_Some hj⟩ hi hj
 
-def one_le_seg (xs : List E) (i l r : Nat) : Prop :=
+def OneLeSeg (xs : List E) (i l r : Nat) : Prop :=
   ∀ xi (j : Nat) xj, l ≤ j ∧ j < r → xs[i]? = some xi → xs[j]? = some xj → ¬ R xj xi
 
 def header (xs : List E) (a b : Nat) : Prop :=
-  if a = 0 then True else one_le_seg R xs (a - 1) a b
+  if a = 0 then True else OneLeSeg R xs (a - 1) a b
 
-theorem header__preserve (xs xs' : List E) (a b : Nat) :
-    header R xs a b → xs ≡ₚ xs' → outside_same xs xs' a b → b ≤ xs.length →
+theorem header_preserve (xs xs' : List E) (a b : Nat) :
+    header R xs a b → xs ≡ₚ xs' → OutsideSame xs xs' a b → b ≤ xs.length →
     header R xs' a b := by
-  unfold header one_le_seg outside_same
+  unfold header OneLeSeg OutsideSame
   intro H Hperm Hsame Hb
   by_cases ha : a = 0
   · simp [ha]
@@ -205,25 +205,25 @@ variable (R : E → E → Prop)
 /-- The comparison function implements `R`. The sort implementation only ever
 checks `cmp x y < 0`; it does not distinguish between 0 and positive
 comparisons. -/
-def cmp_implements (cmp_code : func.t) : IProp GF :=
+def cmpImplements (cmp_code : func.t) : IProp GF :=
   iprop(∀ (x y : E),
     {{ True }}
       (App (App (Val #cmp_code) (Val #x)) (Val #y))
     {{ (r : w64), RET #r; ⌜sint.Z r < 0 ↔ R x y⌝ }})
 
-instance cmp_implements_persistent (cmp_code : func.t) :
-    Persistent (cmp_implements (GF := GF) R cmp_code) := by
-  unfold cmp_implements; infer_instance
+instance cmpImplements_persistent (cmp_code : func.t) :
+    Persistent (cmpImplements (GF := GF) R cmp_code) := by
+  unfold cmpImplements; infer_instance
 
 theorem wp_order2CmpFunc [StrictWeakOrder R] (data : slice.t) (a b : w64) (swaps_l : loc)
     (cmp_code : func.t) (dq : DFrac) (xs : List E) (swaps : w64) (xa xb : E)
     (Ha_bound : 0 ≤ sint.Z a) (Hb_bound : 0 ≤ sint.Z b) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦*{dq} xs ∗
         "%Hxa" ∷ ⌜xs[sint.nat a]? = some xa⌝ ∗
         "%Hxb" ∷ ⌜xs[sint.nat b]? = some xb⌝ ∗
         "Hswaps" ∷ swaps_l ↦ swaps ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code }}
+        "#Hcmp" ∷ cmpImplements R cmp_code }}
       (App (App (App (App (App (Val #(functions order2CmpFunc [Et])) (Val #data)) (Val #a))
         (Val #b)) (Val #swaps_l)) (Val #cmp_code))
     {{ (a' b' : w64) (swaps' : w64), RET (PairV #a' #b');
@@ -233,7 +233,7 @@ theorem wp_order2CmpFunc [StrictWeakOrder R] (data : slice.t) (a b : w64) (swaps
   wp_start as H
   iNamed H
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
   have := lookup_lt_Some Hxa
   have := lookup_lt_Some Hxb
   slice_index_if
@@ -242,7 +242,7 @@ theorem wp_order2CmpFunc [StrictWeakOrder R] (data : slice.t) (a b : w64) (swaps
   slice_index_if
   wp_apply wp_load_slice_index data (sint.Z a) xs dq xa Ha_bound $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; exact Hxa
-  unfold cmp_implements
+  unfold cmpImplements
   wp_apply Hcmp with %r %Hr
   wp_if_destruct
   · iapply HΦ

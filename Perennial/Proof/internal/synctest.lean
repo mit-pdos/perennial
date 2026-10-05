@@ -19,17 +19,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.synctest.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.internal.synctest :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.internal.synctest :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.internal.synctest :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.internal.synctest :=
   build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.internal.synctest get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.internal.synctest get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.internal.synctest }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.internal.synctest }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -41,7 +41,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
 /-- `synctest.Run` is not supported by Perennial; it changes the semantics of go
 programs because it messes with runtime state (i.e. it creates a new bubble). -/
 theorem wp_Run (v : func.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.internal.synctest ∗ False }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.internal.synctest ∗ False }}
       (App (Val (@! Run)) (Val #v))
     {{ RET #(); True }} := by
   wp_start as ⟨⟩
@@ -49,7 +49,7 @@ theorem wp_Run (v : func.t) :
 /-- `synctest.IsInBubble` always returns false since Perennial doesn't permit
 `synctest.Run`. -/
 theorem wp_IsInBubble :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.internal.synctest }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.internal.synctest }}
       (App (Val (@! IsInBubble)) (Val #()))
     {{ RET #false; True }} := by
   wp_start

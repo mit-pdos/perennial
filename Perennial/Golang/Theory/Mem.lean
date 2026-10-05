@@ -39,14 +39,14 @@ class AtomicWps (V : Type) [TypedPointsto (GF := GF) V] [ZeroVal V] : Prop where
 export AtomicWps (wp_cmpxchg_fail wp_cmpxchg_suc wp_atomic_load wp_atomic_swap)
 
 /-- Prove `AtomicWps V` for a type whose typed points-to is
-`heap_pointsto l dq #v` (Rocq `solve_atomic_wps`). -/
+`heapPointsto l dq #v` (Rocq `solve_atomic_wps`). -/
 macro "solve_atomic_wps" : tactic => `(tactic| (
   constructor
-  all_goals try simp only [typed_pointsto_unseal, typed_pointsto_wrap, typed_pointsto_def_heap]
+  all_goals try simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap]
   · intro l v' v1 v2 dq s E Hne
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, >%Hnn⟩
-    iapply Perennial.wp_cmpxchg_fail l dq #v' #v1 #v2 (fun h => Hne (go.into_val_inj h)) $$ Hl
+    iapply Perennial.wp_cmpxchg_fail l dq #v' #v1 #v2 (fun h => Hne (go.intoVal_inj h)) $$ Hl
     inext; iintro Hl
     iapply HΦ; iframe Hl; ipureintro; exact Hnn
   · intro l v' v1 v2 s E Heq
@@ -138,7 +138,7 @@ theorem access_split {Δ Δ' P A : IProp GF} {p : Bool} [h : Access A A P P]
     iframe HΔ' HP
 
 theorem tac_wp_load {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
-    [IntoValTyped (GF := GF) V t] {K : List ectx_item} {l : loc} {v : V} {dq : DFrac}
+    [IntoValTyped (GF := GF) V t] {K : List EctxItem} {l : loc} {v : V} {dq : DFrac}
     {Δ Δ' P : IProp GF} {p : Bool} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     [hacc : Access (l ↦{dq} v) (l ↦{dq} v) P P]
     (hsplit : Δ ⊣⊢ Δ' ∗ iprop(□?p P)) (h : Δ ⊢ WP (fill K (Val #v)) @ s; E {{ Φ }}) :
@@ -153,7 +153,7 @@ theorem tac_wp_load {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (G
   iapply Hclose $$ HA
 
 theorem tac_wp_store {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
-    [IntoValTyped (GF := GF) V t] {K : List ectx_item} {l : loc} {v w : V}
+    [IntoValTyped (GF := GF) V t] {K : List EctxItem} {l : loc} {v w : V}
     {Δ Δ' Δ'' P P' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     [hacc : Access (l ↦ v) (l ↦ w) P P']
     (hsplit : Δ ⊣⊢ Δ' ∗ P) (hadd : Δ' ∗ P' ⊣⊢ Δ'')
@@ -172,7 +172,7 @@ theorem tac_wp_store {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (
   iapply Hclose $$ HA
 
 theorem tac_wp_alloc {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
-    [IntoValTyped (GF := GF) V t] {K : List ectx_item} {v : V}
+    [IntoValTyped (GF := GF) V t] {K : List EctxItem} {v : V}
     {Δ : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (h : ∀ l : loc, Δ ∗ (l ↦ v) ⊢ WP (fill K (Val #l)) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K (App (Val (GoInstruction (GoAlloc t))) (Val #v))) @ s; E {{ Φ }} := by
@@ -193,7 +193,7 @@ variable [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] 
 /-- A function literal value is the Go function value `#(func.mk f x e)` (used
 by `wp_store` to store function literals). -/
 theorem recv_eq_func_mk (f x : binder) (e : expr) : (RecV f x e : val) = #(func.mk f x e) := by
-  rw [go.into_val_unfold func.t]
+  rw [go.intoVal_unfold func.t]
 
 end func_lit
 
@@ -202,11 +202,11 @@ end func_lit
 section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
-/-- If `e` is `#x` (`into_val x`), return `(V, x)`. -/
+/-- If `e` is `#x` (`intoVal x`), return `(V, x)`. -/
 def isIntoVal? (e : Expr) : MetaM (Option (Expr × Expr)) := do
   let e ← instantiateMVars e
   let e := e.consumeMData
-  if e.isAppOfArity ``GoGlobalContext.into_val 4 then
+  if e.isAppOfArity ``GoGlobalContext.intoVal 4 then
     return some (e.getArg! 2, e.getArg! 3)
   return none
 
@@ -279,7 +279,7 @@ def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       if ← isDefEq P' P then
         let r := hyps.remove true ivar
         let v ← instantiateMVars v
-        let vv ← instantiateMVars (← mkAppOptM ``GoGlobalContext.into_val
+        let vv ← instantiateMVars (← mkAppOptM ``GoGlobalContext.intoVal
           #[none, none, some (← instantiateMVars V), some v])
         let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext vv)
         let k := fun (h : Expr) => do
@@ -329,7 +329,7 @@ def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     if let some (hacc, P') ← synthAccess A A' P then
       let r := hyps.remove true ivar
       let ⟨ehyps'', hyps'', hadd⟩ := r.hyps'.add bi name ivar q(false) P'
-      let unitV ← instantiateMVars (← mkAppOptM ``GoGlobalContext.into_val
+      let unitV ← instantiateMVars (← mkAppOptM ``GoGlobalContext.intoVal
         #[none, none, some (mkConst ``Unit), some (mkConst ``Unit.unit)])
       let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext unitV)
       let k := fun (h : Expr) => do
@@ -398,7 +398,7 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       let letName? ← match K with
         | Ki :: _ =>
           let Ki ← whnfR Ki
-          if Ki.isAppOfArity ``ectx_item.AppRCtx 2 then
+          if Ki.isAppOfArity ``EctxItem.AppRCtx 2 then
             let f ← whnfR (Ki.getArg! 1)
             match_expr f with
             | Perennial.expr.Rec _ fb xb _ =>
@@ -436,7 +436,7 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     let pt ← instantiateMVars
       (← mkAppOptM ``typed_pointsto #[some GF, some V, some inst, some l, some v, some own1])
     let lv ← instantiateMVars
-      (← mkAppOptM ``GoGlobalContext.into_val #[none, none, some locTy, some l])
+      (← mkAppOptM ``GoGlobalContext.intoVal #[none, none, some locTy, some l])
     let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext lv)
     return (pt, filled)
   let hTy ← withLocalDeclD lName locTy fun l => do
@@ -543,7 +543,7 @@ theorem access_struct_field {l : loc} {v v' : V} {dq : DFrac} {A A' R : IProp GF
     (hP' : typed_pointsto_def l v' dq ⊣⊢ iprop(A' ∗ R)) :
     AccessStrict A A' (typed_pointsto l v dq) (typed_pointsto l v' dq) where
   access_strict := by
-    rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+    rw [typed_pointsto_unseal]; unfold typedPointstoWrap
     iintro ⟨H, %Hnn⟩
     icases hP.1 $$ H with ⟨HA, HR⟩
     iframe HA

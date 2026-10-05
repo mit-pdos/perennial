@@ -25,37 +25,37 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : etcdserverpb.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst :
+instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb :=
   build_get_is_pkg_init_wf
 
 /- FIXME (from Rocq): annoying to even state axioms about marshalling this
 stuff. Want to turn the protobuf data into Gallina. -/
 axiom InternalRaftRequestC : Type
-axiom own_InternalRaftRequest
+axiom ownInternalRaftRequest
     (req : etcdserverpb.InternalRaftRequest.t) (req_abs : InternalRaftRequestC) : IProp GF
-axiom is_RaftRequest_marshalled (req_abs : InternalRaftRequestC) (data : List w8) : Prop
+axiom IsRaftRequestMarshalled (req_abs : InternalRaftRequestC) (data : List w8) : Prop
 
-axiom own_InternalRaftRequest_new_header
+axiom ownInternalRaftRequest_new_header
     (req : etcdserverpb.InternalRaftRequest.t) (hdr_ptr : loc)
     (hdr : etcdserverpb.RequestHeader.t) (req_abs : InternalRaftRequestC) :
-    own_InternalRaftRequest (GF := GF) req req_abs -∗
+    ownInternalRaftRequest (GF := GF) req req_abs -∗
     hdr_ptr ↦ hdr -∗
-    ∃ req_abs', own_InternalRaftRequest ({ req with Header' := hdr_ptr }) req_abs'
+    ∃ req_abs', ownInternalRaftRequest ({ req with Header' := hdr_ptr }) req_abs'
 
-axiom wp_InternalRaftRequest__Marshal [package_sem : etcdserverpb.Assumptions] (m_ptr : loc) (m : etcdserverpb.InternalRaftRequest.t)
+axiom InternalRaftRequest.wp_Marshal [package_sem : etcdserverpb.Assumptions] (m_ptr : loc) (m : etcdserverpb.InternalRaftRequest.t)
     (msg : InternalRaftRequestC) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb ∗
-       m_ptr ↦ m ∗ own_InternalRaftRequest m msg }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb ∗
+       m_ptr ↦ m ∗ ownInternalRaftRequest m msg }}
       (App (Val (m_ptr @!! go.type.PointerType etcdserverpb.InternalRaftRequest @!! go!"Marshal"))
         (Val #()))
     {{ (dAtA_sl : slice.t) (err : error.t), RET #(dAtA_sl, err);
         m_ptr ↦ m ∗
-        own_InternalRaftRequest m msg ∗
+        ownInternalRaftRequest m msg ∗
         if decide (err = interface.nil) then
-          ∃ dAtA, dAtA_sl ↦*□ dAtA ∧ ⌜is_RaftRequest_marshalled msg dAtA⌝
+          ∃ dAtA, dAtA_sl ↦*□ dAtA ∧ ⌜IsRaftRequestMarshalled msg dAtA⌝
         else
           ⌜dAtA_sl = slice.nil⌝ }}
 

@@ -32,9 +32,9 @@ theorem wp_assume (b : Bool) (Φ : val → IProp GF) :
     iapply HΦ
     ipureintro; rfl
 
-theorem wp_assume_sum_no_overflow (x y : w64) (Φ : val → IProp GF) :
+theorem wp_assumeSumNoOverflow (x y : w64) (Φ : val → IProp GF) :
     iprop(⌜uint.Z x + uint.Z y < 2 ^ 64⌝ -∗ Φ #()) ⊢
-      WP (App (App (Val assume_sum_no_overflow) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
+      WP (App (App (Val assumeSumNoOverflow) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
   iintro HΦ
   wp_call
   wp_apply_core wp_assume
@@ -45,20 +45,20 @@ theorem wp_assume_sum_no_overflow (x y : w64) (Φ : val → IProp GF) :
   simp only [decide_eq_true_eq] at H
   word
 
-theorem wp_sum_assume_no_overflow (x y : w64) (Φ : val → IProp GF) :
+theorem wp_sumAssumeNoOverflow (x y : w64) (Φ : val → IProp GF) :
     iprop(⌜uint.Z x + uint.Z y < 2 ^ 64⌝ -∗ Φ #(x + y)) ⊢
-      WP (App (App (Val sum_assume_no_overflow) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
+      WP (App (App (Val sumAssumeNoOverflow) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
   iintro HΦ
   wp_call
-  wp_apply_core wp_assume_sum_no_overflow
+  wp_apply_core wp_assumeSumNoOverflow
   iintro %H
   wp_pures
   iapply HΦ
   ipureintro; exact H
 
-theorem wp_assume_sum_no_overflow_signed (x y : w64) (Φ : val → IProp GF) :
+theorem wp_assumeSumNoOverflowSigned (x y : w64) (Φ : val → IProp GF) :
     iprop(⌜-2 ^ 63 ≤ sint.Z x + sint.Z y ∧ sint.Z x + sint.Z y < 2 ^ 63⌝ -∗ Φ #()) ⊢
-      WP (App (App (Val assume_sum_no_overflow_signed) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
+      WP (App (App (Val assumeSumNoOverflowSigned) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
   iintro HΦ
   wp_call
   by_cases h1 : sint.Z (W64 0) < sint.Z y
@@ -104,20 +104,20 @@ theorem wp_assume_sum_no_overflow_signed (x y : w64) (Φ : val → IProp GF) :
       iintro %H
       exact absurd H (by decide)
 
-theorem wp_sum_assume_no_overflow_signed (x y : w64) (Φ : val → IProp GF) :
+theorem wp_sumAssumeNoOverflowSigned (x y : w64) (Φ : val → IProp GF) :
     iprop(⌜-2 ^ 63 ≤ sint.Z x + sint.Z y ∧ sint.Z x + sint.Z y < 2 ^ 63⌝ -∗ Φ #(x + y)) ⊢
-      WP (App (App (Val sum_assume_no_overflow_signed) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
+      WP (App (App (Val sumAssumeNoOverflowSigned) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
   iintro HΦ
   wp_call
-  wp_apply_core wp_assume_sum_no_overflow_signed
+  wp_apply_core wp_assumeSumNoOverflowSigned
   iintro %H
   wp_pures
   iapply HΦ
   ipureintro; exact H
 
-theorem wp_mul_overflows (x y : w64) (Φ : val → IProp GF) :
+theorem wp_mulOverflows (x y : w64) (Φ : val → IProp GF) :
     Φ #(decide (2 ^ 64 ≤ uint.Z x * uint.Z y)) ⊢
-      WP (App (App (Val mul_overflows) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
+      WP (App (App (Val mulOverflows) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
   iintro HΦ
   wp_call
   by_cases hx : x = W64 0
@@ -149,12 +149,12 @@ theorem wp_mul_overflows (x y : w64) (Φ : val → IProp GF) :
       simp only [key]
       iexact HΦ
 
-theorem wp_assume_mul_no_overflow (x y : w64) (Φ : val → IProp GF) :
+theorem wp_assumeMulNoOverflow (x y : w64) (Φ : val → IProp GF) :
     iprop(⌜uint.Z x * uint.Z y < 2 ^ 64⌝ -∗ Φ #()) ⊢
-      WP (App (App (Val assume_mul_no_overflow) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
+      WP (App (App (Val assumeMulNoOverflow) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
   iintro HΦ
   wp_call
-  wp_apply_core wp_mul_overflows
+  wp_apply_core wp_mulOverflows
   wp_pures
   wp_apply_core wp_assume
   iintro %H

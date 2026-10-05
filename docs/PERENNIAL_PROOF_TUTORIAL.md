@@ -147,19 +147,19 @@ before `RET` are optional (`{{ RET #(); True }}`).
 * `#x` turns a Lean value (`w64`, `w8`, `Bool`, `loc`, `slice.t`, a struct `S.t`,
   `go_string`, `()`, ...) into a GooseLang `val`.
 * Multiple return values are a pair: `RET (PairV #a #b)`.
-* The precondition starts with `is_pkg_init (PROP := IProp GF) pkg`; the
+* The precondition starts with `isPkgInit (PROP := IProp GF) pkg`; the
   `(PROP := ...)` is needed when nothing else in the precondition fixes the
   logic (write it always, as the ported proofs do).
 
 The first example: `wp_start` introduces the continuation `HΦ` and the
-precondition (moving `is_pkg_init` facts to the intuitionistic context) and
+precondition (moving `isPkgInit` facts to the intuitionistic context) and
 unfolds the function; `wp_auto` runs the straight-line code; `wp_end` applies
 `HΦ` and tries to close the rest.
 
 ```lean
 /-- `func conditionalReturn(x bool) uint64 { if x { return 0 }; return 1 }` -/
 theorem wp_conditionalReturn' (x : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! conditionalReturn)) (Val #x))
     {{ (r : w64), RET #r; ⌜r = if x then W64 0 else W64 1⌝ }} := by
   wp_start
@@ -178,7 +178,7 @@ program (here the Boolean variable `x`); the case hypothesis is called `Hif`:
 /-- The same proof with `wp_if_destruct`, which splits on the condition of the
 `if:` at the head of the program. -/
 theorem wp_conditionalReturn'' (x : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! conditionalReturn)) (Val #x))
     {{ (r : w64), RET #r; ⌜r = if x then W64 0 else W64 1⌝ }} := by
   wp_start
@@ -195,7 +195,7 @@ hypothesis `p`), and drops points-to facts of locals that are dead.
 ```lean
 /-- `func usePtr() { p := new(uint64); *p = 1; x := *p; *p = x }` -/
 theorem wp_usePtr' :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! usePtr)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -206,7 +206,7 @@ theorem wp_usePtr' :
 ## 5. Calling other functions: `wp_apply`
 
 `wp_apply lem $$ spats as pats` finds the call in the goal, applies the spec,
-proves its `is_pkg_init` premises, introduces the postcondition with the
+proves its `isPkgInit` premises, introduces the postcondition with the
 iris-lean intro patterns `pats` and runs `wp_auto`. (`with` is a synonym of
 `as`; `wp_apply +noauto lem ...` skips the `wp_auto`, `wp_apply (lc := n) lem ...`
 asks it for `n` later credits. Rocq's `--no-auto`/`--lc n` are Lean comments and
@@ -216,7 +216,7 @@ are rejected.)
 /-- `func returnTwo(p []byte) (uint64, uint64) { return 0, 0 }`.
 Multiple return values are a `PairV`. -/
 theorem wp_returnTwo' (p : slice.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! returnTwo)) (Val #p))
     {{ RET (PairV #(W64 0) #(W64 0)); True }} := by
   wp_start
@@ -225,7 +225,7 @@ theorem wp_returnTwo' (p : slice.t) :
 
 /-- `func returnTwoWrapper(data []byte) (uint64, uint64)` calls `returnTwo`. -/
 theorem wp_returnTwoWrapper' (data : slice.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! returnTwoWrapper)) (Val #data))
     {{ RET (PairV #(W64 0) #(W64 0)); True }} := by
   wp_start
@@ -253,7 +253,7 @@ fields of a struct points-to `s ↦ v` directly, through the generated
 ```lean
 /-- `func (s *S) writeB(two TwoInts) { s.b = two }` -/
 theorem wp_S__writeB' (s : loc) (v : S.t) (two : TwoInts.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ s ↦ v }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦ v }}
       (App (Val (s @!! go.type.PointerType S @!! go!"writeB")) (Val #two))
     {{ RET #(); s ↦ ({ v with b' := two } : S.t) }} := by
   wp_start as Hs
@@ -270,7 +270,7 @@ struct points-to into its fields:
 The anonymous allocation `&S{..}` is done with `wp_alloc`; `iStructNamed`
 splits the struct points-to into one points-to per field. -/
 theorem wp_NewS' :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NewS)) (Val #()))
     {{ (s : loc), RET #s; s.[S.t, go!"a"] ↦ W64 2 ∗ s.[S.t, go!"c"] ↦ true }} := by
   wp_start
@@ -304,7 +304,7 @@ theorem own_bounded_get (l : loc) :
 
 Seal definitions that clients should not unfold (`@[irreducible] def foo :=
 foo_def` with `theorem foo_unseal : foo = foo_def`) and unfold them in proofs
-with `simp only [foo_unseal, foo_def]` (see `is_Mutex` in
+with `simp only [foo_unseal, foo_def]` (see `isMutex` in
 `Perennial/Proof/sync_proof/mutex.lean`).
 
 ## 8. Loops, slices
@@ -335,12 +335,12 @@ for i := 0; i < len(xs); i++ { sum += xs[i] }
 return sum
 ``` -/
 theorem wp_intSliceLoop' (s : slice.t) (vs : List w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ s ↦* vs }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦* vs }}
       (App (Val (@! intSliceLoop)) (Val #s))
     {{ RET #(sum_w64 vs); s ↦* vs }} := by
   wp_start as Hs
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hs
   -- the loop invariant
   ihave HI : (∃ i : w64,
       "i" ∷ i_ptr ↦ i ∗
@@ -371,7 +371,7 @@ theorem wp_intSliceLoop' (s : slice.t) (vs : List w64) :
 
 Things to note:
 
-* `own_slice_len` gives the length fact (`vs.length = sint.nat s.len`);
+* `ownSlice_len` gives the length fact (`vs.length = sint.nat s.len`);
   `ihave %H := lem $$ Hs` puts it in the Lean context without consuming `Hs`.
 * Slice indexing has a bounds check (`if 0 ≤ i ∧ i < len then ... else Panic`);
   discharge it with `simp only [...]`.
@@ -382,8 +382,8 @@ Things to note:
 
 ## 9. Maps, goroutines, locks
 
-Maps use `wp_map_make1`, `wp_map_insert`, `wp_map_lookup1`/`wp_map_lookup2`,
-`wp_map_delete` (`Perennial/Golang/Theory/Map.lean`):
+Maps use `wp_map_make1`, `wp_mapInsert`, `wp_map_lookup1`/`wp_map_lookup2`,
+`wp_mapDelete` (`Perennial/Golang/Theory/Map.lean`):
 
 ````lean
 /-- ```go
@@ -396,30 +396,30 @@ func useMap() {
 }
 ``` -/
 theorem wp_useMap' :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! useMap)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
   wp_auto
   wp_apply (wp_map_make1 (K := w64) (V := slice.t)) as %m Hm
-  wp_apply wp_map_insert $$ Hm as Hm
+  wp_apply wp_mapInsert $$ Hm as Hm
   wp_apply wp_map_lookup2 $$ Hm as Hm
   -- `ok` is `false` (key 2 is absent), so `wp_auto` took the fall-through branch
-  wp_apply wp_map_insert $$ Hm as Hm
+  wp_apply wp_mapInsert $$ Hm as Hm
   wp_end
 ````
 
-A `sync.Mutex` protects a lock invariant `R` (`sync.is_Mutex l R`, persistent):
-`Lock` gives `own_Mutex l ∗ R`, `Unlock` takes them back. The precondition must
-also have `is_pkg_init pkg_id.sync`. `wp_start as #Hm` moves both `is_pkg_init`
-facts aside and destructs the rest (`is_Mutex`) with `#Hm`:
+A `sync.Mutex` protects a lock invariant `R` (`sync.isMutex l R`, persistent):
+`Lock` gives `ownMutex l ∗ R`, `Unlock` takes them back. The precondition must
+also have `isPkgInit pkg_id.sync`. `wp_start as #Hm` moves both `isPkgInit`
+facts aside and destructs the rest (`isMutex`) with `#Hm`:
 
 ```lean
 /-- `func DoSomeLocking(l *sync.Mutex) { l.Lock(); l.Unlock() }`, for any lock
 invariant `R`. -/
 theorem wp_DoSomeLocking' [sync.Assumptions] (l : loc) (R : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_pkg_init (PROP := IProp GF) pkg_id.sync ∗
-        sync.is_Mutex l R }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isPkgInit (PROP := IProp GF) pkg_id.sync ∗
+        sync.isMutex l R }}
       (App (Val (@! DoSomeLocking)) (Val #l))
     {{ RET #(); True }} := by
   wp_start as #Hm
@@ -446,7 +446,7 @@ func simpleSpawn() {
 }
 ``` -/
 theorem wp_simpleSpawn' [sync.Assumptions] :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_pkg_init (PROP := IProp GF) pkg_id.sync }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isPkgInit (PROP := IProp GF) pkg_id.sync }}
       (App (Val (@! simpleSpawn)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -528,12 +528,12 @@ In a program proof, `iinv` is used right before an atomic step: focus on it with
 invariant content is not timeless, eliminate the later with a later credit:
 `wp_auto_lc 1` produces `Hlc1 : £ 1`, used as
 `imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi` (see
-`wp_Once__Do` in `Perennial/Proof/sync_proof/once.lean`).
+`Once.wp_Do` in `Perennial/Proof/sync_proof/once.lean`).
 
 ## 11. Package initialization
 
-`is_pkg_init pkg` asserts that the package was initialized (it includes
-`is_pkg_init` of all its imports). Each package proof defines two instances and
+`isPkgInit pkg` asserts that the package was initialized (it includes
+`isPkgInit` of all its imports). Each package proof defines two instances and
 proves `wp_initialize'`; `Perennial/Proof/sync_proof/base.lean` does this for
 `sync`:
 
@@ -544,13 +544,13 @@ example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 
 -- The initialization proof: run `package.init`, initialize the imported
--- packages in order, and conclude `is_pkg_init`.
+-- packages in order, and conclude `isPkgInit`.
 example (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.sync get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.sync get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.sync }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.sync }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -568,8 +568,8 @@ example (get_is_pkg_init : go_string → IProp GF)
   computed from the package's imports, so their instances must exist.
 * `wp_initialize'` initializes the imports in the order of `initialize'` in
   `Perennial/Code/<pkg>.lean`; `Hinit.2.1`, `Hinit.2.2.1`, ... are the
-  imports' `get_is_pkg_init_prop` facts.
-* In client specs, `wp_start` and `wp_apply` solve `is_pkg_init` premises
+  imports' `GetIsPkgInitProp` facts.
+* In client specs, `wp_start` and `wp_apply` solve `isPkgInit` premises
   automatically (`iPkgInit`), also when only a package importing it is
   available.
 
@@ -620,7 +620,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
   /-- `ifStmtInitialization` stores a function literal `f := func() uint64 {..}`
   in a local variable. -/
   theorem wp_ifStmtInitialization' (x : w64) :
-      {{ is_pkg_init (PROP := IProp GF) pkg }}
+      {{ isPkgInit (PROP := IProp GF) pkg }}
         (App (Val (@! ifStmtInitialization)) (Val #x))
       {{ (r : w64), RET #r; True }} := by
     wp_start
@@ -638,7 +638,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
   /-- WP tactics fail (rather than leaving a `sorry`) when their argument does
   not elaborate. -/
   example (p : slice.t) :
-      {{ is_pkg_init (PROP := IProp GF) pkg }}
+      {{ isPkgInit (PROP := IProp GF) pkg }}
         (App (Val (@! returnTwoWrapper)) (Val #p))
       {{ RET (PairV #(W64 0) #(W64 0)); True }} := by
     wp_start

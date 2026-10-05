@@ -28,14 +28,14 @@ namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
-structure future_names where
-  chan_name : chan_names
-  pending_set_name : GName
+structure FutureNames where
+  chanName : ChanNames
+  pendingSetName : GName
 
 section future
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
   [IntoValTyped (GF := GF) V t]
@@ -43,26 +43,26 @@ variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {
 /-- `Fulfill γ contract` is a token representing a registered contract. The holder
 commits to eventually sending a value `v` satisfying `contract v`. Internally, it holds
 half of a saved predicate and an auth_set fragment. -/
-def Fulfill (γ : future_names) (contract : V → IProp GF) : IProp GF :=
-  iprop(∃ (gn : GName), saved_pred_own gn (DFrac.own (1 : Qp).half) contract ∗
-    auth_set_frag γ.pending_set_name gn)
+def Fulfill (γ : FutureNames) (contract : V → IProp GF) : IProp GF :=
+  iprop(∃ (gn : GName), savedPredOwn gn (DFrac.own (1 : Qp).half) contract ∗
+    authSetFrag γ.pendingSetName gn)
 
 /-- `Fulfilled γ v` bundles a `Fulfill` with evidence that the contract is satisfied. This
 is what gets transferred through the channel. -/
-def Fulfilled (γ : future_names) (v : V) : IProp GF :=
+def Fulfilled (γ : FutureNames) (v : V) : IProp GF :=
   iprop(∃ contract, Fulfill γ contract ∗ contract v)
 
 /-- `Await γ pending` is the consumer's tracking state. `pending` is the list of contracts
 not yet matched to a received value. -/
-def Await (γ : future_names) (pending : List (V → IProp GF)) : IProp GF :=
-  iprop(∃ (pending_map : gmap GName (V → IProp GF)),
-    auth_set_auth γ.pending_set_name (domSet pending_map) ∗
-    ⌜((map_to_list pending_map).map Prod.snd).Perm pending⌝ ∗
-    [∗map] gn ↦ P ∈ pending_map, saved_pred_own gn (DFrac.own (1 : Qp).half) P)
+def Await (γ : FutureNames) (pending : List (V → IProp GF)) : IProp GF :=
+  iprop(∃ (pending_map : GMap GName (V → IProp GF)),
+    authSetAuth γ.pendingSetName (domSet pending_map) ∗
+    ⌜((mapToList pending_map).map Prod.snd).Perm pending⌝ ∗
+    [∗map] gn ↦ P ∈ pending_map, savedPredOwn gn (DFrac.own (1 : Qp).half) P)
 
 /-- The future invariant. -/
-def future_inv (γ : future_names) : IProp GF :=
-  iprop(∃ (s : chanstate.t V), "Hch" ∷ own_chan γ.chan_name V s ∗
+def futureInv (γ : FutureNames) : IProp GF :=
+  iprop(∃ (s : chanstate.t V), "Hch" ∷ ownChan γ.chanName V s ∗
     (match s with
      | .Buffered msgs => iprop([∗list] v ∈ msgs, Fulfilled γ v)
      | .SndPending v => Fulfilled γ v
@@ -71,23 +71,23 @@ def future_inv (γ : future_names) : IProp GF :=
      | _ => iprop(False)))
 
 variable (V) in
-/-- `is_future γ ch` is the persistent channel invariant. The channel carries `Fulfilled`
+/-- `isFuture γ ch` is the persistent channel invariant. The channel carries `Fulfilled`
 tokens — values bundled with their contract evidence. -/
-def is_future (γ : future_names) (ch : loc) : IProp GF :=
-  iprop(is_chan ch γ.chan_name V ∗ inv nroot (future_inv (V := V) γ))
+def isFuture (γ : FutureNames) (ch : loc) : IProp GF :=
+  iprop(isChan ch γ.chanName V ∗ inv nroot (futureInv (V := V) γ))
 
-instance is_future_pers (γ : future_names) (ch : loc) : Persistent (is_future V (GF := GF) γ ch) := by
-  unfold is_future; infer_instance
+instance isFuture_pers (γ : FutureNames) (ch : loc) : Persistent (isFuture V (GF := GF) γ ch) := by
+  unfold isFuture; infer_instance
 
-theorem map_to_list_snd_insert {K A : Type} [DecidableEq K] (m : gmap K A) (k : K) (v : A)
+theorem mapToList_snd_insert {K A : Type} [DecidableEq K] (m : GMap K A) (k : K) (v : A)
     (h : m !! k = none) :
-    ((map_to_list (<[k := v]> m)).map Prod.snd).Perm (v :: (map_to_list m).map Prod.snd) :=
-  (gmap.map_to_list_insert m k v h).map Prod.snd
+    ((mapToList (<[k := v]> m)).map Prod.snd).Perm (v :: (mapToList m).map Prod.snd) :=
+  (GMap.mapToList_insert m k v h).map Prod.snd
 
-theorem map_to_list_snd_delete {K A : Type} [DecidableEq K] (m : gmap K A) (k : K) (v : A)
+theorem mapToList_snd_delete {K A : Type} [DecidableEq K] (m : GMap K A) (k : K) (v : A)
     (h : m !! k = some v) :
-    ((map_to_list m).map Prod.snd).Perm (v :: (map_to_list (gmap.delete k m)).map Prod.snd) :=
-  (gmap.map_to_list_delete m k v h).map Prod.snd
+    ((mapToList m).map Prod.snd).Perm (v :: (mapToList (GMap.delete k m)).map Prod.snd) :=
+  (GMap.mapToList_delete m k v h).map Prod.snd
 
 theorem Permutation_cons_split {A : Type} (x : A) (l l' : List A) (h : l.Perm (x :: l')) :
     ∃ pre post, l = pre ++ x :: post ∧ l'.Perm (pre ++ post) := by
@@ -96,15 +96,15 @@ theorem Permutation_cons_split {A : Type} (x : A) (l l' : List A) (h : l.Perm (x
   have h2 : (x :: l').Perm (x :: (pre ++ post)) := h.symm.trans List.perm_middle
   exact h2.cons_inv
 
-theorem start_future (ch : loc) (γ : chan_names) (s : chanstate.t V)
+theorem start_future (ch : loc) (γ : ChanNames) (s : chanstate.t V)
     (Hs : s = .Idle ∨ s = .Buffered []) :
-    ⊢ is_chan ch γ V -∗ own_chan γ V s ={⊤}=∗
-      ∃ γmf, is_future V γmf ch ∗ Await (V := V) γmf [] := by
+    ⊢ isChan ch γ V -∗ ownChan γ V s ={⊤}=∗
+      ∃ γmf, isFuture V γmf ch ∗ Await (V := V) γmf [] := by
   iintro #Hch Hoc
   imod auth_set_init (A := GName) with ⟨%γpending, Hset_auth⟩
-  imod inv_alloc nroot ⊤ (future_inv (V := V) ⟨γ, γpending⟩) $$ [Hoc] with #Hinv
+  imod inv_alloc nroot ⊤ (futureInv (V := V) ⟨γ, γpending⟩) $$ [Hoc] with #Hinv
   · inext
-    unfold future_inv
+    unfold futureInv
     iexists s
     iframe
     rcases Hs with rfl | rfl <;> dsimp only
@@ -113,54 +113,54 @@ theorem start_future (ch : loc) (γ : chan_names) (s : chanstate.t V)
   imodintro
   iexists ⟨γ, γpending⟩
   isplitl []
-  · unfold is_future; iframe #
+  · unfold isFuture; iframe #
   unfold Await
   iexists ∅
-  rw [gmap.dom_empty_L]
+  rw [GMap.dom_empty_L]
   iframe
   isplitl []
-  · ipureintro; rw [gmap.map_to_list_empty]; exact .nil
+  · ipureintro; rw [GMap.mapToList_empty]; exact .nil
   · iapply BigSepM.bigSepM_empty.2; iempintro
 
-theorem future_alloc_promise (γ : future_names) (ch : loc) (contract : V → IProp GF)
+theorem future_alloc_promise (γ : FutureNames) (ch : loc) (contract : V → IProp GF)
     (pending : List (V → IProp GF)) :
-    ⊢ is_future V γ ch -∗ Await γ pending ={⊤}=∗
+    ⊢ isFuture V γ ch -∗ Await γ pending ={⊤}=∗
       Fulfill γ contract ∗ Await γ (pending ++ [contract]) := by
   iintro #Hmf HAwait
   unfold Await
   icases HAwait with ⟨%pending_map, Hauth, %Hperm, Hfrags⟩
-  imod saved_pred_alloc_cofinite contract ((map_to_list pending_map).map Prod.fst) (DFrac.own 1)
+  imod saved_pred_alloc_cofinite contract ((mapToList pending_map).map Prod.fst) (DFrac.own 1)
     DFrac.valid_own_one with ⟨%gn, %Hfresh, Hpred⟩
   have Hnone : pending_map !! gn = none := by
     cases h : pending_map !! gn with
     | none => rfl
     | some P =>
       exfalso; apply Hfresh
-      exact List.mem_map.2 ⟨(gn, P), (gmap.elem_of_map_to_list _ _ _).2 h, rfl⟩
+      exact List.mem_map.2 ⟨(gn, P), (GMap.elem_of_map_to_list _ _ _).2 h, rfl⟩
   icases saved_pred_halves _ _ $$ Hpred with ⟨Hpred1, Hpred2⟩
-  imod auth_set_alloc gn _ _ ((gmap.not_elem_of_dom _ _).2 Hnone) $$ Hauth with ⟨Hauth, Hfrag⟩
+  imod auth_set_alloc gn _ _ ((GMap.not_elem_of_dom _ _).2 Hnone) $$ Hauth with ⟨Hauth, Hfrag⟩
   imodintro
   isplitl [Hpred1 Hfrag]
   · unfold Fulfill; iexists gn; iframe
   iexists (<[gn := contract]> pending_map)
-  rw [gmap.dom_insert_L]
+  rw [GMap.dom_insert_L]
   iframe Hauth
   isplitl []
   · ipureintro
-    exact (map_to_list_snd_insert _ _ _ Hnone).trans
+    exact (mapToList_snd_insert _ _ _ Hnone).trans
       ((Hperm.cons contract).trans (List.perm_append_singleton contract pending).symm)
   · iapply (BigSepM.bigSepM_insert (Φ := fun gn (P : V → IProp GF) =>
-      saved_pred_own (GF := GF) gn (DFrac.own (1 : Qp).half) P) Hnone).2
+      savedPredOwn (GF := GF) gn (DFrac.own (1 : Qp).half) P) Hnone).2
     iframe
 
-theorem future_fulfill_au (γ : future_names) (ch : loc) (v : V) (Φ : IProp GF) :
-    ⊢ is_future V γ ch -∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ Fulfilled γ v -∗ ▷ (True -∗ Φ) -∗
-      send_au γ.chan_name v Φ := by
-  unfold is_future send_au
+theorem future_fulfill_au (γ : FutureNames) (ch : loc) (v : V) (Φ : IProp GF) :
+    ⊢ isFuture V γ ch -∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ Fulfilled γ v -∗ ▷ (True -∗ Φ) -∗
+      sendAu γ.chanName v Φ := by
+  unfold isFuture sendAu
   iintro ⟨#Hisch, #Hinv⟩ ⟨Hlc1, Hlc2, Hlc3, HFulfilled⟩ Hau
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
-  unfold future_inv
+  unfold futureInv
   icases Hi with ⟨%s, Hoc0, Hi⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -189,7 +189,7 @@ theorem future_fulfill_au (γ : future_names) (ch : loc) (v : V) (Φ : IProp GF)
     imod Hclose $$ [Hoc HFulfilled] with -
     · inext; iexists .SndPending v; iframe
     imodintro
-    unfold send_nested_au
+    unfold sendNestedAu
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hoc1, Hi⟩
@@ -219,14 +219,14 @@ theorem future_fulfill_au (γ : future_names) (ch : loc) (v : V) (Φ : IProp GF)
     itrivial
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_future_fulfill (γ : future_names) (ch : loc) (v : V) :
-    {{ is_future V γ ch ∗ Fulfilled γ v }}
+theorem wp_future_fulfill (γ : FutureNames) (ch : loc) (v : V) :
+    {{ isFuture V γ ch ∗ Fulfilled γ v }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
     {{ RET #(); True }} := by
   iintro %Φ ⟨#Hmf, HFulfilled⟩ HΦ
-  ihave #Hch : is_chan ch γ.chan_name V $$ [Hmf]
-  · unfold is_future; icases Hmf with ⟨$, -⟩
-  iapply chan.wp_send ch v γ.chan_name $$ Hch
+  ihave #Hch : isChan ch γ.chanName V $$ [Hmf]
+  · unfold isFuture; icases Hmf with ⟨$, -⟩
+  iapply chan.wp_send ch v γ.chanName $$ Hch
   iintro ⟨Hlc1, Hlc2, Hlc3, _⟩
   iapply future_fulfill_au γ ch v (Φ #()) $$ Hmf [$Hlc1 $Hlc2 $Hlc3 $HFulfilled]
   inext
@@ -236,7 +236,7 @@ theorem wp_future_fulfill (γ : future_names) (ch : loc) (v : V) :
 
 /-- Matching a received `Fulfilled` against the pending contracts (Rocq: the `Hmatch`
 assertion inside `future_await_au`). -/
-theorem future_match (γ : future_names) (pending : List (V → IProp GF)) (v_rcv : V) :
+theorem future_match (γ : FutureNames) (pending : List (V → IProp GF)) (v_rcv : V) :
     ⊢ £ 1 -∗ Fulfilled γ v_rcv -∗ Await γ pending ={⊤}=∗
       ∃ (P : V → IProp GF) (pre post : List (V → IProp GF)),
         ⌜pending = pre ++ P :: post⌝ ∗ P v_rcv ∗ Await γ (pre ++ post) := by
@@ -244,25 +244,25 @@ theorem future_match (γ : future_names) (pending : List (V → IProp GF)) (v_rc
   iintro Hlc ⟨%contract_f, ⟨%gn_f, Hpred_f, Hfrag_f⟩, Hcontract_v⟩
     ⟨%pending_map, Hauth, %Hperm, Hfrags⟩
   ihave %Hin := auth_set_elem _ _ _ $$ Hauth Hfrag_f
-  obtain ⟨P, Hlookup⟩ := (gmap.elem_of_dom _ _).1 Hin
+  obtain ⟨P, Hlookup⟩ := (GMap.elem_of_dom _ _).1 Hin
   icases (BigSepM.bigSepM_delete (Φ := fun gn (P : V → IProp GF) =>
-      saved_pred_own (GF := GF) gn (DFrac.own (1 : Qp).half) P) Hlookup).1 $$ Hfrags
+      savedPredOwn (GF := GF) gn (DFrac.own (1 : Qp).half) P) Hlookup).1 $$ Hfrags
     with ⟨Hpred_p, Hfrags_rest⟩
   ihave Hag := saved_pred_agree gn_f _ _ P contract_f v_rcv $$ Hpred_p Hpred_f
   imod lc_fupd_elim_later $$ Hlc Hag with #Hag
   ihave HPv := internal_eq_rewrite_wand $$ Hag Hcontract_v
   imod auth_set_dealloc _ _ _ $$ [Hauth Hfrag_f] with Hauth
   · iframe
-  have Hcons : pending.Perm (P :: (map_to_list (gmap.delete gn_f pending_map)).map Prod.snd) :=
-    Hperm.symm.trans (map_to_list_snd_delete _ _ _ Hlookup)
+  have Hcons : pending.Perm (P :: (mapToList (GMap.delete gn_f pending_map)).map Prod.snd) :=
+    Hperm.symm.trans (mapToList_snd_delete _ _ _ Hlookup)
   obtain ⟨pre, post, Hsplit, Hrest_perm⟩ := Permutation_cons_split _ _ _ Hcons
   imodintro
   iexists P, pre, post
   iframe HPv
   isplitl []
   · ipureintro; exact Hsplit
-  iexists (gmap.delete gn_f pending_map)
-  rw [gmap.dom_delete_L]
+  iexists (GMap.delete gn_f pending_map)
+  rw [GMap.dom_delete_L]
   isplitl [Hauth]
   · iexact Hauth
   isplitl []
@@ -274,17 +274,17 @@ theorem future_match (γ : future_names) (pending : List (V → IProp GF)) (v_rc
 2. uses saved predicate agreement to identify which contract was fulfilled,
 3. removes the matched contract from `pending`,
 4. returns `P v` directly to the caller. -/
-theorem future_await_au (γ : future_names) (ch : loc) (pending : List (V → IProp GF))
+theorem future_await_au (γ : FutureNames) (ch : loc) (pending : List (V → IProp GF))
     (Φ : V → Bool → IProp GF) :
-    ⊢ is_future V γ ch -∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ Await γ pending -∗
+    ⊢ isFuture V γ ch -∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ Await γ pending -∗
       ▷ (∀ (v : V) (P : V → IProp GF) (pre post : List (V → IProp GF)),
           ⌜pending = pre ++ P :: post⌝ -∗ P v -∗ Await γ (pre ++ post) -∗ Φ v true) -∗
-      recv_au γ.chan_name V Φ := by
-  unfold is_future recv_au
+      recvAu γ.chanName V Φ := by
+  unfold isFuture recvAu
   iintro ⟨#Hisch, #Hinv⟩ ⟨Hlc1, Hlc2, Hlc3, HAwait⟩ Hau
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
-  unfold future_inv
+  unfold futureInv
   icases Hi with ⟨%s, Hoc0, Hi⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -308,7 +308,7 @@ theorem future_await_au (γ : future_names) (ch : loc) (pending : List (V → IP
     imod Hclose $$ [Hoc] with -
     · inext; iexists .RcvPending; iframe
     imodintro
-    unfold recv_nested_au
+    unfold recvNestedAu
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hoc1, Hi⟩
@@ -338,15 +338,15 @@ theorem future_await_au (γ : future_names) (ch : loc) (pending : List (V → IP
     iapply Hau $$ %v %P %pre %post %Hsplit HP HAwait
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_future_await (γ : future_names) (ch : loc) (pending : List (V → IProp GF)) :
-    {{ is_future V γ ch ∗ Await γ pending }}
+theorem wp_future_await (γ : FutureNames) (ch : loc) (pending : List (V → IProp GF)) :
+    {{ isFuture V γ ch ∗ Await γ pending }}
       (App (Val (chan.receive t)) (Val #ch))
     {{ (v : V) (P : V → IProp GF) (pre post : List (V → IProp GF)), RET (PairV #v #true);
         ⌜pending = pre ++ P :: post⌝ ∗ P v ∗ Await γ (pre ++ post) }} := by
   iintro %Φ ⟨#Hmf, HAwait⟩ HΦ
-  ihave #Hch : is_chan ch γ.chan_name V $$ [Hmf]
-  · unfold is_future; icases Hmf with ⟨$, -⟩
-  iapply chan.wp_receive ch γ.chan_name $$ Hch
+  ihave #Hch : isChan ch γ.chanName V $$ [Hmf]
+  · unfold isFuture; icases Hmf with ⟨$, -⟩
+  iapply chan.wp_receive ch γ.chanName $$ Hch
   iintro ⟨Hlc1, Hlc2, Hlc3, _⟩
   iapply future_await_au γ ch pending (fun v ok => Φ (PairV #v #ok)) $$ Hmf
     [$Hlc1 $Hlc2 $Hlc3 $HAwait]

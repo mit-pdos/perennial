@@ -20,40 +20,40 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-/-- The invariant body of `is_select_nb_only`. -/
-abbrev select_nb_only_inv (γ : chan_names) : IProp GF :=
+/-- The invariant body of `isSelectNbOnly`. -/
+abbrev selectNbOnlyInv (γ : ChanNames) : IProp GF :=
   iprop(∃ s : chanstate.t Unit,
-    "Hoc" ∷ own_chan γ Unit s ∗
+    "Hoc" ∷ ownChan γ Unit s ∗
     "%Hs" ∷ ⌜match s with | .Idle => True | _ => False⌝)
 
 /-- Invariant: channel must be Idle, all other states are False -/
-def is_select_nb_only (γ : chan_names) (ch : loc) : IProp GF :=
-  iprop("#Hch" ∷ is_chan ch γ Unit ∗
-    "#Hinv" ∷ inv nroot (select_nb_only_inv γ))
+def isSelectNbOnly (γ : ChanNames) (ch : loc) : IProp GF :=
+  iprop("#Hch" ∷ isChan ch γ Unit ∗
+    "#Hinv" ∷ inv nroot (selectNbOnlyInv γ))
 
-instance is_select_nb_only_pers (γ : chan_names) (ch : loc) :
-    Persistent (is_select_nb_only (GF := GF) γ ch) := by
-  unfold is_select_nb_only; infer_instance
+instance isSelectNbOnly_pers (γ : ChanNames) (ch : loc) :
+    Persistent (isSelectNbOnly (GF := GF) γ ch) := by
+  unfold isSelectNbOnly; infer_instance
 
-theorem start_select_nb_only (ch : loc) (γ : chan_names) :
-    ⊢ is_chan (GF := GF) ch γ Unit -∗ own_chan γ Unit .Idle ={⊤}=∗ is_select_nb_only γ ch := by
+theorem start_select_nb_only (ch : loc) (γ : ChanNames) :
+    ⊢ isChan (GF := GF) ch γ Unit -∗ ownChan γ Unit .Idle ={⊤}=∗ isSelectNbOnly γ ch := by
   iintro #Hch Hoc
-  imod inv_alloc nroot ⊤ (select_nb_only_inv (GF := GF) γ) $$ [Hoc] with #Hinv
+  imod inv_alloc nroot ⊤ (selectNbOnlyInv (GF := GF) γ) $$ [Hoc] with #Hinv
   · inext; iexists .Idle; iframe
   imodintro
-  unfold is_select_nb_only
+  unfold isSelectNbOnly
   iframe #
 
 /-- Nonblocking send AU - vacuous since we ban all send preconditions -/
-theorem select_nb_only_send_au (γ : chan_names) (ch : loc) (v : Unit) (Φ Φnotready : IProp GF) :
-    ⊢ is_select_nb_only γ ch -∗ Φnotready -∗ nonblocking_send_au γ v Φ Φnotready := by
+theorem select_nb_only_send_au (γ : ChanNames) (ch : loc) (v : Unit) (Φ Φnotready : IProp GF) :
+    ⊢ isSelectNbOnly γ ch -∗ Φnotready -∗ nonblockingSendAu γ v Φ Φnotready := by
   iintro #Hnb Hnotready
-  unfold is_select_nb_only nonblocking_send_au nonblocking_send_au_inner
+  unfold isSelectNbOnly nonblockingSendAu nonblockingSendAuInner
   icases Hnb with ⟨#Hch, #Hinv⟩
   isplit
   · iinv Hinv with ⟨%s, >Hoc, >%Hs⟩ Hclose
@@ -68,11 +68,11 @@ theorem select_nb_only_send_au (γ : chan_names) (ch : loc) (v : Unit) (Φ Φnot
   · iexact Hnotready
 
 /-- Nonblocking receive AU - vacuous since we ban all receive preconditions -/
-theorem select_nb_only_rcv_au (γ : chan_names) (ch : loc) (Φ : Unit → Bool → IProp GF)
+theorem select_nb_only_rcv_au (γ : ChanNames) (ch : loc) (Φ : Unit → Bool → IProp GF)
     (Φnotready : IProp GF) :
-    ⊢ is_select_nb_only γ ch -∗ Φnotready -∗ nonblocking_recv_au γ Unit Φ Φnotready := by
+    ⊢ isSelectNbOnly γ ch -∗ Φnotready -∗ nonblockingRecvAu γ Unit Φ Φnotready := by
   iintro #Hnb Hnotready
-  unfold is_select_nb_only nonblocking_recv_au nonblocking_recv_au_inner
+  unfold isSelectNbOnly nonblockingRecvAu nonblockingRecvAuInner
   icases Hnb with ⟨#Hch, #Hinv⟩
   isplit
   · iinv Hinv with ⟨%s, >Hoc, >%Hs⟩ Hclose
@@ -90,7 +90,7 @@ set_option goose.wp.extras true
 
 /-- Example 1 -/
 theorem wp_select_nb_not_ready :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! select_nb_not_ready)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -103,7 +103,7 @@ theorem wp_select_nb_not_ready :
     wp_apply_core chan.wp_select_nonblocking
     isplit
     · iapply BigAndL.bigAndL_singleton.2
-      simp only [chan.nonblocking_clause_pre]
+      simp only [chan.nonblockingClausePre]
       iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ch, γ
       isplitr
       · ipureintro; rfl
@@ -116,7 +116,7 @@ theorem wp_select_nb_not_ready :
   wp_apply_core chan.wp_select_nonblocking
   isplit
   · iapply BigAndL.bigAndL_singleton.2
-    simp only [chan.nonblocking_clause_pre]
+    simp only [chan.nonblockingClausePre]
     iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ch, γ, ()
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩
@@ -131,7 +131,7 @@ theorem wp_select_nb_not_ready :
 
 /-- Example 2 -/
 theorem wp_select_nb_guaranteed_ready :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! select_nb_guaranteed_ready)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -139,7 +139,7 @@ theorem wp_select_nb_guaranteed_ready :
   wp_apply chan.wp_make1 (V := w64) as %ch %γ ⟨#His_ch, %Hcap, Hch⟩
   wp_apply_core chan.wp_close (V := w64) ch γ $$ His_ch
   iintro -
-  unfold close_au
+  unfold closeAu
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
@@ -150,16 +150,16 @@ theorem wp_select_nb_guaranteed_ready :
   imod Hmask with -
   imodintro
   wp_auto
-  wp_apply_core chan.wp_select_nonblocking_alt [iprop(False)] (own_chan γ w64 (.Closed [])) $$ [HΦ] Hch []
+  wp_apply_core chan.wp_select_nonblocking_alt [iprop(False)] (ownChan γ w64 (.Closed [])) $$ [HΦ] Hch []
   · iapply BigSepL2.bigSepL2_singleton.2
     iintro HP
-    simp only [chan.nonblocking_alt_clause_pre]
+    simp only [chan.nonblockingAltClausePre]
     iexists w64, inferInstance, inferInstance, inferInstance, inferInstance, ch, γ
     isplitr
     · ipureintro; rfl
     isplitr
     · iexact His_ch
-    unfold nonblocking_recv_au_alt
+    unfold nonblockingRecvAuAlt
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
     inext
@@ -178,26 +178,26 @@ theorem wp_select_nb_guaranteed_ready :
 
 
 /-- Invariant for the "full buffer" situation -/
-def is_select_nb_full1 (γ : chan_names) (ch : loc) : IProp GF :=
-  iprop("#Hch" ∷ is_chan ch γ w64 ∗
-    "%Hcap1" ∷ ⌜γ.chan_cap = W64 1⌝ ∗
-    "Hinv" ∷ own_chan γ w64 (.Buffered [W64 0]))
+def isSelectNbFull1 (γ : ChanNames) (ch : loc) : IProp GF :=
+  iprop("#Hch" ∷ isChan ch γ w64 ∗
+    "%Hcap1" ∷ ⌜γ.chanCap = W64 1⌝ ∗
+    "Hinv" ∷ ownChan γ w64 (.Buffered [W64 0]))
 
-theorem start_select_nb_full1 (ch : loc) (γ : chan_names) :
-    ⊢ is_chan (GF := GF) ch γ w64 -∗ ⌜γ.chan_cap = W64 1⌝ -∗
-      own_chan γ w64 (.Buffered [W64 0]) ={⊤}=∗ is_select_nb_full1 γ ch := by
+theorem start_select_nb_full1 (ch : loc) (γ : ChanNames) :
+    ⊢ isChan (GF := GF) ch γ w64 -∗ ⌜γ.chanCap = W64 1⌝ -∗
+      ownChan γ w64 (.Buffered [W64 0]) ={⊤}=∗ isSelectNbFull1 γ ch := by
   iintro #Hch %Hcap Hoc
   imodintro
-  unfold is_select_nb_full1 named
+  unfold isSelectNbFull1 named
   iframe Hoc
   isplitr
   · iexact Hch
   ipureintro; exact Hcap
 
-theorem select_nb_full1_send_au (γ : chan_names) (ch : loc) (Φ Φnotready : IProp GF) :
-    ⊢ is_select_nb_full1 γ ch -∗ Φnotready -∗ nonblocking_send_au γ (W64 0) Φ Φnotready := by
+theorem select_nb_full1_send_au (γ : ChanNames) (ch : loc) (Φ Φnotready : IProp GF) :
+    ⊢ isSelectNbFull1 γ ch -∗ Φnotready -∗ nonblockingSendAu γ (W64 0) Φ Φnotready := by
   iintro Hfull Hnotready
-  unfold is_select_nb_full1 nonblocking_send_au nonblocking_send_au_inner
+  unfold isSelectNbFull1 nonblockingSendAu nonblockingSendAuInner
   icases Hfull with ⟨#Hch, %Hcap1, Hoc⟩
   isplit
   · iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -208,16 +208,16 @@ theorem select_nb_full1_send_au (γ : chan_names) (ch : loc) (Φ Φnotready : IP
     dsimp only
     iintro Hoc
     -- Show this contradicts the capacity bound.
-    ihave %Hle := own_chan_buffer_size _ _ _ $$ Hoc
+    ihave %Hle := ownChan_buffer_size _ _ _ $$ Hoc
     rw [Hcap1] at Hle
     simp at Hle
   · iexact Hnotready
 
-theorem SendAU_from_empty_buffer_to (_ch : loc) (γ : chan_names) (Φ : IProp GF) :
-    ⊢ own_chan γ w64 (.Buffered []) -∗ (own_chan γ w64 (.Buffered [W64 0]) -∗ Φ) -∗
-      send_au γ (W64 0) Φ := by
+theorem SendAU_from_empty_buffer_to (_ch : loc) (γ : ChanNames) (Φ : IProp GF) :
+    ⊢ ownChan γ w64 (.Buffered []) -∗ (ownChan γ w64 (.Buffered [W64 0]) -∗ Φ) -∗
+      sendAu γ (W64 0) Φ := by
   iintro Hoc Hk
-  unfold send_au
+  unfold sendAu
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
@@ -231,11 +231,11 @@ theorem SendAU_from_empty_buffer_to (_ch : loc) (γ : chan_names) (Φ : IProp GF
   iapply Hk $$ Hoc
 
 /-- From a send on full buffer (which blocks indefinitely), any Φ can be derived -/
-theorem SendAU_full_cap1_vacuous (_ch : loc) (γ : chan_names) (v0 v : w64) (Φ : IProp GF)
-    (Hcap : γ.chan_cap = W64 1) :
-    ⊢ own_chan γ w64 (.Buffered [v0]) -∗ send_au γ v Φ := by
+theorem SendAU_full_cap1_vacuous (_ch : loc) (γ : ChanNames) (v0 v : w64) (Φ : IProp GF)
+    (Hcap : γ.chanCap = W64 1) :
+    ⊢ ownChan γ w64 (.Buffered [v0]) -∗ sendAu γ v Φ := by
   iintro Hoc
-  unfold send_au
+  unfold sendAu
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
@@ -243,13 +243,13 @@ theorem SendAU_full_cap1_vacuous (_ch : loc) (γ : chan_names) (v0 v : w64) (Φ 
   iframe Hoc
   dsimp only
   iintro Hoc
-  ihave %Hle := own_chan_buffer_size _ _ _ $$ Hoc
+  ihave %Hle := ownChan_buffer_size _ _ _ $$ Hoc
   rw [Hcap] at Hle
   simp at Hle
 
 /-- Example 3 -/
 theorem wp_select_nb_full_buffer_not_ready :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! select_nb_full_buffer_not_ready)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -260,7 +260,7 @@ theorem wp_select_nb_full_buffer_not_ready :
   wp_apply_core chan.wp_send ch (W64 0) γ $$ His_chan
   iintro -
   iapply SendAU_from_empty_buffer_to ch γ $$ Hown
-  -- Now we have: own_chan (Buffered [0]) in the continuation.
+  -- Now we have: ownChan (Buffered [0]) in the continuation.
   iintro Hoc
   imod start_select_nb_full1 ch γ $$ His_chan [] Hoc with Hfull
   · ipureintro; exact Hcap
@@ -269,7 +269,7 @@ theorem wp_select_nb_full_buffer_not_ready :
   wp_apply_core chan.wp_select_nonblocking
   isplit
   · iapply BigAndL.bigAndL_singleton.2
-    simp only [chan.nonblocking_clause_pre]
+    simp only [chan.nonblockingClausePre]
     iexists w64, inferInstance, inferInstance, inferInstance, inferInstance, ch, γ, W64 0
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩

@@ -15,25 +15,25 @@ namespace go
 
 /-- Lexicographic order on byte strings (Rocq: stdpp `lexico` with
 `w8_lexico x y := uint.Z x < uint.Z y`). -/
-def go_string_lt : go_string → go_string → Prop :=
+def GoStringLt : go_string → go_string → Prop :=
   List.Lex (fun (x y : w8) => uint.Z x < uint.Z y)
 
-instance go_string_lt_dec : DecidableRel go_string_lt :=
+instance goStringLt_dec : DecidableRel GoStringLt :=
   fun x y => inferInstanceAs (Decidable (List.Lex _ x y))
 
 example :
-    ¬ go_string_lt go!"" go!"" ∧
-    go_string_lt go!"" go!"a" ∧
-    ¬ go_string_lt go!"a" go!"" ∧
-    ¬ go_string_lt go!"ab" go!"a" ∧
-    go_string_lt go!"ab" go!"b" := by
+    ¬ GoStringLt go!"" go!"" ∧
+    GoStringLt go!"" go!"a" ∧
+    ¬ GoStringLt go!"a" go!"" ∧
+    ¬ GoStringLt go!"ab" go!"a" ∧
+    GoStringLt go!"ab" go!"b" := by
   decide
 
-def go_string_le (x y : go_string) : Prop :=
-  x = y ∨ go_string_lt x y
+def GoStringLe (x y : go_string) : Prop :=
+  x = y ∨ GoStringLt x y
 
-instance go_string_le_dec : DecidableRel go_string_le :=
-  fun x y => inferInstanceAs (Decidable (x = y ∨ go_string_lt x y))
+instance goStringLe_dec : DecidableRel GoStringLe :=
+  fun x y => inferInstanceAs (Decidable (x = y ∨ GoStringLt x y))
 
 section defs
 variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
@@ -66,16 +66,16 @@ class StringSemantics [GoSemanticsFunctions] : Prop where
     ⟦Convert from_ to, v⟧ ⤳[internal] (@! strings.StringToByteSlice v)
 
   lt_string (x y : go_string) :
-    ⟦GoOp GoLt go.string, (#x, #y)⟧ ⤳[under] #(decide (go_string_lt x y))
+    ⟦GoOp GoLt go.string, (#x, #y)⟧ ⤳[under] #(decide (GoStringLt x y))
 
   le_string (x y : go_string) :
-    ⟦GoOp GoLe go.string, (#x, #y)⟧ ⤳[under] #(decide (go_string_le x y))
+    ⟦GoOp GoLe go.string, (#x, #y)⟧ ⤳[under] #(decide (GoStringLe x y))
 
   gt_string (x y : go_string) :
-    ⟦GoOp GoGt go.string, (#x, #y)⟧ ⤳[under] #(decide (go_string_lt y x))
+    ⟦GoOp GoGt go.string, (#x, #y)⟧ ⤳[under] #(decide (GoStringLt y x))
 
   ge_string (x y : go_string) :
-    ⟦GoOp GoGe go.string, (#x, #y)⟧ ⤳[under] #(decide (go_string_le y x))
+    ⟦GoOp GoGe go.string, (#x, #y)⟧ ⤳[under] #(decide (GoStringLe y x))
 
 attribute [instance] StringSemantics.package_sem StringSemantics.internal_string_len_step
   StringSemantics.string_len_unfold StringSemantics.string_index

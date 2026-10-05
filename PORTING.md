@@ -17,24 +17,24 @@ reasoning, `program_proof/`) is out of scope.
   goose only for disk/crash examples, so it is dropped. GooseLang is an
   instance of iris-lean's `Language`, and proofs use iris-lean's `wp`, which
   already has later credits and `numLatersPerStep`. Perennial's
-  `state * global_state` pair becomes a single iris-lean `State`.
+  `state * GlobalState` pair becomes a single iris-lean `State`.
 * **Bounded-step layer and time receipts.** The trusted semantics `base_step`
-  (and its iris-lean language `goose_real_ectxi_lang`, `GooseLang/Lang.lean`)
+  (and its iris-lean language `gooseRealEctxiLang`, `GooseLang/Lang.lean`)
   is unchanged, but the language instance used by the program logic is a
   separate step-bounded layer (`GooseLang/BoundedLang.lean`): its state adds a
   *fuel* of Go-instruction steps, and once the fuel is exhausted Go
   instructions stutter instead of stepping. This supports *time receipts*
   (Mével, Jourdan, Pottier, ESOP 2019; `GooseLang/Receipts.lean`): `⧗ n`/`⧖ n`,
-  with `⧗ N ⊢ False` for the bound `N = receipt_bound GF`.
+  with `⧗ N ⊢ False` for the bound `N = receiptBound GF`.
   The bound is an *unspecified parameter*, not a constant: it is a field of the
   receipt ghost state `receiptGS GF` (part of `gooseGlobalGS`, hence of
   `heapGS`), so downstream files, whose sections already assume `heapGS`, need
   no new argument, and the language instance and its `PureExec`/`Atomic`
   instances do not depend on it. A proof that needs `N` to be small takes a
-  premise (`idutil.wp_Generator__Next` takes `receipt_bound GF ≤ 2 ^ 48`). The
+  premise (`idutil.wp_Generator__Next` takes `receiptBound GF ≤ 2 ^ 48`). The
   adequacy theorems (`goose_adequacy N`, `goose_invariance N`, and the
   grove/disk ones) hold for every `N`: they allocate the receipt ghost state
-  with `receipt_bound GF = N` (a hypothesis of the WP premise `Hwp`, from which
+  with `receiptBound GF = N` (a hypothesis of the WP premise `Hwp`, from which
   the client discharges the proof's premises about `N`) and are about real
   executions of *fewer than `N` steps*, an explicit hypothesis. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts".
@@ -83,7 +83,7 @@ Run `etc/lean-port-status.py --rocq <master checkout>` for per-area file, line a
 
 ## Conventions for porters
 
-* Keep Rocq identifiers (`wp_load`, `is_Mutex`, `own_slice`) so a Rocq name can
+* Keep Rocq identifiers (`wp_load`, `isMutex`, `ownSlice`) so a Rocq name can
   be found with grep. Rename only when a name is not legal Lean; quote with «» when
   possible (e.g. `«Mutexⁱᵐᵖˡ»`, `«unsafe»`).
 * Sealing: `def foo_def`, `@[irreducible] def foo := foo_def`,

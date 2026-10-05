@@ -34,10 +34,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : unittest.Assumptions]
 
-instance is_pkg_init_inst :
+instance isPkgInit_inst :
     IsPkgInit (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst :
+instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest :=
   build_get_is_pkg_init_wf
 
@@ -49,7 +49,7 @@ local macro "wp_auto_neg " h:ident : tactic =>
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 
 theorem wp_BasicNamedReturn :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! BasicNamedReturn)) (Val #()))
     {{ RET #(go!"ok"); True }} := by
   wp_start
@@ -57,7 +57,7 @@ theorem wp_BasicNamedReturn :
   wp_end
 
 theorem wp_VoidButEndsWithReturn :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! VoidButEndsWithReturn)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -65,7 +65,7 @@ theorem wp_VoidButEndsWithReturn :
   wp_end
 
 theorem wp_VoidImplicitReturnInBranch (b : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! VoidImplicitReturnInBranch)) (Val #b))
     {{ RET #(); True }} := by
   wp_start
@@ -78,7 +78,7 @@ theorem wp_VoidImplicitReturnInBranch (b : Bool) :
     wp_end
 
 theorem wp_typeAssertInt (x : interface.t) (v : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ ⌜x = interface.mk_ok go.int #v⌝ }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ ⌜x = interface.mkOk go.int #v⌝ }}
       (App (Val (@! typeAssertInt)) (Val #x))
     {{ RET #v; True }} := by
   wp_start as %Hx
@@ -87,7 +87,7 @@ theorem wp_typeAssertInt (x : interface.t) (v : w64) :
   wp_end
 
 theorem wp_wrapUnwrapInt :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! wrapUnwrapInt)) (Val #()))
     {{ RET #(W64 1); True }} := by
   wp_start
@@ -98,7 +98,7 @@ theorem wp_wrapUnwrapInt :
   wp_end
 
 theorem wp_checkedTypeAssert (x : interface.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
         ⌜match x with
           | interface.ok i =>
               if i.ty = go.uint64 then ∃ v : w64, i.v = #v else True
@@ -124,7 +124,7 @@ theorem wp_checkedTypeAssert (x : interface.t) :
       wp_end
 
 theorem wp_basicTypeSwitch (x : interface.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
               (ty = go.int → ∃ v' : w64, v = #v') ∧
@@ -154,7 +154,7 @@ theorem wp_basicTypeSwitch (x : interface.t) :
         wp_end
 
 theorem wp_fancyTypeSwitch (x : interface.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
               (ty = go.int → ∃ v' : w64, v = #v') ∧
@@ -186,7 +186,7 @@ theorem wp_fancyTypeSwitch (x : interface.t) :
         wp_end
 
 theorem wp_multiTypeSwitch (x : interface.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
               (ty = go.int → ∃ v' : w64, v = #v') ∧
@@ -211,7 +211,7 @@ theorem wp_multiTypeSwitch (x : interface.t) :
       wp_end
 
 theorem wp_testSwitchMultiple (x : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! testSwitchMultiple)) (Val #x))
     {{ (y : w64), RET #y;
         ⌜(uint.Z x = 10 → sint.Z y = 1) ∧
@@ -228,52 +228,52 @@ theorem wp_testSwitchMultiple (x : w64) :
   · iapply HΦ; ipureintro; word
   iapply HΦ; ipureintro; word
 
-theorem wp_Point__IgnoreReceiver (p : Point.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+theorem Point.wp_IgnoreReceiver (p : Point.t) :
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (p @!! Point @!! go!"IgnoreReceiver")) (Val #()))
     {{ RET #(go!"ok"); True }} := by
   wp_start
   wp_end
 
 theorem wp_mapGetCall :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! mapGetCall)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
   wp_auto
   wp_apply (wp_map_make1 (K := w64) (V := func.t)) with %m Hm
-  wp_apply wp_map_insert $$ Hm with Hm
+  wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm
   wp_end
 
 theorem wp_NamedMapAssignment :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NamedMapAssignment)) (Val #()))
-    {{ (m : loc), RET #m; m ↦$ ({[W64 1 := true]} : gmap w64 Bool) }} := by
+    {{ (m : loc), RET #m; m ↦$ ({[W64 1 := true]} : GMap w64 Bool) }} := by
   wp_start
   wp_auto
   rw [go.make1_underlying, go.is_underlying (t := MapWrapper)]
   wp_apply (wp_map_make1 (K := w64) (V := Bool)) with %m Hm
-  wp_apply wp_map_insert $$ Hm with Hm
-  rw [gmap.insert_empty]
+  wp_apply wp_mapInsert $$ Hm with Hm
+  rw [GMap.insert_empty]
   wp_end
 
 theorem wp_mapLiteralTest :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! mapLiteralTest)) (Val #()))
     {{ (l : loc), RET #l;
-        l ↦$ (<[go!"c" := W64 99]> (<[go!"b" := W64 98]> {[go!"a" := W64 97]}) : gmap go_string w64) }} := by
+        l ↦$ (<[go!"c" := W64 99]> (<[go!"b" := W64 98]> {[go!"a" := W64 97]}) : GMap go_string w64) }} := by
   wp_start
   wp_auto
   wp_apply (wp_map_make1 (K := go_string) (V := w64)) with %m Hm
-  wp_apply wp_map_insert $$ Hm with Hm
-  wp_apply wp_map_insert $$ Hm with Hm
-  wp_apply wp_map_insert $$ Hm with Hm
-  rw [gmap.insert_empty]
+  wp_apply wp_mapInsert $$ Hm with Hm
+  wp_apply wp_mapInsert $$ Hm with Hm
+  wp_apply wp_mapInsert $$ Hm with Hm
+  rw [GMap.insert_empty]
   iapply HΦ $$ Hm
 
 theorem wp_testConversionLiteral :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! testConversionLiteral)) (Val #()))
     {{ RET #true; True }} := by
   wp_start
@@ -281,19 +281,19 @@ theorem wp_testConversionLiteral :
   wp_apply (wp_map_make1 (K := interface.t) (V := interface.t)) with %m Hm
   have hnil : SafeMapKey (GF := GF) go.any (interface.nil : interface.t) :=
     ⟨fun s E Φ => by iintro H; wp_auto; iapply H⟩
-  wp_apply wp_map_insert $$ Hm with Hm
-  wp_apply wp_map_insert $$ Hm with Hm
+  wp_apply wp_mapInsert $$ Hm with Hm
+  wp_apply wp_mapInsert $$ Hm with Hm
   have hs : SafeMapKey (GF := GF) go.any
-      (interface.mk_ok withInterface #(withInterface.t.mk interface.nil)) :=
+      (interface.mkOk withInterface #(withInterface.t.mk interface.nil)) :=
     ⟨fun s E Φ => by iintro H; wp_auto; iapply H⟩
-  wp_apply wp_map_insert $$ Hm with Hm
+  wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm
   iapply HΦ
   itrivial
 
 theorem wp_useNilField :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! useNilField)) (Val #()))
     {{ (l : loc), RET #l; l ↦ containsPointer.t.mk null }} := by
   wp_start
@@ -303,14 +303,14 @@ theorem wp_useNilField :
   iframe
 
 theorem wp_testU32NewtypeLen :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! testU32NewtypeLen)) (Val #()))
     {{ RET #true; True }} := by
   wp_start
   wp_auto
   wp_apply (wp_slice_make2 (V := w8)) with %sl ⟨Hs, Hcap⟩
   · ipureintro; word
-  ihave %Hlen := own_slice_len _ _ _ $$ Hs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hs
   have h : sint.Z sl.len = 20 := by
     have h1 := Hlen.1
     have h2 := Hlen.2
@@ -321,7 +321,7 @@ theorem wp_testU32NewtypeLen :
   itrivial
 
 theorem wp_signedMidpoint (x y : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ ⌜-2^63 < sint.Z x + sint.Z y ∧ sint.Z x + sint.Z y < 2^63⌝ }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ ⌜-2^63 < sint.Z x + sint.Z y ∧ sint.Z x + sint.Z y < 2^63⌝ }}
       (App (App (Val (@! signedMidpoint)) (Val #x)) (Val #y))
     {{ (z : w64), RET #z; ⌜sint.Z z = (sint.Z x + sint.Z y).tdiv 2⌝ }} := by
   wp_start as %H
@@ -337,7 +337,7 @@ theorem wp_signedMidpoint (x y : w64) :
   rfl
 
 theorem wp_useFloat :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! useFloat)) (Val #()))
     {{ (f : w64), RET #f; True }} := by
   wp_start
@@ -347,13 +347,13 @@ theorem wp_useFloat :
   wp_end
 
 theorem wp_intSliceLoop (s : slice.t) (xs : List w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ s ↦* xs }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦* xs }}
       (App (Val (@! intSliceLoop)) (Val #s))
     {{ (z : w64), RET #z; s ↦* xs }} := by
   wp_start as Hs
   wp_auto
-  ihave %Hs_len := own_slice_len _ _ _ $$ Hs
-  ihave %Hs_wf := own_slice_wf _ _ _ $$ Hs
+  ihave %Hs_len := ownSlice_len _ _ _ $$ Hs
+  ihave %Hs_wf := ownSlice_wf _ _ _ $$ Hs
   ihave HI : (∃ i sum : w64,
       "i" ∷ i_ptr ↦ i ∗
       "xs" ∷ xs_ptr ↦ s ∗
@@ -378,7 +378,7 @@ theorem wp_intSliceLoop (s : slice.t) (xs : List w64) :
     iframe
 
 theorem wp_useEmbeddedMethod (d : embedD.t) (b : embedB.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ d.embedC'.embedB' ↦ b }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ d.embedC'.embedB' ↦ b }}
       (App (Val (@! useEmbeddedMethod)) (Val #d))
     {{ RET #true; True }} := by
   wp_start
@@ -399,7 +399,7 @@ theorem wp_useEmbeddedMethod (d : embedD.t) (b : embedB.t) :
   itrivial
 
 theorem wp_pointerAny :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! pointerAny)) (Val #()))
     {{ (l : loc), RET #l; l ↦ interface.nil }} := by
   wp_start
@@ -408,7 +408,7 @@ theorem wp_pointerAny :
   wp_end
 
 theorem wp_useRuneOps (r0 : w32) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! useRuneOps)) (Val #r0))
     {{ (r : w32), RET #r; ⌜r = W32 98⌝ }} := by
   wp_start
@@ -433,7 +433,7 @@ local macro "wp_append_lit" : tactic => `(tactic| (
   try wp_auto))
 
 theorem wp_ifJoinDemo (arg1 arg2 : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (Val (@! ifJoinDemo)) (Val #arg1)) (Val #arg2))
     {{ RET #(); True }} := by
   wp_start
@@ -457,7 +457,7 @@ theorem wp_ifJoinDemo (arg1 arg2 : Bool) :
 /-- The Rocq proof of `wp_ifJoinDemo`, which joins the branches of the first
 `if` with `wp_if_join` instead of case-splitting the rest of the function. -/
 theorem wp_ifJoinDemo_join (arg1 arg2 : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (Val (@! ifJoinDemo)) (Val #arg1)) (Val #arg2))
     {{ RET #(); True }} := by
   wp_start
@@ -467,9 +467,9 @@ theorem wp_ifJoinDemo_join (arg1 arg2 : Bool) :
   · ipureintro; rfl
   iintro %sl ⟨Hz, Hzcap⟩
   wp_auto
-  wp_if_join (fun v => (iprop(⌜v = execute_val⌝ ∗
+  wp_if_join (fun v => (iprop(⌜v = executeVal⌝ ∗
       ∃ (sl : slice.t) (xs : List w64),
-        arr_ptr ↦ sl ∗ sl ↦* xs ∗ own_slice_cap w64 sl (DFrac.own 1)) : IProp GF))
+        arr_ptr ↦ sl ∗ sl ↦* xs ∗ ownSliceCap w64 sl (DFrac.own 1)) : IProp GF))
     with [arr Hz Hzcap]
   · -- `arg1 = false`
     isplitr
@@ -490,7 +490,7 @@ theorem wp_ifJoinDemo_join (arg1 arg2 : Bool) :
 end no_slice_literal_step
 
 theorem wp_repeatLocalVars :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! repeatLocalVars)) (Val #()))
     {{ RET #(); True }} := by
   wp_start

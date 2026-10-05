@@ -19,25 +19,25 @@ namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
-structure lock_channel_names where
+structure LockChannelNames where
   /-- Underlying channel ghost state -/
-  lchan_name : chan_names
+  lchanName : ChanNames
   /-- Ghost bool tracking lock state -/
-  locked_name : GName
+  lockedName : GName
 
 section lock_channel
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
   [IntoValTyped (GF := GF) V t]
 
 /-- The lock channel invariant. -/
-def lock_channel_inv (γ : chan_names) (R : IProp GF) : IProp GF :=
+def lockChannelInv (γ : ChanNames) (R : IProp GF) : IProp GF :=
   iprop(∃ (s : chanstate.t V) (locked : Bool),
-    "Hch" ∷ own_chan γ V s ∗
-    "%Hcap" ∷ ⌜γ.chan_cap = W64 1⌝ ∗
+    "Hch" ∷ ownChan γ V s ∗
+    "%Hcap" ∷ ⌜γ.chanCap = W64 1⌝ ∗
     (match s with
      | .Buffered [] => iprop(⌜locked = false⌝ ∗ R)
      | .Buffered [_] => iprop(⌜locked = true⌝)
@@ -45,45 +45,45 @@ def lock_channel_inv (γ : chan_names) (R : IProp GF) : IProp GF :=
      | _ => iprop(False)))
 
 variable (V) in
-def is_lock_channel (γ : lock_channel_names) (ch : loc) (R : IProp GF) : IProp GF :=
-  iprop("#Hchan" ∷ is_chan ch γ.lchan_name V ∗
-    "#Hinv" ∷ inv nroot (lock_channel_inv (V := V) γ.lchan_name R))
+def isLockChannel (γ : LockChannelNames) (ch : loc) (R : IProp GF) : IProp GF :=
+  iprop("#Hchan" ∷ isChan ch γ.lchanName V ∗
+    "#Hinv" ∷ inv nroot (lockChannelInv (V := V) γ.lchanName R))
 
-instance is_lock_channel_persistent (γ : lock_channel_names) (ch : loc) (R : IProp GF) :
-    Persistent (is_lock_channel V γ ch R) := by
-  unfold is_lock_channel; infer_instance
+instance isLockChannel_persistent (γ : LockChannelNames) (ch : loc) (R : IProp GF) :
+    Persistent (isLockChannel V γ ch R) := by
+  unfold isLockChannel; infer_instance
 
-theorem start_lock_channel (ch : loc) (R : IProp GF) (γ : chan_names)
-    (Hcap : γ.chan_cap = W64 1) :
-    ⊢ is_chan ch γ V -∗ own_chan γ V (.Buffered []) -∗ ▷ R ={⊤}=∗
-      ∃ γlock, is_lock_channel V γlock ch R := by
+theorem start_lock_channel (ch : loc) (R : IProp GF) (γ : ChanNames)
+    (Hcap : γ.chanCap = W64 1) :
+    ⊢ isChan ch γ V -∗ ownChan γ V (.Buffered []) -∗ ▷ R ={⊤}=∗
+      ∃ γlock, isLockChannel V γlock ch R := by
   iintro #Hch Hoc HR
-  imod ghost_var_alloc false with ⟨%γlocked, -⟩
-  imod inv_alloc nroot ⊤ (lock_channel_inv (V := V) γ R) $$ [Hoc HR] with #Hinv
+  imod ghostVar_alloc false with ⟨%γlocked, -⟩
+  imod inv_alloc nroot ⊤ (lockChannelInv (V := V) γ R) $$ [Hoc HR] with #Hinv
   · inext
-    unfold lock_channel_inv
+    unfold lockChannelInv
     iexists .Buffered [], false
     dsimp only
     iframe
     ipureintro; exact ⟨Hcap, rfl⟩
   imodintro
   iexists ⟨γ, γlocked⟩
-  unfold is_lock_channel
+  unfold isLockChannel
   iframe #
 
-theorem is_lock_channel_is_chan (γ : lock_channel_names) (ch : loc) (R : IProp GF) :
-    is_lock_channel V γ ch R ⊢ is_chan ch γ.lchan_name V := by
-  unfold is_lock_channel
+theorem isLockChannel_is_chan (γ : LockChannelNames) (ch : loc) (R : IProp GF) :
+    isLockChannel V γ ch R ⊢ isChan ch γ.lchanName V := by
+  unfold isLockChannel
   iintro ⟨$, -⟩
 
-theorem lock_channel_send_au (γ : lock_channel_names) (ch : loc) (v : V) (R : IProp GF)
+theorem lock_channel_send_au (γ : LockChannelNames) (ch : loc) (v : V) (R : IProp GF)
     (Φ : IProp GF) :
-    ⊢ is_lock_channel V γ ch R -∗ £ 1 -∗ ▷ (R -∗ Φ) -∗ send_au γ.lchan_name v Φ := by
-  unfold is_lock_channel send_au
+    ⊢ isLockChannel V γ ch R -∗ £ 1 -∗ ▷ (R -∗ Φ) -∗ sendAu γ.lchanName v Φ := by
+  unfold isLockChannel sendAu
   iintro ⟨#Hchan, #Hinv⟩ Hlc Hcont
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc Hi with Hi
-  unfold lock_channel_inv
+  unfold lockChannelInv
   icases Hi with ⟨%s, %locked, Hch, %Hcap, Hi⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -104,21 +104,21 @@ theorem lock_channel_send_au (γ : lock_channel_names) (ch : loc) (v : V) (R : I
     imodintro
     iapply Hcont $$ HR
   · iintro H
-    ihave %Hbad := own_chan_buffer_size _ _ _ $$ H
+    ihave %Hbad := ownChan_buffer_size _ _ _ $$ H
     rw [Hcap] at Hbad
     simp at Hbad
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem lock_channel_nonblocking_send_au (γ : lock_channel_names) (ch : loc) (v : V)
+theorem lock_channel_nonblocking_send_au (γ : LockChannelNames) (ch : loc) (v : V)
     (R : IProp GF) (Φ : IProp GF) :
-    ⊢ is_lock_channel V γ ch R -∗ £ 1 -∗ (R -∗ Φ) -∗
-      nonblocking_send_au γ.lchan_name v Φ iprop(True) := by
-  unfold is_lock_channel nonblocking_send_au nonblocking_send_au_inner
+    ⊢ isLockChannel V γ ch R -∗ £ 1 -∗ (R -∗ Φ) -∗
+      nonblockingSendAu γ.lchanName v Φ iprop(True) := by
+  unfold isLockChannel nonblockingSendAu nonblockingSendAuInner
   iintro ⟨#Hchan, #Hinv⟩ Hlc HΦ
   isplit
   · iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc Hi with Hi
-    unfold lock_channel_inv
+    unfold lockChannelInv
     icases Hi with ⟨%s, %locked, Hch, %Hcap, Hi⟩
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
@@ -139,31 +139,31 @@ theorem lock_channel_nonblocking_send_au (γ : lock_channel_names) (ch : loc) (v
       imodintro
       iapply HΦ $$ HR
     · iintro H
-      ihave %Hbad := own_chan_buffer_size _ _ _ $$ H
+      ihave %Hbad := ownChan_buffer_size _ _ _ $$ H
       rw [Hcap] at Hbad
       simp at Hbad
     all_goals first | itrivial | (iexfalso; iexact Hi)
   · itrivial
 
-theorem wp_lock_channel_lock (γ : lock_channel_names) (ch : loc) (v : V) (R : IProp GF) :
-    {{ is_lock_channel V γ ch R }}
+theorem wp_lock_channel_lock (γ : LockChannelNames) (ch : loc) (v : V) (R : IProp GF) :
+    {{ isLockChannel V γ ch R }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
     {{ RET #(); R }} := by
   iintro %Φ #Hlock HΦ
-  ihave #Hchan := is_lock_channel_is_chan γ ch R $$ Hlock
-  iapply chan.wp_send ch v γ.lchan_name $$ Hchan
+  ihave #Hchan := isLockChannel_is_chan γ ch R $$ Hlock
+  iapply chan.wp_send ch v γ.lchanName $$ Hchan
   iintro ⟨Hlc1, Hlc2, Hlc3, Hlc4⟩
   iapply lock_channel_send_au γ ch v R (Φ #()) $$ Hlock Hlc1 HΦ
 
-theorem lock_channel_recv_au (γ : lock_channel_names) (ch : loc) (R : IProp GF)
+theorem lock_channel_recv_au (γ : LockChannelNames) (ch : loc) (R : IProp GF)
     (Φ : V → Bool → IProp GF) :
-    ⊢ is_lock_channel V γ ch R -∗ R -∗ £ 1 -∗ ▷ (∀ v, True -∗ Φ v true) -∗
-      recv_au γ.lchan_name V Φ := by
-  unfold is_lock_channel recv_au
+    ⊢ isLockChannel V γ ch R -∗ R -∗ £ 1 -∗ ▷ (∀ v, True -∗ Φ v true) -∗
+      recvAu γ.lchanName V Φ := by
+  unfold isLockChannel recvAu
   iintro ⟨#Hchan, #Hinv⟩ HR Hlc HΦcont
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc Hi with Hi
-  unfold lock_channel_inv
+  unfold lockChannelInv
   icases Hi with ⟨%s, %locked, Hch, %Hcap, Hi⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -187,13 +187,13 @@ theorem lock_channel_recv_au (γ : lock_channel_names) (ch : loc) (R : IProp GF)
     itrivial
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_lock_channel_unlock (γ : lock_channel_names) (ch : loc) (R : IProp GF) :
-    {{ is_lock_channel V γ ch R ∗ R }}
+theorem wp_lock_channel_unlock (γ : LockChannelNames) (ch : loc) (R : IProp GF) :
+    {{ isLockChannel V γ ch R ∗ R }}
       (App (Val (chan.receive t)) (Val #ch))
     {{ (v : V), RET (PairV #v #true); True }} := by
   iintro %Φ ⟨#Hlock, HR⟩ HΦ
-  ihave #Hchan := is_lock_channel_is_chan γ ch R $$ Hlock
-  iapply chan.wp_receive ch γ.lchan_name $$ Hchan
+  ihave #Hchan := isLockChannel_is_chan γ ch R $$ Hlock
+  iapply chan.wp_receive ch γ.lchanName $$ Hchan
   iintro ⟨Hlc1, Hlc2⟩
   iapply lock_channel_recv_au γ ch R (fun v ok => Φ (PairV #v #ok)) $$ Hlock HR Hlc1 HΦ
 

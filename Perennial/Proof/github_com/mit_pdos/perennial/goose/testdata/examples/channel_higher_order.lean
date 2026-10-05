@@ -29,28 +29,28 @@ instance request_countable [ffi_syntax] : Pos.Countable request.t :=
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-def do_request (r : request.t) (γfut : future_names) (Q : go_string → IProp GF) : IProp GF :=
+def doRequest (r : request.t) (γfut : FutureNames) (Q : go_string → IProp GF) : IProp GF :=
   iprop("Hf" ∷ WP (App (Val #r.f') (Val #())) {{ fun v => iprop(∃ s : go_string, ⌜v = #s⌝ ∗ Q s) }} ∗
-    "#Hfut" ∷ is_future go_string γfut r.result' ∗
+    "#Hfut" ∷ isFuture go_string γfut r.result' ∗
     "Hpromise" ∷ Fulfill (V := go_string) γfut Q)
 
-def await_request (r : request.t) (γfut : future_names) (Q : go_string → IProp GF) : IProp GF :=
-  iprop("#Hfut" ∷ is_future go_string γfut r.result' ∗
+def awaitRequest (r : request.t) (γfut : FutureNames) (Q : go_string → IProp GF) : IProp GF :=
+  iprop("#Hfut" ∷ isFuture go_string γfut r.result' ∗
     "HAwait" ∷ Await (V := go_string) γfut [Q])
 
 set_option goose.wp.extras true
 
 theorem wp_mkRequest (f : func.t) (Q : go_string → IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
         WP (App (Val #f) (Val #())) {{ fun v => iprop(∃ s : go_string, ⌜v = #s⌝ ∗ Q s) }} }}
       (App (Val (@! mkRequest)) (Val #f))
-    {{ (γfut : future_names) (r : request.t), RET #r;
-        do_request r γfut Q ∗ await_request r γfut Q }} := by
+    {{ (γfut : FutureNames) (r : request.t), RET #r;
+        doRequest r γfut Q ∗ awaitRequest r γfut Q }} := by
   wp_start as Hf
   wp_auto
   iapply wp_fupd
@@ -61,16 +61,16 @@ theorem wp_mkRequest (f : func.t) (Q : go_string → IProp GF) :
   imod future_alloc_promise (V := go_string) γfut ch Q [] $$ Hfut HAwait with ⟨Hpromise, HAwait⟩
   imodintro
   iapply HΦ
-  unfold do_request await_request
+  unfold doRequest awaitRequest
   iframe # ∗
 
 omit package_sem in
-theorem wp_get_response (r : request.t) (γfut : future_names) (Q : go_string → IProp GF) :
-    {{ await_request r γfut Q }}
+theorem wp_get_response (r : request.t) (γfut : FutureNames) (Q : go_string → IProp GF) :
+    {{ awaitRequest r γfut Q }}
       (App (Val (chan.receive go.string)) (Val #r.result'))
     {{ (s : go_string), RET (PairV #s #true); Q s }} := by
   iintro %Φ H HΦ
-  unfold await_request
+  unfold awaitRequest
   icases H with ⟨#Hfut, HAwait⟩
   iapply wp_future_await (t := go.string) γfut r.result' [Q] $$ [$Hfut $HAwait]
   inext
@@ -85,26 +85,26 @@ theorem wp_get_response (r : request.t) (γfut : future_names) (Q : go_string �
     simp at this
 
 
-def is_request_chan (γ : chan_names) (ch : loc) : IProp GF :=
-  is_chan_bag (V := request.t) γ ch (fun r => iprop(∃ γfut Q, do_request r γfut Q))
+def isRequestChan (γ : ChanNames) (ch : loc) : IProp GF :=
+  isChanBag (V := request.t) γ ch (fun r => iprop(∃ γfut Q, doRequest r γfut Q))
 
-instance is_request_chan_pers (γ : chan_names) (ch : loc) :
-    Persistent (is_request_chan (GF := GF) γ ch) := by
-  unfold is_request_chan; infer_instance
+instance isRequestChan_pers (γ : ChanNames) (ch : loc) :
+    Persistent (isRequestChan (GF := GF) γ ch) := by
+  unfold isRequestChan; infer_instance
 
-theorem wp_ho_worker (γ : chan_names) (ch : loc) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_request_chan γ ch }}
+theorem wp_ho_worker (γ : ChanNames) (ch : loc) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isRequestChan γ ch }}
       (App (Val (@! ho_worker)) (Val #ch))
     {{ RET #(); True }} := by
   wp_start as #His
-  unfold is_request_chan at *
+  unfold isRequestChan at *
   wp_auto
   ihave HI : (∃ r0 : request.t, "r" ∷ r_ptr ↦ r0 : IProp GF) $$ [r]
   · iexists _; iexact r
   wp_for HI
   wp_apply wp_bag_receive (t := request) γ ch _ $$ His as %rq Hreq
   icases Hreq with ⟨%γfut, %Q, Hreq⟩
-  unfold do_request
+  unfold doRequest
   iNamed Hreq
   wp_bind (App (Val #rq.f') (Val #()))
   iapply wp_wand $$ Hf
@@ -120,17 +120,17 @@ theorem wp_ho_worker (γ : chan_names) (ch : loc) :
 
 set_option maxHeartbeats 400000 in
 theorem wp_HigherOrderExample :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! HigherOrderExample)) (Val #()))
     {{ (s : slice.t), RET #s; s ↦* [go!"hello world", go!"HELLO", go!"world"] }} := by
   wp_start
   wp_auto
   iapply wp_fupd
   wp_apply chan.wp_make1 (V := request.t) $$ [] as %req_ch %γ ⟨#His, %Hcap, Hown⟩
-  imod start_bag (fun r => iprop(∃ γfut Q, do_request r γfut Q)) _ req_ch γ trivial $$ His Hown
+  imod start_bag (fun r => iprop(∃ γfut Q, doRequest r γfut Q)) _ req_ch γ trivial $$ His Hown
     with #Hch
-  ihave #Hreqs : is_request_chan γ req_ch $$ []
-  · unfold is_request_chan; iexact Hch
+  ihave #Hreqs : isRequestChan γ req_ch $$ []
+  · unfold isRequestChan; iexact Hch
   ipersist c
   wp_apply wp_fork $$ []
   · wp_apply wp_ho_worker $$ [$Hreqs]

@@ -51,7 +51,7 @@ Semantics is:
 - if there's a default then select it; else, go back to the beginning.
 -/
 open github_com.mit_pdos.perennial.goose.model in
-def try_comm_clause (c : comm_clause) : val :=
+def tryCommClause (c : comm_clause) : val :=
   match c with
   | CommClause case' body =>
   λ: "blocking",
@@ -67,11 +67,11 @@ def try_comm_clause (c : comm_clause) : val :=
         if: "success" then ((λ: <>, body : val) #() ("v", "ok"), #true)
         else (#(), #false))
 
-/-- `try_select` is used as the core of both `select_blocking` and
+/-- `trySelect` is used as the core of both `select_blocking` and
 `select_nonblocking` -/
-def try_select (blocking : Bool) : List comm_clause → expr :=
+def trySelect (blocking : Bool) : List comm_clause → expr :=
   List.foldr (fun clause cases_remaining =>
-      gl(let: ("v", "done") := try_comm_clause clause #blocking in
+      gl(let: ("v", "done") := tryCommClause clause #blocking in
       if: ⟨go.bool⟩! "done" then (λ: <>, cases_remaining : val) #()
       else ("v", #true)))
     gl((#(), #false))
@@ -117,7 +117,7 @@ class ChanSemantics [GoSemanticsFunctions] : Prop where
        ∃ clauses',
          clauses'.Perm clauses ∧
          e' =
-         gl(let: ("v", "succeeded") := chan.try_select false clauses' in
+         gl(let: ("v", "succeeded") := chan.trySelect false clauses' in
           if: "succeeded" then "v"
           else (λ: <>, default_handler : val) #()))
   chan_select_blocking (clauses : List comm_clause) :
@@ -126,7 +126,7 @@ class ChanSemantics [GoSemanticsFunctions] : Prop where
        ∃ clauses',
          clauses'.Perm clauses ∧
          e' =
-         gl(let: ("v", "succeeded") := chan.try_select true clauses' in
+         gl(let: ("v", "succeeded") := chan.trySelect true clauses' in
           if: "succeeded" then "v"
           else (λ: <>, SelectStmt (SelectStmtClauses none clauses) : val) #()))
 

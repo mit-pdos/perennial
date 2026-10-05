@@ -74,19 +74,19 @@ theorem len_fin' (x l : w64) (b : w8) (n i : Nat) (heq : W8 (blen8 i) = b)
   rw [hl, ← heq]; word
 
 /-- The state of `Len64` after shifting `x` (initially `X`) right by `n` bits: `x < 2 ^ b`. -/
-def len_inv (X b : Nat) (x n : w64) : Prop :=
+def LenInv (X b : Nat) (x n : w64) : Prop :=
   uint.nat x = X / 2 ^ uint.nat n ∧ uint.nat x < 2 ^ b ∧ uint.nat n + b ≤ 64 ∧
     (uint.nat n = 0 ∨ 2 ^ uint.nat n ≤ X)
 
-theorem len_inv_init (X : Nat) (x : w64) (hX : uint.nat x = X) :
-    len_inv X 64 x (zero_val w64) := by
+theorem lenInv_init (X : Nat) (x : w64) (hX : uint.nat x = X) :
+    LenInv X 64 x (zero_val w64) := by
   have := x.isLt
-  simp only [len_inv, zero_val, ZeroVal.zero_val_def]
+  simp only [LenInv, zero_val, ZeroVal.zero_val_def]
   refine ⟨?_, ?_, ?_, Or.inl ?_⟩ <;> simp [uint.nat] at * <;> omega
 
-theorem len_inv_yes (X s : Nat) (x n x' n' : w64) (h : len_inv X (2 * s) x n)
+theorem lenInv_yes (X s : Nat) (x n x' n' : w64) (h : LenInv X (2 * s) x n)
     (hge : 2 ^ s ≤ uint.nat x) (hx' : uint.nat x' = uint.nat x / 2 ^ s)
-    (hn' : uint.nat n' = uint.nat n + s) : len_inv X s x' n' := by
+    (hn' : uint.nat n' = uint.nat n + s) : LenInv X s x' n' := by
   obtain ⟨h1, h2, h3, h4⟩ := h
   refine ⟨?_, ?_, by omega, Or.inr ?_⟩
   · rw [hx', hn', h1, Nat.div_div_eq_div_mul, ← Nat.pow_add]
@@ -97,8 +97,8 @@ theorem len_inv_yes (X s : Nat) (x n x' n' : w64) (h : len_inv X (2 * s) x n)
     rw [h1] at hge
     exact (Nat.le_div_iff_mul_le (Nat.two_pow_pos _)).1 hge
 
-theorem len_inv_no (X s : Nat) (x n : w64) (h : len_inv X (2 * s) x n)
-    (hlt : uint.nat x < 2 ^ s) : len_inv X s x n :=
+theorem lenInv_no (X s : Nat) (x n : w64) (h : LenInv X (2 * s) x n)
+    (hlt : uint.nat x < 2 ^ s) : LenInv X s x n :=
   ⟨h.1, hlt, by have := h.2.2.1; omega, h.2.2.2⟩
 
 section wps
@@ -109,7 +109,7 @@ variable [sem : go.Semantics]
 variable [package_sem : math.bits.Assumptions]
 
 theorem wp_Len64_exact (x : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.math.bits }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.math.bits }}
       (App (Val (@! Len64)) (Val #x))
     {{ (l : w64), RET #l; ⌜uint.Z l ≤ 64 ∧ uint.Z x < 2 ^ uint.nat l ∧
         (x = 0 ∨ 2 ^ uint.nat l ≤ 2 * uint.Z x)⌝ }} := by
@@ -118,26 +118,26 @@ theorem wp_Len64_exact (x : w64) :
   rw [hs]
   clear hs
   wp_auto
-  -- the three `if x >= 1<<k { x >>= k; n += k }` statements, joined at `len_inv`
+  -- the three `if x >= 1<<k { x >>= k; n += k }` statements, joined at `LenInv`
   wp_join iprop(∃ (x' n' : w64), "x" ∷ x_ptr ↦ x' ∗ "n" ∷ n_ptr ↦ n' ∗
-      "%Hinv" ∷ ⌜len_inv (uint.nat x) 32 x' n'⌝) with [x n] as ⟨%x1, %n1, x, n, %Hinv⟩
+      "%Hinv" ∷ ⌜LenInv (uint.nat x) 32 x' n'⌝) with [x n] as ⟨%x1, %n1, x, n, %Hinv⟩
   · iexists _, _; iframe; ipureintro
-    exact len_inv_yes _ 32 x (zero_val w64) _ _ (len_inv_init _ x rfl) (by word) (by word)
+    exact lenInv_yes _ 32 x (zero_val w64) _ _ (lenInv_init _ x rfl) (by word) (by word)
       (by simp only [zero_val, ZeroVal.zero_val_def]; word)
   · iexists _, _; iframe; ipureintro
-    exact len_inv_no _ 32 x _ (len_inv_init _ x rfl) (by word)
+    exact lenInv_no _ 32 x _ (lenInv_init _ x rfl) (by word)
   wp_join iprop(∃ (x' n' : w64), "x" ∷ x_ptr ↦ x' ∗ "n" ∷ n_ptr ↦ n' ∗
-      "%Hinv" ∷ ⌜len_inv (uint.nat x) 16 x' n'⌝) with [x n] as ⟨%x2, %n2, x, n, %Hinv⟩
+      "%Hinv" ∷ ⌜LenInv (uint.nat x) 16 x' n'⌝) with [x n] as ⟨%x2, %n2, x, n, %Hinv⟩
   · iexists _, _; iframe; ipureintro
-    exact len_inv_yes _ 16 x1 n1 _ _ Hinv (by word) (by word) (by have := Hinv.2.2.1; word)
+    exact lenInv_yes _ 16 x1 n1 _ _ Hinv (by word) (by word) (by have := Hinv.2.2.1; word)
   · iexists _, _; iframe; ipureintro
-    exact len_inv_no _ 16 x1 n1 Hinv (by word)
+    exact lenInv_no _ 16 x1 n1 Hinv (by word)
   wp_join iprop(∃ (x' n' : w64), "x" ∷ x_ptr ↦ x' ∗ "n" ∷ n_ptr ↦ n' ∗
-      "%Hinv" ∷ ⌜len_inv (uint.nat x) 8 x' n'⌝) with [x n] as ⟨%x3, %n3, x, n, %Hinv⟩
+      "%Hinv" ∷ ⌜LenInv (uint.nat x) 8 x' n'⌝) with [x n] as ⟨%x3, %n3, x, n, %Hinv⟩
   · iexists _, _; iframe; ipureintro
-    exact len_inv_yes _ 8 x2 n2 _ _ Hinv (by word) (by word) (by have := Hinv.2.2.1; word)
+    exact lenInv_yes _ 8 x2 n2 _ _ Hinv (by word) (by word) (by have := Hinv.2.2.1; word)
   · iexists _, _; iframe; ipureintro
-    exact len_inv_no _ 8 x2 n2 Hinv (by word)
+    exact lenInv_no _ 8 x2 n2 Hinv (by word)
   -- `return n + int(len8tab[x])`
   obtain ⟨hi, hx3, hn3, hpos⟩ := Hinv
   have hx3' : uint.nat x3 < 256 := hx3
@@ -150,7 +150,7 @@ theorem wp_Len64_exact (x : w64) :
   exact len_fin' x _ _ (uint.nat n3) (uint.nat x3) rfl (by word) (by omega) hi hx3' hpos
 
 theorem wp_Len_exact (x : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.math.bits }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.math.bits }}
       (App (Val (@! Len)) (Val #x))
     {{ (l : w64), RET #l; ⌜uint.Z l ≤ 64 ∧ uint.Z x < 2 ^ uint.nat l ∧
         (x = 0 ∨ 2 ^ uint.nat l ≤ 2 * uint.Z x)⌝ }} := by

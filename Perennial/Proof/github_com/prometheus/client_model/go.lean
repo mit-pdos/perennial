@@ -21,9 +21,9 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : _root_.Perennial.github_com.prometheus.client_model.go.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.github_com.prometheus.client_model.go :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.github_com.prometheus.client_model.go :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.github_com.prometheus.client_model.go :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.github_com.prometheus.client_model.go :=
   build_get_is_pkg_init_wf
 
 end init

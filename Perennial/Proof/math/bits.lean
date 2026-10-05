@@ -22,17 +22,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : math.bits.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.math.bits :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.math.bits :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.math.bits :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.math.bits :=
   build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.math.bits get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.math.bits get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.math.bits }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.math.bits }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -52,7 +52,7 @@ theorem len8tab_eq : ∃ s : go_string, len8tab = #s ∧ s.length = 256 :=
 
 set_option maxRecDepth 100000 in
 theorem wp_Len64 (x : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.math.bits }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.math.bits }}
       (App (Val (@! Len64)) (Val #x))
     {{ (l : w64), RET #l; True }} := by
   wp_start
@@ -68,7 +68,7 @@ theorem wp_Len64 (x : w64) :
     | (exfalso; rename_i h; exact h _ (List.getElem?_eq_getElem (by rw [hlen]; word)))
 
 theorem wp_Len (x : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.math.bits }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.math.bits }}
       (App (Val (@! Len)) (Val #x))
     {{ (l : w64), RET #l; True }} := by
   wp_start

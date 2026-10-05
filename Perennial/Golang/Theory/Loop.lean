@@ -1,7 +1,7 @@
 /-
 Port of `new/golang/theory/loop.v`: `PureWp` instances for `break:` and
 `continue:`, the loop rule `wp_for` with its sealed postcondition
-`for_postcondition`, and the tactics `wp_for_core` and `wp_for_post_core`
+`forPostcondition`, and the tactics `wp_for_core` and `wp_for_post_core`
 (the user-facing `wp_for` and `wp_for_post` are in `Auto.lean`).
 
 Loop reasoning:
@@ -19,43 +19,43 @@ open Iris Iris.BI Iris.ProgramLogic
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance pure_continue_val (v1 : val) :
-    PureWp (G := G) (L := L) True (App (App (Val exception_seq) (Val v1)) (Val continue_val))
-      (Val continue_val) where
+    PureWp (G := G) (L := L) True (App (App (Val exception_seq) (Val v1)) (Val continueVal))
+      (Val continueVal) where
   pure_wp_wp s E Φ K _ := by
-    rw [exception_seq_unseal, continue_val_unseal]
-    simp only [continue_val_def]
+    rw [exception_seq_unseal, continueVal_unseal]
+    simp only [continueValDef]
     iintro Hwp
     wp_call_lc Hlc
     iapply Hwp $$ Hlc
 
 instance pure_break_val (v1 : val) :
-    PureWp (G := G) (L := L) True (App (App (Val exception_seq) (Val v1)) (Val break_val))
-      (Val break_val) where
+    PureWp (G := G) (L := L) True (App (App (Val exception_seq) (Val v1)) (Val breakVal))
+      (Val breakVal) where
   pure_wp_wp s E Φ K _ := by
-    rw [exception_seq_unseal, break_val_unseal]
-    simp only [break_val_def]
+    rw [exception_seq_unseal, breakVal_unseal]
+    simp only [breakValDef]
     iintro Hwp
     wp_call_lc Hlc
     iapply Hwp $$ Hlc
 
 instance pure_do_continue_val :
-    PureWp (G := G) (L := L) True (App (Val do_continue) (Val #())) (Val continue_val) where
+    PureWp (G := G) (L := L) True (App (Val do_continue) (Val #())) (Val continueVal) where
   pure_wp_wp s E Φ K _ := by
-    rw [do_continue_unseal, continue_val_unseal]
-    simp only [continue_val_def]
+    rw [do_continue_unseal, continueVal_unseal]
+    simp only [continueValDef]
     iintro Hwp
     wp_call_lc Hlc
     iapply Hwp $$ Hlc
 
 instance pure_do_break_val :
-    PureWp (G := G) (L := L) True (App (Val do_break) (Val #())) (Val break_val) where
+    PureWp (G := G) (L := L) True (App (Val do_break) (Val #())) (Val breakVal) where
   pure_wp_wp s E Φ K _ := by
-    rw [do_break_unseal, break_val_unseal]
-    simp only [break_val_def]
+    rw [do_break_unseal, breakVal_unseal]
+    simp only [breakValDef]
     iintro Hwp
     wp_call_lc Hlc
     iapply Hwp $$ Hlc
@@ -69,19 +69,19 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 
 /-- The postcondition of a loop body (sealed; use the `wp_for_post_*` lemmas
 to prove it). -/
-def for_postcondition_def (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
+def forPostconditionDef (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) (bv : val) : IProp GF :=
-  iprop((⌜bv = continue_val⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ _v, P }}) ∨
-    (⌜bv = execute_val⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ _v, P }}) ∨
-    (⌜bv = break_val⌝ ∗ Φ execute_val) ∨
-    (∃ v, ⌜bv = return_val v⌝ ∗ Φ bv))
+  iprop((⌜bv = continueVal⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ _v, P }}) ∨
+    (⌜bv = executeVal⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ _v, P }}) ∨
+    (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
+    (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv))
 
-@[irreducible] def for_postcondition (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
+@[irreducible] def forPostcondition (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) (bv : val) : IProp GF :=
-  for_postcondition_def s E post P Φ bv
+  forPostconditionDef s E post P Φ bv
 
-theorem for_postcondition_unseal :
-    @for_postcondition = @for_postcondition_def := by
+theorem forPostcondition_unseal :
+    @forPostcondition = @forPostconditionDef := by
   funext; with_unfolding_all rfl
 
 end for_post
@@ -89,21 +89,21 @@ end for_post
 section wp_for
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 attribute [local instance] go.tagged_internal_inst in
 theorem pure_test_execute :
-    PureWp (G := G) (L := L) True (Fst (Val execute_val)) (Val #go!"execute") := by
-  rw [execute_val_unseal]; simp only [execute_val_def]; infer_instance
+    PureWp (G := G) (L := L) True (Fst (Val executeVal)) (Val #go!"execute") := by
+  rw [executeVal_unseal]; simp only [executeValDef]; infer_instance
 
 theorem pure_test_continue :
-    PureWp (G := G) (L := L) True (Fst (Val continue_val)) (Val #go!"continue") := by
-  rw [continue_val_unseal]; simp only [continue_val_def]; infer_instance
+    PureWp (G := G) (L := L) True (Fst (Val continueVal)) (Val #go!"continue") := by
+  rw [continueVal_unseal]; simp only [continueValDef]; infer_instance
 
 theorem pure_test_break :
-    PureWp (G := G) (L := L) True (Fst (Val break_val)) (Val #go!"break") := by
-  rw [break_val_unseal]; simp only [break_val_def]; infer_instance
+    PureWp (G := G) (L := L) True (Fst (Val breakVal)) (Val #go!"break") := by
+  rw [breakVal_unseal]; simp only [breakValDef]; infer_instance
 
 end wp_for
 
@@ -116,16 +116,16 @@ attribute [local instance] pure_test_execute pure_test_continue pure_test_break
 
 /-- The loop rule: given the invariant `P`, a persistent proof that from `P`
 the condition evaluates to a boolean, after which (if `true`) the body runs
-with postcondition `for_postcondition`. -/
+with postcondition `forPostcondition`. -/
 theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val) (Φ : val → IProp GF) :
     P ⊢ □ (P -∗ WP (App (Val cond) (Val #())) @ s; E {{ v,
             if decide (v = #true) then
-              WP (App (Val body) (Val #())) @ s; E {{ for_postcondition s E post P Φ }}
-            else if decide (v = #false) then Φ execute_val else False }}) -∗
+              WP (App (Val body) (Val #())) @ s; E {{ forPostcondition s E post P Φ }}
+            else if decide (v = #false) then Φ executeVal else False }}) -∗
     WP (App (App (App (Val do_for) (Val cond)) (Val body)) (Val post)) @ s; E {{ Φ }} := by
   iintro HP #Hloop
-  rw [do_for_unseal, for_postcondition_unseal]
-  unfold for_postcondition_def
+  rw [do_for_unseal, forPostcondition_unseal]
+  unfold forPostconditionDef
   iloeb as IH generalizing HP
   wp_call
   ihave Hloop1 := Hloop $$ HP
@@ -162,13 +162,13 @@ theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val
       wp_pures
       iexact HΦ
     · subst Hbc
-      rw [return_val_unseal]
-      simp only [return_val_def]
+      rw [returnVal_unseal]
+      simp only [returnValDef]
       wp_pures
       iexact HΦ
   · by_cases hc' : c = #false
     · subst hc'
-      have : (#false : val) ≠ #true := fun h => absurd (GoGlobalContext.into_val_inj_bool h) (by decide)
+      have : (#false : val) ≠ #true := fun h => absurd (GoGlobalContext.intoVal_inj_bool h) (by decide)
       simp only [decide_true, ite_true, this, decide_false, Bool.false_eq_true, ite_false]
       wp_pures
       iexact Hbody
@@ -179,8 +179,8 @@ theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val
 theorem wp_for_post_do (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) :
     WP (App (Val post) (Val #())) @ s; E {{ _v, P }} ⊢
-      for_postcondition s E post P Φ execute_val := by
-  rw [for_postcondition_unseal]; unfold for_postcondition_def
+      forPostcondition s E post P Φ executeVal := by
+  rw [forPostcondition_unseal]; unfold forPostconditionDef
   iintro H
   iright; ileft
   iframe H
@@ -189,8 +189,8 @@ theorem wp_for_post_do (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
 theorem wp_for_post_continue (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) :
     WP (App (Val post) (Val #())) @ s; E {{ _v, P }} ⊢
-      for_postcondition s E post P Φ continue_val := by
-  rw [for_postcondition_unseal]; unfold for_postcondition_def
+      forPostcondition s E post P Φ continueVal := by
+  rw [forPostcondition_unseal]; unfold forPostconditionDef
   iintro H
   ileft
   iframe H
@@ -198,8 +198,8 @@ theorem wp_for_post_continue (s : Stuckness) (E : CoPset) (post : val) (P : IPro
 
 theorem wp_for_post_break (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) :
-    Φ execute_val ⊢ for_postcondition s E post P Φ break_val := by
-  rw [for_postcondition_unseal]; unfold for_postcondition_def
+    Φ executeVal ⊢ forPostcondition s E post P Φ breakVal := by
+  rw [forPostcondition_unseal]; unfold forPostconditionDef
   iintro H
   iright; iright; ileft
   iframe H
@@ -207,8 +207,8 @@ theorem wp_for_post_break (s : Stuckness) (E : CoPset) (post : val) (P : IProp G
 
 theorem wp_for_post_return (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) (v : val) :
-    Φ (return_val v) ⊢ for_postcondition s E post P Φ (return_val v) := by
-  rw [for_postcondition_unseal]; unfold for_postcondition_def
+    Φ (returnVal v) ⊢ forPostcondition s E post P Φ (returnVal v) := by
+  rw [forPostcondition_unseal]; unfold forPostconditionDef
   iintro H
   iright; iright; iright
   iexists v
@@ -228,7 +228,7 @@ macro "wp_for_core" : tactic => `(tactic| (
   iintro !> __CTX
   iNamed __CTX))
 
-/-- Rocq `wp_for_post_core`: prove a `for_postcondition` goal with the
+/-- Rocq `wp_for_post_core`: prove a `forPostcondition` goal with the
 appropriate `wp_for_post_*` lemma. -/
 macro "wp_for_post_core" : tactic => `(tactic|
   first

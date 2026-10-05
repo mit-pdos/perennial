@@ -7,20 +7,20 @@ import Perennial.Golang.Defn.Predeclared
 
 namespace Perennial
 
-def slice_index_ref [ffi_syntax] [GoSemanticsFunctions] (elem_type : Type) (i : Int) (s : slice.t) :
+def sliceIndexRef [ffi_syntax] [GoSemanticsFunctions] (elem_type : Type) (i : Int) (s : slice.t) :
     loc :=
-  array_index_ref elem_type i s.ptr
+  arrayIndexRef elem_type i s.ptr
 
 namespace slice
 section goose_lang
 variable [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 set_option linter.iris.dupNamespace false in
-def slice (sl : slice.t) (V : Type) (low high : u64) : slice.t :=
-  slice.mk (slice_index_ref V (sint.Z low) sl) (high - low) (sl.cap - low)
+def slice (sl : slice.t) (V : Type) (low high : U64) : slice.t :=
+  slice.mk (sliceIndexRef V (sint.Z low) sl) (high - low) (sl.cap - low)
 
-def full_slice (sl : slice.t) (V : Type) (low high max : u64) : slice.t :=
-  slice.mk (slice_index_ref V (sint.Z low) sl) (high - low) (max - low)
+def fullSlice (sl : slice.t) (V : Type) (low high max : U64) : slice.t :=
+  slice.mk (sliceIndexRef V (sint.Z low) sl) (high - low) (max - low)
 
 /-- only for internal use, not an external model -/
 def _new_cap : val :=
@@ -47,7 +47,7 @@ namespace go
 section defs
 variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
 
-def array_literal_size (kvs : List keyed_element) : Int :=
+def arrayLiteralSize (kvs : List keyed_element) : Int :=
   let (last, m) := (List.foldl (fun (cur_index, max_so_far) ke =>
                               match ke with
                               | KeyedElement none _ => (cur_index + 1, max_so_far)
@@ -74,12 +74,12 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
     (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ sint.Z s.cap then
        #(slice.slice s V low high)
      else Panic "slice bounds out of range")
-  full_slice_slice_step_pure (elem_type : go.type) (s : slice.t) (low high max : w64) {V : Type}
+  fullSlice_slice_step_pure (elem_type : go.type) (s : slice.t) (low high max : w64) {V : Type}
     [ZeroVal V] [TypeRepr elem_type V] :
     ⟦FullSlice (go.SliceType elem_type), (#s, #low, #high, #max)⟧ ⤳[under]
     (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ sint.Z max ∧
         sint.Z max ≤ sint.Z s.cap then
-       #(slice.full_slice s V low high max)
+       #(slice.fullSlice s V low high max)
      else Panic "slice bounds out of range")
 
   -- special case for slice equality
@@ -133,7 +133,7 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
     [TypeRepr elem_type V] :
     ⟦IndexRef (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
     (if 0 ≤ sint.Z i ∧ sint.Z i < sint.Z s.len then
-       #(slice_index_ref V (sint.Z i) s)
+       #(sliceIndexRef V (sint.Z i) s)
      else Panic "slice index out of bounds")
 
   index_slice (elem_type : go.type) (i : w64) (s : slice.t) :
@@ -152,7 +152,7 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
   append_slice {st elem_type : go.type} [st ↓u go.SliceType elem_type] :
     FuncUnfold go.append [st]
     (λ: "s" "x",
-       let: "new_len" := sum_assume_no_overflow_signed (FuncResolve go.len [st] #() "s")
+       let: "new_len" := sumAssumeNoOverflowSigned (FuncResolve go.len [st] #() "s")
                            (FuncResolve go.len [st] #() "x") in
        if: (FuncResolve go.cap [st] #() "s") ≥⟨go.int⟩ "new_len" then
          -- "grow" s to include its capacity
@@ -172,7 +172,7 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
   composite_literal_slice (elem_type : go.type) (kvs : List keyed_element) :
     ⟦CompositeLiteral (go.SliceType elem_type), (LiteralValueV kvs)⟧ ⤳[under]
     (
-      let len := array_literal_size kvs
+      let len := arrayLiteralSize kvs
       if len < 2^63 then
         gl(let: "tmp" := GoAlloc (go.ArrayType len elem_type)
                            (GoZeroVal (go.ArrayType len elem_type) #()) in
@@ -182,21 +182,21 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
       else gl(AngelicExit #())
         )
 
-  array_index_ref_0 (t : Type) (l : loc) : array_index_ref t 0 l = l
+  arrayIndexRef_0 (t : Type) (l : loc) : arrayIndexRef t 0 l = l
 
 attribute [instance] SliceSemantics.internal_len_step SliceSemantics.internal_cap_step
   SliceSemantics.internal_make_slice_step SliceSemantics.internal_dynamic_array_alloc_step
-  SliceSemantics.slice_slice_step_pure SliceSemantics.full_slice_slice_step_pure
+  SliceSemantics.slice_slice_step_pure SliceSemantics.fullSlice_slice_step_pure
   SliceSemantics.is_go_op_go_equals_slice_nil_l SliceSemantics.is_go_op_go_equals_slice_nil_r
   SliceSemantics.clear_slice SliceSemantics.copy_slice SliceSemantics.make3_slice
   SliceSemantics.is_go_op_pointer_plus SliceSemantics.make2_slice SliceSemantics.index_ref_slice
   SliceSemantics.index_slice SliceSemantics.len_slice SliceSemantics.cap_slice
   SliceSemantics.append_slice SliceSemantics.composite_literal_slice
 export SliceSemantics (internal_len_step internal_cap_step internal_make_slice_step
-  internal_dynamic_array_alloc_step slice_slice_step_pure full_slice_slice_step_pure
+  internal_dynamic_array_alloc_step slice_slice_step_pure fullSlice_slice_step_pure
   is_go_op_go_equals_slice_nil_l is_go_op_go_equals_slice_nil_r clear_slice copy_slice
   make3_slice is_go_op_pointer_plus make2_slice index_ref_slice index_slice len_slice cap_slice
-  append_underlying append_slice composite_literal_slice array_index_ref_0)
+  append_underlying append_slice composite_literal_slice arrayIndexRef_0)
 
 end defs
 end go

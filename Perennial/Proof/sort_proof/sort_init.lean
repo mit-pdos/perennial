@@ -20,9 +20,9 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sort.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.sort :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.sort :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.sort :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.sort :=
   build_get_is_pkg_init_wf
 
 end proof

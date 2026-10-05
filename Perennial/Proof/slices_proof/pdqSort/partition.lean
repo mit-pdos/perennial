@@ -30,8 +30,8 @@ set_option hygiene false in
 /-- Proof script shared by the two copies in `partitionCmpFunc`. -/
 macro "part_loop1" : tactic => `(tactic| (
   wp_bind (App (App (App (Val do_for) _) _) _)
-  iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
-    part_inv R data a b xp xs i_ptr j_ptr true false))) $$ [HI]
+  iapply (wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗
+    partInv R data a b xp xs i_ptr j_ptr true false))) $$ [HI]
   · iapply (wp_part_loop1 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
       cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
   iintro %v ⟨%Hv, HI⟩
@@ -42,8 +42,8 @@ set_option hygiene false in
 /-- Proof script shared by the two copies in `partitionCmpFunc`. -/
 macro "part_loop2" : tactic => `(tactic| (
   wp_bind (App (App (App (Val do_for) _) _) _)
-  iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
-    part_inv R data a b xp xs i_ptr j_ptr true true))) $$ [HI]
+  iapply (wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗
+    partInv R data a b xp xs i_ptr j_ptr true true))) $$ [HI]
   · iapply (wp_part_loop2 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
       cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
   iintro %v ⟨%Hv, HI⟩
@@ -53,7 +53,7 @@ macro "part_loop2" : tactic => `(tactic| (
 set_option hygiene false in
 /-- Proof script shared by the two copies in `partitionCmpFunc`. -/
 macro "part_load_j" : tactic => `(tactic| (
-  unfold part_inv
+  unfold partInv
   iNamed HI
   have Hlen2 := HPerm1.length_eq
   list_elem xs1 (sint.nat j_val) as xj
@@ -106,8 +106,8 @@ macro "part_swap" : tactic => `(tactic| (
   wp_apply wp_store_slice_index data (sint.Z j_val) _ xi $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; simp; omega
   try wp_auto
-  ihave HI : part_inv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
-  · unfold part_inv
+  ihave HI : partInv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
+  · unfold partInv
     iexists _, (i_val + W64 1), (j_val - W64 1)
     iframe
     ipureintro
@@ -149,21 +149,21 @@ end bool_lemmas
 section pure
 variable {E : Type} (R : E → E → Prop)
 
-def is_partitioned_pre (xs : List E) (a b i_val j_val : Nat) : Prop :=
+def IsPartitionedPre (xs : List E) (a b i_val j_val : Nat) : Prop :=
   ∀ (i : Nat) xi xa, xs[i]? = some xi → xs[a]? = some xa →
     ((a < i ∧ i < i_val → ¬ R xa xi) ∧
      (j_val < i ∧ i < b → ¬ R xi xa))
 
-def is_partitioned (xs : List E) (a b r : Nat) : Prop :=
+def IsPartitioned (xs : List E) (a b r : Nat) : Prop :=
   ∀ (i : Nat) xr xi, xs[i]? = some xi → xs[r]? = some xr →
     ((a ≤ i ∧ i < r → ¬ R xr xi) ∧
      (r < i ∧ i < b → ¬ R xi xr))
 
-theorem is_partitioned_pre_advance_left (xs : List E) (a b i_val j_val : Nat) (xa xi : E) :
-    is_partitioned_pre R xs a b i_val j_val →
+theorem isPartitionedPre_advance_left (xs : List E) (a b i_val j_val : Nat) (xa xi : E) :
+    IsPartitionedPre R xs a b i_val j_val →
     xs[a]? = some xa → xs[i_val]? = some xi → ¬ R xa xi →
-    is_partitioned_pre R xs a b (i_val + 1) j_val := by
-  unfold is_partitioned_pre
+    IsPartitionedPre R xs a b (i_val + 1) j_val := by
+  unfold IsPartitionedPre
   intro H Ha Hi Hai i xi0 xa0 Hxi0 Hxa0
   rw [Ha] at Hxa0; cases Hxa0
   obtain ⟨H1, H2⟩ := H i xi0 xa Hxi0 Ha
@@ -172,11 +172,11 @@ theorem is_partitioned_pre_advance_left (xs : List E) (a b i_val j_val : Nat) (x
   · subst h; rw [Hi] at Hxi0; cases Hxi0; exact Hai
   · exact H1 (by omega)
 
-theorem is_partitioned_pre_advance_right (xs : List E) (a b i_val j_val : Nat) (xa xj : E) :
-    is_partitioned_pre R xs a b i_val j_val →
+theorem isPartitionedPre_advance_right (xs : List E) (a b i_val j_val : Nat) (xa xj : E) :
+    IsPartitionedPre R xs a b i_val j_val →
     xs[a]? = some xa → xs[j_val]? = some xj → ¬ R xj xa →
-    is_partitioned_pre R xs a b i_val (j_val - 1) := by
-  unfold is_partitioned_pre
+    IsPartitionedPre R xs a b i_val (j_val - 1) := by
+  unfold IsPartitionedPre
   intro H Ha Hj Hja i xi0 xa0 Hxi0 Hxa0
   rw [Ha] at Hxa0; cases Hxa0
   obtain ⟨H1, H2⟩ := H i xi0 xa Hxi0 Ha
@@ -188,10 +188,10 @@ theorem is_partitioned_pre_advance_right (xs : List E) (a b i_val j_val : Nat) (
 theorem partition_conclude (xs : List E) (a b i_val j_val : Nat) (xa xj : E) :
     i_val > j_val →
     (a < i_val ∧ j_val ≥ a) →
-    is_partitioned_pre R xs a b i_val j_val →
+    IsPartitionedPre R xs a b i_val j_val →
     xs[a]? = some xa → xs[j_val]? = some xj →
-    is_partitioned R (<[a := xj]> (<[j_val := xa]> xs)) a b j_val := by
-  unfold is_partitioned_pre is_partitioned
+    IsPartitioned R (<[a := xj]> (<[j_val := xa]> xs)) a b j_val := by
+  unfold IsPartitionedPre IsPartitioned
   intro Hij Hb H Ha Hj i xr xi Hxi Hxr
   have hjl := lookup_lt_Some Hj
   have hal := lookup_lt_Some Ha
@@ -218,11 +218,11 @@ theorem partition_conclude (xs : List E) (a b i_val j_val : Nat) (xa xj : E) :
 
 theorem partition_restore_invariant (xs : List E) (a b i_val j_val : Nat) (xi xj xa : E) :
     (a < i_val ∧ i_val ≤ j_val) ∧ j_val < b ∧ b ≤ xs.length →
-    is_partitioned_pre R xs a b i_val j_val →
+    IsPartitionedPre R xs a b i_val j_val →
     xs[a]? = some xa → xs[i_val]? = some xi → xs[j_val]? = some xj →
     ¬ R xi xa → ¬ R xa xj →
-    is_partitioned_pre R (<[j_val := xi]> (<[i_val := xj]> xs)) a b (i_val + 1) (j_val - 1) := by
-  unfold is_partitioned_pre
+    IsPartitionedPre R (<[j_val := xi]> (<[i_val := xj]> xs)) a b (i_val + 1) (j_val - 1) := by
+  unfold IsPartitionedPre
   intro Hb H Ha Hi Hj Hia Haj i xi0 xa0 Hxi0 Hxa0
   rw [list_lookup_insert_ne _ _ (by omega), list_lookup_insert_ne _ _ (by omega), Ha] at Hxa0
   cases Hxa0
@@ -243,16 +243,16 @@ theorem partition_restore_invariant (xs : List E) (a b i_val j_val : Nat) (xi xj
       obtain ⟨H1, H2⟩ := H i xi0 xa Hxi0 Ha
       exact ⟨fun hi => H1 (by omega), fun hi => H2 (by omega)⟩
 
-def is_eq_seg (xs : List E) (a b : Nat) : Prop :=
+def IsEqSeg (xs : List E) (a b : Nat) : Prop :=
   ∀ (i j : Nat) xi xj, (a ≤ i ∧ i < j) ∧ j < b →
     xs[i]? = some xi → xs[j]? = some xj → ¬ R xj xi ∧ ¬ R xi xj
 
-theorem is_eq_seg_extend [StrictWeakOrder R] (xs : List E) (a i : Nat) (xp xi : E) :
-    xs[a]? = some xp → is_eq_seg R xs a i →
+theorem isEqSeg_extend [StrictWeakOrder R] (xs : List E) (a i : Nat) (xp xi : E) :
+    xs[a]? = some xp → IsEqSeg R xs a i →
     xs[i]? = some xi →
     ¬ R xi xp ∧ ¬ R xp xi →
-    is_eq_seg R xs a (i + 1) := by
-  unfold is_eq_seg
+    IsEqSeg R xs a (i + 1) := by
+  unfold IsEqSeg
   intro Hp H Hi Hip i0 j xi0 xj Hb Hxi0 Hxj
   have eqv := (StrictWeakOrder.strict_weak_order_equiv (R := R))
   by_cases h : i = j
@@ -267,20 +267,20 @@ theorem is_eq_seg_extend [StrictWeakOrder R] (xs : List E) (a i : Nat) (xp xi : 
     exact eqv.trans Hip h2
   · exact H i0 j xi0 xj ⟨Hb.1, by omega⟩ Hxi0 Hxj
 
-theorem is_eq_seg__is_sorted_seg (xs : List E) (a b : Nat) :
-    is_eq_seg R xs a b → is_sorted_seg R xs a b := by
+theorem isEqSeg_is_sorted_seg (xs : List E) (a b : Nat) :
+    IsEqSeg R xs a b → IsSortedSeg R xs a b := by
   intro H i j xi xj hb hi hj
   exact (H i j xi xj hb hi hj).1
 
-def is_eq_partitioned (xs : List E) (a b r : Nat) : Prop :=
+def IsEqPartitioned (xs : List E) (a b r : Nat) : Prop :=
   ∀ (i j : Nat) xi xj,
     xs[i]? = some xi → xs[j]? = some xj →
       (a ≤ i ∧ (i < j ∧ j < b) ∧ i < r) → ¬ R xj xi
 
 theorem peq_init_min [StrictWeakOrder R] (xs : List E) (a pivot b : Nat) (xp xa : E)
     (hp : xs[pivot]? = some xp) (ha : xs[a]? = some xa) (hab : a ≤ pivot ∧ pivot < b)
-    (H : one_le_seg R xs pivot a b) :
-    one_le_seg R ((xs.set a xp).set pivot xa) a a b := by
+    (H : OneLeSeg R xs pivot a b) :
+    OneLeSeg R ((xs.set a xp).set pivot xa) a a b := by
   intro x0 j xj hj hx0 hxj
   have hal := lookup_lt_Some ha
   have hpl := lookup_lt_Some hp
@@ -308,8 +308,8 @@ theorem peq_init_min [StrictWeakOrder R] (xs : List E) (a pivot b : Nat) (xp xa 
 
 theorem peq_swap_min (xs1 : List E) (a b i j : Nat) (xi xj : E)
     (hi : xs1[i]? = some xi) (hj : xs1[j]? = some xj) (hb : a < i ∧ i ≤ j ∧ j < b)
-    (H : one_le_seg R xs1 a a b) :
-    one_le_seg R ((xs1.set i xj).set j xi) a a b := by
+    (H : OneLeSeg R xs1 a a b) :
+    OneLeSeg R ((xs1.set i xj).set j xi) a a b := by
   intro x0 k xk hk hx0 hxk
   rw [list_lookup_insert_ne _ _ (by omega), list_lookup_insert_ne _ _ (by omega)] at hx0
   by_cases hjk : j = k
@@ -329,9 +329,9 @@ theorem peq_swap_min (xs1 : List E) (a b i j : Nat) (xi xj : E)
 theorem peq_swap_seg [StrictWeakOrder R] (xs1 : List E) (a b i j : Nat) (xi xj xp : E)
     (hi : xs1[i]? = some xi) (hj : xs1[j]? = some xj) (hp : xs1[a]? = some xp)
     (hb : a < i ∧ i ≤ j ∧ j < b)
-    (Hs : is_eq_seg R xs1 a i) (Hmin : one_le_seg R xs1 a a b) (Hbr2 : ¬ R xp xj) :
-    is_eq_seg R ((xs1.set i xj).set j xi) a (i + 1) := by
-  apply is_eq_seg_extend R _ a i xp xj
+    (Hs : IsEqSeg R xs1 a i) (Hmin : OneLeSeg R xs1 a a b) (Hbr2 : ¬ R xp xj) :
+    IsEqSeg R ((xs1.set i xj).set j xi) a (i + 1) := by
+  apply isEqSeg_extend R _ a i xp xj
   · rw [list_lookup_insert_ne _ _ (by omega), list_lookup_insert_ne _ _ (by omega)]; exact hp
   · intro i0 j0 x0 y0 hb0 hx0 hy0
     rw [list_lookup_insert_ne _ _ (by omega), list_lookup_insert_ne _ _ (by omega)] at hx0 hy0
@@ -345,8 +345,8 @@ theorem peq_swap_seg [StrictWeakOrder R] (xs1 : List E) (a b i j : Nat) (xi xj x
   · exact ⟨Hmin xp j xj ⟨by omega, by omega⟩ hp hj, Hbr2⟩
 
 theorem peq_conclude [StrictWeakOrder R] (xs1 : List E) (a b i : Nat) (xp : E)
-    (hp : xs1[a]? = some xp) (Hs : is_eq_seg R xs1 a i) (Hmin : one_le_seg R xs1 a a b) :
-    is_eq_partitioned R xs1 a b i := by
+    (hp : xs1[a]? = some xp) (Hs : IsEqSeg R xs1 a i) (Hmin : OneLeSeg R xs1 a a b) :
+    IsEqPartitioned R xs1 a b i := by
   intro i' j' xi xj hxi hxj hb
   by_cases hj : j' < i
   · exact (Hs i' j' xi xj ⟨⟨hb.1, hb.2.1.1⟩, hj⟩ hxi hxj).1
@@ -371,7 +371,7 @@ variable (R : E → E → Prop) [StrictWeakOrder R]
 
 /-- The loop invariant of `partitionCmpFunc` (Rocq `HI0`/`HI1`/`HI2`; `br1`/`br2`
 record that the first/second inner loop has exited). -/
-def part_inv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : loc)
+def partInv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : loc)
     (br1 br2 : Bool) : IProp GF :=
   iprop(∃ (xs1 : List E) (i_val j_val : w64),
     "Hxs" ∷ data ↦* xs1 ∗
@@ -379,11 +379,11 @@ def part_inv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : 
     "j" ∷ j_ptr ↦ j_val ∗
     "%ij_bound" ∷ ⌜(sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) ∧
                    (sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z b - 1)⌝ ∗
-    "%Hpart" ∷ ⌜is_partitioned_pre R xs1 (sint.nat a) (sint.nat b) (sint.nat i_val)
+    "%Hpart" ∷ ⌜IsPartitionedPre R xs1 (sint.nat a) (sint.nat b) (sint.nat i_val)
                  (sint.nat j_val)⌝ ∗
     "%Hpivot" ∷ ⌜xs1[sint.nat a]? = some xp⌝ ∗
     "%HPerm1" ∷ ⌜xs ≡ₚ xs1⌝ ∗
-    "%Houtside1" ∷ ⌜outside_same xs xs1 (sint.nat a) (sint.nat b)⌝ ∗
+    "%Houtside1" ∷ ⌜OutsideSame xs xs1 (sint.nat a) (sint.nat b)⌝ ∗
     "%HBr1" ∷ ⌜br1 = true → sint.Z i_val > sint.Z j_val ∨
                  ∀ xi, xs1[sint.nat i_val]? = some xi → ¬ R xi xp⌝ ∗
     "%HBr2" ∷ ⌜br2 = true → sint.Z i_val > sint.Z j_val ∨
@@ -396,9 +396,9 @@ theorem wp_part_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
     (i_ptr j_ptr data_ptr a_ptr cmp_ptr : loc) (cmp_code : func.t)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
-    ⊢ is_pkg_init (PROP := IProp GF) pkg_id.slices -∗ cmp_implements R cmp_code -∗
+    ⊢ isPkgInit (PROP := IProp GF) pkg_id.slices -∗ cmpImplements R cmp_code -∗
       a_ptr ↦□ a -∗ data_ptr ↦□ data -∗ cmp_ptr ↦□ cmp_code -∗
-      part_inv R data a b xp xs i_ptr j_ptr false false -∗
+      partInv R data a b xp xs i_ptr j_ptr false false -∗
       WP (App (App (App (Val do_for)
           (Val glv(λ: <>,
             if: ![go.int] #i_ptr ≤⟨go.int⟩ ![go.int] #j_ptr then
@@ -412,11 +412,11 @@ theorem wp_part_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
               #false)))
           (Val glv(λ: <>, do: #i_ptr <-[go.int] ![go.int] #i_ptr +⟨go.int⟩ #(W64 1))))
           (Val glv(λ: <>, #())))
-      {{ fun v => iprop(⌜v = execute_val⌝ ∗
-        part_inv R data a b xp xs i_ptr j_ptr true false) }} := by
+      {{ fun v => iprop(⌜v = executeVal⌝ ∗
+        partInv R data a b xp xs i_ptr j_ptr true false) }} := by
   iintro #Hpkg #Hcmp #a #data #cmp HI
-  unfold cmp_implements
-  unfold part_inv
+  unfold cmpImplements
+  unfold partInv
   wp_for HI
   have Hlen2 := HPerm1.length_eq
   wp_if_destruct
@@ -437,7 +437,7 @@ theorem wp_part_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
       ipureintro
       refine ⟨by word, ?_, Hpivot, HPerm1, Houtside1, fun h => h.elim, fun h => h.elim⟩
       rw [show sint.nat (i_val + W64 1) = sint.nat i_val + 1 by word]
-      exact is_partitioned_pre_advance_left R _ _ _ _ _ xp xi Hpart Hpivot Hxi_lookup
+      exact isPartitionedPre_advance_left R _ _ _ _ _ xp xi Hpart Hpivot Hxi_lookup
         (R_antisym R _ _ (Hr.1 (by word)))
     · have hP := dec_val_false Hif
       simp only [hP, decide_false, Bool.false_eq_true, ↓reduceIte]
@@ -464,9 +464,9 @@ theorem wp_part_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
     (i_ptr j_ptr data_ptr a_ptr cmp_ptr : loc) (cmp_code : func.t)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
-    ⊢ is_pkg_init (PROP := IProp GF) pkg_id.slices -∗ cmp_implements R cmp_code -∗
+    ⊢ isPkgInit (PROP := IProp GF) pkg_id.slices -∗ cmpImplements R cmp_code -∗
       a_ptr ↦□ a -∗ data_ptr ↦□ data -∗ cmp_ptr ↦□ cmp_code -∗
-      part_inv R data a b xp xs i_ptr j_ptr true false -∗
+      partInv R data a b xp xs i_ptr j_ptr true false -∗
       WP (App (App (App (Val do_for)
           (Val glv(λ: <>,
             if: ![go.int] #i_ptr ≤⟨go.int⟩ ![go.int] #j_ptr then
@@ -481,11 +481,11 @@ theorem wp_part_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
               #false)))
           (Val glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))))
           (Val glv(λ: <>, #())))
-      {{ fun v => iprop(⌜v = execute_val⌝ ∗
-        part_inv R data a b xp xs i_ptr j_ptr true true) }} := by
+      {{ fun v => iprop(⌜v = executeVal⌝ ∗
+        partInv R data a b xp xs i_ptr j_ptr true true) }} := by
   iintro #Hpkg #Hcmp #a #data #cmp HI
-  unfold cmp_implements
-  unfold part_inv
+  unfold cmpImplements
+  unfold partInv
   wp_for HI
   have Hlen2 := HPerm1.length_eq
   wp_if_destruct
@@ -521,7 +521,7 @@ theorem wp_part_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
       ipureintro
       refine ⟨by word, ?_, Hpivot, HPerm1, Houtside1, fun _ => ?_, fun h => h.elim⟩
       · rw [show sint.nat (j_val - W64 1) = sint.nat j_val - 1 by word]
-        exact is_partitioned_pre_advance_right R _ _ _ _ _ xp xj Hpart Hpivot Hxj_lookup
+        exact isPartitionedPre_advance_right R _ _ _ _ _ xp xj Hpart Hpivot Hxj_lookup
           (fun h => hP (by have := Hr.2 h; word))
       · rcases HBr1 rfl with h | h
         · left; word
@@ -541,21 +541,21 @@ theorem part_finish_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val 
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ ↑xs.length ∧ xs.length ≤ 2 ^ 62)
     (ij_bound : (sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) ∧
       sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z b - 1)
-    (Hpart : is_partitioned_pre R xs1 (sint.nat a) (sint.nat b) (sint.nat i_val) (sint.nat j_val))
+    (Hpart : IsPartitionedPre R xs1 (sint.nat a) (sint.nat b) (sint.nat i_val) (sint.nat j_val))
     (Hpivot : xs1[sint.nat a]? = some xp) (HPerm1 : xs ≡ₚ xs1)
-    (Houtside1 : outside_same xs xs1 (sint.nat a) (sint.nat b)) (_Hlen2 : xs.length = xs1.length)
+    (Houtside1 : OutsideSame xs xs1 (sint.nat a) (sint.nat b)) (_Hlen2 : xs.length = xs1.length)
     (Hxj_lookup : xs1[sint.nat j_val]? = some xj) (Hif : sint.Z j_val < sint.Z i_val) :
     (sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val < sint.Z b) ∧
     xs ≡ₚ (xs1.set (sint.nat j_val) xp).set (sint.nat a) xj ∧
-      is_partitioned R ((xs1.set (sint.nat j_val) xp).set (sint.nat a) xj) (sint.nat a) (sint.nat b)
+      IsPartitioned R ((xs1.set (sint.nat j_val) xp).set (sint.nat a) xj) (sint.nat a) (sint.nat b)
         (sint.nat j_val) ∧
-        outside_same xs ((xs1.set (sint.nat j_val) xp).set (sint.nat a) xj) (sint.nat a)
+        OutsideSame xs ((xs1.set (sint.nat j_val) xp).set (sint.nat a) xj) (sint.nat a)
           (sint.nat b) := by
   refine ⟨by omega, HPerm1.trans (swap_perm xs1 _ _ xp xj Hpivot Hxj_lookup), ?_, ?_⟩
   · exact partition_conclude R xs1 _ _ (sint.nat i_val) _ xp xj (by word) ⟨by word, by word⟩
       Hpart Hpivot Hxj_lookup
-  · exact outside_same_trans _ _ _ _ _ Houtside1
-      (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))
+  · exact outsideSame_trans _ _ _ _ _ Houtside1
+      (outsideSame_swap _ _ _ _ _ _ _ (by word) (by word))
 
 omit [StrictWeakOrder R] ext ffi [ffi_interp ffi] [ffi_semantics ext ffi] go_gctx [ZeroVal E] in
 /-- The pure part of `part_swap`. -/
@@ -563,20 +563,20 @@ theorem part_swap_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val : 
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ ↑xs.length ∧ xs.length ≤ 2 ^ 62)
     (ij_bound : (sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) ∧
       sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z b - 1)
-    (Hpart : is_partitioned_pre R xs1 (sint.nat a) (sint.nat b) (sint.nat i_val) (sint.nat j_val))
+    (Hpart : IsPartitionedPre R xs1 (sint.nat a) (sint.nat b) (sint.nat i_val) (sint.nat j_val))
     (Hpivot : xs1[sint.nat a]? = some xp) (HPerm1 : xs ≡ₚ xs1)
-    (Houtside1 : outside_same xs xs1 (sint.nat a) (sint.nat b)) (Hlen2 : xs.length = xs1.length)
+    (Houtside1 : OutsideSame xs xs1 (sint.nat a) (sint.nat b)) (Hlen2 : xs.length = xs1.length)
     (Hxj_lookup : xs1[sint.nat j_val]? = some xj) (Hle : sint.Z i_val ≤ sint.Z j_val)
     (Hxi_lookup : xs1[sint.nat i_val]? = some xi)
     (HBr1' : sint.Z i_val > sint.Z j_val ∨ ∀ (xi : E), xs1[sint.nat i_val]? = some xi → ¬R xi xp)
     (HBr2' : sint.Z i_val > sint.Z j_val ∨ ∀ (xj : E), xs1[sint.nat j_val]? = some xj → ¬R xp xj) :
     ((sint.Z a + 1 ≤ sint.Z (i_val + W64 1) ∧ sint.Z (i_val + W64 1) ≤ sint.Z b) ∧
       sint.Z a ≤ sint.Z (j_val - W64 1) ∧ sint.Z (j_val - W64 1) ≤ sint.Z b - 1) ∧
-    is_partitioned_pre R ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi) (sint.nat a)
+    IsPartitionedPre R ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi) (sint.nat a)
         (sint.nat b) (sint.nat (i_val + W64 1)) (sint.nat (j_val - W64 1)) ∧
       ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi)[sint.nat a]? = some xp ∧
         xs ≡ₚ (xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi ∧
-          outside_same xs ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi) (sint.nat a)
+          OutsideSame xs ((xs1.set (sint.nat i_val) xj).set (sint.nat j_val) xi) (sint.nat a)
             (sint.nat b) ∧
             (false = true →
                 sint.Z (i_val + W64 1) > sint.Z (j_val - W64 1) ∨
@@ -602,16 +602,16 @@ theorem part_swap_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val : 
       · exact h xj Hxj_lookup
   · rw [list_lookup_insert_ne _ _ (by word), list_lookup_insert_ne _ _ (by word)]
     exact Hpivot
-  · exact outside_same_trans _ _ _ _ _ Houtside1
-      (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))
+  · exact outsideSame_trans _ _ _ _ _ Houtside1
+      (outsideSame_swap _ _ _ _ _ _ _ (by word) (by word))
 
 theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
     (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧
           xs.length ≤ 2 ^ 62⌝ ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code ∗
+        "#Hcmp" ∷ cmpImplements R cmp_code ∗
         "%pivot_range" ∷ ⌜sint.Z a ≤ sint.Z pivot ∧ sint.Z pivot < sint.Z b⌝ }}
       (App (App (App (App (App (Val #(functions partitionCmpFunc [Et])) (Val #data)) (Val #a))
         (Val #b)) (Val #pivot)) (Val #cmp_code))
@@ -619,12 +619,12 @@ theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.
         data ↦* xs' ∗
         "%range" ∷ ⌜sint.Z a ≤ sint.Z r ∧ sint.Z r < sint.Z b⌝ ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-        "%Hpart" ∷ ⌜is_partitioned R xs' (sint.nat a) (sint.nat b) (sint.nat r)⌝ ∗
-        "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
+        "%Hpart" ∷ ⌜IsPartitioned R xs' (sint.nat a) (sint.nat b) (sint.nat r)⌝ ∗
+        "%Houtside" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
   wp_start as H
   iNamed H
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
   list_elem xs (sint.nat pivot) as xp
   list_elem xs (sint.nat a) as xa
   slice_index_if
@@ -645,14 +645,14 @@ theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.
   ipersist a
   ipersist data
   ipersist cmp
-  ihave HI : part_inv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
-  · unfold part_inv
+  ihave HI : partInv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
+  · unfold partInv
     iexists _, _, _
     iframe
     ipureintro
     simp only [sint_toNat]
     refine ⟨by word, ?_, ?_, swap_perm xs _ _ xp xa Hxp_lookup Hxa_lookup,
-      outside_same_swap _ _ _ _ _ _ _ (by word) (by word), by simp, by simp⟩
+      outsideSame_swap _ _ _ _ _ _ _ (by word) (by word), by simp, by simp⟩
     · intro i xi xa' _ _; constructor <;> intro <;> word
     · by_cases h : sint.nat pivot = sint.nat a
       · rw [h, list_lookup_insert_eq _ (by simp; word)]
@@ -675,19 +675,19 @@ theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.
       part_finish
     · part_swap
       wp_for_post
-      unfold part_inv
+      unfold partInv
       simp only [Bool.false_eq_true]
       iframe
 
 theorem wp_medianCmpFunc (data : slice.t) (a b c : w64) (swaps_l : loc) (cmp_code : func.t)
     (dq : DFrac) (xs : List E) (swaps : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦*{dq} xs ∗
         "%Hbounds" ∷ ⌜(0 ≤ sint.Z a ∧ sint.Z a < (xs.length : Int)) ∧
                       (0 ≤ sint.Z b ∧ sint.Z b < (xs.length : Int)) ∧
                       (0 ≤ sint.Z c ∧ sint.Z c < (xs.length : Int))⌝ ∗
         "Hswaps" ∷ swaps_l ↦ swaps ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code }}
+        "#Hcmp" ∷ cmpImplements R cmp_code }}
       (App (App (App (App (App (App (Val #(functions medianCmpFunc [Et])) (Val #data)) (Val #a))
         (Val #b)) (Val #c)) (Val #swaps_l)) (Val #cmp_code))
     {{ (r : w64) (swaps' : w64), RET #r;
@@ -735,11 +735,11 @@ theorem wp_medianCmpFunc (data : slice.t) (a b c : w64) (swaps_l : loc) (cmp_cod
 
 theorem wp_medianAdjacentCmpFunc (data : slice.t) (a : w64) (swaps_l : loc) (cmp_code : func.t)
     (dq : DFrac) (xs : List E) (swaps : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦*{dq} xs ∗
         "%Hbounds" ∷ ⌜(1 ≤ sint.Z a ∧ sint.Z a < (xs.length : Int) - 1) ∧ xs.length ≤ 2 ^ 62⌝ ∗
         "Hswaps" ∷ swaps_l ↦ swaps ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code }}
+        "#Hcmp" ∷ cmpImplements R cmp_code }}
       (App (App (App (App (Val #(functions medianAdjacentCmpFunc [Et])) (Val #data)) (Val #a))
         (Val #swaps_l)) (Val #cmp_code))
     {{ (r : w64) (swaps' : w64), RET #r;
@@ -765,9 +765,9 @@ theorem part_choosePivot_idx (a b d : w64) (n : Nat)
   refine ⟨?_, ?_, ?_⟩ <;> word_p
 
 theorem wp_choosePivotCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code ∗
+        "#Hcmp" ∷ cmpImplements R cmp_code ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧
           xs.length ≤ 2 ^ 62⌝ }}
       (App (App (App (App (Val #(functions choosePivotCmpFunc [Et])) (Val #data)) (Val #a))
@@ -814,7 +814,7 @@ theorem wp_choosePivotCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (
     (try wp_if_destruct) <;> (try wp_if_destruct) <;> ((try simp only [increasingHint, decreasingHint, unknownHint]); iapply HΦ; iframe; ipureintro; exact this)
 
 omit [StrictWeakOrder R] in
-theorem wp_xorshift__Next (r : loc) (v : xorshift.t) :
+theorem xorshift.wp_Next (r : loc) (v : xorshift.t) :
     {{ (r ↦ v : IProp GF) }}
       (App (Val (r @!! go.type.PointerType xorshift @!! go!"Next")) (Val #()))
     {{ (n : w64), RET #n; ∃ v' : xorshift.t, r ↦ v' }} := by
@@ -825,7 +825,7 @@ theorem wp_xorshift__Next (r : loc) (v : xorshift.t) :
 omit [StrictWeakOrder R] in
 /-- `nextPowerOfTwo(length)` is a power of two in `(length, 2 * length]`. -/
 theorem wp_nextPowerOfTwo (length : w64) (h : 0 < sint.Z length) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices }}
       (App (Val (@! nextPowerOfTwo)) (Val #length))
     {{ (m : w64), RET #m; ⌜sint.Z length < uint.Z m ∧ uint.Z m ≤ 2 * sint.Z length⌝ }} := by
   wp_start
@@ -855,18 +855,18 @@ theorem wp_nextPowerOfTwo (length : w64) (h : 0 < sint.Z length) :
   omega
 
 theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧
           xs.length ≤ 2 ^ 62⌝ ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code ∗
+        "#Hcmp" ∷ cmpImplements R cmp_code ∗
         "%pivot_range" ∷ ⌜sint.Z a < sint.Z b⌝ }}
       (App (App (App (App (Val #(functions breakPatternsCmpFunc [Et])) (Val #data)) (Val #a))
         (Val #b)) (Val #cmp_code))
     {{ (xs' : List E), RET #();
         data ↦* xs' ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-        "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
+        "%Houtside" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
   wp_start as H
   iNamed H
   wp_auto
@@ -882,14 +882,14 @@ theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
         "%idx_bound" ∷ ⌜sint.Z a + (sint.Z b - sint.Z a) / 4 * 2 - 1 ≤ sint.Z idx_val ∧
           sint.Z idx_val ≤ sint.Z a + (sint.Z b - sint.Z a) / 4 * 2 + 2⌝ ∗
         "%HPerm1" ∷ ⌜xs ≡ₚ xs1⌝ ∗
-        "%Houtside1" ∷ ⌜outside_same xs xs1 (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [Hxs idx random]
+        "%Houtside1" ∷ ⌜OutsideSame xs xs1 (sint.nat a) (sint.nat b)⌝ : IProp GF) $$ [Hxs idx random]
     · iexists xs, _, _
       iframe
       ipureintro
-      exact ⟨by word, List.Perm.refl _, outside_same_refl _ _ _⟩
+      exact ⟨by word, List.Perm.refl _, outsideSame_refl _ _ _⟩
     wp_for HI
     wp_if_destruct
-    · wp_apply wp_xorshift__Next $$ random with %n ⟨%rv', random⟩
+    · wp_apply xorshift.wp_Next $$ random with %n ⟨%rv', random⟩
       have hand : uint.Z (n &&& (m - W64 1)) ≤ uint.Z (m - W64 1) := by
         have := Nat.and_le_right (n := n.toNat) (m := (m - W64 1).toNat)
         simp only [uint.Z, BitVec.toNat_and]; omega
@@ -907,7 +907,7 @@ theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
       have hj : sint.Z a ≤ sint.Z (a + o) ∧ sint.Z (a + o) < sint.Z b := by
         constructor <;> word
       generalize hjdef : (a + o) = j at *
-      ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+      ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
       have hi : sint.Z a ≤ sint.Z idx_val ∧ sint.Z idx_val < sint.Z b := by
         have := hd; constructor <;> word
       list_elem xs1 (sint.nat j) as xo
@@ -935,8 +935,8 @@ theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
       refine ⟨by have := hd; word, ?_, ?_⟩
       · exact HPerm1.trans (swap_perm xs1 (sint.nat j) (sint.nat idx_val) xo xi
           Hxo_lookup Hxi_lookup)
-      · exact outside_same_trans _ _ _ _ _ Houtside1
-          (outside_same_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
+      · exact outsideSame_trans _ _ _ _ _ Houtside1
+          (outsideSame_swap _ _ _ _ _ _ _ ⟨by word, by word⟩ ⟨by word, by word⟩)
     · iapply HΦ
       iframe
       ipureintro
@@ -944,10 +944,10 @@ theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
   · iapply HΦ
     iframe
     ipureintro
-    exact ⟨List.Perm.refl _, outside_same_refl _ _ _⟩
+    exact ⟨List.Perm.refl _, outsideSame_refl _ _ _⟩
 
 /-- The loop invariant of `partitionEqualCmpFunc`. -/
-def peq_inv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : loc)
+def peqInv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : loc)
     (br1 br2 : Bool) : IProp GF :=
   iprop(∃ (xs1 : List E) (i_val j_val : w64),
     "Hxs" ∷ data ↦* xs1 ∗
@@ -955,11 +955,11 @@ def peq_inv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : l
     "j" ∷ j_ptr ↦ j_val ∗
     "%ij_bound" ∷ ⌜(sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) ∧
                    (sint.Z a ≤ sint.Z j_val ∧ sint.Z j_val ≤ sint.Z b - 1)⌝ ∗
-    "%Hsorted" ∷ ⌜is_eq_seg R xs1 (sint.nat a) (sint.nat i_val)⌝ ∗
+    "%Hsorted" ∷ ⌜IsEqSeg R xs1 (sint.nat a) (sint.nat i_val)⌝ ∗
     "%Hpivot" ∷ ⌜xs1[sint.nat a]? = some xp⌝ ∗
-    "%Hmin" ∷ ⌜one_le_seg R xs1 (sint.nat a) (sint.nat a) (sint.nat b)⌝ ∗
+    "%Hmin" ∷ ⌜OneLeSeg R xs1 (sint.nat a) (sint.nat a) (sint.nat b)⌝ ∗
     "%HPerm1" ∷ ⌜xs ≡ₚ xs1⌝ ∗
-    "%Houtside1" ∷ ⌜outside_same xs xs1 (sint.nat a) (sint.nat b)⌝ ∗
+    "%Houtside1" ∷ ⌜OutsideSame xs xs1 (sint.nat a) (sint.nat b)⌝ ∗
     "%HBr1" ∷ ⌜br1 = true → sint.Z i_val > sint.Z j_val ∨
                  ∀ xi, xs1[sint.nat i_val]? = some xi → ¬ R xi xp⌝ ∗
     "%HBr2" ∷ ⌜br2 = true → sint.Z i_val > sint.Z j_val ∨
@@ -971,9 +971,9 @@ theorem wp_peq_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
     (i_ptr j_ptr data_ptr a_ptr cmp_ptr : loc) (cmp_code : func.t)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
-    ⊢ is_pkg_init (PROP := IProp GF) pkg_id.slices -∗ cmp_implements R cmp_code -∗
+    ⊢ isPkgInit (PROP := IProp GF) pkg_id.slices -∗ cmpImplements R cmp_code -∗
       a_ptr ↦□ a -∗ data_ptr ↦□ data -∗ cmp_ptr ↦□ cmp_code -∗
-      peq_inv R data a b xp xs i_ptr j_ptr false false -∗
+      peqInv R data a b xp xs i_ptr j_ptr false false -∗
       WP (App (App (App (Val do_for)
           (Val glv(λ: <>,
             if: ![go.int] #i_ptr ≤⟨go.int⟩ ![go.int] #j_ptr then
@@ -988,11 +988,11 @@ theorem wp_peq_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
               #false)))
           (Val glv(λ: <>, do: #i_ptr <-[go.int] ![go.int] #i_ptr +⟨go.int⟩ #(W64 1))))
           (Val glv(λ: <>, #())))
-      {{ fun v => iprop(⌜v = execute_val⌝ ∗
-        peq_inv R data a b xp xs i_ptr j_ptr true false) }} := by
+      {{ fun v => iprop(⌜v = executeVal⌝ ∗
+        peqInv R data a b xp xs i_ptr j_ptr true false) }} := by
   iintro #Hpkg #Hcmp #a #data #cmp HI
-  unfold cmp_implements
-  unfold peq_inv
+  unfold cmpImplements
+  unfold peqInv
   wp_for HI
   have Hlen2 := HPerm1.length_eq
   wp_if_destruct
@@ -1028,7 +1028,7 @@ theorem wp_peq_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
       ipureintro
       refine ⟨by word, ?_, Hpivot, Hmin, HPerm1, Houtside1, nofun, nofun⟩
       rw [show sint.nat (i_val + W64 1) = sint.nat i_val + 1 by word]
-      exact is_eq_seg_extend R xs1 _ _ xp xi Hpivot Hsorted Hxi_lookup
+      exact isEqSeg_extend R xs1 _ _ xp xi Hpivot Hsorted Hxi_lookup
         ⟨Hmin xp _ xi ⟨by word, by word⟩ Hpivot Hxi_lookup,
          fun h => hP (by have := Hr.2 h; word)⟩
   · isplitl []
@@ -1046,9 +1046,9 @@ theorem wp_peq_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
     (i_ptr j_ptr data_ptr a_ptr cmp_ptr : loc) (cmp_code : func.t)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
-    ⊢ is_pkg_init (PROP := IProp GF) pkg_id.slices -∗ cmp_implements R cmp_code -∗
+    ⊢ isPkgInit (PROP := IProp GF) pkg_id.slices -∗ cmpImplements R cmp_code -∗
       a_ptr ↦□ a -∗ data_ptr ↦□ data -∗ cmp_ptr ↦□ cmp_code -∗
-      peq_inv R data a b xp xs i_ptr j_ptr true false -∗
+      peqInv R data a b xp xs i_ptr j_ptr true false -∗
       WP (App (App (App (Val do_for)
           (Val glv(λ: <>,
             if: ![go.int] #i_ptr ≤⟨go.int⟩ ![go.int] #j_ptr then
@@ -1062,11 +1062,11 @@ theorem wp_peq_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
               #false)))
           (Val glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))))
           (Val glv(λ: <>, #())))
-      {{ fun v => iprop(⌜v = execute_val⌝ ∗
-        peq_inv R data a b xp xs i_ptr j_ptr true true) }} := by
+      {{ fun v => iprop(⌜v = executeVal⌝ ∗
+        peqInv R data a b xp xs i_ptr j_ptr true true) }} := by
   iintro #Hpkg #Hcmp #a #data #cmp HI
-  unfold cmp_implements
-  unfold peq_inv
+  unfold cmpImplements
+  unfold peqInv
   wp_for HI
   have Hlen2 := HPerm1.length_eq
   wp_if_destruct
@@ -1112,25 +1112,25 @@ theorem wp_peq_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
 
 theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
     (xs : List E) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧
           xs.length ≤ 2 ^ 62⌝ ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code ∗
+        "#Hcmp" ∷ cmpImplements R cmp_code ∗
         "%pivot_range" ∷ ⌜sint.Z a ≤ sint.Z pivot ∧ sint.Z pivot < sint.Z b⌝ ∗
-        "%Hmin" ∷ ⌜one_le_seg R xs (sint.nat pivot) (sint.nat a) (sint.nat b)⌝ }}
+        "%Hmin" ∷ ⌜OneLeSeg R xs (sint.nat pivot) (sint.nat a) (sint.nat b)⌝ }}
       (App (App (App (App (App (Val #(functions partitionEqualCmpFunc [Et])) (Val #data))
         (Val #a)) (Val #b)) (Val #pivot)) (Val #cmp_code))
     {{ (xs' : List E) (r : w64), RET #r;
         data ↦* xs' ∗
         "%range" ∷ ⌜sint.Z a < sint.Z r ∧ sint.Z r ≤ sint.Z b⌝ ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
-        "%Hpart" ∷ ⌜is_eq_partitioned R xs' (sint.nat a) (sint.nat b) (sint.nat r)⌝ ∗
-        "%Houtside" ∷ ⌜outside_same xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
+        "%Hpart" ∷ ⌜IsEqPartitioned R xs' (sint.nat a) (sint.nat b) (sint.nat r)⌝ ∗
+        "%Houtside" ∷ ⌜OutsideSame xs xs' (sint.nat a) (sint.nat b)⌝ }} := by
   wp_start as H
   iNamed H
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
   list_elem xs (sint.nat pivot) as xp
   list_elem xs (sint.nat a) as xa
   slice_index_if
@@ -1151,14 +1151,14 @@ theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : 
   ipersist a
   ipersist data
   ipersist cmp
-  ihave HI : peq_inv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
-  · unfold peq_inv
+  ihave HI : peqInv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]
+  · unfold peqInv
     iexists _, _, _
     iframe
     ipureintro
     simp only [sint_toNat]
     refine ⟨by word, ?_, ?_, ?_, swap_perm xs _ _ xp xa Hxp_lookup Hxa_lookup,
-      outside_same_swap _ _ _ _ _ _ _ (by word) (by word), by simp, by simp⟩
+      outsideSame_swap _ _ _ _ _ _ _ (by word) (by word), by simp, by simp⟩
     · intro i j xi xj hb; word
     · by_cases h : sint.nat pivot = sint.nat a
       · rw [h, list_lookup_insert_eq _ (by simp; word)]
@@ -1168,8 +1168,8 @@ theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : 
   wp_for
   -- first inner loop: `for i <= j && !less(data[a], data[i]) { i++ }`
   wp_bind (App (App (App (Val do_for) _) _) _)
-  iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
-    peq_inv R data a b xp xs i_ptr j_ptr true false))) $$ [HI]
+  iapply (wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗
+    peqInv R data a b xp xs i_ptr j_ptr true false))) $$ [HI]
   · iapply (wp_peq_loop1 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
       cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
   iintro %v ⟨%Hv, HI⟩
@@ -1177,14 +1177,14 @@ theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : 
   wp_auto
   -- second inner loop: `for i <= j && less(data[a], data[j]) { j-- }`
   wp_bind (App (App (App (Val do_for) _) _) _)
-  iapply (wp_wand (Φ := fun v => iprop(⌜v = execute_val⌝ ∗
-    peq_inv R data a b xp xs i_ptr j_ptr true true))) $$ [HI]
+  iapply (wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗
+    peqInv R data a b xp xs i_ptr j_ptr true true))) $$ [HI]
   · iapply (wp_peq_loop2 (Et := Et) R data a b xp xs i_ptr j_ptr data_ptr a_ptr cmp_ptr
       cmp_code Hab_bound Hlen) $$ Hpkg Hcmp a data cmp HI
   iintro %v ⟨%Hv, HI⟩
   subst Hv
   wp_auto
-  unfold peq_inv
+  unfold peqInv
   iNamed HI
   have Hlen2 := HPerm1.length_eq
   wp_auto
@@ -1234,8 +1234,8 @@ theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : 
     · rw [list_lookup_insert_ne _ _ (by word), list_lookup_insert_ne _ _ (by word)]
       exact Hpivot
     · exact peq_swap_min R xs1 _ _ _ _ xi xj Hxi_lookup Hxj_lookup ⟨by word, by word, by word⟩ Hmin
-    · exact outside_same_trans _ _ _ _ _ Houtside1
-        (outside_same_swap _ _ _ _ _ _ _ (by word) (by word))
+    · exact outsideSame_trans _ _ _ _ _ Houtside1
+        (outsideSame_swap _ _ _ _ _ _ _ (by word) (by word))
 
 end proof
 

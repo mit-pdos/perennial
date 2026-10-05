@@ -9,7 +9,7 @@ noncomputable section
 namespace Perennial
 open Iris BI OFE CMRA ProofMode Excl
 
-variable {GF : BundledGFunctors} [allG GF]
+variable {GF : BundledGFunctors} [AllG GF]
 
 def token (γ : GName) : IProp GF := own γ (excl () : Excl Unit)
 

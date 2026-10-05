@@ -18,46 +18,46 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std ProofMode
 attribute [local instance] disk_op disk_model disk_semantics disk_interp
 
 /-- Rocq `disk_interp_adequacy`. -/
-instance disk_interp_adequacy : ffi_interp_adequacy disk_model where
-  ffiGpreS := disk_preG
+instance disk_interp_adequacy : FfiInterpAdequacy disk_model where
+  ffiGpreS := DiskPreG
   ffi_initgP _ := True
   ffi_initP _ _ := True
-  ffi_global_start _ _ := iprop(True)
-  ffi_local_start hL d :=
-    iprop([∗map] a ↦ b ∈ (d : disk_state), disk_pointsto hL a (.own 1) b)
+  ffiGlobalStart _ _ := iprop(True)
+  ffiLocalStart hL d :=
+    iprop([∗map] a ↦ b ∈ (d : DiskState), diskPointsto hL a (.own 1) b)
   ffi_global_init _ _ _ _ := by
     iapply bupd_intro
     iexists ()
     isplit
-    · iapply (show iprop(True) ⊢ disk_interp.ffi_global_ctx () _ from .rfl); itrivial
+    · iapply (show iprop(True) ⊢ disk_interp.ffiGlobalCtx () _ from .rfl); itrivial
     · itrivial
   ffi_local_init GF hPre σ _ _ := by
-    letI := hPre.disk_preG_gen_heapG
-    imod genHeap_init (H := gmap Int) (σ : disk_state) with ⟨%names, H1, H2, -⟩
+    letI := hPre.diskPreGGenHeapG
+    imod genHeap_init (H := GMap Int) (σ : DiskState) with ⟨%names, H1, H2, -⟩
     imodintro
-    iexists (⟨names⟩ : diskGS GF)
+    iexists (⟨names⟩ : DiskGS GF)
     iframe H1
-    unfold disk_pointsto
+    unfold diskPointsto
     iexact H2
 
 open disk_ffi in
 /-- Adequacy for GooseLang with the disk FFI: if the WP is proved for an
-arbitrary time-receipt bound `N` (`receipt_bound GF = N`), then in every real
+arbitrary time-receipt bound `N` (`receiptBound GF = N`), then in every real
 execution of fewer than `N` steps, no thread is stuck and a final value of the
 main thread satisfies `φ` (see `goose_adequacy`). -/
 theorem disk_adequacy [GoGlobalContext] {GF : BundledGFunctors}
-    [hPre : gooseGpreS disk_model GF] (N : Nat) (e : expr) (σ : state) (g : global_state)
+    [hPre : GooseGpreS disk_model GF] (N : Nat) (e : expr) (σ : state) (g : GlobalState)
     (φ : val → Prop)
     (Hwp : ∀ [hG : heapGS .hasLC GF],
-      receipt_bound GF = N →
-      hG.goose_localGS.goose_go_local_context = σ.go_state.go_lctx →
-      ⊢ ([∗map] a ↦ b ∈ disk_world σ, disk_pointsto (goose_diskGS (GF := GF)) a (.own 1) b) -∗
-        own_go_state σ.go_state.package_state ={⊤}=∗
+      receiptBound GF = N →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ ([∗map] a ↦ b ∈ diskWorld σ, diskPointsto (gooseDiskGS (GF := GF)) a (.own 1) b) -∗
+        ownGoState σ.goState.packageState ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
-    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
-    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2))
+    (n : Nat) (κs : List Observation) (t2 : List expr) (σ2 : CfgState)
+    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2) := by
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) := by
   refine goose_adequacy (GF := GF) N e σ g φ trivial trivial ?_ n κs t2 σ2 Hsteps Hbound
   intro hG HN Hlctx
   iintro _ Hd Hgs

@@ -6,7 +6,7 @@ Lean notes:
   again here) come from `Perennial/Proof/go_etcd_io/etcd/api/v3/*`.
 * The `clientv3` package-init instance is declared only here (Rocq also
   re-declares it in `op.v` and `client.v`).
-* Rocq's `own_etcd_pointsto` quantifies over `` `{!allG Σ} ``; here it binds
+* Rocq's `ownEtcdPointsto` quantifies over `` `{!allG Σ} ``; here it binds
   `{GF} [allG GF]`.
 -/
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.base
@@ -52,16 +52,16 @@ instance clientv3_get_is_pkg_init_wf_inst :
 
 end init
 
-/-- Rocq `Axiom clientv3_names : Set`. -/
-axiom clientv3_names : Type
+/-- Rocq `Axiom Clientv3Names : Set`. -/
+axiom Clientv3Names : Type
 
-/-- Rocq `Axiom own_etcd_pointsto`. -/
-axiom own_etcd_pointsto {GF : BundledGFunctors} [allG GF] (γ : clientv3_names) (dq : DFrac)
+/-- Rocq `Axiom ownEtcdPointsto`. -/
+axiom ownEtcdPointsto {GF : BundledGFunctors} [AllG GF] (γ : Clientv3Names) (dq : DFrac)
   (k : go_string) (kv : Option KeyValue.t) : IProp GF
 
 /-- Rocq `k etcd[ γ ]↦ dq kv`. -/
-notation:50 k:51 " etcd[" γ "]↦{" dq "} " kv:50 => own_etcd_pointsto γ dq k kv
-notation:50 k:51 " etcd[" γ "]↦ " kv:50 => own_etcd_pointsto γ (DFrac.own 1) k kv
+notation:50 k:51 " etcd[" γ "]↦{" dq "} " kv:50 => ownEtcdPointsto γ dq k kv
+notation:50 k:51 " etcd[" γ "]↦ " kv:50 => ownEtcdPointsto γ (DFrac.own 1) k kv
 
 end go_etcd_io.etcd.client.v3_proof
 

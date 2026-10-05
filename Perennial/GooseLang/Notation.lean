@@ -38,7 +38,7 @@ own, so `gl(...)` is only needed for pairs/strings outside them.
 
 | syntax | meaning |
 |---|---|
-| `#x` | `into_val x`; `#"abc"` is `into_val go!"abc"` (a `go_string`) |
+| `#x` | `intoVal x`; `#"abc"` is `intoVal go!"abc"` (a `go_string`) |
 | `λ: "x" "y", e` | `Rec BAnon "x" (Rec BAnon "y" e)`; `RecV BAnon "x" ...` when a `val` is expected |
 | `rec: "f" "x" "y" := e` | `Rec "f" "x" (Rec BAnon "y" e)` (or `RecV ...` when a `val` is expected) |
 | `let: "x" := e1 in e2` | `App (Rec BAnon "x" e2) e1` |
@@ -88,7 +88,7 @@ end coercions
 /-- `#"abc"` is the `go_string` literal `"abc"` (Rocq puts `#`'s argument in
 `%go` scope). -/
 scoped macro_rules
-  | `(#$s:str) => `(into_val go!$s)
+  | `(#$s:str) => `(intoVal go!$s)
 
 /-! ## Binders and patterns -/
 
@@ -160,8 +160,8 @@ partial def glExprStx (stx : Term) : TermElabM Term := do
   | `(($e, $es,*)) =>
     let xs ← (#[e] ++ es.getElems).mapM fun x => `(gl($x))
     leftNest (fun a b => `(Pair $a $b)) xs
-  | `($a && $b) => `(If gl($a) gl($b) (Val (into_val false)))
-  | `($a || $b) => `(If gl($a) (Val (into_val true)) gl($b))
+  | `($a && $b) => `(If gl($a) gl($b) (Val (intoVal false)))
+  | `($a || $b) => `(If gl($a) (Val (intoVal true)) gl($b))
   | `($x:ident) =>
     if ← isResolvable x.getId then return stx
     else `(Var $(quote x.getId.toString))

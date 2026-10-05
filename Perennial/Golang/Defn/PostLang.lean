@@ -61,32 +61,32 @@ def nil : t := null
 end map
 
 class FloatOps where
-  float64_neg : w64 → w64
-  float64_add : w64 → w64 → w64
-  float64_sub : w64 → w64 → w64
-  float64_mul : w64 → w64 → w64
-  float64_div : w64 → w64 → w64
-  float64_leb : w64 → w64 → Bool
+  float64Neg : w64 → w64
+  float64Add : w64 → w64 → w64
+  float64Sub : w64 → w64 → w64
+  float64Mul : w64 → w64 → w64
+  float64Div : w64 → w64 → w64
+  float64Leb : w64 → w64 → Bool
 
-  float32_neg : w32 → w32
-  float32_add : w32 → w32 → w32
-  float32_sub : w32 → w32 → w32
-  float32_mul : w32 → w32 → w32
-  float32_div : w32 → w32 → w32
-  float32_leb : w32 → w32 → Bool
+  float32Neg : w32 → w32
+  float32Add : w32 → w32 → w32
+  float32Sub : w32 → w32 → w32
+  float32Mul : w32 → w32 → w32
+  float32Div : w32 → w32 → w32
+  float32Leb : w32 → w32 → Bool
 
-  float64_to_float32 : w64 → w32
+  float64ToFloat32 : w64 → w32
 
-export FloatOps (float64_neg float64_add float64_sub float64_mul float64_div float64_leb
-  float32_neg float32_add float32_sub float32_mul float32_div float32_leb float64_to_float32)
+export FloatOps (float64Neg float64Add float64Sub float64Mul float64Div float64Leb
+  float32Neg float32Add float32Sub float32Mul float32Div float32Leb float64ToFloat32)
 
 class GoSemanticsFunctions [ffi_syntax] where
   underlying : go.type → go.type
-  global_addr : go_string → loc
+  globalAddr : go_string → loc
   functions : go_string → List go.type → func.t
   methods : go.type → go_string → val → func.t
 
-  method_set : go.type → gmap go_string go.signature
+  methodSet : go.type → GMap go_string go.signature
 
   /-- This uses a Lean `Type` because there are multiple `go.type`s that have
   the same `Type` representation (e.g. uint64/int64, *X/*Y), but offsets are
@@ -95,22 +95,22 @@ class GoSemanticsFunctions [ffi_syntax] where
   TypeRepr : go.type → (V : Type) → [ZeroVal V] → Prop
   struct_field_ref : Type → go_string → loc → loc
 
-  array_index_ref (elem_type : Type) (i : Int) (l : loc) : loc
+  arrayIndexRef (elem_type : Type) (i : Int) (l : loc) : loc
 
-  map_empty : val → val
-  map_lookup : val → val → Bool × val
-  map_insert : val → val → val → val
-  map_delete : val → val → val
+  mapEmpty : val → val
+  mapLookup : val → val → Bool × val
+  mapInsert : val → val → val → val
+  mapDelete : val → val → val
   is_map_domain : val → List val → Prop
 
   is_map_pure (v : val) (m : val → Bool × val) : Prop
-  map_default : val → val
+  mapDefault : val → val
   [float_ops : FloatOps]
 
 attribute [instance] GoSemanticsFunctions.float_ops
 
-export GoSemanticsFunctions (underlying global_addr functions methods method_set struct_field_ref
-  array_index_ref map_empty map_lookup map_insert map_delete is_map_domain is_map_pure map_default)
+export GoSemanticsFunctions (underlying globalAddr functions methods methodSet struct_field_ref
+  arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
 
 /-- Rocq `Existing Class TypeRepr` (with `Hint Mode TypeRepr - - + - -`): the
 class form of `GoSemanticsFunctions.TypeRepr`. -/
@@ -136,55 +136,55 @@ end unfolding_defs
 
 inductive tag where
   | under
-  | under_t (t : go.type)
+  | underT (t : go.type)
   | internal
-  | internal_under
+  | internalUnder
 
-export tag (under under_t internal internal_under)
+export tag (under underT internal internalUnder)
 
 namespace go
 section defs
 variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
 
-def GlobalAlloc_def (v : go_string) (t : go.type) : val :=
+def GlobalAllocDef (v : go_string) (t : go.type) : val :=
   λ: <>,
     let: "l" := GoAlloc t (GoZeroVal t #()) in
     if: "l" =⟨go.PointerType t⟩ (GlobalVarAddr v #()) then
       #()
     else AngelicExit #()
-@[irreducible] def GlobalAlloc (v : go_string) (t : go.type) : val := GlobalAlloc_def v t
-theorem GlobalAlloc_unseal : GlobalAlloc = GlobalAlloc_def := by with_unfolding_all rfl
+@[irreducible] def GlobalAlloc (v : go_string) (t : go.type) : val := GlobalAllocDef v t
+theorem GlobalAlloc_unseal : GlobalAlloc = GlobalAllocDef := by with_unfolding_all rfl
 
 /-- This semantics considers several Go types to be `primitive` in the sense
 that they are modeled as taking a single heap location. Predeclared types are
 in their own file. A `class` (Rocq: plain inductive) so that the premise
-`[is_primitive u]` of `alloc_primitive` etc. is found by typeclass search. -/
-class inductive is_primitive : go.type → Prop
-  | is_primitive_pointer t : is_primitive (go.PointerType t)
-  | is_primitive_function sig : is_primitive (go.FunctionType sig)
-  | is_primitive_interface elems : is_primitive (go.InterfaceType elems)
-  | is_primitive_slice elem : is_primitive (go.SliceType elem)
-  | is_primitive_map kt vt : is_primitive (go.MapType kt vt)
-  | is_primitive_channel dir t : is_primitive (go.ChannelType dir t)
+`[IsPrimitive u]` of `alloc_primitive` etc. is found by typeclass search. -/
+class inductive IsPrimitive : go.type → Prop
+  | isPrimitive_pointer t : IsPrimitive (go.PointerType t)
+  | isPrimitive_function sig : IsPrimitive (go.FunctionType sig)
+  | isPrimitive_interface elems : IsPrimitive (go.InterfaceType elems)
+  | isPrimitive_slice elem : IsPrimitive (go.SliceType elem)
+  | isPrimitive_map kt vt : IsPrimitive (go.MapType kt vt)
+  | isPrimitive_channel dir t : IsPrimitive (go.ChannelType dir t)
 
-attribute [instance] is_primitive.is_primitive_pointer is_primitive.is_primitive_function
-  is_primitive.is_primitive_interface is_primitive.is_primitive_slice is_primitive.is_primitive_map
-  is_primitive.is_primitive_channel
-export is_primitive (is_primitive_pointer is_primitive_function is_primitive_interface
-  is_primitive_slice is_primitive_map is_primitive_channel)
+attribute [instance] IsPrimitive.isPrimitive_pointer IsPrimitive.isPrimitive_function
+  IsPrimitive.isPrimitive_interface IsPrimitive.isPrimitive_slice IsPrimitive.isPrimitive_map
+  IsPrimitive.isPrimitive_channel
+export IsPrimitive (isPrimitive_pointer isPrimitive_function isPrimitive_interface
+  isPrimitive_slice isPrimitive_map isPrimitive_channel)
 
-inductive is_primitive_zero_val : go.type → val → Prop
-  | is_primitive_zero_val_pointer t : is_primitive_zero_val (go.PointerType t) #null
-  | is_primitive_zero_val_function t : is_primitive_zero_val (go.FunctionType t) #func.nil
-  | is_primitive_zero_valinterface elems :
-      is_primitive_zero_val (go.InterfaceType elems) #interface.nil
-  | is_primitive_zero_val_slice elem : is_primitive_zero_val (go.SliceType elem) #slice.nil
-  | is_primitive_zero_val_map kt vt : is_primitive_zero_val (go.MapType kt vt) #null
-  | is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) #null
+inductive IsPrimitiveZeroVal : go.type → val → Prop
+  | isPrimitiveZeroVal_pointer t : IsPrimitiveZeroVal (go.PointerType t) #null
+  | isPrimitiveZeroVal_function t : IsPrimitiveZeroVal (go.FunctionType t) #func.nil
+  | isPrimitive_zero_valinterface elems :
+      IsPrimitiveZeroVal (go.InterfaceType elems) #interface.nil
+  | isPrimitiveZeroVal_slice elem : IsPrimitiveZeroVal (go.SliceType elem) #slice.nil
+  | isPrimitiveZeroVal_map kt vt : IsPrimitiveZeroVal (go.MapType kt vt) #null
+  | isPrimitiveZeroVal_channel dir t : IsPrimitiveZeroVal (go.ChannelType dir t) #null
 
-export is_primitive_zero_val (is_primitive_zero_val_pointer is_primitive_zero_val_function
-  is_primitive_zero_valinterface is_primitive_zero_val_slice is_primitive_zero_val_map
-  is_primitive_zero_val_channel)
+export IsPrimitiveZeroVal (isPrimitiveZeroVal_pointer isPrimitiveZeroVal_function
+  isPrimitive_zero_valinterface isPrimitiveZeroVal_slice isPrimitiveZeroVal_map
+  isPrimitiveZeroVal_channel)
 
 -- `interface.t_ok`, `interface.t` and `func.t` contain GooseLang syntax, whose
 -- equality is decided classically (see `Lang.lean`).
@@ -230,17 +230,17 @@ panics because the type is not comparable.
 /-- `⟦instr, args⟧ ⤳ e`: the Go instruction `instr` applied to `args` takes a
 deterministic pure step to `e`. -/
 class IsGoStepPureDet (instr : go_instruction) (args : val) (e : outParam expr) : Prop where
-  is_go_step_det : ∀ s s' e',
-    is_go_step instr args e' s s' ↔ is_go_step_pure instr args e' ∧ s = s'
-  is_go_step_pure_det : is_go_step_pure instr args = Eq e
+  isGoStep_det : ∀ s s' e',
+    IsGoStep instr args e' s s' ↔ is_go_step_pure instr args e' ∧ s = s'
+  isGoStep_pure_det : is_go_step_pure instr args = Eq e
 
-export IsGoStepPureDet (is_go_step_det is_go_step_pure_det)
+export IsGoStepPureDet (isGoStep_det isGoStep_pure_det)
 
 class IsGoStepPureDetTagged (t : tag) (instr : go_instruction) (args : val) (e : outParam expr) :
     Prop where
-  is_go_step_det_internal : IsGoStepPureDet instr args e
+  isGoStep_det_internal : IsGoStepPureDet instr args e
 
-export IsGoStepPureDetTagged (is_go_step_det_internal)
+export IsGoStepPureDetTagged (isGoStep_det_internal)
 
 end defs
 end go
@@ -261,7 +261,7 @@ variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
 
 theorem tagged_steps (t : tag) :
     ∀ instr args e, ⟦instr, args⟧ ⤳[t] e → ⟦instr, args⟧ ⤳ e := by
-  intro _ _ _ h; exact h.is_go_step_det_internal
+  intro _ _ _ h; exact h.isGoStep_det_internal
 
 class UnderlyingEq [GoSemanticsFunctions] (s : go.type) (t : outParam go.type) : Prop where
   underlying_eq : underlying s = underlying t
@@ -360,42 +360,42 @@ export CoreComparisonSemantics (go_op_go_equals_func_nil_l go_op_go_equals_func_
   check_comparable_pointer go_eq_pointer check_comparable_channel go_eq_channel
   struct_is_comparable go_eq_struct)
 
-def struct_field_type (f : go_string) : List go.field_decl → go.type
+def structFieldType (f : go_string) : List go.field_decl → go.type
   | [] => go.Named go!"field not found" []
   | go.FieldDecl f' t :: fds
   | go.EmbeddedField f' t :: fds =>
       if f = f' then t
-      else struct_field_type f fds
+      else structFieldType f fds
 
 class IntoValUnfold (V : Type) (f : outParam (V → val)) : Prop where
-  into_val_unfold : @into_val _ _ V = f
+  intoVal_unfold : @intoVal _ _ V = f
 
-/-- Rocq `into_val_unfold` (with `V` explicit). -/
-theorem into_val_unfold (V : Type) {f : V → val} [IntoValUnfold V f] : @into_val _ _ V = f :=
-  IntoValUnfold.into_val_unfold
+/-- Rocq `intoVal_unfold` (with `V` explicit). -/
+theorem intoVal_unfold (V : Type) {f : V → val} [IntoValUnfold V f] : @intoVal _ _ V = f :=
+  IntoValUnfold.intoVal_unfold
 
 class IntoValInj (V : Type) : Prop where
-  into_val_inj : Function.Injective (into_val (V := V))
+  intoVal_inj : Function.Injective (intoVal (V := V))
 
-export IntoValInj (into_val_inj)
+export IntoValInj (intoVal_inj)
 
 class BasicIntoValInj : Prop where
-  [into_val_inj_loc : IntoValInj loc]
-  [into_val_inj_slice : IntoValInj slice.t]
-  [into_val_inj_w64 : IntoValInj w64]
-  [into_val_inj_w32 : IntoValInj w32]
-  [into_val_inj_w16 : IntoValInj w16]
-  [into_val_inj_w8 : IntoValInj w8]
-  [into_val_inj_bool : IntoValInj Bool]
-  [into_val_inj_string : IntoValInj go_string]
-  [into_val_inj_interface : IntoValInj interface.t]
-  [into_val_inj_proph_id : IntoValInj proph_id]
+  [intoVal_inj_loc : IntoValInj loc]
+  [intoVal_inj_slice : IntoValInj slice.t]
+  [intoVal_inj_w64 : IntoValInj w64]
+  [intoVal_inj_w32 : IntoValInj w32]
+  [intoVal_inj_w16 : IntoValInj w16]
+  [intoVal_inj_w8 : IntoValInj w8]
+  [intoVal_inj_bool : IntoValInj Bool]
+  [intoVal_inj_string : IntoValInj go_string]
+  [intoVal_inj_interface : IntoValInj interface.t]
+  [intoVal_inj_proph_id : IntoValInj proph_id]
 
-attribute [instance] BasicIntoValInj.into_val_inj_loc BasicIntoValInj.into_val_inj_slice
-  BasicIntoValInj.into_val_inj_w64 BasicIntoValInj.into_val_inj_w32
-  BasicIntoValInj.into_val_inj_w16 BasicIntoValInj.into_val_inj_w8
-  BasicIntoValInj.into_val_inj_bool BasicIntoValInj.into_val_inj_string
-  BasicIntoValInj.into_val_inj_interface BasicIntoValInj.into_val_inj_proph_id
+attribute [instance] BasicIntoValInj.intoVal_inj_loc BasicIntoValInj.intoVal_inj_slice
+  BasicIntoValInj.intoVal_inj_w64 BasicIntoValInj.intoVal_inj_w32
+  BasicIntoValInj.intoVal_inj_w16 BasicIntoValInj.intoVal_inj_w8
+  BasicIntoValInj.intoVal_inj_bool BasicIntoValInj.intoVal_inj_string
+  BasicIntoValInj.intoVal_inj_interface BasicIntoValInj.intoVal_inj_proph_id
 
 /-- `go.CoreSemantics` defines the basics of when a GoContext is valid,
 excluding predeclared types (including primitives), arrays, slice, map, and
@@ -417,7 +417,7 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     [⟦CompositeLiteral t_under, v⟧ ⤳[under] e] : ⟦CompositeLiteral t, v⟧ ⤳ e
   slice_underlying {t t_under : go.type} [t ↓u t_under] (v : val) (e : expr)
     [⟦Slice t_under, v⟧ ⤳[under] e] : ⟦Slice t, v⟧ ⤳ e
-  full_slice_underlying {t t_under : go.type} [t ↓u t_under] (v : val) (e : expr)
+  fullSlice_underlying {t t_under : go.type} [t ↓u t_under] (v : val) (e : expr)
     [⟦FullSlice t_under, v⟧ ⤳[under] e] : ⟦FullSlice t, v⟧ ⤳ e
   index_underlying {t t_under : go.type} [t ↓u t_under] (v : val) (e : expr)
     [⟦Index t_under, v⟧ ⤳[under] e] : ⟦Index t, v⟧ ⤳ e
@@ -439,7 +439,7 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   go_method_resolve_step (m : go_string) (t : go.type) (rcvr : val) {tunder : go.type}
     [t ↓u tunder] [NotInterface tunder] :
     ⟦MethodResolve t m, rcvr⟧ ⤳ #(methods t m rcvr)
-  go_global_var_addr_step (v : go_string) : ⟦GlobalVarAddr v, #()⟧ ⤳ #(global_addr v)
+  go_global_var_addr_step (v : go_string) : ⟦GlobalVarAddr v, #()⟧ ⤳ #(globalAddr v)
 
   /-- FIXME: unsound semantics: simply computing the struct field address will
   panic if the base address is nil. This is a bit of a headache because every
@@ -456,17 +456,17 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   go_prealloc_step : is_go_step_pure GoPrealloc #() = (fun (e : expr) => ∃ (l : loc), l ≠ null ∧ e = #l)
   angelic_exit_step : is_go_step_pure AngelicExit #() = (fun (e : expr) => e = AngelicExit #())
 
-  into_val_unfold_func : IntoValUnfold func.t (fun f => RecV f.f f.x f.e)
-  into_val_unfold_bool : IntoValUnfold Bool (fun x => LitV (LitBool x))
+  intoVal_unfold_func : IntoValUnfold func.t (fun f => RecV f.f f.x f.e)
+  intoVal_unfold_bool : IntoValUnfold Bool (fun x => LitV (LitBool x))
 
   -- Eventually want to get rid of these.
-  into_val_unfold_w64 : IntoValUnfold w64 (fun x => LitV (LitInt x))
-  into_val_unfold_w32 : IntoValUnfold w32 (fun x => LitV (LitInt32 x))
-  into_val_unfold_w16 : IntoValUnfold w16 (fun x => LitV (LitInt16 x))
-  into_val_unfold_w8 : IntoValUnfold w8 (fun x => LitV (LitByte x))
-  into_val_unfold_string : IntoValUnfold go_string (fun x => LitV (LitString x))
-  into_val_unfold_loc : IntoValUnfold loc (fun x => LitV (LitLoc x))
-  into_val_unfold_unit : IntoValUnfold Unit (fun _ => LitV LitUnit)
+  intoVal_unfold_w64 : IntoValUnfold w64 (fun x => LitV (LitInt x))
+  intoVal_unfold_w32 : IntoValUnfold w32 (fun x => LitV (LitInt32 x))
+  intoVal_unfold_w16 : IntoValUnfold w16 (fun x => LitV (LitInt16 x))
+  intoVal_unfold_w8 : IntoValUnfold w8 (fun x => LitV (LitByte x))
+  intoVal_unfold_string : IntoValUnfold go_string (fun x => LitV (LitString x))
+  intoVal_unfold_loc : IntoValUnfold loc (fun x => LitV (LitLoc x))
+  intoVal_unfold_unit : IntoValUnfold Unit (fun _ => LitV LitUnit)
 
   go_zero_val_step {V : Type} [ZeroVal V] {t : go.type} [TypeRepr t V] :
     ⟦GoZeroVal t, #()⟧ ⤳ #(zero_val V)
@@ -510,21 +510,21 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
                        match ke with
                        | KeyedElement (some (KeyField field_name)) (ElementExpression from_ e) =>
                            gl(StructFieldSet (go.StructType fds) field_name
-                             (v, Convert from_ (struct_field_type field_name fds_unsealed) e))
+                             (v, Convert from_ (structFieldType field_name fds_unsealed) e))
                        | _ => Panic "invalid Go code"
                 ) (GoZeroVal (go.StructType fds) #()) l)
 
   alloc_underlying {t t_under : go.type} [t ↓u t_under] (v : val) (e : expr)
-    [⟦GoAlloc t_under, v⟧ ⤳[internal_under] e] : ⟦GoAlloc t, v⟧ ⤳[internal] e
+    [⟦GoAlloc t_under, v⟧ ⤳[internalUnder] e] : ⟦GoAlloc t, v⟧ ⤳[internal] e
   load_underlying {t t_under : go.type} [t ↓u t_under] (v : val) (e : expr)
-    [⟦GoLoad t_under, v⟧ ⤳[internal_under] e] : ⟦GoLoad t, v⟧ ⤳[internal] e
+    [⟦GoLoad t_under, v⟧ ⤳[internalUnder] e] : ⟦GoLoad t, v⟧ ⤳[internal] e
   store_underlying {t t_under : go.type} [t ↓u t_under] (v : val) (e : expr)
-    [⟦GoStore t_under, v⟧ ⤳[internal_under] e] : ⟦GoStore t, v⟧ ⤳[internal] e
+    [⟦GoStore t_under, v⟧ ⤳[internalUnder] e] : ⟦GoStore t, v⟧ ⤳[internal] e
 
-  alloc_primitive (v : val) (u : go.type) [H : is_primitive u] :
-    ⟦GoAlloc u, v⟧ ⤳[internal_under] Alloc v
+  alloc_primitive (v : val) (u : go.type) [H : IsPrimitive u] :
+    ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
   alloc_struct (v : val) {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] :
-    ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internal_under]
+    ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internalUnder]
       (let: "l" := GoPrealloc #() in
        List.foldr (fun fd alloc_rest =>
                 let (field_name, field_type) := match fd with
@@ -539,12 +539,12 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
          ) (#() : expr) fds_unsealed ;;
        "l")
 
-  load_primitive (u : go.type) [H : is_primitive u] (l : val) :
-    ⟦GoLoad u, l⟧ ⤳[internal_under] Read l
+  load_primitive (u : go.type) [H : IsPrimitive u] (l : val) :
+    ⟦GoLoad u, l⟧ ⤳[internalUnder] Read l
 
   load_struct (fds : List go.field_decl) (l : val) {fds_unsealed : List go.field_decl}
     [fds =→ fds_unsealed] :
-    ⟦GoLoad (go.StructType fds), l⟧ ⤳[internal_under]
+    ⟦GoLoad (go.StructType fds), l⟧ ⤳[internalUnder]
       (List.foldl (fun struct_so_far fd =>
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
@@ -554,10 +554,10 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
                 gl(StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val))
          ) (GoZeroVal (go.StructType fds) #()) fds_unsealed)
 
-  store_primitive (u : go.type) [H : is_primitive u] (l v : val) :
-    ⟦GoStore u, (l, v)⟧ ⤳[internal_under] Store l v
+  store_primitive (u : go.type) [H : IsPrimitive u] (l v : val) :
+    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
   store_struct {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] (l v : val) :
-    ⟦GoStore (go.StructType fds), (l, v)⟧ ⤳[internal_under]
+    ⟦GoStore (go.StructType fds), (l, v)⟧ ⤳[internalUnder]
       (List.foldl (fun store_so_far fd =>
                 gl(store_so_far ;;
                   (let (field_name, field_type) := match fd with
@@ -574,17 +574,17 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
 attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_not_named
   CoreSemantics.convert_underlying CoreSemantics.go_un_op_underlying
   CoreSemantics.go_op_underlying CoreSemantics.composite_literal_underlying
-  CoreSemantics.slice_underlying CoreSemantics.full_slice_underlying
+  CoreSemantics.slice_underlying CoreSemantics.fullSlice_underlying
   CoreSemantics.index_underlying CoreSemantics.index_ref_underlying
   CoreSemantics.check_comparable_underlying CoreSemantics.struct_field_get_underlying
   CoreSemantics.struct_field_set_underlying CoreSemantics.struct_field_ref_step_underlying
   CoreSemantics.go_zero_val_step_underlying CoreSemantics.go_func_resolve_step
   CoreSemantics.go_method_resolve_step CoreSemantics.go_global_var_addr_step
-  CoreSemantics.struct_field_ref_step CoreSemantics.into_val_unfold_func
-  CoreSemantics.into_val_unfold_bool CoreSemantics.into_val_unfold_w64
-  CoreSemantics.into_val_unfold_w32 CoreSemantics.into_val_unfold_w16
-  CoreSemantics.into_val_unfold_w8 CoreSemantics.into_val_unfold_string
-  CoreSemantics.into_val_unfold_loc CoreSemantics.into_val_unfold_unit
+  CoreSemantics.struct_field_ref_step CoreSemantics.intoVal_unfold_func
+  CoreSemantics.intoVal_unfold_bool CoreSemantics.intoVal_unfold_w64
+  CoreSemantics.intoVal_unfold_w32 CoreSemantics.intoVal_unfold_w16
+  CoreSemantics.intoVal_unfold_w8 CoreSemantics.intoVal_unfold_string
+  CoreSemantics.intoVal_unfold_loc CoreSemantics.intoVal_unfold_unit
   CoreSemantics.go_zero_val_step CoreSemantics.go_zero_val_pointer
   CoreSemantics.go_zero_val_function CoreSemantics.go_zero_val_slice
   CoreSemantics.go_zero_val_interface CoreSemantics.go_zero_val_channel
@@ -597,12 +597,12 @@ attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_n
 
 export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
   go_un_op_underlying go_op_underlying composite_literal_underlying slice_underlying
-  full_slice_underlying index_underlying index_ref_underlying check_comparable_underlying
+  fullSlice_underlying index_underlying index_ref_underlying check_comparable_underlying
   struct_field_get_underlying struct_field_set_underlying struct_field_ref_step_underlying
   go_zero_val_step_underlying go_func_resolve_step go_method_resolve_step go_global_var_addr_step
-  struct_field_ref_step go_prealloc_step angelic_exit_step into_val_unfold_func
-  into_val_unfold_bool into_val_unfold_w64 into_val_unfold_w32 into_val_unfold_w16
-  into_val_unfold_w8 into_val_unfold_string into_val_unfold_loc into_val_unfold_unit
+  struct_field_ref_step go_prealloc_step angelic_exit_step intoVal_unfold_func
+  intoVal_unfold_bool intoVal_unfold_w64 intoVal_unfold_w32 intoVal_unfold_w16
+  intoVal_unfold_w8 intoVal_unfold_string intoVal_unfold_loc intoVal_unfold_unit
   go_zero_val_step go_zero_val_pointer go_zero_val_function go_zero_val_slice
   go_zero_val_interface go_zero_val_channel go_zero_val_map core_comparison_sem
   composite_literal_pointer composite_literal_struct alloc_underlying load_underlying
@@ -624,8 +624,8 @@ scoped syntax:max "![" term "] " term:max : term
 scoped syntax:40 term:41 " <-[" term "] " term:40 : term
 
 macro_rules
-  | `(@! $f) => `(into_val (functions $f []))
-  | `($r @!! $t @!! $m) => `(into_val (methods $t $m (into_val $r)))
+  | `(@! $f) => `(intoVal (functions $f []))
+  | `($r @!! $t @!! $m) => `(intoVal (methods $t $m (intoVal $r)))
   | `(![$t] $e) => `(App (Val (GoInstruction (GoLoad $t))) gl($e))
   | `($e1 <-[$t] $e2) => `(App (Val (GoInstruction (GoStore $t))) (Pair gl($e1) gl($e2)))
 

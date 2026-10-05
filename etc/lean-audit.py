@@ -191,7 +191,19 @@ def qual_score(name, qual):
         k += 1
     return k
 
+# Lean names renamed to Lean conventions (etc/lean-rename.py): new -> old
+# (Rocq-style) name, so that renamed declarations still find their Rocq
+# counterpart
+rocq_name = {}
+_rn = os.path.join(ROOT, "etc/lean-rename/renames.tsv")
+if os.path.exists(_rn):
+    for _l in open(_rn, encoding="utf-8"):
+        _p = _l.rstrip("\n").split("\t")
+        if len(_p) == 2:
+            rocq_name[_p[1]] = _p[0]
+
 def rocq_lookup(name, module):
+    name = rocq_name.get(name, name)
     sn = short(name)
     cands = rocq.get(sn, []) or rocq.get(sn.replace("'", ""), [])  # Lean renames clashes `Int` -> `Int'`
     if not cands:

@@ -22,21 +22,21 @@ omit package_sem in
 /-- Two full points-tos for the same `w64` location are contradictory. -/
 theorem w64_pointsto_excl (l : loc) (v w : w64) :
     (typed_pointsto l v (DFrac.own 1) : IProp GF) ∗ typed_pointsto l w (DFrac.own 1) ⊢ False := by
-  rw [typed_pointsto_unseal]; unfold typed_pointsto_wrap
+  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
   iintro ⟨⟨H1, _⟩, ⟨H2, _⟩⟩
   have e : ∀ u : w64, typed_pointsto_def (GF := GF) l u (DFrac.own 1) =
-      heap_pointsto l (DFrac.own 1) #u := fun _ => rfl
+      heapPointsto l (DFrac.own 1) #u := fun _ => rfl
   simp only [e]
   icombine H1 H2 gives % ⟨Hv, _⟩
   exact absurd (DFrac.valid_op_own Hv) (by simp)
 
-theorem wp_testStructUpdates : test_fun_ok (GF := GF) testStructUpdates := by
+theorem wp_testStructUpdates : TestFunOk (GF := GF) testStructUpdates := by
   semantics_auto
 
-theorem wp_testNestedStructUpdates : test_fun_ok (GF := GF) testNestedStructUpdates := by
+theorem wp_testNestedStructUpdates : TestFunOk (GF := GF) testNestedStructUpdates := by
   semantics_auto
 
-theorem wp_testStructConstructions : test_fun_ok (GF := GF) testStructConstructions := by
+theorem wp_testStructConstructions : TestFunOk (GF := GF) testStructConstructions := by
   semantics_auto
   by_cases h : p4_ptr = «$r0_ptr»
   · -- Rocq: Admitted ("how to combine typed_pointsto to get sum of fractions?")
@@ -51,22 +51,22 @@ theorem wp_testStructConstructions : test_fun_ok (GF := GF) testStructConstructi
   · simp only [h, decide_false, Bool.not_false]
     iexact HΦ
 
-theorem wp_testIncompleteStruct : test_fun_ok (GF := GF) testIncompleteStruct := by
+theorem wp_testIncompleteStruct : TestFunOk (GF := GF) testIncompleteStruct := by
   semantics_auto
 
-theorem wp_testStoreInStructVar : test_fun_ok (GF := GF) testStoreInStructVar := by
+theorem wp_testStoreInStructVar : TestFunOk (GF := GF) testStoreInStructVar := by
   semantics_auto
 
-theorem wp_testStoreInStructPointerVar : test_fun_ok (GF := GF) testStoreInStructPointerVar := by
+theorem wp_testStoreInStructPointerVar : TestFunOk (GF := GF) testStoreInStructPointerVar := by
   semantics_auto
 
-theorem wp_testStoreComposite : test_fun_ok (GF := GF) testStoreComposite := by
+theorem wp_testStoreComposite : TestFunOk (GF := GF) testStoreComposite := by
   semantics_auto
 
-theorem wp_testStoreSlice : test_fun_ok (GF := GF) testStoreSlice := by
+theorem wp_testStoreSlice : TestFunOk (GF := GF) testStoreSlice := by
   semantics_auto
 
-theorem wp_testStructFieldFunc : test_fun_ok (GF := GF) testStructFieldFunc := by
+theorem wp_testStructFieldFunc : TestFunOk (GF := GF) testStructFieldFunc := by
   semantics_auto
   -- the stored function literal is a raw `RecV`
   steps

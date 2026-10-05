@@ -8,7 +8,7 @@ positive to zero to negative.
 
 See the Rocq file for a discussion of the key ideas: `0 ≤ n` is a precondition,
 only the *sign* of `cmp` matters, `cmp` is only called on `[0, n)`, and the
-user-provided `cmp` is "adapted" (`adapt_cmp`) so that `cmp (-1) = 1` and
+user-provided `cmp` is "adapted" (`adaptCmp`) so that `cmp (-1) = 1` and
 `cmp n ≤ 0`.
 -/
 import Perennial.Proof.ProofPrelude
@@ -45,42 +45,42 @@ theorem signum_bound (cmp_r : Int) : -1 ≤ signum cmp_r ∧ signum cmp_r ≤ 1 
   unfold signum; (repeat' split) <;> omega
 
 /-- "proper" monotonicity on only `[0, n)` - a sensible precondition for `Find`. -/
-def is_mono_cmp (cmp : Int → Int) (n : Int) : Prop :=
+def IsMonoCmp (cmp : Int → Int) (n : Int) : Prop :=
   ∀ i j, 0 ≤ i ∧ i < j ∧ j < n → signum (cmp j) ≤ signum (cmp i)
 
-def adapt_cmp (cmp : Int → Int) (n : Int) : Int → Int :=
+def adaptCmp (cmp : Int → Int) (n : Int) : Int → Int :=
   fun i => if i < 0 then 1 else
            if n ≤ i then
              if n = 0 then 0 else (-1)
            else cmp i
 
-theorem adapt_cmp_bounded (cmp : Int → Int) (n : Int) :
-    ∀ i, 0 ≤ i ∧ i < n → adapt_cmp cmp n i = cmp i := by
+theorem adaptCmp_bounded (cmp : Int → Int) (n : Int) :
+    ∀ i, 0 ≤ i ∧ i < n → adaptCmp cmp n i = cmp i := by
   intro i H
-  unfold adapt_cmp
+  unfold adaptCmp
   (repeat' split) <;> omega
 
 /-- "internal" monotonicity on `[-1, n]` by extending (adapting) `cmp`. -/
-def is_valid_cmp (cmp : Int → Int) (n : Int) : Prop :=
+def IsValidCmp (cmp : Int → Int) (n : Int) : Prop :=
   (∀ i j, -1 ≤ i ∧ i < j ∧ j ≤ n → signum (cmp j) ≤ signum (cmp i)) ∧
   cmp (-1) = 1 ∧
   cmp n ≤ 0
 
-theorem is_valid_cmp_adapted (cmp : Int → Int) (n : Int) :
-    0 ≤ n → is_mono_cmp cmp n → is_valid_cmp (adapt_cmp cmp n) n := by
-  unfold is_mono_cmp is_valid_cmp
+theorem isValidCmp_adapted (cmp : Int → Int) (n : Int) :
+    0 ≤ n → IsMonoCmp cmp n → IsValidCmp (adaptCmp cmp n) n := by
+  unfold IsMonoCmp IsValidCmp
   intro Hnn Hmono
   refine ⟨?_, ?_, ?_⟩
   · intro i j Hij
     by_cases h : 0 ≤ i ∧ j < n
-    · rw [adapt_cmp_bounded _ _ i (by omega), adapt_cmp_bounded _ _ j (by omega)]
+    · rw [adaptCmp_bounded _ _ i (by omega), adaptCmp_bounded _ _ j (by omega)]
       exact Hmono i j (by omega)
     · have hi := signum_bound (cmp i)
       have hj := signum_bound (cmp j)
-      unfold adapt_cmp
+      unfold adaptCmp
       (repeat' split) <;> (try simp only [signum_n1, signum_0, signum_1]) <;> omega
-  · unfold adapt_cmp; (repeat' split) <;> omega
-  · unfold adapt_cmp; (repeat' split) <;> omega
+  · unfold adaptCmp; (repeat' split) <;> omega
+  · unfold adaptCmp; (repeat' split) <;> omega
 
 theorem shiftr_1_eq_div (x : w64) : x >>> W64 1 = x / (2 : w64) := by
   apply BitVec.eq_of_toNat_eq
@@ -90,15 +90,15 @@ theorem shiftr_1_eq_div (x : w64) : x >>> W64 1 = x / (2 : w64) := by
 
 theorem find_prefix (cmp : Int → Int) (n i : Int)
     (Hmono : ∀ i j, -1 ≤ i ∧ i < j ∧ j ≤ n →
-      signum (adapt_cmp cmp n j) ≤ signum (adapt_cmp cmp n i))
-    (Hb : 0 ≤ i ∧ i ≤ n) (Hi_prop : adapt_cmp cmp n (i - 1) > 0) :
+      signum (adaptCmp cmp n j) ≤ signum (adaptCmp cmp n i))
+    (Hb : 0 ≤ i ∧ i ≤ n) (Hi_prop : adaptCmp cmp n (i - 1) > 0) :
     ∀ k, 0 ≤ k ∧ k < i → cmp k > 0 := by
   intro k Hk
   by_cases hk : k = i - 1
-  · subst hk; rwa [adapt_cmp_bounded _ _ _ (by omega)] at Hi_prop
+  · subst hk; rwa [adaptCmp_bounded _ _ _ (by omega)] at Hi_prop
   · have Hm := Hmono k (i - 1) (by omega)
-    rw [adapt_cmp_bounded _ _ _ (by omega), adapt_cmp_bounded _ _ _ (by omega)] at Hm
-    rw [adapt_cmp_bounded _ _ _ (by omega)] at Hi_prop
+    rw [adaptCmp_bounded _ _ _ (by omega), adaptCmp_bounded _ _ _ (by omega)] at Hm
+    rw [adaptCmp_bounded _ _ _ (by omega)] at Hi_prop
     unfold signum at Hm
     (repeat' split at Hm) <;> omega
 
@@ -111,19 +111,19 @@ variable [package_sem : sort.Assumptions]
 
 /-- The comparison function must implement a pure function over in-bounds
 indices, with an arbitrary invariant `I` that it requires and preserves. -/
-def cmp_implements (cmp_code : func.t) (cmp : Int → Int) (n : Int) (I : IProp GF) : IProp GF :=
+def cmpImplements (cmp_code : func.t) (cmp : Int → Int) (n : Int) (I : IProp GF) : IProp GF :=
   iprop(∀ (i : w64),
     {{ I ∗ ⌜0 ≤ sint.Z i ∧ sint.Z i < n⌝ }}
       (App (Val #cmp_code) (Val #i))
     {{ (r : w64), RET #r; I ∗ ⌜sint.Z r = cmp (sint.Z i)⌝ }})
 
-instance cmp_implements_persistent (cmp_code : func.t) (cmp : Int → Int) (n : Int)
-    (I : IProp GF) : Persistent (cmp_implements cmp_code cmp n I) := by
-  unfold cmp_implements; infer_instance
+instance cmpImplements_persistent (cmp_code : func.t) (cmp : Int → Int) (n : Int)
+    (I : IProp GF) : Persistent (cmpImplements cmp_code cmp n I) := by
+  unfold cmpImplements; infer_instance
 
-theorem cmp_implements_adapt (cmp_code : func.t) (cmp : Int → Int) (n : Int) (I : IProp GF) :
-    cmp_implements cmp_code cmp n I ⊢ cmp_implements cmp_code (adapt_cmp cmp n) n I := by
-  unfold cmp_implements
+theorem cmpImplements_adapt (cmp_code : func.t) (cmp : Int → Int) (n : Int) (I : IProp GF) :
+    cmpImplements cmp_code cmp n I ⊢ cmpImplements cmp_code (adaptCmp cmp n) n I := by
+  unfold cmpImplements
   iintro #H %i
   wp_start_folded as ⟨HI, %Hb⟩
   iapply H $$ [HI]
@@ -133,15 +133,15 @@ theorem cmp_implements_adapt (cmp_code : func.t) (cmp : Int → Int) (n : Int) (
   iapply HΦ
   iframe HI
   ipureintro
-  rw [adapt_cmp_bounded _ _ _ Hb]
+  rw [adaptCmp_bounded _ _ _ Hb]
   exact Hr
 
 theorem wp_Find (n : w64) (cmp_code : func.t) (cmp : Int → Int) (I : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.sort ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sort ∗
         ⌜0 ≤ sint.Z n⌝ ∗
-        cmp_implements cmp_code cmp (sint.Z n) I ∗
+        cmpImplements cmp_code cmp (sint.Z n) I ∗
         I ∗
-        ⌜is_mono_cmp cmp (sint.Z n)⌝ }}
+        ⌜IsMonoCmp cmp (sint.Z n)⌝ }}
       (App (App (Val (@! Find)) (Val #n)) (Val #cmp_code))
     {{ (i : w64) (found : Bool), RET (PairV #i #found);
         I ∗
@@ -150,18 +150,18 @@ theorem wp_Find (n : w64) (cmp_code : func.t) (cmp : Int → Int) (I : IProp GF)
         ⌜∀ k, 0 ≤ k ∧ k < sint.Z i → cmp k > 0⌝ }} := by
   wp_start as ⟨%Hpos, #Hcmp0, I, %Hvalid⟩
   wp_auto
-  ihave #Hcmp := cmp_implements_adapt cmp_code cmp (sint.Z n) I $$ Hcmp0
+  ihave #Hcmp := cmpImplements_adapt cmp_code cmp (sint.Z n) I $$ Hcmp0
   iclear Hcmp0
-  have Hvalid := is_valid_cmp_adapted cmp (sint.Z n) Hpos Hvalid
+  have Hvalid := isValidCmp_adapted cmp (sint.Z n) Hpos Hvalid
   obtain ⟨Hmono, Hneg, Hn⟩ := Hvalid
-  unfold cmp_implements
+  unfold cmpImplements
   ihave HI : (∃ (i j : w64),
       "i" ∷ i_ptr ↦ i ∗
       "j" ∷ j_ptr ↦ j ∗
       "I" ∷ I ∗
       "%Hbounds" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z j ∧ sint.Z j ≤ sint.Z n⌝ ∗
-      "%Hi_prop" ∷ ⌜adapt_cmp cmp (sint.Z n) (sint.Z i - 1) > 0⌝ ∗
-      "%Hj_prop" ∷ ⌜adapt_cmp cmp (sint.Z n) (sint.Z j) ≤ 0⌝ : IProp GF) $$ [i j I]
+      "%Hi_prop" ∷ ⌜adaptCmp cmp (sint.Z n) (sint.Z i - 1) > 0⌝ ∗
+      "%Hj_prop" ∷ ⌜adaptCmp cmp (sint.Z n) (sint.Z j) ≤ 0⌝ : IProp GF) $$ [i j I]
   · iexists _, _
     iframe
     ipureintro
@@ -199,7 +199,7 @@ theorem wp_Find (n : w64) (cmp_code : func.t) (cmp : Int → Int) (I : IProp GF)
       iapply HΦ
       iframe I
       ipureintro
-      rw [adapt_cmp_bounded _ _ _ (by omega)] at Hr
+      rw [adaptCmp_bounded _ _ _ (by omega)] at Hr
       refine ⟨?_, ?_, find_prefix cmp _ _ Hmono (by omega) Hi_prop⟩
       · rw [decide_eq_true_iff]
         constructor
@@ -207,7 +207,7 @@ theorem wp_Find (n : w64) (cmp_code : func.t) (cmp : Int → Int) (I : IProp GF)
         · intro ⟨_, h⟩; rw [h] at Hr; word
       · intro H
         have := H (sint.Z i) (by omega)
-        rw [← Hij, adapt_cmp_bounded _ _ _ (by omega)] at Hj_prop
+        rw [← Hij, adaptCmp_bounded _ _ _ (by omega)] at Hj_prop
         omega
     · iapply HΦ
       iframe I
@@ -220,7 +220,7 @@ end proof
 /-- Direct translation of the specification text. However, this formulation
 seems hard to work with for the common case of a monotonic comparison function,
 as you'd get for a sorted list. -/
-def real_valid_cmp (cmp : Int → Int) (n : Int) : Prop :=
+def RealValidCmp (cmp : Int → Int) (n : Int) : Prop :=
   ∃ start end_,
     (0 ≤ start ∧ start ≤ end_ ∧ end_ < n) ∧
     (∀ i, 0 ≤ i ∧ i < start → cmp i > 0) ∧
@@ -229,13 +229,13 @@ def real_valid_cmp (cmp : Int → Int) (n : Int) : Prop :=
 
 set_option linter.deprecated false in
 theorem real_to_internal_cmp (cmp : Int → Int) (n : Int) :
-    0 ≤ n → real_valid_cmp cmp n → is_valid_cmp (adapt_cmp cmp n) n := by
+    0 ≤ n → RealValidCmp cmp n → IsValidCmp (adaptCmp cmp n) n := by
   intro Hnn ⟨start, end_, Hord, Hstart, Hmiddle, Hend⟩
-  -- the sign of `adapt_cmp cmp n i` on `[-1, n]`, by region
-  have hs : ∀ i, -1 ≤ i ∧ i ≤ n → signum (adapt_cmp cmp n i) =
+  -- the sign of `adaptCmp cmp n i` on `[-1, n]`, by region
+  have hs : ∀ i, -1 ≤ i ∧ i ≤ n → signum (adaptCmp cmp n i) =
       if i < start then 1 else if i < end_ then 0 else -1 := by
     intro i Hi
-    unfold adapt_cmp
+    unfold adaptCmp
     by_cases h0 : i < 0
     · simp only [h0, ↓reduceIte, signum_1]; rw [if_pos (by omega)]
     by_cases hn : n ≤ i
@@ -253,8 +253,8 @@ theorem real_to_internal_cmp (cmp : Int → Int) (n : Int) :
   · intro i j Hij
     rw [hs i (by omega), hs j (by omega)]
     (repeat' split) <;> omega
-  · unfold adapt_cmp; simp
-  · unfold adapt_cmp
+  · unfold adaptCmp; simp
+  · unfold adaptCmp
     simp only [show ¬ n < 0 by omega, Int.le_refl, ↓reduceIte]
     split <;> omega
 

@@ -38,10 +38,10 @@ variable (R : E → E → Prop)
 
 theorem wp_SortFunc {S : go.type} [S ↓u go.SliceType Et] (data : slice.t) (cmp_code : func.t)
     (xs : List E) (SWO : StrictWeakOrder R) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.slices ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "%Hlength_bound" ∷ ⌜xs.length ≤ 2 ^ 62⌝ ∗
-        "#Hcmp" ∷ cmp_implements R cmp_code }}
+        "#Hcmp" ∷ cmpImplements R cmp_code }}
       (App (App (Val #(functions SortFunc [S, Et])) (Val #data)) (Val #cmp_code))
     {{ (xs' : List E), RET #();
         "Hxs" ∷ data ↦* xs' ∗
@@ -51,7 +51,7 @@ theorem wp_SortFunc {S : go.type} [S ↓u go.SliceType Et] (data : slice.t) (cmp
   wp_start as H
   iNamed H
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hxs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
   wp_apply math.bits.wp_Len with %l _
   wp_apply wp_pdqsortCmpFunc R data (W64 0) data.len l cmp_code xs $$ [Hxs]
     with %xs' ⟨Hxs, %Hperm, %Hsorted, %Houtside⟩
@@ -63,7 +63,7 @@ theorem wp_SortFunc {S : go.type} [S ↓u go.SliceType Et] (data : slice.t) (cmp
   ipureintro
   refine ⟨Hperm, ?_⟩
   intro i j xi xj Hi Hj Hij
-  apply is_sorted_seg__is_sorted R xs' _ i j xi xj Hij Hi Hj
+  apply isSortedSeg_is_sorted R xs' _ i j xi xj Hij Hi Hj
   rw [← Hperm.length_eq, Hlen.1]
   exact Hsorted
 

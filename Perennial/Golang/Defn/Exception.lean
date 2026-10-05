@@ -33,46 +33,46 @@ namespace Perennial
 section defn
 variable [ffi_syntax] [GoGlobalContext]
 
-def execute_val_def : val := glv((#"execute", #()))
-@[irreducible] def execute_val : val := execute_val_def
-theorem execute_val_unseal : execute_val = execute_val_def := by with_unfolding_all rfl
+def executeValDef : val := glv((#"execute", #()))
+@[irreducible] def executeVal : val := executeValDef
+theorem executeVal_unseal : executeVal = executeValDef := by with_unfolding_all rfl
 
-def return_val_def (v : val) : val := glv((#"return", v))
-@[irreducible] def return_val : val → val := return_val_def
-theorem return_val_unseal : return_val = return_val_def := by with_unfolding_all rfl
+def returnValDef (v : val) : val := glv((#"return", v))
+@[irreducible] def returnVal : val → val := returnValDef
+theorem returnVal_unseal : returnVal = returnValDef := by with_unfolding_all rfl
 
 /-- executing to the end without a return produces a `#()` to match Go's void
 return semantics (named return values are translated as return statements
 using do_return as defined below). -/
-def do_execute_def : val :=
+def doExecuteDef : val :=
   λ: "_v", (#"execute", #())
 
-@[irreducible] def do_execute : val := do_execute_def
-theorem do_execute_unseal : do_execute = do_execute_def := by with_unfolding_all rfl
+@[irreducible] def do_execute : val := doExecuteDef
+theorem do_execute_unseal : do_execute = doExecuteDef := by with_unfolding_all rfl
 
 /-- Handle "execute" computations by dropping the final value and running the
 next sequential computation. -/
-def exception_seq_def : val :=
+def exceptionSeqDef : val :=
   λ: "s2" "s1",
     if: (Fst "s1") =⟨go.string⟩ #"execute" then
       "s2" #()
     else
       "s1"
 
-@[irreducible] def exception_seq : val := exception_seq_def
-theorem exception_seq_unseal : exception_seq = exception_seq_def := by with_unfolding_all rfl
+@[irreducible] def exception_seq : val := exceptionSeqDef
+theorem exception_seq_unseal : exception_seq = exceptionSeqDef := by with_unfolding_all rfl
 
-def do_return_def : val :=
+def doReturnDef : val :=
   λ: "v", (#"return", Var "v")
 
-@[irreducible] def do_return : val := do_return_def
-theorem do_return_unseal : do_return = do_return_def := by with_unfolding_all rfl
+@[irreducible] def do_return : val := doReturnDef
+theorem do_return_unseal : do_return = doReturnDef := by with_unfolding_all rfl
 
-def exception_do_def : val :=
+def exceptionDoDef : val :=
   λ: "v", Snd "v"
 
-@[irreducible] def exception_do : val := exception_do_def
-theorem exception_do_unseal : exception_do = exception_do_def := by with_unfolding_all rfl
+@[irreducible] def exception_do : val := exceptionDoDef
+theorem exception_do_unseal : exception_do = exceptionDoDef := by with_unfolding_all rfl
 
 end defn
 

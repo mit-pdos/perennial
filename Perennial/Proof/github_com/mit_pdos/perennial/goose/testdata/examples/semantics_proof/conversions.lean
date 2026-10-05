@@ -23,17 +23,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
 
-theorem wp_testByteSliceToString : test_fun_ok (GF := GF) testByteSliceToString := by
+theorem wp_testByteSliceToString : TestFunOk (GF := GF) testByteSliceToString := by
   semantics_auto
-  simp only [slice_index_ref]
+  simp only [sliceIndexRef]
   icases array_acc (GF := GF) _ (sint.Z (W64 0)) _ _ _ (zero_val w8) (by decide) rfl $$ p with ⟨Hp0, p⟩
   steps
   ihave p := p $$ Hp0
-  simp only [slice_index_ref]
+  simp only [sliceIndexRef]
   icases array_acc (GF := GF) _ (sint.Z (W64 1)) _ _ _ (zero_val w8) (by decide) rfl $$ p with ⟨Hp1, p⟩
   steps
   ihave p := p $$ Hp1
-  simp only [slice_index_ref]
+  simp only [sliceIndexRef]
   icases array_acc (GF := GF) _ (sint.Z (W64 2)) _ _ _ (zero_val w8) (by decide) rfl $$ p with ⟨Hp2, p⟩
   steps
   ihave p := p $$ Hp2

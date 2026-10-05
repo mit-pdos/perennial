@@ -8,7 +8,7 @@ Lean blocks are copied from [`TutorialExamples.lean`](TutorialExamples.lean),
 which is checked with `lake env lean docs/TutorialExamples.lean`.
 
 Source locations are given as files plus the tactic or lemma name (grep for
-`"wp_auto"`, `theorem wp_map_insert`, ...). The docstrings in those files are
+`"wp_auto"`, `theorem wp_mapInsert`, ...). The docstrings in those files are
 authoritative.
 
 ---
@@ -33,7 +33,7 @@ Inside `iprop(...)` (e.g. as an argument of another spec) a triple means
 the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.lean`):
 
 ```
-⊢ ∀ Φ : val → IProp GF, iprop(is_pkg_init pkg_id.sync ∗ is_sema sema γ N) -∗
+⊢ ∀ Φ : val → IProp GF, iprop(isPkgInit pkg_id.sync ∗ isSema sema γ N) -∗
     (|={⊤ \ ↑N,∅}=> ...) -∗ WP (App (Val (@! runtime_Semacquire)) (Val #sema)) {{ Φ }}
 ```
 
@@ -55,10 +55,10 @@ the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.le
 |:--|:--|:--|
 | `l ↦ v`, `l ↦{dq} v`, `l ↦□ v` | typed points-to (`typed_pointsto l v dq`) | `Golang/Theory/PostLifting.lean` |
 | `l.[S.t, go!"f"]` | address of field `f` of the struct at `l` | `Golang/Defn/PostLang.lean` |
-| `s ↦* vs`, `s ↦*{dq} vs` | slice points-to (`own_slice`) | `Golang/Theory/Slice.lean` |
-| `own_slice_cap V s dq` | ownership of the capacity beyond the length | `Golang/Theory/Slice.lean` |
-| `m ↦$ mv`, `m ↦${dq} mv`, `m ↦$□ mv` | map points-to (`own_map`), `mv : gmap K V` | `Golang/Theory/Map.lean` |
-| `is_pkg_init (PROP := IProp GF) pkg` | package `pkg` is initialized | `Golang/Theory/Pkg.lean` |
+| `s ↦* vs`, `s ↦*{dq} vs` | slice points-to (`ownSlice`) | `Golang/Theory/Slice.lean` |
+| `ownSliceCap V s dq` | ownership of the capacity beyond the length | `Golang/Theory/Slice.lean` |
+| `m ↦$ mv`, `m ↦${dq} mv`, `m ↦$□ mv` | map points-to (`ownMap`), `mv : gmap K V` | `Golang/Theory/Map.lean` |
+| `isPkgInit (PROP := IProp GF) pkg` | package `pkg` is initialized | `Golang/Theory/Pkg.lean` |
 | `"H" ∷ P` | named proposition (for `iNamed`) | `Helpers/NamedProps.lean` |
 
 ### Words, maps, lists
@@ -74,13 +74,13 @@ is `l[i]?` and `<[i := v]> l` is `l.set i v`. `go!"abc"` is a `go_string` (a
 Rocq `Opaque` definitions are written
 
 ```
-def is_Mutex_def (m : loc) (R : IProp GF) : IProp GF := is_lock m R
-@[irreducible] def is_Mutex (m : loc) (R : IProp GF) : IProp GF := is_Mutex_def m R
-theorem is_Mutex_unseal : @is_Mutex = @is_Mutex_def := by funext; with_unfolding_all rfl
+def isMutexDef (m : loc) (R : IProp GF) : IProp GF := is_lock m R
+@[irreducible] def isMutex (m : loc) (R : IProp GF) : IProp GF := isMutexDef m R
+theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 ```
 
 (`Perennial/Proof/sync_proof/mutex.lean`) and unfolded in proofs with
-`simp only [is_Mutex_unseal, is_Mutex_def]`. Typeclass facts (`Persistent`,
+`simp only [isMutex_unseal, isMutexDef]`. Typeclass facts (`Persistent`,
 `Timeless`) are proved by unsealing and `infer_instance`.
 
 ---
@@ -96,7 +96,7 @@ All of these work on an Iris proof mode goal whose conclusion is a GooseLang
 the wand form above):
 
 1. `iintro %Φ Hpre HΦ` (after an `imodintro` if the goal is `□ ...`);
-2. move the `is_pkg_init` conjuncts at the front of `Hpre` to the intuitionistic
+2. move the `isPkgInit` conjuncts at the front of `Hpre` to the intuitionistic
    context, named `Hpkg`, `Hpkg2`, ... (used by `iPkgInit`);
 3. destruct the rest with `pat` (an iris-lean cases pattern), or keep it as
    `Hpre`;
@@ -104,7 +104,7 @@ the wand form above):
    (`wp_method_call`) and take the call step (`wp_call`).
 
 Use `wp_start_folded` to prove a spec of a closure or a function value that
-should not be unfolded (e.g. `pred_implements_adapt` in
+should not be unfolded (e.g. `predImplements_adapt` in
 `Perennial/Proof/sort_proof/search.lean`).
 
 Proof state of `wp_S__writeB'` before `wp_start as Hs`:
@@ -112,7 +112,7 @@ Proof state of `wp_S__writeB'` before `wp_start as Hs`:
 ```
 ⊢ ⊢
     ∀ Φ,
-      is_pkg_init pkg ∗ s ↦ v -∗
+      isPkgInit pkg ∗ s ↦ v -∗
         ▷ (s ↦ { a' := v.a', b' := two, c' := v.c' } -∗ Φ #()) -∗
           WP (#(methods S.PointerType [119#8, 114#8, 105#8, 116#8, 101#8, 66#8] #s) #two) {{ Φ }}
 ```
@@ -121,7 +121,7 @@ after it:
 
 ```
   ∗HΦ : s ↦ { a' := v.a', b' := two, c' := v.c' } -∗ Φ #()
-  □Hpkg : is_pkg_init pkg
+  □Hpkg : isPkgInit pkg
   ∗Hs : s ↦ v
   ⊢
   WP
@@ -138,7 +138,7 @@ and after `wp_auto`:
 
 ```
   ∗HΦ : s ↦ { a' := v.a', b' := two, c' := v.c' } -∗ Φ #()
-  □Hpkg : is_pkg_init pkg
+  □Hpkg : isPkgInit pkg
   ∗Hs : s ↦ { a' := v.a', b' := two, c' := v.c' }
   ⊢ Φ #()
 ```
@@ -211,13 +211,13 @@ Lean comment) and are rejected with an error. `with` is a synonym of `as`.
    binding the context (Rocq `wp_bind` + `iApply`). If it does not fit, run
    `wp_pures` and try again.
 2. Strip a leading `▷` from the premise goals and close trivial ones; solve
-   `is_pkg_init` premises (`iPkgInit`); close pure side conditions without
+   `isPkgInit` premises (`iPkgInit`); close pure side conditions without
    metavariables (e.g. a bounds check `0 ≤ 0`) with `decide` or `word`. If the
    spec does not apply because an argument is a function literal `RecV ..` where
    the spec expects a `func.t`, it is retried after `wp_func_lits`.
 3. Introduce `pats` (iris-lean intro patterns) in the continuation (the
    introduced hypotheses are simplified with the WP simp set, so that they agree
-   with the expression, e.g. `W64 (go.array_literal_size [..])`) and run
+   with the expression, e.g. `W64 (go.arrayLiteralSize [..])`) and run
    `wp_auto` on it.
 
 Premise goals created by `[...]` spec patterns come before the continuation:
@@ -238,7 +238,7 @@ introduced; then `iintro` by hand (see `wp_wrapUnwrapInt` in
 
 ### `wp_apply_core lem $$ spats`
 
-`ProofMode.lean`. Step 1 only: no `is_pkg_init` solving, no introduction, no
+`ProofMode.lean`. Step 1 only: no `isPkgInit` solving, no introduction, no
 automation. The last goal is the continuation `∀ x, Q -∗ WP K[v] {{ Φ }}`.
 
 ### `wp_load`, `wp_store`, `wp_alloc l as H`, `wp_alloc_auto`
@@ -270,7 +270,7 @@ rest of the function and re-verifies it; `wp_join R` instead binds the head
 assertion `R : IProp GF` (may be `∃ x, ...`), and leaves
 
 1. the cases of the bound expression only, with postcondition
-   `fun v => ⌜v = v₀⌝ ∗ R` (`v₀ = execute_val` for an `if` statement that falls
+   `fun v => ⌜v = v₀⌝ ∗ R` (`v₀ = executeVal` for an `if` statement that falls
    through; `(v := #false)` for an expression such as a `&&`);
 2. the continuation `R -∗ WP K[v₀] {{ Φ }}`, proved once.
 
@@ -301,7 +301,7 @@ once:
 
 ```
 wp_join iprop(∃ (sl : slice.t) (xs : List w64),
-    arr_ptr ↦ sl ∗ sl ↦* xs ∗ own_slice_cap w64 sl (DFrac.own 1))
+    arr_ptr ↦ sl ∗ sl ↦* xs ∗ ownSliceCap w64 sl (DFrac.own 1))
   with [arr Hz Hzcap] as ⟨%sl1, %xs, arr, Hz, Hzcap⟩
 · append_lit          -- `arg1 = true`; the `false` case was closed by `iframe`
   wp_join_done
@@ -309,7 +309,7 @@ wp_if_destruct        -- the rest of the function, once
 ...
 ```
 
-Other uses: `wp_WaitGroup__Add` (frame mode, the `w != 0 && delta > 0 && ...`
+Other uses: `WaitGroup.wp_Add` (frame mode, the `w != 0 && delta > 0 && ...`
 panic checks), `wp_siftDownCmpFunc` (existential witness `c` from three cases).
 Where to join: after a case split whose cases fall through to the same code
 (`if` statements without `return`, `&&`/`||` conditions, `switch` cases that
@@ -327,7 +327,7 @@ invariant (`iNamedAccu`), then `wp_auto` and `cleanup_bool_decide`. The goal is
 then
 
 ```
-if decide (cond) = true then WP body {{ for_postcondition ... }} else Φ execute_val
+if decide (cond) = true then WP body {{ forPostcondition ... }} else Φ executeVal
 ```
 
 so the next step is usually `wp_if_destruct`. `wp_for HI` also `iNamed`s `HI`,
@@ -335,7 +335,7 @@ the hypothesis holding your loop invariant (`ihave HI : (∃ i, ...) $$ [..]`).
 Hypotheses you do not want in the invariant must be cleared or framed away
 before `wp_for`.
 
-`wp_for_post` proves a `for_postcondition` goal at the end of an iteration with
+`wp_for_post` proves a `forPostcondition` goal at the end of an iteration with
 `wp_for_post_do` (fall-through: then the post statement runs, e.g. `i++`),
 `wp_for_post_continue`, `wp_for_post_break` or `wp_for_post_return`, then runs
 `wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
@@ -355,7 +355,7 @@ Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z s.len
   ⊢
   if decide (sint.Z i < sint.Z s.len) = true then
     WP (... loop body ...)
-      {{ for_postcondition Stuckness.NotStuck ⊤ (λ: <>, do: #i_ptr <-[go.int] ...)
+      {{ forPostcondition Stuckness.NotStuck ⊤ (λ: <>, do: #i_ptr <-[go.int] ...)
             iprop("HΦ" ∷ ... ∗ "Hs" ∷ s ↦* vs ∗ "xs" ∷ xs_ptr ↦ s ∗ "HI" ∷ ∃ i, ...)
             fun v => WP (exception_do (v ;;; return: ![go.uint64] #sum_ptr)) {{ Φ }} }}
   else ...
@@ -405,13 +405,13 @@ the old behaviour).
 | `iStructNamed H` | split `H : l ↦{dq} (v : S.t)` into field points-tos named after the fields | `Golang/Theory/PostLifting.lean` |
 | `iStructNamedPrefix H "p"`, `iStructNamedSuffix H "s"` | with renaming | same |
 | `ipersist H` | turn `H : l ↦ v` (or anything with `UpdateIntoPersistently`) into persistent `H : l ↦□ v`; needs an update in the goal (a WP is fine) | `GooseLang/IPersist.lean` |
-| `iPkgInit` | solve an `is_pkg_init` goal or the `is_pkg_init` conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
-| `solve_pkg_init` | solve one `is_pkg_init pkg` goal (also through the dependencies of other packages' `is_pkg_init`) | same |
-| `is_pkg_init_unfold`, `is_pkg_init_finish` | unfold `is_pkg_init` in the goal; finish a `wp_initialize'` proof | `Golang/Theory/Auto.lean` |
+| `iPkgInit` | solve an `isPkgInit` goal or the `isPkgInit` conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
+| `solve_pkg_init` | solve one `isPkgInit pkg` goal (also through the dependencies of other packages' `isPkgInit`) | same |
+| `isPkgInit_unfold`, `is_pkg_init_finish` | unfold `isPkgInit` in the goal; finish a `wp_initialize'` proof | `Golang/Theory/Auto.lean` |
 | `cleanup_bool_decide` | simplify `if decide (#(decide P) = #true)` and friends | `Golang/Theory/Auto.lean` |
 | `solve_ndisj` | prove namespace mask conditions (`↑(N.@"a") ⊆ ⊤ ∖ ↑(N.@"b")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@x)`, `↑(N.@"a") ## ↑(N.@"b")`, using mask hypotheses); `iinv` discharges its mask side condition with it | `Golang/Theory/IrisTactics.lean` |
 | `iinv H with pat Hclose` | iris-lean's `iinv`, re-implemented: mask side conditions by `solve_ndisj`, no `simp [*]` (no deep recursion with word facts), an error (suggesting `wp_bind`) on a non-atomic WP | same |
-| `wp_func_lits` | rewrite function literal values `RecV f x e` in the WP expression to `#(func.mk f x e)` (`wp_apply` tries it when a spec does not apply, e.g. `wp_map_insert` of a closure) | `Golang/Theory/Auto.lean` |
+| `wp_func_lits` | rewrite function literal values `RecV f x e` in the WP expression to `#(func.mk f x e)` (`wp_apply` tries it when a spec does not apply, e.g. `wp_mapInsert` of a closure) | `Golang/Theory/Auto.lean` |
 | `wp_alloc_anon` | an allocation not bound by `let:` (e.g. `&S{..}`), inaccessible names (Rocq `wp_alloc l as "?"`) | `Golang/Theory/Mem.lean` |
 | `wp_if_angelic` | for the head `if: #(decide P) then e else AngelicExit #()`: continue with `e` under a hypothesis `P` (introduce it with `iintro %H`) | `Golang/Theory/Auto.lean` |
 | `no_sorry tac` | run `tac` without error recovery and fail if the proof would contain `sorry` (used by `word`, `list_solver`) | `Std/Word/Automation.lean` |
@@ -451,7 +451,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
 
 ## 4. Specification lemmas
 
-Names follow Rocq. Specs take `is_pkg_init` of their package where Rocq does;
+Names follow Rocq. Specs take `isPkgInit` of their package where Rocq does;
 `wp_apply` discharges it.
 
 ### Memory (`Golang/Theory/Mem.lean`, `PostLifting.lean`)
@@ -468,11 +468,11 @@ Names follow Rocq. Specs take `is_pkg_init` of their package where Rocq does;
 
 | Lemma | |
 |:--|:--|
-| `own_slice_len` | `s ↦*{dq} vs ⊢ ⌜vs.length = sint.nat s.len ∧ 0 ≤ sint.Z s.len⌝` |
-| `own_slice_wf`, `own_slice_cap_wf` | `0 ≤ len ≤ cap` |
-| `own_slice_nil`, `own_slice_empty`, `own_slice_agree`, `own_slice_persist` | |
-| `own_slice_split`, `own_slice_combine`, `own_slice_slice`, `own_slice_elem_acc` | splitting and element access |
-| `wp_load_slice_index s i vs dq v (hpos : 0 ≤ i)` | `{{ s ↦*{dq} vs ∗ ⌜vs[i.toNat]? = some v⌝ }} ![t] #(slice_index_ref V i s) {{ RET #v; s ↦*{dq} vs }}` |
+| `ownSlice_len` | `s ↦*{dq} vs ⊢ ⌜vs.length = sint.nat s.len ∧ 0 ≤ sint.Z s.len⌝` |
+| `ownSlice_wf`, `ownSliceCap_wf` | `0 ≤ len ≤ cap` |
+| `ownSlice_nil`, `ownSlice_empty`, `ownSlice_agree`, `ownSlice_persist` | |
+| `ownSlice_split`, `ownSlice_combine`, `ownSlice_slice`, `ownSlice_elem_acc` | splitting and element access |
+| `wp_load_slice_index s i vs dq v (hpos : 0 ≤ i)` | `{{ s ↦*{dq} vs ∗ ⌜vs[i.toNat]? = some v⌝ }} ![t] #(sliceIndexRef V i s) {{ RET #v; s ↦*{dq} vs }}` |
 | `wp_store_slice_index` | `{{ s ↦* vs ∗ ⌜0 ≤ i ∧ i < vs.length⌝ }} ... {{ RET #(); s ↦* vs.set i.toNat v' }}` |
 | `wp_slice_make2`, `wp_slice_make3` | `make([]T, n)`, `make([]T, n, c)` |
 | `wp_slice_append`, `wp_slice_copy`, `wp_slice_clear` | `append`, `copy`, `clear` |
@@ -483,9 +483,9 @@ Names follow Rocq. Specs take `is_pkg_init` of their package where Rocq does;
 | Lemma | |
 |:--|:--|
 | `wp_map_make1`, `wp_map_make2` | `make(map[K]V)`; give `(K := ..) (V := ..)` |
-| `wp_map_insert` | `{{ l ↦$ m }} ... {{ RET #(); l ↦$ <[k := v]> m }}` (needs `SafeMapKey`) |
+| `wp_mapInsert` | `{{ l ↦$ m }} ... {{ RET #(); l ↦$ <[k := v]> m }}` (needs `SafeMapKey`) |
 | `wp_map_lookup1`, `wp_map_lookup2` | `m[k]`, `v, ok := m[k]`; the result is `(m !! k).getD (zero_val V)` (and `decide (m !! k).isSome`) |
-| `wp_map_delete`, `wp_map_clear`, `wp_map_for_range` | |
+| `wp_mapDelete`, `wp_map_clear`, `wp_map_for_range` | |
 
 Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `gmap.insert_empty`.
 
@@ -494,23 +494,23 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `gmap.insert_empty
 | Lemma | |
 |:--|:--|
 | `wp_for`, `wp_for_post_do/continue/break/return` | loops (used by the tactics) |
-| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `wp_Once__doSlow`) |
+| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`) |
 | `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
-| `wp_assume`, `wp_sum_assume_no_overflow`, ... | `primitive.Assume*` |
+| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*` |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
 
 ### `sync` (`Perennial/Proof/sync_proof/*.lean`, `Perennial/Proof/sync/atomic.lean`)
 
 | Lemma | |
 |:--|:--|
-| `sync.init_Mutex R E m` | `m ↦ zero_val Mutex.t -∗ ▷ R ={E}=∗ is_Mutex m R` |
-| `sync.wp_Mutex__Lock`, `wp_Mutex__Unlock`, `wp_Mutex__TryLock` | `Lock`: `{{ is_Mutex m R }} {{ own_Mutex m ∗ R }}`; `Unlock` takes `own_Mutex m ∗ ▷ R` |
+| `sync.init_Mutex R E m` | `m ↦ zero_val Mutex.t -∗ ▷ R ={E}=∗ isMutex m R` |
+| `sync.wp_Mutex__Lock`, `Mutex.wp_Unlock`, `Mutex.wp_TryLock` | `Lock`: `{{ isMutex m R }} {{ ownMutex m ∗ R }}`; `Unlock` takes `ownMutex m ∗ ▷ R` |
 | `sync.Mutex_is_Locker` | a `*Mutex` implements `Locker` |
-| `sync.wp_NewCond`, `wp_Cond__Wait`, `wp_Cond__Signal`, `wp_Cond__Broadcast` | condition variables |
-| `sync.init_Once`, `wp_Once__Do` | `sync.Once` |
+| `sync.wp_NewCond`, `Cond.wp_Wait`, `Cond.wp_Signal`, `Cond.wp_Broadcast` | condition variables |
+| `sync.init_Once`, `Once.wp_Do` | `sync.Once` |
 | `sync.wp_RWMutex__*` | `RWMutex` |
 | `sync.wp_runtime_Semacquire`, `wp_runtime_Semrelease` | runtime semaphores (atomic-update style specs) |
-| `sync.atomic.wp_*` (`wp_Uint64__Load`, `wp_Bool__Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic` |
+| `sync.atomic.wp_*` (`Uint64.wp_Load`, `Bool.wp_Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic` |
 
 ### Other proved packages
 
@@ -526,7 +526,7 @@ their `*_proof` directories (`wp_Search`, `wp_SearchInts`, `wp_Find`, the
 ### Specs for function arguments
 
 A Go function value `f : func.t` is specified by a persistent Texan triple about
-`App (Val #f) (Val #i)`; see `pred_implements` in
+`App (Val #f) (Val #i)`; see `predImplements` in
 `Perennial/Proof/sort_proof/search.lean`, where the caller proves the triple for
 a closure with `iintro %i; wp_start as ...; wp_auto; ...` and the callee uses it
 with `wp_apply Hf $$ [I] with %r ⟨I, %Hf_result⟩`.
@@ -537,8 +537,8 @@ with `wp_apply Hf $$ [I] with %r ⟨I, %Hf_result⟩`.
 /-- `func DoSomeLocking(l *sync.Mutex) { l.Lock(); l.Unlock() }`, for any lock
 invariant `R`. -/
 theorem wp_DoSomeLocking' [sync.Assumptions] (l : loc) (R : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_pkg_init (PROP := IProp GF) pkg_id.sync ∗
-        sync.is_Mutex l R }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isPkgInit (PROP := IProp GF) pkg_id.sync ∗
+        sync.isMutex l R }}
       (App (Val (@! DoSomeLocking)) (Val #l))
     {{ RET #(); True }} := by
   wp_start as #Hm
@@ -562,7 +562,7 @@ func simpleSpawn() {
 }
 ``` -/
 theorem wp_simpleSpawn' [sync.Assumptions] :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_pkg_init (PROP := IProp GF) pkg_id.sync }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isPkgInit (PROP := IProp GF) pkg_id.sync }}
       (App (Val (@! simpleSpawn)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -662,49 +662,49 @@ counter that is incremented once per call never overflows (given the premise
 `Perennial/GooseLang/Adequacy.lean` (adequacy),
 `Perennial/ProgramLogic/TimeReceiptsTest.lean` (laws and the paper's clock).
 
-**The bound `N`.** `N` is the field `receipt_bound GF : Nat` of the receipt
-ghost state (with `receipt_bound_pos : 0 < receipt_bound GF`):
+**The bound `N`.** `N` is the field `receiptBound GF : Nat` of the receipt
+ghost state (with `receiptBound_pos : 0 < receiptBound GF`):
 
 ```
 class receiptGS (GF : BundledGFunctors) where
-  receipt_allG : allG GF
-  receipt_tok_name : GName
-  receipt_lb_name : GName
-  receipt_bound : Nat
-  receipt_bound_pos : 0 < receipt_bound
+  receiptAllG : allG GF
+  receiptTokName : GName
+  receiptLbName : GName
+  receiptBound : Nat
+  receiptBound_pos : 0 < receiptBound
 ```
 
 The receipts use only the generic ghost libraries. The step counter is a
-`mono_nat` (`receipt_lb_name`), and `⧖ n` is its lower bound `n` plus `⌜n < N⌝`.
+`mono_nat` (`receiptLbName`), and `⧖ n` is its lower bound `n` plus `⌜n < N⌝`.
 Each counted step `k` also issues an exclusive `ghost_map` token `k ↪ ()`
-(`receipt_tok_name`), and `⧗ n` is `n` such tokens, each with `⧖ (k + 1)`.
+(`receiptTokName`), and `⧗ n` is `n` such tokens, each with `⧖ (k + 1)`.
 Tokens are distinct steps, so the latest of `n` of them gives `⧖ n`; this is how
 the snapshot rule and `⧗ n ⊢ ⌜n < N⌝` hold without the authoritative counter.
-`receipt_allG` is an instance only inside `Receipts.lean`; elsewhere proofs keep
+`receiptAllG` is an instance only inside `Receipts.lean`; elsewhere proofs keep
 their own `[allG GF]`.
 
 `receiptGS` is a field of `gooseGlobalGS`, hence available from `heapGS`, so a
-proof can write `receipt_bound GF` without new section variables. Nothing else
+proof can write `receiptBound GF` without new section variables. Nothing else
 depends on `N`: the language instance, `PureExec`/`Atomic` instances and the
 receipt camera (`receiptGpreS`, `gooseGpreS`) are the same for every `N`. A
 proof that needs `N` to be small states it as a premise, e.g.
-`(Hbound : receipt_bound GF ≤ 2 ^ 48)`, and every caller passes the premise on;
+`(Hbound : receiptBound GF ≤ 2 ^ 48)`, and every caller passes the premise on;
 the client discharges it when it picks `N` at adequacy time (below). Prefer to
 put the premise only where it is needed: if the code is safe for every `N` and
 only some resource of the postcondition depends on the bound, make that resource
-conditional (`⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i`, as `idutil.Generator.Next`)
+conditional (`⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i`, as `idutil.Generator.Next`)
 rather than the whole spec.
 
 **Semantics.** The trusted `base_step` is unchanged. The registered language
 instance `goose_ectxi_lang` is a layer on top of it whose state is
-`cfg_state × Nat`; the number is a *fuel* for *Go instruction* steps
+`CfgState × Nat`; the number is a *fuel* for *Go instruction* steps
 (`App (Val (GoInstruction op)) (Val v)`: function/method resolution, typed
 loads, stores and allocations, struct operations, ...). With fuel `f + 1` a Go
 instruction takes its real step and leaves fuel `f`; with fuel `0` it
 *stutters* (expression and state unchanged), the paper's "`tick` diverges at
 the limit". All other steps are real steps that leave the fuel alone. The
 adequacy theorems start with fuel `N - 1`, and the state interpretation owns
-`receipt_fuel f`, the authoritative receipt counter `receipt_auth (N - (f + 1))`.
+`receiptFuel f`, the authoritative receipt counter `receiptAuth (N - (f + 1))`.
 Only Go instructions are counted because a step that can stutter is neither
 pure (`PureExec`) nor atomic (`Language.Atomic`), and the heap primitives must
 stay atomic for invariant opening; Go instructions have a single lifting lemma
@@ -712,7 +712,7 @@ stay atomic for invariant opening; Go instructions have a single lifting lemma
 
 **Assertions and laws.** `⧗ n` (`receipt n`): `n` exclusive receipts; `⧖ n`
 (`preceipt n`): persistent, "at least `n` counted steps happened". Below,
-`N = receipt_bound GF`.
+`N = receiptBound GF`.
 
 | law | lemma |
 |-----|-------|
@@ -720,7 +720,7 @@ stay atomic for invariant opening; Go instructions have a single lifting lemma
 | `⊢ \|==> ⧗ 0`, `⧗ n ⊢ ⧗ 0 ∗ ⧗ n` | `receipt_zero`, `receipt_zero_of` |
 | `⧖ n` persistent, `⧖ (max m n) ⊣⊢ ⧖ m ∗ ⧖ n`, `⧖ n ⊢ ⧖ m` (`m ≤ n`), `⊢ \|==> ⧖ 0` | `preceipt_persistent`, `preceipt_max`, `preceipt_mono`, `preceipt_zero` |
 | `⧗ n ⊢ \|==> (⧗ n ∗ ⧖ n)` (snapshot) | `receipt_snapshot` |
-| `⧗ N ⊢ False`, `⧖ N ⊢ False` (hence `\|={E}=> False` for any `E`) | `receipt_bound_elim`, `preceipt_bound_elim`, `receipt_bound_fupd` |
+| `⧗ N ⊢ False`, `⧖ N ⊢ False` (hence `\|={E}=> False` for any `E`) | `receiptBound_elim`, `preceipt_bound_elim`, `receiptBound_fupd` |
 | `⧗ n ⊢ ⌜n < N⌝`, `⧖ n ⊢ ⌜n < N⌝`, `⧗ 1 ∗ ⧗ n ⊢ ⌜n + 1 < N⌝ ∗ ⧗ (n + 1)` | `receipt_lt`, `preceipt_lt`, `receipt_add_one_lt` |
 
 `⧗ N ⊢ False` holds without any invariant or mask (the paper needs
@@ -750,28 +750,28 @@ can be used instead.
 **Adequacy: picking `N`.** `goose_adequacy` (and
 `grove_ffi_single_node_adequacy`, `disk_adequacy`, `goose_invariance`) is
 stated for the real semantics and every bound `N`: the WP premise `Hwp` is
-proved under the hypothesis `receipt_bound GF = N`, and the conclusion is about
+proved under the hypothesis `receiptBound GF = N`, and the conclusion is about
 executions of fewer than `N` steps:
 
 ```
 theorem goose_adequacy [hPre : gooseGpreS ffi GF] (N : Nat)
-    (e : expr) (σ : state) (g : global_state) (φ : val → Prop)
-    (Hinitg : ffi_initgP g.global_world) (Hinit : ffi_initP σ.world g.global_world)
+    (e : expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : heapGS .hasLC GF],
-      receipt_bound GF = N →
-      hG.goose_localGS.goose_go_local_context = σ.go_state.go_lctx →
-      ⊢ ffi_global_start (goose_ffiGlobalGS (ffi := ffi) (GF := GF)) g.global_world -∗
-        ffi_local_start (goose_ffiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
-        own_go_state σ.go_state.package_state ={⊤}=∗
+      receiptBound GF = N →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
+        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        ownGoState σ.goState.packageState ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
-    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : cfg_state)
-    (Hsteps : real_nsteps n ([e], ((σ, g) : cfg_state)) κs (t2, σ2))
+    (n : Nat) (κs : List observation) (t2 : List expr) (σ2 : CfgState)
+    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → real_not_stuck e2 σ2)
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2)
 ```
 
 A client chooses `N` and discharges the premises its proof makes about it from
-`HN : receipt_bound GF = N`. For a program that calls `idutil.Generator.Next`,
+`HN : receiptBound GF = N`. For a program that calls `idutil.Generator.Next`,
 `N = 2^48` (or anything smaller) works:
 
 ```
@@ -779,53 +779,53 @@ A client chooses `N` and discharges the premises its proof makes about it from
     (@fun hG HN Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
 ```
 
-where `Hwp` is the client's WP proof under the premise `receipt_bound GF ≤ 2 ^ 48`
-(it uses the premise to specialize the `⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i`
-returned by `wp_Generator__Next`); `TimeReceiptsTest.lean` has this
+where `Hwp` is the client's WP proof under the premise `receiptBound GF ≤ 2 ^ 48`
+(it uses the premise to specialize the `⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i`
+returned by `Generator.wp_Next`); `TimeReceiptsTest.lean` has this
 instantiation for `N = 2 ^ 64`. The result holds for executions of fewer than
 `2^48` steps. Since there is
 nothing to gain from a smaller `N`, a client takes the largest `N` that all the
-premises allow. `real_nsteps`/`real_not_stuck` are iris-lean's
-`Language.NSteps`/`NotStuck` for `goose_real_ectxi_lang`. The proof applies
+premises allow. `RealNsteps`/`RealNotStuck` are iris-lean's
+`Language.NSteps`/`NotStuck` for `gooseRealEctxiLang`. The proof applies
 iris-lean adequacy to the bounded language started with fuel `N - 1`
 (`goose_adequacy_blang N hN`) and the simulation `bounded_nsteps_of_real` (a
 real execution of at most `f` steps is a bounded one from fuel `f`; no Go
-instruction stutters) and `real_not_stuck_of_bounded` (every bounded step is
+instruction stutters) and `realNotStuck_of_bounded` (every bounded step is
 backed by a real one).
 
 **Example: `idutil.Generator.Next`** (`Perennial/Proof/go_etcd_io/etcd/pkg/v3/idutil.lean`).
-The invariant of `is_Generator g R` owns one receipt per completed call,
+The invariant of `isGenerator g R` owns one receipt per completed call,
 `⧗ num_used`, next to the remaining `R` tokens (the list
 `seqZ (init + num_used + 1) (2^48 - num_used)`, empty once `num_used ≥ 2^48`).
 `Next` takes a receipt from an early Go instruction and adds it to the
 invariant when the atomic increment opens it; `receipt_add_one_lt` gives
-`num_used + 1 < receipt_bound GF`. The specs hold for every `N` (the code never
+`num_used + 1 < receiptBound GF`. The specs hold for every `N` (the code never
 fails); only the token in `Next`'s postcondition is conditional. Either
 `num_used < 2^48` and the head of the token list is returned (the premise is
 unused), or the list is empty, stays empty, and the premise
-`receipt_bound GF ≤ 2^48` contradicts `num_used + 1 < receipt_bound GF`
+`receiptBound GF ≤ 2^48` contradicts `num_used + 1 < receiptBound GF`
 (`idutil.take_token`). The specs are Rocq's, with no ticket, except for that
 premise:
 
 ```
-theorem wp_Generator__Next (g : loc) (R : w64 → IProp GF) :
-    {{ is_pkg_init pkg ∗ is_Generator g R }}
+theorem Generator.wp_Next (g : loc) (R : w64 → IProp GF) :
+    {{ isPkgInit pkg ∗ isGenerator g R }}
       (App (Val (g @!! go.type.PointerType Generator @!! go!"Next")) (Val #()))
-    {{ (i : w64), RET #i; ⌜receipt_bound GF ≤ 2 ^ 48⌝ -∗ R i }}
+    {{ (i : w64), RET #i; ⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i }}
 
 theorem wp_NewGenerator (R : w64 → IProp GF)
     (memberID : w16) (now : time.Time.t) :
-    {{ is_pkg_init pkg ∗ ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
+    {{ isPkgInit pkg ∗ ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
-    {{ (g : loc), RET #g; is_Generator g R }}
+    {{ (g : loc), RET #g; isGenerator g R }}
 ```
 
 The postcondition is a wand rather than `⌜…⌝ → R i` so that a caller holding
 `Hbound` specializes it with `ispecialize HR $$ %Hbound`. A caller takes the
-premise only if it consumes the token: `etcdserver.own_EtcdServer_access` hands
-out `is_Generator` with no premise, while
-`wp_EtcdServer__processInternalRaftRequestOnce` takes `Hbound` because the
-token stands for the `own_unregistered_id` that `w.Register(id)` needs. The
+premise only if it consumes the token: `etcdserver.ownEtcdServer_access` hands
+out `isGenerator` with no premise, while
+`EtcdServer.wp_processInternalRaftRequestOnce` takes `Hbound` because the
+token stands for the `ownUnregisteredId` that `w.Register(id)` needs. The
 proof starts with
 
 ```
@@ -843,9 +843,9 @@ proof starts with
 
 and later, inside the atomic update of `AddUint64`,
 `icases receipt_add_one_lt _ $$ [Htk Hused] with ⟨%Hlt, Hused⟩` and
-`icases take_token (fun i => R (W64 (pfx * 2 ^ 48 + i % 2 ^ 48))) (init + num_used) num_used (receipt_bound GF) Hlt $$ HR with ⟨HRi, HR⟩`.
+`icases take_token (fun i => R (W64 (pfx * 2 ^ 48 + i % 2 ^ 48))) (init + num_used) num_used (receiptBound GF) Hlt $$ HR with ⟨HRi, HR⟩`.
 `TimeReceiptsTest.lean` has the same pattern for the paper's clock
-(`wp_clock_incr`, premise `receipt_bound GF ≤ 2 ^ 64`).
+(`wp_clock_incr`, premise `receiptBound GF ≤ 2 ^ 64`).
 
 ### Package initialization
 
@@ -856,13 +856,13 @@ example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 
 -- The initialization proof: run `package.init`, initialize the imported
--- packages in order, and conclude `is_pkg_init`.
+-- packages in order, and conclude `isPkgInit`.
 example (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.sync get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.sync get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.sync }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.sync }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown

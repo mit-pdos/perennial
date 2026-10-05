@@ -34,24 +34,24 @@ instance Spec_Monad : Monad (Spec GF) where
   pure resp := fun Φ => Φ resp
   bind ma kmb := fun ΦB => ma (fun respa => kmb respa ΦB)
 
-variable [allG GF] [Pos.Countable EtcdState.t]
+variable [AllG GF] [Pos.Countable EtcdState.t]
 
 /-- This is only in grove_ffi. -/
-axiom own_time (t : w64) : IProp GF
+axiom ownTime (t : w64) : IProp GF
 
-def handle_etcdE_spec (γ : GName) : Handler etcdE (Spec GF) :=
+def handleEtcdESpec (γ : GName) : Handler EtcdE (Spec GF) :=
   fun _A e =>
     match e with
-    | .GetState => fun Φ => iprop(∃ σ q, ghost_var γ q σ ∗ (ghost_var γ q σ -∗ Φ σ))
+    | .GetState => fun Φ => iprop(∃ σ q, ghostVar γ q σ ∗ (ghostVar γ q σ -∗ Φ σ))
     | .SetState σ' => fun Φ =>
-        iprop(∃ (_σ : EtcdState.t), ghost_var γ 1 _σ ∗ (ghost_var γ 1 σ' -∗ Φ ()))
-    | .GetTime => fun Φ => iprop(∀ time, own_time time -∗ own_time time ∗ Φ time)
+        iprop(∃ (_σ : EtcdState.t), ghostVar γ 1 _σ ∗ (ghostVar γ 1 σ' -∗ Φ ()))
+    | .GetTime => fun Φ => iprop(∀ time, ownTime time -∗ ownTime time ∗ Φ time)
     | .Assume P => fun Φ => iprop(⌜P⌝ -∗ Φ ())
     | .Assert P => fun Φ => iprop(⌜P⌝ ∗ Φ ())
     | .SuchThat pred => fun Φ => iprop(∀ x, ⌜pred x⌝ -∗ Φ x)
 
 def GrantSpec (req : LeaseGrantRequest.t) (γ : GName) : Spec GF LeaseGrantResponse.t :=
-  interp (handle_etcdE_spec γ) (LeaseGrant req)
+  interp (handleEtcdESpec γ) (LeaseGrant req)
 
 end spec
 

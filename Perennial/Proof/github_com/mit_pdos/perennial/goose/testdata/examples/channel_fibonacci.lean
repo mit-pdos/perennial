@@ -23,13 +23,13 @@ def fib : Nat → w64
   | 1 => W64 1
   | n + 2 => fib (n + 1) + fib n
 
-def fib_list (n : Nat) : List w64 := (List.range n).map fib
+def fibList (n : Nat) : List w64 := (List.range n).map fib
 
-theorem fib_list_succ (n : Nat) : fib_list (n + 1) = fib_list n ++ [fib n] := by
-  simp [fib_list, List.range_succ]
+theorem fibList_succ (n : Nat) : fibList (n + 1) = fibList n ++ [fib n] := by
+  simp [fibList, List.range_succ]
 
-theorem fib_list_length (n : Nat) : (fib_list n).length = n := by
-  simp [fib_list]
+theorem fibList_length (n : Nat) : (fibList n).length = n := by
+  simp [fibList]
 
 theorem fib_succ (k : Nat) :
     fib (k + 1) = match k with | 0 => W64 1 | k' + 1 => fib (k' + 1) + fib k' := by
@@ -38,7 +38,7 @@ theorem fib_succ (k : Nat) :
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
@@ -46,22 +46,22 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 set_option goose.wp.extras true
 
 set_option maxHeartbeats 400000 in
-theorem wp_fibonacci (n : w64) (c0 : loc) (γ : spsc_names) (Hn : 0 < sint.Z n) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗
-        is_spsc γ c0 (fun i v => iprop(⌜v = fib i.toNat⌝))
-          (fun sent => iprop(⌜sent = fib_list (sint.nat n)⌝)) ∗
-        spsc_producer γ ([] : List w64) }}
+theorem wp_fibonacci (n : w64) (c0 : loc) (γ : SpscNames) (Hn : 0 < sint.Z n) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗
+        isSpsc γ c0 (fun i v => iprop(⌜v = fib i.toNat⌝))
+          (fun sent => iprop(⌜sent = fibList (sint.nat n)⌝)) ∗
+        spscProducer γ ([] : List w64) }}
       (App (App (Val (@! fibonacci)) (Val #n)) (Val #c0))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hspsc, Hprod⟩
   wp_auto
   ihave HI : (∃ (i : Nat) (sent : List w64),
-      "Hprod" ∷ spsc_producer γ sent ∗
+      "Hprod" ∷ spscProducer γ sent ∗
       "x" ∷ x_ptr ↦ fib i ∗
       "y" ∷ y_ptr ↦ fib (i + 1) ∗
       "i" ∷ i_ptr ↦ W64 i ∗
       "%Hil" ∷ ⌜i = sent.length⌝ ∗
-      "%Hsl" ∷ ⌜sent = fib_list i⌝ ∗
+      "%Hsl" ∷ ⌜sent = fibList i⌝ ∗
       "%Hi" ∷ ⌜i ≤ sint.nat n⌝ : IProp GF) $$ [Hprod x y i]
   · iexists 0, []
     rw [show fib 0 = W64 0 from rfl, show fib (0 + 1) = W64 1 from rfl]
@@ -80,7 +80,7 @@ theorem wp_fibonacci (n : w64) (c0 : loc) (γ : spsc_names) (Hn : 0 < sint.Z n) 
     iframe
     ipureintro
     have : sint.Z (W64 (i : Int)) = i := by word
-    refine ⟨by simp [Hil], by rw [Hsl, fib_list_succ], by word⟩
+    refine ⟨by simp [Hil], by rw [Hsl, fibList_succ], by word⟩
   · have hi : i = sint.nat n := by
       have : sint.Z (W64 (i : Int)) = i := by word
       word
@@ -91,20 +91,20 @@ theorem wp_fibonacci (n : w64) (c0 : loc) (γ : spsc_names) (Hn : 0 < sint.Z n) 
 
 set_option maxHeartbeats 400000 in
 theorem wp_fib_consumer :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! fib_consumer)) (Val #()))
-    {{ (sl : slice.t), RET #sl; sl ↦* fib_list 10 }} := by
+    {{ (sl : slice.t), RET #sl; sl ↦* fibList 10 }} := by
   wp_start
   wp_auto
   wp_apply chan.wp_make2 (V := w64) (W64 10) $$ [] as %c %γ ⟨#Hchan, %Hcap, Hown⟩
   · ipureintro; decide
-  imod start_spsc c (fun i v => iprop(⌜v = fib i.toNat⌝)) (fun sent => iprop(⌜sent = fib_list 10⌝))
+  imod start_spsc c (fun i v => iprop(⌜v = fib i.toNat⌝)) (fun sent => iprop(⌜sent = fibList 10⌝))
     γ $$ Hchan [Hown] with ⟨%γspsc, #Hspsc, Hprod, Hcons⟩
   · iright; iexact Hown
   wp_apply chan.wp_cap (V := w64) c γ $$ Hchan
   rw [Hcap]
   wp_apply wp_fork $$ [Hprod]
-  · rw [show fib_list 10 = fib_list (sint.nat (W64 10)) from rfl]
+  · rw [show fibList 10 = fibList (sint.nat (W64 10)) from rfl]
     wp_apply wp_fibonacci (W64 10) c γspsc (by decide) $$ [Hprod]
     · iframe # ∗
     itrivial
@@ -115,15 +115,15 @@ theorem wp_fib_consumer :
   wp_auto
   ihave HI : (∃ (k : Nat) (iv : w64) (sl : slice.t),
       "i" ∷ i_ptr ↦ iv ∗
-      "Hcons" ∷ spsc_consumer γspsc (fib_list k) ∗
-      "Hsl" ∷ sl ↦* fib_list k ∗
+      "Hcons" ∷ spscConsumer γspsc (fibList k) ∗
+      "Hsl" ∷ sl ↦* fibList k ∗
       "results" ∷ results_ptr ↦ sl ∗
-      "Hslcap" ∷ own_slice_cap w64 sl (DFrac.own 1) : IProp GF) $$ [i Hcons Hsl results Hslcap]
+      "Hslcap" ∷ ownSliceCap w64 sl (DFrac.own 1) : IProp GF) $$ [i Hcons Hsl results Hslcap]
   · iexists 0, _, _
-    rw [show fib_list 0 = [] from rfl]
+    rw [show fibList 0 = [] from rfl]
     iframe
   wp_for HI
-  wp_apply wp_spsc_receive (t := go.int) γspsc c _ _ (fib_list k) $$ [Hcons] as %v %ok H
+  wp_apply wp_spsc_receive (t := go.int) γspsc c _ _ (fibList k) $$ [Hcons] as %v %ok H
   · iframe # ∗
   cases ok
   · simp only [Bool.false_eq_true, ↓reduceIte]
@@ -145,9 +145,9 @@ theorem wp_fib_consumer :
     wp_for_post
     iframe
     iexists k + 1, _, sl'
-    rw [fib_list_length] at Hfib
+    rw [fibList_length] at Hfib
     subst Hfib
-    rw [fib_list_succ k]
+    rw [fibList_succ k]
     simp only [Int.toNat_natCast]
     iframe
 

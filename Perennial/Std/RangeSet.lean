@@ -6,7 +6,7 @@ import Perennial.Std.Word.Properties
 namespace Perennial
 
 /-- The set of words `W64 start, ..., W64 (start + sz - 1)`. -/
-def rangeSet (start sz : Int) : gset w64 := list_to_set ((seqZ start sz).map W64)
+def rangeSet (start sz : Int) : GSet w64 := listToSet ((seqZ start sz).map W64)
 
 theorem rangeSet_lookup (start sz : Int) (i : w64) (hpos : 0 ≤ start) (hov : start + sz < 2 ^ 64) :
     i ∈ rangeSet start sz ↔ start ≤ uint.Z i ∧ uint.Z i < start + sz := by
@@ -26,7 +26,7 @@ theorem rangeSet_empty (start sz : Int) (h : sz ≤ 0) : rangeSet start sz = ∅
   rw [rangeSet, seqZ_nil _ _ h]; rfl
 
 theorem rangeSet_size (start sz : Int) (h1 : 0 ≤ start) (h2 : 0 ≤ sz) (hov : start + sz < 2 ^ 64) :
-    gmap.size (rangeSet start sz) = sz.toNat := by
+    GMap.size (rangeSet start sz) = sz.toNat := by
   rw [rangeSet, size_list_to_set _ (seq_U64_NoDup start sz h1 hov), List.length_map, length_seqZ]
 
 theorem rangeSet_append_one (start sz : w64) (hb : uint.Z start + uint.Z sz < 2 ^ 64) (i : w64)
@@ -47,7 +47,7 @@ theorem rangeSet_append_one (start sz : w64) (hb : uint.Z start + uint.Z sz < 2 
 
 theorem rangeSet_first (start sz : Int) (h : sz > 0) :
     rangeSet start sz = {[W64 start]} ∪ rangeSet (start + 1) (sz - 1) := by
-  rw [rangeSet, seqZ_cons _ _ h, List.map_cons, list_to_set_cons]; rfl
+  rw [rangeSet, seqZ_cons _ _ h, List.map_cons, listToSet_cons]; rfl
 
 theorem rangeSet_first_disjoint (start sz : Int) (h1 : 0 ≤ start) (hov : start + sz < 2 ^ 64) :
     {[W64 start]} ## rangeSet (start + 1) (sz - 1) := by

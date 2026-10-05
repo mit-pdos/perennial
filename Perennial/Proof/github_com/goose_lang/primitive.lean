@@ -27,17 +27,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [sem : go.PreSemantics]
 variable [package_sem : github_com.goose_lang.primitive.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.github_com.goose_lang.primitive :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.github_com.goose_lang.primitive :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.github_com.goose_lang.primitive :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.github_com.goose_lang.primitive :=
   build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.github_com.goose_lang.primitive get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.github_com.goose_lang.primitive get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -85,52 +85,52 @@ theorem wp_RandomUint64 :
   iapply «wp_RandomUint64__impl» $$ [] HΦ
   itrivial
 
-def is_Mutex_def (m : loc) (R : IProp GF) : IProp GF := is_lock m R
-/-- This means `m` is a valid mutex with invariant `R` (Rocq `Opaque is_Mutex`). -/
-@[irreducible] def is_Mutex (m : loc) (R : IProp GF) : IProp GF := is_Mutex_def m R
-theorem is_Mutex_unseal : @is_Mutex = @is_Mutex_def := by funext; with_unfolding_all rfl
+def isMutexDef (m : loc) (R : IProp GF) : IProp GF := isLock m R
+/-- This means `m` is a valid mutex with invariant `R` (Rocq `Opaque isMutex`). -/
+@[irreducible] def isMutex (m : loc) (R : IProp GF) : IProp GF := isMutexDef m R
+theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 
-def own_Mutex_def (m : loc) : IProp GF := own_lock m
+def ownMutexDef (m : loc) : IProp GF := ownLock m
 /-- This resource denotes ownership of the fact that the Mutex is currently
-locked (Rocq `Opaque own_Mutex`). -/
-@[irreducible] def own_Mutex (m : loc) : IProp GF := own_Mutex_def m
-theorem own_Mutex_unseal : @own_Mutex = @own_Mutex_def := by funext; with_unfolding_all rfl
+locked (Rocq `Opaque ownMutex`). -/
+@[irreducible] def ownMutex (m : loc) : IProp GF := ownMutexDef m
+theorem ownMutex_unseal : @ownMutex = @ownMutexDef := by funext; with_unfolding_all rfl
 
-theorem own_Mutex_exclusive (m : loc) : ⊢ own_Mutex (GF := GF) m -∗ own_Mutex m -∗ False := by
-  simp only [own_Mutex_unseal, own_Mutex_def]
-  exact own_lock_exclusive m
+theorem ownMutex_exclusive (m : loc) : ⊢ ownMutex (GF := GF) m -∗ ownMutex m -∗ False := by
+  simp only [ownMutex_unseal, ownMutexDef]
+  exact ownLock_exclusive m
 
-instance is_Mutex_ne (m : loc) : NonExpansive (is_Mutex (GF := GF) m) := by
-  rw [is_Mutex_unseal]; unfold is_Mutex_def; infer_instance
+instance isMutex_ne (m : loc) : NonExpansive (isMutex (GF := GF) m) := by
+  rw [isMutex_unseal]; unfold isMutexDef; infer_instance
 
-instance is_Mutex_persistent (m : loc) (R : IProp GF) : Persistent (is_Mutex m R) := by
-  rw [is_Mutex_unseal]; unfold is_Mutex_def; infer_instance
+instance isMutex_persistent (m : loc) (R : IProp GF) : Persistent (isMutex m R) := by
+  rw [isMutex_unseal]; unfold isMutexDef; infer_instance
 
-instance locked_timeless (m : loc) : Timeless (own_Mutex (GF := GF) m) := by
-  rw [own_Mutex_unseal]; unfold own_Mutex_def; infer_instance
+instance locked_timeless (m : loc) : Timeless (ownMutex (GF := GF) m) := by
+  rw [ownMutex_unseal]; unfold ownMutexDef; infer_instance
 
 theorem init_Mutex (R : IProp GF) (E : CoPset) (m : loc) :
-    ⊢ typed_pointsto (GF := GF) m (zero_val Bool) (DFrac.own 1) -∗ ▷ R ={E}=∗ is_Mutex m R := by
-  simp only [is_Mutex_unseal, is_Mutex_def]
+    ⊢ typed_pointsto (GF := GF) m (zero_val Bool) (DFrac.own 1) -∗ ▷ R ={E}=∗ isMutex m R := by
+  simp only [isMutex_unseal, isMutexDef]
   exact init_lock R E m
 
-theorem wp_Mutex__Lock (m : loc) (R : IProp GF) :
-    {{ is_Mutex m R }}
+theorem Mutex.wp_Lock (m : loc) (R : IProp GF) :
+    {{ isMutex m R }}
       (App (Val (m @!! go.type.PointerType Mutex @!! go!"Lock")) (Val #()))
-    {{ RET #(); own_Mutex m ∗ R }} := by
+    {{ RET #(); ownMutex m ∗ R }} := by
   wp_start as #His
-  simp only [is_Mutex_unseal, is_Mutex_def, own_Mutex_unseal, own_Mutex_def]
+  simp only [isMutex_unseal, isMutexDef, ownMutex_unseal, ownMutexDef]
   wp_apply wp_lock_lock $$ His as ⟨Hown, HR⟩
   iapply HΦ
   iframe
 
 /-- This form is useful for defer statements. -/
-theorem wp_Mutex__Unlock (m : loc) (R : IProp GF) :
-    {{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}
+theorem Mutex.wp_Unlock (m : loc) (R : IProp GF) :
+    {{ isMutex m R ∗ ownMutex m ∗ ▷ R }}
       (App (Val (m @!! go.type.PointerType Mutex @!! go!"Unlock")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as ⟨#His, Hlocked, HR⟩
-  simp only [is_Mutex_unseal, is_Mutex_def, own_Mutex_unseal, own_Mutex_def]
+  simp only [isMutex_unseal, isMutexDef, ownMutex_unseal, ownMutexDef]
   wp_apply wp_lock_unlock $$ [$His $Hlocked $HR]
   iapply HΦ
   itrivial

@@ -13,10 +13,10 @@ namespace Perennial
 abbrev byte_string := List w8
 abbrev go_string := byte_string
 
-def string_to_go_string (s : String) : go_string :=
+def stringToGoString (s : String) : go_string :=
   s.toUTF8.toList.map (fun b => BitVec.ofNat 8 b.toNat)
 
-instance : Coe String go_string := ⟨string_to_go_string⟩
+instance : Coe String go_string := ⟨stringToGoString⟩
 
 open Lean Elab Term Meta in
 /-- `go!"abc"` is the `go_string` with the UTF-8 bytes of `"abc"`. -/

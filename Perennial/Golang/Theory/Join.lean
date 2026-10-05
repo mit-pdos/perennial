@@ -10,7 +10,7 @@ intermediate assertion `R` that every case must establish, and leaves:
 
 1. the case goals for the bound expression only, with postcondition
    `fun v => ⌜v = v₀⌝ ∗ R` (`v₀` is the value of the bound expression,
-   `execute_val` for a statement that falls through);
+   `executeVal` for a statement that falls through);
 2. the continuation `R -∗ WP K[v₀] {{ Φ }}`, proved once.
 
 Usage:
@@ -56,7 +56,7 @@ Cost: each case only contains the bound expression, not the rest of the
 function, so `wp_auto`, `simp` and the kernel work on smaller terms, and the
 rest of the function is symbolically executed once.
 
-Examples: below, `docs/TutorialExamples.lean`, `wp_WaitGroup__Add` in
+Examples: below, `docs/TutorialExamples.lean`, `WaitGroup.wp_Add` in
 `Perennial/Proof/sync_proof/waitgroup.lean`.
 -/
 import Perennial.Golang.Theory.TacticsSimp
@@ -115,7 +115,7 @@ end done
 macro "wp_join_done" : tactic =>
   `(tactic| ((first | iapply wp_join_done_true | iapply wp_join_done_intro); try (iframe; done)))
 
-/-- Options of `wp_join`: the join value `(v := v₀)` (default `execute_val`) or
+/-- Options of `wp_join`: the join value `(v := v₀)` (default `executeVal`) or
 a general join postcondition `(Q := Q)`. -/
 declare_syntax_cat wpJoinOpt
 syntax (name := wpJoinOptV) atomic(" (" &"v" " := ") term ")" : wpJoinOpt
@@ -212,7 +212,7 @@ open Lean Elab Tactic Meta in
       if v₀?.isSome then throwError "wp_join: `(v := _)` cannot be combined with `(Q := _)`"
       `(wp_join_gen $Q)
     | none, some R =>
-      let v₀ ← match v₀? with | some v => Pure.pure v | none => `(execute_val)
+      let v₀ ← match v₀? with | some v => Pure.pure v | none => `(executeVal)
       `(wp_join_val $R $v₀)
     | some _, some _ => throwError "wp_join: give either `R` or `(Q := _)`, not both"
     | none, none => throwError "wp_join: missing the join assertion"

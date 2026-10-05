@@ -20,22 +20,22 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : log.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.log :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.log :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.log :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.log :=
   build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.log get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.log get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.log }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.log }} := by
   -- Unprovable: `std'init` and `bufferPool'init` are opaque (axioms in Perennial/Code/log.lean).
   sorry -- Rocq: Admitted
 
 theorem wp_Printf (msg : go_string) (arg : slice.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.log }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.log }}
       (App (App (Val (@! Printf)) (Val #msg)) (Val #arg))
     {{ RET #(); True }} := by
   wp_start

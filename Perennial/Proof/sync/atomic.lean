@@ -26,17 +26,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.sync.atomic :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.sync.atomic :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.sync.atomic :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.sync.atomic :=
   build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.sync.atomic get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.sync.atomic get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.sync.atomic }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -48,7 +48,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
 /-! ### Uint64 -/
 
 theorem wp_LoadUint64 (addr : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : w64, addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (@! LoadUint64)) (Val #addr)) {{ Φ }} := by
   wp_start as _
@@ -58,7 +58,7 @@ theorem wp_LoadUint64 (addr : loc) (dq : DFrac) :
   iapply HΦ $$ Haddr
 
 theorem wp_SwapUint64 (addr : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
       WP (App (App (Val (@! SwapUint64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -68,7 +68,7 @@ theorem wp_SwapUint64 (addr : loc) (v : w64) :
   iapply HΦ $$ Haddr
 
 theorem wp_StoreUint64 (addr : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StoreUint64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -82,16 +82,16 @@ theorem wp_StoreUint64 (addr : loc) (v : w64) :
   iexact HΦ
 
 theorem wp_AddUint64 (addr : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (Val (@! AddUint64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typed_pointsto_unseal, typed_pointsto_wrap, typed_pointsto_def_heap,
+  simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap,
     TypedPointsto.typed_pointsto_def]
   icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.into_val_unfold, atomic_add_eval]) $$ Haddr
+  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
   iintro Haddr
   iapply HΦ
   iframe
@@ -103,7 +103,7 @@ in which goose emits it. Resolving `AddUint64` is a Go instruction, which yields
 a time receipt `⧗ 1`; the atomic update receives it (so it can, e.g., be stored
 in an invariant opened by the update). -/
 theorem wp_AddUint64_receipt (addr : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (⧗ 1 -∗ |={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (App (Val (GoInstruction (FuncResolve AddUint64 []))) (Val #())) (Val #addr))
@@ -118,7 +118,7 @@ theorem wp_AddUint64_receipt (addr : loc) (v : w64) :
   iapply HΦ $$ Hr
 
 theorem wp_CompareAndSwapUint64 (addr : loc) (old new : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), addr ↦{dq} v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
@@ -144,35 +144,35 @@ theorem wp_CompareAndSwapUint64 (addr : loc) (old new : w64) :
     wp_pures
     iexact HΦ
 
-def own_Uint64_def (u : loc) (dq : DFrac) (v : w64) : IProp GF :=
+def ownUint64Def (u : loc) (dq : DFrac) (v : w64) : IProp GF :=
   typed_pointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v : Uint64.t }) dq
-@[irreducible] def own_Uint64 (u : loc) (dq : DFrac) (v : w64) : IProp GF := own_Uint64_def u dq v
-theorem own_Uint64_unseal : @own_Uint64 = @own_Uint64_def := by funext; with_unfolding_all rfl
+@[irreducible] def ownUint64 (u : loc) (dq : DFrac) (v : w64) : IProp GF := ownUint64Def u dq v
+theorem ownUint64_unseal : @ownUint64 = @ownUint64Def := by funext; with_unfolding_all rfl
 
-instance own_Uint64_timeless (u : loc) (dq : DFrac) (v : w64) :
-    Timeless (own_Uint64 (GF := GF) u dq v) := by
-  rw [own_Uint64_unseal]; unfold own_Uint64_def; infer_instance
-instance own_Uint64_dfractional (u : loc) (v : w64) :
-    DFractional (fun dq => own_Uint64 (GF := GF) u dq v) := by
-  rw [own_Uint64_unseal]; unfold own_Uint64_def; infer_instance
-instance own_Uint64_as_dfractional (u : loc) (v : w64) (dq : DFrac) :
-    AsDFractional (own_Uint64 (GF := GF) u dq v) (fun dq => own_Uint64 u dq v) dq :=
-  ⟨.rfl, own_Uint64_dfractional u v⟩
-instance own_Uint64_fractional (u : loc) (v : w64) :
-    Fractional (fun q => own_Uint64 (GF := GF) u (DFrac.own q) v) :=
-  fractional_of_dfractional (fun dq => own_Uint64 (GF := GF) u dq v)
-instance own_Uint64_combines_gives (u : loc) (v v' : w64) (dq dq' : DFrac) :
-    CombineSepGives (own_Uint64 (GF := GF) u dq v) (own_Uint64 u dq' v') iprop(⌜v = v'⌝) where
+instance ownUint64_timeless (u : loc) (dq : DFrac) (v : w64) :
+    Timeless (ownUint64 (GF := GF) u dq v) := by
+  rw [ownUint64_unseal]; unfold ownUint64Def; infer_instance
+instance ownUint64_dfractional (u : loc) (v : w64) :
+    DFractional (fun dq => ownUint64 (GF := GF) u dq v) := by
+  rw [ownUint64_unseal]; unfold ownUint64Def; infer_instance
+instance ownUint64_as_dfractional (u : loc) (v : w64) (dq : DFrac) :
+    AsDFractional (ownUint64 (GF := GF) u dq v) (fun dq => ownUint64 u dq v) dq :=
+  ⟨.rfl, ownUint64_dfractional u v⟩
+instance ownUint64_fractional (u : loc) (v : w64) :
+    Fractional (fun q => ownUint64 (GF := GF) u (DFrac.own q) v) :=
+  fractional_of_dfractional (fun dq => ownUint64 (GF := GF) u dq v)
+instance ownUint64_combines_gives (u : loc) (v v' : w64) (dq dq' : DFrac) :
+    CombineSepGives (ownUint64 (GF := GF) u dq v) (ownUint64 u dq' v') iprop(⌜v = v'⌝) where
   combine_sep_gives := by
-    rw [own_Uint64_unseal]; unfold own_Uint64_def
+    rw [ownUint64_unseal]; unfold ownUint64Def
     iintro ⟨H1, H2⟩
     icombine H1 H2 gives %Heq
     imodintro; ipureintro
     cases Heq; rfl
 
-theorem wp_Uint64__Load (u : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ v : w64, own_Uint64 u dq v ∗ (own_Uint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
+theorem Uint64.wp_Load (u : loc) (dq : DFrac) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ v : w64, ownUint64 u dq v ∗ (ownUint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (u @!! go.type.PointerType Uint64 @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -180,7 +180,7 @@ theorem wp_Uint64__Load (u : loc) (dq : DFrac) :
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Uint64_unseal, own_Uint64_def]
+  simp only [ownUint64_unseal, ownUint64Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v
@@ -194,10 +194,10 @@ theorem wp_Uint64__Load (u : loc) (dq : DFrac) :
   wp_auto
   iexact HΦ
 
-theorem wp_Uint64__Store (u : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : w64, own_Uint64 u (DFrac.own 1) old ∗
-        (own_Uint64 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
+theorem Uint64.wp_Store (u : loc) (v : w64) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : w64, ownUint64 u (DFrac.own 1) old ∗
+        (ownUint64 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (Val (u @!! go.type.PointerType Uint64 @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -205,7 +205,7 @@ theorem wp_Uint64__Store (u : loc) (v : w64) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Uint64_unseal, own_Uint64_def]
+  simp only [ownUint64_unseal, ownUint64Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -219,10 +219,10 @@ theorem wp_Uint64__Store (u : loc) (v : w64) :
   wp_auto
   iexact HΦ
 
-theorem wp_Uint64__Add (u : loc) (delta : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : w64, own_Uint64 u (DFrac.own 1) old ∗
-        (own_Uint64 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
+theorem Uint64.wp_Add (u : loc) (delta : w64) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : w64, ownUint64 u (DFrac.own 1) old ∗
+        (ownUint64 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
       WP (App (Val (u @!! go.type.PointerType Uint64 @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -230,7 +230,7 @@ theorem wp_Uint64__Add (u : loc) (delta : w64) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Uint64_unseal, own_Uint64_def]
+  simp only [ownUint64_unseal, ownUint64Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -244,11 +244,11 @@ theorem wp_Uint64__Add (u : loc) (delta : w64) :
   wp_auto
   iexact HΦ
 
-theorem wp_Uint64__CompareAndSwap (u : loc) (old new : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), own_Uint64 u dq v ∗
+theorem Uint64.wp_CompareAndSwap (u : loc) (old new : w64) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), ownUint64 u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
-        (own_Uint64 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
+        (ownUint64 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (Val (u @!! go.type.PointerType Uint64 @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
@@ -258,7 +258,7 @@ theorem wp_Uint64__CompareAndSwap (u : loc) (old new : w64) :
   imod HΦ with H
   imodintro; inext
   icases H with ⟨%v, %dq, Hown, %Hdq, HΦ⟩
-  simp only [own_Uint64_unseal, own_Uint64_def]
+  simp only [ownUint64_unseal, ownUint64Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v, dq
@@ -277,7 +277,7 @@ theorem wp_Uint64__CompareAndSwap (u : loc) (old new : w64) :
 /-! ### Int64 -/
 
 theorem wp_LoadInt64 (addr : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : w64, addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (@! LoadInt64)) (Val #addr)) {{ Φ }} := by
   wp_start as _
@@ -287,7 +287,7 @@ theorem wp_LoadInt64 (addr : loc) (dq : DFrac) :
   iapply HΦ $$ Haddr
 
 theorem wp_SwapInt64 (addr : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
       WP (App (App (Val (@! SwapInt64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -297,7 +297,7 @@ theorem wp_SwapInt64 (addr : loc) (v : w64) :
   iapply HΦ $$ Haddr
 
 theorem wp_StoreInt64 (addr : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StoreInt64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -311,23 +311,23 @@ theorem wp_StoreInt64 (addr : loc) (v : w64) :
   iexact HΦ
 
 theorem wp_AddInt64 (addr : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (Val (@! AddInt64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typed_pointsto_unseal, typed_pointsto_wrap, typed_pointsto_def_heap,
+  simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap,
     TypedPointsto.typed_pointsto_def]
   icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.into_val_unfold, atomic_add_eval]) $$ Haddr
+  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
   iintro Haddr
   iapply HΦ
   iframe
   ipureintro; exact Hnn
 
 theorem wp_CompareAndSwapInt64 (addr : loc) (old new : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), addr ↦{dq} v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
@@ -353,35 +353,35 @@ theorem wp_CompareAndSwapInt64 (addr : loc) (old new : w64) :
     wp_pures
     iexact HΦ
 
-def own_Int64_def (u : loc) (dq : DFrac) (v : w64) : IProp GF :=
+def ownInt64Def (u : loc) (dq : DFrac) (v : w64) : IProp GF :=
   typed_pointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v : Int64.t }) dq
-@[irreducible] def own_Int64 (u : loc) (dq : DFrac) (v : w64) : IProp GF := own_Int64_def u dq v
-theorem own_Int64_unseal : @own_Int64 = @own_Int64_def := by funext; with_unfolding_all rfl
+@[irreducible] def ownInt64 (u : loc) (dq : DFrac) (v : w64) : IProp GF := ownInt64Def u dq v
+theorem ownInt64_unseal : @ownInt64 = @ownInt64Def := by funext; with_unfolding_all rfl
 
-instance own_Int64_timeless (u : loc) (dq : DFrac) (v : w64) :
-    Timeless (own_Int64 (GF := GF) u dq v) := by
-  rw [own_Int64_unseal]; unfold own_Int64_def; infer_instance
-instance own_Int64_dfractional (u : loc) (v : w64) :
-    DFractional (fun dq => own_Int64 (GF := GF) u dq v) := by
-  rw [own_Int64_unseal]; unfold own_Int64_def; infer_instance
-instance own_Int64_as_dfractional (u : loc) (v : w64) (dq : DFrac) :
-    AsDFractional (own_Int64 (GF := GF) u dq v) (fun dq => own_Int64 u dq v) dq :=
-  ⟨.rfl, own_Int64_dfractional u v⟩
-instance own_Int64_fractional (u : loc) (v : w64) :
-    Fractional (fun q => own_Int64 (GF := GF) u (DFrac.own q) v) :=
-  fractional_of_dfractional (fun dq => own_Int64 (GF := GF) u dq v)
-instance own_Int64_combines_gives (u : loc) (v v' : w64) (dq dq' : DFrac) :
-    CombineSepGives (own_Int64 (GF := GF) u dq v) (own_Int64 u dq' v') iprop(⌜v = v'⌝) where
+instance ownInt64_timeless (u : loc) (dq : DFrac) (v : w64) :
+    Timeless (ownInt64 (GF := GF) u dq v) := by
+  rw [ownInt64_unseal]; unfold ownInt64Def; infer_instance
+instance ownInt64_dfractional (u : loc) (v : w64) :
+    DFractional (fun dq => ownInt64 (GF := GF) u dq v) := by
+  rw [ownInt64_unseal]; unfold ownInt64Def; infer_instance
+instance ownInt64_as_dfractional (u : loc) (v : w64) (dq : DFrac) :
+    AsDFractional (ownInt64 (GF := GF) u dq v) (fun dq => ownInt64 u dq v) dq :=
+  ⟨.rfl, ownInt64_dfractional u v⟩
+instance ownInt64_fractional (u : loc) (v : w64) :
+    Fractional (fun q => ownInt64 (GF := GF) u (DFrac.own q) v) :=
+  fractional_of_dfractional (fun dq => ownInt64 (GF := GF) u dq v)
+instance ownInt64_combines_gives (u : loc) (v v' : w64) (dq dq' : DFrac) :
+    CombineSepGives (ownInt64 (GF := GF) u dq v) (ownInt64 u dq' v') iprop(⌜v = v'⌝) where
   combine_sep_gives := by
-    rw [own_Int64_unseal]; unfold own_Int64_def
+    rw [ownInt64_unseal]; unfold ownInt64Def
     iintro ⟨H1, H2⟩
     icombine H1 H2 gives %Heq
     imodintro; ipureintro
     cases Heq; rfl
 
-theorem wp_Int64__Load (u : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ v : w64, own_Int64 u dq v ∗ (own_Int64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
+theorem Int64.wp_Load (u : loc) (dq : DFrac) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ v : w64, ownInt64 u dq v ∗ (ownInt64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (u @!! go.type.PointerType Int64 @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -389,7 +389,7 @@ theorem wp_Int64__Load (u : loc) (dq : DFrac) :
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Int64_unseal, own_Int64_def]
+  simp only [ownInt64_unseal, ownInt64Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v
@@ -403,10 +403,10 @@ theorem wp_Int64__Load (u : loc) (dq : DFrac) :
   wp_auto
   iexact HΦ
 
-theorem wp_Int64__Store (u : loc) (v : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : w64, own_Int64 u (DFrac.own 1) old ∗
-        (own_Int64 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
+theorem Int64.wp_Store (u : loc) (v : w64) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : w64, ownInt64 u (DFrac.own 1) old ∗
+        (ownInt64 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (Val (u @!! go.type.PointerType Int64 @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -414,7 +414,7 @@ theorem wp_Int64__Store (u : loc) (v : w64) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Int64_unseal, own_Int64_def]
+  simp only [ownInt64_unseal, ownInt64Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -428,10 +428,10 @@ theorem wp_Int64__Store (u : loc) (v : w64) :
   wp_auto
   iexact HΦ
 
-theorem wp_Int64__Add (u : loc) (delta : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : w64, own_Int64 u (DFrac.own 1) old ∗
-        (own_Int64 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
+theorem Int64.wp_Add (u : loc) (delta : w64) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : w64, ownInt64 u (DFrac.own 1) old ∗
+        (ownInt64 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
       WP (App (Val (u @!! go.type.PointerType Int64 @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -439,7 +439,7 @@ theorem wp_Int64__Add (u : loc) (delta : w64) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Int64_unseal, own_Int64_def]
+  simp only [ownInt64_unseal, ownInt64Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -453,11 +453,11 @@ theorem wp_Int64__Add (u : loc) (delta : w64) :
   wp_auto
   iexact HΦ
 
-theorem wp_Int64__CompareAndSwap (u : loc) (old new : w64) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), own_Int64 u dq v ∗
+theorem Int64.wp_CompareAndSwap (u : loc) (old new : w64) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), ownInt64 u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
-        (own_Int64 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
+        (ownInt64 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (Val (u @!! go.type.PointerType Int64 @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
@@ -467,7 +467,7 @@ theorem wp_Int64__CompareAndSwap (u : loc) (old new : w64) :
   imod HΦ with H
   imodintro; inext
   icases H with ⟨%v, %dq, Hown, %Hdq, HΦ⟩
-  simp only [own_Int64_unseal, own_Int64_def]
+  simp only [ownInt64_unseal, ownInt64Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v, dq
@@ -486,7 +486,7 @@ theorem wp_Int64__CompareAndSwap (u : loc) (old new : w64) :
 /-! ### Uint32 -/
 
 theorem wp_LoadUint32 (addr : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : w32, addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (@! LoadUint32)) (Val #addr)) {{ Φ }} := by
   wp_start as _
@@ -496,7 +496,7 @@ theorem wp_LoadUint32 (addr : loc) (dq : DFrac) :
   iapply HΦ $$ Haddr
 
 theorem wp_SwapUint32 (addr : loc) (v : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w32, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
       WP (App (App (Val (@! SwapUint32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -506,7 +506,7 @@ theorem wp_SwapUint32 (addr : loc) (v : w32) :
   iapply HΦ $$ Haddr
 
 theorem wp_StoreUint32 (addr : loc) (v : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w32, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StoreUint32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -520,23 +520,23 @@ theorem wp_StoreUint32 (addr : loc) (v : w32) :
   iexact HΦ
 
 theorem wp_AddUint32 (addr : loc) (v : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w32, addr ↦ oldv ∗
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (Val (@! AddUint32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typed_pointsto_unseal, typed_pointsto_wrap, typed_pointsto_def_heap,
+  simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap,
     TypedPointsto.typed_pointsto_def]
   icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.into_val_unfold, atomic_add_eval]) $$ Haddr
+  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
   iintro Haddr
   iapply HΦ
   iframe
   ipureintro; exact Hnn
 
 theorem wp_CompareAndSwapUint32 (addr : loc) (old new : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ (v : w32) (dq : DFrac), addr ↦{dq} v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
@@ -562,35 +562,35 @@ theorem wp_CompareAndSwapUint32 (addr : loc) (old new : w32) :
     wp_pures
     iexact HΦ
 
-def own_Uint32_def (u : loc) (dq : DFrac) (v : w32) : IProp GF :=
+def ownUint32Def (u : loc) (dq : DFrac) (v : w32) : IProp GF :=
   typed_pointsto (GF := GF) u ({ _0' := zero_val _, v' := v : Uint32.t }) dq
-@[irreducible] def own_Uint32 (u : loc) (dq : DFrac) (v : w32) : IProp GF := own_Uint32_def u dq v
-theorem own_Uint32_unseal : @own_Uint32 = @own_Uint32_def := by funext; with_unfolding_all rfl
+@[irreducible] def ownUint32 (u : loc) (dq : DFrac) (v : w32) : IProp GF := ownUint32Def u dq v
+theorem ownUint32_unseal : @ownUint32 = @ownUint32Def := by funext; with_unfolding_all rfl
 
-instance own_Uint32_timeless (u : loc) (dq : DFrac) (v : w32) :
-    Timeless (own_Uint32 (GF := GF) u dq v) := by
-  rw [own_Uint32_unseal]; unfold own_Uint32_def; infer_instance
-instance own_Uint32_dfractional (u : loc) (v : w32) :
-    DFractional (fun dq => own_Uint32 (GF := GF) u dq v) := by
-  rw [own_Uint32_unseal]; unfold own_Uint32_def; infer_instance
-instance own_Uint32_as_dfractional (u : loc) (v : w32) (dq : DFrac) :
-    AsDFractional (own_Uint32 (GF := GF) u dq v) (fun dq => own_Uint32 u dq v) dq :=
-  ⟨.rfl, own_Uint32_dfractional u v⟩
-instance own_Uint32_fractional (u : loc) (v : w32) :
-    Fractional (fun q => own_Uint32 (GF := GF) u (DFrac.own q) v) :=
-  fractional_of_dfractional (fun dq => own_Uint32 (GF := GF) u dq v)
-instance own_Uint32_combines_gives (u : loc) (v v' : w32) (dq dq' : DFrac) :
-    CombineSepGives (own_Uint32 (GF := GF) u dq v) (own_Uint32 u dq' v') iprop(⌜v = v'⌝) where
+instance ownUint32_timeless (u : loc) (dq : DFrac) (v : w32) :
+    Timeless (ownUint32 (GF := GF) u dq v) := by
+  rw [ownUint32_unseal]; unfold ownUint32Def; infer_instance
+instance ownUint32_dfractional (u : loc) (v : w32) :
+    DFractional (fun dq => ownUint32 (GF := GF) u dq v) := by
+  rw [ownUint32_unseal]; unfold ownUint32Def; infer_instance
+instance ownUint32_as_dfractional (u : loc) (v : w32) (dq : DFrac) :
+    AsDFractional (ownUint32 (GF := GF) u dq v) (fun dq => ownUint32 u dq v) dq :=
+  ⟨.rfl, ownUint32_dfractional u v⟩
+instance ownUint32_fractional (u : loc) (v : w32) :
+    Fractional (fun q => ownUint32 (GF := GF) u (DFrac.own q) v) :=
+  fractional_of_dfractional (fun dq => ownUint32 (GF := GF) u dq v)
+instance ownUint32_combines_gives (u : loc) (v v' : w32) (dq dq' : DFrac) :
+    CombineSepGives (ownUint32 (GF := GF) u dq v) (ownUint32 u dq' v') iprop(⌜v = v'⌝) where
   combine_sep_gives := by
-    rw [own_Uint32_unseal]; unfold own_Uint32_def
+    rw [ownUint32_unseal]; unfold ownUint32Def
     iintro ⟨H1, H2⟩
     icombine H1 H2 gives %Heq
     imodintro; ipureintro
     cases Heq; rfl
 
-theorem wp_Uint32__Load (u : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ v : w32, own_Uint32 u dq v ∗ (own_Uint32 u dq v ={∅,⊤}=∗ Φ #v)) -∗
+theorem Uint32.wp_Load (u : loc) (dq : DFrac) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ v : w32, ownUint32 u dq v ∗ (ownUint32 u dq v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (u @!! go.type.PointerType Uint32 @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -598,7 +598,7 @@ theorem wp_Uint32__Load (u : loc) (dq : DFrac) :
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Uint32_unseal, own_Uint32_def]
+  simp only [ownUint32_unseal, ownUint32Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v
@@ -612,10 +612,10 @@ theorem wp_Uint32__Load (u : loc) (dq : DFrac) :
   wp_auto
   iexact HΦ
 
-theorem wp_Uint32__Store (u : loc) (v : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : w32, own_Uint32 u (DFrac.own 1) old ∗
-        (own_Uint32 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
+theorem Uint32.wp_Store (u : loc) (v : w32) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : w32, ownUint32 u (DFrac.own 1) old ∗
+        (ownUint32 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (Val (u @!! go.type.PointerType Uint32 @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -623,7 +623,7 @@ theorem wp_Uint32__Store (u : loc) (v : w32) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Uint32_unseal, own_Uint32_def]
+  simp only [ownUint32_unseal, ownUint32Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -637,10 +637,10 @@ theorem wp_Uint32__Store (u : loc) (v : w32) :
   wp_auto
   iexact HΦ
 
-theorem wp_Uint32__Add (u : loc) (delta : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : w32, own_Uint32 u (DFrac.own 1) old ∗
-        (own_Uint32 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
+theorem Uint32.wp_Add (u : loc) (delta : w32) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : w32, ownUint32 u (DFrac.own 1) old ∗
+        (ownUint32 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
       WP (App (Val (u @!! go.type.PointerType Uint32 @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -648,7 +648,7 @@ theorem wp_Uint32__Add (u : loc) (delta : w32) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Uint32_unseal, own_Uint32_def]
+  simp only [ownUint32_unseal, ownUint32Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -662,11 +662,11 @@ theorem wp_Uint32__Add (u : loc) (delta : w32) :
   wp_auto
   iexact HΦ
 
-theorem wp_Uint32__CompareAndSwap (u : loc) (old new : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ (v : w32) (dq : DFrac), own_Uint32 u dq v ∗
+theorem Uint32.wp_CompareAndSwap (u : loc) (old new : w32) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ (v : w32) (dq : DFrac), ownUint32 u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
-        (own_Uint32 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
+        (ownUint32 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (Val (u @!! go.type.PointerType Uint32 @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
@@ -676,7 +676,7 @@ theorem wp_Uint32__CompareAndSwap (u : loc) (old new : w32) :
   imod HΦ with H
   imodintro; inext
   icases H with ⟨%v, %dq, Hown, %Hdq, HΦ⟩
-  simp only [own_Uint32_unseal, own_Uint32_def]
+  simp only [ownUint32_unseal, ownUint32Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v, dq
@@ -695,7 +695,7 @@ theorem wp_Uint32__CompareAndSwap (u : loc) (old new : w32) :
 /-! ### Int32 -/
 
 theorem wp_LoadInt32 (addr : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : w32, addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (@! LoadInt32)) (Val #addr)) {{ Φ }} := by
   wp_start as _
@@ -705,7 +705,7 @@ theorem wp_LoadInt32 (addr : loc) (dq : DFrac) :
   iapply HΦ $$ Haddr
 
 theorem wp_SwapInt32 (addr : loc) (v : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w32, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
       WP (App (App (Val (@! SwapInt32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -715,7 +715,7 @@ theorem wp_SwapInt32 (addr : loc) (v : w32) :
   iapply HΦ $$ Haddr
 
 theorem wp_StoreInt32 (addr : loc) (v : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w32, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StoreInt32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -729,23 +729,23 @@ theorem wp_StoreInt32 (addr : loc) (v : w32) :
   iexact HΦ
 
 theorem wp_AddInt32 (addr : loc) (v : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : w32, addr ↦ oldv ∗
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (Val (@! AddInt32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typed_pointsto_unseal, typed_pointsto_wrap, typed_pointsto_def_heap,
+  simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap,
     TypedPointsto.typed_pointsto_def]
   icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.into_val_unfold, atomic_add_eval]) $$ Haddr
+  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
   iintro Haddr
   iapply HΦ
   iframe
   ipureintro; exact Hnn
 
 theorem wp_CompareAndSwapInt32 (addr : loc) (old new : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ (v : w32) (dq : DFrac), addr ↦{dq} v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
@@ -771,35 +771,35 @@ theorem wp_CompareAndSwapInt32 (addr : loc) (old new : w32) :
     wp_pures
     iexact HΦ
 
-def own_Int32_def (u : loc) (dq : DFrac) (v : w32) : IProp GF :=
+def ownInt32Def (u : loc) (dq : DFrac) (v : w32) : IProp GF :=
   typed_pointsto (GF := GF) u ({ _0' := zero_val _, v' := v : Int32.t }) dq
-@[irreducible] def own_Int32 (u : loc) (dq : DFrac) (v : w32) : IProp GF := own_Int32_def u dq v
-theorem own_Int32_unseal : @own_Int32 = @own_Int32_def := by funext; with_unfolding_all rfl
+@[irreducible] def ownInt32 (u : loc) (dq : DFrac) (v : w32) : IProp GF := ownInt32Def u dq v
+theorem ownInt32_unseal : @ownInt32 = @ownInt32Def := by funext; with_unfolding_all rfl
 
-instance own_Int32_timeless (u : loc) (dq : DFrac) (v : w32) :
-    Timeless (own_Int32 (GF := GF) u dq v) := by
-  rw [own_Int32_unseal]; unfold own_Int32_def; infer_instance
-instance own_Int32_dfractional (u : loc) (v : w32) :
-    DFractional (fun dq => own_Int32 (GF := GF) u dq v) := by
-  rw [own_Int32_unseal]; unfold own_Int32_def; infer_instance
-instance own_Int32_as_dfractional (u : loc) (v : w32) (dq : DFrac) :
-    AsDFractional (own_Int32 (GF := GF) u dq v) (fun dq => own_Int32 u dq v) dq :=
-  ⟨.rfl, own_Int32_dfractional u v⟩
-instance own_Int32_fractional (u : loc) (v : w32) :
-    Fractional (fun q => own_Int32 (GF := GF) u (DFrac.own q) v) :=
-  fractional_of_dfractional (fun dq => own_Int32 (GF := GF) u dq v)
-instance own_Int32_combines_gives (u : loc) (v v' : w32) (dq dq' : DFrac) :
-    CombineSepGives (own_Int32 (GF := GF) u dq v) (own_Int32 u dq' v') iprop(⌜v = v'⌝) where
+instance ownInt32_timeless (u : loc) (dq : DFrac) (v : w32) :
+    Timeless (ownInt32 (GF := GF) u dq v) := by
+  rw [ownInt32_unseal]; unfold ownInt32Def; infer_instance
+instance ownInt32_dfractional (u : loc) (v : w32) :
+    DFractional (fun dq => ownInt32 (GF := GF) u dq v) := by
+  rw [ownInt32_unseal]; unfold ownInt32Def; infer_instance
+instance ownInt32_as_dfractional (u : loc) (v : w32) (dq : DFrac) :
+    AsDFractional (ownInt32 (GF := GF) u dq v) (fun dq => ownInt32 u dq v) dq :=
+  ⟨.rfl, ownInt32_dfractional u v⟩
+instance ownInt32_fractional (u : loc) (v : w32) :
+    Fractional (fun q => ownInt32 (GF := GF) u (DFrac.own q) v) :=
+  fractional_of_dfractional (fun dq => ownInt32 (GF := GF) u dq v)
+instance ownInt32_combines_gives (u : loc) (v v' : w32) (dq dq' : DFrac) :
+    CombineSepGives (ownInt32 (GF := GF) u dq v) (ownInt32 u dq' v') iprop(⌜v = v'⌝) where
   combine_sep_gives := by
-    rw [own_Int32_unseal]; unfold own_Int32_def
+    rw [ownInt32_unseal]; unfold ownInt32Def
     iintro ⟨H1, H2⟩
     icombine H1 H2 gives %Heq
     imodintro; ipureintro
     cases Heq; rfl
 
-theorem wp_Int32__Load (u : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ v : w32, own_Int32 u dq v ∗ (own_Int32 u dq v ={∅,⊤}=∗ Φ #v)) -∗
+theorem Int32.wp_Load (u : loc) (dq : DFrac) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ v : w32, ownInt32 u dq v ∗ (ownInt32 u dq v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (u @!! go.type.PointerType Int32 @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -807,7 +807,7 @@ theorem wp_Int32__Load (u : loc) (dq : DFrac) :
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Int32_unseal, own_Int32_def]
+  simp only [ownInt32_unseal, ownInt32Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v
@@ -821,10 +821,10 @@ theorem wp_Int32__Load (u : loc) (dq : DFrac) :
   wp_auto
   iexact HΦ
 
-theorem wp_Int32__Store (u : loc) (v : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : w32, own_Int32 u (DFrac.own 1) old ∗
-        (own_Int32 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
+theorem Int32.wp_Store (u : loc) (v : w32) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : w32, ownInt32 u (DFrac.own 1) old ∗
+        (ownInt32 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (Val (u @!! go.type.PointerType Int32 @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -832,7 +832,7 @@ theorem wp_Int32__Store (u : loc) (v : w32) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Int32_unseal, own_Int32_def]
+  simp only [ownInt32_unseal, ownInt32Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -846,10 +846,10 @@ theorem wp_Int32__Store (u : loc) (v : w32) :
   wp_auto
   iexact HΦ
 
-theorem wp_Int32__Add (u : loc) (delta : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : w32, own_Int32 u (DFrac.own 1) old ∗
-        (own_Int32 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
+theorem Int32.wp_Add (u : loc) (delta : w32) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : w32, ownInt32 u (DFrac.own 1) old ∗
+        (ownInt32 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
       WP (App (Val (u @!! go.type.PointerType Int32 @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -857,7 +857,7 @@ theorem wp_Int32__Add (u : loc) (delta : w32) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Int32_unseal, own_Int32_def]
+  simp only [ownInt32_unseal, ownInt32Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -871,11 +871,11 @@ theorem wp_Int32__Add (u : loc) (delta : w32) :
   wp_auto
   iexact HΦ
 
-theorem wp_Int32__CompareAndSwap (u : loc) (old new : w32) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ (v : w32) (dq : DFrac), own_Int32 u dq v ∗
+theorem Int32.wp_CompareAndSwap (u : loc) (old new : w32) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ (v : w32) (dq : DFrac), ownInt32 u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
-        (own_Int32 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
+        (ownInt32 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (Val (u @!! go.type.PointerType Int32 @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
@@ -885,7 +885,7 @@ theorem wp_Int32__CompareAndSwap (u : loc) (old new : w32) :
   imod HΦ with H
   imodintro; inext
   icases H with ⟨%v, %dq, Hown, %Hdq, HΦ⟩
-  simp only [own_Int32_unseal, own_Int32_def]
+  simp only [ownInt32_unseal, ownInt32Def]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v, dq
@@ -904,7 +904,7 @@ theorem wp_Int32__CompareAndSwap (u : loc) (old new : w32) :
 /-! ### Pointer -/
 
 theorem wp_LoadPointer (addr : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : loc, addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (@! LoadPointer)) (Val #addr)) {{ Φ }} := by
   wp_start as _
@@ -914,7 +914,7 @@ theorem wp_LoadPointer (addr : loc) (dq : DFrac) :
   iapply HΦ $$ Haddr
 
 theorem wp_SwapPointer (addr : loc) (v : loc) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : loc, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
       WP (App (App (Val (@! SwapPointer)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -924,7 +924,7 @@ theorem wp_SwapPointer (addr : loc) (v : loc) :
   iapply HΦ $$ Haddr
 
 theorem wp_StorePointer (addr : loc) (v : loc) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ oldv : loc, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StorePointer)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
@@ -938,7 +938,7 @@ theorem wp_StorePointer (addr : loc) (v : loc) :
   iexact HΦ
 
 theorem wp_CompareAndSwapPointer (addr : loc) (old new : loc) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ (v : loc) (dq : DFrac), addr ↦{dq} v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
@@ -968,19 +968,19 @@ theorem wp_CompareAndSwapPointer (addr : loc) (old new : loc) :
 section pointer
 variable {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] (T : go.type) [IntoValTyped (GF := GF) T' T]
 
-def own_Pointer_def (u : loc) (dq : DFrac) (v : loc) : IProp GF :=
+def ownPointerDef (u : loc) (dq : DFrac) (v : loc) : IProp GF :=
   typed_pointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v } : Pointer.t T') dq
-@[irreducible] def own_Pointer (u : loc) (dq : DFrac) (v : loc) : IProp GF :=
-  own_Pointer_def (T' := T') u dq v
-theorem own_Pointer_unseal : @own_Pointer = @own_Pointer_def := by funext; with_unfolding_all rfl
+@[irreducible] def ownPointer (u : loc) (dq : DFrac) (v : loc) : IProp GF :=
+  ownPointerDef (T' := T') u dq v
+theorem ownPointer_unseal : @ownPointer = @ownPointerDef := by funext; with_unfolding_all rfl
 
-instance own_Pointer_timeless (u : loc) (dq : DFrac) (v : loc) :
-    Timeless (own_Pointer (GF := GF) (T' := T') u dq v) := by
-  rw [own_Pointer_unseal]; unfold own_Pointer_def; infer_instance
+instance ownPointer_timeless (u : loc) (dq : DFrac) (v : loc) :
+    Timeless (ownPointer (GF := GF) (T' := T') u dq v) := by
+  rw [ownPointer_unseal]; unfold ownPointerDef; infer_instance
 
-theorem wp_Pointer__Load (u : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ v : loc, own_Pointer (T' := T') u dq v ∗ (own_Pointer (T' := T') u dq v ={∅,⊤}=∗ Φ #v)) -∗
+theorem Pointer.wp_Load (u : loc) (dq : DFrac) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ v : loc, ownPointer (T' := T') u dq v ∗ (ownPointer (T' := T') u dq v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (u @!! go.type.PointerType (Pointer T) @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -988,7 +988,7 @@ theorem wp_Pointer__Load (u : loc) (dq : DFrac) :
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Pointer_unseal, own_Pointer_def]
+  simp only [ownPointer_unseal, ownPointerDef]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v
@@ -1002,10 +1002,10 @@ theorem wp_Pointer__Load (u : loc) (dq : DFrac) :
   wp_auto
   iexact HΦ
 
-theorem wp_Pointer__Store (u : loc) (v : loc) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : loc, own_Pointer (T' := T') u (DFrac.own 1) old ∗
-        (own_Pointer (T' := T') u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
+theorem Pointer.wp_Store (u : loc) (v : loc) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : loc, ownPointer (T' := T') u (DFrac.own 1) old ∗
+        (ownPointer (T' := T') u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (Val (u @!! go.type.PointerType (Pointer T) @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -1013,7 +1013,7 @@ theorem wp_Pointer__Store (u : loc) (v : loc) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Pointer_unseal, own_Pointer_def]
+  simp only [ownPointer_unseal, ownPointerDef]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists old
@@ -1027,11 +1027,11 @@ theorem wp_Pointer__Store (u : loc) (v : loc) :
   wp_auto
   iexact HΦ
 
-theorem wp_Pointer__CompareAndSwap (u : loc) (old new : loc) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ (v : loc) (dq : DFrac), own_Pointer (T' := T') u dq v ∗
+theorem Pointer.wp_CompareAndSwap (u : loc) (old new : loc) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ (v : loc) (dq : DFrac), ownPointer (T' := T') u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
-        (own_Pointer (T' := T') u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
+        (ownPointer (T' := T') u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (Val (u @!! go.type.PointerType (Pointer T) @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
@@ -1041,7 +1041,7 @@ theorem wp_Pointer__CompareAndSwap (u : loc) (old new : loc) :
   imod HΦ with H
   imodintro; inext
   icases H with ⟨%v, %dq, Hown, %Hdq, HΦ⟩
-  simp only [own_Pointer_unseal, own_Pointer_def]
+  simp only [ownPointer_unseal, ownPointerDef]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v, dq
@@ -1057,10 +1057,10 @@ theorem wp_Pointer__CompareAndSwap (u : loc) (old new : loc) :
   wp_auto
   iexact HΦ
 
-theorem wp_Pointer__Swap (u : loc) (v' : loc) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ∃ v : loc, own_Pointer (T' := T') u (DFrac.own 1) v ∗
-        (own_Pointer (T' := T') u (DFrac.own 1) v' ={∅,⊤}=∗ Φ #v)) -∗
+theorem Pointer.wp_Swap (u : loc) (v' : loc) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ∃ v : loc, ownPointer (T' := T') u (DFrac.own 1) v ∗
+        (ownPointer (T' := T') u (DFrac.own 1) v' ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (u @!! go.type.PointerType (Pointer T) @!! go!"Swap")) (Val #v')) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -1068,7 +1068,7 @@ theorem wp_Pointer__Swap (u : loc) (v' : loc) :
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Pointer_unseal, own_Pointer_def]
+  simp only [ownPointer_unseal, ownPointerDef]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists v
@@ -1092,37 +1092,37 @@ def b32w (b : Bool) : w32 := if b then W32 1 else W32 0
 theorem b32w_inj {b1 b2 : Bool} (h : b32w b1 = b32w b2) : b1 = b2 := by
   cases b1 <;> cases b2 <;> first | rfl | (exfalso; revert h; decide)
 
-def own_Bool_def (u : loc) (dq : DFrac) (v : Bool) : IProp GF :=
+def ownBoolDef (u : loc) (dq : DFrac) (v : Bool) : IProp GF :=
   typed_pointsto (GF := GF) u ({ _0' := zero_val _, v' := b32w v } : Bool'.t) dq
-@[irreducible] def own_Bool (u : loc) (dq : DFrac) (v : Bool) : IProp GF := own_Bool_def u dq v
-theorem own_Bool_unseal : @own_Bool = @own_Bool_def := by funext; with_unfolding_all rfl
+@[irreducible] def ownBool (u : loc) (dq : DFrac) (v : Bool) : IProp GF := ownBoolDef u dq v
+theorem ownBool_unseal : @ownBool = @ownBoolDef := by funext; with_unfolding_all rfl
 
-instance own_Bool_timeless (u : loc) (dq : DFrac) (v : Bool) :
-    Timeless (own_Bool (GF := GF) u dq v) := by
-  rw [own_Bool_unseal]; unfold own_Bool_def; infer_instance
-instance own_Bool_dfractional (u : loc) (v : Bool) :
-    DFractional (fun dq => own_Bool (GF := GF) u dq v) := by
-  rw [own_Bool_unseal]; unfold own_Bool_def; infer_instance
-instance own_Bool_fractional (u : loc) (v : Bool) :
-    Fractional (fun q => own_Bool (GF := GF) u (DFrac.own q) v) :=
-  fractional_of_dfractional (fun dq => own_Bool (GF := GF) u dq v)
-instance own_Bool_as_fractional (u : loc) (q : Qp) (v : Bool) :
-    AsFractional (own_Bool (GF := GF) u (DFrac.own q) v) ioΦ
-      (fun q => own_Bool u (DFrac.own q) v) ioq q where
+instance ownBool_timeless (u : loc) (dq : DFrac) (v : Bool) :
+    Timeless (ownBool (GF := GF) u dq v) := by
+  rw [ownBool_unseal]; unfold ownBoolDef; infer_instance
+instance ownBool_dfractional (u : loc) (v : Bool) :
+    DFractional (fun dq => ownBool (GF := GF) u dq v) := by
+  rw [ownBool_unseal]; unfold ownBoolDef; infer_instance
+instance ownBool_fractional (u : loc) (v : Bool) :
+    Fractional (fun q => ownBool (GF := GF) u (DFrac.own q) v) :=
+  fractional_of_dfractional (fun dq => ownBool (GF := GF) u dq v)
+instance ownBool_as_fractional (u : loc) (q : Qp) (v : Bool) :
+    AsFractional (ownBool (GF := GF) u (DFrac.own q) v) ioΦ
+      (fun q => ownBool u (DFrac.own q) v) ioq q where
   as_fractional := .rfl
-  as_fractional_fractional := own_Bool_fractional u v
-instance own_Bool_combines_gives (u : loc) (v v' : Bool) (dq dq' : DFrac) :
-    CombineSepGives (own_Bool (GF := GF) u dq v) (own_Bool u dq' v') iprop(⌜v = v'⌝) where
+  as_fractional_fractional := ownBool_fractional u v
+instance ownBool_combines_gives (u : loc) (v v' : Bool) (dq dq' : DFrac) :
+    CombineSepGives (ownBool (GF := GF) u dq v) (ownBool u dq' v') iprop(⌜v = v'⌝) where
   combine_sep_gives := by
-    rw [own_Bool_unseal]; unfold own_Bool_def
+    rw [ownBool_unseal]; unfold ownBoolDef
     iintro ⟨H1, H2⟩
     icombine H1 H2 gives %Heq
     imodintro; ipureintro
     exact b32w_inj (congrArg Bool'.t.v' Heq)
 
-theorem wp_Bool__Load (u : loc) (dq : DFrac) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ v : Bool, own_Bool u dq v ∗ (own_Bool u dq v ={∅,⊤}=∗ Φ #v)) -∗
+theorem Bool.wp_Load (u : loc) (dq : DFrac) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ v : Bool, ownBool u dq v ∗ (ownBool u dq v ={∅,⊤}=∗ Φ #v)) -∗
       WP (App (Val (u @!! go.type.PointerType Bool' @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -1130,7 +1130,7 @@ theorem wp_Bool__Load (u : loc) (dq : DFrac) :
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Bool_unseal, own_Bool_def]
+  simp only [ownBool_unseal, ownBoolDef]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists (b32w v)
@@ -1145,15 +1145,15 @@ theorem wp_Bool__Load (u : loc) (dq : DFrac) :
   cases v <;> simp [b32w] <;> iexact HΦ
 
 theorem wp_b32 (b : Bool) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       Φ #(b32w b) -∗ WP (App (Val (@! b32)) (Val #b)) {{ Φ }} := by
   wp_start as _
   cases b <;> simp only [b32w, Bool.false_eq_true, ↓reduceIte] <;> wp_auto <;> iexact HΦ
 
-theorem wp_Bool__Store (u : loc) (v : Bool) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ old : Bool, own_Bool u (DFrac.own 1) old ∗
-        (own_Bool u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
+theorem Bool.wp_Store (u : loc) (v : Bool) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ old : Bool, ownBool u (DFrac.own 1) old ∗
+        (ownBool u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (Val (u @!! go.type.PointerType Bool' @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -1162,7 +1162,7 @@ theorem wp_Bool__Store (u : loc) (v : Bool) :
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext
-  simp only [own_Bool_unseal, own_Bool_def]
+  simp only [ownBool_unseal, ownBoolDef]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   iexists (b32w old)
@@ -1176,11 +1176,11 @@ theorem wp_Bool__Store (u : loc) (v : Bool) :
   wp_auto
   iexact HΦ
 
-theorem wp_Bool__CompareAndSwap (u : loc) (old new : Bool) :
-    ⊢ ∀ Φ : val → IProp GF, is_pkg_init (PROP := IProp GF) pkg_id.sync.atomic -∗
-      (|={⊤,∅}=> ▷ ∃ (v : Bool) (dq : DFrac), own_Bool u dq v ∗
+theorem Bool.wp_CompareAndSwap (u : loc) (old new : Bool) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ (v : Bool) (dq : DFrac), ownBool u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
-        (own_Bool u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
+        (ownBool u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (Val (u @!! go.type.PointerType Bool' @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
@@ -1192,7 +1192,7 @@ theorem wp_Bool__CompareAndSwap (u : loc) (old new : Bool) :
   imod HΦ with H
   imodintro; inext
   icases H with ⟨%v, %dq, Hown, %Hdq, HΦ⟩
-  simp only [own_Bool_unseal, own_Bool_def]
+  simp only [ownBool_unseal, ownBoolDef]
   ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   have hiff : (b32w v = b32w old) ↔ (v = old) := ⟨b32w_inj, fun h => h ▸ rfl⟩

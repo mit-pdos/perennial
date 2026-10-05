@@ -4,7 +4,7 @@ Port of `src/Helpers/Qextra.v`: facts about positive rationals.
 Positive rationals are iris-lean's `Iris.Qp = {q : Rat // 0 < q}`, which has
 `+`, `/`, `1`, `Qp.half` and `<`/`≤` (on the underlying `Rat`). Rocq's `q / 2`
 is `q.half`, `/2` is `(1 : Qp).half`. Multiplication and `min` are not in
-iris-lean, so they are defined here as `Qp_mul` and `Qp_min`.
+iris-lean, so they are defined here as `QpMul` and `QpMin`.
 -/
 import Iris.Algebra.Frac
 
@@ -12,17 +12,17 @@ namespace Perennial
 
 open Iris
 
-def Qp_mul (p q : Qp) : Qp := ⟨p.val * q.val, Rat.mul_pos p.2 q.2⟩
+def QpMul (p q : Qp) : Qp := ⟨p.val * q.val, Rat.mul_pos p.2 q.2⟩
 
-def Qp_min (p q : Qp) : Qp := if p.val ≤ q.val then p else q
+def QpMin (p q : Qp) : Qp := if p.val ≤ q.val then p else q
 
 /-- Rocq `Qppower q n = q ^ n`. -/
 def Qppower (q : Qp) : Nat → Qp
   | 0 => 1
-  | n + 1 => Qp_mul q (Qppower q n)
+  | n + 1 => QpMul q (Qppower q n)
 
-theorem Qp_min_glb1_lt (q q1 q2 : Qp) (h1 : q < q1) (h2 : q < q2) : q < Qp_min q1 q2 := by
-  unfold Qp_min; split <;> assumption
+theorem qpMin_glb1_lt (q q1 q2 : Qp) (h1 : q < q1) (h2 : q < q2) : q < QpMin q1 q2 := by
+  unfold QpMin; split <;> assumption
 
 theorem Qp_split_lt (q1 q2 : Qp) (h : q1 < q2) : ∃ q', q1 + q' = q2 := Qp.lt_iff_exists_add.mp h
 

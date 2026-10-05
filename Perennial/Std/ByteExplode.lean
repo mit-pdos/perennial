@@ -10,13 +10,13 @@ import Perennial.Std.Word.Automation
 
 namespace Perennial
 
-theorem byte_explode (P : u8 → Prop) (h : ∀ i : Fin 256, P (BitVec.ofNat 8 i)) : ∀ x, P x := by
+theorem byte_explode (P : U8 → Prop) (h : ∀ i : Fin 256, P (BitVec.ofNat 8 i)) : ∀ x, P x := by
   intro x
   have := h ⟨x.toNat, x.isLt⟩
   simpa using this
 
-theorem bit_off_explode (P : u64 → Prop) (h : ∀ i : Fin 8, P (W64 i)) :
-    ∀ bit : u64, uint.Z bit < 8 → P bit := by
+theorem bit_off_explode (P : U64 → Prop) (h : ∀ i : Fin 8, P (W64 i)) :
+    ∀ bit : U64, uint.Z bit < 8 → P bit := by
   intro bit hb
   have := h ⟨bit.toNat, by simp [uint.Z] at hb; omega⟩
   have e : W64 (bit.toNat : Int) = bit := by simp [W64]

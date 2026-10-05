@@ -9,7 +9,7 @@ Differences from Rocq:
 * Maps are any iris-lean `LawfulFiniteMap M K` (with `DecidableEq K`), so the
   lemmas apply to `Perennial.gmap`. stdpp's `dom m1 = dom m2` is
   `PartialMap.dom m1 = PartialMap.dom m2` (domains as predicates; see
-  `map_dom_eq_iff`), and `map_zip` is an abbreviation for the
+  `map_dom_eq_iff`), and `mapZip` is an abbreviation for the
   `zipWith (·, ·)` that iris-lean's `bigSepM2` is defined with.
 * `big_sepS_exists_sepM` is stated for any iris-lean `LawfulFiniteSet`, with
   `dom m = s` as `FiniteMap.dom_set m = s`.
@@ -20,7 +20,7 @@ Differences from Rocq:
 * `big_sepM_mono_ncfupd` is dropped (no crash logic, see PORTING.md).
 * `big_sepM_gmap_curry` is dropped: it is `Abort`ed in Rocq.
 * `map_curry` lemmas are stated for `Perennial.gmap` with a local definition
-  `gmap_curry`, since iris-lean has no `map_curry`.
+  `gmapCurry`, since iris-lean has no `map_curry`.
 * Lemmas whose Rocq statement carries unused `Absorbing` arguments
   (`big_sepM2_lookup_*`, `big_sepM2_sepM_*`) do not take them.
 -/
@@ -56,30 +56,30 @@ theorem map_dom_eq_none {m1 : M A} {m2 : M B} (h : dom m1 = dom m2) {k : K} :
   have := map_dom_eq_iff.mp h k
   cases h1 : get? m1 k <;> cases h2 : get? m2 k <;> simp_all
 
-theorem map_lookup_filter_key_in (m : M A) (P : K → Prop) [DecidablePred P] (i : K) :
+theorem mapLookup_filter_key_in (m : M A) (P : K → Prop) [DecidablePred P] (i : K) :
     P i → get? (filter (fun k _ => decide (P k)) m) i = get? m i := by
   intro hP
   rw [get?_filter]
   cases get? m i <;> simp [hP]
 
-theorem map_lookup_filter_key_notin (m : M A) (P : K → Prop) [DecidablePred P] (i : K) :
+theorem mapLookup_filter_key_notin (m : M A) (P : K → Prop) [DecidablePred P] (i : K) :
     ¬ P i → get? (filter (fun k _ => decide (P k)) m) i = none := by
   intro hP
   rw [get?_filter]
   cases get? m i <;> simp [hP]
 
-theorem map_lookup_filter_key (m : M A) (P : K → Prop) [DecidablePred P] (i : K) :
+theorem mapLookup_filter_key (m : M A) (P : K → Prop) [DecidablePred P] (i : K) :
     get? (filter (fun k _ => decide (P k)) m) i = if P i then get? m i else none := by
   split
-  · exact map_lookup_filter_key_in m P i ‹_›
-  · exact map_lookup_filter_key_notin m P i ‹_›
+  · exact mapLookup_filter_key_in m P i ‹_›
+  · exact mapLookup_filter_key_notin m P i ‹_›
 
 theorem filter_same_keys_0' (m1 : M A) (m2 : M B) (P : K → Prop) [DecidablePred P] :
     (∀ k, (get? m1 k).isSome → (get? m2 k).isSome) →
     ∀ k, (get? (filter (fun k _ => decide (P k)) m1) k).isSome →
          (get? (filter (fun k _ => decide (P k)) m2) k).isSome := by
   intro h k
-  simp only [map_lookup_filter_key]
+  simp only [mapLookup_filter_key]
   split
   · exact h k
   · simp
@@ -92,14 +92,14 @@ theorem filter_same_keys_1' (m1 : M A) (m2 : M B) (P : K → Prop) [DecidablePre
     ∀ k, (get? m1 k).isSome → (get? m2 k).isSome := by
   intro h1 h2 k
   have h1 := h1 k; have h2 := h2 k
-  simp only [map_lookup_filter_key] at h1 h2
+  simp only [mapLookup_filter_key] at h1 h2
   by_cases hP : P k <;> simp_all
 
 /-- Rocq `filter_dom`: the domain of a key-filtered map is the filtered domain. -/
 theorem filter_dom (P : K → Prop) [DecidablePred P] (m : M A) :
     dom (filter (fun k _ => decide (P k)) m) = fun k => P k ∧ dom m k := by
   funext k
-  simp only [dom, map_lookup_filter_key]
+  simp only [dom, mapLookup_filter_key]
   by_cases hP : P k <;> simp [hP]
 
 theorem filter_same_keys_0 (m1 : M A) (m2 : M B) (P : K → Prop) [DecidablePred P] :
@@ -146,56 +146,56 @@ theorem map_disjoint_filter_complement (φ : K → A → Bool) (m : M A) :
 
 end filter
 
-/-! ## `map_zip_with` and `map_zip` -/
+/-! ## `map_zip_with` and `mapZip` -/
 
-section map_zip
+section mapZip
 
 variable {K : Type _} {M : Type u → Type _} [LawfulFiniteMap M K] [DecidableEq K]
 variable {A B C : Type u}
 
-theorem map_zip_with_empty_l (f : A → B → C) (m2 : M B) :
+theorem mapZip_with_empty_l (f : A → B → C) (m2 : M B) :
     zipWith f (∅ : M A) m2 = (∅ : M C) := by
   apply equiv_iff_eq.mp; intro k
   simp [get?_zipWith, get?_empty]
 
-theorem map_zip_with_empty_r (f : A → B → C) (m1 : M A) :
+theorem mapZip_with_empty_r (f : A → B → C) (m1 : M A) :
     zipWith f m1 (∅ : M B) = (∅ : M C) := by
   apply equiv_iff_eq.mp; intro k
   simp only [get?_zipWith, get?_empty]
   cases get? m1 k <;> rfl
 
-/-- Rocq `map_zip`, in the form used by iris-lean's `[∗map] k ↦ x1;x2 ∈ m1;m2, _`
+/-- Rocq `mapZip`, in the form used by iris-lean's `[∗map] k ↦ x1;x2 ∈ m1;m2, _`
 (`PartialMap.zip` itself has universe-polymorphism issues). -/
-abbrev map_zip (m1 : M A) (m2 : M B) : M (A × B) := zipWith (fun (x : A) (y : B) => (x, y)) m1 m2
+abbrev mapZip (m1 : M A) (m2 : M B) : M (A × B) := zipWith (fun (x : A) (y : B) => (x, y)) m1 m2
 
-theorem map_zip_empty_l (m2 : M B) : map_zip (∅ : M A) m2 = ∅ := map_zip_with_empty_l _ m2
+theorem mapZip_empty_l (m2 : M B) : mapZip (∅ : M A) m2 = ∅ := mapZip_with_empty_l _ m2
 
-theorem map_zip_empty_r (m1 : M A) : map_zip m1 (∅ : M B) = ∅ := map_zip_with_empty_r _ m1
+theorem mapZip_empty_r (m1 : M A) : mapZip m1 (∅ : M B) = ∅ := mapZip_with_empty_r _ m1
 
-theorem map_zip_insert (m1 : M A) (m2 : M B) (i : K) (v1 : A) (v2 : B) :
-    map_zip (insert m1 i v1) (insert m2 i v2) = insert (map_zip m1 m2) i (v1, v2) :=
+theorem mapZip_insert (m1 : M A) (m2 : M B) (i : K) (v1 : A) (v2 : B) :
+    mapZip (insert m1 i v1) (insert m2 i v2) = insert (mapZip m1 m2) i (v1, v2) :=
   zipWith_insert
 
-theorem map_zip_lookup_none_1 (m1 : M A) (m2 : M B) (i : K) :
-    get? m1 i = none → get? (map_zip m1 m2) i = none := by
+theorem mapZip_lookup_none_1 (m1 : M A) (m2 : M B) (i : K) :
+    get? m1 i = none → get? (mapZip m1 m2) i = none := by
   intro h; rw [get?_zipWith, h]; rfl
 
-theorem map_zip_lookup_none_2 (m1 : M A) (m2 : M B) (i : K) :
-    get? m2 i = none → get? (map_zip m1 m2) i = none := by
+theorem mapZip_lookup_none_2 (m1 : M A) (m2 : M B) (i : K) :
+    get? m2 i = none → get? (mapZip m1 m2) i = none := by
   intro h; rw [get?_zipWith, h]; cases get? m1 i <;> rfl
 
-theorem map_zip_lookup_some (m1 : M A) (m2 : M B) (i : K) (v1 : A) (v2 : B) :
-    get? m1 i = some v1 → get? m2 i = some v2 → get? (map_zip m1 m2) i = some (v1, v2) := by
+theorem mapZip_lookup_some (m1 : M A) (m2 : M B) (i : K) (v1 : A) (v2 : B) :
+    get? m1 i = some v1 → get? m2 i = some v2 → get? (mapZip m1 m2) i = some (v1, v2) := by
   intro h1 h2; rw [get?_zipWith, h1, h2]; rfl
 
-theorem map_zip_filter (m1 : M A) (m2 : M B) (P : K → Prop) [DecidablePred P] :
-    map_zip (filter (fun k _ => decide (P k)) m1) (filter (fun k _ => decide (P k)) m2) =
-    filter (fun k _ => decide (P k)) (map_zip m1 m2) := by
+theorem mapZip_filter (m1 : M A) (m2 : M B) (P : K → Prop) [DecidablePred P] :
+    mapZip (filter (fun k _ => decide (P k)) m1) (filter (fun k _ => decide (P k)) m2) =
+    filter (fun k _ => decide (P k)) (mapZip m1 m2) := by
   apply equiv_iff_eq.mp; intro k
-  simp only [get?_zipWith, map_lookup_filter_key]
+  simp only [get?_zipWith, mapLookup_filter_key]
   split <;> rfl
 
-end map_zip
+end mapZip
 
 /-! ## `big_sepM` -/
 
@@ -577,8 +577,8 @@ theorem big_sepM2_filter (Φ : K → A → B → PROP) (P : K → Prop) [Decidab
           filter (fun k _ => decide (P k)) m2, Φ k y1 y2) ∗
       ([∗map] k ↦ y1;y2 ∈ filter (fun k _ => decide (¬ P k)) m1;
           filter (fun k _ => decide (¬ P k)) m2, Φ k y1 y2) := by
-  have hz := map_zip_filter m1 m2 P
-  have hz' := map_zip_filter m1 m2 (fun k => ¬ P k)
+  have hz := mapZip_filter m1 m2 P
+  have hz' := mapZip_filter m1 m2 (fun k => ¬ P k)
   have hsplit := big_sepM_filter_split (fun k (xy : A × B) => Φ k xy.1 xy.2) (fun k _ => P k)
     (zipWith (fun (x : A) (y : B) => (x, y)) m1 m2)
   rw [← hz, ← hz'] at hsplit
@@ -631,16 +631,16 @@ open Classical
 
 variable {A B : Type _} [DecidableEq A] [DecidableEq B] {T : Type _}
 
-/-- The inner map of `gmap_curry m` at `a` (possibly empty). -/
-def gmap_curry_inner (m : gmap (A × B) T) (a : A) : gmap B T :=
+/-- The inner map of `gmapCurry m` at `a` (possibly empty). -/
+def gmapCurryInner (m : GMap (A × B) T) (a : A) : GMap B T :=
   ⟨fun b => m !! (a, b), by
     obtain ⟨l, hl⟩ := m.finite
     exact ⟨l.map Prod.snd, fun b h => List.mem_map.mpr ⟨(a, b), hl _ h, rfl⟩⟩⟩
 
-/-- Rocq `gmap_curry` (stdpp `map_curry`): only keys with a nonempty inner map
+/-- Rocq `gmapCurry` (stdpp `map_curry`): only keys with a nonempty inner map
 are present. -/
-def gmap_curry (m : gmap (A × B) T) : gmap A (gmap B T) :=
-  ⟨fun a => if ∃ b, (m !! (a, b)).isSome then some (gmap_curry_inner m a) else none, by
+def gmapCurry (m : GMap (A × B) T) : GMap A (GMap B T) :=
+  ⟨fun a => if ∃ b, (m !! (a, b)).isSome then some (gmapCurryInner m a) else none, by
     obtain ⟨l, hl⟩ := m.finite
     refine ⟨l.map Prod.fst, fun a h => ?_⟩
     split at h
@@ -649,63 +649,63 @@ def gmap_curry (m : gmap (A × B) T) : gmap A (gmap B T) :=
       exact List.mem_map.mpr ⟨(a, b), hl _ hb, rfl⟩
     · simp at h⟩
 
-theorem gmap_curry_lookup_iff (m : gmap (A × B) T) (a : A) :
-    gmap_curry m !! a =
-      if ∃ b, (m !! (a, b)).isSome then some (gmap_curry_inner m a) else none := by
+theorem gmapCurry_lookup_iff (m : GMap (A × B) T) (a : A) :
+    gmapCurry m !! a =
+      if ∃ b, (m !! (a, b)).isSome then some (gmapCurryInner m a) else none := by
   rfl
 
-theorem gmap_curry_insert (m : gmap (A × B) T) (k : A × B) (v : T) :
+theorem gmapCurry_insert (m : GMap (A × B) T) (k : A × B) (v : T) :
     m !! k = none →
-    gmap_curry (<[k := v]> m) =
-      <[k.1 := <[k.2 := v]> ((gmap_curry m !! k.1).getD ∅)]> (gmap_curry m) := by
+    gmapCurry (<[k := v]> m) =
+      <[k.1 := <[k.2 := v]> ((gmapCurry m !! k.1).getD ∅)]> (gmapCurry m) := by
   intro _
   obtain ⟨a, b⟩ := k
-  apply gmap.ext; intro a'
-  rw [gmap_curry_lookup_iff, gmap.lookup_insert_eq_iff]
+  apply GMap.ext; intro a'
+  rw [gmapCurry_lookup_iff, GMap.lookup_insert_eq_iff]
   by_cases ha : a = a'
   · subst ha
     rw [ite_eq_left rfl, ite_eq_left (⟨b, by simp⟩ : ∃ b', _)]
     congr 1
-    apply gmap.ext; intro b'
-    simp only [gmap_curry_inner, gmap.lookup_mk, gmap.lookup_insert_eq_iff, Prod.mk.injEq,
+    apply GMap.ext; intro b'
+    simp only [gmapCurryInner, GMap.lookup_mk, GMap.lookup_insert_eq_iff, Prod.mk.injEq,
       true_and]
     by_cases hb : b = b'
     · simp [hb]
-    · rw [ite_eq_right hb, ite_eq_right hb, gmap_curry_lookup_iff]
+    · rw [ite_eq_right hb, ite_eq_right hb, gmapCurry_lookup_iff]
       split
       · rfl
       · rename_i hnex
         cases h : m !! (a, b')
         · rfl
         · exact absurd ⟨b', by simp [h]⟩ hnex
-  · rw [ite_eq_right ha, gmap_curry_lookup_iff]
+  · rw [ite_eq_right ha, gmapCurry_lookup_iff]
     have hl : ∀ b', (<[(a, b) := v]> m) !! (a', b') = m !! (a', b') := by
       intro b'; simp [ha]
-    have hi : gmap_curry_inner (<[(a, b) := v]> m) a' = gmap_curry_inner m a' := by
-      apply gmap.ext; intro b'; exact hl b'
+    have hi : gmapCurryInner (<[(a, b) := v]> m) a' = gmapCurryInner m a' := by
+      apply GMap.ext; intro b'; exact hl b'
     simp only [hl, hi]
 
-theorem gmap_curry_insert_delete (m : gmap (A × B) T) (k : A × B) (v : T) :
+theorem gmapCurry_insert_delete (m : GMap (A × B) T) (k : A × B) (v : T) :
     m !! k = none →
-    gmap_curry (<[k := v]> m) =
-      <[k.1 := <[k.2 := v]> ((gmap_curry m !! k.1).getD ∅)]> (gmap.delete k.1 (gmap_curry m)) := by
+    gmapCurry (<[k := v]> m) =
+      <[k.1 := <[k.2 := v]> ((gmapCurry m !! k.1).getD ∅)]> (GMap.delete k.1 (gmapCurry m)) := by
   intro h
-  rw [gmap_curry_insert m k v h, gmap.insert_delete]
+  rw [gmapCurry_insert m k v h, GMap.insert_delete]
 
-theorem gmap_curry_lookup_exists (m : gmap (A × B) T) (k : A × B) (v : T) :
+theorem gmapCurry_lookup_exists (m : GMap (A × B) T) (k : A × B) (v : T) :
     m !! k = some v →
-    ∃ offmap, gmap_curry m !! k.1 = some offmap ∧ offmap !! k.2 = some v := by
+    ∃ offmap, gmapCurry m !! k.1 = some offmap ∧ offmap !! k.2 = some v := by
   intro h
   classical
-  refine ⟨gmap_curry_inner m k.1, ?_, ?_⟩
-  · rw [gmap_curry_lookup_iff, ite_eq_left (⟨k.2, by simp [h]⟩ : ∃ b, _)]
-  · simpa [gmap_curry_inner] using h
+  refine ⟨gmapCurryInner m k.1, ?_, ?_⟩
+  · rw [gmapCurry_lookup_iff, ite_eq_left (⟨k.2, by simp [h]⟩ : ∃ b, _)]
+  · simpa [gmapCurryInner] using h
 
-theorem gmap_curry_lookup (m : gmap (A × B) T) (k1 : A) (k2 : B) (offmap : gmap B T) :
-    gmap_curry m !! k1 = some offmap →
+theorem gmapCurry_lookup (m : GMap (A × B) T) (k1 : A) (k2 : B) (offmap : GMap B T) :
+    gmapCurry m !! k1 = some offmap →
     m !! (k1, k2) = offmap !! k2 := by
   classical
-  rw [gmap_curry_lookup_iff]
+  rw [gmapCurry_lookup_iff]
   split
   · intro h; cases h; rfl
   · intro h; cases h

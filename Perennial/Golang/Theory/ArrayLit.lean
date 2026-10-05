@@ -45,7 +45,7 @@ theorem arrayLitSets_eq {V : Type} (z : V) :
 section array_lit
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : gooseGlobalGS hlc GF] [L : gooseLocalGS GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 theorem wp_arrayLit_set {s : Stuckness} {E : CoPset} (n : Int) (t : go.type) {V : Type} (e0 : expr)
@@ -54,9 +54,9 @@ theorem wp_arrayLit_set {s : Stuckness} {E : CoPset} (n : Int) (t : go.type) {V 
     (Φ : val → IProp GF) :
     Φ #(array.mk n (acc.set (sint.nat (W64 i)) x)) ⊢
       WP gl(ArraySet (e0, (#(W64 i), Convert t t (Val #x)))) @ s; E {{ Φ }} := by
-  refine .trans ?_ (wp_bind (fill [ectx_item.PairLCtx (Pair (Val #(W64 i))
+  refine .trans ?_ (wp_bind (fill [EctxItem.PairLCtx (Pair (Val #(W64 i))
     (App (Val (GoInstruction (go_instruction.Convert t t))) (Val #x))),
-    ectx_item.AppRCtx (Val (GoInstruction go_instruction.ArraySet))]))
+    EctxItem.AppRCtx (Val (GoInstruction go_instruction.ArraySet))]))
   refine .trans ?_ (he0 _)
   change _ ⊢ WP gl(ArraySet (Val #(array.mk n acc), (#(W64 i), Convert t t (Val #x)))) @ s; E {{ Φ }}
   iintro HΦ

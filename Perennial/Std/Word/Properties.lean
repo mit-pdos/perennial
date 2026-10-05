@@ -6,14 +6,14 @@ import Perennial.Std.ListBasics
 
 namespace Perennial
 
-/-- Rocq `u8_to_ascii`: the character with this byte as its code. -/
-def u8_to_ascii (x : byte) : Char := Char.ofNat x.toNat
+/-- Rocq `u8ToAscii`: the character with this byte as its code. -/
+def u8ToAscii (x : Byte) : Char := Char.ofNat x.toNat
 
-/-- Rocq `u8_to_string`. -/
-def u8_to_string (x : byte) : String := String.singleton (u8_to_ascii x)
+/-- Rocq `u8ToString`. -/
+def u8ToString (x : Byte) : String := String.singleton (u8ToAscii x)
 
-/-- Rocq `u64_round_up x div`: `(x + div) / div * div`. -/
-def u64_round_up (x div : u64) : u64 := (x + div) / div * div
+/-- Rocq `u64RoundUp x div`: `(x + div) / div * div`. -/
+def u64RoundUp (x div : U64) : U64 := (x + div) / div * div
 
 theorem seq_U64_NoDup (m len : Int) (hlb : 0 ≤ m) (hub : m + len < 2 ^ 64) :
     ((seqZ m len).map W64).Nodup := by

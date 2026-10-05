@@ -59,35 +59,35 @@ def substEnv (σ : String → Option val) : expr → expr
   | CmpXchg e0 e1 e2 => CmpXchg (substEnv σ e0) (substEnv σ e1) (substEnv σ e2)
   | NewProph => NewProph
   | ResolveProph e1 e2 => ResolveProph (substEnv σ e1) (substEnv σ e2)
-  | LiteralValue l => LiteralValue (substEnv_kes σ l)
-  | SelectStmtClauses d l => SelectStmtClauses (substEnv_opt σ d) (substEnv_ccs σ l)
+  | LiteralValue l => LiteralValue (substEnvKes σ l)
+  | SelectStmtClauses d l => SelectStmtClauses (substEnvOpt σ d) (substEnvCcs σ l)
 
-def substEnv_opt (σ : String → Option val) : Option expr → Option expr
+def substEnvOpt (σ : String → Option val) : Option expr → Option expr
   | none => none
   | some e => some (substEnv σ e)
 
-def substEnv_kes (σ : String → Option val) : List keyed_element → List keyed_element
+def substEnvKes (σ : String → Option val) : List keyed_element → List keyed_element
   | [] => []
-  | ke :: l => substEnv_ke σ ke :: substEnv_kes σ l
+  | ke :: l => substEnvKe σ ke :: substEnvKes σ l
 
-def substEnv_ke (σ : String → Option val) : keyed_element → keyed_element
-  | KeyedElement k el => KeyedElement (substEnv_okey σ k) (substEnv_el σ el)
+def substEnvKe (σ : String → Option val) : keyed_element → keyed_element
+  | KeyedElement k el => KeyedElement (substEnvOkey σ k) (substEnvEl σ el)
 
-def substEnv_okey (σ : String → Option val) : Option key → Option key
+def substEnvOkey (σ : String → Option val) : Option key → Option key
   | none => none
   | some (KeyExpression t e) => some (KeyExpression t (substEnv σ e))
-  | some (KeyLiteralValue l) => some (KeyLiteralValue (substEnv_kes σ l))
+  | some (KeyLiteralValue l) => some (KeyLiteralValue (substEnvKes σ l))
   | some k => some k
 
-def substEnv_el (σ : String → Option val) : element → element
+def substEnvEl (σ : String → Option val) : element → element
   | ElementExpression t e => ElementExpression t (substEnv σ e)
-  | ElementLiteralValue l => ElementLiteralValue (substEnv_kes σ l)
+  | ElementLiteralValue l => ElementLiteralValue (substEnvKes σ l)
 
-def substEnv_ccs (σ : String → Option val) : List comm_clause → List comm_clause
+def substEnvCcs (σ : String → Option val) : List comm_clause → List comm_clause
   | [] => []
-  | c :: l => substEnv_cc σ c :: substEnv_ccs σ l
+  | c :: l => substEnvCc σ c :: substEnvCcs σ l
 
-def substEnv_cc (σ : String → Option val) : comm_clause → comm_clause
+def substEnvCc (σ : String → Option val) : comm_clause → comm_clause
   | CommClause (SendCase t b e) body =>
     CommClause (SendCase t (substEnv σ b) (substEnv σ e)) (substEnv σ body)
   | CommClause (RecvCase t e) body => CommClause (RecvCase t (substEnv σ e)) (substEnv σ body)
@@ -169,50 +169,50 @@ theorem subst_substEnv (x : String) (v : val) (σ : String → Option val) :
     simp only [substEnv, subst, subst_substEnv_opt x v σ d, subst_substEnv_ccs x v σ l]
 
 theorem subst_substEnv_opt (x : String) (v : val) (σ : String → Option val) :
-    ∀ d : Option expr, subst_opt x v (substEnv_opt (envDel (BNamed x) σ) d) = substEnv_opt (envIns x v σ) d
-  | none => by simp only [substEnv_opt, subst_opt]
-  | some e => by simp only [substEnv_opt, subst_opt, subst_substEnv x v σ e]
+    ∀ d : Option expr, substOpt x v (substEnvOpt (envDel (BNamed x) σ) d) = substEnvOpt (envIns x v σ) d
+  | none => by simp only [substEnvOpt, substOpt]
+  | some e => by simp only [substEnvOpt, substOpt, subst_substEnv x v σ e]
 
 theorem subst_substEnv_kes (x : String) (v : val) (σ : String → Option val) :
     ∀ l : List keyed_element,
-      subst_keyed_elements x v (substEnv_kes (envDel (BNamed x) σ) l) = substEnv_kes (envIns x v σ) l
-  | [] => by simp only [substEnv_kes, subst_keyed_elements]
+      substKeyedElements x v (substEnvKes (envDel (BNamed x) σ) l) = substEnvKes (envIns x v σ) l
+  | [] => by simp only [substEnvKes, substKeyedElements]
   | ke :: l => by
-    simp only [substEnv_kes, subst_keyed_elements, subst_substEnv_ke x v σ ke, subst_substEnv_kes x v σ l]
+    simp only [substEnvKes, substKeyedElements, subst_substEnv_ke x v σ ke, subst_substEnv_kes x v σ l]
 
 theorem subst_substEnv_ke (x : String) (v : val) (σ : String → Option val) :
     ∀ ke : keyed_element,
-      subst_keyed_element x v (substEnv_ke (envDel (BNamed x) σ) ke) = substEnv_ke (envIns x v σ) ke
+      substKeyedElement x v (substEnvKe (envDel (BNamed x) σ) ke) = substEnvKe (envIns x v σ) ke
   | KeyedElement k el => by
-    simp only [substEnv_ke, subst_keyed_element, subst_substEnv_okey x v σ k, subst_substEnv_el x v σ el]
+    simp only [substEnvKe, substKeyedElement, subst_substEnv_okey x v σ k, subst_substEnv_el x v σ el]
 
 theorem subst_substEnv_okey (x : String) (v : val) (σ : String → Option val) :
-    ∀ k : Option key, subst_opt_key x v (substEnv_okey (envDel (BNamed x) σ) k) = substEnv_okey (envIns x v σ) k
-  | none => by simp only [substEnv_okey, subst_opt_key]
-  | some (KeyField _) => by simp only [substEnv_okey, subst_opt_key]
-  | some (KeyInteger _) => by simp only [substEnv_okey, subst_opt_key]
-  | some (KeyExpression _ e) => by simp only [substEnv_okey, subst_opt_key, subst_substEnv x v σ e]
-  | some (KeyLiteralValue l) => by simp only [substEnv_okey, subst_opt_key, subst_substEnv_kes x v σ l]
+    ∀ k : Option key, substOptKey x v (substEnvOkey (envDel (BNamed x) σ) k) = substEnvOkey (envIns x v σ) k
+  | none => by simp only [substEnvOkey, substOptKey]
+  | some (KeyField _) => by simp only [substEnvOkey, substOptKey]
+  | some (KeyInteger _) => by simp only [substEnvOkey, substOptKey]
+  | some (KeyExpression _ e) => by simp only [substEnvOkey, substOptKey, subst_substEnv x v σ e]
+  | some (KeyLiteralValue l) => by simp only [substEnvOkey, substOptKey, subst_substEnv_kes x v σ l]
 
 theorem subst_substEnv_el (x : String) (v : val) (σ : String → Option val) :
-    ∀ el : element, subst_element x v (substEnv_el (envDel (BNamed x) σ) el) = substEnv_el (envIns x v σ) el
-  | ElementExpression _ e => by simp only [substEnv_el, subst_element, subst_substEnv x v σ e]
-  | ElementLiteralValue l => by simp only [substEnv_el, subst_element, subst_substEnv_kes x v σ l]
+    ∀ el : element, substElement x v (substEnvEl (envDel (BNamed x) σ) el) = substEnvEl (envIns x v σ) el
+  | ElementExpression _ e => by simp only [substEnvEl, substElement, subst_substEnv x v σ e]
+  | ElementLiteralValue l => by simp only [substEnvEl, substElement, subst_substEnv_kes x v σ l]
 
 theorem subst_substEnv_ccs (x : String) (v : val) (σ : String → Option val) :
     ∀ l : List comm_clause,
-      subst_comm_clauses x v (substEnv_ccs (envDel (BNamed x) σ) l) = substEnv_ccs (envIns x v σ) l
-  | [] => by simp only [substEnv_ccs, subst_comm_clauses]
+      substCommClauses x v (substEnvCcs (envDel (BNamed x) σ) l) = substEnvCcs (envIns x v σ) l
+  | [] => by simp only [substEnvCcs, substCommClauses]
   | c :: l => by
-    simp only [substEnv_ccs, subst_comm_clauses, subst_substEnv_cc x v σ c, subst_substEnv_ccs x v σ l]
+    simp only [substEnvCcs, substCommClauses, subst_substEnv_cc x v σ c, subst_substEnv_ccs x v σ l]
 
 theorem subst_substEnv_cc (x : String) (v : val) (σ : String → Option val) :
-    ∀ c : comm_clause, subst_comm_clause x v (substEnv_cc (envDel (BNamed x) σ) c) = substEnv_cc (envIns x v σ) c
+    ∀ c : comm_clause, substCommClause x v (substEnvCc (envDel (BNamed x) σ) c) = substEnvCc (envIns x v σ) c
   | CommClause (SendCase _ b e) body => by
-    simp only [substEnv_cc, subst_comm_clause, subst_substEnv x v σ b, subst_substEnv x v σ e,
+    simp only [substEnvCc, substCommClause, subst_substEnv x v σ b, subst_substEnv x v σ e,
       subst_substEnv x v σ body]
   | CommClause (RecvCase _ e) body => by
-    simp only [substEnv_cc, subst_comm_clause, subst_substEnv x v σ e, subst_substEnv x v σ body]
+    simp only [substEnvCc, substCommClause, subst_substEnv x v σ e, subst_substEnv x v σ body]
 end
 
 theorem envDel_nil (b : binder) : envDel b (envNil : String → Option val) = envNil := by
@@ -239,36 +239,36 @@ theorem substEnv_nil : ∀ e : expr, substEnv envNil e = e
   | LiteralValue l => by simp only [substEnv, substEnv_nil_kes l]
   | SelectStmtClauses d l => by simp only [substEnv, substEnv_nil_opt d, substEnv_nil_ccs l]
 
-theorem substEnv_nil_opt : ∀ d : Option expr, substEnv_opt envNil d = d
-  | none => by simp only [substEnv_opt]
-  | some e => by simp only [substEnv_opt, substEnv_nil e]
+theorem substEnv_nil_opt : ∀ d : Option expr, substEnvOpt envNil d = d
+  | none => by simp only [substEnvOpt]
+  | some e => by simp only [substEnvOpt, substEnv_nil e]
 
-theorem substEnv_nil_kes : ∀ l : List keyed_element, substEnv_kes envNil l = l
-  | [] => by simp only [substEnv_kes]
-  | ke :: l => by simp only [substEnv_kes, substEnv_nil_ke ke, substEnv_nil_kes l]
+theorem substEnv_nil_kes : ∀ l : List keyed_element, substEnvKes envNil l = l
+  | [] => by simp only [substEnvKes]
+  | ke :: l => by simp only [substEnvKes, substEnv_nil_ke ke, substEnv_nil_kes l]
 
-theorem substEnv_nil_ke : ∀ ke : keyed_element, substEnv_ke envNil ke = ke
-  | KeyedElement k el => by simp only [substEnv_ke, substEnv_nil_okey k, substEnv_nil_el el]
+theorem substEnv_nil_ke : ∀ ke : keyed_element, substEnvKe envNil ke = ke
+  | KeyedElement k el => by simp only [substEnvKe, substEnv_nil_okey k, substEnv_nil_el el]
 
-theorem substEnv_nil_okey : ∀ k : Option key, substEnv_okey envNil k = k
-  | none => by simp only [substEnv_okey]
-  | some (KeyField _) => by simp only [substEnv_okey]
-  | some (KeyInteger _) => by simp only [substEnv_okey]
-  | some (KeyExpression _ e) => by simp only [substEnv_okey, substEnv_nil e]
-  | some (KeyLiteralValue l) => by simp only [substEnv_okey, substEnv_nil_kes l]
+theorem substEnv_nil_okey : ∀ k : Option key, substEnvOkey envNil k = k
+  | none => by simp only [substEnvOkey]
+  | some (KeyField _) => by simp only [substEnvOkey]
+  | some (KeyInteger _) => by simp only [substEnvOkey]
+  | some (KeyExpression _ e) => by simp only [substEnvOkey, substEnv_nil e]
+  | some (KeyLiteralValue l) => by simp only [substEnvOkey, substEnv_nil_kes l]
 
-theorem substEnv_nil_el : ∀ el : element, substEnv_el envNil el = el
-  | ElementExpression _ e => by simp only [substEnv_el, substEnv_nil e]
-  | ElementLiteralValue l => by simp only [substEnv_el, substEnv_nil_kes l]
+theorem substEnv_nil_el : ∀ el : element, substEnvEl envNil el = el
+  | ElementExpression _ e => by simp only [substEnvEl, substEnv_nil e]
+  | ElementLiteralValue l => by simp only [substEnvEl, substEnv_nil_kes l]
 
-theorem substEnv_nil_ccs : ∀ l : List comm_clause, substEnv_ccs envNil l = l
-  | [] => by simp only [substEnv_ccs]
-  | c :: l => by simp only [substEnv_ccs, substEnv_nil_cc c, substEnv_nil_ccs l]
+theorem substEnv_nil_ccs : ∀ l : List comm_clause, substEnvCcs envNil l = l
+  | [] => by simp only [substEnvCcs]
+  | c :: l => by simp only [substEnvCcs, substEnv_nil_cc c, substEnv_nil_ccs l]
 
-theorem substEnv_nil_cc : ∀ c : comm_clause, substEnv_cc envNil c = c
+theorem substEnv_nil_cc : ∀ c : comm_clause, substEnvCc envNil c = c
   | CommClause (SendCase _ b e) body => by
-    simp only [substEnv_cc, substEnv_nil b, substEnv_nil e, substEnv_nil body]
-  | CommClause (RecvCase _ e) body => by simp only [substEnv_cc, substEnv_nil e, substEnv_nil body]
+    simp only [substEnvCc, substEnv_nil b, substEnv_nil e, substEnv_nil body]
+  | CommClause (RecvCase _ e) body => by simp only [substEnvCc, substEnv_nil e, substEnv_nil body]
 end
 
 /-- Substitution of one variable is a special case. -/
@@ -330,11 +330,11 @@ theorem substEnv_pf_snd {a a' : expr} (ha : substEnv σ a = a') : substEnv σ (S
   simp only [substEnv, ha]
 theorem substEnv_pf_fork {a a' : expr} (ha : substEnv σ a = a') : substEnv σ (Fork a) = Fork a' := by
   simp only [substEnv, ha]
-theorem substEnv_pf_prim0 (op : prim_op0) : substEnv σ (Primitive0 op) = Primitive0 op := by
+theorem substEnv_pf_prim0 (op : PrimOp0) : substEnv σ (Primitive0 op) = Primitive0 op := by
   simp only [substEnv]
-theorem substEnv_pf_prim1 (op : prim_op1) {a a' : expr} (ha : substEnv σ a = a') :
+theorem substEnv_pf_prim1 (op : PrimOp1) {a a' : expr} (ha : substEnv σ a = a') :
     substEnv σ (Primitive1 op a) = Primitive1 op a' := by simp only [substEnv, ha]
-theorem substEnv_pf_prim2 (op : prim_op2) {a b a' b' : expr} (ha : substEnv σ a = a')
+theorem substEnv_pf_prim2 (op : PrimOp2) {a b a' b' : expr} (ha : substEnv σ a = a')
     (hb : substEnv σ b = b') : substEnv σ (Primitive2 op a b) = Primitive2 op a' b' := by
   simp only [substEnv, ha, hb]
 theorem substEnv_pf_extop (op : ffi_opcode) {a a' : expr} (ha : substEnv σ a = a') :
@@ -345,30 +345,30 @@ theorem substEnv_pf_cmpxchg {a b c a' b' c' : expr} (ha : substEnv σ a = a') (h
 theorem substEnv_pf_newproph : substEnv σ (NewProph : expr) = NewProph := by simp only [substEnv]
 theorem substEnv_pf_resolve {a b a' b' : expr} (ha : substEnv σ a = a') (hb : substEnv σ b = b') :
     substEnv σ (ResolveProph a b) = ResolveProph a' b' := by simp only [substEnv, ha, hb]
-theorem substEnv_pf_litval {l l' : List keyed_element} (h : substEnv_kes σ l = l') :
+theorem substEnv_pf_litval {l l' : List keyed_element} (h : substEnvKes σ l = l') :
     substEnv σ (LiteralValue l) = LiteralValue l' := by simp only [substEnv, h]
-theorem substEnv_pf_kes_nil : substEnv_kes σ [] = [] := by simp only [substEnv_kes]
+theorem substEnv_pf_kes_nil : substEnvKes σ [] = [] := by simp only [substEnvKes]
 theorem substEnv_pf_kes_cons {ke ke' : keyed_element} {l l' : List keyed_element}
-    (h1 : substEnv_ke σ ke = ke') (h2 : substEnv_kes σ l = l') :
-    substEnv_kes σ (ke :: l) = ke' :: l' := by simp only [substEnv_kes, h1, h2]
-theorem substEnv_pf_ke {k k' : Option key} {el el' : element} (h1 : substEnv_okey σ k = k')
-    (h2 : substEnv_el σ el = el') : substEnv_ke σ (KeyedElement k el) = KeyedElement k' el' := by
-  simp only [substEnv_ke, h1, h2]
-theorem substEnv_pf_okey_none : substEnv_okey σ none = none := by simp only [substEnv_okey]
+    (h1 : substEnvKe σ ke = ke') (h2 : substEnvKes σ l = l') :
+    substEnvKes σ (ke :: l) = ke' :: l' := by simp only [substEnvKes, h1, h2]
+theorem substEnv_pf_ke {k k' : Option key} {el el' : element} (h1 : substEnvOkey σ k = k')
+    (h2 : substEnvEl σ el = el') : substEnvKe σ (KeyedElement k el) = KeyedElement k' el' := by
+  simp only [substEnvKe, h1, h2]
+theorem substEnv_pf_okey_none : substEnvOkey σ none = none := by simp only [substEnvOkey]
 theorem substEnv_pf_okey_field (f : go_string) :
-    substEnv_okey σ (some (KeyField f)) = some (KeyField f) := by simp only [substEnv_okey]
+    substEnvOkey σ (some (KeyField f)) = some (KeyField f) := by simp only [substEnvOkey]
 theorem substEnv_pf_okey_int (i : Int) :
-    substEnv_okey σ (some (KeyInteger i)) = some (KeyInteger i) := by simp only [substEnv_okey]
+    substEnvOkey σ (some (KeyInteger i)) = some (KeyInteger i) := by simp only [substEnvOkey]
 theorem substEnv_pf_okey_expr (t : go.type) {e e' : expr} (h : substEnv σ e = e') :
-    substEnv_okey σ (some (KeyExpression t e)) = some (KeyExpression t e') := by
-  simp only [substEnv_okey, h]
-theorem substEnv_pf_okey_lv {l l' : List keyed_element} (h : substEnv_kes σ l = l') :
-    substEnv_okey σ (some (KeyLiteralValue l)) = some (KeyLiteralValue l') := by
-  simp only [substEnv_okey, h]
+    substEnvOkey σ (some (KeyExpression t e)) = some (KeyExpression t e') := by
+  simp only [substEnvOkey, h]
+theorem substEnv_pf_okey_lv {l l' : List keyed_element} (h : substEnvKes σ l = l') :
+    substEnvOkey σ (some (KeyLiteralValue l)) = some (KeyLiteralValue l') := by
+  simp only [substEnvOkey, h]
 theorem substEnv_pf_el_expr (t : go.type) {e e' : expr} (h : substEnv σ e = e') :
-    substEnv_el σ (ElementExpression t e) = ElementExpression t e' := by simp only [substEnv_el, h]
-theorem substEnv_pf_el_lv {l l' : List keyed_element} (h : substEnv_kes σ l = l') :
-    substEnv_el σ (ElementLiteralValue l) = ElementLiteralValue l' := by simp only [substEnv_el, h]
+    substEnvEl σ (ElementExpression t e) = ElementExpression t e' := by simp only [substEnvEl, h]
+theorem substEnv_pf_el_lv {l l' : List keyed_element} (h : substEnvKes σ l = l') :
+    substEnvEl σ (ElementLiteralValue l) = ElementLiteralValue l' := by simp only [substEnvEl, h]
 
 end pf
 

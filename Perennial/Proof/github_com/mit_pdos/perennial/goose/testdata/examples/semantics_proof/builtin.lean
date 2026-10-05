@@ -20,10 +20,10 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-theorem wp_testMinUint64 : test_fun_ok (GF := GF) testMinUint64 := by
+theorem wp_testMinUint64 : TestFunOk (GF := GF) testMinUint64 := by
   semantics_auto
 
-theorem wp_testMaxUint64 : test_fun_ok (GF := GF) testMaxUint64 := by
+theorem wp_testMaxUint64 : TestFunOk (GF := GF) testMaxUint64 := by
   semantics_auto
 
 end wps

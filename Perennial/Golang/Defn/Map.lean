@@ -64,11 +64,11 @@ variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
 
 class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_lookup_step_pure (m k : val) :
-    ⟦InternalMapLookup, (m, k)⟧ ⤳ (let (ok, v) := map_lookup m k; gl((v, #ok)))
+    ⟦InternalMapLookup, (m, k)⟧ ⤳ (let (ok, v) := mapLookup m k; gl((v, #ok)))
   internal_map_insert_step_pure (m k v : val) :
-    ⟦InternalMapInsert, (m, k, v)⟧ ⤳ (map_insert m k v)
+    ⟦InternalMapInsert, (m, k, v)⟧ ⤳ (mapInsert m k v)
   internal_map_delete_step_pure (m k : val) :
-    ⟦InternalMapDelete, (m, k)⟧ ⤳ (map_delete m k)
+    ⟦InternalMapDelete, (m, k)⟧ ⤳ (mapDelete m k)
   /-- Not an instance in Lean: `ks` and `H` cannot be found by typeclass
   search. -/
   internal_map_length_step_pure (m : val) (ks : List val) (H : is_map_domain m ks) :
@@ -87,7 +87,7 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
                  else return: "b")
           ) gl(return: (do: #())) ks)
   internal_map_make_step_pure (v : val) :
-    ⟦InternalMapMake, v⟧ ⤳ (map_empty v)
+    ⟦InternalMapMake, v⟧ ⤳ (mapEmpty v)
   internal_map_check_key_step (key_type : go.type) (k : val) :
     ⟦InternalMapCheckKey key_type, k⟧ ⤳ (k =⟨key_type⟩ k)
 
@@ -99,30 +99,30 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
 
   -- internal deterministic steps
   internal_map_lookup_step (mv k : val) :
-    ⟦InternalMapLookup, (mv, k)⟧ ⤳ (let (ok, v) := map_lookup mv k; gl((v, #ok)))
+    ⟦InternalMapLookup, (mv, k)⟧ ⤳ (let (ok, v) := mapLookup mv k; gl((v, #ok)))
   internal_map_insert_step (mv k v : val) :
-    ⟦InternalMapInsert, (mv, k, v)⟧ ⤳ (map_insert mv k v)
+    ⟦InternalMapInsert, (mv, k, v)⟧ ⤳ (mapInsert mv k v)
   internal_map_delete_step (mv k : val) :
-    ⟦InternalMapDelete, (mv, k)⟧ ⤳ (map_delete mv k)
+    ⟦InternalMapDelete, (mv, k)⟧ ⤳ (mapDelete mv k)
   internal_map_make_step (v : val) :
-    ⟦InternalMapMake, v⟧ ⤳ (map_empty v)
+    ⟦InternalMapMake, v⟧ ⤳ (mapEmpty v)
 
-  map_lookup_pure (k mv : val) (m : val → Bool × val) (H : is_map_pure mv m) :
-    map_lookup mv k = m k
+  mapLookup_pure (k mv : val) (m : val → Bool × val) (H : is_map_pure mv m) :
+    mapLookup mv k = m k
   is_map_pure_map_insert (k v mv : val) (m : val → Bool × val) (H : is_map_pure mv m) :
-    is_map_pure (map_insert mv k v) (fun k' => if k' = k then (true, v) else m k')
+    is_map_pure (mapInsert mv k v) (fun k' => if k' = k then (true, v) else m k')
   is_map_pure_map_delete (k mv : val) (m : val → Bool × val) (H : is_map_pure mv m) :
-    is_map_pure (map_delete mv k)
-      (fun k' => if k' = k then (false, map_default mv) else m k')
-  is_map_pure_map_empty (dv : val) : is_map_pure (map_empty dv) (fun _ => (false, dv))
+    is_map_pure (mapDelete mv k)
+      (fun k' => if k' = k then (false, mapDefault mv) else m k')
+  is_map_pure_map_empty (dv : val) : is_map_pure (mapEmpty dv) (fun _ => (false, dv))
 
-  map_default_map_empty (dv : val) : map_default (map_empty dv) = dv
-  map_default_map_insert (m k v : val) : map_default (map_insert m k v) = map_default m
-  map_default_map_delete (m k : val) : map_default (map_delete m k) = map_default m
+  mapDefault_map_empty (dv : val) : mapDefault (mapEmpty dv) = dv
+  mapDefault_map_insert (m k v : val) : mapDefault (mapInsert m k v) = mapDefault m
+  mapDefault_map_delete (m k : val) : mapDefault (mapDelete m k) = mapDefault m
 
   is_map_domain_exists (mv : val) (m : val → Bool × val) (H : is_map_pure mv m) :
     ∃ ks, is_map_domain mv ks
-  is_map_domain_map_empty (dv : val) (ks : List val) : is_map_domain (map_empty dv) ks → ks = []
+  is_map_domain_map_empty (dv : val) (ks : List val) : is_map_domain (mapEmpty dv) ks → ks = []
   is_map_domain_pure (mv : val) (m : val → Bool × val) (ks : List val) :
     is_map_pure mv m →
     is_map_domain mv ks →
@@ -188,9 +188,9 @@ export MapSemantics (internal_map_lookup_step_pure internal_map_insert_step_pure
   internal_map_delete_step_pure internal_map_length_step_pure
   internal_map_domain_literal_step_pure internal_map_make_step_pure internal_map_check_key_step
   is_go_op_go_equals_map_nil_l is_go_op_go_equals_map_nil_r internal_map_lookup_step
-  internal_map_insert_step internal_map_delete_step internal_map_make_step map_lookup_pure
-  is_map_pure_map_insert is_map_pure_map_delete is_map_pure_map_empty map_default_map_empty
-  map_default_map_insert map_default_map_delete is_map_domain_exists is_map_domain_map_empty
+  internal_map_insert_step internal_map_delete_step internal_map_make_step mapLookup_pure
+  is_map_pure_map_insert is_map_pure_map_delete is_map_pure_map_empty mapDefault_map_empty
+  mapDefault_map_insert mapDefault_map_delete is_map_domain_exists is_map_domain_map_empty
   is_map_domain_pure clear_map delete_map make2_map make1_map len_map composite_literal_map)
 
 end defs

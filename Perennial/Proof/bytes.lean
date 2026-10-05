@@ -21,17 +21,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : bytes.Assumptions]
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.bytes :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.bytes :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.bytes :=
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.bytes :=
   build_get_is_pkg_init_wf
 
 theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.bytes get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+    (Hinit : GetIsPkgInitProp pkg_id.bytes get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.bytes }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.bytes }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -45,13 +45,13 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   is_pkg_init_finish
 
 theorem wp_Clone (sl_b : slice.t) (dq : DFrac) (b : List w8) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.bytes ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.bytes ∗
        "Hsl_b" ∷ sl_b ↦*{dq} b }}
       (App (Val (@! Clone)) (Val #sl_b))
     {{ (sl_b' : slice.t), RET #sl_b';
        "Hsl_b" ∷ sl_b ↦*{dq} b ∗
        "Hsl_b'" ∷ sl_b' ↦* b ∗
-       "Hsl_b'_cap" ∷ own_slice_cap w8 sl_b' (DFrac.own 1) }} := by
+       "Hsl_b'_cap" ∷ ownSliceCap w8 sl_b' (DFrac.own 1) }} := by
   wp_start
   iNamed Hpre
   wp_auto
@@ -59,14 +59,14 @@ theorem wp_Clone (sl_b : slice.t) (dq : DFrac) (b : List w8) :
   · subst Hif
     simp only [decide_true]
     wp_auto
-    ihave %Hlen := own_slice_len _ _ _ $$ Hsl_b
+    ihave %Hlen := ownSlice_len _ _ _ $$ Hsl_b
     have hb : b = [] := List.eq_nil_of_length_eq_zero (by rw [Hlen.1]; rfl)
     subst hb
     iapply HΦ
     iframe Hsl_b
     isplitl []
-    · iapply own_slice_nil
-    · iapply own_slice_cap_nil
+    · iapply ownSlice_nil
+    · iapply ownSliceCap_nil
   · simp only [decide_eq_false Hif]
     -- step to the slice literal without unfolding it (`wp_auto` would)
     wp_pure; wp_pure; wp_pure; wp_pure; wp_pure; wp_pure
@@ -85,7 +85,7 @@ theorem wp_Clone (sl_b : slice.t) (dq : DFrac) (b : List w8) :
     iframe Hs' Hs'_cap Hsl_b
 
 theorem wp_Equal (sl_b0 sl_b1 : slice.t) (d0 d1 : DFrac) (b0 b1 : List w8) :
-    {{ is_pkg_init (PROP := IProp GF) pkg_id.bytes ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.bytes ∗
        "Hb0" ∷ sl_b0 ↦*{d0} b0 ∗
        "Hb1" ∷ sl_b1 ↦*{d1} b1 }}
       (App (App (Val (@! Equal)) (Val #sl_b0)) (Val #sl_b1))

@@ -73,23 +73,23 @@ instance countableProp : Pos.Countable Prop :=
 
 /-- `Pos.Countable` for finite maps, through the (canonical) `toList`. -/
 instance gmap_countable {K V : Type} [DecidableEq K] [Pos.Countable K] [Pos.Countable V] :
-    Pos.Countable (gmap K V) :=
+    Pos.Countable (GMap K V) :=
   .ofInjective (fun m => Pos.Countable.encode m.toList)
     (fun m1 m2 h => by
       have h : m1.toList = m2.toList := Pos.encode_inj h
-      apply gmap.map_eq
+      apply GMap.map_eq
       intro k
       cases h1 : m1 !! k with
       | none =>
         cases h2 : m2 !! k with
         | none => rfl
         | some v =>
-          have := (gmap.mem_toList m2 k v).mpr h2
-          rw [← h, gmap.mem_toList, h1] at this
+          have := (GMap.mem_toList m2 k v).mpr h2
+          rw [← h, GMap.mem_toList, h1] at this
           cases this
       | some v =>
-        have := (gmap.mem_toList m1 k v).mpr h1
-        rw [h, gmap.mem_toList] at this
+        have := (GMap.mem_toList m1 k v).mpr h1
+        rw [h, GMap.mem_toList] at this
         exact this.symm)
 
 /-- Countability from a left-inverse map into a countable type (stdpp `inj_countable'`). -/

@@ -14,16 +14,16 @@ def assume : val :=
                (rec: "infloop" <> := "infloop" #()) #()
 
 /-- Assume "a" + "b" doesn't overflow. -/
-def assume_sum_no_overflow : val :=
+def assumeSumNoOverflow : val :=
   λ: "a" "b", assume ("a" ≤⟨go.uint64⟩ #(W64 (2^64-1)) -⟨go.uint64⟩ "b") ;; #()
 
 /-- Assume "a" + "b" doesn't overflow and return the sum. -/
-def sum_assume_no_overflow : val :=
-  λ: "a" "b", assume_sum_no_overflow "a" "b" ;;
+def sumAssumeNoOverflow : val :=
+  λ: "a" "b", assumeSumNoOverflow "a" "b" ;;
               "a" +⟨go.uint64⟩ "b"
 
 /-- Assume "x" + "y" doesn't overflow. -/
-def assume_sum_no_overflow_signed : val :=
+def assumeSumNoOverflowSigned : val :=
   λ: "x" "y",
   let: "max_int" := #(W64 (2^63-1)) in
   let: "min_int" := #(W64 (-2^63)) in
@@ -31,17 +31,17 @@ def assume_sum_no_overflow_signed : val :=
     (("y" <⟨go.int⟩ #(W64 0)) && (("min_int" -⟨go.int⟩ "y") <⟨go.int⟩ "x")))
 
 /-- Assume "x" + "y" doesn't overflow and return the sum. -/
-def sum_assume_no_overflow_signed : val :=
-  λ: "a" "b", assume_sum_no_overflow_signed "a" "b" ;;
+def sumAssumeNoOverflowSigned : val :=
+  λ: "a" "b", assumeSumNoOverflowSigned "a" "b" ;;
               "a" +⟨go.uint64⟩ "b"
 
-def mul_overflows : val :=
+def mulOverflows : val :=
   λ: "a" "b", if: ("a" =⟨go.uint64⟩ #(W64 0)) || ("b" =⟨go.uint64⟩ #(W64 0)) then #false
               else "a" >⟨go.uint64⟩ #(W64 (2^64-1)) /⟨go.uint64⟩ "b"
 
 /-- Assume "a" * "b" doesn't overflow (as unsigned 64-bit integers) -/
-def assume_mul_no_overflow : val :=
-  λ: "a" "b", assume (⟨go.bool⟩! mul_overflows "a" "b")
+def assumeMulNoOverflow : val :=
+  λ: "a" "b", assume (⟨go.bool⟩! mulOverflows "a" "b")
 
 end defn
 

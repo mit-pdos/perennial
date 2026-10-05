@@ -24,8 +24,8 @@ Confirmed with `#check @strings.wp_Fields`, whose binders are only
 | Lean | Rocq |
 |---|---|
 | `Perennial/Proof/strings.lean:97` `wp_Fields` | `new/proof/strings.v:60` (`∀ `{!strings.Assumptions}`) |
-| `Perennial/Proof/go_etcd_io/etcd/api/v3/etcdserverpb.lean:41` `wp_InternalRaftRequest__Marshal`, `:48` `own_InternalRaftRequest_new_header` | `new/proof/go_etcd_io/etcd/api/v3/etcdserverpb.v:23,30` (Section has `package_sem`) |
-| `Perennial/Proof/k8s_io/utils/third_party/forked/golang/btree.lean:55,65,80` `wp_BTree__Clone/Get/ReplaceOrInsert` (and the predicates at :46/:50, harmless) | `new/proof/k8s_io/.../btree.v` (Context has `btree.Assumptions`) |
+| `Perennial/Proof/go_etcd_io/etcd/api/v3/etcdserverpb.lean:41` `InternalRaftRequest.wp_Marshal`, `:48` `own_InternalRaftRequest_new_header` | `new/proof/go_etcd_io/etcd/api/v3/etcdserverpb.v:23,30` (Section has `package_sem`) |
+| `Perennial/Proof/k8s_io/utils/third_party/forked/golang/btree.lean:55,65,80` `BTree.wp_Clone/Get/ReplaceOrInsert` (and the predicates at :46/:50, harmless) | `new/proof/k8s_io/.../btree.v` (Context has `btree.Assumptions`) |
 
 **Fix:** put `include package_sem in` (for btree, `include … package_sem in`)
 before each axiom, or bind `[strings.Assumptions]` explicitly. Then `#check`
@@ -48,10 +48,10 @@ None found.
   on w64/loc is `LitV …`, which in Lean is abstract. This is documented. The
   Lean version is the more useful one.
 - **`Bool` atomic specs** (`Perennial/Proof/sync/atomic.lean` ~1103, 1127:
-  `wp_Bool__Load`, `wp_Bool__Store`, `wp_b32`) take an extra
+  `Bool.wp_Load`, `Bool.wp_Store`, `wp_b32`) take an extra
   `is_pkg_init pkg_id.sync.atomic` precondition that Rocq (`atomic.v:863,872`)
   does not have. This is formally weaker but practically harmless. Fix: drop it.
-- **`wp_Pointer__Load/Store`** add `▷` inside the AU precondition. This makes
+- **`Pointer.wp_Load/Store`** add `▷` inside the AU precondition. This makes
   the specs stronger for clients, so it is fine; noted only as a divergence.
 - **Ghost libraries** (`Perennial/Ghost/{GhostVar,GhostMap,DGhostVar,MonoList,SavedProp}.lean`)
   require `[Pos.Countable A]`, while Rocq takes any `A`. This is a restriction,
@@ -72,7 +72,7 @@ None found.
   instance, so `is_Cond` facts about that field rest on an arbitrary predicate,
   exactly as in Rocq. (`copyChecker` and `copyChecker.check` are no longer
   axiomatized: they are Lean-only trusted code in `TrustedCode/sync.lean`, with
-  `copyChecker.t = loc`, so `wp_copyChecker__check` is proved.)
+  `copyChecker.t = loc`, so `copyChecker.wp_check` is proved.)
 - **Unfinished work:** `Theory/Chan/AuSpec/ChanAuSend.lean:255` has `| _ => sorry`
   that is not admitted in Rocq; the directory is untracked and in progress. Not
   yet ported: `theory/chan.v`, `chan_au_recv.v`, `sync_proof/{waitgroup,waitgroup_join,rwmutex_guard}.v`.

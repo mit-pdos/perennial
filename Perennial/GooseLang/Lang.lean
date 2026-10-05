@@ -9,13 +9,13 @@ Differences from the Rocq version:
 * The base step is an inductive relation (`base_step`) instead of being written
   with the `Transitions` monad, and FFI steps (`ffi_semantics.ffi_step`) are a
   plain relation.
-* The real semantics is `goose_real_ectxi_lang`, an iris-lean
-  `EctxItemLanguage` whose state is the pair `state × global_state`
-  (`cfg_state`). It is a `def`, not an instance: the registered language
+* The real semantics is `gooseRealEctxiLang`, an iris-lean
+  `EctxItemLanguage` whose state is the pair `state × GlobalState`
+  (`CfgState`). It is a `def`, not an instance: the registered language
   instance (used by the program logic) is the step-bounded layer
   `goose_ectxi_lang` of `Perennial/GooseLang/BoundedLang.lean`, which adds a
   step fuel on top of `base_step` for time receipts. The adequacy theorems
-  are transferred back to `goose_real_ectxi_lang` (`goose_adequacy`).
+  are transferred back to `gooseRealEctxiLang` (`goose_adequacy`).
 * Equality on the syntax is decided classically. Rocq proves it with an
   encoding into trees; nothing downstream computes with it.
 -/
@@ -78,7 +78,7 @@ abbrev mk (ptr : loc) (len cap : w64) : slice.t := ⟨ptr, len, cap⟩
 end slice
 
 /-- Primitive (non-composite) values, injected into `val` by `LitV`. -/
-inductive base_lit where
+inductive BaseLit where
   | LitInt (n : w64)
   | LitInt32 (n : w32)
   | LitInt16 (n : w16)
@@ -92,14 +92,14 @@ inductive base_lit where
   | LitSlice (s : slice.t)
 deriving DecidableEq, Inhabited
 
-inductive prim_op0 where
+inductive PrimOp0 where
   /-- a stuck expression, to represent undefined behavior -/
   | PanicOp (s : String)
   /-- non-deterministically pick an integer -/
   | ArbitraryIntOp
 deriving DecidableEq
 
-inductive prim_op1 where
+inductive PrimOp1 where
   /-- non-atomic write, part 1 (loc) -/
   | PrepareWriteOp
   /-- non-atomic loads (which conflict with stores) -/
@@ -111,7 +111,7 @@ inductive prim_op1 where
   | AllocOp
 deriving DecidableEq
 
-inductive prim_op2 where
+inductive PrimOp2 where
   /-- pointer, value -/
   | FinishStoreOp
   /-- pointer, value; returns old value -/
@@ -198,9 +198,9 @@ inductive expr where
   -- Concurrency
   | Fork (e : expr)
   -- Heap-based primitives
-  | Primitive0 (op : prim_op0)
-  | Primitive1 (op : prim_op1) (e : expr)
-  | Primitive2 (op : prim_op2) (e1 e2 : expr)
+  | Primitive0 (op : PrimOp0)
+  | Primitive1 (op : PrimOp1) (e : expr)
+  | Primitive2 (op : PrimOp2) (e1 e2 : expr)
   /-- Compare-exchange -/
   | CmpXchg (e0 e1 e2 : expr)
   /-- External FFI operation -/
@@ -212,7 +212,7 @@ inductive expr where
   | SelectStmtClauses (default_handler : Option expr) (l : List comm_clause)
 
 inductive val where
-  | LitV (l : base_lit)
+  | LitV (l : BaseLit)
   | RecV (f x : binder) (e : expr)
   | PairV (v1 v2 : val)
   | InjLV (v : val)
@@ -274,7 +274,7 @@ export key (KeyField KeyInteger KeyExpression KeyLiteralValue)
 export element (ElementExpression ElementLiteralValue)
 export comm_clause (CommClause)
 export comm_case (SendCase RecvCase)
-export base_lit (LitInt LitInt32 LitInt16 LitBool LitByte LitString LitUnit LitPoison LitLoc
+export BaseLit (LitInt LitInt32 LitInt16 LitBool LitByte LitString LitUnit LitPoison LitLoc
   LitProphecy LitSlice)
 export go_operator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder GoAnd
   GoOr GoXor GoBitClear GoShiftl GoShiftr)
@@ -333,21 +333,21 @@ instance [ffi_syntax] : Inhabited func.t := ⟨nil⟩
 abbrev mk [ffi_syntax] (f x : binder) (e : expr) : func.t := ⟨f, x, e⟩
 end func
 
-/-- `GoGlobalContext` contains the `into_val` function. This allows for the Go
-semantics to state constraints on `into_val` (e.g. injectivity for certain
+/-- `GoGlobalContext` contains the `intoVal` function. This allows for the Go
+semantics to state constraints on `intoVal` (e.g. injectivity for certain
 types). -/
 class GoGlobalContext [ffi_syntax] where
-  into_val : {V : Type} → V → val
-  into_val_inj_loc : Function.Injective (into_val (V := loc))
-  into_val_inj_bool : Function.Injective (into_val (V := Bool))
-  into_val_inj_proph_id : Function.Injective (into_val (V := proph_id))
-  into_val_inj_w64 : Function.Injective (into_val (V := w64))
-  into_val_inj_w8 : Function.Injective (into_val (V := w8))
+  intoVal : {V : Type} → V → val
+  intoVal_inj_loc : Function.Injective (intoVal (V := loc))
+  intoVal_inj_bool : Function.Injective (intoVal (V := Bool))
+  intoVal_inj_proph_id : Function.Injective (intoVal (V := proph_id))
+  intoVal_inj_w64 : Function.Injective (intoVal (V := w64))
+  intoVal_inj_w8 : Function.Injective (intoVal (V := w8))
 
-export GoGlobalContext (into_val)
+export GoGlobalContext (intoVal)
 
-/-- `# x` is `into_val x`. -/
-scoped prefix:max "#" => into_val
+/-- `# x` is `intoVal x`. -/
+scoped prefix:max "#" => intoVal
 
 /-- `GoLocalContext` contains several low-level Go functions for typed memory
 access, map updates, etc. -/
@@ -373,7 +373,7 @@ inductive t [ffi_syntax] where
 
 export t (ok nil)
 
-abbrev mk_ok [ffi_syntax] (ty : go.type) (v : val) : t := .ok ⟨ty, v⟩
+abbrev mkOk [ffi_syntax] (ty : go.type) (v : val) : t := .ok ⟨ty, v⟩
 /-- Rocq `interface.mk`. -/
 abbrev mk [ffi_syntax] (ty : go.type) (v : val) : t_ok := ⟨ty, v⟩
 
@@ -389,16 +389,16 @@ end array
 
 /-! ## State -/
 
-inductive naMode where
+inductive NaMode where
   | Writing
   | Reading (n : Nat)
 deriving DecidableEq, Inhabited
 
-export naMode (Writing Reading)
+export NaMode (Writing Reading)
 
-abbrev nonAtomic (T : Type) := naMode × T
+abbrev NonAtomic (T : Type) := NaMode × T
 
-def Free {T} (v : T) : nonAtomic T := (Reading 0, v)
+def Free {T} (v : T) : NonAtomic T := (Reading 0, v)
 
 class ZeroVal (V : Type) where
   zero_val_def : V
@@ -429,34 +429,34 @@ section state
 variable [ffi_syntax] [ffi_model]
 
 structure GoState where
-  go_lctx : GoLocalContext
-  package_state : gmap go_string Bool
+  goLctx : GoLocalContext
+  packageState : GMap go_string Bool
 
 instance : Inhabited GoLocalContext := ⟨⟨fun _ _ _ => False⟩⟩
 instance : Inhabited GoState := ⟨⟨default, ∅⟩⟩
 
 structure state where
-  heap : gmap loc (nonAtomic val)
-  go_state : GoState
+  heap : GMap loc (NonAtomic val)
+  goState : GoState
   world : ffi_state
 
-structure global_state where
-  global_world : ffi_global_state
-  used_proph_id : gset proph_id
+structure GlobalState where
+  globalWorld : ffi_global_state
+  usedProphId : GSet proph_id
 
 instance : Inhabited state := ⟨⟨∅, default, default⟩⟩
-instance : Inhabited global_state := ⟨⟨default, ∅⟩⟩
+instance : Inhabited GlobalState := ⟨⟨default, ∅⟩⟩
 
-/-- The state of the iris-lean language: Rocq's `state * global_state`. -/
-abbrev cfg_state := state × global_state
+/-- The state of the iris-lean language: Rocq's `state * GlobalState`. -/
+abbrev CfgState := state × GlobalState
 
 /-- An observation associates a prophecy variable to the value it is resolved to. -/
-abbrev observation := proph_id × val
+abbrev Observation := proph_id × val
 
 end state
 
-def is_go_step [ffi_syntax] [GoGlobalContext] [GoLocalContext]
-    (op : go_instruction) (arg : val) (e' : expr) (s s' : gmap go_string Bool) : Prop :=
+def IsGoStep [ffi_syntax] [GoGlobalContext] [GoLocalContext]
+    (op : go_instruction) (arg : val) (e' : expr) (s s' : GMap go_string Bool) : Prop :=
   match op with
   | PackageInitCheck p => arg = #() ∧ e' = Val #((s !! p).getD false) ∧ s' = s
   | PackageInitStart p => arg = #() ∧ e' = Val #() ∧ s' = <[p := false]> s
@@ -466,7 +466,7 @@ def is_go_step [ffi_syntax] [GoGlobalContext] [GoLocalContext]
 /-- FFI semantics: `ffi_step op v σg e' σg'` says that the external operation
 `op` applied to `v` in state `σg` can produce `e'` and state `σg'`. -/
 class ffi_semantics (ext : ffi_syntax) (ffi : ffi_model) where
-  ffi_step : ffi_opcode → val → cfg_state → expr → cfg_state → Prop
+  ffi_step : ffi_opcode → val → CfgState → expr → CfgState → Prop
 
 export ffi_semantics (ffi_step)
 
@@ -475,16 +475,16 @@ export ffi_semantics (ffi_step)
 section lang
 variable [ext : ffi_syntax]
 
-def to_val : expr → Option val
+def toVal : expr → Option val
   | Val v => some v
   | _ => none
 
-@[simp] theorem to_of_val (v : val) : to_val (Val v) = some v := rfl
+@[simp] theorem to_of_val (v : val) : toVal (Val v) = some v := rfl
 
-theorem of_to_val {e : expr} {v : val} : to_val e = some v → Val v = e := by
-  cases e <;> simp [to_val]; exact Eq.symm
+theorem of_to_val {e : expr} {v : val} : toVal e = some v → Val v = e := by
+  cases e <;> simp [toVal]; exact Eq.symm
 
-inductive ectx_item where
+inductive EctxItem where
   | AppLCtx (v2 : val)
   | AppRCtx (e1 : expr)
   | IfCtx (e1 e2 : expr)
@@ -492,9 +492,9 @@ inductive ectx_item where
   | PairRCtx (v1 : val)
   | FstCtx
   | SndCtx
-  | Primitive1Ctx (op : prim_op1)
-  | Primitive2LCtx (op : prim_op2) (e2 : expr)
-  | Primitive2RCtx (op : prim_op2) (v1 : val)
+  | Primitive1Ctx (op : PrimOp1)
+  | Primitive2LCtx (op : PrimOp2) (e2 : expr)
+  | Primitive2RCtx (op : PrimOp2) (v1 : val)
   | ExternalOpCtx (op : ffi_opcode)
   | CmpXchgLCtx (e1 e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
@@ -502,8 +502,8 @@ inductive ectx_item where
   | ResolveProphLCtx (v2 : val)
   | ResolveProphRCtx (e1 : expr)
 
-open ectx_item in
-def fill_item (Ki : ectx_item) (e : expr) : expr :=
+open EctxItem in
+def fillItem (Ki : EctxItem) (e : expr) : expr :=
   match Ki with
   | AppLCtx v2 => App e (Val v2)
   | AppRCtx e1 => App e1 e
@@ -540,35 +540,35 @@ def subst (x : String) (v : val) : expr → expr
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
   | ResolveProph e1 e2 => ResolveProph (subst x v e1) (subst x v e2)
-  | LiteralValue l => LiteralValue (subst_keyed_elements x v l)
-  | SelectStmtClauses d l => SelectStmtClauses (subst_opt x v d) (subst_comm_clauses x v l)
+  | LiteralValue l => LiteralValue (substKeyedElements x v l)
+  | SelectStmtClauses d l => SelectStmtClauses (substOpt x v d) (substCommClauses x v l)
 
-def subst_opt (x : String) (v : val) : Option expr → Option expr
+def substOpt (x : String) (v : val) : Option expr → Option expr
   | none => none
   | some e => some (subst x v e)
 
-def subst_keyed_elements (x : String) (v : val) : List keyed_element → List keyed_element
+def substKeyedElements (x : String) (v : val) : List keyed_element → List keyed_element
   | [] => []
-  | ke :: l => subst_keyed_element x v ke :: subst_keyed_elements x v l
+  | ke :: l => substKeyedElement x v ke :: substKeyedElements x v l
 
-def subst_keyed_element (x : String) (v : val) : keyed_element → keyed_element
-  | KeyedElement k el => KeyedElement (subst_opt_key x v k) (subst_element x v el)
+def substKeyedElement (x : String) (v : val) : keyed_element → keyed_element
+  | KeyedElement k el => KeyedElement (substOptKey x v k) (substElement x v el)
 
-def subst_opt_key (x : String) (v : val) : Option key → Option key
+def substOptKey (x : String) (v : val) : Option key → Option key
   | none => none
   | some (KeyExpression t e) => some (KeyExpression t (subst x v e))
-  | some (KeyLiteralValue l) => some (KeyLiteralValue (subst_keyed_elements x v l))
+  | some (KeyLiteralValue l) => some (KeyLiteralValue (substKeyedElements x v l))
   | some k => some k
 
-def subst_element (x : String) (v : val) : element → element
+def substElement (x : String) (v : val) : element → element
   | ElementExpression t e => ElementExpression t (subst x v e)
-  | ElementLiteralValue l => ElementLiteralValue (subst_keyed_elements x v l)
+  | ElementLiteralValue l => ElementLiteralValue (substKeyedElements x v l)
 
-def subst_comm_clauses (x : String) (v : val) : List comm_clause → List comm_clause
+def substCommClauses (x : String) (v : val) : List comm_clause → List comm_clause
   | [] => []
-  | c :: l => subst_comm_clause x v c :: subst_comm_clauses x v l
+  | c :: l => substCommClause x v c :: substCommClauses x v l
 
-def subst_comm_clause (x : String) (v : val) : comm_clause → comm_clause
+def substCommClause (x : String) (v : val) : comm_clause → comm_clause
   | CommClause (SendCase t b e) body => CommClause (SendCase t (subst x v b) (subst x v e)) (subst x v body)
   | CommClause (RecvCase t e) body => CommClause (RecvCase t (subst x v e)) (subst x v body)
 end
@@ -585,16 +585,16 @@ end lang
 section step
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
 
-def state_init_heap (l : loc) (v : val) (σ : state) : state :=
+def stateInitHeap (l : loc) (v : val) (σ : state) : state :=
   { σ with heap := {[l := Free v]} ∪ σ.heap }
 
-def is_Writing {A} (mna : Option (nonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
+def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
 /-- `l` is the start of a fresh block in `σg`. -/
-def isFresh (σg : cfg_state) (l : loc) : Prop :=
-  (∀ i : Int, l +ₗ i ≠ null ∧ σg.1.heap !! (l +ₗ i) = none) ∧ l.addr_offset = 0
+def IsFresh (σg : CfgState) (l : loc) : Prop :=
+  (∀ i : Int, l +ₗ i ≠ null ∧ σg.1.heap !! (l +ₗ i) = none) ∧ l.addrOffset = 0
 
-def atomic_add_eval (v1 v2 : val) : Option val :=
+def atomicAddEval (v1 v2 : val) : Option val :=
   match v1, v2 with
   | LitV (LitInt n1), LitV (LitInt n2) => some #(n1 + n2)
   | LitV (LitInt32 n1), LitV (LitInt32 n2) => some #(n1 + n2)
@@ -602,105 +602,105 @@ def atomic_add_eval (v1 v2 : val) : Option val :=
   | LitV (LitByte n1), LitV (LitByte n2) => some #(n1 + n2)
   | _, _ => none
 
-def set_heap (f : gmap loc (nonAtomic val) → gmap loc (nonAtomic val)) (σg : cfg_state) :
-    cfg_state :=
+def setHeap (f : GMap loc (NonAtomic val) → GMap loc (NonAtomic val)) (σg : CfgState) :
+    CfgState :=
   ({ σg.1 with heap := f σg.1.heap }, σg.2)
 
 open Classical in
 /-- Rocq `base_trans`/`base_step`, as an inductive relation:
 `base_step e σg κs e' σg' efs`. -/
-inductive base_step : expr → cfg_state → List observation → expr → cfg_state → List expr → Prop
-  | RecS f x e σg : base_step (Rec f x e) σg [] (Val (RecV f x e)) σg []
-  | PairS v1 v2 σg : base_step (Pair (Val v1) (Val v2)) σg [] (Val (PairV v1 v2)) σg []
+inductive BaseStep : expr → CfgState → List Observation → expr → CfgState → List expr → Prop
+  | RecS f x e σg : BaseStep (Rec f x e) σg [] (Val (RecV f x e)) σg []
+  | PairS v1 v2 σg : BaseStep (Pair (Val v1) (Val v2)) σg [] (Val (PairV v1 v2)) σg []
   | BetaS f x e1 v2 σg :
-      base_step (App (Val (RecV f x e1)) (Val v2)) σg []
+      BaseStep (App (Val (RecV f x e1)) (Val v2)) σg []
         (subst' x v2 (subst' f (RecV f x e1) e1)) σg []
-  | IfTrueS e1 e2 σg : base_step (If (Val #true) e1 e2) σg [] e1 σg []
-  | IfFalseS e1 e2 σg : base_step (If (Val #false) e1 e2) σg [] e2 σg []
-  | FstS v1 v2 σg : base_step (Fst (Val (PairV v1 v2))) σg [] (Val v1) σg []
-  | SndS v1 v2 σg : base_step (Snd (Val (PairV v1 v2))) σg [] (Val v2) σg []
-  | ForkS e σg : base_step (Fork e) σg [] (Val #()) σg [e]
-  | ArbitraryIntS (x : w64) σg : base_step ArbitraryInt σg [] (Val #x) σg []
+  | IfTrueS e1 e2 σg : BaseStep (If (Val #true) e1 e2) σg [] e1 σg []
+  | IfFalseS e1 e2 σg : BaseStep (If (Val #false) e1 e2) σg [] e2 σg []
+  | FstS v1 v2 σg : BaseStep (Fst (Val (PairV v1 v2))) σg [] (Val v1) σg []
+  | SndS v1 v2 σg : BaseStep (Snd (Val (PairV v1 v2))) σg [] (Val v2) σg []
+  | ForkS e σg : BaseStep (Fork e) σg [] (Val #()) σg [e]
+  | ArbitraryIntS (x : w64) σg : BaseStep ArbitraryInt σg [] (Val #x) σg []
   | AllocS v l σg :
-      isFresh σg l →
-      base_step (Alloc (Val v)) σg [] (Val #l) (state_init_heap l v σg.1, σg.2) []
+      IsFresh σg l →
+      BaseStep (Alloc (Val v)) σg [] (Val #l) (stateInitHeap l v σg.1, σg.2) []
   /-- non-atomic load part 1 (used for map accesses) -/
   | StartReadS l n v σg :
       σg.1.heap !! l = some (Reading n, v) →
-      base_step (StartRead (Val #l)) σg [] (Val v) (set_heap (<[l := (Reading (n + 1), v)]> ·) σg) []
+      BaseStep (StartRead (Val #l)) σg [] (Val v) (setHeap (<[l := (Reading (n + 1), v)]> ·) σg) []
   /-- non-atomic load part 2 -/
   | FinishReadS l n v σg :
       σg.1.heap !! l = some (Reading (n + 1), v) →
-      base_step (FinishRead (Val #l)) σg [] (Val #()) (set_heap (<[l := (Reading n, v)]> ·) σg) []
+      BaseStep (FinishRead (Val #l)) σg [] (Val #()) (setHeap (<[l := (Reading n, v)]> ·) σg) []
   /-- atomic load (used for most normal Go loads) -/
   | LoadS l n v σg :
       σg.1.heap !! l = some (Reading n, v) →
-      base_step (Load (Val #l)) σg [] (Val v) σg []
+      BaseStep (Load (Val #l)) σg [] (Val v) σg []
   /-- non-atomic write part 1 -/
   | PrepareWriteS l v σg :
       σg.1.heap !! l = some (Reading 0, v) →
-      base_step (PrepareWrite (Val #l)) σg [] (Val #()) (set_heap (<[l := (Writing, v)]> ·) σg) []
+      BaseStep (PrepareWrite (Val #l)) σg [] (Val #()) (setHeap (<[l := (Writing, v)]> ·) σg) []
   /-- non-atomic write part 2 -/
   | FinishStoreS l v σg :
-      is_Writing (σg.1.heap !! l) →
-      base_step (FinishStore (Val #l) (Val v)) σg [] (Val #()) (set_heap (<[l := Free v]> ·) σg) []
+      IsWriting (σg.1.heap !! l) →
+      BaseStep (FinishStore (Val #l) (Val v)) σg [] (Val #()) (setHeap (<[l := Free v]> ·) σg) []
   | AtomicSwapS l v0 v σg :
       σg.1.heap !! l = some (Reading 0, v0) →
-      base_step (AtomicSwap (Val #l) (Val v)) σg [] (Val v0) (set_heap (<[l := Free v]> ·) σg) []
+      BaseStep (AtomicSwap (Val #l) (Val v)) σg [] (Val v0) (setHeap (<[l := Free v]> ·) σg) []
   | AtomicAddS l v0 v v' σg :
       σg.1.heap !! l = some (Reading 0, v0) →
-      atomic_add_eval v0 v = some v' →
-      base_step (AtomicAdd (Val #l) (Val v)) σg [] (Val v') (set_heap (<[l := Free v']> ·) σg) []
+      atomicAddEval v0 v = some v' →
+      BaseStep (AtomicAdd (Val #l) (Val v)) σg [] (Val v') (setHeap (<[l := Free v']> ·) σg) []
   | ExternalOpS op v e' σg σg' :
       ffi_step op v σg e' σg' →
-      base_step (ExternalOp op (Val v)) σg [] e' σg' []
+      BaseStep (ExternalOp op (Val v)) σg [] e' σg' []
   | GoInstructionS op arg e' s' σg :
-      @is_go_step _ _ σg.1.go_state.go_lctx op arg e' σg.1.go_state.package_state s' →
-      base_step (App (Val (GoInstruction op)) (Val arg)) σg [] e'
-        ({ σg.1 with go_state := { σg.1.go_state with package_state := s' } }, σg.2) []
+      @IsGoStep _ _ σg.1.goState.goLctx op arg e' σg.1.goState.packageState s' →
+      BaseStep (App (Val (GoInstruction op)) (Val arg)) σg [] e'
+        ({ σg.1 with goState := { σg.1.goState with packageState := s' } }, σg.2) []
   | CmpXchgFailS l n vl v1 v2 σg :
       σg.1.heap !! l = some (Reading n, vl) →
       vl ≠ v1 →
-      base_step (CmpXchg (Val #l) (Val v1) (Val v2)) σg [] (Val (PairV vl #false)) σg []
+      BaseStep (CmpXchg (Val #l) (Val v1) (Val v2)) σg [] (Val (PairV vl #false)) σg []
   | CmpXchgSucS l vl v1 v2 σg :
       σg.1.heap !! l = some (Reading 0, vl) →
       vl = v1 →
-      base_step (CmpXchg (Val #l) (Val v1) (Val v2)) σg [] (Val (PairV vl #true))
-        (set_heap (<[l := Free v2]> ·) σg) []
+      BaseStep (CmpXchg (Val #l) (Val v1) (Val v2)) σg [] (Val (PairV vl #true))
+        (setHeap (<[l := Free v2]> ·) σg) []
   | NewProphS p σg :
-      p ∉ σg.2.used_proph_id →
-      base_step NewProph σg [] (Val #p)
-        (σg.1, { σg.2 with used_proph_id := {[p := ()]} ∪ σg.2.used_proph_id }) []
+      p ∉ σg.2.usedProphId →
+      BaseStep NewProph σg [] (Val #p)
+        (σg.1, { σg.2 with usedProphId := {[p := ()]} ∪ σg.2.usedProphId }) []
   | ResolveProphS (p : proph_id) w σg :
-      base_step (ResolveProph (Val #p) (Val w)) σg [(p, w)] (Val #()) σg []
-  | LiteralValueS l σg : base_step (LiteralValue l) σg [] (Val (LiteralValueV l)) σg []
+      BaseStep (ResolveProph (Val #p) (Val w)) σg [(p, w)] (Val #()) σg []
+  | LiteralValueS l σg : BaseStep (LiteralValue l) σg [] (Val (LiteralValueV l)) σg []
   | SelectStmtClausesS d cs σg :
-      base_step (SelectStmtClauses d cs) σg [] (Val (SelectStmtClausesV d cs)) σg []
+      BaseStep (SelectStmtClauses d cs) σg [] (Val (SelectStmtClausesV d cs)) σg []
 
-theorem val_base_stuck {e σ κ e' σ' efs} : base_step e σ κ e' σ' efs → to_val e = none := by
+theorem val_base_stuck {e σ κ e' σ' efs} : BaseStep e σ κ e' σ' efs → toVal e = none := by
   intro h; cases h <;> rfl
 
-theorem fill_item_val (Ki : ectx_item) (e : expr) :
-    (to_val (fill_item Ki e)).isSome → (to_val e).isSome := by
-  cases Ki <;> simp [fill_item, to_val]
+theorem fillItem_val (Ki : EctxItem) (e : expr) :
+    (toVal (fillItem Ki e)).isSome → (toVal e).isSome := by
+  cases Ki <;> simp [fillItem, toVal]
 
-theorem fill_item_inj (Ki : ectx_item) : Function.Injective (fill_item Ki) := by
-  intro e1 e2 h; cases Ki <;> simp_all [fill_item]
+theorem fillItem_inj (Ki : EctxItem) : Function.Injective (fillItem Ki) := by
+  intro e1 e2 h; cases Ki <;> simp_all [fillItem]
 
-theorem fill_item_no_val_inj (Ki1 Ki2 : ectx_item) {e1 e2 : expr} :
-    to_val e1 = none → to_val e2 = none → fill_item Ki1 e1 = fill_item Ki2 e2 → Ki1 = Ki2 := by
+theorem fillItem_no_val_inj (Ki1 Ki2 : EctxItem) {e1 e2 : expr} :
+    toVal e1 = none → toVal e2 = none → fillItem Ki1 e1 = fillItem Ki2 e2 → Ki1 = Ki2 := by
   intro h1 h2 h
-  cases Ki1 <;> cases Ki2 <;> simp only [fill_item, reduceCtorEq] at h <;>
+  cases Ki1 <;> cases Ki2 <;> simp only [fillItem, reduceCtorEq] at h <;>
     (try simp only [expr.App.injEq, expr.Pair.injEq,
     expr.If.injEq, expr.Fst.injEq, expr.Snd.injEq, expr.Primitive1.injEq, expr.Primitive2.injEq,
     expr.ExternalOp.injEq, expr.CmpXchg.injEq, expr.ResolveProph.injEq] at h) <;>
     (try subst_eqs) <;> (first | (obtain ⟨_, _, _⟩ := h) | (obtain ⟨_, _⟩ := h) | skip) <;>
-    subst_vars <;> simp_all [to_val]
+    subst_vars <;> simp_all [toVal]
 
-theorem base_ctx_step_val (Ki : ectx_item) {e σ κ e2 σ2 efs} :
-    base_step (fill_item Ki e) σ κ e2 σ2 efs → (to_val e).isSome := by
+theorem base_ctx_step_val (Ki : EctxItem) {e σ κ e2 σ2 efs} :
+    BaseStep (fillItem Ki e) σ κ e2 σ2 efs → (toVal e).isSome := by
   intro h
-  cases Ki <;> simp only [fill_item] at h <;> cases h <;> simp [to_val]
+  cases Ki <;> simp only [fillItem] at h <;> cases h <;> simp [toVal]
 
 end step
 
@@ -710,7 +710,7 @@ section language
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
 
 instance goose_toVal : ToVal expr val where
-  toVal := to_val
+  toVal := toVal
   ofVal := Val
   coe_of_toVal_eq_some := of_to_val
   toVal_coe _ := rfl
@@ -718,16 +718,16 @@ instance goose_toVal : ToVal expr val where
 /-- The real GooseLang semantics as an iris-lean `EctxItemLanguage` (the trusted
 model). Not an instance: the program logic uses the bounded layer
 `goose_ectxi_lang` (`BoundedLang.lean`). -/
-@[reducible] def goose_real_ectxi_lang : EctxItemLanguage expr ectx_item cfg_state observation val where
-  toVal := to_val
+@[reducible] def gooseRealEctxiLang : EctxItemLanguage expr EctxItem CfgState Observation val where
+  toVal := toVal
   ofVal := Val
   coe_of_toVal_eq_some := of_to_val
   toVal_coe _ := rfl
-  baseStep := fun (e, σ) κ (e', σ', efs) => base_step e σ κ e' σ' efs
-  fillItem := fill_item
-  fillItem_inj {Ki} := fill_item_inj Ki
-  fillItem_val e Ki := fill_item_val Ki e
-  fillItem_no_val_inj Ki1 Ki2 := fill_item_no_val_inj Ki1 Ki2
+  baseStep := fun (e, σ) κ (e', σ', efs) => BaseStep e σ κ e' σ' efs
+  fillItem := fillItem
+  fillItem_inj {Ki} := fillItem_inj Ki
+  fillItem_val e Ki := fillItem_val Ki e
+  fillItem_no_val_inj Ki1 Ki2 := fillItem_no_val_inj Ki1 Ki2
   val_stuck := val_base_stuck
   base_ctx_step_val {Ki} _ _ _ _ _ _ := base_ctx_step_val Ki
 

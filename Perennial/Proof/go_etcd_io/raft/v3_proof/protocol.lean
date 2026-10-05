@@ -9,11 +9,11 @@ Lean notes:
   the generated `go_etcd_io.raft.v3.node`, so they are `v3_proof.node.t` and
   `v3_proof.message.t`. Generated raft names are written `v3.node`, ...
 * The broadcast and bag idioms fix `hlc := HasLC.hasLC` and need `[allG GF]`.
-* Deviations from Rocq (so that `wp_node__Advance` and `wp_node__Propose`,
+* Deviations from Rocq (so that `node.wp_Advance` and `node.wp_Propose`,
   admitted in Rocq, are provable; their statements are unchanged): the
-  invariants in `is_node_inner` (`"#Hpropc"`, `"#Hadvancec"`) and
-  `own_propose_message` are changed, see their docstrings. New:
-  `msgWithResult_countable`, `is_initialized_access`.
+  invariants in `isNodeInner` (`"#Hpropc"`, `"#Hadvancec"`) and
+  `ownProposeMessage` are changed, see their docstrings. New:
+  `msgWithResult_countable`, `isInitialized_access`.
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.base
 import Perennial.Golang.Theory.Chan.Idioms.Broadcast
@@ -52,35 +52,35 @@ end astate
 
 /-! ### Global definitions, not specific to a particular (generation of a) node. -/
 
-/-- Rocq `Axiom raft_names : Type`. -/
-axiom raft_names : Type
+/-- Rocq `Axiom RaftNames : Type`. -/
+axiom RaftNames : Type
 
-/-- Rocq `Axiom own_raft_log` (Rocq abstracts only over `Σ`). -/
-axiom own_raft_log {GF : BundledGFunctors} (γ : raft_names) (log : List (List w8)) : IProp GF
+/-- Rocq `Axiom ownRaftLog` (Rocq abstracts only over `Σ`). -/
+axiom ownRaftLog {GF : BundledGFunctors} (γ : RaftNames) (log : List (List w8)) : IProp GF
 
-/-- Rocq `Axiom is_raft_log`. -/
-axiom is_raft_log {GF : BundledGFunctors} (γ : raft_names) (log : List (List w8)) : IProp GF
+/-- Rocq `Axiom isRaftLog`. -/
+axiom isRaftLog {GF : BundledGFunctors} (γ : RaftNames) (log : List (List w8)) : IProp GF
 
-/-- Rocq `Axiom is_raft_log_pers`. -/
-axiom is_raft_log_pers {GF : BundledGFunctors} (γ : raft_names) (log : List (List w8)) :
-    Persistent (is_raft_log (GF := GF) γ log)
+/-- Rocq `Axiom isRaftLog_pers`. -/
+axiom isRaftLog_pers {GF : BundledGFunctors} (γ : RaftNames) (log : List (List w8)) :
+    Persistent (isRaftLog (GF := GF) γ log)
 
-instance is_raft_log_pers_inst {GF : BundledGFunctors} (γ : raft_names) (log : List (List w8)) :
-    Persistent (is_raft_log (GF := GF) γ log) :=
-  is_raft_log_pers γ log
+instance isRaftLog_pers_inst {GF : BundledGFunctors} (γ : RaftNames) (log : List (List w8)) :
+    Persistent (isRaftLog (GF := GF) γ log) :=
+  isRaftLog_pers γ log
 
 section wps
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
-theorem is_initialized_access :
-    is_pkg_init (PROP := IProp GF) raft ⊢ v3.is_initialized :=
-  is_pkg_init_access (PROP := IProp GF) raft
+theorem isInitialized_access :
+    isPkgInit (PROP := IProp GF) raft ⊢ v3.isInitialized :=
+  isPkgInit_access (PROP := IProp GF) raft
 
 /-- Rocq `MsgProp`. -/
 def MsgProp : w32 := W32 2
@@ -102,57 +102,57 @@ instance msgWithResult_countable : Pos.Countable v3.msgWithResult.t :=
       subst h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15
       rfl)
 
-/-- Rocq `own_propose_message`.
+/-- Rocq `ownProposeMessage`.
 
 Lean deviations: Rocq has `"Hentries" ∷ pm.m'.Entries' ↦* [data_sl]` (a slice of
 `Entry`s described as a slice of byte slices) and `"data_sl" ∷ data_sl ↦* data`
 (full ownership, which `Propose` does not have: its precondition is
 `data_sl ↦*□ data`). Here `Entries` is a one-element slice of an `Entry` whose
 `Data` is `data_sl`, and `data_sl ↦*□ data`. -/
-def own_propose_message (γraft : raft_names) (pm : v3.msgWithResult.t) : IProp GF :=
-  iprop(∃ (data_sl : slice.t) (data : List w8) (γch : chan_names) (e : v3.raftpb.Entry.t),
+def ownProposeMessage (γraft : RaftNames) (pm : v3.msgWithResult.t) : IProp GF :=
+  iprop(∃ (data_sl : slice.t) (data : List w8) (γch : ChanNames) (e : v3.raftpb.Entry.t),
     "Hmsg" ∷ ⌜pm.m'.Type' = MsgProp⌝ ∗
     "%He" ∷ ⌜e.Data' = data_sl⌝ ∗
     "Hentries" ∷ pm.m'.Entries' ↦* [e] ∗
     "#data_sl" ∷ data_sl ↦*□ data ∗
-    "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗
-      (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True)) ∗
+    "Hupd" ∷ (|={⊤,∅}=> ∃ log, ownRaftLog γraft log ∗
+      (ownRaftLog γraft (log ++ [data]) ={∅,⊤}=∗ True)) ∗
     -- FIXME: probably can only send once.
-    "Hresult" ∷ is_chan_bag (V := interface.t) γch pm.result'
+    "Hresult" ∷ isChanBag (V := interface.t) γch pm.result'
       (fun _ => iprop(True)))
 
-/-- Rocq `is_node_inner` (`Local`).
+/-- Rocq `isNodeInner` (`Local`).
 
 Lean deviations:
-* `"#Hpropc"`: Rocq `is_chan_bag γp n.propc' (λ (_ : error.t), True)`, a bag at
+* `"#Hpropc"`: Rocq `isChanBag γp n.propc' (λ (_ : error.t), True)`, a bag at
   element type `error` (its `V` is inferred from the predicate) although `propc`
   is a `chan msgWithResult`; here a bag of `msgWithResult` whose elements are
-  `own_propose_message`s (needed to send a proposal on it).
-* `"#Hadvancec"`: Rocq `is_chan n.advancec' γa unit ∗ inv nroot (∃ s, own_chan γa unit s)`,
+  `ownProposeMessage`s (needed to send a proposal on it).
+* `"#Hadvancec"`: Rocq `isChan n.advancec' γa unit ∗ inv nroot (∃ s, ownChan γa unit s)`,
   which allows a closed `advancec` (then the send in `Advance` panics); here a
-  bag (`is_chan_bag`, whose invariant excludes `Closed`) with trivial payload. -/
-def is_node_inner (γraft : raft_names) (n : v3.node.t) : IProp GF :=
-  iprop(∃ (γp γa γd : chan_names),
-    "#Hpropc" ∷ is_chan_bag (V := v3.msgWithResult.t) γp n.propc' (own_propose_message γraft) ∗
-    "#Hadvancec" ∷ is_chan_bag (V := Unit) γa n.advancec' (fun _ => iprop(True)) ∗
-    "#Hdone" ∷ own_broadcast_chan n.done' γd iprop(True) broadcast.t.Unknown)
+  bag (`isChanBag`, whose invariant excludes `Closed`) with trivial payload. -/
+def isNodeInner (γraft : RaftNames) (n : v3.node.t) : IProp GF :=
+  iprop(∃ (γp γa γd : ChanNames),
+    "#Hpropc" ∷ isChanBag (V := v3.msgWithResult.t) γp n.propc' (ownProposeMessage γraft) ∗
+    "#Hadvancec" ∷ isChanBag (V := Unit) γa n.advancec' (fun _ => iprop(True)) ∗
+    "#Hdone" ∷ ownBroadcastChan n.done' γd iprop(True) broadcast.t.Unknown)
 
 /-- Rocq `is_node`. -/
-def is_node (γraft : raft_names) (n : loc) : IProp GF :=
+def is_node (γraft : RaftNames) (n : loc) : IProp GF :=
   iprop(∃ nd : v3.node.t,
     "n_ptr" ∷ n ↦□ nd ∗
-    "Hinner" ∷ is_node_inner γraft nd)
+    "Hinner" ∷ isNodeInner γraft nd)
 
-instance is_node_inner_pers (γraft : raft_names) (n : v3.node.t) :
-    Persistent (is_node_inner (GF := GF) γraft n) := by
-  unfold is_node_inner; infer_instance
+instance isNodeInner_pers (γraft : RaftNames) (n : v3.node.t) :
+    Persistent (isNodeInner (GF := GF) γraft n) := by
+  unfold isNodeInner; infer_instance
 
-instance is_node_pers (γraft : raft_names) (n : loc) :
+instance is_node_pers (γraft : RaftNames) (n : loc) :
     Persistent (is_node (GF := GF) γraft n) := by
   unfold is_node; infer_instance
 
-theorem wp_node__Ready (γraft : raft_names) (n : loc) :
-    {{ is_pkg_init (PROP := IProp GF) raft ∗ is_node γraft n }}
+theorem node.wp_Ready (γraft : RaftNames) (n : loc) :
+    {{ isPkgInit (PROP := IProp GF) raft ∗ is_node γraft n }}
       (App (Val (n @!! go.type.PointerType v3.node @!! go!"Ready")) (Val #()))
     {{ (ready : chan.t), RET #ready; True }} := by
   wp_start as Hpre
@@ -161,8 +161,8 @@ theorem wp_node__Ready (γraft : raft_names) (n : loc) :
   wp_auto
   wp_end
 
-theorem wp_node__Advance (γraft : raft_names) (n : loc) :
-    {{ is_pkg_init (PROP := IProp GF) raft ∗ is_node γraft n }}
+theorem node.wp_Advance (γraft : RaftNames) (n : loc) :
+    {{ isPkgInit (PROP := IProp GF) raft ∗ is_node γraft n }}
       (App (Val (n @!! go.type.PointerType v3.node @!! go!"Advance")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as Hpre
@@ -173,7 +173,7 @@ theorem wp_node__Advance (γraft : raft_names) (n : loc) :
   wp_apply_core chan.wp_select_blocking
   iapply BigAndL.bigAndL_cons.2
   isplit
-  · simp only [chan.blocking_clause_pre]
+  · simp only [chan.blockingClausePre]
     iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, nd.advancec', γa, ()
     isplit
     · ipureintro; exact ⟨rfl, rfl⟩
@@ -186,12 +186,12 @@ theorem wp_node__Advance (γraft : raft_names) (n : loc) :
     wp_end
   iapply BigAndL.bigAndL_cons.2
   isplit
-  · simp only [chan.blocking_clause_pre]
+  · simp only [chan.blockingClausePre]
     iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, nd.done', γd
     isplit
     · ipureintro; rfl
     isplit
-    · iapply own_broadcast_chan_is_chan $$ Hdone
+    · iapply ownBroadcastChan_is_chan $$ Hdone
     iapply broadcast_chan_receive _ _ _ _ _ $$ Hdone
     iintro ⟨_, _⟩
     wp_auto
@@ -200,16 +200,16 @@ theorem wp_node__Advance (γraft : raft_names) (n : loc) :
     itrivial
 
 /-- (Rocq: admitted. Proved here by inlining `stepWait` and
-`stepWithWaitOption (wait := true)`, with the changed `is_node_inner` and
-`own_propose_message`.) -/
-theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
+`stepWithWaitOption (wait := true)`, with the changed `isNodeInner` and
+`ownProposeMessage`.) -/
+theorem node.wp_Propose (γraft : RaftNames) (n : loc) (ctx : interface.t_ok)
     (ctx_desc : context.Context_desc.t (IProp GF)) (data_sl : slice.t) (data : List w8) :
-    {{ is_pkg_init (PROP := IProp GF) raft ∗
-        "#Hctx" ∷ context.is_Context ctx ctx_desc ∗
+    {{ isPkgInit (PROP := IProp GF) raft ∗
+        "#Hctx" ∷ context.isContext ctx ctx_desc ∗
         "#Hnode" ∷ is_node γraft n ∗
         "#data_sl" ∷ data_sl ↦*□ data ∗
-        "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗
-          (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True)) }}
+        "Hupd" ∷ (|={⊤,∅}=> ∃ log, ownRaftLog γraft log ∗
+          (ownRaftLog γraft (log ++ [data]) ={∅,⊤}=∗ True)) }}
       (App (App (Val (n @!! go.type.PointerType v3.node @!! go!"Propose"))
         (Val #(interface.ok ctx))) (Val #data_sl))
     {{ (err : interface.t), RET #err; if err = interface.nil then True else True }} := by
@@ -231,25 +231,25 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
   wp_auto
   iunfold is_node at Hnode
   icases Hnode with ⟨%nd, #Hn, #Hinner⟩
-  iunfold is_node_inner at Hinner
+  iunfold isNodeInner at Hinner
   icases Hinner with ⟨%γp, %γa, %γd, #Hpropc, #Hadvancec, #Hdone⟩
   iStructNamed Hn
   wp_auto_lc 4
-  ihave #Hinit := is_initialized_access $$ Hpkg
+  ihave #Hinit := isInitialized_access $$ Hpkg
   iNamed Hinit
   wp_apply (chan.wp_make2 (V := interface.t) (W64 1)) as %res %γres ⟨#Hres_is, %Hcap, Hres_own⟩
   · ipureintro; decide
   imod start_bag (fun _ => iprop(True)) (.Buffered []) res γres trivial $$ Hres_is Hres_own with #Hres
-  iunfold context.is_Context at Hctx
+  iunfold context.isContext at Hctx
   iNamed Hctx
-  iunfold context.is_Context_def at Hctx
+  iunfold context.isContextDef at Hctx
   iNamed Hctx
   wp_apply HDone $$ [] as %dch %dγ #HDone_ch
   wp_apply_core chan.wp_select_blocking
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- send the proposal on `propc`
-    simp only [chan.blocking_clause_pre]
+    simp only [chan.blockingClausePre]
     iexists v3.msgWithResult.t, inferInstance, inferInstance, inferInstance, inferInstance,
       nd.propc', γp, _
     isplit
@@ -257,7 +257,7 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
     isplit
     · iapply is_bag_is_chan $$ Hpropc
     iapply bag_send_au _ _ _ _ _ $$ [$Hlc1 $Hlc2] Hpropc [Hsl Hupd] [-]
-    · unfold own_propose_message
+    · unfold ownProposeMessage
       iexists data_sl, data, γres, _
       iframe # ∗
       ipureintro; exact ⟨rfl, rfl⟩
@@ -268,7 +268,7 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
     iapply BigAndL.bigAndL_cons.2
     isplit
     · -- the result arrives
-      simp only [chan.blocking_clause_pre]
+      simp only [chan.blockingClausePre]
       iexists interface.t, inferInstance, inferInstance, inferInstance, inferInstance, res, γres
       isplit
       · ipureintro; rfl
@@ -286,13 +286,13 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
     iapply BigAndL.bigAndL_cons.2
     isplit
     · -- `ctx.Done()` is closed
-      simp only [chan.blocking_clause_pre]
+      simp only [chan.blockingClausePre]
       iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, dch2, dγ2
       isplit
       · ipureintro; rfl
       isplit
-      · iapply context.is_Context_Done_is_chan $$ HDone_ch2
-      iapply context.is_Context_Done_receive _ _ _ _ $$ HDone_ch2
+      · iapply context.isContextDone_is_chan $$ HDone_ch2
+      iapply context.isContextDone_receive _ _ _ _ $$ HDone_ch2
       iintro _
       wp_auto
       ihave #HErr' := HErr $$ %broadcast.t.Unknown
@@ -302,12 +302,12 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
     iapply BigAndL.bigAndL_cons.2
     isplit
     · -- the node is stopped
-      simp only [chan.blocking_clause_pre]
+      simp only [chan.blockingClausePre]
       iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, nd.done', γd
       isplit
       · ipureintro; rfl
       isplit
-      · iapply own_broadcast_chan_is_chan $$ Hdone
+      · iapply ownBroadcastChan_is_chan $$ Hdone
       iapply broadcast_chan_receive _ _ _ _ _ $$ Hdone
       iintro ⟨_, _⟩
       wp_auto
@@ -318,13 +318,13 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- `ctx.Done()` is closed
-    simp only [chan.blocking_clause_pre]
+    simp only [chan.blockingClausePre]
     iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, dch, dγ
     isplit
     · ipureintro; rfl
     isplit
-    · iapply context.is_Context_Done_is_chan $$ HDone_ch
-    iapply context.is_Context_Done_receive _ _ _ _ $$ HDone_ch
+    · iapply context.isContextDone_is_chan $$ HDone_ch
+    iapply context.isContextDone_receive _ _ _ _ $$ HDone_ch
     iintro _
     wp_auto
     ihave #HErr' := HErr $$ %broadcast.t.Unknown
@@ -334,12 +334,12 @@ theorem wp_node__Propose (γraft : raft_names) (n : loc) (ctx : interface.t_ok)
   iapply BigAndL.bigAndL_cons.2
   isplit
   · -- the node is stopped
-    simp only [chan.blocking_clause_pre]
+    simp only [chan.blockingClausePre]
     iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, nd.done', γd
     isplit
     · ipureintro; rfl
     isplit
-    · iapply own_broadcast_chan_is_chan $$ Hdone
+    · iapply ownBroadcastChan_is_chan $$ Hdone
     iapply broadcast_chan_receive _ _ _ _ _ $$ Hdone
     iintro ⟨_, _⟩
     wp_auto

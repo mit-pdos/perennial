@@ -92,15 +92,15 @@ instance os_is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.os :=
 instance os_get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.os :=
   build_get_is_pkg_init_wf
 
-/-- Rocq `is_initialized`. -/
-def is_initialized : IProp GF :=
+/-- Rocq `isInitialized`. -/
+def isInitialized : IProp GF :=
   iprop(∃ errStopped : interface.t,
-    "ErrStopped" ∷ (global_addr ErrStopped ↦□ errStopped : IProp GF) ∗
+    "ErrStopped" ∷ (globalAddr ErrStopped ↦□ errStopped : IProp GF) ∗
     "%HErrStopped" ∷ ⌜errStopped ≠ interface.nil⌝)
 
-instance is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.go_etcd_io.raft.v3 :=
-  define_is_pkg_init is_initialized
-instance get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.go_etcd_io.raft.v3 :=
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.go_etcd_io.raft.v3 :=
+  define_is_pkg_init isInitialized
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.go_etcd_io.raft.v3 :=
   build_get_is_pkg_init_wf
 
 end init

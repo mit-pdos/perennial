@@ -26,10 +26,10 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : lock.Assumptions]
 
-instance is_pkg_init_inst :
+instance isPkgInit_inst :
     IsPkgInit (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock :=
   define_is_pkg_init iprop(True)
-instance get_is_pkg_init_wf_inst :
+instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock :=
   build_get_is_pkg_init_wf
 
@@ -38,24 +38,24 @@ end init
 section proof
 variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [allG GF]
+variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : lock.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
 
-def is_Lock (γ : lock_channel_names) (l : Lock.t) (R : IProp GF) : IProp GF :=
-  iprop("#Hlock_chan" ∷ is_lock_channel Unit γ l.ch' R)
+def isLock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) : IProp GF :=
+  iprop("#Hlock_chan" ∷ isLockChannel Unit γ l.ch' R)
 
-instance is_Lock_persistent (γ : lock_channel_names) (l : Lock.t) (R : IProp GF) :
-    Persistent (is_Lock γ l R) := by
-  unfold is_Lock; infer_instance
+instance isLock_persistent (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
+    Persistent (isLock γ l R) := by
+  unfold isLock; infer_instance
 
 set_option goose.wp.extras true
 
 theorem wp_NewLock (R : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ ▷ R }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ ▷ R }}
       (App (Val (@! NewLock)) (Val #()))
-    {{ (γ : lock_channel_names) (l : Lock.t), RET #l; is_Lock γ l R }} := by
+    {{ (γ : LockChannelNames) (l : Lock.t), RET #l; isLock γ l R }} := by
   wp_start as HR
   iapply wp_fupd
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γch ⟨#Hchan, %Hcap, Hoc⟩
@@ -63,46 +63,46 @@ theorem wp_NewLock (R : IProp GF) :
   imod start_lock_channel (V := Unit) ch R γch Hcap $$ Hchan Hoc HR with ⟨%γlock, #Hislock⟩
   imodintro
   iapply HΦ
-  unfold is_Lock
+  unfold isLock
   iexact Hislock
 
-theorem wp_Lock__Lock (γ : lock_channel_names) (l : Lock.t) (R : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_Lock γ l R }}
+theorem Lock.wp_Lock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isLock γ l R }}
       (App (Val (l @!! Lock @!! go!"Lock")) (Val #()))
     {{ RET #(); R }} := by
   wp_start as #Hl
-  unfold is_Lock
+  unfold isLock
   wp_auto
   wp_apply wp_lock_channel_lock (t := go.type.StructType []) γ l.ch' () R $$ Hl as HR
   iapply HΦ $$ HR
 
-theorem wp_Lock__Unlock (γ : lock_channel_names) (l : Lock.t) (R : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_Lock γ l R ∗ R }}
+theorem Lock.wp_Unlock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isLock γ l R ∗ R }}
       (App (Val (l @!! Lock @!! go!"Unlock")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hl, HR⟩
-  unfold is_Lock
+  unfold isLock
   wp_auto
   wp_apply wp_lock_channel_unlock (t := go.type.StructType []) γ l.ch' R $$ [$Hl $HR] as %v -
   iapply HΦ
   itrivial
 
-theorem wp_Lock__TryLock (γ : lock_channel_names) (l : Lock.t) (R : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_Lock γ l R }}
+theorem Lock.wp_TryLock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isLock γ l R }}
       (App (Val (l @!! Lock @!! go!"TryLock")) (Val #()))
     {{ (b : Bool), RET #b; if b then R else True }} := by
   wp_start as #Hl
-  unfold is_Lock
+  unfold isLock
   wp_auto_lc 1
   wp_apply_core chan.wp_select_nonblocking
   isplit
   · iapply BigAndL.bigAndL_singleton.2
-    simp only [chan.nonblocking_clause_pre]
-    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, l.ch', γ.lchan_name, ()
+    simp only [chan.nonblockingClausePre]
+    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, l.ch', γ.lchanName, ()
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩
     isplitr
-    · iapply is_lock_channel_is_chan $$ Hl
+    · iapply isLockChannel_is_chan $$ Hl
     iapply lock_channel_nonblocking_send_au $$ Hl Hlc1
     iintro HR
     wp_auto
@@ -114,13 +114,13 @@ theorem wp_Lock__TryLock (γ : lock_channel_names) (l : Lock.t) (R : IProp GF) :
     simp only [Bool.false_eq_true, ↓reduceIte]
     itrivial
 
-theorem wp_Lock__LockWithTimeout (γ : lock_channel_names) (l : Lock.t) (R : IProp GF)
+theorem Lock.wp_LockWithTimeout (γ : LockChannelNames) (l : Lock.t) (R : IProp GF)
     (d : time.Duration.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_Lock γ l R }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isLock γ l R }}
       (App (Val (l @!! Lock @!! go!"LockWithTimeout")) (Val #d))
     {{ (b : Bool), RET #b; if b then R else True }} := by
   wp_start as #Hl
-  unfold is_Lock
+  unfold isLock
   wp_auto
   wp_apply +noauto time.wp_After
   iintro %after_ch %γafter #Hafter
@@ -128,12 +128,12 @@ theorem wp_Lock__LockWithTimeout (γ : lock_channel_names) (l : Lock.t) (R : IPr
   wp_apply_core chan.wp_select_blocking
   iapply BigAndL.bigAndL_cons.2
   isplit
-  · simp only [chan.blocking_clause_pre]
-    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, l.ch', γ.lchan_name, ()
+  · simp only [chan.blockingClausePre]
+    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, l.ch', γ.lchanName, ()
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩
     isplitr
-    · iapply is_lock_channel_is_chan $$ Hl
+    · iapply isLockChannel_is_chan $$ Hl
     iapply lock_channel_send_au $$ Hl Hlc1
     inext
     iintro HR
@@ -142,7 +142,7 @@ theorem wp_Lock__LockWithTimeout (γ : lock_channel_names) (l : Lock.t) (R : IPr
     simp only [↓reduceIte]
     iexact HR
   iapply BigAndL.bigAndL_singleton.2
-  simp only [chan.blocking_clause_pre]
+  simp only [chan.blockingClausePre]
   iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
   isplitr
   · ipureintro; rfl

@@ -16,12 +16,12 @@ namespace package
 section defns
 variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
 
-def init_def (pkg_name : go_string) : val :=
+def initDef (pkg_name : go_string) : val :=
   λ: "init",
     if: PackageInitCheck pkg_name #() then #()
     else PackageInitStart pkg_name #() ;; "init" #() ;; PackageInitFinish pkg_name #()
-@[irreducible] def init (pkg_name : go_string) : val := init_def pkg_name
-theorem init_unseal : init = init_def := by with_unfolding_all rfl
+@[irreducible] def init (pkg_name : go_string) : val := initDef pkg_name
+theorem init_unseal : init = initDef := by with_unfolding_all rfl
 end defns
 end package
 
