@@ -657,7 +657,6 @@ steps, for a bound `N` that the proof does not fix, e.g. to show that a 64-bit
 counter that is incremented once per call never overflows (given the premise
 `N ≤ 2^64`). Files:
 `Perennial/GooseLang/BoundedLang.lean` (semantics),
-`Perennial/Algebra/TimeReceipt.lean` (the camera),
 `Perennial/GooseLang/Receipts.lean` (ghost state and laws),
 `Perennial/GooseLang/Lifting.lean` (`wp_GoInstruction_receipt`),
 `Perennial/GooseLang/Adequacy.lean` (adequacy),
@@ -669,14 +668,20 @@ ghost state (with `receipt_bound_pos : 0 < receipt_bound GF`):
 ```
 class receiptGS (GF : BundledGFunctors) where
   receipt_allG : allG GF
-  receipt_name : GName
+  receipt_tok_name : GName
+  receipt_lb_name : GName
   receipt_bound : Nat
   receipt_bound_pos : 0 < receipt_bound
 ```
 
-The receipts are `own receipt_name a` for `a` in the camera `TRView` (code
-`receiptR` of `Perennial/Ghost/All.lean`). `receipt_allG` is an instance only
-inside `Receipts.lean`; elsewhere proofs keep their own `[allG GF]`.
+The receipts use only the generic ghost libraries. The step counter is a
+`mono_nat` (`receipt_lb_name`), and `⧖ n` is its lower bound `n` plus `⌜n < N⌝`.
+Each counted step `k` also issues an exclusive `ghost_map` token `k ↪ ()`
+(`receipt_tok_name`), and `⧗ n` is `n` such tokens, each with `⧖ (k + 1)`.
+Tokens are distinct steps, so the latest of `n` of them gives `⧖ n`; this is how
+the snapshot rule and `⧗ n ⊢ ⌜n < N⌝` hold without the authoritative counter.
+`receipt_allG` is an instance only inside `Receipts.lean`; elsewhere proofs keep
+their own `[allG GF]`.
 
 `receiptGS` is a field of `gooseGlobalGS`, hence available from `heapGS`, so a
 proof can write `receipt_bound GF` without new section variables. Nothing else

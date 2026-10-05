@@ -100,9 +100,9 @@ theorem goose_init [hPre : gooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   imod ffi_global_init GF hPre.goose_preG_ffi g.global_world Hinitg with ⟨%hFG, Hgctx, Hgstart⟩
   imod ffi_local_init GF hPre.goose_preG_ffi σ.world g.global_world Hinit
     with ⟨%hFL, Hlctx, Hlstart⟩
-  imod receipt_init (hPre := hPre.goose_preG_receipt) N hN with ⟨%γR, HR⟩
+  imod receipt_init (hPre := hPre.goose_preG_receipt) N hN with ⟨%γR, %γL, HR⟩
   let G : gooseGlobalGS .hasLC GF :=
-    ⟨Hinv, hProph, hFG, ⟨hPre.goose_preG_receipt.receipt_preG_allG, γR, N, hN⟩⟩
+    ⟨Hinv, hProph, hFG, ⟨hPre.goose_preG_receipt.receipt_preG_allG, γR, γL, N, hN⟩⟩
   let L : gooseLocalGS GF :=
     ⟨hFL, σ.go_state.go_lctx, hHeap, go_stateGS_update_pre GF hPre.goose_preG_go_state γ⟩
   let hG : heapGS .hasLC GF := ⟨G, L⟩
