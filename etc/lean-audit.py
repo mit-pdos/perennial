@@ -200,13 +200,15 @@ if os.path.exists(_rn):
     for _l in open(_rn, encoding="utf-8"):
         _p = _l.rstrip("\n").split("\t")
         if len(_p) == 2:
-            rocq_name[_p[1]] = _p[0]
+            rocq_name[_p[1].replace("«", "").replace("»", "")] = _p[0]
 
 def rocq_lookup(name, module):
     seen = set()
-    while name in rocq_name and name not in seen:   # renamed in several steps
-        seen.add(name)
-        name = rocq_name[name]
+    key = name.replace("«", "").replace("»", "")
+    while key in rocq_name and key not in seen:   # renamed in several steps
+        seen.add(key)
+        name = rocq_name[key]
+        key = name.replace("«", "").replace("»", "")
     sn = short(name)
     cands = rocq.get(sn, []) or rocq.get(sn.replace("'", ""), [])  # Lean renames clashes `Int` -> `Int'`
     if not cands:

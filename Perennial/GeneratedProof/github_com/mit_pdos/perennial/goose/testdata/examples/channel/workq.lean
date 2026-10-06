@@ -34,7 +34,7 @@ instance Worker_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Worker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.«Workerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.underlying := by
   solve_into_val_typed_struct
 
 instance Worker_access_load_queue (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.t) (dq : DFrac) :
@@ -92,7 +92,7 @@ instance shared_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance shared_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.«sharedⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.underlying := by
   solve_into_val_typed_struct
 
 instance shared_access_load_remaining (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared.t) (dq : DFrac) :

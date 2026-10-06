@@ -23,7 +23,7 @@ def Logger [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Logger
 
-axiom «Loggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Logger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 /-- the date in the local time zone: 2009/01/23 -/
 @[reducible] noncomputable def Ldate [FfiSyntax] [GoGlobalContext] : val :=
@@ -50,12 +50,12 @@ axiom Lmsgprefix [FfiSyntax] [GoGlobalContext] : val
 noncomputable def std [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.std"
 
-axiom std'init [FfiSyntax] [GoGlobalContext] : val
+axiom std.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def bufferPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.bufferPool"
 
-axiom bufferPool'init [FfiSyntax] [GoGlobalContext] : val
+axiom bufferPool.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.New"
@@ -126,7 +126,7 @@ noncomputable def Output [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.log where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -134,9 +134,9 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val bufferPool'init) (Val #())))))
+  (App (Val bufferPool.init) (Val #())))))
   (App (Val doExecute)
-  (App (Val std'init) (Val #()))))))))
+  (App (Val std.init) (Val #()))))))))
 
 namespace Logger
 axiom t : Type
@@ -144,19 +144,19 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Logger
 
-class Logger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Logger_type_repr : go.TypeReprUnderlying «Loggerⁱᵐᵖˡ» Logger.t
-  Logger_underlying : go.UnderlyingDirectedEq Logger «Loggerⁱᵐᵖˡ»
-  «Loggerⁱᵐᵖˡ_underlying» : go.IsUnderlying «Loggerⁱᵐᵖˡ» «Loggerⁱᵐᵖˡ»
+class Logger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Logger.underlying Logger.t
+  underlying : go.UnderlyingDirectedEq Logger Logger.underlying
+  isUnderlying : go.IsUnderlying Logger.underlying Logger.underlying
 
-attribute [instance] Logger_Assumptions.Logger_type_repr
-  Logger_Assumptions.Logger_underlying
-  Logger_Assumptions.«Loggerⁱᵐᵖˡ_underlying»
+attribute [instance] Logger.TypeAssumptions.type_repr
+  Logger.TypeAssumptions.underlying
+  Logger.TypeAssumptions.isUnderlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Logger_instance : Logger_Assumptions
-  Printf_unfold : FuncUnfold Printf [] «Printfⁱᵐᵖˡ»
-  Println_unfold : FuncUnfold Println [] «Printlnⁱᵐᵖˡ»
+  Logger_instance : Logger.TypeAssumptions
+  Printf_unfold : FuncUnfold Printf [] Printf.impl
+  Println_unfold : FuncUnfold Println [] Println.impl
 
 attribute [instance] Assumptions.Logger_instance
   Assumptions.Printf_unfold

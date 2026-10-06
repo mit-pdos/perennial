@@ -37,7 +37,7 @@ instance LeaseGrantRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseGrantRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseGrantRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantRequest.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseGrantRequest_access_load_TTL (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantRequest.t) (dq : DFrac) :
@@ -147,7 +147,7 @@ instance LeaseGrantResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseGrantResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseGrantResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseGrantResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantResponse.t) (dq : DFrac) :
@@ -286,7 +286,7 @@ instance LeaseRevokeRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseRevokeRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseRevokeRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeRequest.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseRevokeRequest_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeRequest.t) (dq : DFrac) :
@@ -377,7 +377,7 @@ instance LeaseRevokeResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseRevokeResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseRevokeResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseRevokeResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeResponse.t) (dq : DFrac) :
@@ -469,7 +469,7 @@ instance LeaseCheckpoint_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseCheckpoint_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpoint.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseCheckpointⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpoint.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpoint.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseCheckpoint_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpoint.t) (dq : DFrac) :
@@ -576,7 +576,7 @@ instance LeaseCheckpointRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseCheckpointRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseCheckpointRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseCheckpointRequest_access_load_Checkpoints (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest.t) (dq : DFrac) :
@@ -667,7 +667,7 @@ instance LeaseCheckpointResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseCheckpointResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseCheckpointResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseCheckpointResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointResponse.t) (dq : DFrac) :
@@ -758,7 +758,7 @@ instance LeaseKeepAliveRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseKeepAliveRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseKeepAliveRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveRequest.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseKeepAliveRequest_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveRequest.t) (dq : DFrac) :
@@ -851,7 +851,7 @@ instance LeaseKeepAliveResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseKeepAliveResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseKeepAliveResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseKeepAliveResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveResponse.t) (dq : DFrac) :
@@ -975,7 +975,7 @@ instance LeaseTimeToLiveRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseTimeToLiveRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseTimeToLiveRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveRequest.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseTimeToLiveRequest_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveRequest.t) (dq : DFrac) :
@@ -1086,7 +1086,7 @@ instance LeaseTimeToLiveResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseTimeToLiveResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseTimeToLiveResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseTimeToLiveResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse.t) (dq : DFrac) :
@@ -1240,7 +1240,7 @@ instance LeaseLeasesRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseLeasesRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseLeasesRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesRequest.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseLeasesRequest_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesRequest.t) (dq : DFrac) :
@@ -1315,7 +1315,7 @@ instance LeaseStatus_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseStatus_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseStatus.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseStatusⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseStatus.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseStatus.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseStatus_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseStatus.t) (dq : DFrac) :

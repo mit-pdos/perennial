@@ -40,7 +40,7 @@ noncomputable def Permutation [FfiSyntax] [GoGlobalContext] : GoString :=
 /-- Returns true if x + y does not overflow
 
     go: std_core.go:11:6 -/
-noncomputable def «SumNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SumNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -54,7 +54,7 @@ noncomputable def «SumNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     *Use with care* - if the assumption is violated this function will panic.
 
     go: std_core.go:18:6 -/
-noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SumAssumeNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -72,7 +72,7 @@ noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
 /-- MulNoOverflow returns true if x * y does not overflow
 
     go: std_core.go:24:6 -/
-noncomputable def «MulNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MulNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -92,7 +92,7 @@ noncomputable def «MulNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     *Use with care* - if the assumption is violated this function will panic.
 
     go: std_core.go:34:6 -/
-noncomputable def «MulAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MulAssumeNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -110,7 +110,7 @@ noncomputable def «MulAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
 /-- Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
 
     go: std_core.go:40:6 -/
-noncomputable def «Shuffleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Shuffle.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "xs"
   (App (Val exceptionDo)
   (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (Var "xs"))
@@ -157,7 +157,7 @@ noncomputable def «Shuffleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     Fisher-Yates shuffle.
 
     go: std_core.go:54:6 -/
-noncomputable def «Permutationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Permutation.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "n"))
@@ -198,12 +198,12 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #())))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] «SumNoOverflowⁱᵐᵖˡ»
-  SumAssumeNoOverflow_unfold : FuncUnfold SumAssumeNoOverflow [] «SumAssumeNoOverflowⁱᵐᵖˡ»
-  MulNoOverflow_unfold : FuncUnfold MulNoOverflow [] «MulNoOverflowⁱᵐᵖˡ»
-  MulAssumeNoOverflow_unfold : FuncUnfold MulAssumeNoOverflow [] «MulAssumeNoOverflowⁱᵐᵖˡ»
-  Shuffle_unfold : FuncUnfold Shuffle [] «Shuffleⁱᵐᵖˡ»
-  Permutation_unfold : FuncUnfold Permutation [] «Permutationⁱᵐᵖˡ»
+  SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] SumNoOverflow.impl
+  SumAssumeNoOverflow_unfold : FuncUnfold SumAssumeNoOverflow [] SumAssumeNoOverflow.impl
+  MulNoOverflow_unfold : FuncUnfold MulNoOverflow [] MulNoOverflow.impl
+  MulAssumeNoOverflow_unfold : FuncUnfold MulAssumeNoOverflow [] MulAssumeNoOverflow.impl
+  Shuffle_unfold : FuncUnfold Shuffle [] Shuffle.impl
+  Permutation_unfold : FuncUnfold Permutation [] Permutation.impl
   import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
 
 attribute [instance] Assumptions.SumNoOverflow_unfold

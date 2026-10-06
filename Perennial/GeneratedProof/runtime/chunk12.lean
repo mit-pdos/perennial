@@ -41,7 +41,7 @@ instance pollCache_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pollCache_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pollCache.t runtime.«pollCacheⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.pollCache.t runtime.pollCache.underlying := by
   solve_into_val_typed_struct
 
 instance pollCache_access_load_lock (l : Loc) (v : runtime.pollCache.t) (dq : DFrac) :
@@ -100,7 +100,7 @@ instance updateMaxProcsGState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance updateMaxProcsGState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.updateMaxProcsGState.t runtime.«updateMaxProcsGStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.updateMaxProcsGState.t runtime.updateMaxProcsGState.underlying := by
   solve_into_val_typed_struct
 
 instance updateMaxProcsGState_access_load_lock (l : Loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
@@ -191,7 +191,7 @@ instance ticksType_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ticksType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.ticksType.t runtime.«ticksTypeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.ticksType.t runtime.ticksType.underlying := by
   solve_into_val_typed_struct
 
 instance ticksType_access_load_lock (l : Loc) (v : runtime.ticksType.t) (dq : DFrac) :
@@ -292,7 +292,7 @@ instance sudog_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sudog_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sudog.t runtime.«sudogⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.sudog.t runtime.sudog.underlying := by
   solve_into_val_typed_struct
 
 instance sudog_access_load_g (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
@@ -607,7 +607,7 @@ instance g_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance g_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.g.t runtime.«gⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.g.t runtime.g.underlying := by
   solve_into_val_typed_struct
 
 instance g_access_load_stack (l : Loc) (v : runtime.g.t) (dq : DFrac) :
@@ -1673,7 +1673,7 @@ instance forcegcstate_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance forcegcstate_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.forcegcstate.t runtime.«forcegcstateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.forcegcstate.t runtime.forcegcstate.underlying := by
   solve_into_val_typed_struct
 
 instance forcegcstate_access_load_lock (l : Loc) (v : runtime.forcegcstate.t) (dq : DFrac) :
@@ -1752,7 +1752,7 @@ instance rwmutex_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance rwmutex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.rwmutex.t runtime.«rwmutexⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.rwmutex.t runtime.rwmutex.underlying := by
   solve_into_val_typed_struct
 
 instance rwmutex_access_load_rLock (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
@@ -1906,7 +1906,7 @@ instance semaRoot_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance semaRoot_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.semaRoot.t runtime.«semaRootⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.semaRoot.t runtime.semaRoot.underlying := by
   solve_into_val_typed_struct
 
 instance semaRoot_access_load_lock (l : Loc) (v : runtime.semaRoot.t) (dq : DFrac) :
@@ -1982,7 +1982,7 @@ instance notifyList_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance notifyList_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.notifyList.t runtime.«notifyListⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.notifyList.t runtime.notifyList.underlying := by
   solve_into_val_typed_struct
 
 instance notifyList_access_load_wait (l : Loc) (v : runtime.notifyList.t) (dq : DFrac) :
@@ -2088,7 +2088,7 @@ instance stackpoolItem_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stackpoolItem_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stackpoolItem.t runtime.«stackpoolItemⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.stackpoolItem.t runtime.stackpoolItem.underlying := by
   solve_into_val_typed_struct
 
 instance stackpoolItem_access_load__0 (l : Loc) (v : runtime.stackpoolItem.t) (dq : DFrac) :

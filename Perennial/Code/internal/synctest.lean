@@ -76,7 +76,7 @@ noncomputable def Acquire [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.internal.synctest where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -89,13 +89,13 @@ namespace Association
 abbrev t [FfiSyntax] : Type := w64
 end Association
 
-@[reducible] def «Associationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Association.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class Association_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Association_underlying : go.UnderlyingDirectedEq Association «Associationⁱᵐᵖˡ»
+class Association.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Association Association.underlying
 
-attribute [instance] Association_Assumptions.Association_underlying
+attribute [instance] Association.TypeAssumptions.underlying
 
 namespace Bubble
 structure t [FfiSyntax] where
@@ -106,35 +106,35 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end Bubble
 
-@[reducible] def Bubble'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Bubble.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" go.any)]
 
-@[irreducible] def Bubble'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Bubble'fds_unsealed
+@[irreducible] def Bubble.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Bubble.fieldsUnsealed
 
 instance equals_unfold_Bubble [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Bubble'fds Bubble'fds_unsealed :=
-  ⟨by unfold Bubble'fds; rfl⟩
+    EqualsUnfold Bubble.fields Bubble.fieldsUnsealed :=
+  ⟨by unfold Bubble.fields; rfl⟩
 
-@[reducible] def «Bubbleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Bubble'fds)
+@[reducible] def Bubble.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Bubble.fields)
 
-class Bubble_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Bubble_type_repr : go.TypeReprUnderlying «Bubbleⁱᵐᵖˡ» Bubble.t
-  Bubble_underlying : go.UnderlyingDirectedEq Bubble «Bubbleⁱᵐᵖˡ»
-  Bubble_get_b : ∀ (x : Bubble.t), go.IsGoStepPureDetTagged under (StructFieldGet «Bubbleⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
-  Bubble_set_b : ∀ (x : Bubble.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Bubbleⁱᵐᵖˡ» go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble.t)))
+class Bubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Bubble.underlying Bubble.t
+  underlying : go.UnderlyingDirectedEq Bubble Bubble.underlying
+  get_b : ∀ (x : Bubble.t), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : Bubble.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble.t)))
 
-attribute [instance] Bubble_Assumptions.Bubble_type_repr
-  Bubble_Assumptions.Bubble_underlying
-  Bubble_Assumptions.Bubble_get_b
-  Bubble_Assumptions.Bubble_set_b
+attribute [instance] Bubble.TypeAssumptions.type_repr
+  Bubble.TypeAssumptions.underlying
+  Bubble.TypeAssumptions.get_b
+  Bubble.TypeAssumptions.set_b
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Association_instance : Association_Assumptions
-  Bubble_instance : Bubble_Assumptions
-  Run_unfold : FuncUnfold Run [] «Runⁱᵐᵖˡ»
-  IsInBubble_unfold : FuncUnfold IsInBubble [] «IsInBubbleⁱᵐᵖˡ»
+  Association_instance : Association.TypeAssumptions
+  Bubble_instance : Bubble.TypeAssumptions
+  Run_unfold : FuncUnfold Run [] Run.impl
+  IsInBubble_unfold : FuncUnfold IsInBubble [] IsInBubble.impl
 
 attribute [instance] Assumptions.Association_instance
   Assumptions.Bubble_instance

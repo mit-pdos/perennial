@@ -26,7 +26,7 @@ instance dirInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance dirInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.dirInfo.t os.«dirInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.dirInfo.t os.dirInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -51,7 +51,7 @@ instance SyscallError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SyscallError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.SyscallError.t os.«SyscallErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.SyscallError.t os.SyscallError.underlying := by
   solve_into_val_typed_struct
 
 instance SyscallError_access_load_Syscall (l : Loc) (v : os.SyscallError.t) (dq : DFrac) :
@@ -102,7 +102,7 @@ instance Process_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Process_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.Process.t os.«Processⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.Process.t os.Process.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -121,7 +121,7 @@ instance processHandle_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance processHandle_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.processHandle.t os.«processHandleⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.processHandle.t os.processHandle.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -140,7 +140,7 @@ instance ProcAttr_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ProcAttr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.ProcAttr.t os.«ProcAttrⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.ProcAttr.t os.ProcAttr.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -159,7 +159,7 @@ instance ProcessState_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ProcessState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.ProcessState.t os.«ProcessStateⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.ProcessState.t os.ProcessState.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -186,7 +186,7 @@ instance LinkError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LinkError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.LinkError.t os.«LinkErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.LinkError.t os.LinkError.underlying := by
   solve_into_val_typed_struct
 
 instance LinkError_access_load_Op (l : Loc) (v : os.LinkError.t) (dq : DFrac) :
@@ -273,7 +273,7 @@ instance noReadFrom_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noReadFrom_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.noReadFrom.t os.«noReadFromⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.noReadFrom.t os.noReadFrom.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -298,7 +298,7 @@ instance fileWithoutReadFrom_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fileWithoutReadFrom_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.fileWithoutReadFrom.t os.«fileWithoutReadFromⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.fileWithoutReadFrom.t os.fileWithoutReadFrom.underlying := by
   solve_into_val_typed_struct
 
 instance fileWithoutReadFrom_access_load_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom.t) (dq : DFrac) :
@@ -353,7 +353,7 @@ instance noWriteTo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noWriteTo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.noWriteTo.t os.«noWriteToⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.noWriteTo.t os.noWriteTo.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -378,7 +378,7 @@ instance fileWithoutWriteTo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fileWithoutWriteTo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.fileWithoutWriteTo.t os.«fileWithoutWriteToⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.fileWithoutWriteTo.t os.fileWithoutWriteTo.underlying := by
   solve_into_val_typed_struct
 
 instance fileWithoutWriteTo_access_load_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo.t) (dq : DFrac) :
@@ -429,7 +429,7 @@ instance file_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance file_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.file.t os.«fileⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.file.t os.file.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -448,7 +448,7 @@ instance unixDirent_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance unixDirent_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.unixDirent.t os.«unixDirentⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.unixDirent.t os.unixDirent.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -472,7 +472,7 @@ instance rawConn_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance rawConn_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.rawConn.t os.«rawConnⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.rawConn.t os.rawConn.underlying := by
   solve_into_val_typed_struct
 
 instance rawConn_access_load_file (l : Loc) (v : os.rawConn.t) (dq : DFrac) :
@@ -512,7 +512,7 @@ instance Root_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Root_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.Root.t os.«Rootⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.Root.t os.Root.underlying := by
   solve_into_val_typed_struct
 
 instance Root_access_load_root (l : Loc) (v : os.Root.t) (dq : DFrac) :
@@ -547,7 +547,7 @@ instance root_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance root_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.root.t os.«rootⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.root.t os.root.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -571,7 +571,7 @@ instance File_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance File_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.File.t os.«Fileⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) os.File.t os.File.underlying := by
   solve_into_val_typed_struct
 
 instance File_access_load_file (l : Loc) (v : os.File.t) (dq : DFrac) :
@@ -606,7 +606,7 @@ instance fileStat_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance fileStat_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.fileStat.t os.«fileStatⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) os.fileStat.t os.fileStat.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

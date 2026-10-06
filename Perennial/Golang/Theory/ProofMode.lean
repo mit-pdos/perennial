@@ -3116,11 +3116,11 @@ def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
       let_expr Perennial.Expr.App _ e1 e2 := e | throwError "not an application"
       let some fv ← isGooseVal? e1 | throwError "not a value"
       let some v2 ← isGooseVal? e2 | throwError "not a value"
-      -- `onlyImpl`: only implementation constants `«Fooⁱᵐᵖˡ»` (as produced by
+      -- `onlyImpl`: only implementation constants `Foo.impl`/`T.M.impl` (as produced by
       -- `wp_func_call`/`wp_method_call`)
       if onlyImpl then
         let some n := (← instantiateMVars fv).getAppFn.constName? | throwError "not a constant"
-        unless (n.toString.endsWith "ⁱᵐᵖˡ") || (n.toString.endsWith "ⁱᵐᵖˡ»") do
+        unless n matches .str _ "impl" do
           throwError "not an implementation constant"
       let fv' ← whnf fv
       let_expr Perennial.val.RecV _ f x body := fv' | throwError "not a function"
@@ -3168,7 +3168,7 @@ macro "wp_call_lc " H:ident : tactic => `(tactic| (wp_call_lc_core; iintro $H:id
 
 /-- `wp_call` calls the function at the head of the WP goal: it finds the
 outermost application `fv v` in evaluation position whose function value `fv`
-unfolds to a `rec:`/`λ:` value (e.g. a generated `«Fooⁱᵐᵖˡ»` constant), takes
+unfolds to a `rec:`/`λ:` value (e.g. a generated `Foo.impl` constant), takes
 the beta step (discarding the later credit) and then runs `wp_pures`. -/
 macro "wp_call" : tactic => `(tactic| (wp_call_core; wp_pures))
 

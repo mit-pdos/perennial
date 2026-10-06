@@ -73,7 +73,7 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 			})
 		} else if _, ok := typ.(*types.Named); ok {
 			ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, glang.AxiomDecl{
-				DeclName: glang.ToIdent(typeName) + "ⁱᵐᵖˡ",
+				DeclName: glang.TypeImpl(glang.ToIdent(typeName)),
 				Type:     glang.VerbatimExpr(typeStr),
 			})
 		}
@@ -265,7 +265,7 @@ func (ctx *Ctx) namedTypeImplDecl(spec *ast.TypeSpec) (decls []glang.Decl) {
 	}
 
 	decl := glang.TypeDecl{
-		Name:       gallinaTypeName + "ⁱᵐᵖˡ",
+		Name:       glang.TypeImpl(gallinaTypeName),
 		Body:       body,
 		TypeParams: ctx.typeParamList(spec.TypeParams),
 	}

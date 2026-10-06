@@ -35,7 +35,7 @@ instance littleEndian_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance littleEndian_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.littleEndian.t encoding.binary.«littleEndianⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) encoding.binary.littleEndian.t encoding.binary.littleEndian.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -58,7 +58,7 @@ instance bigEndian_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance bigEndian_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.bigEndian.t encoding.binary.«bigEndianⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) encoding.binary.bigEndian.t encoding.binary.bigEndian.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -84,7 +84,7 @@ instance coder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance coder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.coder.t encoding.binary.«coderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) encoding.binary.coder.t encoding.binary.coder.underlying := by
   solve_into_val_typed_struct
 
 instance coder_access_load_order (l : Loc) (v : encoding.binary.coder.t) (dq : DFrac) :
@@ -156,7 +156,7 @@ instance nativeEndian_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nativeEndian_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.nativeEndian.t encoding.binary.«nativeEndianⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) encoding.binary.nativeEndian.t encoding.binary.nativeEndian.underlying := by
   solve_into_val_typed_struct
 
 instance nativeEndian_access_load_littleEndian (l : Loc) (v : encoding.binary.nativeEndian.t) (dq : DFrac) :

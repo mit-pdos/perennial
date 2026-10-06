@@ -39,7 +39,7 @@ noncomputable def Or [FfiSyntax] [GoGlobalContext] : GoString :=
     and -0.0 is not less than (is equal to) 0.0.
 
     go: cmp.go:28:6 -/
-noncomputable def «Lessⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Less.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -60,7 +60,7 @@ noncomputable def «Lessⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoTy
     a NaN is considered equal to a NaN, and -0.0 is equal to 0.0.
 
     go: cmp.go:40:6 -/
-noncomputable def «Compareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Compare.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -115,7 +115,7 @@ noncomputable def «Compareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.G
     This will always return false if T is not floating-point.
 
     go: cmp.go:63:6 -/
-noncomputable def «isNaNⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def isNaN.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
@@ -126,7 +126,7 @@ noncomputable def «isNaNⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoT
     If no argument is non-zero, it returns the zero value.
 
     go: cmp.go:69:6 -/
-noncomputable def «Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Or.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "vals"
   (App (Val exceptionDo)
   (Let "vals" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T)))) (Var "vals"))
@@ -165,20 +165,20 @@ namespace Ordered
 abbrev t [FfiSyntax] : Type := interface.t
 end Ordered
 
-@[reducible] def «Orderedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Ordered.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTermUnderlying go.int), (go.type_term.TypeTermUnderlying go.int8), (go.type_term.TypeTermUnderlying go.int16), (go.type_term.TypeTermUnderlying go.int32), (go.type_term.TypeTermUnderlying go.int64), (go.type_term.TypeTermUnderlying go.uint), (go.type_term.TypeTermUnderlying go.uint8), (go.type_term.TypeTermUnderlying go.uint16), (go.type_term.TypeTermUnderlying go.uint32), (go.type_term.TypeTermUnderlying go.uint64), (go.type_term.TypeTermUnderlying go.uintptr), (go.type_term.TypeTermUnderlying go.float32), (go.type_term.TypeTermUnderlying go.float64), (go.type_term.TypeTermUnderlying go.string)])])
 
-class Ordered_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Ordered_underlying : go.UnderlyingDirectedEq Ordered «Orderedⁱᵐᵖˡ»
+class Ordered.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Ordered Ordered.underlying
 
-attribute [instance] Ordered_Assumptions.Ordered_underlying
+attribute [instance] Ordered.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Ordered_instance : Ordered_Assumptions
-  Less_unfold : ∀ (T : go.GoType), FuncUnfold Less [T] («Lessⁱᵐᵖˡ» T)
-  Compare_unfold : ∀ (T : go.GoType), FuncUnfold Compare [T] («Compareⁱᵐᵖˡ» T)
-  isNaN_unfold : ∀ (T : go.GoType), FuncUnfold isNaN [T] («isNaNⁱᵐᵖˡ» T)
-  Or_unfold : ∀ (T : go.GoType), FuncUnfold Or [T] («Orⁱᵐᵖˡ» T)
+  Ordered_instance : Ordered.TypeAssumptions
+  Less_unfold : ∀ (T : go.GoType), FuncUnfold Less [T] (Less.impl T)
+  Compare_unfold : ∀ (T : go.GoType), FuncUnfold Compare [T] (Compare.impl T)
+  isNaN_unfold : ∀ (T : go.GoType), FuncUnfold isNaN [T] (isNaN.impl T)
+  Or_unfold : ∀ (T : go.GoType), FuncUnfold Or [T] (Or.impl T)
 
 attribute [instance] Assumptions.Ordered_instance
   Assumptions.Less_unfold

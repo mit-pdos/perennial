@@ -34,7 +34,7 @@ instance watcher_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance watcher_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watcher.t go_etcd_io.etcd.client.v3.«watcherⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watcher.t go_etcd_io.etcd.client.v3.watcher.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -53,7 +53,7 @@ instance watchGRPCStream_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance watchGRPCStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watchGRPCStream.t go_etcd_io.etcd.client.v3.«watchGRPCStreamⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watchGRPCStream.t go_etcd_io.etcd.client.v3.watchGRPCStream.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -86,7 +86,7 @@ instance watchRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance watchRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watchRequest.t go_etcd_io.etcd.client.v3.«watchRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watchRequest.t go_etcd_io.etcd.client.v3.watchRequest.underlying := by
   solve_into_val_typed_struct
 
 instance watchRequest_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.watchRequest.t) (dq : DFrac) :
@@ -269,7 +269,7 @@ instance progressRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance progressRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.progressRequest.t go_etcd_io.etcd.client.v3.«progressRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.progressRequest.t go_etcd_io.etcd.client.v3.progressRequest.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -293,7 +293,7 @@ instance valCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance valCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.valCtx.t go_etcd_io.etcd.client.v3.«valCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.valCtx.t go_etcd_io.etcd.client.v3.valCtx.underlying := by
   solve_into_val_typed_struct
 
 instance valCtx_access_load_Context (l : Loc) (v : go_etcd_io.etcd.client.v3.valCtx.t) (dq : DFrac) :

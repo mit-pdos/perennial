@@ -58,17 +58,17 @@ axiom m2 [FfiSyntax] [GoGlobalContext] : val
 noncomputable def deBruijn32tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.deBruijn32tab"
 
-axiom deBruijn32tab'init [FfiSyntax] [GoGlobalContext] : val
+axiom deBruijn32tab.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def deBruijn64tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.deBruijn64tab"
 
-axiom deBruijn64tab'init [FfiSyntax] [GoGlobalContext] : val
+axiom deBruijn64tab.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def DITSupported [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.DITSupported"
 
-axiom DITSupported'init [FfiSyntax] [GoGlobalContext] : val
+axiom DITSupported.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def TrailingZeros32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.TrailingZeros32"
@@ -127,7 +127,7 @@ noncomputable def DisableDIT [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.internal.runtime.sys where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -136,11 +136,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val DITSupported'init) (Val #())))))
+  (App (Val DITSupported.init) (Val #())))))
   (App (Val doExecute)
-  (App (Val deBruijn64tab'init) (Val #()))))))
+  (App (Val deBruijn64tab.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val deBruijn32tab'init) (Val #()))))))))
+  (App (Val deBruijn32tab.init) (Val #()))))))))
 
 namespace nih
 structure t [FfiSyntax] where
@@ -150,25 +150,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end nih
 
-@[reducible] def nih'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def nih.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def nih'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  nih'fds_unsealed
+@[irreducible] def nih.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  nih.fieldsUnsealed
 
 instance equals_unfold_nih [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold nih'fds nih'fds_unsealed :=
-  ⟨by unfold nih'fds; rfl⟩
+    EqualsUnfold nih.fields nih.fieldsUnsealed :=
+  ⟨by unfold nih.fields; rfl⟩
 
-@[reducible] def «nihⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType nih'fds)
+@[reducible] def nih.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType nih.fields)
 
-class nih_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  nih_type_repr : go.TypeReprUnderlying «nihⁱᵐᵖˡ» nih.t
-  nih_underlying : go.UnderlyingDirectedEq nih «nihⁱᵐᵖˡ»
+class nih.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying nih.underlying nih.t
+  underlying : go.UnderlyingDirectedEq nih nih.underlying
 
-attribute [instance] nih_Assumptions.nih_type_repr
-  nih_Assumptions.nih_underlying
+attribute [instance] nih.TypeAssumptions.type_repr
+  nih.TypeAssumptions.underlying
 
 namespace NotInHeap
 structure t [FfiSyntax] where
@@ -179,33 +179,33 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end NotInHeap
 
-@[reducible] def NotInHeap'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def NotInHeap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" nih)]
 
-@[irreducible] def NotInHeap'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  NotInHeap'fds_unsealed
+@[irreducible] def NotInHeap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  NotInHeap.fieldsUnsealed
 
 instance equals_unfold_NotInHeap [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold NotInHeap'fds NotInHeap'fds_unsealed :=
-  ⟨by unfold NotInHeap'fds; rfl⟩
+    EqualsUnfold NotInHeap.fields NotInHeap.fieldsUnsealed :=
+  ⟨by unfold NotInHeap.fields; rfl⟩
 
-@[reducible] def «NotInHeapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType NotInHeap'fds)
+@[reducible] def NotInHeap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType NotInHeap.fields)
 
-class NotInHeap_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  NotInHeap_type_repr : go.TypeReprUnderlying «NotInHeapⁱᵐᵖˡ» NotInHeap.t
-  NotInHeap_underlying : go.UnderlyingDirectedEq NotInHeap «NotInHeapⁱᵐᵖˡ»
-  NotInHeap_get__0 : ∀ (x : NotInHeap.t), go.IsGoStepPureDetTagged under (StructFieldGet «NotInHeapⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
-  NotInHeap_set__0 : ∀ (x : NotInHeap.t) (y : nih.t), go.IsGoStepPureDetTagged under (StructFieldSet «NotInHeapⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : NotInHeap.t)))
+class NotInHeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying NotInHeap.underlying NotInHeap.t
+  underlying : go.UnderlyingDirectedEq NotInHeap NotInHeap.underlying
+  get__0 : ∀ (x : NotInHeap.t), go.IsGoStepPureDetTagged under (StructFieldGet NotInHeap.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : NotInHeap.t) (y : nih.t), go.IsGoStepPureDetTagged under (StructFieldSet NotInHeap.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : NotInHeap.t)))
 
-attribute [instance] NotInHeap_Assumptions.NotInHeap_type_repr
-  NotInHeap_Assumptions.NotInHeap_underlying
-  NotInHeap_Assumptions.NotInHeap_get__0
-  NotInHeap_Assumptions.NotInHeap_set__0
+attribute [instance] NotInHeap.TypeAssumptions.type_repr
+  NotInHeap.TypeAssumptions.underlying
+  NotInHeap.TypeAssumptions.get__0
+  NotInHeap.TypeAssumptions.set__0
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  nih_instance : nih_Assumptions
-  NotInHeap_instance : NotInHeap_Assumptions
+  nih_instance : nih.TypeAssumptions
+  NotInHeap_instance : NotInHeap.TypeAssumptions
 
 attribute [instance] Assumptions.nih_instance
   Assumptions.NotInHeap_instance

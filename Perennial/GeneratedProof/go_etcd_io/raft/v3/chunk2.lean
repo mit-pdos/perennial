@@ -55,7 +55,7 @@ instance unstable_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance unstable_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.unstable.t go_etcd_io.raft.v3.«unstableⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.unstable.t go_etcd_io.raft.v3.unstable.underlying := by
   solve_into_val_typed_struct
 
 instance unstable_access_load_snapshot (l : Loc) (v : go_etcd_io.raft.v3.unstable.t) (dq : DFrac) :
@@ -176,7 +176,7 @@ instance SoftState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SoftState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.SoftState.t go_etcd_io.raft.v3.«SoftStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.SoftState.t go_etcd_io.raft.v3.SoftState.underlying := by
   solve_into_val_typed_struct
 
 instance SoftState_access_load_Lead (l : Loc) (v : go_etcd_io.raft.v3.SoftState.t) (dq : DFrac) :
@@ -250,7 +250,7 @@ instance Config_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Config_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.Config.t go_etcd_io.raft.v3.«Configⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.Config.t go_etcd_io.raft.v3.Config.underlying := by
   solve_into_val_typed_struct
 
 instance Config_access_load_ID (l : Loc) (v : go_etcd_io.raft.v3.Config.t) (dq : DFrac) :
@@ -609,7 +609,7 @@ instance raft_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance raft_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raft.t go_etcd_io.raft.v3.«raftⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raft.t go_etcd_io.raft.v3.raft.underlying := by
   solve_into_val_typed_struct
 
 instance raft_access_load_id (l : Loc) (v : go_etcd_io.raft.v3.raft.t) (dq : DFrac) :
@@ -1148,7 +1148,7 @@ instance readOnly_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance readOnly_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.readOnly.t go_etcd_io.raft.v3.«readOnlyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.readOnly.t go_etcd_io.raft.v3.readOnly.underlying := by
   solve_into_val_typed_struct
 
 instance readOnly_access_load_option (l : Loc) (v : go_etcd_io.raft.v3.readOnly.t) (dq : DFrac) :
@@ -1240,7 +1240,7 @@ instance MemoryStorage_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemoryStorage_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.MemoryStorage.t go_etcd_io.raft.v3.«MemoryStorageⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.MemoryStorage.t go_etcd_io.raft.v3.MemoryStorage.underlying := by
   solve_into_val_typed_struct
 
 instance MemoryStorage_access_load_Mutex (l : Loc) (v : go_etcd_io.raft.v3.MemoryStorage.t) (dq : DFrac) :
@@ -1346,7 +1346,7 @@ instance logSlice_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance logSlice_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.logSlice.t go_etcd_io.raft.v3.«logSliceⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.logSlice.t go_etcd_io.raft.v3.logSlice.underlying := by
   solve_into_val_typed_struct
 
 instance logSlice_access_load_term (l : Loc) (v : go_etcd_io.raft.v3.logSlice.t) (dq : DFrac) :

@@ -33,7 +33,7 @@ instance autoTracerProvider_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance autoTracerProvider_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.autoTracerProvider.t go_opentelemetry_io.otel.trace.«autoTracerProviderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.autoTracerProvider.t go_opentelemetry_io.otel.trace.autoTracerProvider.underlying := by
   solve_into_val_typed_struct
 
 instance autoTracerProvider_access_load_TracerProvider (l : Loc) (v : go_opentelemetry_io.otel.trace.autoTracerProvider.t) (dq : DFrac) :
@@ -76,7 +76,7 @@ instance autoTracer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance autoTracer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.autoTracer.t go_opentelemetry_io.otel.trace.«autoTracerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.autoTracer.t go_opentelemetry_io.otel.trace.autoTracer.underlying := by
   solve_into_val_typed_struct
 
 instance autoTracer_access_load_Tracer (l : Loc) (v : go_opentelemetry_io.otel.trace.autoTracer.t) (dq : DFrac) :
@@ -159,7 +159,7 @@ instance autoSpan_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance autoSpan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.autoSpan.t go_opentelemetry_io.otel.trace.«autoSpanⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.autoSpan.t go_opentelemetry_io.otel.trace.autoSpan.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -188,7 +188,7 @@ instance spanLimits_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance spanLimits_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.spanLimits.t go_opentelemetry_io.otel.trace.«spanLimitsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.spanLimits.t go_opentelemetry_io.otel.trace.spanLimits.underlying := by
   solve_into_val_typed_struct
 
 instance spanLimits_access_load_Attrs (l : Loc) (v : go_opentelemetry_io.otel.trace.spanLimits.t) (dq : DFrac) :
@@ -303,7 +303,7 @@ instance TracerConfig_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance TracerConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TracerConfig.t go_opentelemetry_io.otel.trace.«TracerConfigⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TracerConfig.t go_opentelemetry_io.otel.trace.TracerConfig.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -322,7 +322,7 @@ instance SpanConfig_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance SpanConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanConfig.t go_opentelemetry_io.otel.trace.«SpanConfigⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanConfig.t go_opentelemetry_io.otel.trace.SpanConfig.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -341,7 +341,7 @@ instance EventConfig_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance EventConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.EventConfig.t go_opentelemetry_io.otel.trace.«EventConfigⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.EventConfig.t go_opentelemetry_io.otel.trace.EventConfig.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -360,7 +360,7 @@ instance attributeOption_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance attributeOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.attributeOption.t go_opentelemetry_io.otel.trace.«attributeOptionⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.attributeOption.t go_opentelemetry_io.otel.trace.attributeOption.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -384,7 +384,7 @@ instance noopSpan_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noopSpan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.noopSpan.t go_opentelemetry_io.otel.trace.«noopSpanⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.noopSpan.t go_opentelemetry_io.otel.trace.noopSpan.underlying := by
   solve_into_val_typed_struct
 
 instance noopSpan_access_load_Span (l : Loc) (v : go_opentelemetry_io.otel.trace.noopSpan.t) (dq : DFrac) :
@@ -424,7 +424,7 @@ instance TraceState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TraceState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TraceState.t go_opentelemetry_io.otel.trace.«TraceStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TraceState.t go_opentelemetry_io.otel.trace.TraceState.underlying := by
   solve_into_val_typed_struct
 
 instance TraceState_access_load_list (l : Loc) (v : go_opentelemetry_io.otel.trace.TraceState.t) (dq : DFrac) :
@@ -468,7 +468,7 @@ instance SpanContext_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SpanContext_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanContext.t go_opentelemetry_io.otel.trace.«SpanContextⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanContext.t go_opentelemetry_io.otel.trace.SpanContext.underlying := by
   solve_into_val_typed_struct
 
 instance SpanContext_access_load_traceID (l : Loc) (v : go_opentelemetry_io.otel.trace.SpanContext.t) (dq : DFrac) :
@@ -573,7 +573,7 @@ instance nonRecordingSpan_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nonRecordingSpan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.nonRecordingSpan.t go_opentelemetry_io.otel.trace.«nonRecordingSpanⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.nonRecordingSpan.t go_opentelemetry_io.otel.trace.nonRecordingSpan.underlying := by
   solve_into_val_typed_struct
 
 instance nonRecordingSpan_access_load_noopSpan (l : Loc) (v : go_opentelemetry_io.otel.trace.nonRecordingSpan.t) (dq : DFrac) :
@@ -629,7 +629,7 @@ instance noopTracerProvider_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noopTracerProvider_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.noopTracerProvider.t go_opentelemetry_io.otel.trace.«noopTracerProviderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.noopTracerProvider.t go_opentelemetry_io.otel.trace.noopTracerProvider.underlying := by
   solve_into_val_typed_struct
 
 instance noopTracerProvider_access_load_TracerProvider (l : Loc) (v : go_opentelemetry_io.otel.trace.noopTracerProvider.t) (dq : DFrac) :
@@ -669,7 +669,7 @@ instance noopTracer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noopTracer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.noopTracer.t go_opentelemetry_io.otel.trace.«noopTracerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.noopTracer.t go_opentelemetry_io.otel.trace.noopTracer.underlying := by
   solve_into_val_typed_struct
 
 instance noopTracer_access_load_Tracer (l : Loc) (v : go_opentelemetry_io.otel.trace.noopTracer.t) (dq : DFrac) :
@@ -704,7 +704,7 @@ instance Span_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Span_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Span.t go_opentelemetry_io.otel.trace.«Spanⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Span.t go_opentelemetry_io.otel.trace.Span.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -723,7 +723,7 @@ instance Link_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Link_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Link.t go_opentelemetry_io.otel.trace.«Linkⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Link.t go_opentelemetry_io.otel.trace.Link.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -751,7 +751,7 @@ instance SpanContextConfig_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SpanContextConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanContextConfig.t go_opentelemetry_io.otel.trace.«SpanContextConfigⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanContextConfig.t go_opentelemetry_io.otel.trace.SpanContextConfig.underlying := by
   solve_into_val_typed_struct
 
 instance SpanContextConfig_access_load_TraceID (l : Loc) (v : go_opentelemetry_io.otel.trace.SpanContextConfig.t) (dq : DFrac) :
@@ -850,7 +850,7 @@ instance Tracer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Tracer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Tracer.t go_opentelemetry_io.otel.trace.«Tracerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Tracer.t go_opentelemetry_io.otel.trace.Tracer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -875,7 +875,7 @@ instance member_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance member_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.member.t go_opentelemetry_io.otel.trace.«memberⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.member.t go_opentelemetry_io.otel.trace.member.underlying := by
   solve_into_val_typed_struct
 
 instance member_access_load_Key (l : Loc) (v : go_opentelemetry_io.otel.trace.member.t) (dq : DFrac) :

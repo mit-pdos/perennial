@@ -36,7 +36,7 @@ instance ParseError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ParseError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.ParseError.t time.«ParseErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.ParseError.t time.ParseError.underlying := by
   solve_into_val_typed_struct
 
 instance ParseError_access_load_Layout (l : Loc) (v : time.ParseError.t) (dq : DFrac) :
@@ -141,7 +141,7 @@ instance parseDurationError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance parseDurationError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.parseDurationError.t time.«parseDurationErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.parseDurationError.t time.parseDurationError.underlying := by
   solve_into_val_typed_struct
 
 instance parseDurationError_access_load_message (l : Loc) (v : time.parseDurationError.t) (dq : DFrac) :
@@ -198,7 +198,7 @@ instance Timer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Timer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.Timer.t time.«Timerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.Timer.t time.Timer.underlying := by
   solve_into_val_typed_struct
 
 instance Timer_access_load_C (l : Loc) (v : time.Timer.t) (dq : DFrac) :
@@ -255,7 +255,7 @@ instance Ticker_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Ticker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.Ticker.t time.«Tickerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.Ticker.t time.Ticker.underlying := by
   solve_into_val_typed_struct
 
 instance Ticker_access_load_C (l : Loc) (v : time.Ticker.t) (dq : DFrac) :
@@ -313,7 +313,7 @@ instance Time_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Time_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.Time.t time.«Timeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.Time.t time.Time.underlying := by
   solve_into_val_typed_struct
 
 instance Time_access_load_wall (l : Loc) (v : time.Time.t) (dq : DFrac) :
@@ -391,7 +391,7 @@ instance Location_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Location_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.Location.t time.«Locationⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.Location.t time.Location.underlying := by
   solve_into_val_typed_struct
 
 instance Location_access_load_name (l : Loc) (v : time.Location.t) (dq : DFrac) :
@@ -529,7 +529,7 @@ instance zone_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance zone_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.zone.t time.«zoneⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.zone.t time.zone.underlying := by
   solve_into_val_typed_struct
 
 instance zone_access_load_name (l : Loc) (v : time.zone.t) (dq : DFrac) :
@@ -604,7 +604,7 @@ instance zoneTrans_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance zoneTrans_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.zoneTrans.t time.«zoneTransⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.zoneTrans.t time.zoneTrans.underlying := by
   solve_into_val_typed_struct
 
 instance zoneTrans_access_load_when (l : Loc) (v : time.zoneTrans.t) (dq : DFrac) :
@@ -696,7 +696,7 @@ instance rule_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance rule_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.rule.t time.«ruleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.rule.t time.rule.underlying := by
   solve_into_val_typed_struct
 
 instance rule_access_load_kind (l : Loc) (v : time.rule.t) (dq : DFrac) :
@@ -801,7 +801,7 @@ instance dataIO_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance dataIO_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) time.dataIO.t time.«dataIOⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) time.dataIO.t time.dataIO.underlying := by
   solve_into_val_typed_struct
 
 instance dataIO_access_load_p (l : Loc) (v : time.dataIO.t) (dq : DFrac) :

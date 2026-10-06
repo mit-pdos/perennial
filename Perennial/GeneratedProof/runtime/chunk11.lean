@@ -45,7 +45,7 @@ instance cpuProfile_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance cpuProfile_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.cpuProfile.t runtime.«cpuProfileⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.cpuProfile.t runtime.cpuProfile.underlying := by
   solve_into_val_typed_struct
 
 instance cpuProfile_access_load_lock (l : Loc) (v : runtime.cpuProfile.t) (dq : DFrac) :
@@ -184,7 +184,7 @@ instance dloggerImpl_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance dloggerImpl_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.dloggerImpl.t runtime.«dloggerImplⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.dloggerImpl.t runtime.dloggerImpl.underlying := by
   solve_into_val_typed_struct
 
 instance dloggerImpl_access_load__0 (l : Loc) (v : runtime.dloggerImpl.t) (dq : DFrac) :
@@ -277,7 +277,7 @@ instance ucontext_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ucontext_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.ucontext.t runtime.«ucontextⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.ucontext.t runtime.ucontext.underlying := by
   solve_into_val_typed_struct
 
 instance ucontext_access_load_uc_flags (l : Loc) (v : runtime.ucontext.t) (dq : DFrac) :
@@ -407,7 +407,7 @@ instance mcache_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance mcache_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mcache.t runtime.«mcacheⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.mcache.t runtime.mcache.underlying := by
   solve_into_val_typed_struct
 
 instance mcache_access_load__0 (l : Loc) (v : runtime.mcache.t) (dq : DFrac) :
@@ -611,7 +611,7 @@ instance spanSet_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance spanSet_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.spanSet.t runtime.«spanSetⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.spanSet.t runtime.spanSet.underlying := by
   solve_into_val_typed_struct
 
 instance spanSet_access_load_spineLock (l : Loc) (v : runtime.spanSet.t) (dq : DFrac) :
@@ -716,7 +716,7 @@ instance cleanupBlock_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance cleanupBlock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.cleanupBlock.t runtime.«cleanupBlockⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.cleanupBlock.t runtime.cleanupBlock.underlying := by
   solve_into_val_typed_struct
 
 instance cleanupBlock_access_load_cleanupBlockHeader (l : Loc) (v : runtime.cleanupBlock.t) (dq : DFrac) :
@@ -787,7 +787,7 @@ instance cleanupQueue_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance cleanupQueue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.cleanupQueue.t runtime.«cleanupQueueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.cleanupQueue.t runtime.cleanupQueue.underlying := by
   solve_into_val_typed_struct
 
 instance cleanupQueue_access_load_full (l : Loc) (v : runtime.cleanupQueue.t) (dq : DFrac) :
@@ -1073,7 +1073,7 @@ instance statAggregate_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance statAggregate_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.statAggregate.t runtime.«statAggregateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.statAggregate.t runtime.statAggregate.underlying := by
   solve_into_val_typed_struct
 
 instance statAggregate_access_load_ensured (l : Loc) (v : runtime.statAggregate.t) (dq : DFrac) :
@@ -1210,7 +1210,7 @@ instance metricSample_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance metricSample_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.metricSample.t runtime.«metricSampleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.metricSample.t runtime.metricSample.underlying := by
   solve_into_val_typed_struct
 
 instance metricSample_access_load_name (l : Loc) (v : runtime.metricSample.t) (dq : DFrac) :
@@ -1267,7 +1267,7 @@ instance gcBgMarkWorkerNodePadded_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance gcBgMarkWorkerNodePadded_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gcBgMarkWorkerNodePadded.t runtime.«gcBgMarkWorkerNodePaddedⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.gcBgMarkWorkerNodePadded.t runtime.gcBgMarkWorkerNodePadded.underlying := by
   solve_into_val_typed_struct
 
 instance gcBgMarkWorkerNodePadded_access_load_gcBgMarkWorkerNode (l : Loc) (v : runtime.gcBgMarkWorkerNodePadded.t) (dq : DFrac) :
@@ -1336,7 +1336,7 @@ instance scavengerState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance scavengerState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.scavengerState.t runtime.«scavengerStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.scavengerState.t runtime.scavengerState.underlying := by
   solve_into_val_typed_struct
 
 instance scavengerState_access_load_lock (l : Loc) (v : runtime.scavengerState.t) (dq : DFrac) :
@@ -1586,7 +1586,7 @@ instance stackWorkBufHdr_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stackWorkBufHdr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stackWorkBufHdr.t runtime.«stackWorkBufHdrⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.stackWorkBufHdr.t runtime.stackWorkBufHdr.underlying := by
   solve_into_val_typed_struct
 
 instance stackWorkBufHdr_access_load__0 (l : Loc) (v : runtime.stackWorkBufHdr.t) (dq : DFrac) :
@@ -1660,7 +1660,7 @@ instance stackObjectBufHdr_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stackObjectBufHdr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stackObjectBufHdr.t runtime.«stackObjectBufHdrⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.stackObjectBufHdr.t runtime.stackObjectBufHdr.underlying := by
   solve_into_val_typed_struct
 
 instance stackObjectBufHdr_access_load__0 (l : Loc) (v : runtime.stackObjectBufHdr.t) (dq : DFrac) :
@@ -1736,7 +1736,7 @@ instance sweepdata_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sweepdata_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sweepdata.t runtime.«sweepdataⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.sweepdata.t runtime.sweepdata.underlying := by
   solve_into_val_typed_struct
 
 instance sweepdata_access_load_lock (l : Loc) (v : runtime.sweepdata.t) (dq : DFrac) :
@@ -1842,7 +1842,7 @@ instance workbuf_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance workbuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.workbuf.t runtime.«workbufⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.workbuf.t runtime.workbuf.underlying := by
   solve_into_val_typed_struct
 
 instance workbuf_access_load__0 (l : Loc) (v : runtime.workbuf.t) (dq : DFrac) :
@@ -1915,7 +1915,7 @@ instance spanSetBlockHeader2_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance spanSetBlockHeader2_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.spanSetBlockHeader2.t runtime.«spanSetBlockHeader2ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.spanSetBlockHeader2.t runtime.spanSetBlockHeader2.underlying := by
   solve_into_val_typed_struct
 
 instance spanSetBlockHeader2_access_load_spanSetBlockHeader (l : Loc) (v : runtime.spanSetBlockHeader2.t) (dq : DFrac) :
@@ -1973,7 +1973,7 @@ instance consistentHeapStats_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance consistentHeapStats_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.consistentHeapStats.t runtime.«consistentHeapStatsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.consistentHeapStats.t runtime.consistentHeapStats.underlying := by
   solve_into_val_typed_struct
 
 instance consistentHeapStats_access_load_stats (l : Loc) (v : runtime.consistentHeapStats.t) (dq : DFrac) :
@@ -2059,7 +2059,7 @@ instance timer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.timer.t runtime.«timerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.timer.t runtime.timer.underlying := by
   solve_into_val_typed_struct
 
 instance timer_access_load_mu (l : Loc) (v : runtime.timer.t) (dq : DFrac) :

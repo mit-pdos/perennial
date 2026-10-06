@@ -34,7 +34,7 @@ instance FileDisk_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance FileDisk_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.FileDisk.t github_com.goose_lang.primitive.disk.«FileDiskⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.FileDisk.t github_com.goose_lang.primitive.disk.FileDisk.underlying := by
   solve_into_val_typed_struct
 
 instance FileDisk_access_load_fd (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk.t) (dq : DFrac) :
@@ -86,7 +86,7 @@ instance MemDisk_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance MemDisk_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.MemDisk.t github_com.goose_lang.primitive.disk.«MemDiskⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.MemDisk.t github_com.goose_lang.primitive.disk.MemDisk.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

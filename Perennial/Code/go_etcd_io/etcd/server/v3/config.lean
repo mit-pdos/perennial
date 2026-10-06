@@ -27,7 +27,7 @@ def V2DeprecationEnum [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] V2DeprecationEnum
 
-axiom «ServerConfigⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom ServerConfig.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom grpcOverheadBytes [FfiSyntax] [GoGlobalContext] : val
 
@@ -57,7 +57,7 @@ noncomputable def CheckDuplicateURL [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.config where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -72,30 +72,30 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end ServerConfig
 
-class ServerConfig_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ServerConfig_type_repr : go.TypeReprUnderlying «ServerConfigⁱᵐᵖˡ» ServerConfig.t
-  ServerConfig_underlying : go.UnderlyingDirectedEq ServerConfig «ServerConfigⁱᵐᵖˡ»
-  «ServerConfigⁱᵐᵖˡ_underlying» : go.IsUnderlying «ServerConfigⁱᵐᵖˡ» «ServerConfigⁱᵐᵖˡ»
+class ServerConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ServerConfig.underlying ServerConfig.t
+  underlying : go.UnderlyingDirectedEq ServerConfig ServerConfig.underlying
+  isUnderlying : go.IsUnderlying ServerConfig.underlying ServerConfig.underlying
 
-attribute [instance] ServerConfig_Assumptions.ServerConfig_type_repr
-  ServerConfig_Assumptions.ServerConfig_underlying
-  ServerConfig_Assumptions.«ServerConfigⁱᵐᵖˡ_underlying»
+attribute [instance] ServerConfig.TypeAssumptions.type_repr
+  ServerConfig.TypeAssumptions.underlying
+  ServerConfig.TypeAssumptions.isUnderlying
 
 namespace V2DeprecationEnum
 abbrev t [FfiSyntax] : Type := GoString
 end V2DeprecationEnum
 
-@[reducible] def «V2DeprecationEnumⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def V2DeprecationEnum.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class V2DeprecationEnum_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  V2DeprecationEnum_underlying : go.UnderlyingDirectedEq V2DeprecationEnum «V2DeprecationEnumⁱᵐᵖˡ»
+class V2DeprecationEnum.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq V2DeprecationEnum V2DeprecationEnum.underlying
 
-attribute [instance] V2DeprecationEnum_Assumptions.V2DeprecationEnum_underlying
+attribute [instance] V2DeprecationEnum.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ServerConfig_instance : ServerConfig_Assumptions
-  V2DeprecationEnum_instance : V2DeprecationEnum_Assumptions
+  ServerConfig_instance : ServerConfig.TypeAssumptions
+  V2DeprecationEnum_instance : V2DeprecationEnum.TypeAssumptions
 
 attribute [instance] Assumptions.ServerConfig_instance
   Assumptions.V2DeprecationEnum_instance

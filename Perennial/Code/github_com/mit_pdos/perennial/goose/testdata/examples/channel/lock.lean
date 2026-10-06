@@ -29,7 +29,7 @@ noncomputable def NewLock [FfiSyntax] [GoGlobalContext] : GoString :=
 /-- NewLock returns a new Lock backed by a buffered channel of size 1.
 
     go: lock.go:15:6 -/
-noncomputable def «NewLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -37,7 +37,7 @@ noncomputable def «NewLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral Lock))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (Var "$v0")))]))))))
 
 /-- go: lock.go:21:15 -/
-noncomputable def «Lock__Lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lock.Lock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -54,7 +54,7 @@ noncomputable def «Lock__Lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     This will block if the lock is not currently held.
 
     go: lock.go:27:15 -/
-noncomputable def «Lock__Unlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lock.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -69,7 +69,7 @@ noncomputable def «Lock__Unlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     Returns true on success, false if already held.
 
     go: lock.go:33:15 -/
-noncomputable def «Lock__TryLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lock.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -84,7 +84,7 @@ noncomputable def «Lock__TryLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     Returns true if acquired, false if timed out.
 
     go: lock.go:44:15 -/
-noncomputable def «Lock__LockWithTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lock.LockWithTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "d"
   (App (Val exceptionDo)
@@ -119,53 +119,53 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end Lock
 
-@[reducible] def Lock'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Lock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ch" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]
 
-@[irreducible] def Lock'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Lock'fds_unsealed
+@[irreducible] def Lock.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Lock.fieldsUnsealed
 
 instance equals_unfold_Lock [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Lock'fds Lock'fds_unsealed :=
-  ⟨by unfold Lock'fds; rfl⟩
+    EqualsUnfold Lock.fields Lock.fieldsUnsealed :=
+  ⟨by unfold Lock.fields; rfl⟩
 
-@[reducible] def «Lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Lock'fds)
+@[reducible] def Lock.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Lock.fields)
 
-class Lock_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Lock_type_repr : go.TypeReprUnderlying «Lockⁱᵐᵖˡ» Lock.t
-  Lock_underlying : go.UnderlyingDirectedEq Lock «Lockⁱᵐᵖˡ»
-  Lock_get_ch : ∀ (x : Lock.t), go.IsGoStepPureDetTagged under (StructFieldGet «Lockⁱᵐᵖˡ» go!"ch") #x (Val #(x.ch'))
-  Lock_set_ch : ∀ (x : Lock.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «Lockⁱᵐᵖˡ» go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock.t)))
-  Lock_Lock_unfold : MethodUnfold Lock go!"Lock" «Lock__Lockⁱᵐᵖˡ»
-  Lock_LockWithTimeout_unfold : MethodUnfold Lock go!"LockWithTimeout" «Lock__LockWithTimeoutⁱᵐᵖˡ»
-  Lock_TryLock_unfold : MethodUnfold Lock go!"TryLock" «Lock__TryLockⁱᵐᵖˡ»
-  Lock_Unlock_unfold : MethodUnfold Lock go!"Unlock" «Lock__Unlockⁱᵐᵖˡ»
-  Lock'ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"Lock" (LamV "$r"
+class Lock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Lock.underlying Lock.t
+  underlying : go.UnderlyingDirectedEq Lock Lock.underlying
+  get_ch : ∀ (x : Lock.t), go.IsGoStepPureDetTagged under (StructFieldGet Lock.underlying go!"ch") #x (Val #(x.ch'))
+  set_ch : ∀ (x : Lock.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Lock.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock.t)))
+  Lock_unfold : MethodUnfold Lock go!"Lock" Lock.Lock.impl
+  LockWithTimeout_unfold : MethodUnfold Lock go!"LockWithTimeout" Lock.LockWithTimeout.impl
+  TryLock_unfold : MethodUnfold Lock go!"TryLock" Lock.TryLock.impl
+  Unlock_unfold : MethodUnfold Lock go!"Unlock" Lock.Unlock.impl
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"Lock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock go!"Lock"))) (App (Val (GoInstruction (GoLoad Lock))) (Var "$r"))))
-  Lock'ptr_LockWithTimeout_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"LockWithTimeout" (LamV "$r"
+  ptr_LockWithTimeout_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"LockWithTimeout" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock go!"LockWithTimeout"))) (App (Val (GoInstruction (GoLoad Lock))) (Var "$r"))))
-  Lock'ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"TryLock" (LamV "$r"
+  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"TryLock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock go!"TryLock"))) (App (Val (GoInstruction (GoLoad Lock))) (Var "$r"))))
-  Lock'ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"Unlock" (LamV "$r"
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"Unlock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock go!"Unlock"))) (App (Val (GoInstruction (GoLoad Lock))) (Var "$r"))))
 
-attribute [instance] Lock_Assumptions.Lock_type_repr
-  Lock_Assumptions.Lock_underlying
-  Lock_Assumptions.Lock_get_ch
-  Lock_Assumptions.Lock_set_ch
-  Lock_Assumptions.Lock_Lock_unfold
-  Lock_Assumptions.Lock_LockWithTimeout_unfold
-  Lock_Assumptions.Lock_TryLock_unfold
-  Lock_Assumptions.Lock_Unlock_unfold
-  Lock_Assumptions.Lock'ptr_Lock_unfold
-  Lock_Assumptions.Lock'ptr_LockWithTimeout_unfold
-  Lock_Assumptions.Lock'ptr_TryLock_unfold
-  Lock_Assumptions.Lock'ptr_Unlock_unfold
+attribute [instance] Lock.TypeAssumptions.type_repr
+  Lock.TypeAssumptions.underlying
+  Lock.TypeAssumptions.get_ch
+  Lock.TypeAssumptions.set_ch
+  Lock.TypeAssumptions.Lock_unfold
+  Lock.TypeAssumptions.LockWithTimeout_unfold
+  Lock.TypeAssumptions.TryLock_unfold
+  Lock.TypeAssumptions.Unlock_unfold
+  Lock.TypeAssumptions.ptr_Lock_unfold
+  Lock.TypeAssumptions.ptr_LockWithTimeout_unfold
+  Lock.TypeAssumptions.ptr_TryLock_unfold
+  Lock.TypeAssumptions.ptr_Unlock_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Lock_instance : Lock_Assumptions
-  NewLock_unfold : FuncUnfold NewLock [] «NewLockⁱᵐᵖˡ»
+  Lock_instance : Lock.TypeAssumptions
+  NewLock_unfold : FuncUnfold NewLock [] NewLock.impl
   import_time_Assumption : _root_.Perennial.time.Assumptions
 
 attribute [instance] Assumptions.Lock_instance

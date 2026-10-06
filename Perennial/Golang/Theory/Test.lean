@@ -343,7 +343,7 @@ variable [FfiSyntax] [GoGlobalContext]
 /-- A package constant, as goose generates it. -/
 def testConst : val := #(W64 3)
 /-- An implementation constant, as `wp_func_call`/`wp_method_call` produce. -/
-def «testFnⁱᵐᵖˡ» : val := LamV "x" (Var "x")
+def testFn.impl : val := LamV "x" (Var "x")
 end consts
 
 section proofs2
@@ -361,9 +361,9 @@ example (Φ : val → IProp GF) :
   wp_auto
   iexact H
 
-/-- `wp_auto` steps into a call of an implementation constant `«Fooⁱᵐᵖˡ»`. -/
+/-- `wp_auto` steps into a call of an implementation constant `Foo.impl`. -/
 example (Φ : val → IProp GF) :
-    Φ #(W64 3) ⊢ WP (App (Val «testFnⁱᵐᵖˡ») (Val #(W64 3))) {{ Φ }} := by
+    Φ #(W64 3) ⊢ WP (App (Val testFn.impl) (Val #(W64 3))) {{ Φ }} := by
   iintro H
   wp_auto
   iexact H
@@ -388,28 +388,28 @@ structure t [FfiSyntax] where
 instance zero_val [FfiSyntax] : ZeroVal t := ⟨t.mk zeroValDef zeroValDef⟩
 end pt
 
-@[reducible] def pt'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def pt.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64), (go.field_decl.FieldDecl go!"y" go.uint64)]
-@[irreducible] def pt'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl := pt'fds_unsealed
-instance equals_unfold_pt [FfiSyntax] [GoGlobalContext] : EqualsUnfold pt'fds pt'fds_unsealed :=
-  ⟨by unfold pt'fds; rfl⟩
-@[reducible] def «ptⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType pt'fds)
+@[irreducible] def pt.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl := pt.fieldsUnsealed
+instance equals_unfold_pt [FfiSyntax] [GoGlobalContext] : EqualsUnfold pt.fields pt.fieldsUnsealed :=
+  ⟨by unfold pt.fields; rfl⟩
+@[reducible] def pt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType pt.fields)
 
-class pt_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  pt_type_repr : go.TypeReprUnderlying «ptⁱᵐᵖˡ» pt.t
-  pt_underlying : go.UnderlyingDirectedEq pt «ptⁱᵐᵖˡ»
-  pt_get_x : ∀ (x : pt.t), go.IsGoStepPureDetTagged under (StructFieldGet «ptⁱᵐᵖˡ» go!"x") #x (Val #(x.x'))
-  pt_set_x : ∀ (x : pt.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ptⁱᵐᵖˡ» go!"x") (PairV #x #y) (Val #(({ x with x' := y } : pt.t)))
-  pt_get_y : ∀ (x : pt.t), go.IsGoStepPureDetTagged under (StructFieldGet «ptⁱᵐᵖˡ» go!"y") #x (Val #(x.y'))
-  pt_set_y : ∀ (x : pt.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ptⁱᵐᵖˡ» go!"y") (PairV #x #y) (Val #(({ x with y' := y } : pt.t)))
-attribute [instance] pt_Assumptions.pt_type_repr pt_Assumptions.pt_underlying pt_Assumptions.pt_get_x
-  pt_Assumptions.pt_set_x pt_Assumptions.pt_get_y pt_Assumptions.pt_set_y
+class pt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying pt.underlying pt.t
+  underlying : go.UnderlyingDirectedEq pt pt.underlying
+  get_x : ∀ (x : pt.t), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : pt.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : pt.t)))
+  get_y : ∀ (x : pt.t), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"y") #x (Val #(x.y'))
+  set_y : ∀ (x : pt.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : pt.t)))
+attribute [instance] pt.TypeAssumptions.type_repr pt.TypeAssumptions.underlying pt.TypeAssumptions.get_x
+  pt.TypeAssumptions.set_x pt.TypeAssumptions.get_y pt.TypeAssumptions.set_y
 
 section def_
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : pt_Assumptions]
+variable [package_sem' : pt.TypeAssumptions]
 
 instance pt_typed_pointsto : TypedPointsto (GF := GF) pt.t where
   typedPointstoDef l v dq := iprop(
@@ -448,7 +448,7 @@ instance pt_access_store_y (l : Loc) (v : pt.t) (y' : w64) :
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with y' := y' } : pt.t) (DFrac.own 1)) := by
   solve_pointsto_access_struct
 
-instance pt_into_val_typed : IntoValTypedUnderlying (GF := GF) pt.t «ptⁱᵐᵖˡ» := by
+instance pt_into_val_typed : IntoValTypedUnderlying (GF := GF) pt.t pt.underlying := by
   solve_into_val_typed_struct
 
 example (l : Loc) (v : pt.t) :
@@ -487,26 +487,26 @@ structure t [FfiSyntax] where
 instance zero_val [FfiSyntax] : ZeroVal t := ⟨t.mk zeroValDef⟩
 end ub
 
-@[reducible] def ub'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ub.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"p" go.uintptr)]
-@[irreducible] def ub'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl := ub'fds_unsealed
-instance equals_unfold_ub [FfiSyntax] [GoGlobalContext] : EqualsUnfold ub'fds ub'fds_unsealed :=
-  ⟨by unfold ub'fds; rfl⟩
-@[reducible] def «ubⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType ub'fds)
+@[irreducible] def ub.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl := ub.fieldsUnsealed
+instance equals_unfold_ub [FfiSyntax] [GoGlobalContext] : EqualsUnfold ub.fields ub.fieldsUnsealed :=
+  ⟨by unfold ub.fields; rfl⟩
+@[reducible] def ub.underlying [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType ub.fields)
 
-class ub_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ub_type_repr : go.TypeReprUnderlying «ubⁱᵐᵖˡ» ub.t
-  ub_underlying : go.UnderlyingDirectedEq ub «ubⁱᵐᵖˡ»
-  ub_get_p : ∀ (x : ub.t), go.IsGoStepPureDetTagged under (StructFieldGet «ubⁱᵐᵖˡ» go!"p") #x (Val #(x.p'))
-  ub_set_p : ∀ (x : ub.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ubⁱᵐᵖˡ» go!"p") (PairV #x #y) (Val #(({ x with p' := y } : ub.t)))
-attribute [instance] ub_Assumptions.ub_type_repr ub_Assumptions.ub_underlying
-  ub_Assumptions.ub_get_p ub_Assumptions.ub_set_p
+class ub.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ub.underlying ub.t
+  underlying : go.UnderlyingDirectedEq ub ub.underlying
+  get_p : ∀ (x : ub.t), go.IsGoStepPureDetTagged under (StructFieldGet ub.underlying go!"p") #x (Val #(x.p'))
+  set_p : ∀ (x : ub.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ub.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : ub.t)))
+attribute [instance] ub.TypeAssumptions.type_repr ub.TypeAssumptions.underlying
+  ub.TypeAssumptions.get_p ub.TypeAssumptions.set_p
 
 section def_
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : ub_Assumptions]
+variable [package_sem' : ub.TypeAssumptions]
 
 instance ub_typed_pointsto : TypedPointsto (GF := GF) ub.t where
   typedPointstoDef l v dq := iprop(
@@ -530,7 +530,7 @@ instance ub_access_store_p (l : Loc) (v : ub.t) (p' : w64) :
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p' := p' } : ub.t) (DFrac.own 1)) := by
   solve_pointsto_access_struct
 
-instance ub_into_val_typed : IntoValTypedUnderlying (GF := GF) ub.t «ubⁱᵐᵖˡ» := by
+instance ub_into_val_typed : IntoValTypedUnderlying (GF := GF) ub.t ub.underlying := by
   solve_into_val_typed_struct
 
 /-- Load, increment and store the `uintptr` field. -/

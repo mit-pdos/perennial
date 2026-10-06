@@ -423,7 +423,7 @@ noncomputable def ErrorDesc [FfiSyntax] [GoGlobalContext] : GoString :=
     TODO: define clientv3/codes.Code.
 
     go: error.go:248:20 -/
-noncomputable def «EtcdError__Codeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def EtcdError.Code.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -432,7 +432,7 @@ noncomputable def «EtcdError__Codeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoLoad _root_.Perennial.google_golang_org.grpc.codes.Code))) (App (Val (GoInstruction (StructFieldRef EtcdError go!"code"))) (Var "e"))))))))
 
 /-- go: error.go:252:20 -/
-noncomputable def «EtcdError__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def EtcdError.Error.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -441,7 +441,7 @@ noncomputable def «EtcdError__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef EtcdError go!"desc"))) (Var "e"))))))))
 
 /-- go: error.go:256:6 -/
-noncomputable def «Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Error.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "err"
   (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -499,7 +499,7 @@ noncomputable def «Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))
 
 /-- go: error.go:274:6 -/
-noncomputable def «ErrorDescⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ErrorDesc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "err"
   (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -1799,44 +1799,44 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end EtcdError
 
-@[reducible] def EtcdError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def EtcdError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"code" _root_.Perennial.google_golang_org.grpc.codes.Code),
 (go.field_decl.FieldDecl go!"desc" go.string)]
 
-@[irreducible] def EtcdError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  EtcdError'fds_unsealed
+@[irreducible] def EtcdError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  EtcdError.fieldsUnsealed
 
 instance equals_unfold_EtcdError [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold EtcdError'fds EtcdError'fds_unsealed :=
-  ⟨by unfold EtcdError'fds; rfl⟩
+    EqualsUnfold EtcdError.fields EtcdError.fieldsUnsealed :=
+  ⟨by unfold EtcdError.fields; rfl⟩
 
-@[reducible] def «EtcdErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType EtcdError'fds)
+@[reducible] def EtcdError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType EtcdError.fields)
 
-class EtcdError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  EtcdError_type_repr : go.TypeReprUnderlying «EtcdErrorⁱᵐᵖˡ» EtcdError.t
-  EtcdError_underlying : go.UnderlyingDirectedEq EtcdError «EtcdErrorⁱᵐᵖˡ»
-  EtcdError_get_code : ∀ (x : EtcdError.t), go.IsGoStepPureDetTagged under (StructFieldGet «EtcdErrorⁱᵐᵖˡ» go!"code") #x (Val #(x.code'))
-  EtcdError_set_code : ∀ (x : EtcdError.t) (y : _root_.Perennial.google_golang_org.grpc.codes.Code.t), go.IsGoStepPureDetTagged under (StructFieldSet «EtcdErrorⁱᵐᵖˡ» go!"code") (PairV #x #y) (Val #(({ x with code' := y } : EtcdError.t)))
-  EtcdError_get_desc : ∀ (x : EtcdError.t), go.IsGoStepPureDetTagged under (StructFieldGet «EtcdErrorⁱᵐᵖˡ» go!"desc") #x (Val #(x.desc'))
-  EtcdError_set_desc : ∀ (x : EtcdError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «EtcdErrorⁱᵐᵖˡ» go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : EtcdError.t)))
-  EtcdError_Code_unfold : MethodUnfold EtcdError go!"Code" «EtcdError__Codeⁱᵐᵖˡ»
-  EtcdError_Error_unfold : MethodUnfold EtcdError go!"Error" «EtcdError__Errorⁱᵐᵖˡ»
-  EtcdError'ptr_Code_unfold : MethodUnfold (go.GoType.PointerType EtcdError) go!"Code" (LamV "$r"
+class EtcdError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying EtcdError.underlying EtcdError.t
+  underlying : go.UnderlyingDirectedEq EtcdError EtcdError.underlying
+  get_code : ∀ (x : EtcdError.t), go.IsGoStepPureDetTagged under (StructFieldGet EtcdError.underlying go!"code") #x (Val #(x.code'))
+  set_code : ∀ (x : EtcdError.t) (y : _root_.Perennial.google_golang_org.grpc.codes.Code.t), go.IsGoStepPureDetTagged under (StructFieldSet EtcdError.underlying go!"code") (PairV #x #y) (Val #(({ x with code' := y } : EtcdError.t)))
+  get_desc : ∀ (x : EtcdError.t), go.IsGoStepPureDetTagged under (StructFieldGet EtcdError.underlying go!"desc") #x (Val #(x.desc'))
+  set_desc : ∀ (x : EtcdError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet EtcdError.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : EtcdError.t)))
+  Code_unfold : MethodUnfold EtcdError go!"Code" EtcdError.Code.impl
+  Error_unfold : MethodUnfold EtcdError go!"Error" EtcdError.Error.impl
+  ptr_Code_unfold : MethodUnfold (go.GoType.PointerType EtcdError) go!"Code" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve EtcdError go!"Code"))) (App (Val (GoInstruction (GoLoad EtcdError))) (Var "$r"))))
-  EtcdError'ptr_Error_unfold : MethodUnfold (go.GoType.PointerType EtcdError) go!"Error" (LamV "$r"
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType EtcdError) go!"Error" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve EtcdError go!"Error"))) (App (Val (GoInstruction (GoLoad EtcdError))) (Var "$r"))))
 
-attribute [instance] EtcdError_Assumptions.EtcdError_type_repr
-  EtcdError_Assumptions.EtcdError_underlying
-  EtcdError_Assumptions.EtcdError_get_code
-  EtcdError_Assumptions.EtcdError_set_code
-  EtcdError_Assumptions.EtcdError_get_desc
-  EtcdError_Assumptions.EtcdError_set_desc
-  EtcdError_Assumptions.EtcdError_Code_unfold
-  EtcdError_Assumptions.EtcdError_Error_unfold
-  EtcdError_Assumptions.EtcdError'ptr_Code_unfold
-  EtcdError_Assumptions.EtcdError'ptr_Error_unfold
+attribute [instance] EtcdError.TypeAssumptions.type_repr
+  EtcdError.TypeAssumptions.underlying
+  EtcdError.TypeAssumptions.get_code
+  EtcdError.TypeAssumptions.set_code
+  EtcdError.TypeAssumptions.get_desc
+  EtcdError.TypeAssumptions.set_desc
+  EtcdError.TypeAssumptions.Code_unfold
+  EtcdError.TypeAssumptions.Error_unfold
+  EtcdError.TypeAssumptions.ptr_Code_unfold
+  EtcdError.TypeAssumptions.ptr_Error_unfold
 
 namespace TokenFieldNameGRPCKey
 structure t [FfiSyntax] where
@@ -1846,31 +1846,31 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end TokenFieldNameGRPCKey
 
-@[reducible] def TokenFieldNameGRPCKey'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TokenFieldNameGRPCKey.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def TokenFieldNameGRPCKey'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  TokenFieldNameGRPCKey'fds_unsealed
+@[irreducible] def TokenFieldNameGRPCKey.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  TokenFieldNameGRPCKey.fieldsUnsealed
 
 instance equals_unfold_TokenFieldNameGRPCKey [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold TokenFieldNameGRPCKey'fds TokenFieldNameGRPCKey'fds_unsealed :=
-  ⟨by unfold TokenFieldNameGRPCKey'fds; rfl⟩
+    EqualsUnfold TokenFieldNameGRPCKey.fields TokenFieldNameGRPCKey.fieldsUnsealed :=
+  ⟨by unfold TokenFieldNameGRPCKey.fields; rfl⟩
 
-@[reducible] def «TokenFieldNameGRPCKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType TokenFieldNameGRPCKey'fds)
+@[reducible] def TokenFieldNameGRPCKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType TokenFieldNameGRPCKey.fields)
 
-class TokenFieldNameGRPCKey_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TokenFieldNameGRPCKey_type_repr : go.TypeReprUnderlying «TokenFieldNameGRPCKeyⁱᵐᵖˡ» TokenFieldNameGRPCKey.t
-  TokenFieldNameGRPCKey_underlying : go.UnderlyingDirectedEq TokenFieldNameGRPCKey «TokenFieldNameGRPCKeyⁱᵐᵖˡ»
+class TokenFieldNameGRPCKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying TokenFieldNameGRPCKey.underlying TokenFieldNameGRPCKey.t
+  underlying : go.UnderlyingDirectedEq TokenFieldNameGRPCKey TokenFieldNameGRPCKey.underlying
 
-attribute [instance] TokenFieldNameGRPCKey_Assumptions.TokenFieldNameGRPCKey_type_repr
-  TokenFieldNameGRPCKey_Assumptions.TokenFieldNameGRPCKey_underlying
+attribute [instance] TokenFieldNameGRPCKey.TypeAssumptions.type_repr
+  TokenFieldNameGRPCKey.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  EtcdError_instance : EtcdError_Assumptions
-  TokenFieldNameGRPCKey_instance : TokenFieldNameGRPCKey_Assumptions
-  Error_unfold : FuncUnfold Error [] «Errorⁱᵐᵖˡ»
-  ErrorDesc_unfold : FuncUnfold ErrorDesc [] «ErrorDescⁱᵐᵖˡ»
+  EtcdError_instance : EtcdError.TypeAssumptions
+  TokenFieldNameGRPCKey_instance : TokenFieldNameGRPCKey.TypeAssumptions
+  Error_unfold : FuncUnfold Error [] Error.impl
+  ErrorDesc_unfold : FuncUnfold ErrorDesc [] ErrorDesc.impl
   import_codes_Assumption : _root_.Perennial.google_golang_org.grpc.codes.Assumptions
   import_status_Assumption : _root_.Perennial.google_golang_org.grpc.status.Assumptions
 

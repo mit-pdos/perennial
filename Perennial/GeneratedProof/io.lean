@@ -34,7 +34,7 @@ instance LimitedReader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LimitedReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.LimitedReader.t io.«LimitedReaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.LimitedReader.t io.LimitedReader.underlying := by
   solve_into_val_typed_struct
 
 instance LimitedReader_access_load_R (l : Loc) (v : io.LimitedReader.t) (dq : DFrac) :
@@ -94,7 +94,7 @@ instance SectionReader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SectionReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.SectionReader.t io.«SectionReaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.SectionReader.t io.SectionReader.underlying := by
   solve_into_val_typed_struct
 
 instance SectionReader_access_load_r (l : Loc) (v : io.SectionReader.t) (dq : DFrac) :
@@ -200,7 +200,7 @@ instance OffsetWriter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance OffsetWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.OffsetWriter.t io.«OffsetWriterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.OffsetWriter.t io.OffsetWriter.underlying := by
   solve_into_val_typed_struct
 
 instance OffsetWriter_access_load_w (l : Loc) (v : io.OffsetWriter.t) (dq : DFrac) :
@@ -273,7 +273,7 @@ instance teeReader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance teeReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.teeReader.t io.«teeReaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.teeReader.t io.teeReader.underlying := by
   solve_into_val_typed_struct
 
 instance teeReader_access_load_r (l : Loc) (v : io.teeReader.t) (dq : DFrac) :
@@ -328,7 +328,7 @@ instance discard_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance discard_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.discard.t io.«discardⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.discard.t io.discard.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -352,7 +352,7 @@ instance nopCloser_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nopCloser_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.nopCloser.t io.«nopCloserⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.nopCloser.t io.nopCloser.underlying := by
   solve_into_val_typed_struct
 
 instance nopCloser_access_load_Reader (l : Loc) (v : io.nopCloser.t) (dq : DFrac) :
@@ -392,7 +392,7 @@ instance nopCloserWriterTo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nopCloserWriterTo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.nopCloserWriterTo.t io.«nopCloserWriterToⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.nopCloserWriterTo.t io.nopCloserWriterTo.underlying := by
   solve_into_val_typed_struct
 
 instance nopCloserWriterTo_access_load_Reader (l : Loc) (v : io.nopCloserWriterTo.t) (dq : DFrac) :
@@ -431,7 +431,7 @@ instance eofReader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance eofReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.eofReader.t io.«eofReaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.eofReader.t io.eofReader.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -455,7 +455,7 @@ instance multiReader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance multiReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.multiReader.t io.«multiReaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.multiReader.t io.multiReader.underlying := by
   solve_into_val_typed_struct
 
 instance multiReader_access_load_readers (l : Loc) (v : io.multiReader.t) (dq : DFrac) :
@@ -495,7 +495,7 @@ instance multiWriter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance multiWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.multiWriter.t io.«multiWriterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.multiWriter.t io.multiWriter.underlying := by
   solve_into_val_typed_struct
 
 instance multiWriter_access_load_writers (l : Loc) (v : io.multiWriter.t) (dq : DFrac) :
@@ -536,7 +536,7 @@ instance onceError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance onceError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.onceError.t io.«onceErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.onceError.t io.onceError.underlying := by
   solve_into_val_typed_struct
 
 instance onceError_access_load_Mutex (l : Loc) (v : io.onceError.t) (dq : DFrac) :
@@ -598,7 +598,7 @@ instance pipe_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pipe_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.pipe.t io.«pipeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.pipe.t io.pipe.underlying := by
   solve_into_val_typed_struct
 
 instance pipe_access_load_wrMu (l : Loc) (v : io.pipe.t) (dq : DFrac) :
@@ -734,7 +734,7 @@ instance PipeReader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance PipeReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.PipeReader.t io.«PipeReaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.PipeReader.t io.PipeReader.underlying := by
   solve_into_val_typed_struct
 
 instance PipeReader_access_load_pipe (l : Loc) (v : io.PipeReader.t) (dq : DFrac) :
@@ -774,7 +774,7 @@ instance PipeWriter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance PipeWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) io.PipeWriter.t io.«PipeWriterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) io.PipeWriter.t io.PipeWriter.underlying := by
   solve_into_val_typed_struct
 
 instance PipeWriter_access_load_r (l : Loc) (v : io.PipeWriter.t) (dq : DFrac) :

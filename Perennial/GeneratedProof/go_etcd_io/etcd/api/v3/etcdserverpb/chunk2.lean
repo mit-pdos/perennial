@@ -39,7 +39,7 @@ instance RangeResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RangeResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«RangeResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse.underlying := by
   solve_into_val_typed_struct
 
 instance RangeResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse.t) (dq : DFrac) :
@@ -183,7 +183,7 @@ instance PutRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance PutRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«PutRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.underlying := by
   solve_into_val_typed_struct
 
 instance PutRequest_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.t) (dq : DFrac) :
@@ -355,7 +355,7 @@ instance PutResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance PutResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«PutResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse.underlying := by
   solve_into_val_typed_struct
 
 instance PutResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse.t) (dq : DFrac) :
@@ -464,7 +464,7 @@ instance DeleteRangeRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance DeleteRangeRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«DeleteRangeRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest.underlying := by
   solve_into_val_typed_struct
 
 instance DeleteRangeRequest_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest.t) (dq : DFrac) :
@@ -589,7 +589,7 @@ instance DeleteRangeResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance DeleteRangeResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«DeleteRangeResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse.underlying := by
   solve_into_val_typed_struct
 
 instance DeleteRangeResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse.t) (dq : DFrac) :
@@ -709,7 +709,7 @@ instance RequestOp_RequestRange_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RequestOp_RequestRange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestRange.t go_etcd_io.etcd.api.v3.etcdserverpb.«RequestOp_RequestRangeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestRange.t go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestRange.underlying := by
   solve_into_val_typed_struct
 
 instance RequestOp_RequestRange_access_load_RequestRange (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestRange.t) (dq : DFrac) :
@@ -749,7 +749,7 @@ instance RequestOp_RequestPut_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RequestOp_RequestPut_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestPut.t go_etcd_io.etcd.api.v3.etcdserverpb.«RequestOp_RequestPutⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestPut.t go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestPut.underlying := by
   solve_into_val_typed_struct
 
 instance RequestOp_RequestPut_access_load_RequestPut (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestPut.t) (dq : DFrac) :
@@ -789,7 +789,7 @@ instance RequestOp_RequestDeleteRange_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RequestOp_RequestDeleteRange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestDeleteRange.t go_etcd_io.etcd.api.v3.etcdserverpb.«RequestOp_RequestDeleteRangeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestDeleteRange.t go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestDeleteRange.underlying := by
   solve_into_val_typed_struct
 
 instance RequestOp_RequestDeleteRange_access_load_RequestDeleteRange (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestDeleteRange.t) (dq : DFrac) :
@@ -829,7 +829,7 @@ instance RequestOp_RequestTxn_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RequestOp_RequestTxn_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestTxn.t go_etcd_io.etcd.api.v3.etcdserverpb.«RequestOp_RequestTxnⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestTxn.t go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestTxn.underlying := by
   solve_into_val_typed_struct
 
 instance RequestOp_RequestTxn_access_load_RequestTxn (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp_RequestTxn.t) (dq : DFrac) :
@@ -869,7 +869,7 @@ instance ResponseOp_ResponseRange_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ResponseOp_ResponseRange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseRange.t go_etcd_io.etcd.api.v3.etcdserverpb.«ResponseOp_ResponseRangeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseRange.t go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseRange.underlying := by
   solve_into_val_typed_struct
 
 instance ResponseOp_ResponseRange_access_load_ResponseRange (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseRange.t) (dq : DFrac) :
@@ -909,7 +909,7 @@ instance ResponseOp_ResponsePut_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ResponseOp_ResponsePut_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponsePut.t go_etcd_io.etcd.api.v3.etcdserverpb.«ResponseOp_ResponsePutⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponsePut.t go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponsePut.underlying := by
   solve_into_val_typed_struct
 
 instance ResponseOp_ResponsePut_access_load_ResponsePut (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponsePut.t) (dq : DFrac) :
@@ -949,7 +949,7 @@ instance ResponseOp_ResponseDeleteRange_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ResponseOp_ResponseDeleteRange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseDeleteRange.t go_etcd_io.etcd.api.v3.etcdserverpb.«ResponseOp_ResponseDeleteRangeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseDeleteRange.t go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseDeleteRange.underlying := by
   solve_into_val_typed_struct
 
 instance ResponseOp_ResponseDeleteRange_access_load_ResponseDeleteRange (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseDeleteRange.t) (dq : DFrac) :
@@ -989,7 +989,7 @@ instance ResponseOp_ResponseTxn_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ResponseOp_ResponseTxn_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseTxn.t go_etcd_io.etcd.api.v3.etcdserverpb.«ResponseOp_ResponseTxnⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseTxn.t go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseTxn.underlying := by
   solve_into_val_typed_struct
 
 instance ResponseOp_ResponseTxn_access_load_ResponseTxn (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp_ResponseTxn.t) (dq : DFrac) :
@@ -1029,7 +1029,7 @@ instance Compare_Version_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Compare_Version_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Version.t go_etcd_io.etcd.api.v3.etcdserverpb.«Compare_Versionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Version.t go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Version.underlying := by
   solve_into_val_typed_struct
 
 instance Compare_Version_access_load_Version (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Version.t) (dq : DFrac) :
@@ -1069,7 +1069,7 @@ instance Compare_CreateRevision_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Compare_CreateRevision_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_CreateRevision.t go_etcd_io.etcd.api.v3.etcdserverpb.«Compare_CreateRevisionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_CreateRevision.t go_etcd_io.etcd.api.v3.etcdserverpb.Compare_CreateRevision.underlying := by
   solve_into_val_typed_struct
 
 instance Compare_CreateRevision_access_load_CreateRevision (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Compare_CreateRevision.t) (dq : DFrac) :
@@ -1109,7 +1109,7 @@ instance Compare_ModRevision_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Compare_ModRevision_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_ModRevision.t go_etcd_io.etcd.api.v3.etcdserverpb.«Compare_ModRevisionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_ModRevision.t go_etcd_io.etcd.api.v3.etcdserverpb.Compare_ModRevision.underlying := by
   solve_into_val_typed_struct
 
 instance Compare_ModRevision_access_load_ModRevision (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Compare_ModRevision.t) (dq : DFrac) :
@@ -1149,7 +1149,7 @@ instance Compare_Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Compare_Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Value.t go_etcd_io.etcd.api.v3.etcdserverpb.«Compare_Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Value.t go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Value.underlying := by
   solve_into_val_typed_struct
 
 instance Compare_Value_access_load_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Value.t) (dq : DFrac) :
@@ -1189,7 +1189,7 @@ instance Compare_Lease_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Compare_Lease_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Lease.t go_etcd_io.etcd.api.v3.etcdserverpb.«Compare_Leaseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Lease.t go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Lease.underlying := by
   solve_into_val_typed_struct
 
 instance Compare_Lease_access_load_Lease (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Lease.t) (dq : DFrac) :
@@ -1234,7 +1234,7 @@ instance TxnRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TxnRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«TxnRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest.underlying := by
   solve_into_val_typed_struct
 
 instance TxnRequest_access_load_Compare (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest.t) (dq : DFrac) :
@@ -1359,7 +1359,7 @@ instance TxnResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TxnResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«TxnResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse.underlying := by
   solve_into_val_typed_struct
 
 instance TxnResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse.t) (dq : DFrac) :

@@ -50,7 +50,7 @@ instance DefaultLogger_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance DefaultLogger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.DefaultLogger.t go_etcd_io.raft.v3.«DefaultLoggerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.DefaultLogger.t go_etcd_io.raft.v3.DefaultLogger.underlying := by
   solve_into_val_typed_struct
 
 instance DefaultLogger_access_load_Logger (l : Loc) (v : go_etcd_io.raft.v3.DefaultLogger.t) (dq : DFrac) :
@@ -113,7 +113,7 @@ instance Ready_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Ready_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.Ready.t go_etcd_io.raft.v3.«Readyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.Ready.t go_etcd_io.raft.v3.Ready.underlying := by
   solve_into_val_typed_struct
 
 instance Ready_access_load_SoftState (l : Loc) (v : go_etcd_io.raft.v3.Ready.t) (dq : DFrac) :
@@ -266,7 +266,7 @@ instance Peer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Peer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.Peer.t go_etcd_io.raft.v3.«Peerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.Peer.t go_etcd_io.raft.v3.Peer.underlying := by
   solve_into_val_typed_struct
 
 instance Peer_access_load_ID (l : Loc) (v : go_etcd_io.raft.v3.Peer.t) (dq : DFrac) :
@@ -323,7 +323,7 @@ instance msgWithResult_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance msgWithResult_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.msgWithResult.t go_etcd_io.raft.v3.«msgWithResultⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.msgWithResult.t go_etcd_io.raft.v3.msgWithResult.underlying := by
   solve_into_val_typed_struct
 
 instance msgWithResult_access_load_m (l : Loc) (v : go_etcd_io.raft.v3.msgWithResult.t) (dq : DFrac) :
@@ -389,7 +389,7 @@ instance node_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance node_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.node.t go_etcd_io.raft.v3.«nodeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.node.t go_etcd_io.raft.v3.node.underlying := by
   solve_into_val_typed_struct
 
 instance node_access_load_propc (l : Loc) (v : go_etcd_io.raft.v3.node.t) (dq : DFrac) :
@@ -589,7 +589,7 @@ instance lockedRand_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lockedRand_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.lockedRand.t go_etcd_io.raft.v3.«lockedRandⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.lockedRand.t go_etcd_io.raft.v3.lockedRand.underlying := by
   solve_into_val_typed_struct
 
 instance lockedRand_access_load_mu (l : Loc) (v : go_etcd_io.raft.v3.lockedRand.t) (dq : DFrac) :
@@ -633,7 +633,7 @@ instance RawNode_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RawNode_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.RawNode.t go_etcd_io.raft.v3.«RawNodeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.RawNode.t go_etcd_io.raft.v3.RawNode.underlying := by
   solve_into_val_typed_struct
 
 instance RawNode_access_load_raft (l : Loc) (v : go_etcd_io.raft.v3.RawNode.t) (dq : DFrac) :
@@ -738,7 +738,7 @@ instance ReadState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ReadState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.ReadState.t go_etcd_io.raft.v3.«ReadStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.ReadState.t go_etcd_io.raft.v3.ReadState.underlying := by
   solve_into_val_typed_struct
 
 instance ReadState_access_load_Index (l : Loc) (v : go_etcd_io.raft.v3.ReadState.t) (dq : DFrac) :
@@ -795,7 +795,7 @@ instance readIndexRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance readIndexRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.readIndexRequest.t go_etcd_io.raft.v3.«readIndexRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.readIndexRequest.t go_etcd_io.raft.v3.readIndexRequest.underlying := by
   solve_into_val_typed_struct
 
 instance readIndexRequest_access_load_req (l : Loc) (v : go_etcd_io.raft.v3.readIndexRequest.t) (dq : DFrac) :
@@ -850,7 +850,7 @@ instance TracingEvent_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TracingEvent_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.TracingEvent.t go_etcd_io.raft.v3.«TracingEventⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.TracingEvent.t go_etcd_io.raft.v3.TracingEvent.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -879,7 +879,7 @@ instance inMemStorageCallStats_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance inMemStorageCallStats_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.inMemStorageCallStats.t go_etcd_io.raft.v3.«inMemStorageCallStatsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.inMemStorageCallStats.t go_etcd_io.raft.v3.inMemStorageCallStats.underlying := by
   solve_into_val_typed_struct
 
 instance inMemStorageCallStats_access_load_initialState (l : Loc) (v : go_etcd_io.raft.v3.inMemStorageCallStats.t) (dq : DFrac) :
@@ -1000,7 +1000,7 @@ instance entryID_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance entryID_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.entryID.t go_etcd_io.raft.v3.«entryIDⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.entryID.t go_etcd_io.raft.v3.entryID.underlying := by
   solve_into_val_typed_struct
 
 instance entryID_access_load_term (l : Loc) (v : go_etcd_io.raft.v3.entryID.t) (dq : DFrac) :

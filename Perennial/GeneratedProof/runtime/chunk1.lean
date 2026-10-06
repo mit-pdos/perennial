@@ -37,7 +37,7 @@ instance userArena_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance userArena_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.userArena.t runtime.«userArenaⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.userArena.t runtime.userArena.underlying := by
   solve_into_val_typed_struct
 
 instance userArena_access_load_fullList (l : Loc) (v : runtime.userArena.t) (dq : DFrac) :
@@ -126,7 +126,7 @@ instance liveUserArenaChunk_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance liveUserArenaChunk_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.liveUserArenaChunk.t runtime.«liveUserArenaChunkⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.liveUserArenaChunk.t runtime.liveUserArenaChunk.underlying := by
   solve_into_val_typed_struct
 
 instance liveUserArenaChunk_access_load_mspan (l : Loc) (v : runtime.liveUserArenaChunk.t) (dq : DFrac) :
@@ -185,7 +185,7 @@ instance writeUserArenaHeapBits_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance writeUserArenaHeapBits_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.writeUserArenaHeapBits.t runtime.«writeUserArenaHeapBitsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.writeUserArenaHeapBits.t runtime.writeUserArenaHeapBits.underlying := by
   solve_into_val_typed_struct
 
 instance writeUserArenaHeapBits_access_load_offset (l : Loc) (v : runtime.writeUserArenaHeapBits.t) (dq : DFrac) :
@@ -274,7 +274,7 @@ instance argset_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance argset_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.argset.t runtime.«argsetⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.argset.t runtime.argset.underlying := by
   solve_into_val_typed_struct
 
 instance argset_access_load_args (l : Loc) (v : runtime.argset.t) (dq : DFrac) :
@@ -325,7 +325,7 @@ instance hchan_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance hchan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.hchan.t runtime.«hchanⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) runtime.hchan.t runtime.hchan.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -350,7 +350,7 @@ instance waitq_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance waitq_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.waitq.t runtime.«waitqⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.waitq.t runtime.waitq.underlying := by
   solve_into_val_typed_struct
 
 instance waitq_access_load_first (l : Loc) (v : runtime.waitq.t) (dq : DFrac) :
@@ -405,7 +405,7 @@ instance lockRankStruct_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lockRankStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.lockRankStruct.t runtime.«lockRankStructⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.lockRankStruct.t runtime.lockRankStruct.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -430,7 +430,7 @@ instance debugCallWrapArgs_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance debugCallWrapArgs_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.debugCallWrapArgs.t runtime.«debugCallWrapArgsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.debugCallWrapArgs.t runtime.debugCallWrapArgs.underlying := by
   solve_into_val_typed_struct
 
 instance debugCallWrapArgs_access_load_dispatch (l : Loc) (v : runtime.debugCallWrapArgs.t) (dq : DFrac) :
@@ -487,7 +487,7 @@ instance debugLogBuf_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance debugLogBuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.debugLogBuf.t runtime.«debugLogBufⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.debugLogBuf.t runtime.debugLogBuf.underlying := by
   solve_into_val_typed_struct
 
 instance debugLogBuf_access_load__0 (l : Loc) (v : runtime.debugLogBuf.t) (dq : DFrac) :
@@ -547,7 +547,7 @@ instance debugLogReader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance debugLogReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.debugLogReader.t runtime.«debugLogReaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.debugLogReader.t runtime.debugLogReader.underlying := by
   solve_into_val_typed_struct
 
 instance debugLogReader_access_load_data (l : Loc) (v : runtime.debugLogReader.t) (dq : DFrac) :
@@ -650,7 +650,7 @@ instance dloggerFake_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance dloggerFake_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.dloggerFake.t runtime.«dloggerFakeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.dloggerFake.t runtime.dloggerFake.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -673,7 +673,7 @@ instance dlogPerM_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance dlogPerM_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.dlogPerM.t runtime.«dlogPerMⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.dlogPerM.t runtime.dlogPerM.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -698,7 +698,7 @@ instance timespec_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timespec_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.timespec.t runtime.«timespecⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.timespec.t runtime.timespec.underlying := by
   solve_into_val_typed_struct
 
 instance timespec_access_load_tv_sec (l : Loc) (v : runtime.timespec.t) (dq : DFrac) :
@@ -755,7 +755,7 @@ instance timeval_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timeval_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.timeval.t runtime.«timevalⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.timeval.t runtime.timeval.underlying := by
   solve_into_val_typed_struct
 
 instance timeval_access_load_tv_sec (l : Loc) (v : runtime.timeval.t) (dq : DFrac) :
@@ -814,7 +814,7 @@ instance sigactiont_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sigactiont_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sigactiont.t runtime.«sigactiontⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.sigactiont.t runtime.sigactiont.underlying := by
   solve_into_val_typed_struct
 
 instance sigactiont_access_load_sa_handler (l : Loc) (v : runtime.sigactiont.t) (dq : DFrac) :
@@ -905,7 +905,7 @@ instance siginfoFields_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance siginfoFields_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.siginfoFields.t runtime.«siginfoFieldsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.siginfoFields.t runtime.siginfoFields.underlying := by
   solve_into_val_typed_struct
 
 instance siginfoFields_access_load_si_signo (l : Loc) (v : runtime.siginfoFields.t) (dq : DFrac) :
@@ -996,7 +996,7 @@ instance sigeventFields_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sigeventFields_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sigeventFields.t runtime.«sigeventFieldsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.sigeventFields.t runtime.sigeventFields.underlying := by
   solve_into_val_typed_struct
 
 instance sigeventFields_access_load_value (l : Loc) (v : runtime.sigeventFields.t) (dq : DFrac) :
@@ -1084,7 +1084,7 @@ instance usigset_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance usigset_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.usigset.t runtime.«usigsetⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.usigset.t runtime.usigset.underlying := by
   solve_into_val_typed_struct
 
 instance usigset_access_load___val (l : Loc) (v : runtime.usigset.t) (dq : DFrac) :
@@ -1126,7 +1126,7 @@ instance fpxreg_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fpxreg_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.fpxreg.t runtime.«fpxregⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.fpxreg.t runtime.fpxreg.underlying := by
   solve_into_val_typed_struct
 
 instance fpxreg_access_load_significand (l : Loc) (v : runtime.fpxreg.t) (dq : DFrac) :
@@ -1198,7 +1198,7 @@ instance xmmreg_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance xmmreg_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.xmmreg.t runtime.«xmmregⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.xmmreg.t runtime.xmmreg.underlying := by
   solve_into_val_typed_struct
 
 instance xmmreg_access_load_element (l : Loc) (v : runtime.xmmreg.t) (dq : DFrac) :
@@ -1240,7 +1240,7 @@ instance fpxreg1_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fpxreg1_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.fpxreg1.t runtime.«fpxreg1ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.fpxreg1.t runtime.fpxreg1.underlying := by
   solve_into_val_typed_struct
 
 instance fpxreg1_access_load_significand (l : Loc) (v : runtime.fpxreg1.t) (dq : DFrac) :
@@ -1312,7 +1312,7 @@ instance xmmreg1_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance xmmreg1_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.xmmreg1.t runtime.«xmmreg1ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.xmmreg1.t runtime.xmmreg1.underlying := by
   solve_into_val_typed_struct
 
 instance xmmreg1_access_load_element (l : Loc) (v : runtime.xmmreg1.t) (dq : DFrac) :
@@ -1353,7 +1353,7 @@ instance fpreg1_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fpreg1_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.fpreg1.t runtime.«fpreg1ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.fpreg1.t runtime.fpreg1.underlying := by
   solve_into_val_typed_struct
 
 instance fpreg1_access_load_significand (l : Loc) (v : runtime.fpreg1.t) (dq : DFrac) :
@@ -1412,7 +1412,7 @@ instance stackt_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stackt_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stackt.t runtime.«stacktⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.stackt.t runtime.stackt.underlying := by
   solve_into_val_typed_struct
 
 instance stackt_access_load_ss_sp (l : Loc) (v : runtime.stackt.t) (dq : DFrac) :
@@ -1502,7 +1502,7 @@ instance mcontext_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance mcontext_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mcontext.t runtime.«mcontextⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.mcontext.t runtime.mcontext.underlying := by
   solve_into_val_typed_struct
 
 instance mcontext_access_load_gregs (l : Loc) (v : runtime.mcontext.t) (dq : DFrac) :
@@ -1601,7 +1601,7 @@ instance sigcontext_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sigcontext_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sigcontext.t runtime.«sigcontextⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.sigcontext.t runtime.sigcontext.underlying := by
   solve_into_val_typed_struct
 
 instance sigcontext_access_load_r8 (l : Loc) (v : runtime.sigcontext.t) (dq : DFrac) :
@@ -2074,7 +2074,7 @@ instance sockaddr_un_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sockaddr_un_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sockaddr_un.t runtime.«sockaddr_unⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.sockaddr_un.t runtime.sockaddr_un.underlying := by
   solve_into_val_typed_struct
 
 instance sockaddr_un_access_load_family (l : Loc) (v : runtime.sockaddr_un.t) (dq : DFrac) :
@@ -2125,7 +2125,7 @@ instance TypeAssertionError_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance TypeAssertionError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.TypeAssertionError.t runtime.«TypeAssertionErrorⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) runtime.TypeAssertionError.t runtime.TypeAssertionError.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -2150,7 +2150,7 @@ instance errorAddressString_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance errorAddressString_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.errorAddressString.t runtime.«errorAddressStringⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.errorAddressString.t runtime.errorAddressString.underlying := by
   solve_into_val_typed_struct
 
 instance errorAddressString_access_load_msg (l : Loc) (v : runtime.errorAddressString.t) (dq : DFrac) :
@@ -2201,7 +2201,7 @@ instance boundsError_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance boundsError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.boundsError.t runtime.«boundsErrorⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) runtime.boundsError.t runtime.boundsError.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -2220,7 +2220,7 @@ instance typeCacheBucket_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance typeCacheBucket_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.typeCacheBucket.t runtime.«typeCacheBucketⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) runtime.typeCacheBucket.t runtime.typeCacheBucket.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -2245,7 +2245,7 @@ instance bitvector_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance bitvector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.bitvector.t runtime.«bitvectorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.bitvector.t runtime.bitvector.underlying := by
   solve_into_val_typed_struct
 
 instance bitvector_access_load_n (l : Loc) (v : runtime.bitvector.t) (dq : DFrac) :

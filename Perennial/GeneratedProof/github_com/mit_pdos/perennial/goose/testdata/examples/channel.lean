@@ -35,7 +35,7 @@ instance Cond_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Cond_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.«Condⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond.underlying := by
   solve_into_val_typed_struct
 
 instance Cond_access_load_L (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond.t) (dq : DFrac) :
@@ -92,7 +92,7 @@ instance Result_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Result_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.Result.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.«Resultⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.Result.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.Result.underlying := by
   solve_into_val_typed_struct
 
 instance Result_access_load_value (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.Result.t) (dq : DFrac) :
@@ -149,7 +149,7 @@ instance request_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance request_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.request.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.«requestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.request.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.request.underlying := by
   solve_into_val_typed_struct
 
 instance request_access_load_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.request.t) (dq : DFrac) :
@@ -206,7 +206,7 @@ instance stream_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.«streamⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream.underlying := by
   solve_into_val_typed_struct
 
 instance stream_access_load_req (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream.t) (dq : DFrac) :
@@ -264,7 +264,7 @@ instance streamold_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance streamold_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.«streamoldⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold.underlying := by
   solve_into_val_typed_struct
 
 instance streamold_access_load_req (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold.t) (dq : DFrac) :

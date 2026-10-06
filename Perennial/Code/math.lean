@@ -386,267 +386,267 @@ axiom reduceThreshold [FfiSyntax] [GoGlobalContext] : val
 noncomputable def useFMA [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.useFMA"
 
-axiom useFMA'init [FfiSyntax] [GoGlobalContext] : val
+axiom useFMA.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _gamP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._gamP"
 
-axiom _gamP'init [FfiSyntax] [GoGlobalContext] : val
+axiom _gamP.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _gamQ [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._gamQ"
 
-axiom _gamQ'init [FfiSyntax] [GoGlobalContext] : val
+axiom _gamQ.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _gamS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._gamS"
 
-axiom _gamS'init [FfiSyntax] [GoGlobalContext] : val
+axiom _gamS.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0R8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0R8"
 
-axiom p0R8'init [FfiSyntax] [GoGlobalContext] : val
+axiom p0R8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0S8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0S8"
 
-axiom p0S8'init [FfiSyntax] [GoGlobalContext] : val
+axiom p0S8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0R5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0R5"
 
-axiom p0R5'init [FfiSyntax] [GoGlobalContext] : val
+axiom p0R5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0S5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0S5"
 
-axiom p0S5'init [FfiSyntax] [GoGlobalContext] : val
+axiom p0S5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0R3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0R3"
 
-axiom p0R3'init [FfiSyntax] [GoGlobalContext] : val
+axiom p0R3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0S3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0S3"
 
-axiom p0S3'init [FfiSyntax] [GoGlobalContext] : val
+axiom p0S3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0R2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0R2"
 
-axiom p0R2'init [FfiSyntax] [GoGlobalContext] : val
+axiom p0R2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0S2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0S2"
 
-axiom p0S2'init [FfiSyntax] [GoGlobalContext] : val
+axiom p0S2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0R8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0R8"
 
-axiom q0R8'init [FfiSyntax] [GoGlobalContext] : val
+axiom q0R8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0S8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0S8"
 
-axiom q0S8'init [FfiSyntax] [GoGlobalContext] : val
+axiom q0S8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0R5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0R5"
 
-axiom q0R5'init [FfiSyntax] [GoGlobalContext] : val
+axiom q0R5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0S5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0S5"
 
-axiom q0S5'init [FfiSyntax] [GoGlobalContext] : val
+axiom q0S5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0R3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0R3"
 
-axiom q0R3'init [FfiSyntax] [GoGlobalContext] : val
+axiom q0R3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0S3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0S3"
 
-axiom q0S3'init [FfiSyntax] [GoGlobalContext] : val
+axiom q0S3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0R2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0R2"
 
-axiom q0R2'init [FfiSyntax] [GoGlobalContext] : val
+axiom q0R2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0S2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0S2"
 
-axiom q0S2'init [FfiSyntax] [GoGlobalContext] : val
+axiom q0S2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1R8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1R8"
 
-axiom p1R8'init [FfiSyntax] [GoGlobalContext] : val
+axiom p1R8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1S8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1S8"
 
-axiom p1S8'init [FfiSyntax] [GoGlobalContext] : val
+axiom p1S8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1R5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1R5"
 
-axiom p1R5'init [FfiSyntax] [GoGlobalContext] : val
+axiom p1R5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1S5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1S5"
 
-axiom p1S5'init [FfiSyntax] [GoGlobalContext] : val
+axiom p1S5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1R3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1R3"
 
-axiom p1R3'init [FfiSyntax] [GoGlobalContext] : val
+axiom p1R3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1S3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1S3"
 
-axiom p1S3'init [FfiSyntax] [GoGlobalContext] : val
+axiom p1S3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1R2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1R2"
 
-axiom p1R2'init [FfiSyntax] [GoGlobalContext] : val
+axiom p1R2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1S2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1S2"
 
-axiom p1S2'init [FfiSyntax] [GoGlobalContext] : val
+axiom p1S2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1R8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1R8"
 
-axiom q1R8'init [FfiSyntax] [GoGlobalContext] : val
+axiom q1R8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1S8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1S8"
 
-axiom q1S8'init [FfiSyntax] [GoGlobalContext] : val
+axiom q1S8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1R5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1R5"
 
-axiom q1R5'init [FfiSyntax] [GoGlobalContext] : val
+axiom q1R5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1S5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1S5"
 
-axiom q1S5'init [FfiSyntax] [GoGlobalContext] : val
+axiom q1S5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1R3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1R3"
 
-axiom q1R3'init [FfiSyntax] [GoGlobalContext] : val
+axiom q1R3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1S3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1S3"
 
-axiom q1S3'init [FfiSyntax] [GoGlobalContext] : val
+axiom q1S3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1R2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1R2"
 
-axiom q1R2'init [FfiSyntax] [GoGlobalContext] : val
+axiom q1R2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1S2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1S2"
 
-axiom q1S2'init [FfiSyntax] [GoGlobalContext] : val
+axiom q1S2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamA [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamA"
 
-axiom _lgamA'init [FfiSyntax] [GoGlobalContext] : val
+axiom _lgamA.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamR [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamR"
 
-axiom _lgamR'init [FfiSyntax] [GoGlobalContext] : val
+axiom _lgamR.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamS"
 
-axiom _lgamS'init [FfiSyntax] [GoGlobalContext] : val
+axiom _lgamS.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamT"
 
-axiom _lgamT'init [FfiSyntax] [GoGlobalContext] : val
+axiom _lgamT.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamU [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamU"
 
-axiom _lgamU'init [FfiSyntax] [GoGlobalContext] : val
+axiom _lgamU.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamV [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamV"
 
-axiom _lgamV'init [FfiSyntax] [GoGlobalContext] : val
+axiom _lgamV.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamW"
 
-axiom _lgamW'init [FfiSyntax] [GoGlobalContext] : val
+axiom _lgamW.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def pow10tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.pow10tab"
 
-axiom pow10tab'init [FfiSyntax] [GoGlobalContext] : val
+axiom pow10tab.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def pow10postab32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.pow10postab32"
 
-axiom pow10postab32'init [FfiSyntax] [GoGlobalContext] : val
+axiom pow10postab32.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def pow10negtab32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.pow10negtab32"
 
-axiom pow10negtab32'init [FfiSyntax] [GoGlobalContext] : val
+axiom pow10negtab32.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _sin [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._sin"
 
-axiom _sin'init [FfiSyntax] [GoGlobalContext] : val
+axiom _sin.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _cos [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._cos"
 
-axiom _cos'init [FfiSyntax] [GoGlobalContext] : val
+axiom _cos.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _tanP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._tanP"
 
-axiom _tanP'init [FfiSyntax] [GoGlobalContext] : val
+axiom _tanP.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _tanQ [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._tanQ"
 
-axiom _tanQ'init [FfiSyntax] [GoGlobalContext] : val
+axiom _tanQ.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def tanhP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.tanhP"
 
-axiom tanhP'init [FfiSyntax] [GoGlobalContext] : val
+axiom tanhP.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def tanhQ [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.tanhQ"
 
-axiom tanhQ'init [FfiSyntax] [GoGlobalContext] : val
+axiom tanhQ.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def mPi4 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.mPi4"
 
-axiom mPi4'init [FfiSyntax] [GoGlobalContext] : val
+axiom mPi4.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Abs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.Abs"
@@ -1122,7 +1122,7 @@ noncomputable def Float64frombits [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.math where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -1181,111 +1181,111 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val mPi4'init) (Val #())))))
+  (App (Val mPi4.init) (Val #())))))
   (App (Val doExecute)
-  (App (Val tanhQ'init) (Val #()))))))
+  (App (Val tanhQ.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val tanhP'init) (Val #()))))))
+  (App (Val tanhP.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _tanQ'init) (Val #()))))))
+  (App (Val _tanQ.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _tanP'init) (Val #()))))))
+  (App (Val _tanP.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _cos'init) (Val #()))))))
+  (App (Val _cos.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _sin'init) (Val #()))))))
+  (App (Val _sin.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val pow10negtab32'init) (Val #()))))))
+  (App (Val pow10negtab32.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val pow10postab32'init) (Val #()))))))
+  (App (Val pow10postab32.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val pow10tab'init) (Val #()))))))
+  (App (Val pow10tab.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _lgamW'init) (Val #()))))))
+  (App (Val _lgamW.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _lgamV'init) (Val #()))))))
+  (App (Val _lgamV.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _lgamU'init) (Val #()))))))
+  (App (Val _lgamU.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _lgamT'init) (Val #()))))))
+  (App (Val _lgamT.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _lgamS'init) (Val #()))))))
+  (App (Val _lgamS.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _lgamR'init) (Val #()))))))
+  (App (Val _lgamR.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _lgamA'init) (Val #()))))))
+  (App (Val _lgamA.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q1S2'init) (Val #()))))))
+  (App (Val q1S2.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q1R2'init) (Val #()))))))
+  (App (Val q1R2.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q1S3'init) (Val #()))))))
+  (App (Val q1S3.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q1R3'init) (Val #()))))))
+  (App (Val q1R3.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q1S5'init) (Val #()))))))
+  (App (Val q1S5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q1R5'init) (Val #()))))))
+  (App (Val q1R5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q1S8'init) (Val #()))))))
+  (App (Val q1S8.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q1R8'init) (Val #()))))))
+  (App (Val q1R8.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p1S2'init) (Val #()))))))
+  (App (Val p1S2.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p1R2'init) (Val #()))))))
+  (App (Val p1R2.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p1S3'init) (Val #()))))))
+  (App (Val p1S3.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p1R3'init) (Val #()))))))
+  (App (Val p1R3.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p1S5'init) (Val #()))))))
+  (App (Val p1S5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p1R5'init) (Val #()))))))
+  (App (Val p1R5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p1S8'init) (Val #()))))))
+  (App (Val p1S8.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p1R8'init) (Val #()))))))
+  (App (Val p1R8.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q0S2'init) (Val #()))))))
+  (App (Val q0S2.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q0R2'init) (Val #()))))))
+  (App (Val q0R2.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q0S3'init) (Val #()))))))
+  (App (Val q0S3.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q0R3'init) (Val #()))))))
+  (App (Val q0R3.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q0S5'init) (Val #()))))))
+  (App (Val q0S5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q0R5'init) (Val #()))))))
+  (App (Val q0R5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q0S8'init) (Val #()))))))
+  (App (Val q0S8.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val q0R8'init) (Val #()))))))
+  (App (Val q0R8.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p0S2'init) (Val #()))))))
+  (App (Val p0S2.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p0R2'init) (Val #()))))))
+  (App (Val p0R2.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p0S3'init) (Val #()))))))
+  (App (Val p0S3.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p0R3'init) (Val #()))))))
+  (App (Val p0R3.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p0S5'init) (Val #()))))))
+  (App (Val p0S5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p0R5'init) (Val #()))))))
+  (App (Val p0R5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p0S8'init) (Val #()))))))
+  (App (Val p0S8.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val p0R8'init) (Val #()))))))
+  (App (Val p0R8.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _gamS'init) (Val #()))))))
+  (App (Val _gamS.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _gamQ'init) (Val #()))))))
+  (App (Val _gamQ.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _gamP'init) (Val #()))))))
+  (App (Val _gamP.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val useFMA'init) (Val #()))))))))
+  (App (Val useFMA.init) (Val #()))))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 

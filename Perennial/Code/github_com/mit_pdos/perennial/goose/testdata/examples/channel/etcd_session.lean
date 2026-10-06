@@ -45,7 +45,7 @@ noncomputable def sessionMain [FfiSyntax] [GoGlobalContext] : GoString :=
 /-- Mock something that might take a while, and can fail
 
     go: e.go:15:6 -/
-noncomputable def «newSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newSession.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -61,14 +61,14 @@ noncomputable def «newSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- Mock something that might take a while.
 
     go: e.go:23:6 -/
-noncomputable def «waitForSessionExpirationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def waitForSessionExpiration.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))
 
 /-- go: e.go:26:6 -/
-noncomputable def «monitorSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def monitorSession.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -115,7 +115,7 @@ noncomputable def «monitorSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (Val #()))))))
 
 /-- go: e.go:49:6 -/
-noncomputable def «waitSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (A : go.GoType) : val :=
+noncomputable def waitSession.impl [FfiSyntax] [GoGlobalContext] (A : go.GoType) : val :=
   (LamV "cancel"
   (App (Val exceptionDo)
   (Let "cancel" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly A)))) (Var "cancel"))
@@ -141,7 +141,7 @@ noncomputable def «waitSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (A : 
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #())))))))
 
 /-- go: e.go:61:6 -/
-noncomputable def «sessionMainⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def sessionMain.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -187,11 +187,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc mu _root_.Perennial.sync.Mutex)) (Val #()))))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  newSession_unfold : FuncUnfold newSession [] «newSessionⁱᵐᵖˡ»
-  waitForSessionExpiration_unfold : FuncUnfold waitForSessionExpiration [] «waitForSessionExpirationⁱᵐᵖˡ»
-  monitorSession_unfold : FuncUnfold monitorSession [] «monitorSessionⁱᵐᵖˡ»
-  waitSession_unfold : ∀ (A : go.GoType), FuncUnfold waitSession [A] («waitSessionⁱᵐᵖˡ» A)
-  sessionMain_unfold : FuncUnfold sessionMain [] «sessionMainⁱᵐᵖˡ»
+  newSession_unfold : FuncUnfold newSession [] newSession.impl
+  waitForSessionExpiration_unfold : FuncUnfold waitForSessionExpiration [] waitForSessionExpiration.impl
+  monitorSession_unfold : FuncUnfold monitorSession [] monitorSession.impl
+  waitSession_unfold : ∀ (A : go.GoType), FuncUnfold waitSession [A] (waitSession.impl A)
+  sessionMain_unfold : FuncUnfold sessionMain [] sessionMain.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_time_Assumption : _root_.Perennial.time.Assumptions

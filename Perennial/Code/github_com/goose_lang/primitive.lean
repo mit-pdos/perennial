@@ -58,7 +58,7 @@ noncomputable def NewProph [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -67,29 +67,29 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-class Mutex_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Mutex_type_repr : go.TypeReprUnderlying «Mutexⁱᵐᵖˡ» Mutex.t
-  Mutex_underlying : go.UnderlyingDirectedEq Mutex «Mutexⁱᵐᵖˡ»
-  Mutex'ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Lock" «Mutex__Lockⁱᵐᵖˡ»
-  Mutex'ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Unlock" «Mutex__Unlockⁱᵐᵖˡ»
+class Mutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Mutex.underlying Mutex.t
+  underlying : go.UnderlyingDirectedEq Mutex Mutex.underlying
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Lock" Mutex.Lock.impl
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Unlock" Mutex.Unlock.impl
 
-attribute [instance] Mutex_Assumptions.Mutex_type_repr
-  Mutex_Assumptions.Mutex_underlying
-  Mutex_Assumptions.Mutex'ptr_Lock_unfold
-  Mutex_Assumptions.Mutex'ptr_Unlock_unfold
+attribute [instance] Mutex.TypeAssumptions.type_repr
+  Mutex.TypeAssumptions.underlying
+  Mutex.TypeAssumptions.ptr_Lock_unfold
+  Mutex.TypeAssumptions.ptr_Unlock_unfold
 
-class ProphId_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ProphId_type_repr : go.TypeReprUnderlying «ProphIdⁱᵐᵖˡ» ProphId.t
-  ProphId_underlying : go.UnderlyingDirectedEq ProphId «ProphIdⁱᵐᵖˡ»
+class ProphId.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ProphId.underlying ProphId.t
+  underlying : go.UnderlyingDirectedEq ProphId ProphId.underlying
 
-attribute [instance] ProphId_Assumptions.ProphId_type_repr
-  ProphId_Assumptions.ProphId_underlying
+attribute [instance] ProphId.TypeAssumptions.type_repr
+  ProphId.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Mutex_instance : Mutex_Assumptions
-  ProphId_instance : ProphId_Assumptions
-  RandomUint64_unfold : FuncUnfold RandomUint64 [] «RandomUint64ⁱᵐᵖˡ»
-  Assume_unfold : FuncUnfold Assume [] «Assumeⁱᵐᵖˡ»
+  Mutex_instance : Mutex.TypeAssumptions
+  ProphId_instance : ProphId.TypeAssumptions
+  RandomUint64_unfold : FuncUnfold RandomUint64 [] RandomUint64.impl
+  Assume_unfold : FuncUnfold Assume [] Assume.impl
 
 attribute [instance] Assumptions.Mutex_instance
   Assumptions.ProphId_instance

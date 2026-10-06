@@ -38,7 +38,7 @@ instance durationOrCountFlag_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance durationOrCountFlag_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.durationOrCountFlag.t testing.«durationOrCountFlagⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.durationOrCountFlag.t testing.durationOrCountFlag.underlying := by
   solve_into_val_typed_struct
 
 instance durationOrCountFlag_access_load_d (l : Loc) (v : testing.durationOrCountFlag.t) (dq : DFrac) :
@@ -111,7 +111,7 @@ instance InternalBenchmark_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalBenchmark_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.InternalBenchmark.t testing.«InternalBenchmarkⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.InternalBenchmark.t testing.InternalBenchmark.underlying := by
   solve_into_val_typed_struct
 
 instance InternalBenchmark_access_load_Name (l : Loc) (v : testing.InternalBenchmark.t) (dq : DFrac) :
@@ -162,7 +162,7 @@ instance B_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance B_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.B.t testing.«Bⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) testing.B.t testing.B.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -191,7 +191,7 @@ instance BenchmarkResult_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance BenchmarkResult_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.BenchmarkResult.t testing.«BenchmarkResultⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.BenchmarkResult.t testing.BenchmarkResult.underlying := by
   solve_into_val_typed_struct
 
 instance BenchmarkResult_access_load_N (l : Loc) (v : testing.BenchmarkResult.t) (dq : DFrac) :
@@ -313,7 +313,7 @@ instance benchState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance benchState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.benchState.t testing.«benchStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.benchState.t testing.benchState.underlying := by
   solve_into_val_typed_struct
 
 instance benchState_access_load_match (l : Loc) (v : testing.benchState.t) (dq : DFrac) :
@@ -388,7 +388,7 @@ instance PB_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance PB_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.PB.t testing.«PBⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.PB.t testing.PB.underlying := by
   solve_into_val_typed_struct
 
 instance PB_access_load_globalN (l : Loc) (v : testing.PB.t) (dq : DFrac) :
@@ -475,7 +475,7 @@ instance discard_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance discard_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.discard.t testing.«discardⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.discard.t testing.discard.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -503,7 +503,7 @@ instance CoverBlock_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CoverBlock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.CoverBlock.t testing.«CoverBlockⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.CoverBlock.t testing.CoverBlock.underlying := by
   solve_into_val_typed_struct
 
 instance CoverBlock_access_load_Line0 (l : Loc) (v : testing.CoverBlock.t) (dq : DFrac) :
@@ -610,7 +610,7 @@ instance Cover_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Cover_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.Cover.t testing.«Coverⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.Cover.t testing.Cover.underlying := by
   solve_into_val_typed_struct
 
 instance Cover_access_load_Mode (l : Loc) (v : testing.Cover.t) (dq : DFrac) :
@@ -701,7 +701,7 @@ instance InternalExample_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalExample_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.InternalExample.t testing.«InternalExampleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.InternalExample.t testing.InternalExample.underlying := by
   solve_into_val_typed_struct
 
 instance InternalExample_access_load_Name (l : Loc) (v : testing.InternalExample.t) (dq : DFrac) :
@@ -790,7 +790,7 @@ instance InternalFuzzTarget_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalFuzzTarget_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.InternalFuzzTarget.t testing.«InternalFuzzTargetⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.InternalFuzzTarget.t testing.InternalFuzzTarget.underlying := by
   solve_into_val_typed_struct
 
 instance InternalFuzzTarget_access_load_Name (l : Loc) (v : testing.InternalFuzzTarget.t) (dq : DFrac) :
@@ -846,7 +846,7 @@ instance highPrecisionTime_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance highPrecisionTime_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.highPrecisionTime.t testing.«highPrecisionTimeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.highPrecisionTime.t testing.highPrecisionTime.underlying := by
   solve_into_val_typed_struct
 
 instance highPrecisionTime_access_load_now (l : Loc) (v : testing.highPrecisionTime.t) (dq : DFrac) :
@@ -888,7 +888,7 @@ instance fuzzResult_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fuzzResult_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.fuzzResult.t testing.«fuzzResultⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.fuzzResult.t testing.fuzzResult.underlying := by
   solve_into_val_typed_struct
 
 instance fuzzResult_access_load_N (l : Loc) (v : testing.fuzzResult.t) (dq : DFrac) :
@@ -955,7 +955,7 @@ instance testDeps_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance testDeps_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.testDeps.t testing.«testDepsⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) testing.testDeps.t testing.testDeps.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -980,7 +980,7 @@ instance chattyFlag_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance chattyFlag_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.chattyFlag.t testing.«chattyFlagⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.chattyFlag.t testing.chattyFlag.underlying := by
   solve_into_val_typed_struct
 
 instance chattyFlag_access_load_on (l : Loc) (v : testing.chattyFlag.t) (dq : DFrac) :
@@ -1039,7 +1039,7 @@ instance chattyPrinter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance chattyPrinter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.chattyPrinter.t testing.«chattyPrinterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.chattyPrinter.t testing.chattyPrinter.underlying := by
   solve_into_val_typed_struct
 
 instance chattyPrinter_access_load_w (l : Loc) (v : testing.chattyPrinter.t) (dq : DFrac) :
@@ -1127,7 +1127,7 @@ instance indenter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance indenter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.indenter.t testing.«indenterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.indenter.t testing.indenter.underlying := by
   solve_into_val_typed_struct
 
 instance indenter_access_load_c (l : Loc) (v : testing.indenter.t) (dq : DFrac) :
@@ -1168,7 +1168,7 @@ instance outputWriter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance outputWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.outputWriter.t testing.«outputWriterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.outputWriter.t testing.outputWriter.underlying := by
   solve_into_val_typed_struct
 
 instance outputWriter_access_load_c (l : Loc) (v : testing.outputWriter.t) (dq : DFrac) :
@@ -1225,7 +1225,7 @@ instance InternalTest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalTest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.InternalTest.t testing.«InternalTestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.InternalTest.t testing.InternalTest.underlying := by
   solve_into_val_typed_struct
 
 instance InternalTest_access_load_Name (l : Loc) (v : testing.InternalTest.t) (dq : DFrac) :
@@ -1288,7 +1288,7 @@ instance testState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance testState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.testState.t testing.«testStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.testState.t testing.testState.underlying := by
   solve_into_val_typed_struct
 
 instance testState_access_load_match (l : Loc) (v : testing.testState.t) (dq : DFrac) :

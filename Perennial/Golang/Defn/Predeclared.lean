@@ -18,12 +18,12 @@ end error
 section helpers
 variable [FfiSyntax] [GoGlobalContext]
 
-def «minⁱᵐᵖˡ» (t : go.GoType) (n : Nat) : val :=
+def min.impl (t : go.GoType) (n : Nat) : val :=
   match n with
   | 2 => λ: "x" "y", if: ("x" <⟨t⟩ "y") then "x" else "y"
   | _ => LitV LitPoison
 
-def «maxⁱᵐᵖˡ» (t : go.GoType) (n : Nat) : val :=
+def max.impl (t : go.GoType) (n : Nat) : val :=
   match n with
   | 2 => λ: "x" "y", if: "x" >⟨t⟩ "y" then "x" else "y"
   | _ => LitV LitPoison
@@ -936,8 +936,8 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   make2_underlying (t : go.GoType) : functions make2 [t] = functions make2 [underlying t]
   make1_underlying (t : go.GoType) : functions make1 [t] = functions make1 [underlying t]
 
-  min_unfold (n : Nat) (t : go.GoType) : FuncUnfold min (List.replicate n t) («minⁱᵐᵖˡ» t n)
-  max_unfold (n : Nat) (t : go.GoType) : FuncUnfold max (List.replicate n t) («maxⁱᵐᵖˡ» t n)
+  min_unfold (n : Nat) (t : go.GoType) : FuncUnfold min (List.replicate n t) (min.impl t n)
+  max_unfold (n : Nat) (t : go.GoType) : FuncUnfold max (List.replicate n t) (max.impl t n)
 
   [unsafe_sem : unsafe.Semantics]
 

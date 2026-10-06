@@ -684,7 +684,7 @@ noncomputable def disabled_testWal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.disabled_testWal"
 
 /-- go: allocator.go:7:6 -/
-noncomputable def «findKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def findKey.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
   (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (Var "m"))
@@ -721,7 +721,7 @@ noncomputable def «findKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "found") (Var "$r0"))))))))))
 
 /-- go: allocator.go:20:6 -/
-noncomputable def «allocateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def allocate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
   (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (Var "m"))
@@ -748,7 +748,7 @@ noncomputable def «allocateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "k") (Var "$r0")))))))))))))))
 
 /-- go: allocator.go:26:6 -/
-noncomputable def «freeRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def freeRange.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "sz"
   (App (Val exceptionDo)
   (Let "sz" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "sz"))
@@ -775,7 +775,7 @@ noncomputable def «freeRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 unit)))) (Pair (Var "m") (Var "$r0"))))))))))
 
 /-- go: allocator.go:34:6 -/
-noncomputable def «testAllocateDistinctⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAllocateDistinct.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "free" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 unit)))) (Val #())))
@@ -814,7 +814,7 @@ noncomputable def «testAllocateDistinctⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 unit)))) (Pair (Var "free") (Var "$r0")))))))))
 
 /-- go: allocator.go:41:6 -/
-noncomputable def «testAllocateFullⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAllocateFull.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "free" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 unit)))) (Val #())))
@@ -866,7 +866,7 @@ noncomputable def «testAllocateFullⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 unit)))) (Pair (Var "free") (Var "$r0")))))))))
 
 /-- go: block.go:3:6 -/
-noncomputable def «testExplicitBlockStmtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testExplicitBlockStmt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -886,7 +886,7 @@ noncomputable def «testExplicitBlockStmtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: builtin.go:3:6 -/
-noncomputable def «testMinUint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testMinUint64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -900,7 +900,7 @@ noncomputable def «testMinUint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: builtin.go:8:6 -/
-noncomputable def «testMaxUint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testMaxUint64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -914,7 +914,7 @@ noncomputable def «testMaxUint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: closures.go:6:6 -/
-noncomputable def «adderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def adder.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -933,7 +933,7 @@ noncomputable def «adderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (Var "$r0")))))))))
 
 /-- go: closures.go:14:6 -/
-noncomputable def «testClosureBasicⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testClosureBasic.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "pos" (App (Val (GoInstruction (GoAlloc AdderType))) (App (Val (GoInstruction (GoZeroVal AdderType))) (Val #())))
@@ -976,7 +976,7 @@ noncomputable def «testClosureBasicⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore AdderType))) (Pair (Var "pos") (Var "$r0")))))))))
 
 /-- go: comparisons.go:3:6 -/
-noncomputable def «testCompareAllⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCompareAll.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -1019,7 +1019,7 @@ noncomputable def «testCompareAllⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: comparisons.go:20:6 -/
-noncomputable def «testCompareGTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCompareGT.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -1049,7 +1049,7 @@ noncomputable def «testCompareGTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: comparisons.go:31:6 -/
-noncomputable def «testCompareGEⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCompareGE.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -1089,7 +1089,7 @@ noncomputable def «testCompareGEⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: comparisons.go:47:6 -/
-noncomputable def «testCompareLTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCompareLT.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -1119,7 +1119,7 @@ noncomputable def «testCompareLTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: comparisons.go:58:6 -/
-noncomputable def «testCompareLEⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCompareLE.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -1159,7 +1159,7 @@ noncomputable def «testCompareLEⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: conversions.go:5:6 -/
-noncomputable def «literalCastⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def literalCast.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -1171,7 +1171,7 @@ noncomputable def «literalCastⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: conversions.go:11:6 -/
-noncomputable def «stringToByteSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def stringToByteSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
@@ -1184,7 +1184,7 @@ noncomputable def «stringToByteSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0"))))))))))
 
 /-- go: conversions.go:17:6 -/
-noncomputable def «byteSliceToStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def byteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
@@ -1194,7 +1194,7 @@ noncomputable def «byteSliceToStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
 /-- tests
 
     go: conversions.go:23:6 -/
-noncomputable def «testByteSliceToStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testByteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -1219,7 +1219,7 @@ noncomputable def «testByteSliceToStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: copy.go:3:6 -/
-noncomputable def «testCopySimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCopySimple.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -1245,7 +1245,7 @@ noncomputable def «testCopySimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: copy.go:11:6 -/
-noncomputable def «testCopyShorterDstⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCopyShorterDst.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -1277,7 +1277,7 @@ noncomputable def «testCopyShorterDstⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: copy.go:20:6 -/
-noncomputable def «testCopyShorterSrcⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCopyShorterSrc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -1309,7 +1309,7 @@ noncomputable def «testCopyShorterSrcⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: defer.go:3:6 -/
-noncomputable def «deferSimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def deferSimple.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val wrapDefer)
   (Lam "$defer"
@@ -1345,14 +1345,14 @@ noncomputable def «deferSimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: defer.go:13:6 -/
-noncomputable def «testDeferⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testDefer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (App (Val (GoInstruction (FuncResolve deferSimple []))) (Val #())) (Val #()))) (Val #(W64 10)))))))
 
 /-- go: defer.go:17:6 -/
-noncomputable def «testDeferFuncLitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testDeferFuncLit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -1389,7 +1389,7 @@ noncomputable def «testDeferFuncLitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: first_class_function.go:3:6 -/
-noncomputable def «FirstClassFunctionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def FirstClassFunction.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
@@ -1397,7 +1397,7 @@ noncomputable def «FirstClassFunctionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")) (Val #(W64 10))))))))
 
 /-- go: first_class_function.go:7:6 -/
-noncomputable def «ApplyFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ApplyF.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "f"
   (App (Val exceptionDo)
@@ -1408,7 +1408,7 @@ noncomputable def «ApplyFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Var "f")) (Var "$a0")))))))))
 
 /-- go: first_class_function.go:11:6 -/
-noncomputable def «testFirstClassFunctionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testFirstClassFunction.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -1420,7 +1420,7 @@ noncomputable def «testFirstClassFunctionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
     "next" in next_val
 
     go: function_ordering.go:11:18 -/
-noncomputable def «Editor__AdvanceReturnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Editor.AdvanceReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "next"
   (App (Val exceptionDo)
@@ -1451,7 +1451,7 @@ noncomputable def «Editor__AdvanceReturnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     its implementation is unimportant
 
     go: function_ordering.go:21:6 -/
-noncomputable def «addFour64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def addFour64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
   (Lam "c"
@@ -1467,7 +1467,7 @@ noncomputable def «addFour64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- tests
 
     go: function_ordering.go:31:6 -/
-noncomputable def «failing_testFunctionOrderingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def failing_testFunctionOrdering.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
@@ -1565,7 +1565,7 @@ noncomputable def «failing_testFunctionOrderingⁱᵐᵖˡ» [FfiSyntax] [GoGlo
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
 
 /-- go: function_ordering.go:74:6 -/
-noncomputable def «storeAndReturnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def storeAndReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "v"
   (App (Val exceptionDo)
@@ -1582,7 +1582,7 @@ noncomputable def «storeAndReturnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     which is incorrect.
 
     go: function_ordering.go:81:6 -/
-noncomputable def «failing_testArgumentOrderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def failing_testArgumentOrder.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -1614,7 +1614,7 @@ noncomputable def «failing_testArgumentOrderⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:3:6 -/
-noncomputable def «testU64ToU32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testU64ToU32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -1644,7 +1644,7 @@ noncomputable def «testU64ToU32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:12:6 -/
-noncomputable def «testU32ToU64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testU32ToU64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -1674,7 +1674,7 @@ noncomputable def «testU32ToU64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:21:6 -/
-noncomputable def «testU32Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testU32Len.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -1687,7 +1687,7 @@ noncomputable def «testU32Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:28:6 -/
-noncomputable def «testU32NewtypeLenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testU32NewtypeLen.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -1700,7 +1700,7 @@ noncomputable def «testU32NewtypeLenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:33:6 -/
-noncomputable def «testUint32Untypedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testUint32Untyped.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc Uint32))) (App (Val (GoInstruction (GoZeroVal Uint32))) (Val #())))
@@ -1712,7 +1712,7 @@ noncomputable def «testUint32Untypedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore Uint32))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: interfaces.go:12:6 -/
-noncomputable def «measureAreaⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def measureArea.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
   (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc geometryInterface))) (Var "t"))
@@ -1720,7 +1720,7 @@ noncomputable def «measureAreaⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (App (Val (GoInstruction (MethodResolve geometryInterface go!"Square"))) (App (Val (GoInstruction (GoLoad geometryInterface))) (Var "t"))) (Val #()))))))
 
 /-- go: interfaces.go:16:6 -/
-noncomputable def «measureVolumePlusNMⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def measureVolumePlusNM.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "n"
   (Lam "m"
@@ -1732,7 +1732,7 @@ noncomputable def «measureVolumePlusNMⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve geometryInterface go!"Volume"))) (App (Val (GoInstruction (GoLoad geometryInterface))) (Var "t"))) (Val #())) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "m"))))))))))))
 
 /-- go: interfaces.go:20:6 -/
-noncomputable def «measureVolumeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def measureVolume.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
   (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc geometryInterface))) (Var "t"))
@@ -1740,7 +1740,7 @@ noncomputable def «measureVolumeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (App (Val (GoInstruction (MethodResolve geometryInterface go!"Volume"))) (App (Val (GoInstruction (GoLoad geometryInterface))) (Var "t"))) (Val #()))))))
 
 /-- go: interfaces.go:28:23 -/
-noncomputable def «SquareStruct__Squareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SquareStruct.Square.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1749,7 +1749,7 @@ noncomputable def «SquareStruct__Squareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))))))))))
 
 /-- go: interfaces.go:32:23 -/
-noncomputable def «SquareStruct__Volumeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SquareStruct.Volume.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1758,7 +1758,7 @@ noncomputable def «SquareStruct__Volumeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))))))))))
 
 /-- go: interfaces.go:40:6 -/
-noncomputable def «testBasicInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBasicInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
@@ -1772,7 +1772,7 @@ noncomputable def «testBasicInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces.go:47:6 -/
-noncomputable def «testAssignInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAssignInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
@@ -1791,7 +1791,7 @@ noncomputable def «testAssignInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces.go:55:6 -/
-noncomputable def «testMultipleInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testMultipleInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
@@ -1816,7 +1816,7 @@ noncomputable def «testMultipleInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces.go:64:6 -/
-noncomputable def «testBinaryExprInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBinaryExprInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
@@ -1843,7 +1843,7 @@ noncomputable def «testBinaryExprInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces.go:73:6 -/
-noncomputable def «testIfStmtInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testIfStmtInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
@@ -1863,7 +1863,7 @@ noncomputable def «testIfStmtInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:11:6 -/
-noncomputable def «testParamsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testParamsInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
@@ -1884,7 +1884,7 @@ noncomputable def «testParamsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:19:6 -/
-noncomputable def «testEmptyInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testEmptyInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
@@ -1893,7 +1893,7 @@ noncomputable def «testEmptyInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "i")) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "j")))))))))
 
 /-- go: interfaces_complex.go:25:6 -/
-noncomputable def «testStringInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStringInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
@@ -1910,7 +1910,7 @@ noncomputable def «testStringInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:35:6 -/
-noncomputable def «testTypeAssertionInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testTypeAssertionInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
@@ -1924,7 +1924,7 @@ noncomputable def «testTypeAssertionInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGloba
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:52:22 -/
-noncomputable def «shapeStruct__describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def shapeStruct.describe.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1933,7 +1933,7 @@ noncomputable def «shapeStruct__describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef shapeStruct go!"Shape"))) (Var "s"))))))))
 
 /-- go: interfaces_complex.go:61:24 -/
-noncomputable def «polygonStruct__describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def polygonStruct.describe.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1942,7 +1942,7 @@ noncomputable def «polygonStruct__describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef polygonStruct go!"Shape"))) (Var "p"))))))))
 
 /-- go: interfaces_complex.go:65:24 -/
-noncomputable def «polygonStruct__sidesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def polygonStruct.sides.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1951,7 +1951,7 @@ noncomputable def «polygonStruct__sidesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef polygonStruct go!"Sides"))) (Var "p"))))))))
 
 /-- go: interfaces_complex.go:69:6 -/
-noncomputable def «testDoublePointerInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testDoublePointerInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc shapeStruct))) (App (Val (GoInstruction (GoZeroVal shapeStruct))) (Val #())))
@@ -1975,7 +1975,7 @@ noncomputable def «testDoublePointerInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGloba
   (App (Val (GoInstruction (GoStore shapeStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:76:6 -/
-noncomputable def «testMultipleFieldsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testMultipleFieldsInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc polygonStruct))) (App (Val (GoInstruction (GoZeroVal polygonStruct))) (Val #())))
@@ -1989,7 +1989,7 @@ noncomputable def «testMultipleFieldsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlob
   (App (Val (GoInstruction (GoStore polygonStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:93:16 -/
-noncomputable def «Puppy__Nameⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Puppy.Name.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1998,7 +1998,7 @@ noncomputable def «Puppy__Nameⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (Val #(go!"Max")))))))
 
 /-- go: interfaces_complex.go:97:16 -/
-noncomputable def «Puppy__Speedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Puppy.Speed.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2007,7 +2007,7 @@ noncomputable def «Puppy__Speedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (Val #(W64 1)))))))
 
 /-- go: interfaces_complex.go:103:17 -/
-noncomputable def «Kitten__Nameⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Kitten.Name.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2016,7 +2016,7 @@ noncomputable def «Kitten__Nameⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (Val #(go!"Max")))))))
 
 /-- go: interfaces_complex.go:107:17 -/
-noncomputable def «Kitten__Weightⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Kitten.Weight.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2025,7 +2025,7 @@ noncomputable def «Kitten__Weightⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (Val #(W64 10)))))))
 
 /-- go: interfaces_complex.go:111:6 -/
-noncomputable def «testSharedFunctionsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSharedFunctionsInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "kit" (App (Val (GoInstruction (GoAlloc catInterface))) (App (Val (GoInstruction (GoZeroVal catInterface))) (Val #())))
@@ -2042,7 +2042,7 @@ noncomputable def «testSharedFunctionsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlo
   (App (Val (GoInstruction (GoStore catInterface))) (Pair (Var "kit") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:126:23 -/
-noncomputable def «PaperStruct__Assignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def PaperStruct.Assign.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "t"
   (App (Val exceptionDo)
@@ -2056,7 +2056,7 @@ noncomputable def «PaperStruct__Assignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef PaperStruct go!"Title"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType PaperStruct)))) (Var "p"))) (Var "$r0")))))))))))
 
 /-- go: interfaces_complex.go:130:23 -/
-noncomputable def «PaperStruct__GetTitleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def PaperStruct.GetTitle.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2065,7 +2065,7 @@ noncomputable def «PaperStruct__GetTitleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef PaperStruct go!"Title"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType PaperStruct)))) (Var "p")))))))))
 
 /-- go: interfaces_complex.go:134:6 -/
-noncomputable def «testAcceptAddressInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAcceptAddressInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "p1" (App (Val (GoInstruction (GoAlloc PaperStruct))) (App (Val (GoInstruction (GoZeroVal PaperStruct))) (Val #())))
@@ -2092,7 +2092,7 @@ noncomputable def «testAcceptAddressInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGloba
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType PaperStruct) go!"Assign"))) (Var "p1")) (Var "$a0")))))))))
 
 /-- go: interfaces_complex.go:157:15 -/
-noncomputable def «Lily__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lily.Petals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2101,7 +2101,7 @@ noncomputable def «Lily__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (Val #(W64 3)))))))
 
 /-- go: interfaces_complex.go:158:15 -/
-noncomputable def «Lily__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lily.Genus.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2110,7 +2110,7 @@ noncomputable def «Lily__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (Val #(go!"Lillium")))))))
 
 /-- go: interfaces_complex.go:162:15 -/
-noncomputable def «Rose__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Rose.Petals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2119,7 +2119,7 @@ noncomputable def «Rose__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (Val #(W64 12)))))))
 
 /-- go: interfaces_complex.go:163:15 -/
-noncomputable def «Rose__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Rose.Genus.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2128,7 +2128,7 @@ noncomputable def «Rose__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (Val #(go!"Rosa")))))))
 
 /-- go: interfaces_complex.go:167:16 -/
-noncomputable def «Daisy__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Daisy.Petals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2137,7 +2137,7 @@ noncomputable def «Daisy__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (Val #(W64 5)))))))
 
 /-- go: interfaces_complex.go:168:16 -/
-noncomputable def «Daisy__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Daisy.Genus.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2146,7 +2146,7 @@ noncomputable def «Daisy__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (Val #(go!"Bellis")))))))
 
 /-- go: interfaces_complex.go:170:6 -/
-noncomputable def «testPolymorphismInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testPolymorphismInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Lily)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Lily)))) (Val #())))
@@ -2176,7 +2176,7 @@ noncomputable def «testPolymorphismInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType Lily)))) (Pair (Var "l") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:178:6 -/
-noncomputable def «testEmbeddingInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testEmbeddingInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Lily)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Lily)))) (Val #())))
@@ -2206,7 +2206,7 @@ noncomputable def «testEmbeddingInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType Lily)))) (Pair (Var "l") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:186:6 -/
-noncomputable def «testDowncastInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testDowncastInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lily))) (App (Val (GoInstruction (GoZeroVal Lily))) (Val #())))
@@ -2226,7 +2226,7 @@ noncomputable def «testDowncastInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     locks are correctly interpreted
 
     go: lock.go:7:6 -/
-noncomputable def «testsUseLocksⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testsUseLocks.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
@@ -2246,7 +2246,7 @@ noncomputable def «testsUseLocksⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
 /-- helpers
 
     go: loops.go:4:6 -/
-noncomputable def «standardForLoopⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def standardForLoop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (Var "s"))
@@ -2299,7 +2299,7 @@ noncomputable def «standardForLoopⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "sumPtr") (Var "$r0"))))))))))
 
 /-- go: loops.go:28:22 -/
-noncomputable def «LoopStruct__forLoopWaitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LoopStruct.forLoopWait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ls"
   (Lam "i"
   (App (Val exceptionDo)
@@ -2331,7 +2331,7 @@ noncomputable def «LoopStruct__forLoopWaitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
 /-- tests
 
     go: loops.go:40:6 -/
-noncomputable def «testStandardForLoopⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStandardForLoop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
@@ -2356,7 +2356,7 @@ noncomputable def «testStandardForLoopⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
 
 /-- go: loops.go:49:6 -/
-noncomputable def «testForLoopWaitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testForLoopWait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ls" (App (Val (GoInstruction (GoAlloc LoopStruct))) (App (Val (GoInstruction (GoZeroVal LoopStruct))) (Val #())))
@@ -2373,7 +2373,7 @@ noncomputable def «testForLoopWaitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore LoopStruct))) (Pair (Var "ls") (Var "$r0")))))))))
 
 /-- go: loops.go:59:6 -/
-noncomputable def «testBreakFromLoopWithContinueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBreakFromLoopWithContinue.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2400,7 +2400,7 @@ noncomputable def «testBreakFromLoopWithContinueⁱᵐᵖˡ» [FfiSyntax] [GoGl
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:71:6 -/
-noncomputable def «testBreakFromLoopNoContinueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBreakFromLoopNoContinue.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2429,7 +2429,7 @@ noncomputable def «testBreakFromLoopNoContinueⁱᵐᵖˡ» [FfiSyntax] [GoGlob
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:83:6 -/
-noncomputable def «testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBreakFromLoopNoContinueDouble.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2462,7 +2462,7 @@ noncomputable def «testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ» [FfiSyntax] [
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:96:6 -/
-noncomputable def «testBreakFromLoopForOnlyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBreakFromLoopForOnly.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2482,7 +2482,7 @@ noncomputable def «testBreakFromLoopForOnlyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:104:6 -/
-noncomputable def «testBreakFromLoopAssignAndContinueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBreakFromLoopAssignAndContinue.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2513,7 +2513,7 @@ noncomputable def «testBreakFromLoopAssignAndContinueⁱᵐᵖˡ» [FfiSyntax] 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:117:6 -/
-noncomputable def «testNestedLoopsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testNestedLoops.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2573,7 +2573,7 @@ noncomputable def «testNestedLoopsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok1") (Var "$r0")))))))))
 
 /-- go: loops.go:136:6 -/
-noncomputable def «testNestedGoStyleLoopsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testNestedGoStyleLoops.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2616,7 +2616,7 @@ noncomputable def «testNestedGoStyleLoopsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: loops.go:150:6 -/
-noncomputable def «testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testNestedGoStyleLoopsNoComparison.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2659,7 +2659,7 @@ noncomputable def «testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ» [FfiSyntax] 
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: maps.go:3:6 -/
-noncomputable def «IterateMapKeysⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def IterateMapKeys.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
   (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
@@ -2680,7 +2680,7 @@ noncomputable def «IterateMapKeysⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "k") (Var "$key")))))))))))))))
 
 /-- go: maps.go:11:6 -/
-noncomputable def «IterateMapValuesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def IterateMapValues.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
   (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
@@ -2704,7 +2704,7 @@ noncomputable def «IterateMapValuesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "v") (Var "$value")))))))))))))))
 
 /-- go: maps.go:19:6 -/
-noncomputable def «testIterateMapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testIterateMap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2743,7 +2743,7 @@ noncomputable def «testIterateMapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: maps.go:37:6 -/
-noncomputable def «testMapSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testMapSize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2782,14 +2782,14 @@ noncomputable def «testMapSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: multiple_assign.go:3:6 -/
-noncomputable def «multReturnTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def multReturnTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Pair (Val #(W64 2)) (Val #(W64 3))))))
 
 /-- go: multiple_assign.go:7:6 -/
-noncomputable def «testAssignTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAssignTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2817,14 +2817,14 @@ noncomputable def «testAssignTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: multiple_assign.go:14:6 -/
-noncomputable def «multReturnThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def multReturnThree.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Pair (Pair (Val #(W64 2)) (Val #true)) (Val #(W32 1))))))
 
 /-- go: multiple_assign.go:18:6 -/
-noncomputable def «testAssignThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAssignThree.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2862,7 +2862,7 @@ noncomputable def «testAssignThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: multiple_assign.go:26:6 -/
-noncomputable def «testMultipleAssignToMapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testMultipleAssignToMap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2890,14 +2890,14 @@ noncomputable def «testMultipleAssignToMapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: multiple_return.go:3:6 -/
-noncomputable def «returnTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def returnTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Pair (Val #(W64 2)) (Val #(W64 3))))))
 
 /-- go: multiple_return.go:7:6 -/
-noncomputable def «testReturnTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testReturnTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2917,7 +2917,7 @@ noncomputable def «testReturnTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))))
 
 /-- go: multiple_return.go:12:6 -/
-noncomputable def «testAnonymousBindingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAnonymousBinding.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2936,14 +2936,14 @@ noncomputable def «testAnonymousBindingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (Var "$r0")))))))))))
 
 /-- go: multiple_return.go:17:6 -/
-noncomputable def «returnThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def returnThree.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Pair (Pair (Val #(W64 2)) (Val #true)) (Val #(W32 1))))))
 
 /-- go: multiple_return.go:21:6 -/
-noncomputable def «testReturnThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testReturnThree.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "z" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
@@ -2969,14 +2969,14 @@ noncomputable def «testReturnThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))))))))))
 
 /-- go: multiple_return.go:26:6 -/
-noncomputable def «returnFourⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def returnFour.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 2)) (Val #true)) (Val #(W32 1))) (Val #(W64 7))))))
 
 /-- go: multiple_return.go:30:6 -/
-noncomputable def «testReturnFourⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testReturnFour.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "w" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -3008,7 +3008,7 @@ noncomputable def «testReturnFourⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))))))))))
 
 /-- go: new.go:3:6 -/
-noncomputable def «testNilDefaultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testNilDefault.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.int)))) (Val #())))
@@ -3024,7 +3024,7 @@ noncomputable def «testNilDefaultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.int)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: new.go:9:6 -/
-noncomputable def «testNilValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testNilVal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.int)))) (Val #())))
@@ -3036,7 +3036,7 @@ noncomputable def «testNilValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.int)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: nil.go:3:6 -/
-noncomputable def «testCompareSliceToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCompareSliceToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -3048,7 +3048,7 @@ noncomputable def «testCompareSliceToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: nil.go:8:6 -/
-noncomputable def «testComparePointerToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testComparePointerToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
@@ -3060,7 +3060,7 @@ noncomputable def «testComparePointerToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: nil.go:13:6 -/
-noncomputable def «testCompareNilToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testCompareNilToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (Val #())))
@@ -3072,7 +3072,7 @@ noncomputable def «testCompareNilToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: nil.go:18:6 -/
-noncomputable def «testComparePointerWrappedToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testComparePointerWrappedToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -3084,7 +3084,7 @@ noncomputable def «testComparePointerWrappedToNilⁱᵐᵖˡ» [FfiSyntax] [GoG
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: nil.go:24:6 -/
-noncomputable def «testComparePointerWrappedDefaultToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testComparePointerWrappedDefaultToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -3092,7 +3092,7 @@ noncomputable def «testComparePointerWrappedDefaultToNilⁱᵐᵖˡ» [FfiSynta
   (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))))))))
 
 /-- go: nil.go:29:6 -/
-noncomputable def «testInterfaceNilWithTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testInterfaceNilWithType.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "isNil" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -3111,7 +3111,7 @@ noncomputable def «testInterfaceNilWithTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
 /-- helpers
 
     go: operations.go:4:6 -/
-noncomputable def «reverseAssignOps64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def reverseAssignOps64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -3132,7 +3132,7 @@ noncomputable def «reverseAssignOps64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))))))))))
 
 /-- go: operations.go:13:6 -/
-noncomputable def «reverseAssignOps32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def reverseAssignOps32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -3153,7 +3153,7 @@ noncomputable def «reverseAssignOps32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))))))))))))
 
 /-- go: operations.go:22:6 -/
-noncomputable def «add64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def add64Equals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "z"
@@ -3165,7 +3165,7 @@ noncomputable def «add64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "z"))))))))))))
 
 /-- go: operations.go:26:6 -/
-noncomputable def «sub64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def sub64Equals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "z"
@@ -3179,7 +3179,7 @@ noncomputable def «sub64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- tests
 
     go: operations.go:31:6 -/
-noncomputable def «testReverseAssignOps64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testReverseAssignOps64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3246,7 +3246,7 @@ noncomputable def «testReverseAssignOps64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:47:6 -/
-noncomputable def «failing_testReverseAssignOps32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def failing_testReverseAssignOps32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3303,7 +3303,7 @@ noncomputable def «failing_testReverseAssignOps32ⁱᵐᵖˡ» [FfiSyntax] [GoG
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:61:6 -/
-noncomputable def «testAdd64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAdd64Equals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3329,7 +3329,7 @@ noncomputable def «testAdd64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:68:6 -/
-noncomputable def «testSub64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSub64Equals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3362,7 +3362,7 @@ noncomputable def «testSub64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:76:6 -/
-noncomputable def «testDivisionPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testDivisionPrecedence.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "blockSize" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -3384,7 +3384,7 @@ noncomputable def «testDivisionPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "blockSize") (Var "$r0")))))))))
 
 /-- go: operations.go:83:6 -/
-noncomputable def «testModPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testModPrecedence.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x1" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -3401,7 +3401,7 @@ noncomputable def «testModPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x1") (Var "$r0")))))))))
 
 /-- go: operations.go:89:6 -/
-noncomputable def «testBitwiseOpsPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBitwiseOpsPrecedence.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3437,7 +3437,7 @@ noncomputable def «testBitwiseOpsPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:102:6 -/
-noncomputable def «testArithmeticShiftsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testArithmeticShifts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3469,7 +3469,7 @@ noncomputable def «testArithmeticShiftsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:114:6 -/
-noncomputable def «testBitAddAndⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testBitAddAnd.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "tid" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -3486,21 +3486,21 @@ noncomputable def «testBitAddAndⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "tid") (Var "$r0")))))))))
 
 /-- go: operations.go:120:6 -/
-noncomputable def «testManyParenthesesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testManyParentheses.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Val #true))))
 
 /-- go: operations.go:124:6 -/
-noncomputable def «testPlusTimesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testPlusTimes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Val #true))))
 
 /-- go: panic.go:3:6 -/
-noncomputable def «shouldPanicⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def shouldPanic.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3511,7 +3511,7 @@ noncomputable def «shouldPanicⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))
 
 /-- go: precedence.go:3:6 -/
-noncomputable def «testOrCompareSimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testOrCompareSimple.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3524,7 +3524,7 @@ noncomputable def «testOrCompareSimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (Val #()))))))
 
 /-- go: precedence.go:10:6 -/
-noncomputable def «testOrCompareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testOrCompare.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3550,7 +3550,7 @@ noncomputable def «testOrCompareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: precedence.go:22:6 -/
-noncomputable def «testAndCompareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAndCompare.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3576,14 +3576,14 @@ noncomputable def «testAndCompareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: precedence.go:34:6 -/
-noncomputable def «testShiftModⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testShiftMod.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Val #true))))
 
 /-- go: prims.go:9:6 -/
-noncomputable def «testLinearizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testLinearize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
@@ -3604,7 +3604,7 @@ noncomputable def «testLinearizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "m") (Var "$r0")))))))))
 
 /-- go: shortcircuiting.go:11:6 -/
-noncomputable def «CheckTrueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CheckTrue.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (Var "b"))
@@ -3615,7 +3615,7 @@ noncomputable def «CheckTrueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))))))))))
 
 /-- go: shortcircuiting.go:16:6 -/
-noncomputable def «CheckFalseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CheckFalse.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (Var "b"))
@@ -3628,7 +3628,7 @@ noncomputable def «CheckFalseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- tests
 
     go: shortcircuiting.go:22:6 -/
-noncomputable def «testShortcircuitAndTFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testShortcircuitAndTF.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType BoolTest)))) (Val #())))
@@ -3652,7 +3652,7 @@ noncomputable def «testShortcircuitAndTFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
 
 /-- go: shortcircuiting.go:31:6 -/
-noncomputable def «testShortcircuitAndFTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testShortcircuitAndFT.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType BoolTest)))) (Val #())))
@@ -3676,7 +3676,7 @@ noncomputable def «testShortcircuitAndFTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
 
 /-- go: shortcircuiting.go:40:6 -/
-noncomputable def «testShortcircuitOrTFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testShortcircuitOrTF.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType BoolTest)))) (Val #())))
@@ -3700,7 +3700,7 @@ noncomputable def «testShortcircuitOrTFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
 
 /-- go: shortcircuiting.go:48:6 -/
-noncomputable def «testShortcircuitOrFTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testShortcircuitOrFT.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType BoolTest)))) (Val #())))
@@ -3724,7 +3724,7 @@ noncomputable def «testShortcircuitOrFTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
 
 /-- go: slices.go:9:24 -/
-noncomputable def «ArrayEditor__Advanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ArrayEditor.Advance.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ae"
   (Lam "arr"
   (Lam "next"
@@ -3754,7 +3754,7 @@ noncomputable def «ArrayEditor__Advanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
 /-- tests
 
     go: slices.go:17:6 -/
-noncomputable def «testSliceOpsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSliceOps.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
@@ -3839,7 +3839,7 @@ noncomputable def «testSliceOpsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: slices.go:40:6 -/
-noncomputable def «testSliceCapacityOpsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSliceCapacityOps.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
@@ -3906,7 +3906,7 @@ noncomputable def «testSliceCapacityOpsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: slices.go:59:6 -/
-noncomputable def «testOverwriteArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testOverwriteArray.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
@@ -3975,7 +3975,7 @@ noncomputable def «testOverwriteArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
 
 /-- go: slices.go:80:6 -/
-noncomputable def «testSliceLiteralⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSliceLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "bytes" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -4010,7 +4010,7 @@ noncomputable def «testSliceLiteralⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0")))))))))
 
 /-- go: slices.go:89:6 -/
-noncomputable def «testSliceAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSliceAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4056,7 +4056,7 @@ noncomputable def «testSliceAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: slices.go:100:6 -/
-noncomputable def «testSliceRefⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSliceRef.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "sl" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
@@ -4077,7 +4077,7 @@ noncomputable def «testSliceRefⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "sl") (Var "$r0")))))))))
 
 /-- go: struct_pointers.go:14:17 -/
-noncomputable def «Bar__mutateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bar.mutate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "bar"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4094,7 +4094,7 @@ noncomputable def «Bar__mutateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Bar go!"a"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bar)))) (Var "bar"))) (Var "$r0")))))))))))
 
 /-- go: struct_pointers.go:19:17 -/
-noncomputable def «Foo__mutateBarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Foo.mutateBar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "foo"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4106,7 +4106,7 @@ noncomputable def «Foo__mutateBarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Bar) go!"mutate"))) (App (Val (GoInstruction (StructFieldRef Foo go!"bar"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Foo)))) (Var "foo")))) (Val #()))))))))
 
 /-- go: struct_pointers.go:23:6 -/
-noncomputable def «testFooBarMutationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testFooBarMutation.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc Foo))) (App (Val (GoInstruction (GoZeroVal Foo))) (Val #())))
@@ -4124,7 +4124,7 @@ noncomputable def «testFooBarMutationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore Foo))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: structs.go:14:6 -/
-noncomputable def «NewSⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewS.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -4136,7 +4136,7 @@ noncomputable def «NewSⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression TwoInts (Var "$v1"))), (KeyedElement (some (KeyField go!"c")) (ElementExpression go.bool (Var "$v2")))])))))))))
 
 /-- go: structs.go:22:13 -/
-noncomputable def «S__readAⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def S.readA.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4145,7 +4145,7 @@ noncomputable def «S__readAⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef S go!"a"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))))))))
 
 /-- go: structs.go:26:13 -/
-noncomputable def «S__readBⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def S.readB.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4154,7 +4154,7 @@ noncomputable def «S__readBⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))))))))
 
 /-- go: structs.go:30:12 -/
-noncomputable def «S__readBValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def S.readBVal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4163,7 +4163,7 @@ noncomputable def «S__readBValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (Var "s"))))))))
 
 /-- go: structs.go:34:13 -/
-noncomputable def «S__updateBValXⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def S.updateBValX.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "i"
   (App (Val exceptionDo)
@@ -4177,7 +4177,7 @@ noncomputable def «S__updateBValXⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))) (Var "$r0")))))))))))
 
 /-- go: structs.go:38:13 -/
-noncomputable def «S__negateCⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def S.negateC.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4190,7 +4190,7 @@ noncomputable def «S__negateCⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s"))) (Var "$r0"))))))))))
 
 /-- go: structs.go:42:6 -/
-noncomputable def «testStructUpdatesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStructUpdates.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4257,7 +4257,7 @@ noncomputable def «testStructUpdatesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: structs.go:65:6 -/
-noncomputable def «testNestedStructUpdatesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testNestedStructUpdates.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4331,7 +4331,7 @@ noncomputable def «testNestedStructUpdatesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: structs.go:90:6 -/
-noncomputable def «testStructConstructionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStructConstructions.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4383,7 +4383,7 @@ noncomputable def «testStructConstructionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: structs.go:109:6 -/
-noncomputable def «testIncompleteStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testIncompleteStruct.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4419,7 +4419,7 @@ noncomputable def «testIncompleteStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: structs.go:126:6 -/
-noncomputable def «testStoreInStructVarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStoreInStructVar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc StructWrap))) (App (Val (GoInstruction (GoZeroVal StructWrap))) (Val #())))
@@ -4436,7 +4436,7 @@ noncomputable def «testStoreInStructVarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore StructWrap))) (Pair (Var "p") (Var "$r0")))))))))
 
 /-- go: structs.go:132:6 -/
-noncomputable def «testStoreInStructPointerVarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStoreInStructPointerVar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType StructWrap)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType StructWrap)))) (Val #())))
@@ -4452,7 +4452,7 @@ noncomputable def «testStoreInStructPointerVarⁱᵐᵖˡ» [FfiSyntax] [GoGlob
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType StructWrap)))) (Pair (Var "p") (Var "$r0")))))))))
 
 /-- go: structs.go:138:6 -/
-noncomputable def «testStoreCompositeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStoreComposite.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType TwoInts)))) (Val #())))
@@ -4470,7 +4470,7 @@ noncomputable def «testStoreCompositeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0")))))))))
 
 /-- go: structs.go:144:6 -/
-noncomputable def «testStoreSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStoreSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.SliceType go.uint64))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (go.GoType.SliceType go.uint64))))) (Val #())))
@@ -4492,7 +4492,7 @@ noncomputable def «testStoreSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.SliceType go.uint64))))) (Pair (Var "p") (Var "$r0")))))))))
 
 /-- go: structs.go:155:6 -/
-noncomputable def «testStructFieldFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testStructFieldFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType StructWithFunc)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType StructWithFunc)))) (Val #())))
@@ -4513,7 +4513,7 @@ noncomputable def «testStructFieldFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType StructWithFunc)))) (Pair (Var "a") (Var "$r0")))))))))
 
 /-- go: switch.go:3:6 -/
-noncomputable def «testSwitchValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSwitchVal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -4532,7 +4532,7 @@ noncomputable def «testSwitchValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: switch.go:15:6 -/
-noncomputable def «testSwitchMultipleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSwitchMultiple.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -4554,7 +4554,7 @@ noncomputable def «testSwitchMultipleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: switch.go:26:6 -/
-noncomputable def «testSwitchDefaultTrueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSwitchDefaultTrue.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -4573,7 +4573,7 @@ noncomputable def «testSwitchDefaultTrueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: switch.go:45:26 -/
-noncomputable def «switchConcrete__markerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def switchConcrete.marker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4582,7 +4582,7 @@ noncomputable def «switchConcrete__markerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (Val #()))))))
 
 /-- go: switch.go:48:6 -/
-noncomputable def «testSwitchConversionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testSwitchConversion.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType switchConcrete)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType switchConcrete)))) (Val #())))
@@ -4613,7 +4613,7 @@ noncomputable def «testSwitchConversionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType switchConcrete)))) (Pair (Var "v") (Var "$r0")))))))))
 
 /-- go: type_equality.go:3:6 -/
-noncomputable def «TypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T U : go.GoType) : val :=
+noncomputable def TypesEqual.impl [FfiSyntax] [GoGlobalContext] (T U : go.GoType) : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType T)))) (Val #())))
@@ -4622,28 +4622,28 @@ noncomputable def «TypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T U :
   (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType T) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "t"))) (App (Val (GoInstruction (Convert (go.GoType.PointerType U) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType U)))) (Var "u"))))))))))
 
 /-- go: type_equality.go:9:6 -/
-noncomputable def «testPrimitiveTypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testPrimitiveTypesEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (If (If (If (If (If (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.int]))) (Val #())) (Val #())) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.string]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.uint32]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.int64]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.uint64]))) (Val #())) (Val #()))) (Val #false)) (App (App (Val (GoInstruction (FuncResolve TypesEqual [(go.GoType.FunctionType (go.signature.Signature [] false [go.bool])), (go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))]))) (Val #())) (Val #())) (Val #false)))))
 
 /-- go: type_equality.go:22:6 -/
-noncomputable def «testDefinedStrTypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testDefinedStrTypesEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [DefinedStr, go.string]))) (Val #())) (Val #()))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [DefinedStr, DefinedStr2]))) (Val #())) (Val #())) (Val #false)))))
 
 /-- go: type_equality.go:32:6 -/
-noncomputable def «testListTypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testListTypesEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (If (App (App (Val (GoInstruction (FuncResolve TypesEqual [(List' go.int), (List' go.int)]))) (Val #())) (Val #())) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [(List' go.int), (List' go.string)]))) (Val #())) (Val #()))) (Val #false)))))
 
 /-- go: vars.go:3:6 -/
-noncomputable def «testPointerAssignmentⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testPointerAssignment.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4655,7 +4655,7 @@ noncomputable def «testPointerAssignmentⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: vars.go:9:6 -/
-noncomputable def «testAddressOfLocalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAddressOfLocal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4676,7 +4676,7 @@ noncomputable def «testAddressOfLocalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: vars.go:16:6 -/
-noncomputable def «testAnonymousAssignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def testAnonymousAssign.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val #(W64 1)) (Val #(W64 2))))
@@ -4687,7 +4687,7 @@ noncomputable def «testAnonymousAssignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (Var "$r0"))))))
 
 /-- go: wal.go:24:6 -/
-noncomputable def «intToBlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def intToBlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
@@ -4705,7 +4705,7 @@ noncomputable def «intToBlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))))
 
 /-- go: wal.go:30:6 -/
-noncomputable def «blockToIntⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def blockToInt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "v"
   (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v"))
@@ -4716,7 +4716,7 @@ noncomputable def «blockToIntⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- New initializes a fresh log
 
     go: wal.go:35:6 -/
-noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def New.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Val #())))
@@ -4774,7 +4774,7 @@ noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Pair (Var "d") (Var "$r0")))))))))
 
 /-- go: wal.go:50:14 -/
-noncomputable def «Log__lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.lock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4786,7 +4786,7 @@ noncomputable def «Log__lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"l"))) (Var "l")))) (Val #()))))))))
 
 /-- go: wal.go:54:14 -/
-noncomputable def «Log__unlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4802,7 +4802,7 @@ noncomputable def «Log__unlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     Returns true if the allocation succeeded.
 
     go: wal.go:61:14 -/
-noncomputable def «Log__BeginTxnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.BeginTxn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4835,7 +4835,7 @@ noncomputable def «Log__BeginTxnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     Reads must go through the log to return committed but un-applied writes.
 
     go: wal.go:75:14 -/
-noncomputable def «Log__Readⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Read.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "a"
   (App (Val exceptionDo)
@@ -4879,7 +4879,7 @@ noncomputable def «Log__Readⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"lock"))) (Var "l")) (Val #())))))))))
 
 /-- go: wal.go:88:14 -/
-noncomputable def «Log__Sizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Size.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4895,7 +4895,7 @@ noncomputable def «Log__Sizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- Write to the disk through the log.
 
     go: wal.go:95:14 -/
-noncomputable def «Log__Writeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Write.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "a"
   (Lam "v"
@@ -4956,7 +4956,7 @@ noncomputable def «Log__Writeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- Commit the current transaction.
 
     go: wal.go:111:14 -/
-noncomputable def «Log__Commitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Commit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4987,7 +4987,7 @@ noncomputable def «Log__Commitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"lock"))) (Var "l")) (Val #())))))))))
 
 /-- go: wal.go:120:6 -/
-noncomputable def «getLogEntryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def getLogEntry.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam "logOffset"
   (App (Val exceptionDo)
@@ -5022,7 +5022,7 @@ noncomputable def «getLogEntryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- applyLog assumes we are running sequentially
 
     go: wal.go:129:6 -/
-noncomputable def «applyLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def applyLog.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam "length"
   (App (Val exceptionDo)
@@ -5072,7 +5072,7 @@ noncomputable def «applyLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))))
 
 /-- go: wal.go:140:6 -/
-noncomputable def «clearLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def clearLog.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
@@ -5095,7 +5095,7 @@ noncomputable def «clearLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     Frees all the space in the log.
 
     go: wal.go:148:14 -/
-noncomputable def «Log__Applyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Apply.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -5130,7 +5130,7 @@ noncomputable def «Log__Applyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- Open recovers the log following a crash or shutdown
 
     go: wal.go:161:6 -/
-noncomputable def «Openⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Open.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Val #())))
@@ -5188,7 +5188,7 @@ noncomputable def «Openⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- disabled since performance is quite poor
 
     go: wal.go:176:6 -/
-noncomputable def «disabled_testWalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def disabled_testWal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -5268,25 +5268,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end unit
 
-@[reducible] def unit'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def unit.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def unit'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  unit'fds_unsealed
+@[irreducible] def unit.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  unit.fieldsUnsealed
 
 instance equals_unfold_unit [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold unit'fds unit'fds_unsealed :=
-  ⟨by unfold unit'fds; rfl⟩
+    EqualsUnfold unit.fields unit.fieldsUnsealed :=
+  ⟨by unfold unit.fields; rfl⟩
 
-@[reducible] def «unitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType unit'fds)
+@[reducible] def unit.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType unit.fields)
 
-class unit_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  unit_type_repr : go.TypeReprUnderlying «unitⁱᵐᵖˡ» unit.t
-  unit_underlying : go.UnderlyingDirectedEq unit «unitⁱᵐᵖˡ»
+class unit.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying unit.underlying unit.t
+  underlying : go.UnderlyingDirectedEq unit unit.underlying
 
-attribute [instance] unit_Assumptions.unit_type_repr
-  unit_Assumptions.unit_underlying
+attribute [instance] unit.TypeAssumptions.type_repr
+  unit.TypeAssumptions.underlying
 
 namespace Editor
 structure t [FfiSyntax] where
@@ -5298,36 +5298,36 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Editor
 
-@[reducible] def Editor'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Editor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" (go.GoType.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"next_val" go.uint64)]
 
-@[irreducible] def Editor'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Editor'fds_unsealed
+@[irreducible] def Editor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Editor.fieldsUnsealed
 
 instance equals_unfold_Editor [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Editor'fds Editor'fds_unsealed :=
-  ⟨by unfold Editor'fds; rfl⟩
+    EqualsUnfold Editor.fields Editor.fieldsUnsealed :=
+  ⟨by unfold Editor.fields; rfl⟩
 
-@[reducible] def «Editorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Editor'fds)
+@[reducible] def Editor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Editor.fields)
 
-class Editor_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Editor_type_repr : go.TypeReprUnderlying «Editorⁱᵐᵖˡ» Editor.t
-  Editor_underlying : go.UnderlyingDirectedEq Editor «Editorⁱᵐᵖˡ»
-  Editor_get_s : ∀ (x : Editor.t), go.IsGoStepPureDetTagged under (StructFieldGet «Editorⁱᵐᵖˡ» go!"s") #x (Val #(x.s'))
-  Editor_set_s : ∀ (x : Editor.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Editorⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Editor.t)))
-  Editor_get_next_val : ∀ (x : Editor.t), go.IsGoStepPureDetTagged under (StructFieldGet «Editorⁱᵐᵖˡ» go!"next_val") #x (Val #(x.next_val'))
-  Editor_set_next_val : ∀ (x : Editor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Editorⁱᵐᵖˡ» go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : Editor.t)))
-  Editor'ptr_AdvanceReturn_unfold : MethodUnfold (go.GoType.PointerType Editor) go!"AdvanceReturn" «Editor__AdvanceReturnⁱᵐᵖˡ»
+class Editor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Editor.underlying Editor.t
+  underlying : go.UnderlyingDirectedEq Editor Editor.underlying
+  get_s : ∀ (x : Editor.t), go.IsGoStepPureDetTagged under (StructFieldGet Editor.underlying go!"s") #x (Val #(x.s'))
+  set_s : ∀ (x : Editor.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Editor.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Editor.t)))
+  get_next_val : ∀ (x : Editor.t), go.IsGoStepPureDetTagged under (StructFieldGet Editor.underlying go!"next_val") #x (Val #(x.next_val'))
+  set_next_val : ∀ (x : Editor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Editor.underlying go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : Editor.t)))
+  ptr_AdvanceReturn_unfold : MethodUnfold (go.GoType.PointerType Editor) go!"AdvanceReturn" Editor.AdvanceReturn.impl
 
-attribute [instance] Editor_Assumptions.Editor_type_repr
-  Editor_Assumptions.Editor_underlying
-  Editor_Assumptions.Editor_get_s
-  Editor_Assumptions.Editor_set_s
-  Editor_Assumptions.Editor_get_next_val
-  Editor_Assumptions.Editor_set_next_val
-  Editor_Assumptions.Editor'ptr_AdvanceReturn_unfold
+attribute [instance] Editor.TypeAssumptions.type_repr
+  Editor.TypeAssumptions.underlying
+  Editor.TypeAssumptions.get_s
+  Editor.TypeAssumptions.set_s
+  Editor.TypeAssumptions.get_next_val
+  Editor.TypeAssumptions.set_next_val
+  Editor.TypeAssumptions.ptr_AdvanceReturn_unfold
 
 namespace Pair'
 structure t [FfiSyntax] where
@@ -5339,58 +5339,58 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Pair'
 
-@[reducible] def Pair'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Pair.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
 (go.field_decl.FieldDecl go!"y" go.uint64)]
 
-@[irreducible] def Pair'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Pair'fds_unsealed
+@[irreducible] def Pair.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Pair.fieldsUnsealed
 
 instance equals_unfold_Pair [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Pair'fds Pair'fds_unsealed :=
-  ⟨by unfold Pair'fds; rfl⟩
+    EqualsUnfold Pair.fields Pair.fieldsUnsealed :=
+  ⟨by unfold Pair.fields; rfl⟩
 
-@[reducible] def «Pair'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Pair'fds)
+@[reducible] def Pair'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Pair.fields)
 
-class Pair_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Pair_type_repr : go.TypeReprUnderlying «Pair'ⁱᵐᵖˡ» Pair'.t
-  Pair_underlying : go.UnderlyingDirectedEq Pair' «Pair'ⁱᵐᵖˡ»
-  Pair_get_x : ∀ (x : Pair'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Pair'ⁱᵐᵖˡ» go!"x") #x (Val #(x.x'))
-  Pair_set_x : ∀ (x : Pair'.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Pair'ⁱᵐᵖˡ» go!"x") (PairV #x #y) (Val #(({ x with x' := y } : Pair'.t)))
-  Pair_get_y : ∀ (x : Pair'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Pair'ⁱᵐᵖˡ» go!"y") #x (Val #(x.y'))
-  Pair_set_y : ∀ (x : Pair'.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Pair'ⁱᵐᵖˡ» go!"y") (PairV #x #y) (Val #(({ x with y' := y } : Pair'.t)))
+class Pair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Pair'.underlying Pair'.t
+  underlying : go.UnderlyingDirectedEq Pair' Pair'.underlying
+  get_x : ∀ (x : Pair'.t), go.IsGoStepPureDetTagged under (StructFieldGet Pair'.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : Pair'.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pair'.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : Pair'.t)))
+  get_y : ∀ (x : Pair'.t), go.IsGoStepPureDetTagged under (StructFieldGet Pair'.underlying go!"y") #x (Val #(x.y'))
+  set_y : ∀ (x : Pair'.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pair'.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : Pair'.t)))
 
-attribute [instance] Pair_Assumptions.Pair_type_repr
-  Pair_Assumptions.Pair_underlying
-  Pair_Assumptions.Pair_get_x
-  Pair_Assumptions.Pair_set_x
-  Pair_Assumptions.Pair_get_y
-  Pair_Assumptions.Pair_set_y
+attribute [instance] Pair.TypeAssumptions.type_repr
+  Pair.TypeAssumptions.underlying
+  Pair.TypeAssumptions.get_x
+  Pair.TypeAssumptions.set_x
+  Pair.TypeAssumptions.get_y
+  Pair.TypeAssumptions.set_y
 
 namespace Uint32
 abbrev t [FfiSyntax] : Type := w32
 end Uint32
 
-@[reducible] def «Uint32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Uint32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
-class Uint32_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Uint32_underlying : go.UnderlyingDirectedEq Uint32 «Uint32ⁱᵐᵖˡ»
+class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Uint32 Uint32.underlying
 
-attribute [instance] Uint32_Assumptions.Uint32_underlying
+attribute [instance] Uint32.TypeAssumptions.underlying
 
 namespace geometryInterface
 abbrev t [FfiSyntax] : Type := interface.t
 end geometryInterface
 
-@[reducible] def «geometryInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def geometryInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Square" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Volume" (go.signature.Signature [] false [go.uint64]))])
 
-class geometryInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  geometryInterface_underlying : go.UnderlyingDirectedEq geometryInterface «geometryInterfaceⁱᵐᵖˡ»
+class geometryInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq geometryInterface geometryInterface.underlying
 
-attribute [instance] geometryInterface_Assumptions.geometryInterface_underlying
+attribute [instance] geometryInterface.TypeAssumptions.underlying
 
 namespace SquareStruct
 structure t [FfiSyntax] where
@@ -5401,39 +5401,39 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end SquareStruct
 
-@[reducible] def SquareStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SquareStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Side" go.uint64)]
 
-@[irreducible] def SquareStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  SquareStruct'fds_unsealed
+@[irreducible] def SquareStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  SquareStruct.fieldsUnsealed
 
 instance equals_unfold_SquareStruct [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold SquareStruct'fds SquareStruct'fds_unsealed :=
-  ⟨by unfold SquareStruct'fds; rfl⟩
+    EqualsUnfold SquareStruct.fields SquareStruct.fieldsUnsealed :=
+  ⟨by unfold SquareStruct.fields; rfl⟩
 
-@[reducible] def «SquareStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType SquareStruct'fds)
+@[reducible] def SquareStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SquareStruct.fields)
 
-class SquareStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  SquareStruct_type_repr : go.TypeReprUnderlying «SquareStructⁱᵐᵖˡ» SquareStruct.t
-  SquareStruct_underlying : go.UnderlyingDirectedEq SquareStruct «SquareStructⁱᵐᵖˡ»
-  SquareStruct_get_Side : ∀ (x : SquareStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «SquareStructⁱᵐᵖˡ» go!"Side") #x (Val #(x.Side'))
-  SquareStruct_set_Side : ∀ (x : SquareStruct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «SquareStructⁱᵐᵖˡ» go!"Side") (PairV #x #y) (Val #(({ x with Side' := y } : SquareStruct.t)))
-  SquareStruct_Square_unfold : MethodUnfold SquareStruct go!"Square" «SquareStruct__Squareⁱᵐᵖˡ»
-  SquareStruct_Volume_unfold : MethodUnfold SquareStruct go!"Volume" «SquareStruct__Volumeⁱᵐᵖˡ»
-  SquareStruct'ptr_Square_unfold : MethodUnfold (go.GoType.PointerType SquareStruct) go!"Square" (LamV "$r"
+class SquareStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying SquareStruct.underlying SquareStruct.t
+  underlying : go.UnderlyingDirectedEq SquareStruct SquareStruct.underlying
+  get_Side : ∀ (x : SquareStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet SquareStruct.underlying go!"Side") #x (Val #(x.Side'))
+  set_Side : ∀ (x : SquareStruct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SquareStruct.underlying go!"Side") (PairV #x #y) (Val #(({ x with Side' := y } : SquareStruct.t)))
+  Square_unfold : MethodUnfold SquareStruct go!"Square" SquareStruct.Square.impl
+  Volume_unfold : MethodUnfold SquareStruct go!"Volume" SquareStruct.Volume.impl
+  ptr_Square_unfold : MethodUnfold (go.GoType.PointerType SquareStruct) go!"Square" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve SquareStruct go!"Square"))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "$r"))))
-  SquareStruct'ptr_Volume_unfold : MethodUnfold (go.GoType.PointerType SquareStruct) go!"Volume" (LamV "$r"
+  ptr_Volume_unfold : MethodUnfold (go.GoType.PointerType SquareStruct) go!"Volume" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve SquareStruct go!"Volume"))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "$r"))))
 
-attribute [instance] SquareStruct_Assumptions.SquareStruct_type_repr
-  SquareStruct_Assumptions.SquareStruct_underlying
-  SquareStruct_Assumptions.SquareStruct_get_Side
-  SquareStruct_Assumptions.SquareStruct_set_Side
-  SquareStruct_Assumptions.SquareStruct_Square_unfold
-  SquareStruct_Assumptions.SquareStruct_Volume_unfold
-  SquareStruct_Assumptions.SquareStruct'ptr_Square_unfold
-  SquareStruct_Assumptions.SquareStruct'ptr_Volume_unfold
+attribute [instance] SquareStruct.TypeAssumptions.type_repr
+  SquareStruct.TypeAssumptions.underlying
+  SquareStruct.TypeAssumptions.get_Side
+  SquareStruct.TypeAssumptions.set_Side
+  SquareStruct.TypeAssumptions.Square_unfold
+  SquareStruct.TypeAssumptions.Volume_unfold
+  SquareStruct.TypeAssumptions.ptr_Square_unfold
+  SquareStruct.TypeAssumptions.ptr_Volume_unfold
 
 namespace NumStruct
 structure t [FfiSyntax] where
@@ -5444,53 +5444,53 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end NumStruct
 
-@[reducible] def NumStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def NumStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.int)]
 
-@[irreducible] def NumStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  NumStruct'fds_unsealed
+@[irreducible] def NumStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  NumStruct.fieldsUnsealed
 
 instance equals_unfold_NumStruct [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold NumStruct'fds NumStruct'fds_unsealed :=
-  ⟨by unfold NumStruct'fds; rfl⟩
+    EqualsUnfold NumStruct.fields NumStruct.fieldsUnsealed :=
+  ⟨by unfold NumStruct.fields; rfl⟩
 
-@[reducible] def «NumStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType NumStruct'fds)
+@[reducible] def NumStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType NumStruct.fields)
 
-class NumStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  NumStruct_type_repr : go.TypeReprUnderlying «NumStructⁱᵐᵖˡ» NumStruct.t
-  NumStruct_underlying : go.UnderlyingDirectedEq NumStruct «NumStructⁱᵐᵖˡ»
-  NumStruct_get_Value : ∀ (x : NumStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «NumStructⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
-  NumStruct_set_Value : ∀ (x : NumStruct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «NumStructⁱᵐᵖˡ» go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : NumStruct.t)))
+class NumStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying NumStruct.underlying NumStruct.t
+  underlying : go.UnderlyingDirectedEq NumStruct NumStruct.underlying
+  get_Value : ∀ (x : NumStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet NumStruct.underlying go!"Value") #x (Val #(x.Value'))
+  set_Value : ∀ (x : NumStruct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet NumStruct.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : NumStruct.t)))
 
-attribute [instance] NumStruct_Assumptions.NumStruct_type_repr
-  NumStruct_Assumptions.NumStruct_underlying
-  NumStruct_Assumptions.NumStruct_get_Value
-  NumStruct_Assumptions.NumStruct_set_Value
+attribute [instance] NumStruct.TypeAssumptions.type_repr
+  NumStruct.TypeAssumptions.underlying
+  NumStruct.TypeAssumptions.get_Value
+  NumStruct.TypeAssumptions.set_Value
 
 namespace shapeInterface
 abbrev t [FfiSyntax] : Type := interface.t
 end shapeInterface
 
-@[reducible] def «shapeInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def shapeInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"describe" (go.signature.Signature [] false [go.string]))])
 
-class shapeInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  shapeInterface_underlying : go.UnderlyingDirectedEq shapeInterface «shapeInterfaceⁱᵐᵖˡ»
+class shapeInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq shapeInterface shapeInterface.underlying
 
-attribute [instance] shapeInterface_Assumptions.shapeInterface_underlying
+attribute [instance] shapeInterface.TypeAssumptions.underlying
 
 namespace polygonInterface
 abbrev t [FfiSyntax] : Type := interface.t
 end polygonInterface
 
-@[reducible] def «polygonInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def polygonInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"sides" (go.signature.Signature [] false [go.uint64]))])
 
-class polygonInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  polygonInterface_underlying : go.UnderlyingDirectedEq polygonInterface «polygonInterfaceⁱᵐᵖˡ»
+class polygonInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq polygonInterface polygonInterface.underlying
 
-attribute [instance] polygonInterface_Assumptions.polygonInterface_underlying
+attribute [instance] polygonInterface.TypeAssumptions.underlying
 
 namespace shapeStruct
 structure t [FfiSyntax] where
@@ -5501,34 +5501,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end shapeStruct
 
-@[reducible] def shapeStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def shapeStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Shape" go.string)]
 
-@[irreducible] def shapeStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  shapeStruct'fds_unsealed
+@[irreducible] def shapeStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  shapeStruct.fieldsUnsealed
 
 instance equals_unfold_shapeStruct [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold shapeStruct'fds shapeStruct'fds_unsealed :=
-  ⟨by unfold shapeStruct'fds; rfl⟩
+    EqualsUnfold shapeStruct.fields shapeStruct.fieldsUnsealed :=
+  ⟨by unfold shapeStruct.fields; rfl⟩
 
-@[reducible] def «shapeStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType shapeStruct'fds)
+@[reducible] def shapeStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType shapeStruct.fields)
 
-class shapeStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  shapeStruct_type_repr : go.TypeReprUnderlying «shapeStructⁱᵐᵖˡ» shapeStruct.t
-  shapeStruct_underlying : go.UnderlyingDirectedEq shapeStruct «shapeStructⁱᵐᵖˡ»
-  shapeStruct_get_Shape : ∀ (x : shapeStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «shapeStructⁱᵐᵖˡ» go!"Shape") #x (Val #(x.Shape'))
-  shapeStruct_set_Shape : ∀ (x : shapeStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «shapeStructⁱᵐᵖˡ» go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : shapeStruct.t)))
-  shapeStruct_describe_unfold : MethodUnfold shapeStruct go!"describe" «shapeStruct__describeⁱᵐᵖˡ»
-  shapeStruct'ptr_describe_unfold : MethodUnfold (go.GoType.PointerType shapeStruct) go!"describe" (LamV "$r"
+class shapeStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying shapeStruct.underlying shapeStruct.t
+  underlying : go.UnderlyingDirectedEq shapeStruct shapeStruct.underlying
+  get_Shape : ∀ (x : shapeStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet shapeStruct.underlying go!"Shape") #x (Val #(x.Shape'))
+  set_Shape : ∀ (x : shapeStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet shapeStruct.underlying go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : shapeStruct.t)))
+  describe_unfold : MethodUnfold shapeStruct go!"describe" shapeStruct.describe.impl
+  ptr_describe_unfold : MethodUnfold (go.GoType.PointerType shapeStruct) go!"describe" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve shapeStruct go!"describe"))) (App (Val (GoInstruction (GoLoad shapeStruct))) (Var "$r"))))
 
-attribute [instance] shapeStruct_Assumptions.shapeStruct_type_repr
-  shapeStruct_Assumptions.shapeStruct_underlying
-  shapeStruct_Assumptions.shapeStruct_get_Shape
-  shapeStruct_Assumptions.shapeStruct_set_Shape
-  shapeStruct_Assumptions.shapeStruct_describe_unfold
-  shapeStruct_Assumptions.shapeStruct'ptr_describe_unfold
+attribute [instance] shapeStruct.TypeAssumptions.type_repr
+  shapeStruct.TypeAssumptions.underlying
+  shapeStruct.TypeAssumptions.get_Shape
+  shapeStruct.TypeAssumptions.set_Shape
+  shapeStruct.TypeAssumptions.describe_unfold
+  shapeStruct.TypeAssumptions.ptr_describe_unfold
 
 namespace polygonStruct
 structure t [FfiSyntax] where
@@ -5540,124 +5540,124 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end polygonStruct
 
-@[reducible] def polygonStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def polygonStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Shape" go.string),
 (go.field_decl.FieldDecl go!"Sides" go.uint64)]
 
-@[irreducible] def polygonStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  polygonStruct'fds_unsealed
+@[irreducible] def polygonStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  polygonStruct.fieldsUnsealed
 
 instance equals_unfold_polygonStruct [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold polygonStruct'fds polygonStruct'fds_unsealed :=
-  ⟨by unfold polygonStruct'fds; rfl⟩
+    EqualsUnfold polygonStruct.fields polygonStruct.fieldsUnsealed :=
+  ⟨by unfold polygonStruct.fields; rfl⟩
 
-@[reducible] def «polygonStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType polygonStruct'fds)
+@[reducible] def polygonStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType polygonStruct.fields)
 
-class polygonStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  polygonStruct_type_repr : go.TypeReprUnderlying «polygonStructⁱᵐᵖˡ» polygonStruct.t
-  polygonStruct_underlying : go.UnderlyingDirectedEq polygonStruct «polygonStructⁱᵐᵖˡ»
-  polygonStruct_get_Shape : ∀ (x : polygonStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «polygonStructⁱᵐᵖˡ» go!"Shape") #x (Val #(x.Shape'))
-  polygonStruct_set_Shape : ∀ (x : polygonStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «polygonStructⁱᵐᵖˡ» go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : polygonStruct.t)))
-  polygonStruct_get_Sides : ∀ (x : polygonStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «polygonStructⁱᵐᵖˡ» go!"Sides") #x (Val #(x.Sides'))
-  polygonStruct_set_Sides : ∀ (x : polygonStruct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «polygonStructⁱᵐᵖˡ» go!"Sides") (PairV #x #y) (Val #(({ x with Sides' := y } : polygonStruct.t)))
-  polygonStruct_describe_unfold : MethodUnfold polygonStruct go!"describe" «polygonStruct__describeⁱᵐᵖˡ»
-  polygonStruct_sides_unfold : MethodUnfold polygonStruct go!"sides" «polygonStruct__sidesⁱᵐᵖˡ»
-  polygonStruct'ptr_describe_unfold : MethodUnfold (go.GoType.PointerType polygonStruct) go!"describe" (LamV "$r"
+class polygonStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying polygonStruct.underlying polygonStruct.t
+  underlying : go.UnderlyingDirectedEq polygonStruct polygonStruct.underlying
+  get_Shape : ∀ (x : polygonStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet polygonStruct.underlying go!"Shape") #x (Val #(x.Shape'))
+  set_Shape : ∀ (x : polygonStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet polygonStruct.underlying go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : polygonStruct.t)))
+  get_Sides : ∀ (x : polygonStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet polygonStruct.underlying go!"Sides") #x (Val #(x.Sides'))
+  set_Sides : ∀ (x : polygonStruct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet polygonStruct.underlying go!"Sides") (PairV #x #y) (Val #(({ x with Sides' := y } : polygonStruct.t)))
+  describe_unfold : MethodUnfold polygonStruct go!"describe" polygonStruct.describe.impl
+  sides_unfold : MethodUnfold polygonStruct go!"sides" polygonStruct.sides.impl
+  ptr_describe_unfold : MethodUnfold (go.GoType.PointerType polygonStruct) go!"describe" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve polygonStruct go!"describe"))) (App (Val (GoInstruction (GoLoad polygonStruct))) (Var "$r"))))
-  polygonStruct'ptr_sides_unfold : MethodUnfold (go.GoType.PointerType polygonStruct) go!"sides" (LamV "$r"
+  ptr_sides_unfold : MethodUnfold (go.GoType.PointerType polygonStruct) go!"sides" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve polygonStruct go!"sides"))) (App (Val (GoInstruction (GoLoad polygonStruct))) (Var "$r"))))
 
-attribute [instance] polygonStruct_Assumptions.polygonStruct_type_repr
-  polygonStruct_Assumptions.polygonStruct_underlying
-  polygonStruct_Assumptions.polygonStruct_get_Shape
-  polygonStruct_Assumptions.polygonStruct_set_Shape
-  polygonStruct_Assumptions.polygonStruct_get_Sides
-  polygonStruct_Assumptions.polygonStruct_set_Sides
-  polygonStruct_Assumptions.polygonStruct_describe_unfold
-  polygonStruct_Assumptions.polygonStruct_sides_unfold
-  polygonStruct_Assumptions.polygonStruct'ptr_describe_unfold
-  polygonStruct_Assumptions.polygonStruct'ptr_sides_unfold
+attribute [instance] polygonStruct.TypeAssumptions.type_repr
+  polygonStruct.TypeAssumptions.underlying
+  polygonStruct.TypeAssumptions.get_Shape
+  polygonStruct.TypeAssumptions.set_Shape
+  polygonStruct.TypeAssumptions.get_Sides
+  polygonStruct.TypeAssumptions.set_Sides
+  polygonStruct.TypeAssumptions.describe_unfold
+  polygonStruct.TypeAssumptions.sides_unfold
+  polygonStruct.TypeAssumptions.ptr_describe_unfold
+  polygonStruct.TypeAssumptions.ptr_sides_unfold
 
 namespace dogInterface
 abbrev t [FfiSyntax] : Type := interface.t
 end dogInterface
 
-@[reducible] def «dogInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def dogInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Speed" (go.signature.Signature [] false [go.uint64]))])
 
-class dogInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  dogInterface_underlying : go.UnderlyingDirectedEq dogInterface «dogInterfaceⁱᵐᵖˡ»
+class dogInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq dogInterface dogInterface.underlying
 
-attribute [instance] dogInterface_Assumptions.dogInterface_underlying
+attribute [instance] dogInterface.TypeAssumptions.underlying
 
 namespace catInterface
 abbrev t [FfiSyntax] : Type := interface.t
 end catInterface
 
-@[reducible] def «catInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def catInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Weight" (go.signature.Signature [] false [go.uint64]))])
 
-class catInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  catInterface_underlying : go.UnderlyingDirectedEq catInterface «catInterfaceⁱᵐᵖˡ»
+class catInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq catInterface catInterface.underlying
 
-attribute [instance] catInterface_Assumptions.catInterface_underlying
+attribute [instance] catInterface.TypeAssumptions.underlying
 
 namespace Puppy
 abbrev t [FfiSyntax] : Type := GoString
 end Puppy
 
-@[reducible] def «Puppyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Puppy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class Puppy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Puppy_underlying : go.UnderlyingDirectedEq Puppy «Puppyⁱᵐᵖˡ»
-  Puppy_Name_unfold : MethodUnfold Puppy go!"Name" «Puppy__Nameⁱᵐᵖˡ»
-  Puppy_Speed_unfold : MethodUnfold Puppy go!"Speed" «Puppy__Speedⁱᵐᵖˡ»
-  Puppy'ptr_Name_unfold : MethodUnfold (go.GoType.PointerType Puppy) go!"Name" (LamV "$r"
+class Puppy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Puppy Puppy.underlying
+  Name_unfold : MethodUnfold Puppy go!"Name" Puppy.Name.impl
+  Speed_unfold : MethodUnfold Puppy go!"Speed" Puppy.Speed.impl
+  ptr_Name_unfold : MethodUnfold (go.GoType.PointerType Puppy) go!"Name" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Puppy go!"Name"))) (App (Val (GoInstruction (GoLoad Puppy))) (Var "$r"))))
-  Puppy'ptr_Speed_unfold : MethodUnfold (go.GoType.PointerType Puppy) go!"Speed" (LamV "$r"
+  ptr_Speed_unfold : MethodUnfold (go.GoType.PointerType Puppy) go!"Speed" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Puppy go!"Speed"))) (App (Val (GoInstruction (GoLoad Puppy))) (Var "$r"))))
 
-attribute [instance] Puppy_Assumptions.Puppy_underlying
-  Puppy_Assumptions.Puppy_Name_unfold
-  Puppy_Assumptions.Puppy_Speed_unfold
-  Puppy_Assumptions.Puppy'ptr_Name_unfold
-  Puppy_Assumptions.Puppy'ptr_Speed_unfold
+attribute [instance] Puppy.TypeAssumptions.underlying
+  Puppy.TypeAssumptions.Name_unfold
+  Puppy.TypeAssumptions.Speed_unfold
+  Puppy.TypeAssumptions.ptr_Name_unfold
+  Puppy.TypeAssumptions.ptr_Speed_unfold
 
 namespace Kitten
 abbrev t [FfiSyntax] : Type := GoString
 end Kitten
 
-@[reducible] def «Kittenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Kitten.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class Kitten_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Kitten_underlying : go.UnderlyingDirectedEq Kitten «Kittenⁱᵐᵖˡ»
-  Kitten_Name_unfold : MethodUnfold Kitten go!"Name" «Kitten__Nameⁱᵐᵖˡ»
-  Kitten_Weight_unfold : MethodUnfold Kitten go!"Weight" «Kitten__Weightⁱᵐᵖˡ»
-  Kitten'ptr_Name_unfold : MethodUnfold (go.GoType.PointerType Kitten) go!"Name" (LamV "$r"
+class Kitten.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Kitten Kitten.underlying
+  Name_unfold : MethodUnfold Kitten go!"Name" Kitten.Name.impl
+  Weight_unfold : MethodUnfold Kitten go!"Weight" Kitten.Weight.impl
+  ptr_Name_unfold : MethodUnfold (go.GoType.PointerType Kitten) go!"Name" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Kitten go!"Name"))) (App (Val (GoInstruction (GoLoad Kitten))) (Var "$r"))))
-  Kitten'ptr_Weight_unfold : MethodUnfold (go.GoType.PointerType Kitten) go!"Weight" (LamV "$r"
+  ptr_Weight_unfold : MethodUnfold (go.GoType.PointerType Kitten) go!"Weight" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Kitten go!"Weight"))) (App (Val (GoInstruction (GoLoad Kitten))) (Var "$r"))))
 
-attribute [instance] Kitten_Assumptions.Kitten_underlying
-  Kitten_Assumptions.Kitten_Name_unfold
-  Kitten_Assumptions.Kitten_Weight_unfold
-  Kitten_Assumptions.Kitten'ptr_Name_unfold
-  Kitten_Assumptions.Kitten'ptr_Weight_unfold
+attribute [instance] Kitten.TypeAssumptions.underlying
+  Kitten.TypeAssumptions.Name_unfold
+  Kitten.TypeAssumptions.Weight_unfold
+  Kitten.TypeAssumptions.ptr_Name_unfold
+  Kitten.TypeAssumptions.ptr_Weight_unfold
 
 namespace printInterface
 abbrev t [FfiSyntax] : Type := interface.t
 end printInterface
 
-@[reducible] def «printInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def printInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Assign" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"GetTitle" (go.signature.Signature [] false [go.string]))])
 
-class printInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  printInterface_underlying : go.UnderlyingDirectedEq printInterface «printInterfaceⁱᵐᵖˡ»
+class printInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq printInterface printInterface.underlying
 
-attribute [instance] printInterface_Assumptions.printInterface_underlying
+attribute [instance] printInterface.TypeAssumptions.underlying
 
 namespace PaperStruct
 structure t [FfiSyntax] where
@@ -5668,57 +5668,57 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end PaperStruct
 
-@[reducible] def PaperStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def PaperStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Title" go.string)]
 
-@[irreducible] def PaperStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  PaperStruct'fds_unsealed
+@[irreducible] def PaperStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  PaperStruct.fieldsUnsealed
 
 instance equals_unfold_PaperStruct [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold PaperStruct'fds PaperStruct'fds_unsealed :=
-  ⟨by unfold PaperStruct'fds; rfl⟩
+    EqualsUnfold PaperStruct.fields PaperStruct.fieldsUnsealed :=
+  ⟨by unfold PaperStruct.fields; rfl⟩
 
-@[reducible] def «PaperStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType PaperStruct'fds)
+@[reducible] def PaperStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PaperStruct.fields)
 
-class PaperStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  PaperStruct_type_repr : go.TypeReprUnderlying «PaperStructⁱᵐᵖˡ» PaperStruct.t
-  PaperStruct_underlying : go.UnderlyingDirectedEq PaperStruct «PaperStructⁱᵐᵖˡ»
-  PaperStruct_get_Title : ∀ (x : PaperStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «PaperStructⁱᵐᵖˡ» go!"Title") #x (Val #(x.Title'))
-  PaperStruct_set_Title : ∀ (x : PaperStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «PaperStructⁱᵐᵖˡ» go!"Title") (PairV #x #y) (Val #(({ x with Title' := y } : PaperStruct.t)))
-  PaperStruct'ptr_Assign_unfold : MethodUnfold (go.GoType.PointerType PaperStruct) go!"Assign" «PaperStruct__Assignⁱᵐᵖˡ»
-  PaperStruct'ptr_GetTitle_unfold : MethodUnfold (go.GoType.PointerType PaperStruct) go!"GetTitle" «PaperStruct__GetTitleⁱᵐᵖˡ»
+class PaperStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying PaperStruct.underlying PaperStruct.t
+  underlying : go.UnderlyingDirectedEq PaperStruct PaperStruct.underlying
+  get_Title : ∀ (x : PaperStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet PaperStruct.underlying go!"Title") #x (Val #(x.Title'))
+  set_Title : ∀ (x : PaperStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet PaperStruct.underlying go!"Title") (PairV #x #y) (Val #(({ x with Title' := y } : PaperStruct.t)))
+  ptr_Assign_unfold : MethodUnfold (go.GoType.PointerType PaperStruct) go!"Assign" PaperStruct.Assign.impl
+  ptr_GetTitle_unfold : MethodUnfold (go.GoType.PointerType PaperStruct) go!"GetTitle" PaperStruct.GetTitle.impl
 
-attribute [instance] PaperStruct_Assumptions.PaperStruct_type_repr
-  PaperStruct_Assumptions.PaperStruct_underlying
-  PaperStruct_Assumptions.PaperStruct_get_Title
-  PaperStruct_Assumptions.PaperStruct_set_Title
-  PaperStruct_Assumptions.PaperStruct'ptr_Assign_unfold
-  PaperStruct_Assumptions.PaperStruct'ptr_GetTitle_unfold
+attribute [instance] PaperStruct.TypeAssumptions.type_repr
+  PaperStruct.TypeAssumptions.underlying
+  PaperStruct.TypeAssumptions.get_Title
+  PaperStruct.TypeAssumptions.set_Title
+  PaperStruct.TypeAssumptions.ptr_Assign_unfold
+  PaperStruct.TypeAssumptions.ptr_GetTitle_unfold
 
 namespace Flower
 abbrev t [FfiSyntax] : Type := interface.t
 end Flower
 
-@[reducible] def «Flowerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Flower.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Petals" (go.signature.Signature [] false [go.uint64]))])
 
-class Flower_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Flower_underlying : go.UnderlyingDirectedEq Flower «Flowerⁱᵐᵖˡ»
+class Flower.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Flower Flower.underlying
 
-attribute [instance] Flower_Assumptions.Flower_underlying
+attribute [instance] Flower.TypeAssumptions.underlying
 
 namespace Flora
 abbrev t [FfiSyntax] : Type := interface.t
 end Flora
 
-@[reducible] def «Floraⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Flora.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Flower)])])
 
-class Flora_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Flora_underlying : go.UnderlyingDirectedEq Flora «Floraⁱᵐᵖˡ»
+class Flora.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Flora Flora.underlying
 
-attribute [instance] Flora_Assumptions.Flora_underlying
+attribute [instance] Flora.TypeAssumptions.underlying
 
 namespace Lily
 structure t [FfiSyntax] where
@@ -5728,35 +5728,35 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Lily
 
-@[reducible] def Lily'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Lily.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Lily'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Lily'fds_unsealed
+@[irreducible] def Lily.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Lily.fieldsUnsealed
 
 instance equals_unfold_Lily [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Lily'fds Lily'fds_unsealed :=
-  ⟨by unfold Lily'fds; rfl⟩
+    EqualsUnfold Lily.fields Lily.fieldsUnsealed :=
+  ⟨by unfold Lily.fields; rfl⟩
 
-@[reducible] def «Lilyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Lily'fds)
+@[reducible] def Lily.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Lily.fields)
 
-class Lily_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Lily_type_repr : go.TypeReprUnderlying «Lilyⁱᵐᵖˡ» Lily.t
-  Lily_underlying : go.UnderlyingDirectedEq Lily «Lilyⁱᵐᵖˡ»
-  Lily_Genus_unfold : MethodUnfold Lily go!"Genus" «Lily__Genusⁱᵐᵖˡ»
-  Lily_Petals_unfold : MethodUnfold Lily go!"Petals" «Lily__Petalsⁱᵐᵖˡ»
-  Lily'ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Lily) go!"Genus" (LamV "$r"
+class Lily.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Lily.underlying Lily.t
+  underlying : go.UnderlyingDirectedEq Lily Lily.underlying
+  Genus_unfold : MethodUnfold Lily go!"Genus" Lily.Genus.impl
+  Petals_unfold : MethodUnfold Lily go!"Petals" Lily.Petals.impl
+  ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Lily) go!"Genus" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lily go!"Genus"))) (App (Val (GoInstruction (GoLoad Lily))) (Var "$r"))))
-  Lily'ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Lily) go!"Petals" (LamV "$r"
+  ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Lily) go!"Petals" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lily go!"Petals"))) (App (Val (GoInstruction (GoLoad Lily))) (Var "$r"))))
 
-attribute [instance] Lily_Assumptions.Lily_type_repr
-  Lily_Assumptions.Lily_underlying
-  Lily_Assumptions.Lily_Genus_unfold
-  Lily_Assumptions.Lily_Petals_unfold
-  Lily_Assumptions.Lily'ptr_Genus_unfold
-  Lily_Assumptions.Lily'ptr_Petals_unfold
+attribute [instance] Lily.TypeAssumptions.type_repr
+  Lily.TypeAssumptions.underlying
+  Lily.TypeAssumptions.Genus_unfold
+  Lily.TypeAssumptions.Petals_unfold
+  Lily.TypeAssumptions.ptr_Genus_unfold
+  Lily.TypeAssumptions.ptr_Petals_unfold
 
 namespace Rose
 structure t [FfiSyntax] where
@@ -5766,35 +5766,35 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Rose
 
-@[reducible] def Rose'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Rose.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Rose'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Rose'fds_unsealed
+@[irreducible] def Rose.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Rose.fieldsUnsealed
 
 instance equals_unfold_Rose [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Rose'fds Rose'fds_unsealed :=
-  ⟨by unfold Rose'fds; rfl⟩
+    EqualsUnfold Rose.fields Rose.fieldsUnsealed :=
+  ⟨by unfold Rose.fields; rfl⟩
 
-@[reducible] def «Roseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Rose'fds)
+@[reducible] def Rose.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Rose.fields)
 
-class Rose_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Rose_type_repr : go.TypeReprUnderlying «Roseⁱᵐᵖˡ» Rose.t
-  Rose_underlying : go.UnderlyingDirectedEq Rose «Roseⁱᵐᵖˡ»
-  Rose_Genus_unfold : MethodUnfold Rose go!"Genus" «Rose__Genusⁱᵐᵖˡ»
-  Rose_Petals_unfold : MethodUnfold Rose go!"Petals" «Rose__Petalsⁱᵐᵖˡ»
-  Rose'ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Rose) go!"Genus" (LamV "$r"
+class Rose.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Rose.underlying Rose.t
+  underlying : go.UnderlyingDirectedEq Rose Rose.underlying
+  Genus_unfold : MethodUnfold Rose go!"Genus" Rose.Genus.impl
+  Petals_unfold : MethodUnfold Rose go!"Petals" Rose.Petals.impl
+  ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Rose) go!"Genus" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Rose go!"Genus"))) (App (Val (GoInstruction (GoLoad Rose))) (Var "$r"))))
-  Rose'ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Rose) go!"Petals" (LamV "$r"
+  ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Rose) go!"Petals" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Rose go!"Petals"))) (App (Val (GoInstruction (GoLoad Rose))) (Var "$r"))))
 
-attribute [instance] Rose_Assumptions.Rose_type_repr
-  Rose_Assumptions.Rose_underlying
-  Rose_Assumptions.Rose_Genus_unfold
-  Rose_Assumptions.Rose_Petals_unfold
-  Rose_Assumptions.Rose'ptr_Genus_unfold
-  Rose_Assumptions.Rose'ptr_Petals_unfold
+attribute [instance] Rose.TypeAssumptions.type_repr
+  Rose.TypeAssumptions.underlying
+  Rose.TypeAssumptions.Genus_unfold
+  Rose.TypeAssumptions.Petals_unfold
+  Rose.TypeAssumptions.ptr_Genus_unfold
+  Rose.TypeAssumptions.ptr_Petals_unfold
 
 namespace Daisy
 structure t [FfiSyntax] where
@@ -5804,35 +5804,35 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Daisy
 
-@[reducible] def Daisy'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Daisy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Daisy'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Daisy'fds_unsealed
+@[irreducible] def Daisy.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Daisy.fieldsUnsealed
 
 instance equals_unfold_Daisy [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Daisy'fds Daisy'fds_unsealed :=
-  ⟨by unfold Daisy'fds; rfl⟩
+    EqualsUnfold Daisy.fields Daisy.fieldsUnsealed :=
+  ⟨by unfold Daisy.fields; rfl⟩
 
-@[reducible] def «Daisyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Daisy'fds)
+@[reducible] def Daisy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Daisy.fields)
 
-class Daisy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Daisy_type_repr : go.TypeReprUnderlying «Daisyⁱᵐᵖˡ» Daisy.t
-  Daisy_underlying : go.UnderlyingDirectedEq Daisy «Daisyⁱᵐᵖˡ»
-  Daisy_Genus_unfold : MethodUnfold Daisy go!"Genus" «Daisy__Genusⁱᵐᵖˡ»
-  Daisy_Petals_unfold : MethodUnfold Daisy go!"Petals" «Daisy__Petalsⁱᵐᵖˡ»
-  Daisy'ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Daisy) go!"Genus" (LamV "$r"
+class Daisy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Daisy.underlying Daisy.t
+  underlying : go.UnderlyingDirectedEq Daisy Daisy.underlying
+  Genus_unfold : MethodUnfold Daisy go!"Genus" Daisy.Genus.impl
+  Petals_unfold : MethodUnfold Daisy go!"Petals" Daisy.Petals.impl
+  ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Daisy) go!"Genus" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Daisy go!"Genus"))) (App (Val (GoInstruction (GoLoad Daisy))) (Var "$r"))))
-  Daisy'ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Daisy) go!"Petals" (LamV "$r"
+  ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Daisy) go!"Petals" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Daisy go!"Petals"))) (App (Val (GoInstruction (GoLoad Daisy))) (Var "$r"))))
 
-attribute [instance] Daisy_Assumptions.Daisy_type_repr
-  Daisy_Assumptions.Daisy_underlying
-  Daisy_Assumptions.Daisy_Genus_unfold
-  Daisy_Assumptions.Daisy_Petals_unfold
-  Daisy_Assumptions.Daisy'ptr_Genus_unfold
-  Daisy_Assumptions.Daisy'ptr_Petals_unfold
+attribute [instance] Daisy.TypeAssumptions.type_repr
+  Daisy.TypeAssumptions.underlying
+  Daisy.TypeAssumptions.Genus_unfold
+  Daisy.TypeAssumptions.Petals_unfold
+  Daisy.TypeAssumptions.ptr_Genus_unfold
+  Daisy.TypeAssumptions.ptr_Petals_unfold
 
 namespace LoopStruct
 structure t [FfiSyntax] where
@@ -5843,34 +5843,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end LoopStruct
 
-@[reducible] def LoopStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LoopStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"loopNext" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def LoopStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  LoopStruct'fds_unsealed
+@[irreducible] def LoopStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  LoopStruct.fieldsUnsealed
 
 instance equals_unfold_LoopStruct [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold LoopStruct'fds LoopStruct'fds_unsealed :=
-  ⟨by unfold LoopStruct'fds; rfl⟩
+    EqualsUnfold LoopStruct.fields LoopStruct.fieldsUnsealed :=
+  ⟨by unfold LoopStruct.fields; rfl⟩
 
-@[reducible] def «LoopStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType LoopStruct'fds)
+@[reducible] def LoopStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType LoopStruct.fields)
 
-class LoopStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LoopStruct_type_repr : go.TypeReprUnderlying «LoopStructⁱᵐᵖˡ» LoopStruct.t
-  LoopStruct_underlying : go.UnderlyingDirectedEq LoopStruct «LoopStructⁱᵐᵖˡ»
-  LoopStruct_get_loopNext : ∀ (x : LoopStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «LoopStructⁱᵐᵖˡ» go!"loopNext") #x (Val #(x.loopNext'))
-  LoopStruct_set_loopNext : ∀ (x : LoopStruct.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «LoopStructⁱᵐᵖˡ» go!"loopNext") (PairV #x #y) (Val #(({ x with loopNext' := y } : LoopStruct.t)))
-  LoopStruct_forLoopWait_unfold : MethodUnfold LoopStruct go!"forLoopWait" «LoopStruct__forLoopWaitⁱᵐᵖˡ»
-  LoopStruct'ptr_forLoopWait_unfold : MethodUnfold (go.GoType.PointerType LoopStruct) go!"forLoopWait" (LamV "$r"
+class LoopStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying LoopStruct.underlying LoopStruct.t
+  underlying : go.UnderlyingDirectedEq LoopStruct LoopStruct.underlying
+  get_loopNext : ∀ (x : LoopStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet LoopStruct.underlying go!"loopNext") #x (Val #(x.loopNext'))
+  set_loopNext : ∀ (x : LoopStruct.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet LoopStruct.underlying go!"loopNext") (PairV #x #y) (Val #(({ x with loopNext' := y } : LoopStruct.t)))
+  forLoopWait_unfold : MethodUnfold LoopStruct go!"forLoopWait" LoopStruct.forLoopWait.impl
+  ptr_forLoopWait_unfold : MethodUnfold (go.GoType.PointerType LoopStruct) go!"forLoopWait" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve LoopStruct go!"forLoopWait"))) (App (Val (GoInstruction (GoLoad LoopStruct))) (Var "$r"))))
 
-attribute [instance] LoopStruct_Assumptions.LoopStruct_type_repr
-  LoopStruct_Assumptions.LoopStruct_underlying
-  LoopStruct_Assumptions.LoopStruct_get_loopNext
-  LoopStruct_Assumptions.LoopStruct_set_loopNext
-  LoopStruct_Assumptions.LoopStruct_forLoopWait_unfold
-  LoopStruct_Assumptions.LoopStruct'ptr_forLoopWait_unfold
+attribute [instance] LoopStruct.TypeAssumptions.type_repr
+  LoopStruct.TypeAssumptions.underlying
+  LoopStruct.TypeAssumptions.get_loopNext
+  LoopStruct.TypeAssumptions.set_loopNext
+  LoopStruct.TypeAssumptions.forLoopWait_unfold
+  LoopStruct.TypeAssumptions.ptr_forLoopWait_unfold
 
 namespace BoolTest
 structure t [FfiSyntax] where
@@ -5884,44 +5884,44 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end BoolTest
 
-@[reducible] def BoolTest'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def BoolTest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"t" go.bool),
 (go.field_decl.FieldDecl go!"f" go.bool),
 (go.field_decl.FieldDecl go!"tc" go.uint64),
 (go.field_decl.FieldDecl go!"fc" go.uint64)]
 
-@[irreducible] def BoolTest'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  BoolTest'fds_unsealed
+@[irreducible] def BoolTest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  BoolTest.fieldsUnsealed
 
 instance equals_unfold_BoolTest [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold BoolTest'fds BoolTest'fds_unsealed :=
-  ⟨by unfold BoolTest'fds; rfl⟩
+    EqualsUnfold BoolTest.fields BoolTest.fieldsUnsealed :=
+  ⟨by unfold BoolTest.fields; rfl⟩
 
-@[reducible] def «BoolTestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType BoolTest'fds)
+@[reducible] def BoolTest.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType BoolTest.fields)
 
-class BoolTest_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  BoolTest_type_repr : go.TypeReprUnderlying «BoolTestⁱᵐᵖˡ» BoolTest.t
-  BoolTest_underlying : go.UnderlyingDirectedEq BoolTest «BoolTestⁱᵐᵖˡ»
-  BoolTest_get_t : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet «BoolTestⁱᵐᵖˡ» go!"t") #x (Val #(x.t'))
-  BoolTest_set_t : ∀ (x : BoolTest.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «BoolTestⁱᵐᵖˡ» go!"t") (PairV #x #y) (Val #(({ x with t' := y } : BoolTest.t)))
-  BoolTest_get_f : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet «BoolTestⁱᵐᵖˡ» go!"f") #x (Val #(x.f'))
-  BoolTest_set_f : ∀ (x : BoolTest.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «BoolTestⁱᵐᵖˡ» go!"f") (PairV #x #y) (Val #(({ x with f' := y } : BoolTest.t)))
-  BoolTest_get_tc : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet «BoolTestⁱᵐᵖˡ» go!"tc") #x (Val #(x.tc'))
-  BoolTest_set_tc : ∀ (x : BoolTest.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «BoolTestⁱᵐᵖˡ» go!"tc") (PairV #x #y) (Val #(({ x with tc' := y } : BoolTest.t)))
-  BoolTest_get_fc : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet «BoolTestⁱᵐᵖˡ» go!"fc") #x (Val #(x.fc'))
-  BoolTest_set_fc : ∀ (x : BoolTest.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «BoolTestⁱᵐᵖˡ» go!"fc") (PairV #x #y) (Val #(({ x with fc' := y } : BoolTest.t)))
+class BoolTest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying BoolTest.underlying BoolTest.t
+  underlying : go.UnderlyingDirectedEq BoolTest BoolTest.underlying
+  get_t : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet BoolTest.underlying go!"t") #x (Val #(x.t'))
+  set_t : ∀ (x : BoolTest.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet BoolTest.underlying go!"t") (PairV #x #y) (Val #(({ x with t' := y } : BoolTest.t)))
+  get_f : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet BoolTest.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : BoolTest.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet BoolTest.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : BoolTest.t)))
+  get_tc : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet BoolTest.underlying go!"tc") #x (Val #(x.tc'))
+  set_tc : ∀ (x : BoolTest.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BoolTest.underlying go!"tc") (PairV #x #y) (Val #(({ x with tc' := y } : BoolTest.t)))
+  get_fc : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet BoolTest.underlying go!"fc") #x (Val #(x.fc'))
+  set_fc : ∀ (x : BoolTest.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BoolTest.underlying go!"fc") (PairV #x #y) (Val #(({ x with fc' := y } : BoolTest.t)))
 
-attribute [instance] BoolTest_Assumptions.BoolTest_type_repr
-  BoolTest_Assumptions.BoolTest_underlying
-  BoolTest_Assumptions.BoolTest_get_t
-  BoolTest_Assumptions.BoolTest_set_t
-  BoolTest_Assumptions.BoolTest_get_f
-  BoolTest_Assumptions.BoolTest_set_f
-  BoolTest_Assumptions.BoolTest_get_tc
-  BoolTest_Assumptions.BoolTest_set_tc
-  BoolTest_Assumptions.BoolTest_get_fc
-  BoolTest_Assumptions.BoolTest_set_fc
+attribute [instance] BoolTest.TypeAssumptions.type_repr
+  BoolTest.TypeAssumptions.underlying
+  BoolTest.TypeAssumptions.get_t
+  BoolTest.TypeAssumptions.set_t
+  BoolTest.TypeAssumptions.get_f
+  BoolTest.TypeAssumptions.set_f
+  BoolTest.TypeAssumptions.get_tc
+  BoolTest.TypeAssumptions.set_tc
+  BoolTest.TypeAssumptions.get_fc
+  BoolTest.TypeAssumptions.set_fc
 
 namespace ArrayEditor
 structure t [FfiSyntax] where
@@ -5933,36 +5933,36 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end ArrayEditor
 
-@[reducible] def ArrayEditor'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ArrayEditor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" (go.GoType.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"next_val" go.uint64)]
 
-@[irreducible] def ArrayEditor'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  ArrayEditor'fds_unsealed
+@[irreducible] def ArrayEditor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  ArrayEditor.fieldsUnsealed
 
 instance equals_unfold_ArrayEditor [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold ArrayEditor'fds ArrayEditor'fds_unsealed :=
-  ⟨by unfold ArrayEditor'fds; rfl⟩
+    EqualsUnfold ArrayEditor.fields ArrayEditor.fieldsUnsealed :=
+  ⟨by unfold ArrayEditor.fields; rfl⟩
 
-@[reducible] def «ArrayEditorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType ArrayEditor'fds)
+@[reducible] def ArrayEditor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ArrayEditor.fields)
 
-class ArrayEditor_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ArrayEditor_type_repr : go.TypeReprUnderlying «ArrayEditorⁱᵐᵖˡ» ArrayEditor.t
-  ArrayEditor_underlying : go.UnderlyingDirectedEq ArrayEditor «ArrayEditorⁱᵐᵖˡ»
-  ArrayEditor_get_s : ∀ (x : ArrayEditor.t), go.IsGoStepPureDetTagged under (StructFieldGet «ArrayEditorⁱᵐᵖˡ» go!"s") #x (Val #(x.s'))
-  ArrayEditor_set_s : ∀ (x : ArrayEditor.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «ArrayEditorⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : ArrayEditor.t)))
-  ArrayEditor_get_next_val : ∀ (x : ArrayEditor.t), go.IsGoStepPureDetTagged under (StructFieldGet «ArrayEditorⁱᵐᵖˡ» go!"next_val") #x (Val #(x.next_val'))
-  ArrayEditor_set_next_val : ∀ (x : ArrayEditor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ArrayEditorⁱᵐᵖˡ» go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : ArrayEditor.t)))
-  ArrayEditor'ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType ArrayEditor) go!"Advance" «ArrayEditor__Advanceⁱᵐᵖˡ»
+class ArrayEditor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ArrayEditor.underlying ArrayEditor.t
+  underlying : go.UnderlyingDirectedEq ArrayEditor ArrayEditor.underlying
+  get_s : ∀ (x : ArrayEditor.t), go.IsGoStepPureDetTagged under (StructFieldGet ArrayEditor.underlying go!"s") #x (Val #(x.s'))
+  set_s : ∀ (x : ArrayEditor.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ArrayEditor.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : ArrayEditor.t)))
+  get_next_val : ∀ (x : ArrayEditor.t), go.IsGoStepPureDetTagged under (StructFieldGet ArrayEditor.underlying go!"next_val") #x (Val #(x.next_val'))
+  set_next_val : ∀ (x : ArrayEditor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ArrayEditor.underlying go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : ArrayEditor.t)))
+  ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType ArrayEditor) go!"Advance" ArrayEditor.Advance.impl
 
-attribute [instance] ArrayEditor_Assumptions.ArrayEditor_type_repr
-  ArrayEditor_Assumptions.ArrayEditor_underlying
-  ArrayEditor_Assumptions.ArrayEditor_get_s
-  ArrayEditor_Assumptions.ArrayEditor_set_s
-  ArrayEditor_Assumptions.ArrayEditor_get_next_val
-  ArrayEditor_Assumptions.ArrayEditor_set_next_val
-  ArrayEditor_Assumptions.ArrayEditor'ptr_Advance_unfold
+attribute [instance] ArrayEditor.TypeAssumptions.type_repr
+  ArrayEditor.TypeAssumptions.underlying
+  ArrayEditor.TypeAssumptions.get_s
+  ArrayEditor.TypeAssumptions.set_s
+  ArrayEditor.TypeAssumptions.get_next_val
+  ArrayEditor.TypeAssumptions.set_next_val
+  ArrayEditor.TypeAssumptions.ptr_Advance_unfold
 
 namespace Bar
 structure t [FfiSyntax] where
@@ -5974,36 +5974,36 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Bar
 
-@[reducible] def Bar'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Bar.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" go.uint64)]
 
-@[irreducible] def Bar'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Bar'fds_unsealed
+@[irreducible] def Bar.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Bar.fieldsUnsealed
 
 instance equals_unfold_Bar [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Bar'fds Bar'fds_unsealed :=
-  ⟨by unfold Bar'fds; rfl⟩
+    EqualsUnfold Bar.fields Bar.fieldsUnsealed :=
+  ⟨by unfold Bar.fields; rfl⟩
 
-@[reducible] def «Barⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Bar'fds)
+@[reducible] def Bar.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Bar.fields)
 
-class Bar_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Bar_type_repr : go.TypeReprUnderlying «Barⁱᵐᵖˡ» Bar.t
-  Bar_underlying : go.UnderlyingDirectedEq Bar «Barⁱᵐᵖˡ»
-  Bar_get_a : ∀ (x : Bar.t), go.IsGoStepPureDetTagged under (StructFieldGet «Barⁱᵐᵖˡ» go!"a") #x (Val #(x.a'))
-  Bar_set_a : ∀ (x : Bar.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Barⁱᵐᵖˡ» go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Bar.t)))
-  Bar_get_b : ∀ (x : Bar.t), go.IsGoStepPureDetTagged under (StructFieldGet «Barⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
-  Bar_set_b : ∀ (x : Bar.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Barⁱᵐᵖˡ» go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bar.t)))
-  Bar'ptr_mutate_unfold : MethodUnfold (go.GoType.PointerType Bar) go!"mutate" «Bar__mutateⁱᵐᵖˡ»
+class Bar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Bar.underlying Bar.t
+  underlying : go.UnderlyingDirectedEq Bar Bar.underlying
+  get_a : ∀ (x : Bar.t), go.IsGoStepPureDetTagged under (StructFieldGet Bar.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : Bar.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Bar.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Bar.t)))
+  get_b : ∀ (x : Bar.t), go.IsGoStepPureDetTagged under (StructFieldGet Bar.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : Bar.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Bar.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bar.t)))
+  ptr_mutate_unfold : MethodUnfold (go.GoType.PointerType Bar) go!"mutate" Bar.mutate.impl
 
-attribute [instance] Bar_Assumptions.Bar_type_repr
-  Bar_Assumptions.Bar_underlying
-  Bar_Assumptions.Bar_get_a
-  Bar_Assumptions.Bar_set_a
-  Bar_Assumptions.Bar_get_b
-  Bar_Assumptions.Bar_set_b
-  Bar_Assumptions.Bar'ptr_mutate_unfold
+attribute [instance] Bar.TypeAssumptions.type_repr
+  Bar.TypeAssumptions.underlying
+  Bar.TypeAssumptions.get_a
+  Bar.TypeAssumptions.set_a
+  Bar.TypeAssumptions.get_b
+  Bar.TypeAssumptions.set_b
+  Bar.TypeAssumptions.ptr_mutate_unfold
 
 namespace Foo
 structure t [FfiSyntax] where
@@ -6014,31 +6014,31 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end Foo
 
-@[reducible] def Foo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Foo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"bar" Bar)]
 
-@[irreducible] def Foo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Foo'fds_unsealed
+@[irreducible] def Foo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Foo.fieldsUnsealed
 
 instance equals_unfold_Foo [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Foo'fds Foo'fds_unsealed :=
-  ⟨by unfold Foo'fds; rfl⟩
+    EqualsUnfold Foo.fields Foo.fieldsUnsealed :=
+  ⟨by unfold Foo.fields; rfl⟩
 
-@[reducible] def «Fooⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Foo'fds)
+@[reducible] def Foo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Foo.fields)
 
-class Foo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Foo_type_repr : go.TypeReprUnderlying «Fooⁱᵐᵖˡ» Foo.t
-  Foo_underlying : go.UnderlyingDirectedEq Foo «Fooⁱᵐᵖˡ»
-  Foo_get_bar : ∀ (x : Foo.t), go.IsGoStepPureDetTagged under (StructFieldGet «Fooⁱᵐᵖˡ» go!"bar") #x (Val #(x.bar'))
-  Foo_set_bar : ∀ (x : Foo.t) (y : Bar.t), go.IsGoStepPureDetTagged under (StructFieldSet «Fooⁱᵐᵖˡ» go!"bar") (PairV #x #y) (Val #(({ x with bar' := y } : Foo.t)))
-  Foo'ptr_mutateBar_unfold : MethodUnfold (go.GoType.PointerType Foo) go!"mutateBar" «Foo__mutateBarⁱᵐᵖˡ»
+class Foo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Foo.underlying Foo.t
+  underlying : go.UnderlyingDirectedEq Foo Foo.underlying
+  get_bar : ∀ (x : Foo.t), go.IsGoStepPureDetTagged under (StructFieldGet Foo.underlying go!"bar") #x (Val #(x.bar'))
+  set_bar : ∀ (x : Foo.t) (y : Bar.t), go.IsGoStepPureDetTagged under (StructFieldSet Foo.underlying go!"bar") (PairV #x #y) (Val #(({ x with bar' := y } : Foo.t)))
+  ptr_mutateBar_unfold : MethodUnfold (go.GoType.PointerType Foo) go!"mutateBar" Foo.mutateBar.impl
 
-attribute [instance] Foo_Assumptions.Foo_type_repr
-  Foo_Assumptions.Foo_underlying
-  Foo_Assumptions.Foo_get_bar
-  Foo_Assumptions.Foo_set_bar
-  Foo_Assumptions.Foo'ptr_mutateBar_unfold
+attribute [instance] Foo.TypeAssumptions.type_repr
+  Foo.TypeAssumptions.underlying
+  Foo.TypeAssumptions.get_bar
+  Foo.TypeAssumptions.set_bar
+  Foo.TypeAssumptions.ptr_mutateBar_unfold
 
 namespace TwoInts
 structure t [FfiSyntax] where
@@ -6050,34 +6050,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end TwoInts
 
-@[reducible] def TwoInts'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TwoInts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
 (go.field_decl.FieldDecl go!"y" go.uint64)]
 
-@[irreducible] def TwoInts'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  TwoInts'fds_unsealed
+@[irreducible] def TwoInts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  TwoInts.fieldsUnsealed
 
 instance equals_unfold_TwoInts [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold TwoInts'fds TwoInts'fds_unsealed :=
-  ⟨by unfold TwoInts'fds; rfl⟩
+    EqualsUnfold TwoInts.fields TwoInts.fieldsUnsealed :=
+  ⟨by unfold TwoInts.fields; rfl⟩
 
-@[reducible] def «TwoIntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType TwoInts'fds)
+@[reducible] def TwoInts.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType TwoInts.fields)
 
-class TwoInts_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TwoInts_type_repr : go.TypeReprUnderlying «TwoIntsⁱᵐᵖˡ» TwoInts.t
-  TwoInts_underlying : go.UnderlyingDirectedEq TwoInts «TwoIntsⁱᵐᵖˡ»
-  TwoInts_get_x : ∀ (x : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldGet «TwoIntsⁱᵐᵖˡ» go!"x") #x (Val #(x.x'))
-  TwoInts_set_x : ∀ (x : TwoInts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «TwoIntsⁱᵐᵖˡ» go!"x") (PairV #x #y) (Val #(({ x with x' := y } : TwoInts.t)))
-  TwoInts_get_y : ∀ (x : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldGet «TwoIntsⁱᵐᵖˡ» go!"y") #x (Val #(x.y'))
-  TwoInts_set_y : ∀ (x : TwoInts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «TwoIntsⁱᵐᵖˡ» go!"y") (PairV #x #y) (Val #(({ x with y' := y } : TwoInts.t)))
+class TwoInts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying TwoInts.underlying TwoInts.t
+  underlying : go.UnderlyingDirectedEq TwoInts TwoInts.underlying
+  get_x : ∀ (x : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : TwoInts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : TwoInts.t)))
+  get_y : ∀ (x : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"y") #x (Val #(x.y'))
+  set_y : ∀ (x : TwoInts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : TwoInts.t)))
 
-attribute [instance] TwoInts_Assumptions.TwoInts_type_repr
-  TwoInts_Assumptions.TwoInts_underlying
-  TwoInts_Assumptions.TwoInts_get_x
-  TwoInts_Assumptions.TwoInts_set_x
-  TwoInts_Assumptions.TwoInts_get_y
-  TwoInts_Assumptions.TwoInts_set_y
+attribute [instance] TwoInts.TypeAssumptions.type_repr
+  TwoInts.TypeAssumptions.underlying
+  TwoInts.TypeAssumptions.get_x
+  TwoInts.TypeAssumptions.set_x
+  TwoInts.TypeAssumptions.get_y
+  TwoInts.TypeAssumptions.set_y
 
 namespace S
 structure t [FfiSyntax] where
@@ -6090,52 +6090,52 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end S
 
-@[reducible] def S'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def S.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" TwoInts),
 (go.field_decl.FieldDecl go!"c" go.bool)]
 
-@[irreducible] def S'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  S'fds_unsealed
+@[irreducible] def S.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  S.fieldsUnsealed
 
 instance equals_unfold_S [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold S'fds S'fds_unsealed :=
-  ⟨by unfold S'fds; rfl⟩
+    EqualsUnfold S.fields S.fieldsUnsealed :=
+  ⟨by unfold S.fields; rfl⟩
 
-@[reducible] def «Sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType S'fds)
+@[reducible] def S.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType S.fields)
 
-class S_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  S_type_repr : go.TypeReprUnderlying «Sⁱᵐᵖˡ» S.t
-  S_underlying : go.UnderlyingDirectedEq S «Sⁱᵐᵖˡ»
-  S_get_a : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet «Sⁱᵐᵖˡ» go!"a") #x (Val #(x.a'))
-  S_set_a : ∀ (x : S.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Sⁱᵐᵖˡ» go!"a") (PairV #x #y) (Val #(({ x with a' := y } : S.t)))
-  S_get_b : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet «Sⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
-  S_set_b : ∀ (x : S.t) (y : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldSet «Sⁱᵐᵖˡ» go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S.t)))
-  S_get_c : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet «Sⁱᵐᵖˡ» go!"c") #x (Val #(x.c'))
-  S_set_c : ∀ (x : S.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Sⁱᵐᵖˡ» go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S.t)))
-  S_readBVal_unfold : MethodUnfold S go!"readBVal" «S__readBValⁱᵐᵖˡ»
-  S'ptr_negateC_unfold : MethodUnfold (go.GoType.PointerType S) go!"negateC" «S__negateCⁱᵐᵖˡ»
-  S'ptr_readA_unfold : MethodUnfold (go.GoType.PointerType S) go!"readA" «S__readAⁱᵐᵖˡ»
-  S'ptr_readB_unfold : MethodUnfold (go.GoType.PointerType S) go!"readB" «S__readBⁱᵐᵖˡ»
-  S'ptr_readBVal_unfold : MethodUnfold (go.GoType.PointerType S) go!"readBVal" (LamV "$r"
+class S.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying S.underlying S.t
+  underlying : go.UnderlyingDirectedEq S S.underlying
+  get_a : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : S.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : S.t)))
+  get_b : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : S.t) (y : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S.t)))
+  get_c : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : S.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S.t)))
+  readBVal_unfold : MethodUnfold S go!"readBVal" S.readBVal.impl
+  ptr_negateC_unfold : MethodUnfold (go.GoType.PointerType S) go!"negateC" S.negateC.impl
+  ptr_readA_unfold : MethodUnfold (go.GoType.PointerType S) go!"readA" S.readA.impl
+  ptr_readB_unfold : MethodUnfold (go.GoType.PointerType S) go!"readB" S.readB.impl
+  ptr_readBVal_unfold : MethodUnfold (go.GoType.PointerType S) go!"readBVal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve S go!"readBVal"))) (App (Val (GoInstruction (GoLoad S))) (Var "$r"))))
-  S'ptr_updateBValX_unfold : MethodUnfold (go.GoType.PointerType S) go!"updateBValX" «S__updateBValXⁱᵐᵖˡ»
+  ptr_updateBValX_unfold : MethodUnfold (go.GoType.PointerType S) go!"updateBValX" S.updateBValX.impl
 
-attribute [instance] S_Assumptions.S_type_repr
-  S_Assumptions.S_underlying
-  S_Assumptions.S_get_a
-  S_Assumptions.S_set_a
-  S_Assumptions.S_get_b
-  S_Assumptions.S_set_b
-  S_Assumptions.S_get_c
-  S_Assumptions.S_set_c
-  S_Assumptions.S_readBVal_unfold
-  S_Assumptions.S'ptr_negateC_unfold
-  S_Assumptions.S'ptr_readA_unfold
-  S_Assumptions.S'ptr_readB_unfold
-  S_Assumptions.S'ptr_readBVal_unfold
-  S_Assumptions.S'ptr_updateBValX_unfold
+attribute [instance] S.TypeAssumptions.type_repr
+  S.TypeAssumptions.underlying
+  S.TypeAssumptions.get_a
+  S.TypeAssumptions.set_a
+  S.TypeAssumptions.get_b
+  S.TypeAssumptions.set_b
+  S.TypeAssumptions.get_c
+  S.TypeAssumptions.set_c
+  S.TypeAssumptions.readBVal_unfold
+  S.TypeAssumptions.ptr_negateC_unfold
+  S.TypeAssumptions.ptr_readA_unfold
+  S.TypeAssumptions.ptr_readB_unfold
+  S.TypeAssumptions.ptr_readBVal_unfold
+  S.TypeAssumptions.ptr_updateBValX_unfold
 
 namespace StructWrap
 structure t [FfiSyntax] where
@@ -6146,29 +6146,29 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end StructWrap
 
-@[reducible] def StructWrap'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def StructWrap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"i" go.uint64)]
 
-@[irreducible] def StructWrap'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  StructWrap'fds_unsealed
+@[irreducible] def StructWrap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  StructWrap.fieldsUnsealed
 
 instance equals_unfold_StructWrap [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold StructWrap'fds StructWrap'fds_unsealed :=
-  ⟨by unfold StructWrap'fds; rfl⟩
+    EqualsUnfold StructWrap.fields StructWrap.fieldsUnsealed :=
+  ⟨by unfold StructWrap.fields; rfl⟩
 
-@[reducible] def «StructWrapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType StructWrap'fds)
+@[reducible] def StructWrap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType StructWrap.fields)
 
-class StructWrap_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StructWrap_type_repr : go.TypeReprUnderlying «StructWrapⁱᵐᵖˡ» StructWrap.t
-  StructWrap_underlying : go.UnderlyingDirectedEq StructWrap «StructWrapⁱᵐᵖˡ»
-  StructWrap_get_i : ∀ (x : StructWrap.t), go.IsGoStepPureDetTagged under (StructFieldGet «StructWrapⁱᵐᵖˡ» go!"i") #x (Val #(x.i'))
-  StructWrap_set_i : ∀ (x : StructWrap.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «StructWrapⁱᵐᵖˡ» go!"i") (PairV #x #y) (Val #(({ x with i' := y } : StructWrap.t)))
+class StructWrap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying StructWrap.underlying StructWrap.t
+  underlying : go.UnderlyingDirectedEq StructWrap StructWrap.underlying
+  get_i : ∀ (x : StructWrap.t), go.IsGoStepPureDetTagged under (StructFieldGet StructWrap.underlying go!"i") #x (Val #(x.i'))
+  set_i : ∀ (x : StructWrap.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet StructWrap.underlying go!"i") (PairV #x #y) (Val #(({ x with i' := y } : StructWrap.t)))
 
-attribute [instance] StructWrap_Assumptions.StructWrap_type_repr
-  StructWrap_Assumptions.StructWrap_underlying
-  StructWrap_Assumptions.StructWrap_get_i
-  StructWrap_Assumptions.StructWrap_set_i
+attribute [instance] StructWrap.TypeAssumptions.type_repr
+  StructWrap.TypeAssumptions.underlying
+  StructWrap.TypeAssumptions.get_i
+  StructWrap.TypeAssumptions.set_i
 
 namespace StructWithFunc
 structure t [FfiSyntax] where
@@ -6179,29 +6179,29 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end StructWithFunc
 
-@[reducible] def StructWithFunc'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def StructWithFunc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"fn" (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64])))]
 
-@[irreducible] def StructWithFunc'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  StructWithFunc'fds_unsealed
+@[irreducible] def StructWithFunc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  StructWithFunc.fieldsUnsealed
 
 instance equals_unfold_StructWithFunc [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold StructWithFunc'fds StructWithFunc'fds_unsealed :=
-  ⟨by unfold StructWithFunc'fds; rfl⟩
+    EqualsUnfold StructWithFunc.fields StructWithFunc.fieldsUnsealed :=
+  ⟨by unfold StructWithFunc.fields; rfl⟩
 
-@[reducible] def «StructWithFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType StructWithFunc'fds)
+@[reducible] def StructWithFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType StructWithFunc.fields)
 
-class StructWithFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StructWithFunc_type_repr : go.TypeReprUnderlying «StructWithFuncⁱᵐᵖˡ» StructWithFunc.t
-  StructWithFunc_underlying : go.UnderlyingDirectedEq StructWithFunc «StructWithFuncⁱᵐᵖˡ»
-  StructWithFunc_get_fn : ∀ (x : StructWithFunc.t), go.IsGoStepPureDetTagged under (StructFieldGet «StructWithFuncⁱᵐᵖˡ» go!"fn") #x (Val #(x.fn'))
-  StructWithFunc_set_fn : ∀ (x : StructWithFunc.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «StructWithFuncⁱᵐᵖˡ» go!"fn") (PairV #x #y) (Val #(({ x with fn' := y } : StructWithFunc.t)))
+class StructWithFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying StructWithFunc.underlying StructWithFunc.t
+  underlying : go.UnderlyingDirectedEq StructWithFunc StructWithFunc.underlying
+  get_fn : ∀ (x : StructWithFunc.t), go.IsGoStepPureDetTagged under (StructFieldGet StructWithFunc.underlying go!"fn") #x (Val #(x.fn'))
+  set_fn : ∀ (x : StructWithFunc.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet StructWithFunc.underlying go!"fn") (PairV #x #y) (Val #(({ x with fn' := y } : StructWithFunc.t)))
 
-attribute [instance] StructWithFunc_Assumptions.StructWithFunc_type_repr
-  StructWithFunc_Assumptions.StructWithFunc_underlying
-  StructWithFunc_Assumptions.StructWithFunc_get_fn
-  StructWithFunc_Assumptions.StructWithFunc_set_fn
+attribute [instance] StructWithFunc.TypeAssumptions.type_repr
+  StructWithFunc.TypeAssumptions.underlying
+  StructWithFunc.TypeAssumptions.get_fn
+  StructWithFunc.TypeAssumptions.set_fn
 
 namespace switchConcrete
 structure t [FfiSyntax] where
@@ -6211,51 +6211,51 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end switchConcrete
 
-@[reducible] def switchConcrete'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def switchConcrete.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def switchConcrete'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  switchConcrete'fds_unsealed
+@[irreducible] def switchConcrete.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  switchConcrete.fieldsUnsealed
 
 instance equals_unfold_switchConcrete [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold switchConcrete'fds switchConcrete'fds_unsealed :=
-  ⟨by unfold switchConcrete'fds; rfl⟩
+    EqualsUnfold switchConcrete.fields switchConcrete.fieldsUnsealed :=
+  ⟨by unfold switchConcrete.fields; rfl⟩
 
-@[reducible] def «switchConcreteⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType switchConcrete'fds)
+@[reducible] def switchConcrete.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType switchConcrete.fields)
 
-class switchConcrete_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  switchConcrete_type_repr : go.TypeReprUnderlying «switchConcreteⁱᵐᵖˡ» switchConcrete.t
-  switchConcrete_underlying : go.UnderlyingDirectedEq switchConcrete «switchConcreteⁱᵐᵖˡ»
-  switchConcrete'ptr_marker_unfold : MethodUnfold (go.GoType.PointerType switchConcrete) go!"marker" «switchConcrete__markerⁱᵐᵖˡ»
+class switchConcrete.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying switchConcrete.underlying switchConcrete.t
+  underlying : go.UnderlyingDirectedEq switchConcrete switchConcrete.underlying
+  ptr_marker_unfold : MethodUnfold (go.GoType.PointerType switchConcrete) go!"marker" switchConcrete.marker.impl
 
-attribute [instance] switchConcrete_Assumptions.switchConcrete_type_repr
-  switchConcrete_Assumptions.switchConcrete_underlying
-  switchConcrete_Assumptions.switchConcrete'ptr_marker_unfold
+attribute [instance] switchConcrete.TypeAssumptions.type_repr
+  switchConcrete.TypeAssumptions.underlying
+  switchConcrete.TypeAssumptions.ptr_marker_unfold
 
 namespace switchInterface
 abbrev t [FfiSyntax] : Type := interface.t
 end switchInterface
 
-@[reducible] def «switchInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def switchInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"marker" (go.signature.Signature [] false []))])
 
-class switchInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  switchInterface_underlying : go.UnderlyingDirectedEq switchInterface «switchInterfaceⁱᵐᵖˡ»
+class switchInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq switchInterface switchInterface.underlying
 
-attribute [instance] switchInterface_Assumptions.switchInterface_underlying
+attribute [instance] switchInterface.TypeAssumptions.underlying
 
 namespace DefinedStr
 abbrev t [FfiSyntax] : Type := GoString
 end DefinedStr
 
-@[reducible] def «DefinedStrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def DefinedStr.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class DefinedStr_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  DefinedStr_underlying : go.UnderlyingDirectedEq DefinedStr «DefinedStrⁱᵐᵖˡ»
+class DefinedStr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq DefinedStr DefinedStr.underlying
 
-attribute [instance] DefinedStr_Assumptions.DefinedStr_underlying
+attribute [instance] DefinedStr.TypeAssumptions.underlying
 
 namespace List'
 structure t [FfiSyntax] (T : Type) where
@@ -6267,34 +6267,34 @@ instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end List'
 
-@[reducible] def List'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] def List.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" T),
 (go.field_decl.FieldDecl go!"Next" (go.GoType.PointerType (List' T)))]
 
-@[irreducible] def List'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (List'fds_unsealed T)
+@[irreducible] def List.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (List.fieldsUnsealed T)
 
 instance equals_unfold_List [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (List'fds T) (List'fds_unsealed T) :=
-  ⟨by unfold List'fds; rfl⟩
+    EqualsUnfold (List.fields T) (List.fieldsUnsealed T) :=
+  ⟨by unfold List.fields; rfl⟩
 
-@[reducible] def «List'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (List'fds T))
+@[reducible] def List'.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (List.fields T))
 
-class List_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  List_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («List'ⁱᵐᵖˡ» T) (List'.t T')
-  List_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (List' T) («List'ⁱᵐᵖˡ» T)
-  List_get_X : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («List'ⁱᵐᵖˡ» T) go!"X") #x (Val #(x.X'))
-  List_set_X : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («List'ⁱᵐᵖˡ» T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (List'.t T'))))
-  List_get_Next : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («List'ⁱᵐᵖˡ» T) go!"Next") #x (Val #(x.Next'))
-  List_set_Next : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («List'ⁱᵐᵖˡ» T) go!"Next") (PairV #x #y) (Val #(({ x with Next' := y } : (List'.t T'))))
+class List.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (List'.underlying T) (List'.t T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (List' T) (List'.underlying T)
+  get_X : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (List'.underlying T) go!"X") #x (Val #(x.X'))
+  set_X : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (List'.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (List'.t T'))))
+  get_Next : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (List'.underlying T) go!"Next") #x (Val #(x.Next'))
+  set_Next : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (List'.underlying T) go!"Next") (PairV #x #y) (Val #(({ x with Next' := y } : (List'.t T'))))
 
-attribute [instance] List_Assumptions.List_type_repr
-  List_Assumptions.List_underlying
-  List_Assumptions.List_get_X
-  List_Assumptions.List_set_X
-  List_Assumptions.List_get_Next
-  List_Assumptions.List_set_Next
+attribute [instance] List.TypeAssumptions.type_repr
+  List.TypeAssumptions.underlying
+  List.TypeAssumptions.get_X
+  List.TypeAssumptions.set_X
+  List.TypeAssumptions.get_Next
+  List.TypeAssumptions.set_Next
 
 namespace Log
 structure t [FfiSyntax] where
@@ -6308,277 +6308,277 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Log
 
-@[reducible] def Log'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"d" _root_.Perennial.github_com.goose_lang.primitive.disk.Disk),
 (go.field_decl.FieldDecl go!"l" (go.GoType.PointerType _root_.Perennial.sync.Mutex)),
 (go.field_decl.FieldDecl go!"cache" (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)),
 (go.field_decl.FieldDecl go!"length" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def Log'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Log'fds_unsealed
+@[irreducible] def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Log.fieldsUnsealed
 
 instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Log'fds Log'fds_unsealed :=
-  ⟨by unfold Log'fds; rfl⟩
+    EqualsUnfold Log.fields Log.fieldsUnsealed :=
+  ⟨by unfold Log.fields; rfl⟩
 
-@[reducible] def «Logⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Log'fds)
+@[reducible] def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Log.fields)
 
-class Log_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Log_type_repr : go.TypeReprUnderlying «Logⁱᵐᵖˡ» Log.t
-  Log_underlying : go.UnderlyingDirectedEq Log «Logⁱᵐᵖˡ»
-  Log_get_d : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"d") #x (Val #(x.d'))
-  Log_set_d : ∀ (x : Log.t) (y : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.t), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"d") (PairV #x #y) (Val #(({ x with d' := y } : Log.t)))
-  Log_get_l : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"l") #x (Val #(x.l'))
-  Log_set_l : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"l") (PairV #x #y) (Val #(({ x with l' := y } : Log.t)))
-  Log_get_cache : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"cache") #x (Val #(x.cache'))
-  Log_set_cache : ∀ (x : Log.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : Log.t)))
-  Log_get_length : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"length") #x (Val #(x.length'))
-  Log_set_length : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"length") (PairV #x #y) (Val #(({ x with length' := y } : Log.t)))
-  Log_Apply_unfold : MethodUnfold Log go!"Apply" «Log__Applyⁱᵐᵖˡ»
-  Log_BeginTxn_unfold : MethodUnfold Log go!"BeginTxn" «Log__BeginTxnⁱᵐᵖˡ»
-  Log_Commit_unfold : MethodUnfold Log go!"Commit" «Log__Commitⁱᵐᵖˡ»
-  Log_Read_unfold : MethodUnfold Log go!"Read" «Log__Readⁱᵐᵖˡ»
-  Log_Size_unfold : MethodUnfold Log go!"Size" «Log__Sizeⁱᵐᵖˡ»
-  Log_Write_unfold : MethodUnfold Log go!"Write" «Log__Writeⁱᵐᵖˡ»
-  Log_lock_unfold : MethodUnfold Log go!"lock" «Log__lockⁱᵐᵖˡ»
-  Log_unlock_unfold : MethodUnfold Log go!"unlock" «Log__unlockⁱᵐᵖˡ»
-  Log'ptr_Apply_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Apply" (LamV "$r"
+class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Log.underlying Log.t
+  underlying : go.UnderlyingDirectedEq Log Log.underlying
+  get_d : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"d") #x (Val #(x.d'))
+  set_d : ∀ (x : Log.t) (y : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.t), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : Log.t)))
+  get_l : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"l") #x (Val #(x.l'))
+  set_l : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"l") (PairV #x #y) (Val #(({ x with l' := y } : Log.t)))
+  get_cache : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"cache") #x (Val #(x.cache'))
+  set_cache : ∀ (x : Log.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : Log.t)))
+  get_length : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"length") #x (Val #(x.length'))
+  set_length : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"length") (PairV #x #y) (Val #(({ x with length' := y } : Log.t)))
+  Apply_unfold : MethodUnfold Log go!"Apply" Log.Apply.impl
+  BeginTxn_unfold : MethodUnfold Log go!"BeginTxn" Log.BeginTxn.impl
+  Commit_unfold : MethodUnfold Log go!"Commit" Log.Commit.impl
+  Read_unfold : MethodUnfold Log go!"Read" Log.Read.impl
+  Size_unfold : MethodUnfold Log go!"Size" Log.Size.impl
+  Write_unfold : MethodUnfold Log go!"Write" Log.Write.impl
+  lock_unfold : MethodUnfold Log go!"lock" Log.lock.impl
+  unlock_unfold : MethodUnfold Log go!"unlock" Log.unlock.impl
+  ptr_Apply_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Apply" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Apply"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_BeginTxn_unfold : MethodUnfold (go.GoType.PointerType Log) go!"BeginTxn" (LamV "$r"
+  ptr_BeginTxn_unfold : MethodUnfold (go.GoType.PointerType Log) go!"BeginTxn" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"BeginTxn"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_Commit_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Commit" (LamV "$r"
+  ptr_Commit_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Commit" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Commit"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_Read_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Read" (LamV "$r"
+  ptr_Read_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Read" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Read"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_Size_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Size" (LamV "$r"
+  ptr_Size_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Size" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Size"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_Write_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Write" (LamV "$r"
+  ptr_Write_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Write" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Write"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_lock_unfold : MethodUnfold (go.GoType.PointerType Log) go!"lock" (LamV "$r"
+  ptr_lock_unfold : MethodUnfold (go.GoType.PointerType Log) go!"lock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"lock"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_unlock_unfold : MethodUnfold (go.GoType.PointerType Log) go!"unlock" (LamV "$r"
+  ptr_unlock_unfold : MethodUnfold (go.GoType.PointerType Log) go!"unlock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"unlock"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
 
-attribute [instance] Log_Assumptions.Log_type_repr
-  Log_Assumptions.Log_underlying
-  Log_Assumptions.Log_get_d
-  Log_Assumptions.Log_set_d
-  Log_Assumptions.Log_get_l
-  Log_Assumptions.Log_set_l
-  Log_Assumptions.Log_get_cache
-  Log_Assumptions.Log_set_cache
-  Log_Assumptions.Log_get_length
-  Log_Assumptions.Log_set_length
-  Log_Assumptions.Log_Apply_unfold
-  Log_Assumptions.Log_BeginTxn_unfold
-  Log_Assumptions.Log_Commit_unfold
-  Log_Assumptions.Log_Read_unfold
-  Log_Assumptions.Log_Size_unfold
-  Log_Assumptions.Log_Write_unfold
-  Log_Assumptions.Log_lock_unfold
-  Log_Assumptions.Log_unlock_unfold
-  Log_Assumptions.Log'ptr_Apply_unfold
-  Log_Assumptions.Log'ptr_BeginTxn_unfold
-  Log_Assumptions.Log'ptr_Commit_unfold
-  Log_Assumptions.Log'ptr_Read_unfold
-  Log_Assumptions.Log'ptr_Size_unfold
-  Log_Assumptions.Log'ptr_Write_unfold
-  Log_Assumptions.Log'ptr_lock_unfold
-  Log_Assumptions.Log'ptr_unlock_unfold
+attribute [instance] Log.TypeAssumptions.type_repr
+  Log.TypeAssumptions.underlying
+  Log.TypeAssumptions.get_d
+  Log.TypeAssumptions.set_d
+  Log.TypeAssumptions.get_l
+  Log.TypeAssumptions.set_l
+  Log.TypeAssumptions.get_cache
+  Log.TypeAssumptions.set_cache
+  Log.TypeAssumptions.get_length
+  Log.TypeAssumptions.set_length
+  Log.TypeAssumptions.Apply_unfold
+  Log.TypeAssumptions.BeginTxn_unfold
+  Log.TypeAssumptions.Commit_unfold
+  Log.TypeAssumptions.Read_unfold
+  Log.TypeAssumptions.Size_unfold
+  Log.TypeAssumptions.Write_unfold
+  Log.TypeAssumptions.lock_unfold
+  Log.TypeAssumptions.unlock_unfold
+  Log.TypeAssumptions.ptr_Apply_unfold
+  Log.TypeAssumptions.ptr_BeginTxn_unfold
+  Log.TypeAssumptions.ptr_Commit_unfold
+  Log.TypeAssumptions.ptr_Read_unfold
+  Log.TypeAssumptions.ptr_Size_unfold
+  Log.TypeAssumptions.ptr_Write_unfold
+  Log.TypeAssumptions.ptr_lock_unfold
+  Log.TypeAssumptions.ptr_unlock_unfold
 
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  unit_instance : unit_Assumptions
-  Editor_instance : Editor_Assumptions
-  Pair_instance : Pair_Assumptions
-  Uint32_instance : Uint32_Assumptions
-  geometryInterface_instance : geometryInterface_Assumptions
-  SquareStruct_instance : SquareStruct_Assumptions
-  NumStruct_instance : NumStruct_Assumptions
-  shapeInterface_instance : shapeInterface_Assumptions
-  polygonInterface_instance : polygonInterface_Assumptions
-  shapeStruct_instance : shapeStruct_Assumptions
-  polygonStruct_instance : polygonStruct_Assumptions
-  dogInterface_instance : dogInterface_Assumptions
-  catInterface_instance : catInterface_Assumptions
-  Puppy_instance : Puppy_Assumptions
-  Kitten_instance : Kitten_Assumptions
-  printInterface_instance : printInterface_Assumptions
-  PaperStruct_instance : PaperStruct_Assumptions
-  Flower_instance : Flower_Assumptions
-  Flora_instance : Flora_Assumptions
-  Lily_instance : Lily_Assumptions
-  Rose_instance : Rose_Assumptions
-  Daisy_instance : Daisy_Assumptions
-  LoopStruct_instance : LoopStruct_Assumptions
-  BoolTest_instance : BoolTest_Assumptions
-  ArrayEditor_instance : ArrayEditor_Assumptions
-  Bar_instance : Bar_Assumptions
-  Foo_instance : Foo_Assumptions
-  TwoInts_instance : TwoInts_Assumptions
-  S_instance : S_Assumptions
-  StructWrap_instance : StructWrap_Assumptions
-  StructWithFunc_instance : StructWithFunc_Assumptions
-  switchConcrete_instance : switchConcrete_Assumptions
-  switchInterface_instance : switchInterface_Assumptions
-  DefinedStr_instance : DefinedStr_Assumptions
-  List_instance : List_Assumptions
-  Log_instance : Log_Assumptions
-  findKey_unfold : FuncUnfold findKey [] «findKeyⁱᵐᵖˡ»
-  allocate_unfold : FuncUnfold allocate [] «allocateⁱᵐᵖˡ»
-  freeRange_unfold : FuncUnfold freeRange [] «freeRangeⁱᵐᵖˡ»
-  testAllocateDistinct_unfold : FuncUnfold testAllocateDistinct [] «testAllocateDistinctⁱᵐᵖˡ»
-  testAllocateFull_unfold : FuncUnfold testAllocateFull [] «testAllocateFullⁱᵐᵖˡ»
-  testExplicitBlockStmt_unfold : FuncUnfold testExplicitBlockStmt [] «testExplicitBlockStmtⁱᵐᵖˡ»
-  testMinUint64_unfold : FuncUnfold testMinUint64 [] «testMinUint64ⁱᵐᵖˡ»
-  testMaxUint64_unfold : FuncUnfold testMaxUint64 [] «testMaxUint64ⁱᵐᵖˡ»
-  adder_unfold : FuncUnfold adder [] «adderⁱᵐᵖˡ»
-  testClosureBasic_unfold : FuncUnfold testClosureBasic [] «testClosureBasicⁱᵐᵖˡ»
-  testCompareAll_unfold : FuncUnfold testCompareAll [] «testCompareAllⁱᵐᵖˡ»
-  testCompareGT_unfold : FuncUnfold testCompareGT [] «testCompareGTⁱᵐᵖˡ»
-  testCompareGE_unfold : FuncUnfold testCompareGE [] «testCompareGEⁱᵐᵖˡ»
-  testCompareLT_unfold : FuncUnfold testCompareLT [] «testCompareLTⁱᵐᵖˡ»
-  testCompareLE_unfold : FuncUnfold testCompareLE [] «testCompareLEⁱᵐᵖˡ»
-  literalCast_unfold : FuncUnfold literalCast [] «literalCastⁱᵐᵖˡ»
-  stringToByteSlice_unfold : FuncUnfold stringToByteSlice [] «stringToByteSliceⁱᵐᵖˡ»
-  byteSliceToString_unfold : FuncUnfold byteSliceToString [] «byteSliceToStringⁱᵐᵖˡ»
-  testByteSliceToString_unfold : FuncUnfold testByteSliceToString [] «testByteSliceToStringⁱᵐᵖˡ»
-  testCopySimple_unfold : FuncUnfold testCopySimple [] «testCopySimpleⁱᵐᵖˡ»
-  testCopyShorterDst_unfold : FuncUnfold testCopyShorterDst [] «testCopyShorterDstⁱᵐᵖˡ»
-  testCopyShorterSrc_unfold : FuncUnfold testCopyShorterSrc [] «testCopyShorterSrcⁱᵐᵖˡ»
-  deferSimple_unfold : FuncUnfold deferSimple [] «deferSimpleⁱᵐᵖˡ»
-  testDefer_unfold : FuncUnfold testDefer [] «testDeferⁱᵐᵖˡ»
-  testDeferFuncLit_unfold : FuncUnfold testDeferFuncLit [] «testDeferFuncLitⁱᵐᵖˡ»
-  FirstClassFunction_unfold : FuncUnfold FirstClassFunction [] «FirstClassFunctionⁱᵐᵖˡ»
-  ApplyF_unfold : FuncUnfold ApplyF [] «ApplyFⁱᵐᵖˡ»
-  testFirstClassFunction_unfold : FuncUnfold testFirstClassFunction [] «testFirstClassFunctionⁱᵐᵖˡ»
-  addFour64_unfold : FuncUnfold addFour64 [] «addFour64ⁱᵐᵖˡ»
-  failing_testFunctionOrdering_unfold : FuncUnfold failing_testFunctionOrdering [] «failing_testFunctionOrderingⁱᵐᵖˡ»
-  storeAndReturn_unfold : FuncUnfold storeAndReturn [] «storeAndReturnⁱᵐᵖˡ»
-  failing_testArgumentOrder_unfold : FuncUnfold failing_testArgumentOrder [] «failing_testArgumentOrderⁱᵐᵖˡ»
-  testU64ToU32_unfold : FuncUnfold testU64ToU32 [] «testU64ToU32ⁱᵐᵖˡ»
-  testU32ToU64_unfold : FuncUnfold testU32ToU64 [] «testU32ToU64ⁱᵐᵖˡ»
-  testU32Len_unfold : FuncUnfold testU32Len [] «testU32Lenⁱᵐᵖˡ»
-  testU32NewtypeLen_unfold : FuncUnfold testU32NewtypeLen [] «testU32NewtypeLenⁱᵐᵖˡ»
-  testUint32Untyped_unfold : FuncUnfold testUint32Untyped [] «testUint32Untypedⁱᵐᵖˡ»
-  measureArea_unfold : FuncUnfold measureArea [] «measureAreaⁱᵐᵖˡ»
-  measureVolumePlusNM_unfold : FuncUnfold measureVolumePlusNM [] «measureVolumePlusNMⁱᵐᵖˡ»
-  measureVolume_unfold : FuncUnfold measureVolume [] «measureVolumeⁱᵐᵖˡ»
-  testBasicInterface_unfold : FuncUnfold testBasicInterface [] «testBasicInterfaceⁱᵐᵖˡ»
-  testAssignInterface_unfold : FuncUnfold testAssignInterface [] «testAssignInterfaceⁱᵐᵖˡ»
-  testMultipleInterface_unfold : FuncUnfold testMultipleInterface [] «testMultipleInterfaceⁱᵐᵖˡ»
-  testBinaryExprInterface_unfold : FuncUnfold testBinaryExprInterface [] «testBinaryExprInterfaceⁱᵐᵖˡ»
-  testIfStmtInterface_unfold : FuncUnfold testIfStmtInterface [] «testIfStmtInterfaceⁱᵐᵖˡ»
-  testParamsInterface_unfold : FuncUnfold testParamsInterface [] «testParamsInterfaceⁱᵐᵖˡ»
-  testEmptyInterface_unfold : FuncUnfold testEmptyInterface [] «testEmptyInterfaceⁱᵐᵖˡ»
-  testStringInterface_unfold : FuncUnfold testStringInterface [] «testStringInterfaceⁱᵐᵖˡ»
-  testTypeAssertionInterface_unfold : FuncUnfold testTypeAssertionInterface [] «testTypeAssertionInterfaceⁱᵐᵖˡ»
-  testDoublePointerInterface_unfold : FuncUnfold testDoublePointerInterface [] «testDoublePointerInterfaceⁱᵐᵖˡ»
-  testMultipleFieldsInterface_unfold : FuncUnfold testMultipleFieldsInterface [] «testMultipleFieldsInterfaceⁱᵐᵖˡ»
-  testSharedFunctionsInterface_unfold : FuncUnfold testSharedFunctionsInterface [] «testSharedFunctionsInterfaceⁱᵐᵖˡ»
-  testAcceptAddressInterface_unfold : FuncUnfold testAcceptAddressInterface [] «testAcceptAddressInterfaceⁱᵐᵖˡ»
-  testPolymorphismInterface_unfold : FuncUnfold testPolymorphismInterface [] «testPolymorphismInterfaceⁱᵐᵖˡ»
-  testEmbeddingInterface_unfold : FuncUnfold testEmbeddingInterface [] «testEmbeddingInterfaceⁱᵐᵖˡ»
-  testDowncastInterface_unfold : FuncUnfold testDowncastInterface [] «testDowncastInterfaceⁱᵐᵖˡ»
-  testsUseLocks_unfold : FuncUnfold testsUseLocks [] «testsUseLocksⁱᵐᵖˡ»
-  standardForLoop_unfold : FuncUnfold standardForLoop [] «standardForLoopⁱᵐᵖˡ»
-  testStandardForLoop_unfold : FuncUnfold testStandardForLoop [] «testStandardForLoopⁱᵐᵖˡ»
-  testForLoopWait_unfold : FuncUnfold testForLoopWait [] «testForLoopWaitⁱᵐᵖˡ»
-  testBreakFromLoopWithContinue_unfold : FuncUnfold testBreakFromLoopWithContinue [] «testBreakFromLoopWithContinueⁱᵐᵖˡ»
-  testBreakFromLoopNoContinue_unfold : FuncUnfold testBreakFromLoopNoContinue [] «testBreakFromLoopNoContinueⁱᵐᵖˡ»
-  testBreakFromLoopNoContinueDouble_unfold : FuncUnfold testBreakFromLoopNoContinueDouble [] «testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ»
-  testBreakFromLoopForOnly_unfold : FuncUnfold testBreakFromLoopForOnly [] «testBreakFromLoopForOnlyⁱᵐᵖˡ»
-  testBreakFromLoopAssignAndContinue_unfold : FuncUnfold testBreakFromLoopAssignAndContinue [] «testBreakFromLoopAssignAndContinueⁱᵐᵖˡ»
-  testNestedLoops_unfold : FuncUnfold testNestedLoops [] «testNestedLoopsⁱᵐᵖˡ»
-  testNestedGoStyleLoops_unfold : FuncUnfold testNestedGoStyleLoops [] «testNestedGoStyleLoopsⁱᵐᵖˡ»
-  testNestedGoStyleLoopsNoComparison_unfold : FuncUnfold testNestedGoStyleLoopsNoComparison [] «testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ»
-  IterateMapKeys_unfold : FuncUnfold IterateMapKeys [] «IterateMapKeysⁱᵐᵖˡ»
-  IterateMapValues_unfold : FuncUnfold IterateMapValues [] «IterateMapValuesⁱᵐᵖˡ»
-  testIterateMap_unfold : FuncUnfold testIterateMap [] «testIterateMapⁱᵐᵖˡ»
-  testMapSize_unfold : FuncUnfold testMapSize [] «testMapSizeⁱᵐᵖˡ»
-  multReturnTwo_unfold : FuncUnfold multReturnTwo [] «multReturnTwoⁱᵐᵖˡ»
-  testAssignTwo_unfold : FuncUnfold testAssignTwo [] «testAssignTwoⁱᵐᵖˡ»
-  multReturnThree_unfold : FuncUnfold multReturnThree [] «multReturnThreeⁱᵐᵖˡ»
-  testAssignThree_unfold : FuncUnfold testAssignThree [] «testAssignThreeⁱᵐᵖˡ»
-  testMultipleAssignToMap_unfold : FuncUnfold testMultipleAssignToMap [] «testMultipleAssignToMapⁱᵐᵖˡ»
-  returnTwo_unfold : FuncUnfold returnTwo [] «returnTwoⁱᵐᵖˡ»
-  testReturnTwo_unfold : FuncUnfold testReturnTwo [] «testReturnTwoⁱᵐᵖˡ»
-  testAnonymousBinding_unfold : FuncUnfold testAnonymousBinding [] «testAnonymousBindingⁱᵐᵖˡ»
-  returnThree_unfold : FuncUnfold returnThree [] «returnThreeⁱᵐᵖˡ»
-  testReturnThree_unfold : FuncUnfold testReturnThree [] «testReturnThreeⁱᵐᵖˡ»
-  returnFour_unfold : FuncUnfold returnFour [] «returnFourⁱᵐᵖˡ»
-  testReturnFour_unfold : FuncUnfold testReturnFour [] «testReturnFourⁱᵐᵖˡ»
-  testNilDefault_unfold : FuncUnfold testNilDefault [] «testNilDefaultⁱᵐᵖˡ»
-  testNilVal_unfold : FuncUnfold testNilVal [] «testNilValⁱᵐᵖˡ»
-  testCompareSliceToNil_unfold : FuncUnfold testCompareSliceToNil [] «testCompareSliceToNilⁱᵐᵖˡ»
-  testComparePointerToNil_unfold : FuncUnfold testComparePointerToNil [] «testComparePointerToNilⁱᵐᵖˡ»
-  testCompareNilToNil_unfold : FuncUnfold testCompareNilToNil [] «testCompareNilToNilⁱᵐᵖˡ»
-  testComparePointerWrappedToNil_unfold : FuncUnfold testComparePointerWrappedToNil [] «testComparePointerWrappedToNilⁱᵐᵖˡ»
-  testComparePointerWrappedDefaultToNil_unfold : FuncUnfold testComparePointerWrappedDefaultToNil [] «testComparePointerWrappedDefaultToNilⁱᵐᵖˡ»
-  testInterfaceNilWithType_unfold : FuncUnfold testInterfaceNilWithType [] «testInterfaceNilWithTypeⁱᵐᵖˡ»
-  reverseAssignOps64_unfold : FuncUnfold reverseAssignOps64 [] «reverseAssignOps64ⁱᵐᵖˡ»
-  reverseAssignOps32_unfold : FuncUnfold reverseAssignOps32 [] «reverseAssignOps32ⁱᵐᵖˡ»
-  add64Equals_unfold : FuncUnfold add64Equals [] «add64Equalsⁱᵐᵖˡ»
-  sub64Equals_unfold : FuncUnfold sub64Equals [] «sub64Equalsⁱᵐᵖˡ»
-  testReverseAssignOps64_unfold : FuncUnfold testReverseAssignOps64 [] «testReverseAssignOps64ⁱᵐᵖˡ»
-  failing_testReverseAssignOps32_unfold : FuncUnfold failing_testReverseAssignOps32 [] «failing_testReverseAssignOps32ⁱᵐᵖˡ»
-  testAdd64Equals_unfold : FuncUnfold testAdd64Equals [] «testAdd64Equalsⁱᵐᵖˡ»
-  testSub64Equals_unfold : FuncUnfold testSub64Equals [] «testSub64Equalsⁱᵐᵖˡ»
-  testDivisionPrecedence_unfold : FuncUnfold testDivisionPrecedence [] «testDivisionPrecedenceⁱᵐᵖˡ»
-  testModPrecedence_unfold : FuncUnfold testModPrecedence [] «testModPrecedenceⁱᵐᵖˡ»
-  testBitwiseOpsPrecedence_unfold : FuncUnfold testBitwiseOpsPrecedence [] «testBitwiseOpsPrecedenceⁱᵐᵖˡ»
-  testArithmeticShifts_unfold : FuncUnfold testArithmeticShifts [] «testArithmeticShiftsⁱᵐᵖˡ»
-  testBitAddAnd_unfold : FuncUnfold testBitAddAnd [] «testBitAddAndⁱᵐᵖˡ»
-  testManyParentheses_unfold : FuncUnfold testManyParentheses [] «testManyParenthesesⁱᵐᵖˡ»
-  testPlusTimes_unfold : FuncUnfold testPlusTimes [] «testPlusTimesⁱᵐᵖˡ»
-  shouldPanic_unfold : FuncUnfold shouldPanic [] «shouldPanicⁱᵐᵖˡ»
-  testOrCompareSimple_unfold : FuncUnfold testOrCompareSimple [] «testOrCompareSimpleⁱᵐᵖˡ»
-  testOrCompare_unfold : FuncUnfold testOrCompare [] «testOrCompareⁱᵐᵖˡ»
-  testAndCompare_unfold : FuncUnfold testAndCompare [] «testAndCompareⁱᵐᵖˡ»
-  testShiftMod_unfold : FuncUnfold testShiftMod [] «testShiftModⁱᵐᵖˡ»
-  testLinearize_unfold : FuncUnfold testLinearize [] «testLinearizeⁱᵐᵖˡ»
-  CheckTrue_unfold : FuncUnfold CheckTrue [] «CheckTrueⁱᵐᵖˡ»
-  CheckFalse_unfold : FuncUnfold CheckFalse [] «CheckFalseⁱᵐᵖˡ»
-  testShortcircuitAndTF_unfold : FuncUnfold testShortcircuitAndTF [] «testShortcircuitAndTFⁱᵐᵖˡ»
-  testShortcircuitAndFT_unfold : FuncUnfold testShortcircuitAndFT [] «testShortcircuitAndFTⁱᵐᵖˡ»
-  testShortcircuitOrTF_unfold : FuncUnfold testShortcircuitOrTF [] «testShortcircuitOrTFⁱᵐᵖˡ»
-  testShortcircuitOrFT_unfold : FuncUnfold testShortcircuitOrFT [] «testShortcircuitOrFTⁱᵐᵖˡ»
-  testSliceOps_unfold : FuncUnfold testSliceOps [] «testSliceOpsⁱᵐᵖˡ»
-  testSliceCapacityOps_unfold : FuncUnfold testSliceCapacityOps [] «testSliceCapacityOpsⁱᵐᵖˡ»
-  testOverwriteArray_unfold : FuncUnfold testOverwriteArray [] «testOverwriteArrayⁱᵐᵖˡ»
-  testSliceLiteral_unfold : FuncUnfold testSliceLiteral [] «testSliceLiteralⁱᵐᵖˡ»
-  testSliceAppend_unfold : FuncUnfold testSliceAppend [] «testSliceAppendⁱᵐᵖˡ»
-  testSliceRef_unfold : FuncUnfold testSliceRef [] «testSliceRefⁱᵐᵖˡ»
-  testFooBarMutation_unfold : FuncUnfold testFooBarMutation [] «testFooBarMutationⁱᵐᵖˡ»
-  NewS_unfold : FuncUnfold NewS [] «NewSⁱᵐᵖˡ»
-  testStructUpdates_unfold : FuncUnfold testStructUpdates [] «testStructUpdatesⁱᵐᵖˡ»
-  testNestedStructUpdates_unfold : FuncUnfold testNestedStructUpdates [] «testNestedStructUpdatesⁱᵐᵖˡ»
-  testStructConstructions_unfold : FuncUnfold testStructConstructions [] «testStructConstructionsⁱᵐᵖˡ»
-  testIncompleteStruct_unfold : FuncUnfold testIncompleteStruct [] «testIncompleteStructⁱᵐᵖˡ»
-  testStoreInStructVar_unfold : FuncUnfold testStoreInStructVar [] «testStoreInStructVarⁱᵐᵖˡ»
-  testStoreInStructPointerVar_unfold : FuncUnfold testStoreInStructPointerVar [] «testStoreInStructPointerVarⁱᵐᵖˡ»
-  testStoreComposite_unfold : FuncUnfold testStoreComposite [] «testStoreCompositeⁱᵐᵖˡ»
-  testStoreSlice_unfold : FuncUnfold testStoreSlice [] «testStoreSliceⁱᵐᵖˡ»
-  testStructFieldFunc_unfold : FuncUnfold testStructFieldFunc [] «testStructFieldFuncⁱᵐᵖˡ»
-  testSwitchVal_unfold : FuncUnfold testSwitchVal [] «testSwitchValⁱᵐᵖˡ»
-  testSwitchMultiple_unfold : FuncUnfold testSwitchMultiple [] «testSwitchMultipleⁱᵐᵖˡ»
-  testSwitchDefaultTrue_unfold : FuncUnfold testSwitchDefaultTrue [] «testSwitchDefaultTrueⁱᵐᵖˡ»
-  testSwitchConversion_unfold : FuncUnfold testSwitchConversion [] «testSwitchConversionⁱᵐᵖˡ»
-  TypesEqual_unfold : ∀ (T U : go.GoType), FuncUnfold TypesEqual [T, U] («TypesEqualⁱᵐᵖˡ» T U)
-  testPrimitiveTypesEqual_unfold : FuncUnfold testPrimitiveTypesEqual [] «testPrimitiveTypesEqualⁱᵐᵖˡ»
-  testDefinedStrTypesEqual_unfold : FuncUnfold testDefinedStrTypesEqual [] «testDefinedStrTypesEqualⁱᵐᵖˡ»
-  testListTypesEqual_unfold : FuncUnfold testListTypesEqual [] «testListTypesEqualⁱᵐᵖˡ»
-  testPointerAssignment_unfold : FuncUnfold testPointerAssignment [] «testPointerAssignmentⁱᵐᵖˡ»
-  testAddressOfLocal_unfold : FuncUnfold testAddressOfLocal [] «testAddressOfLocalⁱᵐᵖˡ»
-  testAnonymousAssign_unfold : FuncUnfold testAnonymousAssign [] «testAnonymousAssignⁱᵐᵖˡ»
-  intToBlock_unfold : FuncUnfold intToBlock [] «intToBlockⁱᵐᵖˡ»
-  blockToInt_unfold : FuncUnfold blockToInt [] «blockToIntⁱᵐᵖˡ»
-  New_unfold : FuncUnfold New [] «Newⁱᵐᵖˡ»
-  getLogEntry_unfold : FuncUnfold getLogEntry [] «getLogEntryⁱᵐᵖˡ»
-  applyLog_unfold : FuncUnfold applyLog [] «applyLogⁱᵐᵖˡ»
-  clearLog_unfold : FuncUnfold clearLog [] «clearLogⁱᵐᵖˡ»
-  Open_unfold : FuncUnfold Open [] «Openⁱᵐᵖˡ»
-  disabled_testWal_unfold : FuncUnfold disabled_testWal [] «disabled_testWalⁱᵐᵖˡ»
+  unit_instance : unit.TypeAssumptions
+  Editor_instance : Editor.TypeAssumptions
+  Pair_instance : Pair.TypeAssumptions
+  Uint32_instance : Uint32.TypeAssumptions
+  geometryInterface_instance : geometryInterface.TypeAssumptions
+  SquareStruct_instance : SquareStruct.TypeAssumptions
+  NumStruct_instance : NumStruct.TypeAssumptions
+  shapeInterface_instance : shapeInterface.TypeAssumptions
+  polygonInterface_instance : polygonInterface.TypeAssumptions
+  shapeStruct_instance : shapeStruct.TypeAssumptions
+  polygonStruct_instance : polygonStruct.TypeAssumptions
+  dogInterface_instance : dogInterface.TypeAssumptions
+  catInterface_instance : catInterface.TypeAssumptions
+  Puppy_instance : Puppy.TypeAssumptions
+  Kitten_instance : Kitten.TypeAssumptions
+  printInterface_instance : printInterface.TypeAssumptions
+  PaperStruct_instance : PaperStruct.TypeAssumptions
+  Flower_instance : Flower.TypeAssumptions
+  Flora_instance : Flora.TypeAssumptions
+  Lily_instance : Lily.TypeAssumptions
+  Rose_instance : Rose.TypeAssumptions
+  Daisy_instance : Daisy.TypeAssumptions
+  LoopStruct_instance : LoopStruct.TypeAssumptions
+  BoolTest_instance : BoolTest.TypeAssumptions
+  ArrayEditor_instance : ArrayEditor.TypeAssumptions
+  Bar_instance : Bar.TypeAssumptions
+  Foo_instance : Foo.TypeAssumptions
+  TwoInts_instance : TwoInts.TypeAssumptions
+  S_instance : S.TypeAssumptions
+  StructWrap_instance : StructWrap.TypeAssumptions
+  StructWithFunc_instance : StructWithFunc.TypeAssumptions
+  switchConcrete_instance : switchConcrete.TypeAssumptions
+  switchInterface_instance : switchInterface.TypeAssumptions
+  DefinedStr_instance : DefinedStr.TypeAssumptions
+  List_instance : List.TypeAssumptions
+  Log_instance : Log.TypeAssumptions
+  findKey_unfold : FuncUnfold findKey [] findKey.impl
+  allocate_unfold : FuncUnfold allocate [] allocate.impl
+  freeRange_unfold : FuncUnfold freeRange [] freeRange.impl
+  testAllocateDistinct_unfold : FuncUnfold testAllocateDistinct [] testAllocateDistinct.impl
+  testAllocateFull_unfold : FuncUnfold testAllocateFull [] testAllocateFull.impl
+  testExplicitBlockStmt_unfold : FuncUnfold testExplicitBlockStmt [] testExplicitBlockStmt.impl
+  testMinUint64_unfold : FuncUnfold testMinUint64 [] testMinUint64.impl
+  testMaxUint64_unfold : FuncUnfold testMaxUint64 [] testMaxUint64.impl
+  adder_unfold : FuncUnfold adder [] adder.impl
+  testClosureBasic_unfold : FuncUnfold testClosureBasic [] testClosureBasic.impl
+  testCompareAll_unfold : FuncUnfold testCompareAll [] testCompareAll.impl
+  testCompareGT_unfold : FuncUnfold testCompareGT [] testCompareGT.impl
+  testCompareGE_unfold : FuncUnfold testCompareGE [] testCompareGE.impl
+  testCompareLT_unfold : FuncUnfold testCompareLT [] testCompareLT.impl
+  testCompareLE_unfold : FuncUnfold testCompareLE [] testCompareLE.impl
+  literalCast_unfold : FuncUnfold literalCast [] literalCast.impl
+  stringToByteSlice_unfold : FuncUnfold stringToByteSlice [] stringToByteSlice.impl
+  byteSliceToString_unfold : FuncUnfold byteSliceToString [] byteSliceToString.impl
+  testByteSliceToString_unfold : FuncUnfold testByteSliceToString [] testByteSliceToString.impl
+  testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
+  testCopyShorterDst_unfold : FuncUnfold testCopyShorterDst [] testCopyShorterDst.impl
+  testCopyShorterSrc_unfold : FuncUnfold testCopyShorterSrc [] testCopyShorterSrc.impl
+  deferSimple_unfold : FuncUnfold deferSimple [] deferSimple.impl
+  testDefer_unfold : FuncUnfold testDefer [] testDefer.impl
+  testDeferFuncLit_unfold : FuncUnfold testDeferFuncLit [] testDeferFuncLit.impl
+  FirstClassFunction_unfold : FuncUnfold FirstClassFunction [] FirstClassFunction.impl
+  ApplyF_unfold : FuncUnfold ApplyF [] ApplyF.impl
+  testFirstClassFunction_unfold : FuncUnfold testFirstClassFunction [] testFirstClassFunction.impl
+  addFour64_unfold : FuncUnfold addFour64 [] addFour64.impl
+  failing_testFunctionOrdering_unfold : FuncUnfold failing_testFunctionOrdering [] failing_testFunctionOrdering.impl
+  storeAndReturn_unfold : FuncUnfold storeAndReturn [] storeAndReturn.impl
+  failing_testArgumentOrder_unfold : FuncUnfold failing_testArgumentOrder [] failing_testArgumentOrder.impl
+  testU64ToU32_unfold : FuncUnfold testU64ToU32 [] testU64ToU32.impl
+  testU32ToU64_unfold : FuncUnfold testU32ToU64 [] testU32ToU64.impl
+  testU32Len_unfold : FuncUnfold testU32Len [] testU32Len.impl
+  testU32NewtypeLen_unfold : FuncUnfold testU32NewtypeLen [] testU32NewtypeLen.impl
+  testUint32Untyped_unfold : FuncUnfold testUint32Untyped [] testUint32Untyped.impl
+  measureArea_unfold : FuncUnfold measureArea [] measureArea.impl
+  measureVolumePlusNM_unfold : FuncUnfold measureVolumePlusNM [] measureVolumePlusNM.impl
+  measureVolume_unfold : FuncUnfold measureVolume [] measureVolume.impl
+  testBasicInterface_unfold : FuncUnfold testBasicInterface [] testBasicInterface.impl
+  testAssignInterface_unfold : FuncUnfold testAssignInterface [] testAssignInterface.impl
+  testMultipleInterface_unfold : FuncUnfold testMultipleInterface [] testMultipleInterface.impl
+  testBinaryExprInterface_unfold : FuncUnfold testBinaryExprInterface [] testBinaryExprInterface.impl
+  testIfStmtInterface_unfold : FuncUnfold testIfStmtInterface [] testIfStmtInterface.impl
+  testParamsInterface_unfold : FuncUnfold testParamsInterface [] testParamsInterface.impl
+  testEmptyInterface_unfold : FuncUnfold testEmptyInterface [] testEmptyInterface.impl
+  testStringInterface_unfold : FuncUnfold testStringInterface [] testStringInterface.impl
+  testTypeAssertionInterface_unfold : FuncUnfold testTypeAssertionInterface [] testTypeAssertionInterface.impl
+  testDoublePointerInterface_unfold : FuncUnfold testDoublePointerInterface [] testDoublePointerInterface.impl
+  testMultipleFieldsInterface_unfold : FuncUnfold testMultipleFieldsInterface [] testMultipleFieldsInterface.impl
+  testSharedFunctionsInterface_unfold : FuncUnfold testSharedFunctionsInterface [] testSharedFunctionsInterface.impl
+  testAcceptAddressInterface_unfold : FuncUnfold testAcceptAddressInterface [] testAcceptAddressInterface.impl
+  testPolymorphismInterface_unfold : FuncUnfold testPolymorphismInterface [] testPolymorphismInterface.impl
+  testEmbeddingInterface_unfold : FuncUnfold testEmbeddingInterface [] testEmbeddingInterface.impl
+  testDowncastInterface_unfold : FuncUnfold testDowncastInterface [] testDowncastInterface.impl
+  testsUseLocks_unfold : FuncUnfold testsUseLocks [] testsUseLocks.impl
+  standardForLoop_unfold : FuncUnfold standardForLoop [] standardForLoop.impl
+  testStandardForLoop_unfold : FuncUnfold testStandardForLoop [] testStandardForLoop.impl
+  testForLoopWait_unfold : FuncUnfold testForLoopWait [] testForLoopWait.impl
+  testBreakFromLoopWithContinue_unfold : FuncUnfold testBreakFromLoopWithContinue [] testBreakFromLoopWithContinue.impl
+  testBreakFromLoopNoContinue_unfold : FuncUnfold testBreakFromLoopNoContinue [] testBreakFromLoopNoContinue.impl
+  testBreakFromLoopNoContinueDouble_unfold : FuncUnfold testBreakFromLoopNoContinueDouble [] testBreakFromLoopNoContinueDouble.impl
+  testBreakFromLoopForOnly_unfold : FuncUnfold testBreakFromLoopForOnly [] testBreakFromLoopForOnly.impl
+  testBreakFromLoopAssignAndContinue_unfold : FuncUnfold testBreakFromLoopAssignAndContinue [] testBreakFromLoopAssignAndContinue.impl
+  testNestedLoops_unfold : FuncUnfold testNestedLoops [] testNestedLoops.impl
+  testNestedGoStyleLoops_unfold : FuncUnfold testNestedGoStyleLoops [] testNestedGoStyleLoops.impl
+  testNestedGoStyleLoopsNoComparison_unfold : FuncUnfold testNestedGoStyleLoopsNoComparison [] testNestedGoStyleLoopsNoComparison.impl
+  IterateMapKeys_unfold : FuncUnfold IterateMapKeys [] IterateMapKeys.impl
+  IterateMapValues_unfold : FuncUnfold IterateMapValues [] IterateMapValues.impl
+  testIterateMap_unfold : FuncUnfold testIterateMap [] testIterateMap.impl
+  testMapSize_unfold : FuncUnfold testMapSize [] testMapSize.impl
+  multReturnTwo_unfold : FuncUnfold multReturnTwo [] multReturnTwo.impl
+  testAssignTwo_unfold : FuncUnfold testAssignTwo [] testAssignTwo.impl
+  multReturnThree_unfold : FuncUnfold multReturnThree [] multReturnThree.impl
+  testAssignThree_unfold : FuncUnfold testAssignThree [] testAssignThree.impl
+  testMultipleAssignToMap_unfold : FuncUnfold testMultipleAssignToMap [] testMultipleAssignToMap.impl
+  returnTwo_unfold : FuncUnfold returnTwo [] returnTwo.impl
+  testReturnTwo_unfold : FuncUnfold testReturnTwo [] testReturnTwo.impl
+  testAnonymousBinding_unfold : FuncUnfold testAnonymousBinding [] testAnonymousBinding.impl
+  returnThree_unfold : FuncUnfold returnThree [] returnThree.impl
+  testReturnThree_unfold : FuncUnfold testReturnThree [] testReturnThree.impl
+  returnFour_unfold : FuncUnfold returnFour [] returnFour.impl
+  testReturnFour_unfold : FuncUnfold testReturnFour [] testReturnFour.impl
+  testNilDefault_unfold : FuncUnfold testNilDefault [] testNilDefault.impl
+  testNilVal_unfold : FuncUnfold testNilVal [] testNilVal.impl
+  testCompareSliceToNil_unfold : FuncUnfold testCompareSliceToNil [] testCompareSliceToNil.impl
+  testComparePointerToNil_unfold : FuncUnfold testComparePointerToNil [] testComparePointerToNil.impl
+  testCompareNilToNil_unfold : FuncUnfold testCompareNilToNil [] testCompareNilToNil.impl
+  testComparePointerWrappedToNil_unfold : FuncUnfold testComparePointerWrappedToNil [] testComparePointerWrappedToNil.impl
+  testComparePointerWrappedDefaultToNil_unfold : FuncUnfold testComparePointerWrappedDefaultToNil [] testComparePointerWrappedDefaultToNil.impl
+  testInterfaceNilWithType_unfold : FuncUnfold testInterfaceNilWithType [] testInterfaceNilWithType.impl
+  reverseAssignOps64_unfold : FuncUnfold reverseAssignOps64 [] reverseAssignOps64.impl
+  reverseAssignOps32_unfold : FuncUnfold reverseAssignOps32 [] reverseAssignOps32.impl
+  add64Equals_unfold : FuncUnfold add64Equals [] add64Equals.impl
+  sub64Equals_unfold : FuncUnfold sub64Equals [] sub64Equals.impl
+  testReverseAssignOps64_unfold : FuncUnfold testReverseAssignOps64 [] testReverseAssignOps64.impl
+  failing_testReverseAssignOps32_unfold : FuncUnfold failing_testReverseAssignOps32 [] failing_testReverseAssignOps32.impl
+  testAdd64Equals_unfold : FuncUnfold testAdd64Equals [] testAdd64Equals.impl
+  testSub64Equals_unfold : FuncUnfold testSub64Equals [] testSub64Equals.impl
+  testDivisionPrecedence_unfold : FuncUnfold testDivisionPrecedence [] testDivisionPrecedence.impl
+  testModPrecedence_unfold : FuncUnfold testModPrecedence [] testModPrecedence.impl
+  testBitwiseOpsPrecedence_unfold : FuncUnfold testBitwiseOpsPrecedence [] testBitwiseOpsPrecedence.impl
+  testArithmeticShifts_unfold : FuncUnfold testArithmeticShifts [] testArithmeticShifts.impl
+  testBitAddAnd_unfold : FuncUnfold testBitAddAnd [] testBitAddAnd.impl
+  testManyParentheses_unfold : FuncUnfold testManyParentheses [] testManyParentheses.impl
+  testPlusTimes_unfold : FuncUnfold testPlusTimes [] testPlusTimes.impl
+  shouldPanic_unfold : FuncUnfold shouldPanic [] shouldPanic.impl
+  testOrCompareSimple_unfold : FuncUnfold testOrCompareSimple [] testOrCompareSimple.impl
+  testOrCompare_unfold : FuncUnfold testOrCompare [] testOrCompare.impl
+  testAndCompare_unfold : FuncUnfold testAndCompare [] testAndCompare.impl
+  testShiftMod_unfold : FuncUnfold testShiftMod [] testShiftMod.impl
+  testLinearize_unfold : FuncUnfold testLinearize [] testLinearize.impl
+  CheckTrue_unfold : FuncUnfold CheckTrue [] CheckTrue.impl
+  CheckFalse_unfold : FuncUnfold CheckFalse [] CheckFalse.impl
+  testShortcircuitAndTF_unfold : FuncUnfold testShortcircuitAndTF [] testShortcircuitAndTF.impl
+  testShortcircuitAndFT_unfold : FuncUnfold testShortcircuitAndFT [] testShortcircuitAndFT.impl
+  testShortcircuitOrTF_unfold : FuncUnfold testShortcircuitOrTF [] testShortcircuitOrTF.impl
+  testShortcircuitOrFT_unfold : FuncUnfold testShortcircuitOrFT [] testShortcircuitOrFT.impl
+  testSliceOps_unfold : FuncUnfold testSliceOps [] testSliceOps.impl
+  testSliceCapacityOps_unfold : FuncUnfold testSliceCapacityOps [] testSliceCapacityOps.impl
+  testOverwriteArray_unfold : FuncUnfold testOverwriteArray [] testOverwriteArray.impl
+  testSliceLiteral_unfold : FuncUnfold testSliceLiteral [] testSliceLiteral.impl
+  testSliceAppend_unfold : FuncUnfold testSliceAppend [] testSliceAppend.impl
+  testSliceRef_unfold : FuncUnfold testSliceRef [] testSliceRef.impl
+  testFooBarMutation_unfold : FuncUnfold testFooBarMutation [] testFooBarMutation.impl
+  NewS_unfold : FuncUnfold NewS [] NewS.impl
+  testStructUpdates_unfold : FuncUnfold testStructUpdates [] testStructUpdates.impl
+  testNestedStructUpdates_unfold : FuncUnfold testNestedStructUpdates [] testNestedStructUpdates.impl
+  testStructConstructions_unfold : FuncUnfold testStructConstructions [] testStructConstructions.impl
+  testIncompleteStruct_unfold : FuncUnfold testIncompleteStruct [] testIncompleteStruct.impl
+  testStoreInStructVar_unfold : FuncUnfold testStoreInStructVar [] testStoreInStructVar.impl
+  testStoreInStructPointerVar_unfold : FuncUnfold testStoreInStructPointerVar [] testStoreInStructPointerVar.impl
+  testStoreComposite_unfold : FuncUnfold testStoreComposite [] testStoreComposite.impl
+  testStoreSlice_unfold : FuncUnfold testStoreSlice [] testStoreSlice.impl
+  testStructFieldFunc_unfold : FuncUnfold testStructFieldFunc [] testStructFieldFunc.impl
+  testSwitchVal_unfold : FuncUnfold testSwitchVal [] testSwitchVal.impl
+  testSwitchMultiple_unfold : FuncUnfold testSwitchMultiple [] testSwitchMultiple.impl
+  testSwitchDefaultTrue_unfold : FuncUnfold testSwitchDefaultTrue [] testSwitchDefaultTrue.impl
+  testSwitchConversion_unfold : FuncUnfold testSwitchConversion [] testSwitchConversion.impl
+  TypesEqual_unfold : ∀ (T U : go.GoType), FuncUnfold TypesEqual [T, U] (TypesEqual.impl T U)
+  testPrimitiveTypesEqual_unfold : FuncUnfold testPrimitiveTypesEqual [] testPrimitiveTypesEqual.impl
+  testDefinedStrTypesEqual_unfold : FuncUnfold testDefinedStrTypesEqual [] testDefinedStrTypesEqual.impl
+  testListTypesEqual_unfold : FuncUnfold testListTypesEqual [] testListTypesEqual.impl
+  testPointerAssignment_unfold : FuncUnfold testPointerAssignment [] testPointerAssignment.impl
+  testAddressOfLocal_unfold : FuncUnfold testAddressOfLocal [] testAddressOfLocal.impl
+  testAnonymousAssign_unfold : FuncUnfold testAnonymousAssign [] testAnonymousAssign.impl
+  intToBlock_unfold : FuncUnfold intToBlock [] intToBlock.impl
+  blockToInt_unfold : FuncUnfold blockToInt [] blockToInt.impl
+  New_unfold : FuncUnfold New [] New.impl
+  getLogEntry_unfold : FuncUnfold getLogEntry [] getLogEntry.impl
+  applyLog_unfold : FuncUnfold applyLog [] applyLog.impl
+  clearLog_unfold : FuncUnfold clearLog [] clearLog.impl
+  Open_unfold : FuncUnfold Open [] Open.impl
+  disabled_testWal_unfold : FuncUnfold disabled_testWal [] disabled_testWal.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
   import_binary_Assumption : _root_.Perennial.encoding.binary.Assumptions

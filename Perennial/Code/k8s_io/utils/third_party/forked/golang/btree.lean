@@ -139,7 +139,7 @@ noncomputable def empty [FfiSyntax] [GoGlobalContext] : GoString :=
     size is the maximum size of the returned free list.
 
     go: btree.go:77:6 -/
-noncomputable def «NewFreeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def NewFreeList.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "size"
   (App (Val exceptionDo)
   (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (Var "size"))
@@ -148,7 +148,7 @@ noncomputable def «NewFreeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : 
   (App (Val (GoInstruction (CompositeLiteral (FreeList T)))) (LiteralValue [(KeyedElement (some (KeyField go!"freelist")) (ElementExpression (go.GoType.SliceType (go.GoType.PointerType (node T))) (Var "$v0")))]))))))))
 
 /-- go: btree.go:81:23 -/
-noncomputable def «FreeList__newNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def FreeList.newNode.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "f"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -192,7 +192,7 @@ noncomputable def «FreeList__newNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f")))) (Val #())))))))))
 
 /-- go: btree.go:95:23 -/
-noncomputable def «FreeList__freeNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def FreeList.freeNode.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "f"
   (Lam "n"
   (App (Val exceptionDo)
@@ -227,7 +227,7 @@ noncomputable def «FreeList__freeNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
 /-- Less returns a default LessFunc that uses the '<' operator for types that support it.
 
     go: btree.go:111:6 -/
-noncomputable def «Lessⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Less.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -242,7 +242,7 @@ noncomputable def «Lessⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoTy
 /-- NewOrdered creates a new B-Tree for ordered types.
 
     go: btree.go:116:6 -/
-noncomputable def «NewOrderedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def NewOrdered.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "degree"
   (App (Val exceptionDo)
   (Let "degree" (App (Val (GoInstruction (GoAlloc go.int))) (Var "degree"))
@@ -259,7 +259,7 @@ noncomputable def «NewOrderedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
     The passed-in LessFunc determines how objects of type T are ordered.
 
     go: btree.go:126:6 -/
-noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def New.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "degree"
   (Lam "less"
   (App (Val exceptionDo)
@@ -275,7 +275,7 @@ noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
 /-- NewWithFreeList creates a new B-Tree that uses the given node free list.
 
     go: btree.go:131:6 -/
-noncomputable def «NewWithFreeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def NewWithFreeList.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "degree"
   (Lam "less"
   (Lam "f"
@@ -301,7 +301,7 @@ noncomputable def «NewWithFreeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
     forward.
 
     go: btree.go:146:20 -/
-noncomputable def «items__insertAtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def items.insertAt.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam "index"
   (Lam "item"
@@ -339,7 +339,7 @@ noncomputable def «items__insertAtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
     back.
 
     go: btree.go:157:20 -/
-noncomputable def «items__removeAtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def items.removeAt.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam "index"
   (App (Val exceptionDo)
@@ -375,7 +375,7 @@ noncomputable def «items__removeAtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
 /-- pop removes and returns the last element in the list.
 
     go: btree.go:167:20 -/
-noncomputable def «items__popⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def items.pop.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -408,7 +408,7 @@ noncomputable def «items__popⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
     first index items. index must be less than or equal to length.
 
     go: btree.go:178:20 -/
-noncomputable def «items__truncateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def items.truncate.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam "index"
   (App (Val exceptionDo)
@@ -449,7 +449,7 @@ noncomputable def «items__truncateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
     index.
 
     go: btree.go:190:19 -/
-noncomputable def «items__findⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def items.find.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam "item"
   (Lam "less"
@@ -485,7 +485,7 @@ noncomputable def «items__findⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : 
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))))))
 
 /-- go: btree.go:211:19 -/
-noncomputable def «node__mutableForⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.mutableFor.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "cow"
   (App (Val exceptionDo)
@@ -544,7 +544,7 @@ noncomputable def «node__mutableForⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (Val #())))))))))
 
 /-- go: btree.go:232:19 -/
-noncomputable def «node__mutableChildⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.mutableChild.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "i"
   (App (Val exceptionDo)
@@ -568,7 +568,7 @@ noncomputable def «node__mutableChildⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
     containing all items/children after it.
 
     go: btree.go:241:19 -/
-noncomputable def «node__splitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.split.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "i"
   (App (Val exceptionDo)
@@ -617,7 +617,7 @@ noncomputable def «node__splitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : 
     Returns whether or not a split occurred.
 
     go: btree.go:255:19 -/
-noncomputable def «node__maybeSplitChildⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.maybeSplitChild.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "i"
   (Lam "maxItems"
@@ -670,7 +670,7 @@ noncomputable def «node__maybeSplitChildⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     be found/replaced by insert, it will be returned.
 
     go: btree.go:269:19 -/
-noncomputable def «node__insertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.insert.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "item"
   (Lam "maxItems"
@@ -767,7 +767,7 @@ noncomputable def «node__insertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T :
 /-- get finds the given key in the subtree and returns it.
 
     go: btree.go:297:19 -/
-noncomputable def «node__getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.get.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "key"
   (App (Val exceptionDo)
@@ -810,7 +810,7 @@ noncomputable def «node__getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go
 /-- min returns the first item in the subtree.
 
     go: btree.go:308:6 -/
-noncomputable def «minⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def min.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (App (Val exceptionDo)
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -844,7 +844,7 @@ noncomputable def «minⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
 /-- max returns the last item in the subtree.
 
     go: btree.go:322:6 -/
-noncomputable def «maxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def max.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (App (Val exceptionDo)
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -880,7 +880,7 @@ noncomputable def «maxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
 /-- remove removes an item from the subtree rooted at this node.
 
     go: btree.go:345:19 -/
-noncomputable def «node__removeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.remove.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "item"
   (Lam "minItems"
@@ -1031,7 +1031,7 @@ noncomputable def «node__removeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T :
     that we hit case A.
 
     go: btree.go:418:19 -/
-noncomputable def «node__growChildAndRemoveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.growChildAndRemove.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "i"
   (Lam "item"
@@ -1180,7 +1180,7 @@ noncomputable def «node__growChildAndRemoveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
   (Val #()))))))))))))))))))
 
 /-- go: btree.go:467:6 -/
-noncomputable def «optionalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def optional.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "item"
   (App (Val exceptionDo)
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
@@ -1190,7 +1190,7 @@ noncomputable def «optionalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.
   (App (Val (GoInstruction (CompositeLiteral (optionalItem T)))) (LiteralValue [(KeyedElement (some (KeyField go!"item")) (ElementExpression T (Var "$v0"))), (KeyedElement (some (KeyField go!"valid")) (ElementExpression go.bool (Var "$v1")))]))))))))
 
 /-- go: btree.go:470:6 -/
-noncomputable def «emptyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def empty.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -1205,7 +1205,7 @@ noncomputable def «emptyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoT
     "greaterThan" or "lessThan" queries.
 
     go: btree.go:481:19 -/
-noncomputable def «node__iterateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.iterate.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "dir"
   (Lam "start"
@@ -1476,7 +1476,7 @@ noncomputable def «node__iterateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T 
     the original performance characteristics of the original tree.
 
     go: btree.go:597:20 -/
-noncomputable def «BTree__Cloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Clone.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1511,7 +1511,7 @@ noncomputable def «BTree__Cloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T :
 /-- maxItems returns the max number of items to allow per node.
 
     go: btree.go:611:20 -/
-noncomputable def «BTree__maxItemsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.maxItems.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1523,7 +1523,7 @@ noncomputable def «BTree__maxItemsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
     root node).
 
     go: btree.go:617:20 -/
-noncomputable def «BTree__minItemsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.minItems.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1532,7 +1532,7 @@ noncomputable def «BTree__minItemsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
   (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"degree"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1)))))))))
 
 /-- go: btree.go:621:33 -/
-noncomputable def «copyOnWriteContext__newNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def copyOnWriteContext.newNode.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1554,7 +1554,7 @@ noncomputable def «copyOnWriteContext__newNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     documentation).
 
     go: btree.go:638:33 -/
-noncomputable def «copyOnWriteContext__freeNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def copyOnWriteContext.freeNode.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "n"
   (App (Val exceptionDo)
@@ -1595,7 +1595,7 @@ noncomputable def «copyOnWriteContext__freeNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlo
     nil cannot be added to the tree (will panic).
 
     go: btree.go:657:20 -/
-noncomputable def «BTree__ReplaceOrInsertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.ReplaceOrInsert.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "item"
   (App (Val exceptionDo)
@@ -1698,7 +1698,7 @@ noncomputable def «BTree__ReplaceOrInsertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
     it.  If no such item exists, returns (zeroValue, false).
 
     go: btree.go:681:20 -/
-noncomputable def «BTree__Deleteⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Delete.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "item"
   (App (Val exceptionDo)
@@ -1716,7 +1716,7 @@ noncomputable def «BTree__Deleteⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T 
     If no such item exists, returns (zeroValue, false).
 
     go: btree.go:687:20 -/
-noncomputable def «BTree__DeleteMinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.DeleteMin.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1734,7 +1734,7 @@ noncomputable def «BTree__DeleteMinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     If no such item exists, returns (zeroValue, false).
 
     go: btree.go:694:20 -/
-noncomputable def «BTree__DeleteMaxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.DeleteMax.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1749,7 +1749,7 @@ noncomputable def «BTree__DeleteMaxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (Pair (Var "$ret0") (Var "$ret1")))))))))))
 
 /-- go: btree.go:699:20 -/
-noncomputable def «BTree__deleteItemⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.deleteItem.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "item"
   (Lam "typ"
@@ -1818,7 +1818,7 @@ noncomputable def «BTree__deleteItemⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
     [greaterOrEqual, lessThan), until iterator returns false.
 
     go: btree.go:718:20 -/
-noncomputable def «BTree__AscendRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.AscendRange.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "greaterOrEqual"
   (Lam "lessThan"
@@ -1852,7 +1852,7 @@ noncomputable def «BTree__AscendRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
     [first, pivot), until iterator returns false.
 
     go: btree.go:727:20 -/
-noncomputable def «BTree__AscendLessThanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.AscendLessThan.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
@@ -1883,7 +1883,7 @@ noncomputable def «BTree__AscendLessThanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     the range [pivot, last], until iterator returns false.
 
     go: btree.go:736:20 -/
-noncomputable def «BTree__AscendGreaterOrEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.AscendGreaterOrEqual.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
@@ -1914,7 +1914,7 @@ noncomputable def «BTree__AscendGreaterOrEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     [first, last], until iterator returns false.
 
     go: btree.go:745:20 -/
-noncomputable def «BTree__Ascendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Ascend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "iterator"
   (App (Val exceptionDo)
@@ -1942,7 +1942,7 @@ noncomputable def «BTree__Ascendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T 
     [lessOrEqual, greaterThan), until iterator returns false.
 
     go: btree.go:754:20 -/
-noncomputable def «BTree__DescendRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.DescendRange.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "lessOrEqual"
   (Lam "greaterThan"
@@ -1976,7 +1976,7 @@ noncomputable def «BTree__DescendRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
     [pivot, first], until iterator returns false.
 
     go: btree.go:763:20 -/
-noncomputable def «BTree__DescendLessOrEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.DescendLessOrEqual.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
@@ -2007,7 +2007,7 @@ noncomputable def «BTree__DescendLessOrEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
     the range [last, pivot), until iterator returns false.
 
     go: btree.go:772:20 -/
-noncomputable def «BTree__DescendGreaterThanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.DescendGreaterThan.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
@@ -2038,7 +2038,7 @@ noncomputable def «BTree__DescendGreaterThanⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
     [last, first], until iterator returns false.
 
     go: btree.go:781:20 -/
-noncomputable def «BTree__Descendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Descend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "iterator"
   (App (Val exceptionDo)
@@ -2066,7 +2066,7 @@ noncomputable def «BTree__Descendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T
     (zeroValue, false) if unable to find that item.
 
     go: btree.go:790:20 -/
-noncomputable def «BTree__Getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Get.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "key"
   (App (Val exceptionDo)
@@ -2090,7 +2090,7 @@ noncomputable def «BTree__Getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
 /-- Min returns the smallest item in the tree, or (zeroValue, false) if the tree is empty.
 
     go: btree.go:798:20 -/
-noncomputable def «BTree__Minⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Min.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2107,7 +2107,7 @@ noncomputable def «BTree__Minⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
 /-- Max returns the largest item in the tree, or (zeroValue, false) if the tree is empty.
 
     go: btree.go:803:20 -/
-noncomputable def «BTree__Maxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Max.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2124,7 +2124,7 @@ noncomputable def «BTree__Maxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
 /-- Has returns true if the given key is in the tree.
 
     go: btree.go:808:20 -/
-noncomputable def «BTree__Hasⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Has.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "key"
   (App (Val exceptionDo)
@@ -2149,7 +2149,7 @@ noncomputable def «BTree__Hasⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
 /-- Len returns the number of items currently in the tree.
 
     go: btree.go:814:20 -/
-noncomputable def «BTree__Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2180,7 +2180,7 @@ noncomputable def «BTree__Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
     	    ownership, none are.
 
     go: btree.go:839:20 -/
-noncomputable def «BTree__Clearⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def BTree.Clear.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "addNodesToFreelist"
   (App (Val exceptionDo)
@@ -2209,7 +2209,7 @@ noncomputable def «BTree__Clearⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T :
     freelist up.  Returns true if parent reset call should continue.
 
     go: btree.go:849:19 -/
-noncomputable def «node__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def node.reset.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "c"
   (App (Val exceptionDo)
@@ -2263,75 +2263,75 @@ instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end FreeList
 
-@[reducible] def FreeList'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] def FreeList.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"freelist" (go.GoType.SliceType (go.GoType.PointerType (node T))))]
 
-@[irreducible] def FreeList'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (FreeList'fds_unsealed T)
+@[irreducible] def FreeList.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (FreeList.fieldsUnsealed T)
 
 instance equals_unfold_FreeList [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (FreeList'fds T) (FreeList'fds_unsealed T) :=
-  ⟨by unfold FreeList'fds; rfl⟩
+    EqualsUnfold (FreeList.fields T) (FreeList.fieldsUnsealed T) :=
+  ⟨by unfold FreeList.fields; rfl⟩
 
-@[reducible] def «FreeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (FreeList'fds T))
+@[reducible] def FreeList.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (FreeList.fields T))
 
-class FreeList_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  FreeList_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («FreeListⁱᵐᵖˡ» T) (FreeList.t T')
-  FreeList_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (FreeList T) («FreeListⁱᵐᵖˡ» T)
-  FreeList_get_mu : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («FreeListⁱᵐᵖˡ» T) go!"mu") #x (Val #(x.mu'))
-  FreeList_set_mu : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet («FreeListⁱᵐᵖˡ» T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (FreeList.t T'))))
-  FreeList_get_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («FreeListⁱᵐᵖˡ» T) go!"freelist") #x (Val #(x.freelist'))
-  FreeList_set_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet («FreeListⁱᵐᵖˡ» T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (FreeList.t T'))))
-  FreeList'ptr_freeNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (FreeList T)) go!"freeNode" («FreeList__freeNodeⁱᵐᵖˡ» T)
-  FreeList'ptr_newNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (FreeList T)) go!"newNode" («FreeList__newNodeⁱᵐᵖˡ» T)
+class FreeList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (FreeList.underlying T) (FreeList.t T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (FreeList T) (FreeList.underlying T)
+  get_mu : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (FreeList.underlying T) go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet (FreeList.underlying T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (FreeList.t T'))))
+  get_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (FreeList.underlying T) go!"freelist") #x (Val #(x.freelist'))
+  set_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet (FreeList.underlying T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (FreeList.t T'))))
+  ptr_freeNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (FreeList T)) go!"freeNode" (FreeList.freeNode.impl T)
+  ptr_newNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (FreeList T)) go!"newNode" (FreeList.newNode.impl T)
 
-attribute [instance] FreeList_Assumptions.FreeList_type_repr
-  FreeList_Assumptions.FreeList_underlying
-  FreeList_Assumptions.FreeList_get_mu
-  FreeList_Assumptions.FreeList_set_mu
-  FreeList_Assumptions.FreeList_get_freelist
-  FreeList_Assumptions.FreeList_set_freelist
-  FreeList_Assumptions.FreeList'ptr_freeNode_unfold
-  FreeList_Assumptions.FreeList'ptr_newNode_unfold
+attribute [instance] FreeList.TypeAssumptions.type_repr
+  FreeList.TypeAssumptions.underlying
+  FreeList.TypeAssumptions.get_mu
+  FreeList.TypeAssumptions.set_mu
+  FreeList.TypeAssumptions.get_freelist
+  FreeList.TypeAssumptions.set_freelist
+  FreeList.TypeAssumptions.ptr_freeNode_unfold
+  FreeList.TypeAssumptions.ptr_newNode_unfold
 
 namespace ItemIterator
 abbrev t [FfiSyntax] (T : Type) : Type := func.t
 end ItemIterator
 
-@[reducible] def «ItemIteratorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+@[reducible] def ItemIterator.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [T] false [go.bool]))
 
-class ItemIterator_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ItemIterator_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (ItemIterator T) («ItemIteratorⁱᵐᵖˡ» T)
+class ItemIterator.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (ItemIterator T) (ItemIterator.underlying T)
 
-attribute [instance] ItemIterator_Assumptions.ItemIterator_underlying
+attribute [instance] ItemIterator.TypeAssumptions.underlying
 
 namespace items
 abbrev t [FfiSyntax] (T : Type) : Type := slice.t
 end items
 
-@[reducible] def «itemsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+@[reducible] def items.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.SliceType T)
 
-class items_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  items_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (items T) («itemsⁱᵐᵖˡ» T)
-  items_find_unfold : ∀ (T : go.GoType), MethodUnfold (items T) go!"find" («items__findⁱᵐᵖˡ» T)
-  items'ptr_find_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"find" (LamV "$r"
+class items.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (items T) (items.underlying T)
+  find_unfold : ∀ (T : go.GoType), MethodUnfold (items T) go!"find" (items.find.impl T)
+  ptr_find_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"find" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (items T) go!"find"))) (App (Val (GoInstruction (GoLoad (items T)))) (Var "$r"))))
-  items'ptr_insertAt_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"insertAt" («items__insertAtⁱᵐᵖˡ» T)
-  items'ptr_pop_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"pop" («items__popⁱᵐᵖˡ» T)
-  items'ptr_removeAt_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"removeAt" («items__removeAtⁱᵐᵖˡ» T)
-  items'ptr_truncate_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"truncate" («items__truncateⁱᵐᵖˡ» T)
+  ptr_insertAt_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"insertAt" (items.insertAt.impl T)
+  ptr_pop_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"pop" (items.pop.impl T)
+  ptr_removeAt_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"removeAt" (items.removeAt.impl T)
+  ptr_truncate_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"truncate" (items.truncate.impl T)
 
-attribute [instance] items_Assumptions.items_underlying
-  items_Assumptions.items_find_unfold
-  items_Assumptions.items'ptr_find_unfold
-  items_Assumptions.items'ptr_insertAt_unfold
-  items_Assumptions.items'ptr_pop_unfold
-  items_Assumptions.items'ptr_removeAt_unfold
-  items_Assumptions.items'ptr_truncate_unfold
+attribute [instance] items.TypeAssumptions.underlying
+  items.TypeAssumptions.find_unfold
+  items.TypeAssumptions.ptr_find_unfold
+  items.TypeAssumptions.ptr_insertAt_unfold
+  items.TypeAssumptions.ptr_pop_unfold
+  items.TypeAssumptions.ptr_removeAt_unfold
+  items.TypeAssumptions.ptr_truncate_unfold
 
 namespace node
 structure t [FfiSyntax] (T : Type) where
@@ -2344,83 +2344,83 @@ instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end node
 
-@[reducible] def node'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] def node.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"items" (items T)),
 (go.field_decl.FieldDecl go!"children" (items (go.GoType.PointerType (node T)))),
 (go.field_decl.FieldDecl go!"cow" (go.GoType.PointerType (copyOnWriteContext T)))]
 
-@[irreducible] def node'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (node'fds_unsealed T)
+@[irreducible] def node.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (node.fieldsUnsealed T)
 
 instance equals_unfold_node [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (node'fds T) (node'fds_unsealed T) :=
-  ⟨by unfold node'fds; rfl⟩
+    EqualsUnfold (node.fields T) (node.fieldsUnsealed T) :=
+  ⟨by unfold node.fields; rfl⟩
 
-@[reducible] def «nodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (node'fds T))
+@[reducible] def node.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (node.fields T))
 
-class node_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  node_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («nodeⁱᵐᵖˡ» T) (node.t T')
-  node_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (node T) («nodeⁱᵐᵖˡ» T)
-  node_get_items : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"items") #x (Val #(x.items'))
-  node_set_items : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : (items.t T')), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"items") (PairV #x #y) (Val #(({ x with items' := y } : (node.t T'))))
-  node_get_children : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"children") #x (Val #(x.children'))
-  node_set_children : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : (items.t Loc)), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"children") (PairV #x #y) (Val #(({ x with children' := y } : (node.t T'))))
-  node_get_cow : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"cow") #x (Val #(x.cow'))
-  node_set_cow : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"cow") (PairV #x #y) (Val #(({ x with cow' := y } : (node.t T'))))
-  node'ptr_get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"get" («node__getⁱᵐᵖˡ» T)
-  node'ptr_growChildAndRemove_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"growChildAndRemove" («node__growChildAndRemoveⁱᵐᵖˡ» T)
-  node'ptr_insert_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"insert" («node__insertⁱᵐᵖˡ» T)
-  node'ptr_iterate_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"iterate" («node__iterateⁱᵐᵖˡ» T)
-  node'ptr_maybeSplitChild_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"maybeSplitChild" («node__maybeSplitChildⁱᵐᵖˡ» T)
-  node'ptr_mutableChild_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"mutableChild" («node__mutableChildⁱᵐᵖˡ» T)
-  node'ptr_mutableFor_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"mutableFor" («node__mutableForⁱᵐᵖˡ» T)
-  node'ptr_remove_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"remove" («node__removeⁱᵐᵖˡ» T)
-  node'ptr_reset_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"reset" («node__resetⁱᵐᵖˡ» T)
-  node'ptr_split_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"split" («node__splitⁱᵐᵖˡ» T)
+class node.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (node.underlying T) (node.t T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (node T) (node.underlying T)
+  get_items : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (node.underlying T) go!"items") #x (Val #(x.items'))
+  set_items : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : (items.t T')), go.IsGoStepPureDetTagged under (StructFieldSet (node.underlying T) go!"items") (PairV #x #y) (Val #(({ x with items' := y } : (node.t T'))))
+  get_children : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (node.underlying T) go!"children") #x (Val #(x.children'))
+  set_children : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : (items.t Loc)), go.IsGoStepPureDetTagged under (StructFieldSet (node.underlying T) go!"children") (PairV #x #y) (Val #(({ x with children' := y } : (node.t T'))))
+  get_cow : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (node.underlying T) go!"cow") #x (Val #(x.cow'))
+  set_cow : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (node.underlying T) go!"cow") (PairV #x #y) (Val #(({ x with cow' := y } : (node.t T'))))
+  ptr_get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"get" (node.get.impl T)
+  ptr_growChildAndRemove_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"growChildAndRemove" (node.growChildAndRemove.impl T)
+  ptr_insert_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"insert" (node.insert.impl T)
+  ptr_iterate_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"iterate" (node.iterate.impl T)
+  ptr_maybeSplitChild_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"maybeSplitChild" (node.maybeSplitChild.impl T)
+  ptr_mutableChild_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"mutableChild" (node.mutableChild.impl T)
+  ptr_mutableFor_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"mutableFor" (node.mutableFor.impl T)
+  ptr_remove_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"remove" (node.remove.impl T)
+  ptr_reset_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"reset" (node.reset.impl T)
+  ptr_split_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"split" (node.split.impl T)
 
-attribute [instance] node_Assumptions.node_type_repr
-  node_Assumptions.node_underlying
-  node_Assumptions.node_get_items
-  node_Assumptions.node_set_items
-  node_Assumptions.node_get_children
-  node_Assumptions.node_set_children
-  node_Assumptions.node_get_cow
-  node_Assumptions.node_set_cow
-  node_Assumptions.node'ptr_get_unfold
-  node_Assumptions.node'ptr_growChildAndRemove_unfold
-  node_Assumptions.node'ptr_insert_unfold
-  node_Assumptions.node'ptr_iterate_unfold
-  node_Assumptions.node'ptr_maybeSplitChild_unfold
-  node_Assumptions.node'ptr_mutableChild_unfold
-  node_Assumptions.node'ptr_mutableFor_unfold
-  node_Assumptions.node'ptr_remove_unfold
-  node_Assumptions.node'ptr_reset_unfold
-  node_Assumptions.node'ptr_split_unfold
+attribute [instance] node.TypeAssumptions.type_repr
+  node.TypeAssumptions.underlying
+  node.TypeAssumptions.get_items
+  node.TypeAssumptions.set_items
+  node.TypeAssumptions.get_children
+  node.TypeAssumptions.set_children
+  node.TypeAssumptions.get_cow
+  node.TypeAssumptions.set_cow
+  node.TypeAssumptions.ptr_get_unfold
+  node.TypeAssumptions.ptr_growChildAndRemove_unfold
+  node.TypeAssumptions.ptr_insert_unfold
+  node.TypeAssumptions.ptr_iterate_unfold
+  node.TypeAssumptions.ptr_maybeSplitChild_unfold
+  node.TypeAssumptions.ptr_mutableChild_unfold
+  node.TypeAssumptions.ptr_mutableFor_unfold
+  node.TypeAssumptions.ptr_remove_unfold
+  node.TypeAssumptions.ptr_reset_unfold
+  node.TypeAssumptions.ptr_split_unfold
 
 namespace toRemove
 abbrev t [FfiSyntax] : Type := w64
 end toRemove
 
-@[reducible] def «toRemoveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def toRemove.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class toRemove_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  toRemove_underlying : go.UnderlyingDirectedEq toRemove «toRemoveⁱᵐᵖˡ»
+class toRemove.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq toRemove toRemove.underlying
 
-attribute [instance] toRemove_Assumptions.toRemove_underlying
+attribute [instance] toRemove.TypeAssumptions.underlying
 
 namespace direction
 abbrev t [FfiSyntax] : Type := w64
 end direction
 
-@[reducible] def «directionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def direction.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class direction_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  direction_underlying : go.UnderlyingDirectedEq direction «directionⁱᵐᵖˡ»
+class direction.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq direction direction.underlying
 
-attribute [instance] direction_Assumptions.direction_underlying
+attribute [instance] direction.TypeAssumptions.underlying
 
 namespace optionalItem
 structure t [FfiSyntax] (T : Type) where
@@ -2432,34 +2432,34 @@ instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end optionalItem
 
-@[reducible] def optionalItem'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] def optionalItem.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"item" T),
 (go.field_decl.FieldDecl go!"valid" go.bool)]
 
-@[irreducible] def optionalItem'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (optionalItem'fds_unsealed T)
+@[irreducible] def optionalItem.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (optionalItem.fieldsUnsealed T)
 
 instance equals_unfold_optionalItem [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (optionalItem'fds T) (optionalItem'fds_unsealed T) :=
-  ⟨by unfold optionalItem'fds; rfl⟩
+    EqualsUnfold (optionalItem.fields T) (optionalItem.fieldsUnsealed T) :=
+  ⟨by unfold optionalItem.fields; rfl⟩
 
-@[reducible] def «optionalItemⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (optionalItem'fds T))
+@[reducible] def optionalItem.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (optionalItem.fields T))
 
-class optionalItem_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  optionalItem_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («optionalItemⁱᵐᵖˡ» T) (optionalItem.t T')
-  optionalItem_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (optionalItem T) («optionalItemⁱᵐᵖˡ» T)
-  optionalItem_get_item : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («optionalItemⁱᵐᵖˡ» T) go!"item") #x (Val #(x.item'))
-  optionalItem_set_item : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («optionalItemⁱᵐᵖˡ» T) go!"item") (PairV #x #y) (Val #(({ x with item' := y } : (optionalItem.t T'))))
-  optionalItem_get_valid : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («optionalItemⁱᵐᵖˡ» T) go!"valid") #x (Val #(x.valid'))
-  optionalItem_set_valid : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet («optionalItemⁱᵐᵖˡ» T) go!"valid") (PairV #x #y) (Val #(({ x with valid' := y } : (optionalItem.t T'))))
+class optionalItem.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (optionalItem.underlying T) (optionalItem.t T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (optionalItem T) (optionalItem.underlying T)
+  get_item : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (optionalItem.underlying T) go!"item") #x (Val #(x.item'))
+  set_item : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (optionalItem.underlying T) go!"item") (PairV #x #y) (Val #(({ x with item' := y } : (optionalItem.t T'))))
+  get_valid : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (optionalItem.underlying T) go!"valid") #x (Val #(x.valid'))
+  set_valid : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet (optionalItem.underlying T) go!"valid") (PairV #x #y) (Val #(({ x with valid' := y } : (optionalItem.t T'))))
 
-attribute [instance] optionalItem_Assumptions.optionalItem_type_repr
-  optionalItem_Assumptions.optionalItem_underlying
-  optionalItem_Assumptions.optionalItem_get_item
-  optionalItem_Assumptions.optionalItem_set_item
-  optionalItem_Assumptions.optionalItem_get_valid
-  optionalItem_Assumptions.optionalItem_set_valid
+attribute [instance] optionalItem.TypeAssumptions.type_repr
+  optionalItem.TypeAssumptions.underlying
+  optionalItem.TypeAssumptions.get_item
+  optionalItem.TypeAssumptions.set_item
+  optionalItem.TypeAssumptions.get_valid
+  optionalItem.TypeAssumptions.set_valid
 
 namespace BTree
 structure t [FfiSyntax] (T : Type) where
@@ -2473,100 +2473,100 @@ instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end BTree
 
-@[reducible] def BTree'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] def BTree.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"degree" go.int),
 (go.field_decl.FieldDecl go!"length" go.int),
 (go.field_decl.FieldDecl go!"root" (go.GoType.PointerType (node T))),
 (go.field_decl.FieldDecl go!"cow" (go.GoType.PointerType (copyOnWriteContext T)))]
 
-@[irreducible] def BTree'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (BTree'fds_unsealed T)
+@[irreducible] def BTree.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (BTree.fieldsUnsealed T)
 
 instance equals_unfold_BTree [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (BTree'fds T) (BTree'fds_unsealed T) :=
-  ⟨by unfold BTree'fds; rfl⟩
+    EqualsUnfold (BTree.fields T) (BTree.fieldsUnsealed T) :=
+  ⟨by unfold BTree.fields; rfl⟩
 
-@[reducible] def «BTreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (BTree'fds T))
+@[reducible] def BTree.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (BTree.fields T))
 
-class BTree_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  BTree_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («BTreeⁱᵐᵖˡ» T) (BTree.t T')
-  BTree_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (BTree T) («BTreeⁱᵐᵖˡ» T)
-  BTree_get_degree : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"degree") #x (Val #(x.degree'))
-  BTree_set_degree : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"degree") (PairV #x #y) (Val #(({ x with degree' := y } : (BTree.t T'))))
-  BTree_get_length : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"length") #x (Val #(x.length'))
-  BTree_set_length : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"length") (PairV #x #y) (Val #(({ x with length' := y } : (BTree.t T'))))
-  BTree_get_root : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"root") #x (Val #(x.root'))
-  BTree_set_root : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"root") (PairV #x #y) (Val #(({ x with root' := y } : (BTree.t T'))))
-  BTree_get_cow : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"cow") #x (Val #(x.cow'))
-  BTree_set_cow : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"cow") (PairV #x #y) (Val #(({ x with cow' := y } : (BTree.t T'))))
-  BTree'ptr_Ascend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Ascend" («BTree__Ascendⁱᵐᵖˡ» T)
-  BTree'ptr_AscendGreaterOrEqual_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendGreaterOrEqual" («BTree__AscendGreaterOrEqualⁱᵐᵖˡ» T)
-  BTree'ptr_AscendLessThan_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendLessThan" («BTree__AscendLessThanⁱᵐᵖˡ» T)
-  BTree'ptr_AscendRange_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendRange" («BTree__AscendRangeⁱᵐᵖˡ» T)
-  BTree'ptr_Clear_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Clear" («BTree__Clearⁱᵐᵖˡ» T)
-  BTree'ptr_Clone_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Clone" («BTree__Cloneⁱᵐᵖˡ» T)
-  BTree'ptr_Delete_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Delete" («BTree__Deleteⁱᵐᵖˡ» T)
-  BTree'ptr_DeleteMax_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DeleteMax" («BTree__DeleteMaxⁱᵐᵖˡ» T)
-  BTree'ptr_DeleteMin_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DeleteMin" («BTree__DeleteMinⁱᵐᵖˡ» T)
-  BTree'ptr_Descend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Descend" («BTree__Descendⁱᵐᵖˡ» T)
-  BTree'ptr_DescendGreaterThan_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendGreaterThan" («BTree__DescendGreaterThanⁱᵐᵖˡ» T)
-  BTree'ptr_DescendLessOrEqual_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendLessOrEqual" («BTree__DescendLessOrEqualⁱᵐᵖˡ» T)
-  BTree'ptr_DescendRange_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendRange" («BTree__DescendRangeⁱᵐᵖˡ» T)
-  BTree'ptr_Get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Get" («BTree__Getⁱᵐᵖˡ» T)
-  BTree'ptr_Has_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Has" («BTree__Hasⁱᵐᵖˡ» T)
-  BTree'ptr_Len_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Len" («BTree__Lenⁱᵐᵖˡ» T)
-  BTree'ptr_Max_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Max" («BTree__Maxⁱᵐᵖˡ» T)
-  BTree'ptr_Min_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Min" («BTree__Minⁱᵐᵖˡ» T)
-  BTree'ptr_ReplaceOrInsert_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"ReplaceOrInsert" («BTree__ReplaceOrInsertⁱᵐᵖˡ» T)
-  BTree'ptr_deleteItem_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"deleteItem" («BTree__deleteItemⁱᵐᵖˡ» T)
-  BTree'ptr_maxItems_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"maxItems" («BTree__maxItemsⁱᵐᵖˡ» T)
-  BTree'ptr_minItems_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"minItems" («BTree__minItemsⁱᵐᵖˡ» T)
+class BTree.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (BTree.underlying T) (BTree.t T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (BTree T) (BTree.underlying T)
+  get_degree : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (BTree.underlying T) go!"degree") #x (Val #(x.degree'))
+  set_degree : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet (BTree.underlying T) go!"degree") (PairV #x #y) (Val #(({ x with degree' := y } : (BTree.t T'))))
+  get_length : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (BTree.underlying T) go!"length") #x (Val #(x.length'))
+  set_length : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet (BTree.underlying T) go!"length") (PairV #x #y) (Val #(({ x with length' := y } : (BTree.t T'))))
+  get_root : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (BTree.underlying T) go!"root") #x (Val #(x.root'))
+  set_root : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (BTree.underlying T) go!"root") (PairV #x #y) (Val #(({ x with root' := y } : (BTree.t T'))))
+  get_cow : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (BTree.underlying T) go!"cow") #x (Val #(x.cow'))
+  set_cow : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (BTree.underlying T) go!"cow") (PairV #x #y) (Val #(({ x with cow' := y } : (BTree.t T'))))
+  ptr_Ascend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Ascend" (BTree.Ascend.impl T)
+  ptr_AscendGreaterOrEqual_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendGreaterOrEqual" (BTree.AscendGreaterOrEqual.impl T)
+  ptr_AscendLessThan_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendLessThan" (BTree.AscendLessThan.impl T)
+  ptr_AscendRange_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendRange" (BTree.AscendRange.impl T)
+  ptr_Clear_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Clear" (BTree.Clear.impl T)
+  ptr_Clone_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Clone" (BTree.Clone.impl T)
+  ptr_Delete_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Delete" (BTree.Delete.impl T)
+  ptr_DeleteMax_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DeleteMax" (BTree.DeleteMax.impl T)
+  ptr_DeleteMin_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DeleteMin" (BTree.DeleteMin.impl T)
+  ptr_Descend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Descend" (BTree.Descend.impl T)
+  ptr_DescendGreaterThan_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendGreaterThan" (BTree.DescendGreaterThan.impl T)
+  ptr_DescendLessOrEqual_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendLessOrEqual" (BTree.DescendLessOrEqual.impl T)
+  ptr_DescendRange_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendRange" (BTree.DescendRange.impl T)
+  ptr_Get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Get" (BTree.Get.impl T)
+  ptr_Has_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Has" (BTree.Has.impl T)
+  ptr_Len_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Len" (BTree.Len.impl T)
+  ptr_Max_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Max" (BTree.Max.impl T)
+  ptr_Min_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Min" (BTree.Min.impl T)
+  ptr_ReplaceOrInsert_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"ReplaceOrInsert" (BTree.ReplaceOrInsert.impl T)
+  ptr_deleteItem_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"deleteItem" (BTree.deleteItem.impl T)
+  ptr_maxItems_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"maxItems" (BTree.maxItems.impl T)
+  ptr_minItems_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"minItems" (BTree.minItems.impl T)
 
-attribute [instance] BTree_Assumptions.BTree_type_repr
-  BTree_Assumptions.BTree_underlying
-  BTree_Assumptions.BTree_get_degree
-  BTree_Assumptions.BTree_set_degree
-  BTree_Assumptions.BTree_get_length
-  BTree_Assumptions.BTree_set_length
-  BTree_Assumptions.BTree_get_root
-  BTree_Assumptions.BTree_set_root
-  BTree_Assumptions.BTree_get_cow
-  BTree_Assumptions.BTree_set_cow
-  BTree_Assumptions.BTree'ptr_Ascend_unfold
-  BTree_Assumptions.BTree'ptr_AscendGreaterOrEqual_unfold
-  BTree_Assumptions.BTree'ptr_AscendLessThan_unfold
-  BTree_Assumptions.BTree'ptr_AscendRange_unfold
-  BTree_Assumptions.BTree'ptr_Clear_unfold
-  BTree_Assumptions.BTree'ptr_Clone_unfold
-  BTree_Assumptions.BTree'ptr_Delete_unfold
-  BTree_Assumptions.BTree'ptr_DeleteMax_unfold
-  BTree_Assumptions.BTree'ptr_DeleteMin_unfold
-  BTree_Assumptions.BTree'ptr_Descend_unfold
-  BTree_Assumptions.BTree'ptr_DescendGreaterThan_unfold
-  BTree_Assumptions.BTree'ptr_DescendLessOrEqual_unfold
-  BTree_Assumptions.BTree'ptr_DescendRange_unfold
-  BTree_Assumptions.BTree'ptr_Get_unfold
-  BTree_Assumptions.BTree'ptr_Has_unfold
-  BTree_Assumptions.BTree'ptr_Len_unfold
-  BTree_Assumptions.BTree'ptr_Max_unfold
-  BTree_Assumptions.BTree'ptr_Min_unfold
-  BTree_Assumptions.BTree'ptr_ReplaceOrInsert_unfold
-  BTree_Assumptions.BTree'ptr_deleteItem_unfold
-  BTree_Assumptions.BTree'ptr_maxItems_unfold
-  BTree_Assumptions.BTree'ptr_minItems_unfold
+attribute [instance] BTree.TypeAssumptions.type_repr
+  BTree.TypeAssumptions.underlying
+  BTree.TypeAssumptions.get_degree
+  BTree.TypeAssumptions.set_degree
+  BTree.TypeAssumptions.get_length
+  BTree.TypeAssumptions.set_length
+  BTree.TypeAssumptions.get_root
+  BTree.TypeAssumptions.set_root
+  BTree.TypeAssumptions.get_cow
+  BTree.TypeAssumptions.set_cow
+  BTree.TypeAssumptions.ptr_Ascend_unfold
+  BTree.TypeAssumptions.ptr_AscendGreaterOrEqual_unfold
+  BTree.TypeAssumptions.ptr_AscendLessThan_unfold
+  BTree.TypeAssumptions.ptr_AscendRange_unfold
+  BTree.TypeAssumptions.ptr_Clear_unfold
+  BTree.TypeAssumptions.ptr_Clone_unfold
+  BTree.TypeAssumptions.ptr_Delete_unfold
+  BTree.TypeAssumptions.ptr_DeleteMax_unfold
+  BTree.TypeAssumptions.ptr_DeleteMin_unfold
+  BTree.TypeAssumptions.ptr_Descend_unfold
+  BTree.TypeAssumptions.ptr_DescendGreaterThan_unfold
+  BTree.TypeAssumptions.ptr_DescendLessOrEqual_unfold
+  BTree.TypeAssumptions.ptr_DescendRange_unfold
+  BTree.TypeAssumptions.ptr_Get_unfold
+  BTree.TypeAssumptions.ptr_Has_unfold
+  BTree.TypeAssumptions.ptr_Len_unfold
+  BTree.TypeAssumptions.ptr_Max_unfold
+  BTree.TypeAssumptions.ptr_Min_unfold
+  BTree.TypeAssumptions.ptr_ReplaceOrInsert_unfold
+  BTree.TypeAssumptions.ptr_deleteItem_unfold
+  BTree.TypeAssumptions.ptr_maxItems_unfold
+  BTree.TypeAssumptions.ptr_minItems_unfold
 
 namespace LessFunc
 abbrev t [FfiSyntax] (T : Type) : Type := func.t
 end LessFunc
 
-@[reducible] def «LessFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+@[reducible] def LessFunc.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [T, T] false [go.bool]))
 
-class LessFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LessFunc_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (LessFunc T) («LessFuncⁱᵐᵖˡ» T)
+class LessFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (LessFunc T) (LessFunc.underlying T)
 
-attribute [instance] LessFunc_Assumptions.LessFunc_underlying
+attribute [instance] LessFunc.TypeAssumptions.underlying
 
 namespace copyOnWriteContext
 structure t [FfiSyntax] (T : Type) where
@@ -2578,72 +2578,72 @@ instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end copyOnWriteContext
 
-@[reducible] def copyOnWriteContext'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] def copyOnWriteContext.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"freelist" (go.GoType.PointerType (FreeList T))),
 (go.field_decl.FieldDecl go!"less" (LessFunc T))]
 
-@[irreducible] def copyOnWriteContext'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (copyOnWriteContext'fds_unsealed T)
+@[irreducible] def copyOnWriteContext.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (copyOnWriteContext.fieldsUnsealed T)
 
 instance equals_unfold_copyOnWriteContext [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (copyOnWriteContext'fds T) (copyOnWriteContext'fds_unsealed T) :=
-  ⟨by unfold copyOnWriteContext'fds; rfl⟩
+    EqualsUnfold (copyOnWriteContext.fields T) (copyOnWriteContext.fieldsUnsealed T) :=
+  ⟨by unfold copyOnWriteContext.fields; rfl⟩
 
-@[reducible] def «copyOnWriteContextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (copyOnWriteContext'fds T))
+@[reducible] def copyOnWriteContext.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (copyOnWriteContext.fields T))
 
-class copyOnWriteContext_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  copyOnWriteContext_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («copyOnWriteContextⁱᵐᵖˡ» T) (copyOnWriteContext.t T')
-  copyOnWriteContext_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (copyOnWriteContext T) («copyOnWriteContextⁱᵐᵖˡ» T)
-  copyOnWriteContext_get_freelist : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («copyOnWriteContextⁱᵐᵖˡ» T) go!"freelist") #x (Val #(x.freelist'))
-  copyOnWriteContext_set_freelist : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («copyOnWriteContextⁱᵐᵖˡ» T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (copyOnWriteContext.t T'))))
-  copyOnWriteContext_get_less : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («copyOnWriteContextⁱᵐᵖˡ» T) go!"less") #x (Val #(x.less'))
-  copyOnWriteContext_set_less : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')) (y : (LessFunc.t T')), go.IsGoStepPureDetTagged under (StructFieldSet («copyOnWriteContextⁱᵐᵖˡ» T) go!"less") (PairV #x #y) (Val #(({ x with less' := y } : (copyOnWriteContext.t T'))))
-  copyOnWriteContext'ptr_freeNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (copyOnWriteContext T)) go!"freeNode" («copyOnWriteContext__freeNodeⁱᵐᵖˡ» T)
-  copyOnWriteContext'ptr_newNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (copyOnWriteContext T)) go!"newNode" («copyOnWriteContext__newNodeⁱᵐᵖˡ» T)
+class copyOnWriteContext.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (copyOnWriteContext.underlying T) (copyOnWriteContext.t T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (copyOnWriteContext T) (copyOnWriteContext.underlying T)
+  get_freelist : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (copyOnWriteContext.underlying T) go!"freelist") #x (Val #(x.freelist'))
+  set_freelist : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (copyOnWriteContext.underlying T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (copyOnWriteContext.t T'))))
+  get_less : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (copyOnWriteContext.underlying T) go!"less") #x (Val #(x.less'))
+  set_less : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')) (y : (LessFunc.t T')), go.IsGoStepPureDetTagged under (StructFieldSet (copyOnWriteContext.underlying T) go!"less") (PairV #x #y) (Val #(({ x with less' := y } : (copyOnWriteContext.t T'))))
+  ptr_freeNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (copyOnWriteContext T)) go!"freeNode" (copyOnWriteContext.freeNode.impl T)
+  ptr_newNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (copyOnWriteContext T)) go!"newNode" (copyOnWriteContext.newNode.impl T)
 
-attribute [instance] copyOnWriteContext_Assumptions.copyOnWriteContext_type_repr
-  copyOnWriteContext_Assumptions.copyOnWriteContext_underlying
-  copyOnWriteContext_Assumptions.copyOnWriteContext_get_freelist
-  copyOnWriteContext_Assumptions.copyOnWriteContext_set_freelist
-  copyOnWriteContext_Assumptions.copyOnWriteContext_get_less
-  copyOnWriteContext_Assumptions.copyOnWriteContext_set_less
-  copyOnWriteContext_Assumptions.copyOnWriteContext'ptr_freeNode_unfold
-  copyOnWriteContext_Assumptions.copyOnWriteContext'ptr_newNode_unfold
+attribute [instance] copyOnWriteContext.TypeAssumptions.type_repr
+  copyOnWriteContext.TypeAssumptions.underlying
+  copyOnWriteContext.TypeAssumptions.get_freelist
+  copyOnWriteContext.TypeAssumptions.set_freelist
+  copyOnWriteContext.TypeAssumptions.get_less
+  copyOnWriteContext.TypeAssumptions.set_less
+  copyOnWriteContext.TypeAssumptions.ptr_freeNode_unfold
+  copyOnWriteContext.TypeAssumptions.ptr_newNode_unfold
 
 namespace freeType
 abbrev t [FfiSyntax] : Type := w64
 end freeType
 
-@[reducible] def «freeTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def freeType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class freeType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  freeType_underlying : go.UnderlyingDirectedEq freeType «freeTypeⁱᵐᵖˡ»
+class freeType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq freeType freeType.underlying
 
-attribute [instance] freeType_Assumptions.freeType_underlying
+attribute [instance] freeType.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  FreeList_instance : FreeList_Assumptions
-  ItemIterator_instance : ItemIterator_Assumptions
-  items_instance : items_Assumptions
-  node_instance : node_Assumptions
-  toRemove_instance : toRemove_Assumptions
-  direction_instance : direction_Assumptions
-  optionalItem_instance : optionalItem_Assumptions
-  BTree_instance : BTree_Assumptions
-  LessFunc_instance : LessFunc_Assumptions
-  copyOnWriteContext_instance : copyOnWriteContext_Assumptions
-  freeType_instance : freeType_Assumptions
-  NewFreeList_unfold : ∀ (T : go.GoType), FuncUnfold NewFreeList [T] («NewFreeListⁱᵐᵖˡ» T)
-  Less_unfold : ∀ (T : go.GoType), FuncUnfold Less [T] («Lessⁱᵐᵖˡ» T)
-  NewOrdered_unfold : ∀ (T : go.GoType), FuncUnfold NewOrdered [T] («NewOrderedⁱᵐᵖˡ» T)
-  New_unfold : ∀ (T : go.GoType), FuncUnfold New [T] («Newⁱᵐᵖˡ» T)
-  NewWithFreeList_unfold : ∀ (T : go.GoType), FuncUnfold NewWithFreeList [T] («NewWithFreeListⁱᵐᵖˡ» T)
-  min_unfold : ∀ (T : go.GoType), FuncUnfold min [T] («minⁱᵐᵖˡ» T)
-  max_unfold : ∀ (T : go.GoType), FuncUnfold max [T] («maxⁱᵐᵖˡ» T)
-  optional_unfold : ∀ (T : go.GoType), FuncUnfold optional [T] («optionalⁱᵐᵖˡ» T)
-  empty_unfold : ∀ (T : go.GoType), FuncUnfold empty [T] («emptyⁱᵐᵖˡ» T)
+  FreeList_instance : FreeList.TypeAssumptions
+  ItemIterator_instance : ItemIterator.TypeAssumptions
+  items_instance : items.TypeAssumptions
+  node_instance : node.TypeAssumptions
+  toRemove_instance : toRemove.TypeAssumptions
+  direction_instance : direction.TypeAssumptions
+  optionalItem_instance : optionalItem.TypeAssumptions
+  BTree_instance : BTree.TypeAssumptions
+  LessFunc_instance : LessFunc.TypeAssumptions
+  copyOnWriteContext_instance : copyOnWriteContext.TypeAssumptions
+  freeType_instance : freeType.TypeAssumptions
+  NewFreeList_unfold : ∀ (T : go.GoType), FuncUnfold NewFreeList [T] (NewFreeList.impl T)
+  Less_unfold : ∀ (T : go.GoType), FuncUnfold Less [T] (Less.impl T)
+  NewOrdered_unfold : ∀ (T : go.GoType), FuncUnfold NewOrdered [T] (NewOrdered.impl T)
+  New_unfold : ∀ (T : go.GoType), FuncUnfold New [T] (New.impl T)
+  NewWithFreeList_unfold : ∀ (T : go.GoType), FuncUnfold NewWithFreeList [T] (NewWithFreeList.impl T)
+  min_unfold : ∀ (T : go.GoType), FuncUnfold min [T] (min.impl T)
+  max_unfold : ∀ (T : go.GoType), FuncUnfold max [T] (max.impl T)
+  optional_unfold : ∀ (T : go.GoType), FuncUnfold optional [T] (optional.impl T)
+  empty_unfold : ∀ (T : go.GoType), FuncUnfold empty [T] (empty.impl T)
   import_cmp_Assumption : _root_.Perennial.cmp.Assumptions
   import_sort_Assumption : _root_.Perennial.sort.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions

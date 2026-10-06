@@ -13,10 +13,10 @@ namespace github_com.mit_pdos.gokv.trusted_proph
 section defs
 variable [FfiSyntax]
 
-def «NewProphⁱᵐᵖˡ» : val :=
+def NewProph.impl : val :=
   λ: <>, NewProph
 
-def «ResolveBytesⁱᵐᵖˡ» : val :=
+def ResolveBytes.impl : val :=
   λ: "p" "slice",
   let: "s" := Convert (go.SliceType go.byte) go.string "slice" in
   ResolveProph "p" "s"

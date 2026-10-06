@@ -39,7 +39,7 @@ noncomputable def NewEliminationStack [FfiSyntax] [GoGlobalContext] : GoString :
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.NewEliminationStack"
 
 /-- go: elimination_stack.go:14:6 -/
-noncomputable def «NewLockedStackⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewLockedStack.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -47,7 +47,7 @@ noncomputable def «NewLockedStackⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (CompositeLiteral LockedStack))) (LiteralValue [(KeyedElement (some (KeyField go!"stack")) (ElementExpression (go.GoType.SliceType go.string) (Var "$v0")))])))))))
 
 /-- go: elimination_stack.go:18:23 -/
-noncomputable def «LockedStack__Pushⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LockedStack.Push.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "value"
   (App (Val exceptionDo)
@@ -70,7 +70,7 @@ noncomputable def «LockedStack__Pushⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s")))) (Val #()))))))))))
 
 /-- go: elimination_stack.go:24:23 -/
-noncomputable def «LockedStack__Popⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LockedStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -114,7 +114,7 @@ noncomputable def «LockedStack__Popⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     using a fresh LockedStack and a small default timeout.
 
     go: elimination_stack.go:47:6 -/
-noncomputable def «NewEliminationStackⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewEliminationStack.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -125,7 +125,7 @@ noncomputable def «NewEliminationStackⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
 /-- Push first tries one-shot elimination; on timeout, falls back to the locked stack.
 
     go: elimination_stack.go:55:28 -/
-noncomputable def «EliminationStack__Pushⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def EliminationStack.Push.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "value"
   (App (Val exceptionDo)
@@ -151,7 +151,7 @@ noncomputable def «EliminationStack__Pushⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
 /-- Pop first tries one-shot elimination; on timeout, falls back to the locked stack.
 
     go: elimination_stack.go:67:28 -/
-noncomputable def «EliminationStack__Popⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def EliminationStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -200,38 +200,38 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end LockedStack
 
-@[reducible] def LockedStack'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LockedStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"stack" (go.GoType.SliceType go.string))]
 
-@[irreducible] def LockedStack'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  LockedStack'fds_unsealed
+@[irreducible] def LockedStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  LockedStack.fieldsUnsealed
 
 instance equals_unfold_LockedStack [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold LockedStack'fds LockedStack'fds_unsealed :=
-  ⟨by unfold LockedStack'fds; rfl⟩
+    EqualsUnfold LockedStack.fields LockedStack.fieldsUnsealed :=
+  ⟨by unfold LockedStack.fields; rfl⟩
 
-@[reducible] def «LockedStackⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType LockedStack'fds)
+@[reducible] def LockedStack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType LockedStack.fields)
 
-class LockedStack_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LockedStack_type_repr : go.TypeReprUnderlying «LockedStackⁱᵐᵖˡ» LockedStack.t
-  LockedStack_underlying : go.UnderlyingDirectedEq LockedStack «LockedStackⁱᵐᵖˡ»
-  LockedStack_get_mu : ∀ (x : LockedStack.t), go.IsGoStepPureDetTagged under (StructFieldGet «LockedStackⁱᵐᵖˡ» go!"mu") #x (Val #(x.mu'))
-  LockedStack_set_mu : ∀ (x : LockedStack.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «LockedStackⁱᵐᵖˡ» go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack.t)))
-  LockedStack_get_stack : ∀ (x : LockedStack.t), go.IsGoStepPureDetTagged under (StructFieldGet «LockedStackⁱᵐᵖˡ» go!"stack") #x (Val #(x.stack'))
-  LockedStack_set_stack : ∀ (x : LockedStack.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «LockedStackⁱᵐᵖˡ» go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack.t)))
-  LockedStack'ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType LockedStack) go!"Pop" «LockedStack__Popⁱᵐᵖˡ»
-  LockedStack'ptr_Push_unfold : MethodUnfold (go.GoType.PointerType LockedStack) go!"Push" «LockedStack__Pushⁱᵐᵖˡ»
+class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying LockedStack.underlying LockedStack.t
+  underlying : go.UnderlyingDirectedEq LockedStack LockedStack.underlying
+  get_mu : ∀ (x : LockedStack.t), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : LockedStack.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack.t)))
+  get_stack : ∀ (x : LockedStack.t), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
+  set_stack : ∀ (x : LockedStack.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack.t)))
+  ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType LockedStack) go!"Pop" LockedStack.Pop.impl
+  ptr_Push_unfold : MethodUnfold (go.GoType.PointerType LockedStack) go!"Push" LockedStack.Push.impl
 
-attribute [instance] LockedStack_Assumptions.LockedStack_type_repr
-  LockedStack_Assumptions.LockedStack_underlying
-  LockedStack_Assumptions.LockedStack_get_mu
-  LockedStack_Assumptions.LockedStack_set_mu
-  LockedStack_Assumptions.LockedStack_get_stack
-  LockedStack_Assumptions.LockedStack_set_stack
-  LockedStack_Assumptions.LockedStack'ptr_Pop_unfold
-  LockedStack_Assumptions.LockedStack'ptr_Push_unfold
+attribute [instance] LockedStack.TypeAssumptions.type_repr
+  LockedStack.TypeAssumptions.underlying
+  LockedStack.TypeAssumptions.get_mu
+  LockedStack.TypeAssumptions.set_mu
+  LockedStack.TypeAssumptions.get_stack
+  LockedStack.TypeAssumptions.set_stack
+  LockedStack.TypeAssumptions.ptr_Pop_unfold
+  LockedStack.TypeAssumptions.ptr_Push_unfold
 
 namespace EliminationStack
 structure t [FfiSyntax] where
@@ -243,44 +243,44 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end EliminationStack
 
-@[reducible] def EliminationStack'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def EliminationStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"base" (go.GoType.PointerType LockedStack)),
 (go.field_decl.FieldDecl go!"exchanger" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] def EliminationStack'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  EliminationStack'fds_unsealed
+@[irreducible] def EliminationStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  EliminationStack.fieldsUnsealed
 
 instance equals_unfold_EliminationStack [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold EliminationStack'fds EliminationStack'fds_unsealed :=
-  ⟨by unfold EliminationStack'fds; rfl⟩
+    EqualsUnfold EliminationStack.fields EliminationStack.fieldsUnsealed :=
+  ⟨by unfold EliminationStack.fields; rfl⟩
 
-@[reducible] def «EliminationStackⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType EliminationStack'fds)
+@[reducible] def EliminationStack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType EliminationStack.fields)
 
-class EliminationStack_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  EliminationStack_type_repr : go.TypeReprUnderlying «EliminationStackⁱᵐᵖˡ» EliminationStack.t
-  EliminationStack_underlying : go.UnderlyingDirectedEq EliminationStack «EliminationStackⁱᵐᵖˡ»
-  EliminationStack_get_base : ∀ (x : EliminationStack.t), go.IsGoStepPureDetTagged under (StructFieldGet «EliminationStackⁱᵐᵖˡ» go!"base") #x (Val #(x.base'))
-  EliminationStack_set_base : ∀ (x : EliminationStack.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «EliminationStackⁱᵐᵖˡ» go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack.t)))
-  EliminationStack_get_exchanger : ∀ (x : EliminationStack.t), go.IsGoStepPureDetTagged under (StructFieldGet «EliminationStackⁱᵐᵖˡ» go!"exchanger") #x (Val #(x.exchanger'))
-  EliminationStack_set_exchanger : ∀ (x : EliminationStack.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «EliminationStackⁱᵐᵖˡ» go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack.t)))
-  EliminationStack'ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType EliminationStack) go!"Pop" «EliminationStack__Popⁱᵐᵖˡ»
-  EliminationStack'ptr_Push_unfold : MethodUnfold (go.GoType.PointerType EliminationStack) go!"Push" «EliminationStack__Pushⁱᵐᵖˡ»
+class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying EliminationStack.underlying EliminationStack.t
+  underlying : go.UnderlyingDirectedEq EliminationStack EliminationStack.underlying
+  get_base : ∀ (x : EliminationStack.t), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
+  set_base : ∀ (x : EliminationStack.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack.t)))
+  get_exchanger : ∀ (x : EliminationStack.t), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
+  set_exchanger : ∀ (x : EliminationStack.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack.t)))
+  ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType EliminationStack) go!"Pop" EliminationStack.Pop.impl
+  ptr_Push_unfold : MethodUnfold (go.GoType.PointerType EliminationStack) go!"Push" EliminationStack.Push.impl
 
-attribute [instance] EliminationStack_Assumptions.EliminationStack_type_repr
-  EliminationStack_Assumptions.EliminationStack_underlying
-  EliminationStack_Assumptions.EliminationStack_get_base
-  EliminationStack_Assumptions.EliminationStack_set_base
-  EliminationStack_Assumptions.EliminationStack_get_exchanger
-  EliminationStack_Assumptions.EliminationStack_set_exchanger
-  EliminationStack_Assumptions.EliminationStack'ptr_Pop_unfold
-  EliminationStack_Assumptions.EliminationStack'ptr_Push_unfold
+attribute [instance] EliminationStack.TypeAssumptions.type_repr
+  EliminationStack.TypeAssumptions.underlying
+  EliminationStack.TypeAssumptions.get_base
+  EliminationStack.TypeAssumptions.set_base
+  EliminationStack.TypeAssumptions.get_exchanger
+  EliminationStack.TypeAssumptions.set_exchanger
+  EliminationStack.TypeAssumptions.ptr_Pop_unfold
+  EliminationStack.TypeAssumptions.ptr_Push_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LockedStack_instance : LockedStack_Assumptions
-  EliminationStack_instance : EliminationStack_Assumptions
-  NewLockedStack_unfold : FuncUnfold NewLockedStack [] «NewLockedStackⁱᵐᵖˡ»
-  NewEliminationStack_unfold : FuncUnfold NewEliminationStack [] «NewEliminationStackⁱᵐᵖˡ»
+  LockedStack_instance : LockedStack.TypeAssumptions
+  EliminationStack_instance : EliminationStack.TypeAssumptions
+  NewLockedStack_unfold : FuncUnfold NewLockedStack [] NewLockedStack.impl
+  NewEliminationStack_unfold : FuncUnfold NewEliminationStack [] NewEliminationStack.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_time_Assumption : _root_.Perennial.time.Assumptions
 

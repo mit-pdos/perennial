@@ -37,7 +37,7 @@ instance Log_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Log_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log.t github_com.mit_pdos.perennial.goose.testdata.examples.append_log.«Logⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log.t github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log.underlying := by
   solve_into_val_typed_struct
 
 instance Log_access_load_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log.t) (dq : DFrac) :

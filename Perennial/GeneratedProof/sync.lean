@@ -34,7 +34,7 @@ instance noCopy_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noCopy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.noCopy.t sync.«noCopyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.noCopy.t sync.noCopy.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -62,7 +62,7 @@ instance notifyList_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance notifyList_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.notifyList.t sync.«notifyListⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.notifyList.t sync.notifyList.underlying := by
   solve_into_val_typed_struct
 
 instance notifyList_access_load_wait (l : Loc) (v : sync.notifyList.t) (dq : DFrac) :
@@ -169,7 +169,7 @@ instance Cond_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Cond_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.Cond.t sync.«Condⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.Cond.t sync.Cond.underlying := by
   solve_into_val_typed_struct
 
 instance Cond_access_load_noCopy (l : Loc) (v : sync.Cond.t) (dq : DFrac) :
@@ -252,7 +252,7 @@ instance Map_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Map_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.Map.t sync.«Mapⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) sync.Map.t sync.Map.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -278,7 +278,7 @@ instance Once_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Once_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.Once.t sync.«Onceⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.Once.t sync.Once.underlying := by
   solve_into_val_typed_struct
 
 instance Once_access_load__0 (l : Loc) (v : sync.Once.t) (dq : DFrac) :
@@ -355,7 +355,7 @@ instance Pool_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Pool_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.Pool.t sync.«Poolⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.Pool.t sync.Pool.underlying := by
   solve_into_val_typed_struct
 
 instance Pool_access_load_noCopy (l : Loc) (v : sync.Pool.t) (dq : DFrac) :
@@ -470,7 +470,7 @@ instance poolChainElt_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance poolChainElt_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolChainElt.t sync.«poolChainEltⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) sync.poolChainElt.t sync.poolChainElt.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -495,7 +495,7 @@ instance poolChain_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance poolChain_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolChain.t sync.«poolChainⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.poolChain.t sync.poolChain.underlying := by
   solve_into_val_typed_struct
 
 instance poolChain_access_load_head (l : Loc) (v : sync.poolChain.t) (dq : DFrac) :
@@ -552,7 +552,7 @@ instance poolLocalInternal_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance poolLocalInternal_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolLocalInternal.t sync.«poolLocalInternalⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.poolLocalInternal.t sync.poolLocalInternal.underlying := by
   solve_into_val_typed_struct
 
 instance poolLocalInternal_access_load_private (l : Loc) (v : sync.poolLocalInternal.t) (dq : DFrac) :
@@ -609,7 +609,7 @@ instance poolLocal_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance poolLocal_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolLocal.t sync.«poolLocalⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.poolLocal.t sync.poolLocal.underlying := by
   solve_into_val_typed_struct
 
 instance poolLocal_access_load_poolLocalInternal (l : Loc) (v : sync.poolLocal.t) (dq : DFrac) :
@@ -666,7 +666,7 @@ instance poolDequeue_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance poolDequeue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.poolDequeue.t sync.«poolDequeueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.poolDequeue.t sync.poolDequeue.underlying := by
   solve_into_val_typed_struct
 
 instance poolDequeue_access_load_headTail (l : Loc) (v : sync.poolDequeue.t) (dq : DFrac) :
@@ -723,7 +723,7 @@ instance eface_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance eface_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.eface.t sync.«efaceⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.eface.t sync.eface.underlying := by
   solve_into_val_typed_struct
 
 instance eface_access_load_typ (l : Loc) (v : sync.eface.t) (dq : DFrac) :
@@ -783,7 +783,7 @@ instance RWMutex_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RWMutex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.RWMutex.t sync.«RWMutexⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.RWMutex.t sync.RWMutex.underlying := by
   solve_into_val_typed_struct
 
 instance RWMutex_access_load_w (l : Loc) (v : sync.RWMutex.t) (dq : DFrac) :
@@ -889,7 +889,7 @@ instance WaitGroup_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WaitGroup_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.WaitGroup.t sync.«WaitGroupⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.WaitGroup.t sync.WaitGroup.underlying := by
   solve_into_val_typed_struct
 
 instance WaitGroup_access_load_noCopy (l : Loc) (v : sync.WaitGroup.t) (dq : DFrac) :

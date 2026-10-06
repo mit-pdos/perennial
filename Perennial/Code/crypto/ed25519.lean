@@ -32,7 +32,7 @@ def Options [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Options
 
-axiom «Optionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Options.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom PublicKeySize [FfiSyntax] [GoGlobalContext] : val
 
@@ -48,7 +48,7 @@ noncomputable def privateKeyCache [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def cryptocustomrand [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.cryptocustomrand"
 
-axiom cryptocustomrand'init [FfiSyntax] [GoGlobalContext] : val
+axiom cryptocustomrand.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def GenerateKey [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.GenerateKey"
@@ -74,38 +74,38 @@ noncomputable def VerifyWithOptions [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.crypto.ed25519 where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.ed25519)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
-  (App (Val cryptocustomrand'init) (Val #())))))))
+  (App (Val cryptocustomrand.init) (Val #())))))))
 
 namespace PublicKey
 abbrev t [FfiSyntax] : Type := slice.t
 end PublicKey
 
-@[reducible] def «PublicKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def PublicKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
-class PublicKey_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  PublicKey_underlying : go.UnderlyingDirectedEq PublicKey «PublicKeyⁱᵐᵖˡ»
+class PublicKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq PublicKey PublicKey.underlying
 
-attribute [instance] PublicKey_Assumptions.PublicKey_underlying
+attribute [instance] PublicKey.TypeAssumptions.underlying
 
 namespace PrivateKey
 abbrev t [FfiSyntax] : Type := slice.t
 end PrivateKey
 
-@[reducible] def «PrivateKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def PrivateKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
-class PrivateKey_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  PrivateKey_underlying : go.UnderlyingDirectedEq PrivateKey «PrivateKeyⁱᵐᵖˡ»
+class PrivateKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq PrivateKey PrivateKey.underlying
 
-attribute [instance] PrivateKey_Assumptions.PrivateKey_underlying
+attribute [instance] PrivateKey.TypeAssumptions.underlying
 
 namespace Options
 axiom t : Type
@@ -113,19 +113,19 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Options
 
-class Options_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Options_type_repr : go.TypeReprUnderlying «Optionsⁱᵐᵖˡ» Options.t
-  Options_underlying : go.UnderlyingDirectedEq Options «Optionsⁱᵐᵖˡ»
-  «Optionsⁱᵐᵖˡ_underlying» : go.IsUnderlying «Optionsⁱᵐᵖˡ» «Optionsⁱᵐᵖˡ»
+class Options.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Options.underlying Options.t
+  underlying : go.UnderlyingDirectedEq Options Options.underlying
+  isUnderlying : go.IsUnderlying Options.underlying Options.underlying
 
-attribute [instance] Options_Assumptions.Options_type_repr
-  Options_Assumptions.Options_underlying
-  Options_Assumptions.«Optionsⁱᵐᵖˡ_underlying»
+attribute [instance] Options.TypeAssumptions.type_repr
+  Options.TypeAssumptions.underlying
+  Options.TypeAssumptions.isUnderlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  PublicKey_instance : PublicKey_Assumptions
-  PrivateKey_instance : PrivateKey_Assumptions
-  Options_instance : Options_Assumptions
+  PublicKey_instance : PublicKey.TypeAssumptions
+  PrivateKey_instance : PrivateKey.TypeAssumptions
+  Options_instance : Options.TypeAssumptions
 
 attribute [instance] Assumptions.PublicKey_instance
   Assumptions.PrivateKey_instance

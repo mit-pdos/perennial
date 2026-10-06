@@ -35,7 +35,7 @@ instance Rand_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Rand_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.rand.Rand.t math.rand.«Randⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.rand.Rand.t math.rand.Rand.underlying := by
   solve_into_val_typed_struct
 
 instance Rand_access_load_src (l : Loc) (v : math.rand.Rand.t) (dq : DFrac) :
@@ -123,7 +123,7 @@ instance runtimeSource_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance runtimeSource_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.rand.runtimeSource.t math.rand.«runtimeSourceⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.rand.runtimeSource.t math.rand.runtimeSource.underlying := by
   solve_into_val_typed_struct
 
 instance runtimeSource_access_load_mu (l : Loc) (v : math.rand.runtimeSource.t) (dq : DFrac) :
@@ -164,7 +164,7 @@ instance lockedSource_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lockedSource_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.rand.lockedSource.t math.rand.«lockedSourceⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.rand.lockedSource.t math.rand.lockedSource.underlying := by
   solve_into_val_typed_struct
 
 instance lockedSource_access_load_lk (l : Loc) (v : math.rand.lockedSource.t) (dq : DFrac) :
@@ -222,7 +222,7 @@ instance rngSource_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance rngSource_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.rand.rngSource.t math.rand.«rngSourceⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.rand.rngSource.t math.rand.rngSource.underlying := by
   solve_into_val_typed_struct
 
 instance rngSource_access_load_tap (l : Loc) (v : math.rand.rngSource.t) (dq : DFrac) :
@@ -302,7 +302,7 @@ instance Zipf_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Zipf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.rand.Zipf.t math.rand.«Zipfⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.rand.Zipf.t math.rand.Zipf.underlying := by
   solve_into_val_typed_struct
 
 instance Zipf_access_load_r (l : Loc) (v : math.rand.Zipf.t) (dq : DFrac) :

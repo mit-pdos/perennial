@@ -171,7 +171,7 @@ noncomputable def value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"context.value"
 
 /-- go: context.go:175:30 -/
-noncomputable def «deadlineExceededError__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def deadlineExceededError.Error.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -179,7 +179,7 @@ noncomputable def «deadlineExceededError__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlo
   (Val #(go!"context deadline exceeded"))))))
 
 /-- go: context.go:176:30 -/
-noncomputable def «deadlineExceededError__Timeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def deadlineExceededError.Timeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -187,7 +187,7 @@ noncomputable def «deadlineExceededError__Timeoutⁱᵐᵖˡ» [FfiSyntax] [GoG
   (Val #true)))))
 
 /-- go: context.go:177:30 -/
-noncomputable def «deadlineExceededError__Temporaryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def deadlineExceededError.Temporary.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -195,7 +195,7 @@ noncomputable def «deadlineExceededError__Temporaryⁱᵐᵖˡ» [FfiSyntax] [G
   (Val #true)))))
 
 /-- go: context.go:183:17 -/
-noncomputable def «emptyCtx__Deadlineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def emptyCtx.Deadline.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -205,7 +205,7 @@ noncomputable def «emptyCtx__Deadlineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time))) (Var "deadline")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))))))
 
 /-- go: context.go:187:17 -/
-noncomputable def «emptyCtx__Doneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def emptyCtx.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -213,7 +213,7 @@ noncomputable def «emptyCtx__Doneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Val UntypedNil))))))
 
 /-- go: context.go:191:17 -/
-noncomputable def «emptyCtx__Errⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def emptyCtx.Err.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -221,7 +221,7 @@ noncomputable def «emptyCtx__Errⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
 
 /-- go: context.go:195:17 -/
-noncomputable def «emptyCtx__Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def emptyCtx.Value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "key"
   (App (Val exceptionDo)
@@ -230,7 +230,7 @@ noncomputable def «emptyCtx__Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))))
 
 /-- go: context.go:201:22 -/
-noncomputable def «backgroundCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def backgroundCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -238,7 +238,7 @@ noncomputable def «backgroundCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (Val #(go!"context.Background"))))))
 
 /-- go: context.go:207:16 -/
-noncomputable def «todoCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def todoCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -251,7 +251,7 @@ noncomputable def «todoCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     requests.
 
     go: context.go:215:6 -/
-noncomputable def «Backgroundⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Background.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -263,7 +263,7 @@ noncomputable def «Backgroundⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     parameter).
 
     go: context.go:223:6 -/
-noncomputable def «TODOⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TODO.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -278,7 +278,7 @@ noncomputable def «TODOⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     call cancel as soon as the operations running in this [Context] complete.
 
     go: context.go:240:6 -/
-noncomputable def «WithCancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WithCancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exceptionDo)
   (Let "cancel" (App (Val (GoInstruction (GoAlloc CancelFunc))) (App (Val (GoInstruction (GoZeroVal CancelFunc))) (Val #())))
@@ -315,7 +315,7 @@ noncomputable def «WithCancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     	context.Cause(ctx) // returns myError
 
     go: context.go:268:6 -/
-noncomputable def «WithCancelCauseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WithCancelCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exceptionDo)
   (Let "cancel" (App (Val (GoInstruction (GoAlloc CancelCauseFunc))) (App (Val (GoInstruction (GoZeroVal CancelCauseFunc))) (Val #())))
@@ -341,7 +341,7 @@ noncomputable def «WithCancelCauseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType cancelCtx)))) (Pair (Var "c") (Var "$r0"))))))))))))
 
 /-- go: context.go:273:6 -/
-noncomputable def «withCancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def withCancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exceptionDo)
   (Let "parent" (App (Val (GoInstruction (GoAlloc Context))) (Var "parent"))
@@ -373,7 +373,7 @@ noncomputable def «withCancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     Cause returns nil if c has not been canceled yet.
 
     go: context.go:288:6 -/
-noncomputable def «Causeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc Context))) (Var "c"))
@@ -444,7 +444,7 @@ noncomputable def «Causeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     AfterFunc will use it to schedule the call.
 
     go: context.go:325:6 -/
-noncomputable def «AfterFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def AfterFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Lam "f"
   (App (Val exceptionDo)
@@ -494,7 +494,7 @@ noncomputable def «AfterFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType afterFuncCtx)))) (Pair (Var "a") (Var "$r0")))))))))))))
 
 /-- go: context.go:352:24 -/
-noncomputable def «afterFuncCtx__cancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def afterFuncCtx.cancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "removeFromParent"
   (Lam "err"
@@ -541,7 +541,7 @@ noncomputable def «afterFuncCtx__cancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     different done channel, in which case we should not bypass it.)
 
     go: context.go:382:6 -/
-noncomputable def «parentCancelCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def parentCancelCtx.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exceptionDo)
   (Let "parent" (App (Val (GoInstruction (GoAlloc Context))) (Var "parent"))
@@ -600,7 +600,7 @@ noncomputable def «parentCancelCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- removeChild removes a context from its parent.
 
     go: context.go:399:6 -/
-noncomputable def «removeChildⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def removeChild.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "child"
   (App (Val exceptionDo)
@@ -666,7 +666,7 @@ noncomputable def «removeChildⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore stopCtx))) (Pair (Var "s") (Var "$r0")))))))))))))))))))
 
 /-- go: context.go:441:21 -/
-noncomputable def «cancelCtx__Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def cancelCtx.Value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "key"
   (App (Val exceptionDo)
@@ -684,7 +684,7 @@ noncomputable def «cancelCtx__Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (Val #())))))))))
 
 /-- go: context.go:448:21 -/
-noncomputable def «cancelCtx__Doneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def cancelCtx.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val wrapDefer)
@@ -730,7 +730,7 @@ noncomputable def «cancelCtx__Doneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "d") (Var "$r0"))))))))))))
 
 /-- go: context.go:463:21 -/
-noncomputable def «cancelCtx__Errⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def cancelCtx.Err.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -756,7 +756,7 @@ noncomputable def «cancelCtx__Errⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     It sets the parent context of cancelCtx.
 
     go: context.go:475:21 -/
-noncomputable def «cancelCtx__propagateCancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def cancelCtx.propagateCancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "parent"
   (Lam "child"
@@ -916,7 +916,7 @@ noncomputable def «cancelCtx__propagateCancelⁱᵐᵖˡ» [FfiSyntax] [GoGloba
   (App (Val (GoInstruction (GoStore Context))) (Pair (App (Val (GoInstruction (StructFieldRef cancelCtx go!"Context"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx)))) (Var "c"))) (Var "$r0"))))))))))))))
 
 /-- go: context.go:542:21 -/
-noncomputable def «cancelCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def cancelCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -930,7 +930,7 @@ noncomputable def «cancelCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
     cancel sets c.cause to cause if this is the first time c is canceled.
 
     go: context.go:549:21 -/
-noncomputable def «cancelCtx__cancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def cancelCtx.cancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "removeFromParent"
   (Lam "err"
@@ -1032,7 +1032,7 @@ noncomputable def «cancelCtx__cancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
     Calling [Cause] on the returned context returns nil.
 
     go: context.go:585:6 -/
-noncomputable def «WithoutCancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WithoutCancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (App (Val exceptionDo)
   (Let "parent" (App (Val (GoInstruction (GoAlloc Context))) (Var "parent"))
@@ -1048,7 +1048,7 @@ noncomputable def «WithoutCancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (Val #())))))))
 
 /-- go: context.go:596:25 -/
-noncomputable def «withoutCancelCtx__Deadlineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def withoutCancelCtx.Deadline.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1058,7 +1058,7 @@ noncomputable def «withoutCancelCtx__Deadlineⁱᵐᵖˡ» [FfiSyntax] [GoGloba
   (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time))) (Var "deadline")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))))))
 
 /-- go: context.go:600:25 -/
-noncomputable def «withoutCancelCtx__Doneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def withoutCancelCtx.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1066,7 +1066,7 @@ noncomputable def «withoutCancelCtx__Doneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Val UntypedNil))))))
 
 /-- go: context.go:604:25 -/
-noncomputable def «withoutCancelCtx__Errⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def withoutCancelCtx.Err.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1074,7 +1074,7 @@ noncomputable def «withoutCancelCtx__Errⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
 
 /-- go: context.go:608:27 -/
-noncomputable def «withoutCancelCtx__Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def withoutCancelCtx.Value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "key"
   (App (Val exceptionDo)
@@ -1086,7 +1086,7 @@ noncomputable def «withoutCancelCtx__Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (App (App (Val (GoInstruction (FuncResolve value []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: context.go:612:27 -/
-noncomputable def «withoutCancelCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def withoutCancelCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1106,7 +1106,7 @@ noncomputable def «withoutCancelCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
     call cancel as soon as the operations running in this [Context] complete.
 
     go: context.go:625:6 -/
-noncomputable def «WithDeadlineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WithDeadline.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "d"
   (App (Val exceptionDo)
@@ -1126,7 +1126,7 @@ noncomputable def «WithDeadlineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     not set the cause.
 
     go: context.go:632:6 -/
-noncomputable def «WithDeadlineCauseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "d"
   (Lam "cause"
@@ -1245,7 +1245,7 @@ noncomputable def «WithDeadlineCauseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (Val #()))))))))))))
 
 /-- go: context.go:669:20 -/
-noncomputable def «timerCtx__Deadlineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def timerCtx.Deadline.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1256,7 +1256,7 @@ noncomputable def «timerCtx__Deadlineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time))) (App (Val (GoInstruction (StructFieldRef timerCtx go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx)))) (Var "c")))) (Val #true)))))))))
 
 /-- go: context.go:673:20 -/
-noncomputable def «timerCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def timerCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1267,7 +1267,7 @@ noncomputable def «timerCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Until []))) (Val #())) (Var "$a0")))) (Val #())))) (Val #(go!"])")))))))))
 
 /-- go: context.go:679:20 -/
-noncomputable def «timerCtx__cancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def timerCtx.cancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "removeFromParent"
   (Lam "err"
@@ -1322,7 +1322,7 @@ noncomputable def «timerCtx__cancelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     	}
 
     go: context.go:703:6 -/
-noncomputable def «WithTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WithTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "timeout"
   (App (Val exceptionDo)
@@ -1342,7 +1342,7 @@ noncomputable def «WithTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     not set the cause.
 
     go: context.go:710:6 -/
-noncomputable def «WithTimeoutCauseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WithTimeoutCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "timeout"
   (Lam "cause"
@@ -1361,7 +1361,7 @@ noncomputable def «WithTimeoutCauseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (Pair (Var "$ret0") (Var "$ret1")))))))))))))
 
 /-- go: context.go:762:20 -/
-noncomputable def «valueCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def valueCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1373,7 +1373,7 @@ noncomputable def «valueCtx__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (App (Val (GoInstruction (FuncResolve stringify []))) (Val #())) (Var "$a0"))))) (Val #(go!")")))))))))
 
 /-- go: context.go:768:20 -/
-noncomputable def «valueCtx__Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def valueCtx.Value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "key"
   (App (Val exceptionDo)
@@ -1391,7 +1391,7 @@ noncomputable def «valueCtx__Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (Val #())))))))))
 
 /-- go: context.go:775:6 -/
-noncomputable def «valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "key"
   (App (Val exceptionDo)
@@ -1529,13 +1529,13 @@ namespace Context
 abbrev t [FfiSyntax] : Type := interface.t
 end Context
 
-@[reducible] def «Contextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Context.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Deadline" (go.signature.Signature [] false [_root_.Perennial.time.Time, go.bool])), (go.InterfaceElem.MethodElem go!"Done" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))])), (go.InterfaceElem.MethodElem go!"Err" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"Value" (go.signature.Signature [go.any] false [go.any]))])
 
-class Context_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Context_underlying : go.UnderlyingDirectedEq Context «Contextⁱᵐᵖˡ»
+class Context.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Context Context.underlying
 
-attribute [instance] Context_Assumptions.Context_underlying
+attribute [instance] Context.TypeAssumptions.underlying
 
 namespace deadlineExceededError
 structure t [FfiSyntax] where
@@ -1545,40 +1545,40 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end deadlineExceededError
 
-@[reducible] def deadlineExceededError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def deadlineExceededError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def deadlineExceededError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  deadlineExceededError'fds_unsealed
+@[irreducible] def deadlineExceededError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  deadlineExceededError.fieldsUnsealed
 
 instance equals_unfold_deadlineExceededError [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold deadlineExceededError'fds deadlineExceededError'fds_unsealed :=
-  ⟨by unfold deadlineExceededError'fds; rfl⟩
+    EqualsUnfold deadlineExceededError.fields deadlineExceededError.fieldsUnsealed :=
+  ⟨by unfold deadlineExceededError.fields; rfl⟩
 
-@[reducible] def «deadlineExceededErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType deadlineExceededError'fds)
+@[reducible] def deadlineExceededError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType deadlineExceededError.fields)
 
-class deadlineExceededError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  deadlineExceededError_type_repr : go.TypeReprUnderlying «deadlineExceededErrorⁱᵐᵖˡ» deadlineExceededError.t
-  deadlineExceededError_underlying : go.UnderlyingDirectedEq deadlineExceededError «deadlineExceededErrorⁱᵐᵖˡ»
-  deadlineExceededError_Error_unfold : MethodUnfold deadlineExceededError go!"Error" «deadlineExceededError__Errorⁱᵐᵖˡ»
-  deadlineExceededError_Temporary_unfold : MethodUnfold deadlineExceededError go!"Temporary" «deadlineExceededError__Temporaryⁱᵐᵖˡ»
-  deadlineExceededError_Timeout_unfold : MethodUnfold deadlineExceededError go!"Timeout" «deadlineExceededError__Timeoutⁱᵐᵖˡ»
-  deadlineExceededError'ptr_Error_unfold : MethodUnfold (go.GoType.PointerType deadlineExceededError) go!"Error" (LamV "$r"
+class deadlineExceededError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying deadlineExceededError.underlying deadlineExceededError.t
+  underlying : go.UnderlyingDirectedEq deadlineExceededError deadlineExceededError.underlying
+  Error_unfold : MethodUnfold deadlineExceededError go!"Error" deadlineExceededError.Error.impl
+  Temporary_unfold : MethodUnfold deadlineExceededError go!"Temporary" deadlineExceededError.Temporary.impl
+  Timeout_unfold : MethodUnfold deadlineExceededError go!"Timeout" deadlineExceededError.Timeout.impl
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType deadlineExceededError) go!"Error" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve deadlineExceededError go!"Error"))) (App (Val (GoInstruction (GoLoad deadlineExceededError))) (Var "$r"))))
-  deadlineExceededError'ptr_Temporary_unfold : MethodUnfold (go.GoType.PointerType deadlineExceededError) go!"Temporary" (LamV "$r"
+  ptr_Temporary_unfold : MethodUnfold (go.GoType.PointerType deadlineExceededError) go!"Temporary" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve deadlineExceededError go!"Temporary"))) (App (Val (GoInstruction (GoLoad deadlineExceededError))) (Var "$r"))))
-  deadlineExceededError'ptr_Timeout_unfold : MethodUnfold (go.GoType.PointerType deadlineExceededError) go!"Timeout" (LamV "$r"
+  ptr_Timeout_unfold : MethodUnfold (go.GoType.PointerType deadlineExceededError) go!"Timeout" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve deadlineExceededError go!"Timeout"))) (App (Val (GoInstruction (GoLoad deadlineExceededError))) (Var "$r"))))
 
-attribute [instance] deadlineExceededError_Assumptions.deadlineExceededError_type_repr
-  deadlineExceededError_Assumptions.deadlineExceededError_underlying
-  deadlineExceededError_Assumptions.deadlineExceededError_Error_unfold
-  deadlineExceededError_Assumptions.deadlineExceededError_Temporary_unfold
-  deadlineExceededError_Assumptions.deadlineExceededError_Timeout_unfold
-  deadlineExceededError_Assumptions.deadlineExceededError'ptr_Error_unfold
-  deadlineExceededError_Assumptions.deadlineExceededError'ptr_Temporary_unfold
-  deadlineExceededError_Assumptions.deadlineExceededError'ptr_Timeout_unfold
+attribute [instance] deadlineExceededError.TypeAssumptions.type_repr
+  deadlineExceededError.TypeAssumptions.underlying
+  deadlineExceededError.TypeAssumptions.Error_unfold
+  deadlineExceededError.TypeAssumptions.Temporary_unfold
+  deadlineExceededError.TypeAssumptions.Timeout_unfold
+  deadlineExceededError.TypeAssumptions.ptr_Error_unfold
+  deadlineExceededError.TypeAssumptions.ptr_Temporary_unfold
+  deadlineExceededError.TypeAssumptions.ptr_Timeout_unfold
 
 namespace emptyCtx
 structure t [FfiSyntax] where
@@ -1588,45 +1588,45 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end emptyCtx
 
-@[reducible] def emptyCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def emptyCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def emptyCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  emptyCtx'fds_unsealed
+@[irreducible] def emptyCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  emptyCtx.fieldsUnsealed
 
 instance equals_unfold_emptyCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold emptyCtx'fds emptyCtx'fds_unsealed :=
-  ⟨by unfold emptyCtx'fds; rfl⟩
+    EqualsUnfold emptyCtx.fields emptyCtx.fieldsUnsealed :=
+  ⟨by unfold emptyCtx.fields; rfl⟩
 
-@[reducible] def «emptyCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType emptyCtx'fds)
+@[reducible] def emptyCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType emptyCtx.fields)
 
-class emptyCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  emptyCtx_type_repr : go.TypeReprUnderlying «emptyCtxⁱᵐᵖˡ» emptyCtx.t
-  emptyCtx_underlying : go.UnderlyingDirectedEq emptyCtx «emptyCtxⁱᵐᵖˡ»
-  emptyCtx_Deadline_unfold : MethodUnfold emptyCtx go!"Deadline" «emptyCtx__Deadlineⁱᵐᵖˡ»
-  emptyCtx_Done_unfold : MethodUnfold emptyCtx go!"Done" «emptyCtx__Doneⁱᵐᵖˡ»
-  emptyCtx_Err_unfold : MethodUnfold emptyCtx go!"Err" «emptyCtx__Errⁱᵐᵖˡ»
-  emptyCtx_Value_unfold : MethodUnfold emptyCtx go!"Value" «emptyCtx__Valueⁱᵐᵖˡ»
-  emptyCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType emptyCtx) go!"Deadline" (LamV "$r"
+class emptyCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying emptyCtx.underlying emptyCtx.t
+  underlying : go.UnderlyingDirectedEq emptyCtx emptyCtx.underlying
+  Deadline_unfold : MethodUnfold emptyCtx go!"Deadline" emptyCtx.Deadline.impl
+  Done_unfold : MethodUnfold emptyCtx go!"Done" emptyCtx.Done.impl
+  Err_unfold : MethodUnfold emptyCtx go!"Err" emptyCtx.Err.impl
+  Value_unfold : MethodUnfold emptyCtx go!"Value" emptyCtx.Value.impl
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType emptyCtx) go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Deadline"))) (App (Val (GoInstruction (GoLoad emptyCtx))) (Var "$r"))))
-  emptyCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType emptyCtx) go!"Done" (LamV "$r"
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType emptyCtx) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Done"))) (App (Val (GoInstruction (GoLoad emptyCtx))) (Var "$r"))))
-  emptyCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType emptyCtx) go!"Err" (LamV "$r"
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType emptyCtx) go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Err"))) (App (Val (GoInstruction (GoLoad emptyCtx))) (Var "$r"))))
-  emptyCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType emptyCtx) go!"Value" (LamV "$r"
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType emptyCtx) go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Value"))) (App (Val (GoInstruction (GoLoad emptyCtx))) (Var "$r"))))
 
-attribute [instance] emptyCtx_Assumptions.emptyCtx_type_repr
-  emptyCtx_Assumptions.emptyCtx_underlying
-  emptyCtx_Assumptions.emptyCtx_Deadline_unfold
-  emptyCtx_Assumptions.emptyCtx_Done_unfold
-  emptyCtx_Assumptions.emptyCtx_Err_unfold
-  emptyCtx_Assumptions.emptyCtx_Value_unfold
-  emptyCtx_Assumptions.emptyCtx'ptr_Deadline_unfold
-  emptyCtx_Assumptions.emptyCtx'ptr_Done_unfold
-  emptyCtx_Assumptions.emptyCtx'ptr_Err_unfold
-  emptyCtx_Assumptions.emptyCtx'ptr_Value_unfold
+attribute [instance] emptyCtx.TypeAssumptions.type_repr
+  emptyCtx.TypeAssumptions.underlying
+  emptyCtx.TypeAssumptions.Deadline_unfold
+  emptyCtx.TypeAssumptions.Done_unfold
+  emptyCtx.TypeAssumptions.Err_unfold
+  emptyCtx.TypeAssumptions.Value_unfold
+  emptyCtx.TypeAssumptions.ptr_Deadline_unfold
+  emptyCtx.TypeAssumptions.ptr_Done_unfold
+  emptyCtx.TypeAssumptions.ptr_Err_unfold
+  emptyCtx.TypeAssumptions.ptr_Value_unfold
 
 namespace backgroundCtx
 structure t [FfiSyntax] where
@@ -1637,58 +1637,58 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end backgroundCtx
 
-@[reducible] def backgroundCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def backgroundCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"emptyCtx" emptyCtx)]
 
-@[irreducible] def backgroundCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  backgroundCtx'fds_unsealed
+@[irreducible] def backgroundCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  backgroundCtx.fieldsUnsealed
 
 instance equals_unfold_backgroundCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold backgroundCtx'fds backgroundCtx'fds_unsealed :=
-  ⟨by unfold backgroundCtx'fds; rfl⟩
+    EqualsUnfold backgroundCtx.fields backgroundCtx.fieldsUnsealed :=
+  ⟨by unfold backgroundCtx.fields; rfl⟩
 
-@[reducible] def «backgroundCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType backgroundCtx'fds)
+@[reducible] def backgroundCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType backgroundCtx.fields)
 
-class backgroundCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  backgroundCtx_type_repr : go.TypeReprUnderlying «backgroundCtxⁱᵐᵖˡ» backgroundCtx.t
-  backgroundCtx_underlying : go.UnderlyingDirectedEq backgroundCtx «backgroundCtxⁱᵐᵖˡ»
-  backgroundCtx_get_emptyCtx : ∀ (x : backgroundCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «backgroundCtxⁱᵐᵖˡ» go!"emptyCtx") #x (Val #(x.emptyCtx'))
-  backgroundCtx_set_emptyCtx : ∀ (x : backgroundCtx.t) (y : emptyCtx.t), go.IsGoStepPureDetTagged under (StructFieldSet «backgroundCtxⁱᵐᵖˡ» go!"emptyCtx") (PairV #x #y) (Val #(({ x with emptyCtx' := y } : backgroundCtx.t)))
-  backgroundCtx_Deadline_unfold : MethodUnfold backgroundCtx go!"Deadline" (LamV "$r"
+class backgroundCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying backgroundCtx.underlying backgroundCtx.t
+  underlying : go.UnderlyingDirectedEq backgroundCtx backgroundCtx.underlying
+  get_emptyCtx : ∀ (x : backgroundCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet backgroundCtx.underlying go!"emptyCtx") #x (Val #(x.emptyCtx'))
+  set_emptyCtx : ∀ (x : backgroundCtx.t) (y : emptyCtx.t), go.IsGoStepPureDetTagged under (StructFieldSet backgroundCtx.underlying go!"emptyCtx") (PairV #x #y) (Val #(({ x with emptyCtx' := y } : backgroundCtx.t)))
+  Deadline_unfold : MethodUnfold backgroundCtx go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet backgroundCtx go!"emptyCtx"))) (Var "$r"))))
-  backgroundCtx_Done_unfold : MethodUnfold backgroundCtx go!"Done" (LamV "$r"
+  Done_unfold : MethodUnfold backgroundCtx go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Done"))) (App (Val (GoInstruction (StructFieldGet backgroundCtx go!"emptyCtx"))) (Var "$r"))))
-  backgroundCtx_Err_unfold : MethodUnfold backgroundCtx go!"Err" (LamV "$r"
+  Err_unfold : MethodUnfold backgroundCtx go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Err"))) (App (Val (GoInstruction (StructFieldGet backgroundCtx go!"emptyCtx"))) (Var "$r"))))
-  backgroundCtx_String_unfold : MethodUnfold backgroundCtx go!"String" «backgroundCtx__Stringⁱᵐᵖˡ»
-  backgroundCtx_Value_unfold : MethodUnfold backgroundCtx go!"Value" (LamV "$r"
+  String_unfold : MethodUnfold backgroundCtx go!"String" backgroundCtx.String.impl
+  Value_unfold : MethodUnfold backgroundCtx go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Value"))) (App (Val (GoInstruction (StructFieldGet backgroundCtx go!"emptyCtx"))) (Var "$r"))))
-  backgroundCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"Deadline" (LamV "$r"
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType emptyCtx) go!"Deadline"))) (App (Val (GoInstruction (StructFieldRef backgroundCtx go!"emptyCtx"))) (Var "$r"))))
-  backgroundCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"Done" (LamV "$r"
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType emptyCtx) go!"Done"))) (App (Val (GoInstruction (StructFieldRef backgroundCtx go!"emptyCtx"))) (Var "$r"))))
-  backgroundCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"Err" (LamV "$r"
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType emptyCtx) go!"Err"))) (App (Val (GoInstruction (StructFieldRef backgroundCtx go!"emptyCtx"))) (Var "$r"))))
-  backgroundCtx'ptr_String_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve backgroundCtx go!"String"))) (App (Val (GoInstruction (GoLoad backgroundCtx))) (Var "$r"))))
-  backgroundCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"Value" (LamV "$r"
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType backgroundCtx) go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType emptyCtx) go!"Value"))) (App (Val (GoInstruction (StructFieldRef backgroundCtx go!"emptyCtx"))) (Var "$r"))))
 
-attribute [instance] backgroundCtx_Assumptions.backgroundCtx_type_repr
-  backgroundCtx_Assumptions.backgroundCtx_underlying
-  backgroundCtx_Assumptions.backgroundCtx_get_emptyCtx
-  backgroundCtx_Assumptions.backgroundCtx_set_emptyCtx
-  backgroundCtx_Assumptions.backgroundCtx_Deadline_unfold
-  backgroundCtx_Assumptions.backgroundCtx_Done_unfold
-  backgroundCtx_Assumptions.backgroundCtx_Err_unfold
-  backgroundCtx_Assumptions.backgroundCtx_String_unfold
-  backgroundCtx_Assumptions.backgroundCtx_Value_unfold
-  backgroundCtx_Assumptions.backgroundCtx'ptr_Deadline_unfold
-  backgroundCtx_Assumptions.backgroundCtx'ptr_Done_unfold
-  backgroundCtx_Assumptions.backgroundCtx'ptr_Err_unfold
-  backgroundCtx_Assumptions.backgroundCtx'ptr_String_unfold
-  backgroundCtx_Assumptions.backgroundCtx'ptr_Value_unfold
+attribute [instance] backgroundCtx.TypeAssumptions.type_repr
+  backgroundCtx.TypeAssumptions.underlying
+  backgroundCtx.TypeAssumptions.get_emptyCtx
+  backgroundCtx.TypeAssumptions.set_emptyCtx
+  backgroundCtx.TypeAssumptions.Deadline_unfold
+  backgroundCtx.TypeAssumptions.Done_unfold
+  backgroundCtx.TypeAssumptions.Err_unfold
+  backgroundCtx.TypeAssumptions.String_unfold
+  backgroundCtx.TypeAssumptions.Value_unfold
+  backgroundCtx.TypeAssumptions.ptr_Deadline_unfold
+  backgroundCtx.TypeAssumptions.ptr_Done_unfold
+  backgroundCtx.TypeAssumptions.ptr_Err_unfold
+  backgroundCtx.TypeAssumptions.ptr_String_unfold
+  backgroundCtx.TypeAssumptions.ptr_Value_unfold
 
 namespace todoCtx
 structure t [FfiSyntax] where
@@ -1699,94 +1699,94 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end todoCtx
 
-@[reducible] def todoCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def todoCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"emptyCtx" emptyCtx)]
 
-@[irreducible] def todoCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  todoCtx'fds_unsealed
+@[irreducible] def todoCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  todoCtx.fieldsUnsealed
 
 instance equals_unfold_todoCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold todoCtx'fds todoCtx'fds_unsealed :=
-  ⟨by unfold todoCtx'fds; rfl⟩
+    EqualsUnfold todoCtx.fields todoCtx.fieldsUnsealed :=
+  ⟨by unfold todoCtx.fields; rfl⟩
 
-@[reducible] def «todoCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType todoCtx'fds)
+@[reducible] def todoCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType todoCtx.fields)
 
-class todoCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  todoCtx_type_repr : go.TypeReprUnderlying «todoCtxⁱᵐᵖˡ» todoCtx.t
-  todoCtx_underlying : go.UnderlyingDirectedEq todoCtx «todoCtxⁱᵐᵖˡ»
-  todoCtx_get_emptyCtx : ∀ (x : todoCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «todoCtxⁱᵐᵖˡ» go!"emptyCtx") #x (Val #(x.emptyCtx'))
-  todoCtx_set_emptyCtx : ∀ (x : todoCtx.t) (y : emptyCtx.t), go.IsGoStepPureDetTagged under (StructFieldSet «todoCtxⁱᵐᵖˡ» go!"emptyCtx") (PairV #x #y) (Val #(({ x with emptyCtx' := y } : todoCtx.t)))
-  todoCtx_Deadline_unfold : MethodUnfold todoCtx go!"Deadline" (LamV "$r"
+class todoCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying todoCtx.underlying todoCtx.t
+  underlying : go.UnderlyingDirectedEq todoCtx todoCtx.underlying
+  get_emptyCtx : ∀ (x : todoCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet todoCtx.underlying go!"emptyCtx") #x (Val #(x.emptyCtx'))
+  set_emptyCtx : ∀ (x : todoCtx.t) (y : emptyCtx.t), go.IsGoStepPureDetTagged under (StructFieldSet todoCtx.underlying go!"emptyCtx") (PairV #x #y) (Val #(({ x with emptyCtx' := y } : todoCtx.t)))
+  Deadline_unfold : MethodUnfold todoCtx go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet todoCtx go!"emptyCtx"))) (Var "$r"))))
-  todoCtx_Done_unfold : MethodUnfold todoCtx go!"Done" (LamV "$r"
+  Done_unfold : MethodUnfold todoCtx go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Done"))) (App (Val (GoInstruction (StructFieldGet todoCtx go!"emptyCtx"))) (Var "$r"))))
-  todoCtx_Err_unfold : MethodUnfold todoCtx go!"Err" (LamV "$r"
+  Err_unfold : MethodUnfold todoCtx go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Err"))) (App (Val (GoInstruction (StructFieldGet todoCtx go!"emptyCtx"))) (Var "$r"))))
-  todoCtx_String_unfold : MethodUnfold todoCtx go!"String" «todoCtx__Stringⁱᵐᵖˡ»
-  todoCtx_Value_unfold : MethodUnfold todoCtx go!"Value" (LamV "$r"
+  String_unfold : MethodUnfold todoCtx go!"String" todoCtx.String.impl
+  Value_unfold : MethodUnfold todoCtx go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx go!"Value"))) (App (Val (GoInstruction (StructFieldGet todoCtx go!"emptyCtx"))) (Var "$r"))))
-  todoCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"Deadline" (LamV "$r"
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType emptyCtx) go!"Deadline"))) (App (Val (GoInstruction (StructFieldRef todoCtx go!"emptyCtx"))) (Var "$r"))))
-  todoCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"Done" (LamV "$r"
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType emptyCtx) go!"Done"))) (App (Val (GoInstruction (StructFieldRef todoCtx go!"emptyCtx"))) (Var "$r"))))
-  todoCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"Err" (LamV "$r"
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType emptyCtx) go!"Err"))) (App (Val (GoInstruction (StructFieldRef todoCtx go!"emptyCtx"))) (Var "$r"))))
-  todoCtx'ptr_String_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve todoCtx go!"String"))) (App (Val (GoInstruction (GoLoad todoCtx))) (Var "$r"))))
-  todoCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"Value" (LamV "$r"
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType todoCtx) go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType emptyCtx) go!"Value"))) (App (Val (GoInstruction (StructFieldRef todoCtx go!"emptyCtx"))) (Var "$r"))))
 
-attribute [instance] todoCtx_Assumptions.todoCtx_type_repr
-  todoCtx_Assumptions.todoCtx_underlying
-  todoCtx_Assumptions.todoCtx_get_emptyCtx
-  todoCtx_Assumptions.todoCtx_set_emptyCtx
-  todoCtx_Assumptions.todoCtx_Deadline_unfold
-  todoCtx_Assumptions.todoCtx_Done_unfold
-  todoCtx_Assumptions.todoCtx_Err_unfold
-  todoCtx_Assumptions.todoCtx_String_unfold
-  todoCtx_Assumptions.todoCtx_Value_unfold
-  todoCtx_Assumptions.todoCtx'ptr_Deadline_unfold
-  todoCtx_Assumptions.todoCtx'ptr_Done_unfold
-  todoCtx_Assumptions.todoCtx'ptr_Err_unfold
-  todoCtx_Assumptions.todoCtx'ptr_String_unfold
-  todoCtx_Assumptions.todoCtx'ptr_Value_unfold
+attribute [instance] todoCtx.TypeAssumptions.type_repr
+  todoCtx.TypeAssumptions.underlying
+  todoCtx.TypeAssumptions.get_emptyCtx
+  todoCtx.TypeAssumptions.set_emptyCtx
+  todoCtx.TypeAssumptions.Deadline_unfold
+  todoCtx.TypeAssumptions.Done_unfold
+  todoCtx.TypeAssumptions.Err_unfold
+  todoCtx.TypeAssumptions.String_unfold
+  todoCtx.TypeAssumptions.Value_unfold
+  todoCtx.TypeAssumptions.ptr_Deadline_unfold
+  todoCtx.TypeAssumptions.ptr_Done_unfold
+  todoCtx.TypeAssumptions.ptr_Err_unfold
+  todoCtx.TypeAssumptions.ptr_String_unfold
+  todoCtx.TypeAssumptions.ptr_Value_unfold
 
 namespace CancelFunc
 abbrev t [FfiSyntax] : Type := func.t
 end CancelFunc
 
-@[reducible] def «CancelFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def CancelFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [] false []))
 
-class CancelFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  CancelFunc_underlying : go.UnderlyingDirectedEq CancelFunc «CancelFuncⁱᵐᵖˡ»
+class CancelFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq CancelFunc CancelFunc.underlying
 
-attribute [instance] CancelFunc_Assumptions.CancelFunc_underlying
+attribute [instance] CancelFunc.TypeAssumptions.underlying
 
 namespace CancelCauseFunc
 abbrev t [FfiSyntax] : Type := func.t
 end CancelCauseFunc
 
-@[reducible] def «CancelCauseFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def CancelCauseFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.error] false []))
 
-class CancelCauseFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  CancelCauseFunc_underlying : go.UnderlyingDirectedEq CancelCauseFunc «CancelCauseFuncⁱᵐᵖˡ»
+class CancelCauseFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq CancelCauseFunc CancelCauseFunc.underlying
 
-attribute [instance] CancelCauseFunc_Assumptions.CancelCauseFunc_underlying
+attribute [instance] CancelCauseFunc.TypeAssumptions.underlying
 
 namespace afterFuncer
 abbrev t [FfiSyntax] : Type := interface.t
 end afterFuncer
 
-@[reducible] def «afterFuncerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def afterFuncer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AfterFunc" (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [(go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))]))])
 
-class afterFuncer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  afterFuncer_underlying : go.UnderlyingDirectedEq afterFuncer «afterFuncerⁱᵐᵖˡ»
+class afterFuncer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq afterFuncer afterFuncer.underlying
 
-attribute [instance] afterFuncer_Assumptions.afterFuncer_underlying
+attribute [instance] afterFuncer.TypeAssumptions.underlying
 
 namespace cancelCtx
 structure t [FfiSyntax] where
@@ -1802,7 +1802,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end cancelCtx
 
-@[reducible] def cancelCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def cancelCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Context" Context),
 (go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"done" _root_.Perennial.sync.atomic.Value),
@@ -1810,64 +1810,64 @@ end cancelCtx
 (go.field_decl.FieldDecl go!"err" _root_.Perennial.sync.atomic.Value),
 (go.field_decl.FieldDecl go!"cause" go.error)]
 
-@[irreducible] def cancelCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  cancelCtx'fds_unsealed
+@[irreducible] def cancelCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  cancelCtx.fieldsUnsealed
 
 instance equals_unfold_cancelCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold cancelCtx'fds cancelCtx'fds_unsealed :=
-  ⟨by unfold cancelCtx'fds; rfl⟩
+    EqualsUnfold cancelCtx.fields cancelCtx.fieldsUnsealed :=
+  ⟨by unfold cancelCtx.fields; rfl⟩
 
-@[reducible] def «cancelCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType cancelCtx'fds)
+@[reducible] def cancelCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType cancelCtx.fields)
 
-class cancelCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  cancelCtx_type_repr : go.TypeReprUnderlying «cancelCtxⁱᵐᵖˡ» cancelCtx.t
-  cancelCtx_underlying : go.UnderlyingDirectedEq cancelCtx «cancelCtxⁱᵐᵖˡ»
-  cancelCtx_get_Context : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «cancelCtxⁱᵐᵖˡ» go!"Context") #x (Val #(x.Context'))
-  cancelCtx_set_Context : ∀ (x : cancelCtx.t) (y : Context.t), go.IsGoStepPureDetTagged under (StructFieldSet «cancelCtxⁱᵐᵖˡ» go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : cancelCtx.t)))
-  cancelCtx_get_mu : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «cancelCtxⁱᵐᵖˡ» go!"mu") #x (Val #(x.mu'))
-  cancelCtx_set_mu : ∀ (x : cancelCtx.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «cancelCtxⁱᵐᵖˡ» go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : cancelCtx.t)))
-  cancelCtx_get_done : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «cancelCtxⁱᵐᵖˡ» go!"done") #x (Val #(x.done'))
-  cancelCtx_set_done : ∀ (x : cancelCtx.t) (y : _root_.Perennial.sync.atomic.Value.t), go.IsGoStepPureDetTagged under (StructFieldSet «cancelCtxⁱᵐᵖˡ» go!"done") (PairV #x #y) (Val #(({ x with done' := y } : cancelCtx.t)))
-  cancelCtx_get_children : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «cancelCtxⁱᵐᵖˡ» go!"children") #x (Val #(x.children'))
-  cancelCtx_set_children : ∀ (x : cancelCtx.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «cancelCtxⁱᵐᵖˡ» go!"children") (PairV #x #y) (Val #(({ x with children' := y } : cancelCtx.t)))
-  cancelCtx_get_err : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «cancelCtxⁱᵐᵖˡ» go!"err") #x (Val #(x.err'))
-  cancelCtx_set_err : ∀ (x : cancelCtx.t) (y : _root_.Perennial.sync.atomic.Value.t), go.IsGoStepPureDetTagged under (StructFieldSet «cancelCtxⁱᵐᵖˡ» go!"err") (PairV #x #y) (Val #(({ x with err' := y } : cancelCtx.t)))
-  cancelCtx_get_cause : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «cancelCtxⁱᵐᵖˡ» go!"cause") #x (Val #(x.cause'))
-  cancelCtx_set_cause : ∀ (x : cancelCtx.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet «cancelCtxⁱᵐᵖˡ» go!"cause") (PairV #x #y) (Val #(({ x with cause' := y } : cancelCtx.t)))
-  cancelCtx_Deadline_unfold : MethodUnfold cancelCtx go!"Deadline" (LamV "$r"
+class cancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying cancelCtx.underlying cancelCtx.t
+  underlying : go.UnderlyingDirectedEq cancelCtx cancelCtx.underlying
+  get_Context : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"Context") #x (Val #(x.Context'))
+  set_Context : ∀ (x : cancelCtx.t) (y : Context.t), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : cancelCtx.t)))
+  get_mu : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : cancelCtx.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : cancelCtx.t)))
+  get_done : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"done") #x (Val #(x.done'))
+  set_done : ∀ (x : cancelCtx.t) (y : _root_.Perennial.sync.atomic.Value.t), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : cancelCtx.t)))
+  get_children : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"children") #x (Val #(x.children'))
+  set_children : ∀ (x : cancelCtx.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"children") (PairV #x #y) (Val #(({ x with children' := y } : cancelCtx.t)))
+  get_err : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"err") #x (Val #(x.err'))
+  set_err : ∀ (x : cancelCtx.t) (y : _root_.Perennial.sync.atomic.Value.t), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : cancelCtx.t)))
+  get_cause : ∀ (x : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"cause") #x (Val #(x.cause'))
+  set_cause : ∀ (x : cancelCtx.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"cause") (PairV #x #y) (Val #(({ x with cause' := y } : cancelCtx.t)))
+  Deadline_unfold : MethodUnfold cancelCtx go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet cancelCtx go!"Context"))) (Var "$r"))))
-  cancelCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"Deadline" (LamV "$r"
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Deadline"))) (App (Val (GoInstruction (GoLoad Context))) (App (Val (GoInstruction (StructFieldRef cancelCtx go!"Context"))) (Var "$r")))))
-  cancelCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"Done" «cancelCtx__Doneⁱᵐᵖˡ»
-  cancelCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"Err" «cancelCtx__Errⁱᵐᵖˡ»
-  cancelCtx'ptr_String_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"String" «cancelCtx__Stringⁱᵐᵖˡ»
-  cancelCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"Value" «cancelCtx__Valueⁱᵐᵖˡ»
-  cancelCtx'ptr_cancel_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"cancel" «cancelCtx__cancelⁱᵐᵖˡ»
-  cancelCtx'ptr_propagateCancel_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"propagateCancel" «cancelCtx__propagateCancelⁱᵐᵖˡ»
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"Done" cancelCtx.Done.impl
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"Err" cancelCtx.Err.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"String" cancelCtx.String.impl
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"Value" cancelCtx.Value.impl
+  ptr_cancel_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"cancel" cancelCtx.cancel.impl
+  ptr_propagateCancel_unfold : MethodUnfold (go.GoType.PointerType cancelCtx) go!"propagateCancel" cancelCtx.propagateCancel.impl
 
-attribute [instance] cancelCtx_Assumptions.cancelCtx_type_repr
-  cancelCtx_Assumptions.cancelCtx_underlying
-  cancelCtx_Assumptions.cancelCtx_get_Context
-  cancelCtx_Assumptions.cancelCtx_set_Context
-  cancelCtx_Assumptions.cancelCtx_get_mu
-  cancelCtx_Assumptions.cancelCtx_set_mu
-  cancelCtx_Assumptions.cancelCtx_get_done
-  cancelCtx_Assumptions.cancelCtx_set_done
-  cancelCtx_Assumptions.cancelCtx_get_children
-  cancelCtx_Assumptions.cancelCtx_set_children
-  cancelCtx_Assumptions.cancelCtx_get_err
-  cancelCtx_Assumptions.cancelCtx_set_err
-  cancelCtx_Assumptions.cancelCtx_get_cause
-  cancelCtx_Assumptions.cancelCtx_set_cause
-  cancelCtx_Assumptions.cancelCtx_Deadline_unfold
-  cancelCtx_Assumptions.cancelCtx'ptr_Deadline_unfold
-  cancelCtx_Assumptions.cancelCtx'ptr_Done_unfold
-  cancelCtx_Assumptions.cancelCtx'ptr_Err_unfold
-  cancelCtx_Assumptions.cancelCtx'ptr_String_unfold
-  cancelCtx_Assumptions.cancelCtx'ptr_Value_unfold
-  cancelCtx_Assumptions.cancelCtx'ptr_cancel_unfold
-  cancelCtx_Assumptions.cancelCtx'ptr_propagateCancel_unfold
+attribute [instance] cancelCtx.TypeAssumptions.type_repr
+  cancelCtx.TypeAssumptions.underlying
+  cancelCtx.TypeAssumptions.get_Context
+  cancelCtx.TypeAssumptions.set_Context
+  cancelCtx.TypeAssumptions.get_mu
+  cancelCtx.TypeAssumptions.set_mu
+  cancelCtx.TypeAssumptions.get_done
+  cancelCtx.TypeAssumptions.set_done
+  cancelCtx.TypeAssumptions.get_children
+  cancelCtx.TypeAssumptions.set_children
+  cancelCtx.TypeAssumptions.get_err
+  cancelCtx.TypeAssumptions.set_err
+  cancelCtx.TypeAssumptions.get_cause
+  cancelCtx.TypeAssumptions.set_cause
+  cancelCtx.TypeAssumptions.Deadline_unfold
+  cancelCtx.TypeAssumptions.ptr_Deadline_unfold
+  cancelCtx.TypeAssumptions.ptr_Done_unfold
+  cancelCtx.TypeAssumptions.ptr_Err_unfold
+  cancelCtx.TypeAssumptions.ptr_String_unfold
+  cancelCtx.TypeAssumptions.ptr_Value_unfold
+  cancelCtx.TypeAssumptions.ptr_cancel_unfold
+  cancelCtx.TypeAssumptions.ptr_propagateCancel_unfold
 
 namespace afterFuncCtx
 structure t [FfiSyntax] where
@@ -1880,62 +1880,62 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end afterFuncCtx
 
-@[reducible] def afterFuncCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def afterFuncCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"cancelCtx" cancelCtx),
 (go.field_decl.FieldDecl go!"once" _root_.Perennial.sync.Once),
 (go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [] false [])))]
 
-@[irreducible] def afterFuncCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  afterFuncCtx'fds_unsealed
+@[irreducible] def afterFuncCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  afterFuncCtx.fieldsUnsealed
 
 instance equals_unfold_afterFuncCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold afterFuncCtx'fds afterFuncCtx'fds_unsealed :=
-  ⟨by unfold afterFuncCtx'fds; rfl⟩
+    EqualsUnfold afterFuncCtx.fields afterFuncCtx.fieldsUnsealed :=
+  ⟨by unfold afterFuncCtx.fields; rfl⟩
 
-@[reducible] def «afterFuncCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType afterFuncCtx'fds)
+@[reducible] def afterFuncCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType afterFuncCtx.fields)
 
-class afterFuncCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  afterFuncCtx_type_repr : go.TypeReprUnderlying «afterFuncCtxⁱᵐᵖˡ» afterFuncCtx.t
-  afterFuncCtx_underlying : go.UnderlyingDirectedEq afterFuncCtx «afterFuncCtxⁱᵐᵖˡ»
-  afterFuncCtx_get_cancelCtx : ∀ (x : afterFuncCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «afterFuncCtxⁱᵐᵖˡ» go!"cancelCtx") #x (Val #(x.cancelCtx'))
-  afterFuncCtx_set_cancelCtx : ∀ (x : afterFuncCtx.t) (y : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldSet «afterFuncCtxⁱᵐᵖˡ» go!"cancelCtx") (PairV #x #y) (Val #(({ x with cancelCtx' := y } : afterFuncCtx.t)))
-  afterFuncCtx_get_once : ∀ (x : afterFuncCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «afterFuncCtxⁱᵐᵖˡ» go!"once") #x (Val #(x.once'))
-  afterFuncCtx_set_once : ∀ (x : afterFuncCtx.t) (y : _root_.Perennial.sync.Once.t), go.IsGoStepPureDetTagged under (StructFieldSet «afterFuncCtxⁱᵐᵖˡ» go!"once") (PairV #x #y) (Val #(({ x with once' := y } : afterFuncCtx.t)))
-  afterFuncCtx_get_f : ∀ (x : afterFuncCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «afterFuncCtxⁱᵐᵖˡ» go!"f") #x (Val #(x.f'))
-  afterFuncCtx_set_f : ∀ (x : afterFuncCtx.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «afterFuncCtxⁱᵐᵖˡ» go!"f") (PairV #x #y) (Val #(({ x with f' := y } : afterFuncCtx.t)))
-  afterFuncCtx_Deadline_unfold : MethodUnfold afterFuncCtx go!"Deadline" (LamV "$r"
+class afterFuncCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying afterFuncCtx.underlying afterFuncCtx.t
+  underlying : go.UnderlyingDirectedEq afterFuncCtx afterFuncCtx.underlying
+  get_cancelCtx : ∀ (x : afterFuncCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet afterFuncCtx.underlying go!"cancelCtx") #x (Val #(x.cancelCtx'))
+  set_cancelCtx : ∀ (x : afterFuncCtx.t) (y : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"cancelCtx") (PairV #x #y) (Val #(({ x with cancelCtx' := y } : afterFuncCtx.t)))
+  get_once : ∀ (x : afterFuncCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet afterFuncCtx.underlying go!"once") #x (Val #(x.once'))
+  set_once : ∀ (x : afterFuncCtx.t) (y : _root_.Perennial.sync.Once.t), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"once") (PairV #x #y) (Val #(({ x with once' := y } : afterFuncCtx.t)))
+  get_f : ∀ (x : afterFuncCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet afterFuncCtx.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : afterFuncCtx.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : afterFuncCtx.t)))
+  Deadline_unfold : MethodUnfold afterFuncCtx go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve cancelCtx go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet afterFuncCtx go!"cancelCtx"))) (Var "$r"))))
-  afterFuncCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"Deadline" (LamV "$r"
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"Deadline"))) (App (Val (GoInstruction (StructFieldRef afterFuncCtx go!"cancelCtx"))) (Var "$r"))))
-  afterFuncCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"Done" (LamV "$r"
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"Done"))) (App (Val (GoInstruction (StructFieldRef afterFuncCtx go!"cancelCtx"))) (Var "$r"))))
-  afterFuncCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"Err" (LamV "$r"
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"Err"))) (App (Val (GoInstruction (StructFieldRef afterFuncCtx go!"cancelCtx"))) (Var "$r"))))
-  afterFuncCtx'ptr_String_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"String"))) (App (Val (GoInstruction (StructFieldRef afterFuncCtx go!"cancelCtx"))) (Var "$r"))))
-  afterFuncCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"Value" (LamV "$r"
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"Value"))) (App (Val (GoInstruction (StructFieldRef afterFuncCtx go!"cancelCtx"))) (Var "$r"))))
-  afterFuncCtx'ptr_cancel_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"cancel" «afterFuncCtx__cancelⁱᵐᵖˡ»
-  afterFuncCtx'ptr_propagateCancel_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"propagateCancel" (LamV "$r"
+  ptr_cancel_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"cancel" afterFuncCtx.cancel.impl
+  ptr_propagateCancel_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx) go!"propagateCancel" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"propagateCancel"))) (App (Val (GoInstruction (StructFieldRef afterFuncCtx go!"cancelCtx"))) (Var "$r"))))
 
-attribute [instance] afterFuncCtx_Assumptions.afterFuncCtx_type_repr
-  afterFuncCtx_Assumptions.afterFuncCtx_underlying
-  afterFuncCtx_Assumptions.afterFuncCtx_get_cancelCtx
-  afterFuncCtx_Assumptions.afterFuncCtx_set_cancelCtx
-  afterFuncCtx_Assumptions.afterFuncCtx_get_once
-  afterFuncCtx_Assumptions.afterFuncCtx_set_once
-  afterFuncCtx_Assumptions.afterFuncCtx_get_f
-  afterFuncCtx_Assumptions.afterFuncCtx_set_f
-  afterFuncCtx_Assumptions.afterFuncCtx_Deadline_unfold
-  afterFuncCtx_Assumptions.afterFuncCtx'ptr_Deadline_unfold
-  afterFuncCtx_Assumptions.afterFuncCtx'ptr_Done_unfold
-  afterFuncCtx_Assumptions.afterFuncCtx'ptr_Err_unfold
-  afterFuncCtx_Assumptions.afterFuncCtx'ptr_String_unfold
-  afterFuncCtx_Assumptions.afterFuncCtx'ptr_Value_unfold
-  afterFuncCtx_Assumptions.afterFuncCtx'ptr_cancel_unfold
-  afterFuncCtx_Assumptions.afterFuncCtx'ptr_propagateCancel_unfold
+attribute [instance] afterFuncCtx.TypeAssumptions.type_repr
+  afterFuncCtx.TypeAssumptions.underlying
+  afterFuncCtx.TypeAssumptions.get_cancelCtx
+  afterFuncCtx.TypeAssumptions.set_cancelCtx
+  afterFuncCtx.TypeAssumptions.get_once
+  afterFuncCtx.TypeAssumptions.set_once
+  afterFuncCtx.TypeAssumptions.get_f
+  afterFuncCtx.TypeAssumptions.set_f
+  afterFuncCtx.TypeAssumptions.Deadline_unfold
+  afterFuncCtx.TypeAssumptions.ptr_Deadline_unfold
+  afterFuncCtx.TypeAssumptions.ptr_Done_unfold
+  afterFuncCtx.TypeAssumptions.ptr_Err_unfold
+  afterFuncCtx.TypeAssumptions.ptr_String_unfold
+  afterFuncCtx.TypeAssumptions.ptr_Value_unfold
+  afterFuncCtx.TypeAssumptions.ptr_cancel_unfold
+  afterFuncCtx.TypeAssumptions.ptr_propagateCancel_unfold
 
 namespace stopCtx
 structure t [FfiSyntax] where
@@ -1947,82 +1947,82 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end stopCtx
 
-@[reducible] def stopCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def stopCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Context" Context),
 (go.field_decl.FieldDecl go!"stop" (go.GoType.FunctionType (go.signature.Signature [] false [go.bool])))]
 
-@[irreducible] def stopCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  stopCtx'fds_unsealed
+@[irreducible] def stopCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  stopCtx.fieldsUnsealed
 
 instance equals_unfold_stopCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold stopCtx'fds stopCtx'fds_unsealed :=
-  ⟨by unfold stopCtx'fds; rfl⟩
+    EqualsUnfold stopCtx.fields stopCtx.fieldsUnsealed :=
+  ⟨by unfold stopCtx.fields; rfl⟩
 
-@[reducible] def «stopCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType stopCtx'fds)
+@[reducible] def stopCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType stopCtx.fields)
 
-class stopCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stopCtx_type_repr : go.TypeReprUnderlying «stopCtxⁱᵐᵖˡ» stopCtx.t
-  stopCtx_underlying : go.UnderlyingDirectedEq stopCtx «stopCtxⁱᵐᵖˡ»
-  stopCtx_get_Context : ∀ (x : stopCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «stopCtxⁱᵐᵖˡ» go!"Context") #x (Val #(x.Context'))
-  stopCtx_set_Context : ∀ (x : stopCtx.t) (y : Context.t), go.IsGoStepPureDetTagged under (StructFieldSet «stopCtxⁱᵐᵖˡ» go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : stopCtx.t)))
-  stopCtx_get_stop : ∀ (x : stopCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «stopCtxⁱᵐᵖˡ» go!"stop") #x (Val #(x.stop'))
-  stopCtx_set_stop : ∀ (x : stopCtx.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «stopCtxⁱᵐᵖˡ» go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : stopCtx.t)))
-  stopCtx_Deadline_unfold : MethodUnfold stopCtx go!"Deadline" (LamV "$r"
+class stopCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying stopCtx.underlying stopCtx.t
+  underlying : go.UnderlyingDirectedEq stopCtx stopCtx.underlying
+  get_Context : ∀ (x : stopCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet stopCtx.underlying go!"Context") #x (Val #(x.Context'))
+  set_Context : ∀ (x : stopCtx.t) (y : Context.t), go.IsGoStepPureDetTagged under (StructFieldSet stopCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : stopCtx.t)))
+  get_stop : ∀ (x : stopCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet stopCtx.underlying go!"stop") #x (Val #(x.stop'))
+  set_stop : ∀ (x : stopCtx.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet stopCtx.underlying go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : stopCtx.t)))
+  Deadline_unfold : MethodUnfold stopCtx go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet stopCtx go!"Context"))) (Var "$r"))))
-  stopCtx_Done_unfold : MethodUnfold stopCtx go!"Done" (LamV "$r"
+  Done_unfold : MethodUnfold stopCtx go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Done"))) (App (Val (GoInstruction (StructFieldGet stopCtx go!"Context"))) (Var "$r"))))
-  stopCtx_Err_unfold : MethodUnfold stopCtx go!"Err" (LamV "$r"
+  Err_unfold : MethodUnfold stopCtx go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Err"))) (App (Val (GoInstruction (StructFieldGet stopCtx go!"Context"))) (Var "$r"))))
-  stopCtx_Value_unfold : MethodUnfold stopCtx go!"Value" (LamV "$r"
+  Value_unfold : MethodUnfold stopCtx go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Value"))) (App (Val (GoInstruction (StructFieldGet stopCtx go!"Context"))) (Var "$r"))))
-  stopCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType stopCtx) go!"Deadline" (LamV "$r"
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType stopCtx) go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Deadline"))) (App (Val (GoInstruction (GoLoad Context))) (App (Val (GoInstruction (StructFieldRef stopCtx go!"Context"))) (Var "$r")))))
-  stopCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType stopCtx) go!"Done" (LamV "$r"
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType stopCtx) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Done"))) (App (Val (GoInstruction (GoLoad Context))) (App (Val (GoInstruction (StructFieldRef stopCtx go!"Context"))) (Var "$r")))))
-  stopCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType stopCtx) go!"Err" (LamV "$r"
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType stopCtx) go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Err"))) (App (Val (GoInstruction (GoLoad Context))) (App (Val (GoInstruction (StructFieldRef stopCtx go!"Context"))) (Var "$r")))))
-  stopCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType stopCtx) go!"Value" (LamV "$r"
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType stopCtx) go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Value"))) (App (Val (GoInstruction (GoLoad Context))) (App (Val (GoInstruction (StructFieldRef stopCtx go!"Context"))) (Var "$r")))))
 
-attribute [instance] stopCtx_Assumptions.stopCtx_type_repr
-  stopCtx_Assumptions.stopCtx_underlying
-  stopCtx_Assumptions.stopCtx_get_Context
-  stopCtx_Assumptions.stopCtx_set_Context
-  stopCtx_Assumptions.stopCtx_get_stop
-  stopCtx_Assumptions.stopCtx_set_stop
-  stopCtx_Assumptions.stopCtx_Deadline_unfold
-  stopCtx_Assumptions.stopCtx_Done_unfold
-  stopCtx_Assumptions.stopCtx_Err_unfold
-  stopCtx_Assumptions.stopCtx_Value_unfold
-  stopCtx_Assumptions.stopCtx'ptr_Deadline_unfold
-  stopCtx_Assumptions.stopCtx'ptr_Done_unfold
-  stopCtx_Assumptions.stopCtx'ptr_Err_unfold
-  stopCtx_Assumptions.stopCtx'ptr_Value_unfold
+attribute [instance] stopCtx.TypeAssumptions.type_repr
+  stopCtx.TypeAssumptions.underlying
+  stopCtx.TypeAssumptions.get_Context
+  stopCtx.TypeAssumptions.set_Context
+  stopCtx.TypeAssumptions.get_stop
+  stopCtx.TypeAssumptions.set_stop
+  stopCtx.TypeAssumptions.Deadline_unfold
+  stopCtx.TypeAssumptions.Done_unfold
+  stopCtx.TypeAssumptions.Err_unfold
+  stopCtx.TypeAssumptions.Value_unfold
+  stopCtx.TypeAssumptions.ptr_Deadline_unfold
+  stopCtx.TypeAssumptions.ptr_Done_unfold
+  stopCtx.TypeAssumptions.ptr_Err_unfold
+  stopCtx.TypeAssumptions.ptr_Value_unfold
 
 namespace canceler
 abbrev t [FfiSyntax] : Type := interface.t
 end canceler
 
-@[reducible] def «cancelerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def canceler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Done" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))])), (go.InterfaceElem.MethodElem go!"cancel" (go.signature.Signature [go.bool, go.error, go.error] false []))])
 
-class canceler_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  canceler_underlying : go.UnderlyingDirectedEq canceler «cancelerⁱᵐᵖˡ»
+class canceler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq canceler canceler.underlying
 
-attribute [instance] canceler_Assumptions.canceler_underlying
+attribute [instance] canceler.TypeAssumptions.underlying
 
 namespace stringer
 abbrev t [FfiSyntax] : Type := interface.t
 end stringer
 
-@[reducible] def «stringerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def stringer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-class stringer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stringer_underlying : go.UnderlyingDirectedEq stringer «stringerⁱᵐᵖˡ»
+class stringer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq stringer stringer.underlying
 
-attribute [instance] stringer_Assumptions.stringer_underlying
+attribute [instance] stringer.TypeAssumptions.underlying
 
 namespace withoutCancelCtx
 structure t [FfiSyntax] where
@@ -2033,54 +2033,54 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end withoutCancelCtx
 
-@[reducible] def withoutCancelCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def withoutCancelCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"c" Context)]
 
-@[irreducible] def withoutCancelCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  withoutCancelCtx'fds_unsealed
+@[irreducible] def withoutCancelCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  withoutCancelCtx.fieldsUnsealed
 
 instance equals_unfold_withoutCancelCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold withoutCancelCtx'fds withoutCancelCtx'fds_unsealed :=
-  ⟨by unfold withoutCancelCtx'fds; rfl⟩
+    EqualsUnfold withoutCancelCtx.fields withoutCancelCtx.fieldsUnsealed :=
+  ⟨by unfold withoutCancelCtx.fields; rfl⟩
 
-@[reducible] def «withoutCancelCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType withoutCancelCtx'fds)
+@[reducible] def withoutCancelCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType withoutCancelCtx.fields)
 
-class withoutCancelCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  withoutCancelCtx_type_repr : go.TypeReprUnderlying «withoutCancelCtxⁱᵐᵖˡ» withoutCancelCtx.t
-  withoutCancelCtx_underlying : go.UnderlyingDirectedEq withoutCancelCtx «withoutCancelCtxⁱᵐᵖˡ»
-  withoutCancelCtx_get_c : ∀ (x : withoutCancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «withoutCancelCtxⁱᵐᵖˡ» go!"c") #x (Val #(x.c'))
-  withoutCancelCtx_set_c : ∀ (x : withoutCancelCtx.t) (y : Context.t), go.IsGoStepPureDetTagged under (StructFieldSet «withoutCancelCtxⁱᵐᵖˡ» go!"c") (PairV #x #y) (Val #(({ x with c' := y } : withoutCancelCtx.t)))
-  withoutCancelCtx_Deadline_unfold : MethodUnfold withoutCancelCtx go!"Deadline" «withoutCancelCtx__Deadlineⁱᵐᵖˡ»
-  withoutCancelCtx_Done_unfold : MethodUnfold withoutCancelCtx go!"Done" «withoutCancelCtx__Doneⁱᵐᵖˡ»
-  withoutCancelCtx_Err_unfold : MethodUnfold withoutCancelCtx go!"Err" «withoutCancelCtx__Errⁱᵐᵖˡ»
-  withoutCancelCtx_String_unfold : MethodUnfold withoutCancelCtx go!"String" «withoutCancelCtx__Stringⁱᵐᵖˡ»
-  withoutCancelCtx_Value_unfold : MethodUnfold withoutCancelCtx go!"Value" «withoutCancelCtx__Valueⁱᵐᵖˡ»
-  withoutCancelCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"Deadline" (LamV "$r"
+class withoutCancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying withoutCancelCtx.underlying withoutCancelCtx.t
+  underlying : go.UnderlyingDirectedEq withoutCancelCtx withoutCancelCtx.underlying
+  get_c : ∀ (x : withoutCancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet withoutCancelCtx.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : withoutCancelCtx.t) (y : Context.t), go.IsGoStepPureDetTagged under (StructFieldSet withoutCancelCtx.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : withoutCancelCtx.t)))
+  Deadline_unfold : MethodUnfold withoutCancelCtx go!"Deadline" withoutCancelCtx.Deadline.impl
+  Done_unfold : MethodUnfold withoutCancelCtx go!"Done" withoutCancelCtx.Done.impl
+  Err_unfold : MethodUnfold withoutCancelCtx go!"Err" withoutCancelCtx.Err.impl
+  String_unfold : MethodUnfold withoutCancelCtx go!"String" withoutCancelCtx.String.impl
+  Value_unfold : MethodUnfold withoutCancelCtx go!"Value" withoutCancelCtx.Value.impl
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve withoutCancelCtx go!"Deadline"))) (App (Val (GoInstruction (GoLoad withoutCancelCtx))) (Var "$r"))))
-  withoutCancelCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"Done" (LamV "$r"
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve withoutCancelCtx go!"Done"))) (App (Val (GoInstruction (GoLoad withoutCancelCtx))) (Var "$r"))))
-  withoutCancelCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"Err" (LamV "$r"
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve withoutCancelCtx go!"Err"))) (App (Val (GoInstruction (GoLoad withoutCancelCtx))) (Var "$r"))))
-  withoutCancelCtx'ptr_String_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve withoutCancelCtx go!"String"))) (App (Val (GoInstruction (GoLoad withoutCancelCtx))) (Var "$r"))))
-  withoutCancelCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"Value" (LamV "$r"
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType withoutCancelCtx) go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve withoutCancelCtx go!"Value"))) (App (Val (GoInstruction (GoLoad withoutCancelCtx))) (Var "$r"))))
 
-attribute [instance] withoutCancelCtx_Assumptions.withoutCancelCtx_type_repr
-  withoutCancelCtx_Assumptions.withoutCancelCtx_underlying
-  withoutCancelCtx_Assumptions.withoutCancelCtx_get_c
-  withoutCancelCtx_Assumptions.withoutCancelCtx_set_c
-  withoutCancelCtx_Assumptions.withoutCancelCtx_Deadline_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx_Done_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx_Err_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx_String_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx_Value_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx'ptr_Deadline_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx'ptr_Done_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx'ptr_Err_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx'ptr_String_unfold
-  withoutCancelCtx_Assumptions.withoutCancelCtx'ptr_Value_unfold
+attribute [instance] withoutCancelCtx.TypeAssumptions.type_repr
+  withoutCancelCtx.TypeAssumptions.underlying
+  withoutCancelCtx.TypeAssumptions.get_c
+  withoutCancelCtx.TypeAssumptions.set_c
+  withoutCancelCtx.TypeAssumptions.Deadline_unfold
+  withoutCancelCtx.TypeAssumptions.Done_unfold
+  withoutCancelCtx.TypeAssumptions.Err_unfold
+  withoutCancelCtx.TypeAssumptions.String_unfold
+  withoutCancelCtx.TypeAssumptions.Value_unfold
+  withoutCancelCtx.TypeAssumptions.ptr_Deadline_unfold
+  withoutCancelCtx.TypeAssumptions.ptr_Done_unfold
+  withoutCancelCtx.TypeAssumptions.ptr_Err_unfold
+  withoutCancelCtx.TypeAssumptions.ptr_String_unfold
+  withoutCancelCtx.TypeAssumptions.ptr_Value_unfold
 
 namespace timerCtx
 structure t [FfiSyntax] where
@@ -2093,57 +2093,57 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end timerCtx
 
-@[reducible] def timerCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def timerCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"cancelCtx" cancelCtx),
 (go.field_decl.FieldDecl go!"timer" (go.GoType.PointerType _root_.Perennial.time.Timer)),
 (go.field_decl.FieldDecl go!"deadline" _root_.Perennial.time.Time)]
 
-@[irreducible] def timerCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  timerCtx'fds_unsealed
+@[irreducible] def timerCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  timerCtx.fieldsUnsealed
 
 instance equals_unfold_timerCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold timerCtx'fds timerCtx'fds_unsealed :=
-  ⟨by unfold timerCtx'fds; rfl⟩
+    EqualsUnfold timerCtx.fields timerCtx.fieldsUnsealed :=
+  ⟨by unfold timerCtx.fields; rfl⟩
 
-@[reducible] def «timerCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType timerCtx'fds)
+@[reducible] def timerCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType timerCtx.fields)
 
-class timerCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  timerCtx_type_repr : go.TypeReprUnderlying «timerCtxⁱᵐᵖˡ» timerCtx.t
-  timerCtx_underlying : go.UnderlyingDirectedEq timerCtx «timerCtxⁱᵐᵖˡ»
-  timerCtx_get_cancelCtx : ∀ (x : timerCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «timerCtxⁱᵐᵖˡ» go!"cancelCtx") #x (Val #(x.cancelCtx'))
-  timerCtx_set_cancelCtx : ∀ (x : timerCtx.t) (y : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldSet «timerCtxⁱᵐᵖˡ» go!"cancelCtx") (PairV #x #y) (Val #(({ x with cancelCtx' := y } : timerCtx.t)))
-  timerCtx_get_timer : ∀ (x : timerCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «timerCtxⁱᵐᵖˡ» go!"timer") #x (Val #(x.timer'))
-  timerCtx_set_timer : ∀ (x : timerCtx.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «timerCtxⁱᵐᵖˡ» go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : timerCtx.t)))
-  timerCtx_get_deadline : ∀ (x : timerCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «timerCtxⁱᵐᵖˡ» go!"deadline") #x (Val #(x.deadline'))
-  timerCtx_set_deadline : ∀ (x : timerCtx.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet «timerCtxⁱᵐᵖˡ» go!"deadline") (PairV #x #y) (Val #(({ x with deadline' := y } : timerCtx.t)))
-  timerCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"Deadline" «timerCtx__Deadlineⁱᵐᵖˡ»
-  timerCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"Done" (LamV "$r"
+class timerCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying timerCtx.underlying timerCtx.t
+  underlying : go.UnderlyingDirectedEq timerCtx timerCtx.underlying
+  get_cancelCtx : ∀ (x : timerCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet timerCtx.underlying go!"cancelCtx") #x (Val #(x.cancelCtx'))
+  set_cancelCtx : ∀ (x : timerCtx.t) (y : cancelCtx.t), go.IsGoStepPureDetTagged under (StructFieldSet timerCtx.underlying go!"cancelCtx") (PairV #x #y) (Val #(({ x with cancelCtx' := y } : timerCtx.t)))
+  get_timer : ∀ (x : timerCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet timerCtx.underlying go!"timer") #x (Val #(x.timer'))
+  set_timer : ∀ (x : timerCtx.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet timerCtx.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : timerCtx.t)))
+  get_deadline : ∀ (x : timerCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet timerCtx.underlying go!"deadline") #x (Val #(x.deadline'))
+  set_deadline : ∀ (x : timerCtx.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet timerCtx.underlying go!"deadline") (PairV #x #y) (Val #(({ x with deadline' := y } : timerCtx.t)))
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"Deadline" timerCtx.Deadline.impl
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"Done"))) (App (Val (GoInstruction (StructFieldRef timerCtx go!"cancelCtx"))) (Var "$r"))))
-  timerCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"Err" (LamV "$r"
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"Err"))) (App (Val (GoInstruction (StructFieldRef timerCtx go!"cancelCtx"))) (Var "$r"))))
-  timerCtx'ptr_String_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"String" «timerCtx__Stringⁱᵐᵖˡ»
-  timerCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"Value" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"String" timerCtx.String.impl
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"Value" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"Value"))) (App (Val (GoInstruction (StructFieldRef timerCtx go!"cancelCtx"))) (Var "$r"))))
-  timerCtx'ptr_cancel_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"cancel" «timerCtx__cancelⁱᵐᵖˡ»
-  timerCtx'ptr_propagateCancel_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"propagateCancel" (LamV "$r"
+  ptr_cancel_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"cancel" timerCtx.cancel.impl
+  ptr_propagateCancel_unfold : MethodUnfold (go.GoType.PointerType timerCtx) go!"propagateCancel" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx) go!"propagateCancel"))) (App (Val (GoInstruction (StructFieldRef timerCtx go!"cancelCtx"))) (Var "$r"))))
 
-attribute [instance] timerCtx_Assumptions.timerCtx_type_repr
-  timerCtx_Assumptions.timerCtx_underlying
-  timerCtx_Assumptions.timerCtx_get_cancelCtx
-  timerCtx_Assumptions.timerCtx_set_cancelCtx
-  timerCtx_Assumptions.timerCtx_get_timer
-  timerCtx_Assumptions.timerCtx_set_timer
-  timerCtx_Assumptions.timerCtx_get_deadline
-  timerCtx_Assumptions.timerCtx_set_deadline
-  timerCtx_Assumptions.timerCtx'ptr_Deadline_unfold
-  timerCtx_Assumptions.timerCtx'ptr_Done_unfold
-  timerCtx_Assumptions.timerCtx'ptr_Err_unfold
-  timerCtx_Assumptions.timerCtx'ptr_String_unfold
-  timerCtx_Assumptions.timerCtx'ptr_Value_unfold
-  timerCtx_Assumptions.timerCtx'ptr_cancel_unfold
-  timerCtx_Assumptions.timerCtx'ptr_propagateCancel_unfold
+attribute [instance] timerCtx.TypeAssumptions.type_repr
+  timerCtx.TypeAssumptions.underlying
+  timerCtx.TypeAssumptions.get_cancelCtx
+  timerCtx.TypeAssumptions.set_cancelCtx
+  timerCtx.TypeAssumptions.get_timer
+  timerCtx.TypeAssumptions.set_timer
+  timerCtx.TypeAssumptions.get_deadline
+  timerCtx.TypeAssumptions.set_deadline
+  timerCtx.TypeAssumptions.ptr_Deadline_unfold
+  timerCtx.TypeAssumptions.ptr_Done_unfold
+  timerCtx.TypeAssumptions.ptr_Err_unfold
+  timerCtx.TypeAssumptions.ptr_String_unfold
+  timerCtx.TypeAssumptions.ptr_Value_unfold
+  timerCtx.TypeAssumptions.ptr_cancel_unfold
+  timerCtx.TypeAssumptions.ptr_propagateCancel_unfold
 
 namespace valueCtx
 structure t [FfiSyntax] where
@@ -2156,94 +2156,94 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end valueCtx
 
-@[reducible] def valueCtx'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def valueCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Context" Context),
 (go.field_decl.FieldDecl go!"key" go.any),
 (go.field_decl.FieldDecl go!"val" go.any)]
 
-@[irreducible] def valueCtx'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  valueCtx'fds_unsealed
+@[irreducible] def valueCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  valueCtx.fieldsUnsealed
 
 instance equals_unfold_valueCtx [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold valueCtx'fds valueCtx'fds_unsealed :=
-  ⟨by unfold valueCtx'fds; rfl⟩
+    EqualsUnfold valueCtx.fields valueCtx.fieldsUnsealed :=
+  ⟨by unfold valueCtx.fields; rfl⟩
 
-@[reducible] def «valueCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType valueCtx'fds)
+@[reducible] def valueCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType valueCtx.fields)
 
-class valueCtx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  valueCtx_type_repr : go.TypeReprUnderlying «valueCtxⁱᵐᵖˡ» valueCtx.t
-  valueCtx_underlying : go.UnderlyingDirectedEq valueCtx «valueCtxⁱᵐᵖˡ»
-  valueCtx_get_Context : ∀ (x : valueCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «valueCtxⁱᵐᵖˡ» go!"Context") #x (Val #(x.Context'))
-  valueCtx_set_Context : ∀ (x : valueCtx.t) (y : Context.t), go.IsGoStepPureDetTagged under (StructFieldSet «valueCtxⁱᵐᵖˡ» go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : valueCtx.t)))
-  valueCtx_get_key : ∀ (x : valueCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «valueCtxⁱᵐᵖˡ» go!"key") #x (Val #(x.key'))
-  valueCtx_set_key : ∀ (x : valueCtx.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «valueCtxⁱᵐᵖˡ» go!"key") (PairV #x #y) (Val #(({ x with key' := y } : valueCtx.t)))
-  valueCtx_get_val : ∀ (x : valueCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet «valueCtxⁱᵐᵖˡ» go!"val") #x (Val #(x.val'))
-  valueCtx_set_val : ∀ (x : valueCtx.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «valueCtxⁱᵐᵖˡ» go!"val") (PairV #x #y) (Val #(({ x with val' := y } : valueCtx.t)))
-  valueCtx_Deadline_unfold : MethodUnfold valueCtx go!"Deadline" (LamV "$r"
+class valueCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying valueCtx.underlying valueCtx.t
+  underlying : go.UnderlyingDirectedEq valueCtx valueCtx.underlying
+  get_Context : ∀ (x : valueCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"Context") #x (Val #(x.Context'))
+  set_Context : ∀ (x : valueCtx.t) (y : Context.t), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : valueCtx.t)))
+  get_key : ∀ (x : valueCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"key") #x (Val #(x.key'))
+  set_key : ∀ (x : valueCtx.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"key") (PairV #x #y) (Val #(({ x with key' := y } : valueCtx.t)))
+  get_val : ∀ (x : valueCtx.t), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"val") #x (Val #(x.val'))
+  set_val : ∀ (x : valueCtx.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : valueCtx.t)))
+  Deadline_unfold : MethodUnfold valueCtx go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet valueCtx go!"Context"))) (Var "$r"))))
-  valueCtx_Done_unfold : MethodUnfold valueCtx go!"Done" (LamV "$r"
+  Done_unfold : MethodUnfold valueCtx go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Done"))) (App (Val (GoInstruction (StructFieldGet valueCtx go!"Context"))) (Var "$r"))))
-  valueCtx_Err_unfold : MethodUnfold valueCtx go!"Err" (LamV "$r"
+  Err_unfold : MethodUnfold valueCtx go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Err"))) (App (Val (GoInstruction (StructFieldGet valueCtx go!"Context"))) (Var "$r"))))
-  valueCtx'ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"Deadline" (LamV "$r"
+  ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Deadline"))) (App (Val (GoInstruction (GoLoad Context))) (App (Val (GoInstruction (StructFieldRef valueCtx go!"Context"))) (Var "$r")))))
-  valueCtx'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"Done" (LamV "$r"
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Done"))) (App (Val (GoInstruction (GoLoad Context))) (App (Val (GoInstruction (StructFieldRef valueCtx go!"Context"))) (Var "$r")))))
-  valueCtx'ptr_Err_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"Err" (LamV "$r"
+  ptr_Err_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"Err" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context go!"Err"))) (App (Val (GoInstruction (GoLoad Context))) (App (Val (GoInstruction (StructFieldRef valueCtx go!"Context"))) (Var "$r")))))
-  valueCtx'ptr_String_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"String" «valueCtx__Stringⁱᵐᵖˡ»
-  valueCtx'ptr_Value_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"Value" «valueCtx__Valueⁱᵐᵖˡ»
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"String" valueCtx.String.impl
+  ptr_Value_unfold : MethodUnfold (go.GoType.PointerType valueCtx) go!"Value" valueCtx.Value.impl
 
-attribute [instance] valueCtx_Assumptions.valueCtx_type_repr
-  valueCtx_Assumptions.valueCtx_underlying
-  valueCtx_Assumptions.valueCtx_get_Context
-  valueCtx_Assumptions.valueCtx_set_Context
-  valueCtx_Assumptions.valueCtx_get_key
-  valueCtx_Assumptions.valueCtx_set_key
-  valueCtx_Assumptions.valueCtx_get_val
-  valueCtx_Assumptions.valueCtx_set_val
-  valueCtx_Assumptions.valueCtx_Deadline_unfold
-  valueCtx_Assumptions.valueCtx_Done_unfold
-  valueCtx_Assumptions.valueCtx_Err_unfold
-  valueCtx_Assumptions.valueCtx'ptr_Deadline_unfold
-  valueCtx_Assumptions.valueCtx'ptr_Done_unfold
-  valueCtx_Assumptions.valueCtx'ptr_Err_unfold
-  valueCtx_Assumptions.valueCtx'ptr_String_unfold
-  valueCtx_Assumptions.valueCtx'ptr_Value_unfold
+attribute [instance] valueCtx.TypeAssumptions.type_repr
+  valueCtx.TypeAssumptions.underlying
+  valueCtx.TypeAssumptions.get_Context
+  valueCtx.TypeAssumptions.set_Context
+  valueCtx.TypeAssumptions.get_key
+  valueCtx.TypeAssumptions.set_key
+  valueCtx.TypeAssumptions.get_val
+  valueCtx.TypeAssumptions.set_val
+  valueCtx.TypeAssumptions.Deadline_unfold
+  valueCtx.TypeAssumptions.Done_unfold
+  valueCtx.TypeAssumptions.Err_unfold
+  valueCtx.TypeAssumptions.ptr_Deadline_unfold
+  valueCtx.TypeAssumptions.ptr_Done_unfold
+  valueCtx.TypeAssumptions.ptr_Err_unfold
+  valueCtx.TypeAssumptions.ptr_String_unfold
+  valueCtx.TypeAssumptions.ptr_Value_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Context_instance : Context_Assumptions
-  deadlineExceededError_instance : deadlineExceededError_Assumptions
-  emptyCtx_instance : emptyCtx_Assumptions
-  backgroundCtx_instance : backgroundCtx_Assumptions
-  todoCtx_instance : todoCtx_Assumptions
-  CancelFunc_instance : CancelFunc_Assumptions
-  CancelCauseFunc_instance : CancelCauseFunc_Assumptions
-  afterFuncer_instance : afterFuncer_Assumptions
-  afterFuncCtx_instance : afterFuncCtx_Assumptions
-  stopCtx_instance : stopCtx_Assumptions
-  canceler_instance : canceler_Assumptions
-  cancelCtx_instance : cancelCtx_Assumptions
-  stringer_instance : stringer_Assumptions
-  withoutCancelCtx_instance : withoutCancelCtx_Assumptions
-  timerCtx_instance : timerCtx_Assumptions
-  valueCtx_instance : valueCtx_Assumptions
-  Background_unfold : FuncUnfold Background [] «Backgroundⁱᵐᵖˡ»
-  TODO_unfold : FuncUnfold TODO [] «TODOⁱᵐᵖˡ»
-  WithCancel_unfold : FuncUnfold WithCancel [] «WithCancelⁱᵐᵖˡ»
-  WithCancelCause_unfold : FuncUnfold WithCancelCause [] «WithCancelCauseⁱᵐᵖˡ»
-  withCancel_unfold : FuncUnfold withCancel [] «withCancelⁱᵐᵖˡ»
-  Cause_unfold : FuncUnfold Cause [] «Causeⁱᵐᵖˡ»
-  AfterFunc_unfold : FuncUnfold AfterFunc [] «AfterFuncⁱᵐᵖˡ»
-  parentCancelCtx_unfold : FuncUnfold parentCancelCtx [] «parentCancelCtxⁱᵐᵖˡ»
-  removeChild_unfold : FuncUnfold removeChild [] «removeChildⁱᵐᵖˡ»
-  WithoutCancel_unfold : FuncUnfold WithoutCancel [] «WithoutCancelⁱᵐᵖˡ»
-  WithDeadline_unfold : FuncUnfold WithDeadline [] «WithDeadlineⁱᵐᵖˡ»
-  WithDeadlineCause_unfold : FuncUnfold WithDeadlineCause [] «WithDeadlineCauseⁱᵐᵖˡ»
-  WithTimeout_unfold : FuncUnfold WithTimeout [] «WithTimeoutⁱᵐᵖˡ»
-  WithTimeoutCause_unfold : FuncUnfold WithTimeoutCause [] «WithTimeoutCauseⁱᵐᵖˡ»
-  value_unfold : FuncUnfold value [] «valueⁱᵐᵖˡ»
+  Context_instance : Context.TypeAssumptions
+  deadlineExceededError_instance : deadlineExceededError.TypeAssumptions
+  emptyCtx_instance : emptyCtx.TypeAssumptions
+  backgroundCtx_instance : backgroundCtx.TypeAssumptions
+  todoCtx_instance : todoCtx.TypeAssumptions
+  CancelFunc_instance : CancelFunc.TypeAssumptions
+  CancelCauseFunc_instance : CancelCauseFunc.TypeAssumptions
+  afterFuncer_instance : afterFuncer.TypeAssumptions
+  afterFuncCtx_instance : afterFuncCtx.TypeAssumptions
+  stopCtx_instance : stopCtx.TypeAssumptions
+  canceler_instance : canceler.TypeAssumptions
+  cancelCtx_instance : cancelCtx.TypeAssumptions
+  stringer_instance : stringer.TypeAssumptions
+  withoutCancelCtx_instance : withoutCancelCtx.TypeAssumptions
+  timerCtx_instance : timerCtx.TypeAssumptions
+  valueCtx_instance : valueCtx.TypeAssumptions
+  Background_unfold : FuncUnfold Background [] Background.impl
+  TODO_unfold : FuncUnfold TODO [] TODO.impl
+  WithCancel_unfold : FuncUnfold WithCancel [] WithCancel.impl
+  WithCancelCause_unfold : FuncUnfold WithCancelCause [] WithCancelCause.impl
+  withCancel_unfold : FuncUnfold withCancel [] withCancel.impl
+  Cause_unfold : FuncUnfold Cause [] Cause.impl
+  AfterFunc_unfold : FuncUnfold AfterFunc [] AfterFunc.impl
+  parentCancelCtx_unfold : FuncUnfold parentCancelCtx [] parentCancelCtx.impl
+  removeChild_unfold : FuncUnfold removeChild [] removeChild.impl
+  WithoutCancel_unfold : FuncUnfold WithoutCancel [] WithoutCancel.impl
+  WithDeadline_unfold : FuncUnfold WithDeadline [] WithDeadline.impl
+  WithDeadlineCause_unfold : FuncUnfold WithDeadlineCause [] WithDeadlineCause.impl
+  WithTimeout_unfold : FuncUnfold WithTimeout [] WithTimeout.impl
+  WithTimeoutCause_unfold : FuncUnfold WithTimeoutCause [] WithTimeoutCause.impl
+  value_unfold : FuncUnfold value [] value.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions

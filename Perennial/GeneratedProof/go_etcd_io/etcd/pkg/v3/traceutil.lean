@@ -31,7 +31,7 @@ instance TraceKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TraceKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.TraceKey.t go_etcd_io.etcd.pkg.v3.traceutil.«TraceKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.TraceKey.t go_etcd_io.etcd.pkg.v3.traceutil.TraceKey.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -54,7 +54,7 @@ instance StartTimeKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance StartTimeKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.t go_etcd_io.etcd.pkg.v3.traceutil.«StartTimeKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.t go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -79,7 +79,7 @@ instance Field_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Field_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Field.t go_etcd_io.etcd.pkg.v3.traceutil.«Fieldⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Field.t go_etcd_io.etcd.pkg.v3.traceutil.Field.underlying := by
   solve_into_val_typed_struct
 
 instance Field_access_load_Key (l : Loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.Field.t) (dq : DFrac) :
@@ -130,7 +130,7 @@ instance Trace_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Trace_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Trace.t go_etcd_io.etcd.pkg.v3.traceutil.«Traceⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Trace.t go_etcd_io.etcd.pkg.v3.traceutil.Trace.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -158,7 +158,7 @@ instance step_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance step_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.step.t go_etcd_io.etcd.pkg.v3.traceutil.«stepⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.step.t go_etcd_io.etcd.pkg.v3.traceutil.step.underlying := by
   solve_into_val_typed_struct
 
 instance step_access_load_time (l : Loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.step.t) (dq : DFrac) :

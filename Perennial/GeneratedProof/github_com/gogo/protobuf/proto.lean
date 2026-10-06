@@ -39,7 +39,7 @@ instance Stats_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Stats_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Stats.t github_com.gogo.protobuf.proto.«Statsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Stats.t github_com.gogo.protobuf.proto.Stats.underlying := by
   solve_into_val_typed_struct
 
 instance Stats_access_load_Emalloc (l : Loc) (v : github_com.gogo.protobuf.proto.Stats.t) (dq : DFrac) :
@@ -170,7 +170,7 @@ instance discardInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance discardInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.discardInfo.t github_com.gogo.protobuf.proto.«discardInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.discardInfo.t github_com.gogo.protobuf.proto.discardInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -195,7 +195,7 @@ instance discardFieldInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance discardFieldInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.discardFieldInfo.t github_com.gogo.protobuf.proto.«discardFieldInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.discardFieldInfo.t github_com.gogo.protobuf.proto.discardFieldInfo.underlying := by
   solve_into_val_typed_struct
 
 instance discardFieldInfo_access_load_field (l : Loc) (v : github_com.gogo.protobuf.proto.discardFieldInfo.t) (dq : DFrac) :
@@ -252,7 +252,7 @@ instance duration_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance duration_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.duration.t github_com.gogo.protobuf.proto.«durationⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.duration.t github_com.gogo.protobuf.proto.duration.underlying := by
   solve_into_val_typed_struct
 
 instance duration_access_load_Seconds (l : Loc) (v : github_com.gogo.protobuf.proto.duration.t) (dq : DFrac) :
@@ -309,7 +309,7 @@ instance ExtensionRange_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ExtensionRange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ExtensionRange.t github_com.gogo.protobuf.proto.«ExtensionRangeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ExtensionRange.t github_com.gogo.protobuf.proto.ExtensionRange.underlying := by
   solve_into_val_typed_struct
 
 instance ExtensionRange_access_load_Start (l : Loc) (v : github_com.gogo.protobuf.proto.ExtensionRange.t) (dq : DFrac) :
@@ -365,7 +365,7 @@ instance extensionAdapter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance extensionAdapter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extensionAdapter.t github_com.gogo.protobuf.proto.«extensionAdapterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extensionAdapter.t github_com.gogo.protobuf.proto.extensionAdapter.underlying := by
   solve_into_val_typed_struct
 
 instance extensionAdapter_access_load_extendableProtoV1 (l : Loc) (v : github_com.gogo.protobuf.proto.extensionAdapter.t) (dq : DFrac) :
@@ -404,7 +404,7 @@ instance notLocker_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance notLocker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.notLocker.t github_com.gogo.protobuf.proto.«notLockerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.notLocker.t github_com.gogo.protobuf.proto.notLocker.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -428,7 +428,7 @@ instance XXX_InternalExtensions_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance XXX_InternalExtensions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.XXX_InternalExtensions.t github_com.gogo.protobuf.proto.«XXX_InternalExtensionsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.XXX_InternalExtensions.t github_com.gogo.protobuf.proto.XXX_InternalExtensions.underlying := by
   solve_into_val_typed_struct
 
 instance XXX_InternalExtensions_access_load_p (l : Loc) (v : github_com.gogo.protobuf.proto.XXX_InternalExtensions.t) (dq : DFrac) :
@@ -473,7 +473,7 @@ instance ExtensionDesc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ExtensionDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ExtensionDesc.t github_com.gogo.protobuf.proto.«ExtensionDescⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ExtensionDesc.t github_com.gogo.protobuf.proto.ExtensionDesc.underlying := by
   solve_into_val_typed_struct
 
 instance ExtensionDesc_access_load_ExtendedType (l : Loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc.t) (dq : DFrac) :
@@ -595,7 +595,7 @@ instance Extension_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Extension_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Extension.t github_com.gogo.protobuf.proto.«Extensionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Extension.t github_com.gogo.protobuf.proto.Extension.underlying := by
   solve_into_val_typed_struct
 
 instance Extension_access_load_desc (l : Loc) (v : github_com.gogo.protobuf.proto.Extension.t) (dq : DFrac) :
@@ -662,7 +662,7 @@ instance extPropKey_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance extPropKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extPropKey.t github_com.gogo.protobuf.proto.«extPropKeyⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extPropKey.t github_com.gogo.protobuf.proto.extPropKey.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -686,7 +686,7 @@ instance slowExtensionAdapter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance slowExtensionAdapter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.slowExtensionAdapter.t github_com.gogo.protobuf.proto.«slowExtensionAdapterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.slowExtensionAdapter.t github_com.gogo.protobuf.proto.slowExtensionAdapter.underlying := by
   solve_into_val_typed_struct
 
 instance slowExtensionAdapter_access_load_extensionsBytes (l : Loc) (v : github_com.gogo.protobuf.proto.slowExtensionAdapter.t) (dq : DFrac) :
@@ -727,7 +727,7 @@ instance sortableMapElem_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sortableMapElem_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.sortableMapElem.t github_com.gogo.protobuf.proto.«sortableMapElemⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.sortableMapElem.t github_com.gogo.protobuf.proto.sortableMapElem.underlying := by
   solve_into_val_typed_struct
 
 instance sortableMapElem_access_load_field (l : Loc) (v : github_com.gogo.protobuf.proto.sortableMapElem.t) (dq : DFrac) :
@@ -783,7 +783,7 @@ instance RequiredNotSetError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RequiredNotSetError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.RequiredNotSetError.t github_com.gogo.protobuf.proto.«RequiredNotSetErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.RequiredNotSetError.t github_com.gogo.protobuf.proto.RequiredNotSetError.underlying := by
   solve_into_val_typed_struct
 
 instance RequiredNotSetError_access_load_field (l : Loc) (v : github_com.gogo.protobuf.proto.RequiredNotSetError.t) (dq : DFrac) :
@@ -823,7 +823,7 @@ instance invalidUTF8Error_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance invalidUTF8Error_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.invalidUTF8Error.t github_com.gogo.protobuf.proto.«invalidUTF8Errorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.invalidUTF8Error.t github_com.gogo.protobuf.proto.invalidUTF8Error.underlying := by
   solve_into_val_typed_struct
 
 instance invalidUTF8Error_access_load_field (l : Loc) (v : github_com.gogo.protobuf.proto.invalidUTF8Error.t) (dq : DFrac) :
@@ -863,7 +863,7 @@ instance nonFatal_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nonFatal_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.nonFatal.t github_com.gogo.protobuf.proto.«nonFatalⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.nonFatal.t github_com.gogo.protobuf.proto.nonFatal.underlying := by
   solve_into_val_typed_struct
 
 instance nonFatal_access_load_E (l : Loc) (v : github_com.gogo.protobuf.proto.nonFatal.t) (dq : DFrac) :
@@ -905,7 +905,7 @@ instance Buffer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Buffer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Buffer.t github_com.gogo.protobuf.proto.«Bufferⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Buffer.t github_com.gogo.protobuf.proto.Buffer.underlying := by
   solve_into_val_typed_struct
 
 instance Buffer_access_load_buf (l : Loc) (v : github_com.gogo.protobuf.proto.Buffer.t) (dq : DFrac) :
@@ -978,7 +978,7 @@ instance defaultMessage_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance defaultMessage_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.defaultMessage.t github_com.gogo.protobuf.proto.«defaultMessageⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.defaultMessage.t github_com.gogo.protobuf.proto.defaultMessage.underlying := by
   solve_into_val_typed_struct
 
 instance defaultMessage_access_load_scalars (l : Loc) (v : github_com.gogo.protobuf.proto.defaultMessage.t) (dq : DFrac) :
@@ -1029,7 +1029,7 @@ instance scalarField_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance scalarField_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.scalarField.t github_com.gogo.protobuf.proto.«scalarFieldⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.scalarField.t github_com.gogo.protobuf.proto.scalarField.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1048,7 +1048,7 @@ instance mapKeySorter_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance mapKeySorter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mapKeySorter.t github_com.gogo.protobuf.proto.«mapKeySorterⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mapKeySorter.t github_com.gogo.protobuf.proto.mapKeySorter.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1075,7 +1075,7 @@ instance InternalMessageInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalMessageInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.InternalMessageInfo.t github_com.gogo.protobuf.proto.«InternalMessageInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.InternalMessageInfo.t github_com.gogo.protobuf.proto.InternalMessageInfo.underlying := by
   solve_into_val_typed_struct
 
 instance InternalMessageInfo_access_load_marshal (l : Loc) (v : github_com.gogo.protobuf.proto.InternalMessageInfo.t) (dq : DFrac) :
@@ -1164,7 +1164,7 @@ instance _MessageSet_Item_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance _MessageSet_Item_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto._MessageSet_Item.t github_com.gogo.protobuf.proto.«_MessageSet_Itemⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto._MessageSet_Item.t github_com.gogo.protobuf.proto._MessageSet_Item.underlying := by
   solve_into_val_typed_struct
 
 instance _MessageSet_Item_access_load_TypeId (l : Loc) (v : github_com.gogo.protobuf.proto._MessageSet_Item.t) (dq : DFrac) :
@@ -1221,7 +1221,7 @@ instance messageSet_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance messageSet_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.messageSet.t github_com.gogo.protobuf.proto.«messageSetⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.messageSet.t github_com.gogo.protobuf.proto.messageSet.underlying := by
   solve_into_val_typed_struct
 
 instance messageSet_access_load_Item (l : Loc) (v : github_com.gogo.protobuf.proto.messageSet.t) (dq : DFrac) :
@@ -1277,7 +1277,7 @@ instance pointer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pointer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.pointer.t github_com.gogo.protobuf.proto.«pointerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.pointer.t github_com.gogo.protobuf.proto.pointer.underlying := by
   solve_into_val_typed_struct
 
 instance pointer_access_load_p (l : Loc) (v : github_com.gogo.protobuf.proto.pointer.t) (dq : DFrac) :
@@ -1318,7 +1318,7 @@ instance tagMap_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance tagMap_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.tagMap.t github_com.gogo.protobuf.proto.«tagMapⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.tagMap.t github_com.gogo.protobuf.proto.tagMap.underlying := by
   solve_into_val_typed_struct
 
 instance tagMap_access_load_fastTags (l : Loc) (v : github_com.gogo.protobuf.proto.tagMap.t) (dq : DFrac) :
@@ -1379,7 +1379,7 @@ instance StructProperties_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance StructProperties_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.StructProperties.t github_com.gogo.protobuf.proto.«StructPropertiesⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.StructProperties.t github_com.gogo.protobuf.proto.StructProperties.underlying := by
   solve_into_val_typed_struct
 
 instance StructProperties_access_load_Prop (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties.t) (dq : DFrac) :
@@ -1494,7 +1494,7 @@ instance OneofProperties_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance OneofProperties_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.OneofProperties.t github_com.gogo.protobuf.proto.«OneofPropertiesⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.OneofProperties.t github_com.gogo.protobuf.proto.OneofProperties.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1513,7 +1513,7 @@ instance Properties_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Properties_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Properties.t github_com.gogo.protobuf.proto.«Propertiesⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Properties.t github_com.gogo.protobuf.proto.Properties.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1532,7 +1532,7 @@ instance marshalInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance marshalInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalInfo.t github_com.gogo.protobuf.proto.«marshalInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalInfo.t github_com.gogo.protobuf.proto.marshalInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1551,7 +1551,7 @@ instance marshalFieldInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance marshalFieldInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalFieldInfo.t github_com.gogo.protobuf.proto.«marshalFieldInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalFieldInfo.t github_com.gogo.protobuf.proto.marshalFieldInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1579,7 +1579,7 @@ instance marshalElemInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance marshalElemInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalElemInfo.t github_com.gogo.protobuf.proto.«marshalElemInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalElemInfo.t github_com.gogo.protobuf.proto.marshalElemInfo.underlying := by
   solve_into_val_typed_struct
 
 instance marshalElemInfo_access_load_wiretag (l : Loc) (v : github_com.gogo.protobuf.proto.marshalElemInfo.t) (dq : DFrac) :
@@ -1678,7 +1678,7 @@ instance mergeInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance mergeInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mergeInfo.t github_com.gogo.protobuf.proto.«mergeInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mergeInfo.t github_com.gogo.protobuf.proto.mergeInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1705,7 +1705,7 @@ instance mergeFieldInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance mergeFieldInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mergeFieldInfo.t github_com.gogo.protobuf.proto.«mergeFieldInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mergeFieldInfo.t github_com.gogo.protobuf.proto.mergeFieldInfo.underlying := by
   solve_into_val_typed_struct
 
 instance mergeFieldInfo_access_load_field (l : Loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo.t) (dq : DFrac) :
@@ -1788,7 +1788,7 @@ instance unmarshalInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance unmarshalInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.unmarshalInfo.t github_com.gogo.protobuf.proto.«unmarshalInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.unmarshalInfo.t github_com.gogo.protobuf.proto.unmarshalInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1815,7 +1815,7 @@ instance unmarshalFieldInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance unmarshalFieldInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.unmarshalFieldInfo.t github_com.gogo.protobuf.proto.«unmarshalFieldInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.unmarshalFieldInfo.t github_com.gogo.protobuf.proto.unmarshalFieldInfo.underlying := by
   solve_into_val_typed_struct
 
 instance unmarshalFieldInfo_access_load_field (l : Loc) (v : github_com.gogo.protobuf.proto.unmarshalFieldInfo.t) (dq : DFrac) :
@@ -1906,7 +1906,7 @@ instance textWriter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance textWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.textWriter.t github_com.gogo.protobuf.proto.«textWriterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.textWriter.t github_com.gogo.protobuf.proto.textWriter.underlying := by
   solve_into_val_typed_struct
 
 instance textWriter_access_load_ind (l : Loc) (v : github_com.gogo.protobuf.proto.textWriter.t) (dq : DFrac) :
@@ -1995,7 +1995,7 @@ instance TextMarshaler_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TextMarshaler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.TextMarshaler.t github_com.gogo.protobuf.proto.«TextMarshalerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.TextMarshaler.t github_com.gogo.protobuf.proto.TextMarshaler.underlying := by
   solve_into_val_typed_struct
 
 instance TextMarshaler_access_load_Compact (l : Loc) (v : github_com.gogo.protobuf.proto.TextMarshaler.t) (dq : DFrac) :
@@ -2053,7 +2053,7 @@ instance ParseError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ParseError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ParseError.t github_com.gogo.protobuf.proto.«ParseErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.ParseError.t github_com.gogo.protobuf.proto.ParseError.underlying := by
   solve_into_val_typed_struct
 
 instance ParseError_access_load_Message (l : Loc) (v : github_com.gogo.protobuf.proto.ParseError.t) (dq : DFrac) :
@@ -2129,7 +2129,7 @@ instance token_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance token_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.token.t github_com.gogo.protobuf.proto.«tokenⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.token.t github_com.gogo.protobuf.proto.token.underlying := by
   solve_into_val_typed_struct
 
 instance token_access_load_value (l : Loc) (v : github_com.gogo.protobuf.proto.token.t) (dq : DFrac) :
@@ -2238,7 +2238,7 @@ instance textParser_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance textParser_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.textParser.t github_com.gogo.protobuf.proto.«textParserⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.textParser.t github_com.gogo.protobuf.proto.textParser.underlying := by
   solve_into_val_typed_struct
 
 instance textParser_access_load_s (l : Loc) (v : github_com.gogo.protobuf.proto.textParser.t) (dq : DFrac) :
@@ -2359,7 +2359,7 @@ instance timestamp_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timestamp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.timestamp.t github_com.gogo.protobuf.proto.«timestampⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.timestamp.t github_com.gogo.protobuf.proto.timestamp.underlying := by
   solve_into_val_typed_struct
 
 instance timestamp_access_load_Seconds (l : Loc) (v : github_com.gogo.protobuf.proto.timestamp.t) (dq : DFrac) :
@@ -2415,7 +2415,7 @@ instance float64Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance float64Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.float64Value.t github_com.gogo.protobuf.proto.«float64Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.float64Value.t github_com.gogo.protobuf.proto.float64Value.underlying := by
   solve_into_val_typed_struct
 
 instance float64Value_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.float64Value.t) (dq : DFrac) :
@@ -2455,7 +2455,7 @@ instance float32Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance float32Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.float32Value.t github_com.gogo.protobuf.proto.«float32Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.float32Value.t github_com.gogo.protobuf.proto.float32Value.underlying := by
   solve_into_val_typed_struct
 
 instance float32Value_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.float32Value.t) (dq : DFrac) :
@@ -2495,7 +2495,7 @@ instance int64Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance int64Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int64Value.t github_com.gogo.protobuf.proto.«int64Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int64Value.t github_com.gogo.protobuf.proto.int64Value.underlying := by
   solve_into_val_typed_struct
 
 instance int64Value_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.int64Value.t) (dq : DFrac) :
@@ -2535,7 +2535,7 @@ instance uint64Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance uint64Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.uint64Value.t github_com.gogo.protobuf.proto.«uint64Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.uint64Value.t github_com.gogo.protobuf.proto.uint64Value.underlying := by
   solve_into_val_typed_struct
 
 instance uint64Value_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.uint64Value.t) (dq : DFrac) :
@@ -2575,7 +2575,7 @@ instance int32Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance int32Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int32Value.t github_com.gogo.protobuf.proto.«int32Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.int32Value.t github_com.gogo.protobuf.proto.int32Value.underlying := by
   solve_into_val_typed_struct
 
 instance int32Value_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.int32Value.t) (dq : DFrac) :
@@ -2615,7 +2615,7 @@ instance uint32Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance uint32Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.uint32Value.t github_com.gogo.protobuf.proto.«uint32Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.uint32Value.t github_com.gogo.protobuf.proto.uint32Value.underlying := by
   solve_into_val_typed_struct
 
 instance uint32Value_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.uint32Value.t) (dq : DFrac) :
@@ -2655,7 +2655,7 @@ instance boolValue_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance boolValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.boolValue.t github_com.gogo.protobuf.proto.«boolValueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.boolValue.t github_com.gogo.protobuf.proto.boolValue.underlying := by
   solve_into_val_typed_struct
 
 instance boolValue_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.boolValue.t) (dq : DFrac) :
@@ -2695,7 +2695,7 @@ instance stringValue_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stringValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.stringValue.t github_com.gogo.protobuf.proto.«stringValueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.stringValue.t github_com.gogo.protobuf.proto.stringValue.underlying := by
   solve_into_val_typed_struct
 
 instance stringValue_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.stringValue.t) (dq : DFrac) :
@@ -2735,7 +2735,7 @@ instance bytesValue_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance bytesValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.bytesValue.t github_com.gogo.protobuf.proto.«bytesValueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.bytesValue.t github_com.gogo.protobuf.proto.bytesValue.underlying := by
   solve_into_val_typed_struct
 
 instance bytesValue_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.proto.bytesValue.t) (dq : DFrac) :

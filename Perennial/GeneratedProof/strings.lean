@@ -32,7 +32,7 @@ instance Builder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Builder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.Builder.t strings.«Builderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) strings.Builder.t strings.Builder.underlying := by
   solve_into_val_typed_struct
 
 instance Builder_access_load_addr (l : Loc) (v : strings.Builder.t) (dq : DFrac) :
@@ -90,7 +90,7 @@ instance Reader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Reader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.Reader.t strings.«Readerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) strings.Reader.t strings.Reader.underlying := by
   solve_into_val_typed_struct
 
 instance Reader_access_load_s (l : Loc) (v : strings.Reader.t) (dq : DFrac) :
@@ -157,7 +157,7 @@ instance Replacer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Replacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.Replacer.t strings.«Replacerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) strings.Replacer.t strings.Replacer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -176,7 +176,7 @@ instance replacer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance replacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.replacer.t strings.«replacerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) strings.replacer.t strings.replacer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -204,7 +204,7 @@ instance trieNode_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance trieNode_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.trieNode.t strings.«trieNodeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) strings.trieNode.t strings.trieNode.underlying := by
   solve_into_val_typed_struct
 
 instance trieNode_access_load_value (l : Loc) (v : strings.trieNode.t) (dq : DFrac) :
@@ -310,7 +310,7 @@ instance genericReplacer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance genericReplacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.genericReplacer.t strings.«genericReplacerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) strings.genericReplacer.t strings.genericReplacer.underlying := by
   solve_into_val_typed_struct
 
 instance genericReplacer_access_load_root (l : Loc) (v : strings.genericReplacer.t) (dq : DFrac) :
@@ -377,7 +377,7 @@ instance stringWriter_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance stringWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.stringWriter.t strings.«stringWriterⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) strings.stringWriter.t strings.stringWriter.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -402,7 +402,7 @@ instance singleStringReplacer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance singleStringReplacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.singleStringReplacer.t strings.«singleStringReplacerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) strings.singleStringReplacer.t strings.singleStringReplacer.underlying := by
   solve_into_val_typed_struct
 
 instance singleStringReplacer_access_load_finder (l : Loc) (v : strings.singleStringReplacer.t) (dq : DFrac) :
@@ -459,7 +459,7 @@ instance byteStringReplacer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance byteStringReplacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.byteStringReplacer.t strings.«byteStringReplacerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) strings.byteStringReplacer.t strings.byteStringReplacer.underlying := by
   solve_into_val_typed_struct
 
 instance byteStringReplacer_access_load_replacements (l : Loc) (v : strings.byteStringReplacer.t) (dq : DFrac) :
@@ -517,7 +517,7 @@ instance stringFinder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stringFinder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.stringFinder.t strings.«stringFinderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) strings.stringFinder.t strings.stringFinder.underlying := by
   solve_into_val_typed_struct
 
 instance stringFinder_access_load_pattern (l : Loc) (v : strings.stringFinder.t) (dq : DFrac) :

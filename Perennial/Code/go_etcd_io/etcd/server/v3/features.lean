@@ -38,7 +38,7 @@ axiom PriorityRequest [FfiSyntax] [GoGlobalContext] : val
 noncomputable def DefaultEtcdServerFeatureGates [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/features.DefaultEtcdServerFeatureGates"
 
-axiom DefaultEtcdServerFeatureGates'init [FfiSyntax] [GoGlobalContext] : val
+axiom DefaultEtcdServerFeatureGates.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def NewDefaultServerFeatureGate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/features.NewDefaultServerFeatureGate"
@@ -46,14 +46,14 @@ noncomputable def NewDefaultServerFeatureGate [FfiSyntax] [GoGlobalContext] : Go
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.features where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.features)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
-  (App (Val DefaultEtcdServerFeatureGates'init) (Val #())))))))
+  (App (Val DefaultEtcdServerFeatureGates.init) (Val #())))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 

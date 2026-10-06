@@ -26,7 +26,7 @@ noncomputable def ByteSliceToString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/strings.ByteSliceToString"
 
 /-- go: convert.go:3:6 -/
-noncomputable def «StringToByteSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def StringToByteSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -53,7 +53,7 @@ noncomputable def «StringToByteSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: convert.go:11:6 -/
-noncomputable def «ByteSliceToStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ByteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -87,8 +87,8 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StringToByteSlice_unfold : FuncUnfold StringToByteSlice [] «StringToByteSliceⁱᵐᵖˡ»
-  ByteSliceToString_unfold : FuncUnfold ByteSliceToString [] «ByteSliceToStringⁱᵐᵖˡ»
+  StringToByteSlice_unfold : FuncUnfold StringToByteSlice [] StringToByteSlice.impl
+  ByteSliceToString_unfold : FuncUnfold ByteSliceToString [] ByteSliceToString.impl
 
 attribute [instance] Assumptions.StringToByteSlice_unfold
   Assumptions.ByteSliceToString_unfold

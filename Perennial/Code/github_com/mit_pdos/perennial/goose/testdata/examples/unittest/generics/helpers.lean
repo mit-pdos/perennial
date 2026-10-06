@@ -21,7 +21,7 @@ noncomputable def AnyPointer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics/helpers.AnyPointer"
 
 /-- go: helpers.go:3:6 -/
-noncomputable def «AnyPointerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def AnyPointer.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "x"))
@@ -39,7 +39,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AnyPointer_unfold : ∀ (T : go.GoType), FuncUnfold AnyPointer [T] («AnyPointerⁱᵐᵖˡ» T)
+  AnyPointer_unfold : ∀ (T : go.GoType), FuncUnfold AnyPointer [T] (AnyPointer.impl T)
 
 attribute [instance] Assumptions.AnyPointer_unfold
 

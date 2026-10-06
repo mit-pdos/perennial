@@ -33,7 +33,7 @@ noncomputable def ErrUnsupported [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def errorType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"errors.errorType"
 
-axiom errorType'init [FfiSyntax] [GoGlobalContext] : val
+axiom errorType.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"errors.New"
@@ -66,7 +66,7 @@ noncomputable def asType [FfiSyntax] [GoGlobalContext] : GoString :=
     Each call to New returns a distinct error value even if the text is identical.
 
     go: errors.go:64:6 -/
-noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def New.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "text"
   (App (Val exceptionDo)
   (Let "text" (App (Val (GoInstruction (GoAlloc go.string))) (Var "text"))
@@ -75,7 +75,7 @@ noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral errorString))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0")))])))))))))
 
 /-- go: errors.go:73:23 -/
-noncomputable def «errorString__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def errorString.Error.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -91,7 +91,7 @@ noncomputable def «errorString__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
     In particular Unwrap does not unwrap errors returned by [Join].
 
     go: wrap.go:17:6 -/
-noncomputable def «Unwrapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Unwrap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "err"
   (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -132,7 +132,7 @@ noncomputable def «Unwrapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     method is responsible for setting target.
 
     go: wrap.go:167:6 -/
-noncomputable def «AsTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def AsType.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "err"
   (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -153,7 +153,7 @@ noncomputable def «AsTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.Go
   (Val #())))))))
 
 /-- go: wrap.go:176:6 -/
-noncomputable def «asTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def asType.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "err"
   (Lam "ppe"
   (App (Val exceptionDo)
@@ -279,7 +279,7 @@ noncomputable def «asTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.Go
 instance info' : PkgInfo pkg_id.errors where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -290,7 +290,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val errorType'init) (Val #())))))
+  (App (Val errorType.init) (Val #())))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrUnsupported))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
@@ -305,31 +305,31 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end errorString
 
-@[reducible] def errorString'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def errorString.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" go.string)]
 
-@[irreducible] def errorString'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  errorString'fds_unsealed
+@[irreducible] def errorString.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  errorString.fieldsUnsealed
 
 instance equals_unfold_errorString [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold errorString'fds errorString'fds_unsealed :=
-  ⟨by unfold errorString'fds; rfl⟩
+    EqualsUnfold errorString.fields errorString.fieldsUnsealed :=
+  ⟨by unfold errorString.fields; rfl⟩
 
-@[reducible] def «errorStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType errorString'fds)
+@[reducible] def errorString.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType errorString.fields)
 
-class errorString_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  errorString_type_repr : go.TypeReprUnderlying «errorStringⁱᵐᵖˡ» errorString.t
-  errorString_underlying : go.UnderlyingDirectedEq errorString «errorStringⁱᵐᵖˡ»
-  errorString_get_s : ∀ (x : errorString.t), go.IsGoStepPureDetTagged under (StructFieldGet «errorStringⁱᵐᵖˡ» go!"s") #x (Val #(x.s'))
-  errorString_set_s : ∀ (x : errorString.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «errorStringⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : errorString.t)))
-  errorString'ptr_Error_unfold : MethodUnfold (go.GoType.PointerType errorString) go!"Error" «errorString__Errorⁱᵐᵖˡ»
+class errorString.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying errorString.underlying errorString.t
+  underlying : go.UnderlyingDirectedEq errorString errorString.underlying
+  get_s : ∀ (x : errorString.t), go.IsGoStepPureDetTagged under (StructFieldGet errorString.underlying go!"s") #x (Val #(x.s'))
+  set_s : ∀ (x : errorString.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet errorString.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : errorString.t)))
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType errorString) go!"Error" errorString.Error.impl
 
-attribute [instance] errorString_Assumptions.errorString_type_repr
-  errorString_Assumptions.errorString_underlying
-  errorString_Assumptions.errorString_get_s
-  errorString_Assumptions.errorString_set_s
-  errorString_Assumptions.errorString'ptr_Error_unfold
+attribute [instance] errorString.TypeAssumptions.type_repr
+  errorString.TypeAssumptions.underlying
+  errorString.TypeAssumptions.get_s
+  errorString.TypeAssumptions.set_s
+  errorString.TypeAssumptions.ptr_Error_unfold
 
 namespace joinError
 structure t [FfiSyntax] where
@@ -340,37 +340,37 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end joinError
 
-@[reducible] def joinError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def joinError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"errs" (go.GoType.SliceType go.error))]
 
-@[irreducible] def joinError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  joinError'fds_unsealed
+@[irreducible] def joinError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  joinError.fieldsUnsealed
 
 instance equals_unfold_joinError [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold joinError'fds joinError'fds_unsealed :=
-  ⟨by unfold joinError'fds; rfl⟩
+    EqualsUnfold joinError.fields joinError.fieldsUnsealed :=
+  ⟨by unfold joinError.fields; rfl⟩
 
-@[reducible] def «joinErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType joinError'fds)
+@[reducible] def joinError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType joinError.fields)
 
-class joinError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  joinError_type_repr : go.TypeReprUnderlying «joinErrorⁱᵐᵖˡ» joinError.t
-  joinError_underlying : go.UnderlyingDirectedEq joinError «joinErrorⁱᵐᵖˡ»
-  joinError_get_errs : ∀ (x : joinError.t), go.IsGoStepPureDetTagged under (StructFieldGet «joinErrorⁱᵐᵖˡ» go!"errs") #x (Val #(x.errs'))
-  joinError_set_errs : ∀ (x : joinError.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «joinErrorⁱᵐᵖˡ» go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError.t)))
+class joinError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying joinError.underlying joinError.t
+  underlying : go.UnderlyingDirectedEq joinError joinError.underlying
+  get_errs : ∀ (x : joinError.t), go.IsGoStepPureDetTagged under (StructFieldGet joinError.underlying go!"errs") #x (Val #(x.errs'))
+  set_errs : ∀ (x : joinError.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet joinError.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError.t)))
 
-attribute [instance] joinError_Assumptions.joinError_type_repr
-  joinError_Assumptions.joinError_underlying
-  joinError_Assumptions.joinError_get_errs
-  joinError_Assumptions.joinError_set_errs
+attribute [instance] joinError.TypeAssumptions.type_repr
+  joinError.TypeAssumptions.underlying
+  joinError.TypeAssumptions.get_errs
+  joinError.TypeAssumptions.set_errs
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  errorString_instance : errorString_Assumptions
-  joinError_instance : joinError_Assumptions
-  New_unfold : FuncUnfold New [] «Newⁱᵐᵖˡ»
-  Unwrap_unfold : FuncUnfold Unwrap [] «Unwrapⁱᵐᵖˡ»
-  AsType_unfold : ∀ (E : go.GoType), FuncUnfold AsType [E] («AsTypeⁱᵐᵖˡ» E)
-  asType_unfold : ∀ (E : go.GoType), FuncUnfold asType [E] («asTypeⁱᵐᵖˡ» E)
+  errorString_instance : errorString.TypeAssumptions
+  joinError_instance : joinError.TypeAssumptions
+  New_unfold : FuncUnfold New [] New.impl
+  Unwrap_unfold : FuncUnfold Unwrap [] Unwrap.impl
+  AsType_unfold : ∀ (E : go.GoType), FuncUnfold AsType [E] (AsType.impl E)
+  asType_unfold : ∀ (E : go.GoType), FuncUnfold asType [E] (asType.impl E)
 
 attribute [instance] Assumptions.errorString_instance
   Assumptions.joinError_instance

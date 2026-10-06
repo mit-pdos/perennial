@@ -12,10 +12,10 @@ namespace log
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-def «Printfⁱᵐᵖˡ» : val :=
+def Printf.impl : val :=
   λ: "format" "vs", #()
 
-def «Printlnⁱᵐᵖˡ» : val :=
+def Println.impl : val :=
   λ: "vs", #()
 
 end code

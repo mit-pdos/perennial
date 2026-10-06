@@ -43,14 +43,14 @@ def step [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] step
 
-axiom «Traceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Trace.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom instrumentationScope [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Tracer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.Tracer"
 
-axiom Tracer'init [FfiSyntax] [GoGlobalContext] : val
+axiom Tracer.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Init [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/traceutil.Init"
@@ -73,7 +73,7 @@ noncomputable def EnsureTrace [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.pkg.v3.traceutil where
   pkgImportedPkgs := [pkg_id.time]
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -81,7 +81,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val Tracer'init) (Val #())))))
+  (App (Val Tracer.init) (Val #())))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))))
 
@@ -93,25 +93,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end TraceKey
 
-@[reducible] def TraceKey'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TraceKey.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def TraceKey'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  TraceKey'fds_unsealed
+@[irreducible] def TraceKey.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  TraceKey.fieldsUnsealed
 
 instance equals_unfold_TraceKey [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold TraceKey'fds TraceKey'fds_unsealed :=
-  ⟨by unfold TraceKey'fds; rfl⟩
+    EqualsUnfold TraceKey.fields TraceKey.fieldsUnsealed :=
+  ⟨by unfold TraceKey.fields; rfl⟩
 
-@[reducible] def «TraceKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType TraceKey'fds)
+@[reducible] def TraceKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType TraceKey.fields)
 
-class TraceKey_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TraceKey_type_repr : go.TypeReprUnderlying «TraceKeyⁱᵐᵖˡ» TraceKey.t
-  TraceKey_underlying : go.UnderlyingDirectedEq TraceKey «TraceKeyⁱᵐᵖˡ»
+class TraceKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying TraceKey.underlying TraceKey.t
+  underlying : go.UnderlyingDirectedEq TraceKey TraceKey.underlying
 
-attribute [instance] TraceKey_Assumptions.TraceKey_type_repr
-  TraceKey_Assumptions.TraceKey_underlying
+attribute [instance] TraceKey.TypeAssumptions.type_repr
+  TraceKey.TypeAssumptions.underlying
 
 namespace StartTimeKey
 structure t [FfiSyntax] where
@@ -121,25 +121,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end StartTimeKey
 
-@[reducible] def StartTimeKey'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def StartTimeKey.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def StartTimeKey'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  StartTimeKey'fds_unsealed
+@[irreducible] def StartTimeKey.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  StartTimeKey.fieldsUnsealed
 
 instance equals_unfold_StartTimeKey [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold StartTimeKey'fds StartTimeKey'fds_unsealed :=
-  ⟨by unfold StartTimeKey'fds; rfl⟩
+    EqualsUnfold StartTimeKey.fields StartTimeKey.fieldsUnsealed :=
+  ⟨by unfold StartTimeKey.fields; rfl⟩
 
-@[reducible] def «StartTimeKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType StartTimeKey'fds)
+@[reducible] def StartTimeKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType StartTimeKey.fields)
 
-class StartTimeKey_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StartTimeKey_type_repr : go.TypeReprUnderlying «StartTimeKeyⁱᵐᵖˡ» StartTimeKey.t
-  StartTimeKey_underlying : go.UnderlyingDirectedEq StartTimeKey «StartTimeKeyⁱᵐᵖˡ»
+class StartTimeKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying StartTimeKey.underlying StartTimeKey.t
+  underlying : go.UnderlyingDirectedEq StartTimeKey StartTimeKey.underlying
 
-attribute [instance] StartTimeKey_Assumptions.StartTimeKey_type_repr
-  StartTimeKey_Assumptions.StartTimeKey_underlying
+attribute [instance] StartTimeKey.TypeAssumptions.type_repr
+  StartTimeKey.TypeAssumptions.underlying
 
 namespace Field
 structure t [FfiSyntax] where
@@ -151,34 +151,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Field
 
-@[reducible] def Field'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Field.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" go.string),
 (go.field_decl.FieldDecl go!"Value" go.any)]
 
-@[irreducible] def Field'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Field'fds_unsealed
+@[irreducible] def Field.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Field.fieldsUnsealed
 
 instance equals_unfold_Field [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Field'fds Field'fds_unsealed :=
-  ⟨by unfold Field'fds; rfl⟩
+    EqualsUnfold Field.fields Field.fieldsUnsealed :=
+  ⟨by unfold Field.fields; rfl⟩
 
-@[reducible] def «Fieldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Field'fds)
+@[reducible] def Field.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Field.fields)
 
-class Field_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Field_type_repr : go.TypeReprUnderlying «Fieldⁱᵐᵖˡ» Field.t
-  Field_underlying : go.UnderlyingDirectedEq Field «Fieldⁱᵐᵖˡ»
-  Field_get_Key : ∀ (x : Field.t), go.IsGoStepPureDetTagged under (StructFieldGet «Fieldⁱᵐᵖˡ» go!"Key") #x (Val #(x.Key'))
-  Field_set_Key : ∀ (x : Field.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «Fieldⁱᵐᵖˡ» go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : Field.t)))
-  Field_get_Value : ∀ (x : Field.t), go.IsGoStepPureDetTagged under (StructFieldGet «Fieldⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
-  Field_set_Value : ∀ (x : Field.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Fieldⁱᵐᵖˡ» go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Field.t)))
+class Field.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Field.underlying Field.t
+  underlying : go.UnderlyingDirectedEq Field Field.underlying
+  get_Key : ∀ (x : Field.t), go.IsGoStepPureDetTagged under (StructFieldGet Field.underlying go!"Key") #x (Val #(x.Key'))
+  set_Key : ∀ (x : Field.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Field.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : Field.t)))
+  get_Value : ∀ (x : Field.t), go.IsGoStepPureDetTagged under (StructFieldGet Field.underlying go!"Value") #x (Val #(x.Value'))
+  set_Value : ∀ (x : Field.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Field.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Field.t)))
 
-attribute [instance] Field_Assumptions.Field_type_repr
-  Field_Assumptions.Field_underlying
-  Field_Assumptions.Field_get_Key
-  Field_Assumptions.Field_set_Key
-  Field_Assumptions.Field_get_Value
-  Field_Assumptions.Field_set_Value
+attribute [instance] Field.TypeAssumptions.type_repr
+  Field.TypeAssumptions.underlying
+  Field.TypeAssumptions.get_Key
+  Field.TypeAssumptions.set_Key
+  Field.TypeAssumptions.get_Value
+  Field.TypeAssumptions.set_Value
 
 namespace Trace
 axiom t : Type
@@ -186,14 +186,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Trace
 
-class Trace_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Trace_type_repr : go.TypeReprUnderlying «Traceⁱᵐᵖˡ» Trace.t
-  Trace_underlying : go.UnderlyingDirectedEq Trace «Traceⁱᵐᵖˡ»
-  «Traceⁱᵐᵖˡ_underlying» : go.IsUnderlying «Traceⁱᵐᵖˡ» «Traceⁱᵐᵖˡ»
+class Trace.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Trace.underlying Trace.t
+  underlying : go.UnderlyingDirectedEq Trace Trace.underlying
+  isUnderlying : go.IsUnderlying Trace.underlying Trace.underlying
 
-attribute [instance] Trace_Assumptions.Trace_type_repr
-  Trace_Assumptions.Trace_underlying
-  Trace_Assumptions.«Traceⁱᵐᵖˡ_underlying»
+attribute [instance] Trace.TypeAssumptions.type_repr
+  Trace.TypeAssumptions.underlying
+  Trace.TypeAssumptions.isUnderlying
 
 namespace step
 structure t [FfiSyntax] where
@@ -208,56 +208,56 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end step
 
-@[reducible] def step'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def step.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"time" _root_.Perennial.time.Time),
 (go.field_decl.FieldDecl go!"msg" go.string),
 (go.field_decl.FieldDecl go!"fields" (go.GoType.SliceType Field)),
 (go.field_decl.FieldDecl go!"isSubTraceStart" go.bool),
 (go.field_decl.FieldDecl go!"isSubTraceEnd" go.bool)]
 
-@[irreducible] def step'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  step'fds_unsealed
+@[irreducible] def step.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  step.fieldsUnsealed
 
 instance equals_unfold_step [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold step'fds step'fds_unsealed :=
-  ⟨by unfold step'fds; rfl⟩
+    EqualsUnfold step.fields step.fieldsUnsealed :=
+  ⟨by unfold step.fields; rfl⟩
 
-@[reducible] def «stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType step'fds)
+@[reducible] def step.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType step.fields)
 
-class step_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  step_type_repr : go.TypeReprUnderlying «stepⁱᵐᵖˡ» step.t
-  step_underlying : go.UnderlyingDirectedEq step «stepⁱᵐᵖˡ»
-  step_get_time : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet «stepⁱᵐᵖˡ» go!"time") #x (Val #(x.time'))
-  step_set_time : ∀ (x : step.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet «stepⁱᵐᵖˡ» go!"time") (PairV #x #y) (Val #(({ x with time' := y } : step.t)))
-  step_get_msg : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet «stepⁱᵐᵖˡ» go!"msg") #x (Val #(x.msg'))
-  step_set_msg : ∀ (x : step.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «stepⁱᵐᵖˡ» go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : step.t)))
-  step_get_fields : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet «stepⁱᵐᵖˡ» go!"fields") #x (Val #(x.fields'))
-  step_set_fields : ∀ (x : step.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «stepⁱᵐᵖˡ» go!"fields") (PairV #x #y) (Val #(({ x with fields' := y } : step.t)))
-  step_get_isSubTraceStart : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet «stepⁱᵐᵖˡ» go!"isSubTraceStart") #x (Val #(x.isSubTraceStart'))
-  step_set_isSubTraceStart : ∀ (x : step.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «stepⁱᵐᵖˡ» go!"isSubTraceStart") (PairV #x #y) (Val #(({ x with isSubTraceStart' := y } : step.t)))
-  step_get_isSubTraceEnd : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet «stepⁱᵐᵖˡ» go!"isSubTraceEnd") #x (Val #(x.isSubTraceEnd'))
-  step_set_isSubTraceEnd : ∀ (x : step.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «stepⁱᵐᵖˡ» go!"isSubTraceEnd") (PairV #x #y) (Val #(({ x with isSubTraceEnd' := y } : step.t)))
+class step.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying step.underlying step.t
+  underlying : go.UnderlyingDirectedEq step step.underlying
+  get_time : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"time") #x (Val #(x.time'))
+  set_time : ∀ (x : step.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"time") (PairV #x #y) (Val #(({ x with time' := y } : step.t)))
+  get_msg : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"msg") #x (Val #(x.msg'))
+  set_msg : ∀ (x : step.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : step.t)))
+  get_fields : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"fields") #x (Val #(x.fields'))
+  set_fields : ∀ (x : step.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"fields") (PairV #x #y) (Val #(({ x with fields' := y } : step.t)))
+  get_isSubTraceStart : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"isSubTraceStart") #x (Val #(x.isSubTraceStart'))
+  set_isSubTraceStart : ∀ (x : step.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"isSubTraceStart") (PairV #x #y) (Val #(({ x with isSubTraceStart' := y } : step.t)))
+  get_isSubTraceEnd : ∀ (x : step.t), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"isSubTraceEnd") #x (Val #(x.isSubTraceEnd'))
+  set_isSubTraceEnd : ∀ (x : step.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"isSubTraceEnd") (PairV #x #y) (Val #(({ x with isSubTraceEnd' := y } : step.t)))
 
-attribute [instance] step_Assumptions.step_type_repr
-  step_Assumptions.step_underlying
-  step_Assumptions.step_get_time
-  step_Assumptions.step_set_time
-  step_Assumptions.step_get_msg
-  step_Assumptions.step_set_msg
-  step_Assumptions.step_get_fields
-  step_Assumptions.step_set_fields
-  step_Assumptions.step_get_isSubTraceStart
-  step_Assumptions.step_set_isSubTraceStart
-  step_Assumptions.step_get_isSubTraceEnd
-  step_Assumptions.step_set_isSubTraceEnd
+attribute [instance] step.TypeAssumptions.type_repr
+  step.TypeAssumptions.underlying
+  step.TypeAssumptions.get_time
+  step.TypeAssumptions.set_time
+  step.TypeAssumptions.get_msg
+  step.TypeAssumptions.set_msg
+  step.TypeAssumptions.get_fields
+  step.TypeAssumptions.set_fields
+  step.TypeAssumptions.get_isSubTraceStart
+  step.TypeAssumptions.set_isSubTraceStart
+  step.TypeAssumptions.get_isSubTraceEnd
+  step.TypeAssumptions.set_isSubTraceEnd
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TraceKey_instance : TraceKey_Assumptions
-  StartTimeKey_instance : StartTimeKey_Assumptions
-  Field_instance : Field_Assumptions
-  Trace_instance : Trace_Assumptions
-  step_instance : step_Assumptions
+  TraceKey_instance : TraceKey.TypeAssumptions
+  StartTimeKey_instance : StartTimeKey.TypeAssumptions
+  Field_instance : Field.TypeAssumptions
+  Trace_instance : Trace.TypeAssumptions
+  step_instance : step.TypeAssumptions
   import_time_Assumption : _root_.Perennial.time.Assumptions
 
 attribute [instance] Assumptions.TraceKey_instance

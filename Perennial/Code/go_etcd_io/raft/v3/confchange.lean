@@ -65,7 +65,7 @@ noncomputable def Restore [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.confchange where
   pkgImportedPkgs := [pkg_id.go_etcd_io.raft.v3.tracker]
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -84,37 +84,37 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Changer
 
-@[reducible] def Changer'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Changer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Tracker" _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker),
 (go.field_decl.FieldDecl go!"LastIndex" go.uint64)]
 
-@[irreducible] def Changer'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Changer'fds_unsealed
+@[irreducible] def Changer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Changer.fieldsUnsealed
 
 instance equals_unfold_Changer [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Changer'fds Changer'fds_unsealed :=
-  ⟨by unfold Changer'fds; rfl⟩
+    EqualsUnfold Changer.fields Changer.fieldsUnsealed :=
+  ⟨by unfold Changer.fields; rfl⟩
 
-@[reducible] def «Changerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Changer'fds)
+@[reducible] def Changer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Changer.fields)
 
-class Changer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Changer_type_repr : go.TypeReprUnderlying «Changerⁱᵐᵖˡ» Changer.t
-  Changer_underlying : go.UnderlyingDirectedEq Changer «Changerⁱᵐᵖˡ»
-  Changer_get_Tracker : ∀ (x : Changer.t), go.IsGoStepPureDetTagged under (StructFieldGet «Changerⁱᵐᵖˡ» go!"Tracker") #x (Val #(x.Tracker'))
-  Changer_set_Tracker : ∀ (x : Changer.t) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldSet «Changerⁱᵐᵖˡ» go!"Tracker") (PairV #x #y) (Val #(({ x with Tracker' := y } : Changer.t)))
-  Changer_get_LastIndex : ∀ (x : Changer.t), go.IsGoStepPureDetTagged under (StructFieldGet «Changerⁱᵐᵖˡ» go!"LastIndex") #x (Val #(x.LastIndex'))
-  Changer_set_LastIndex : ∀ (x : Changer.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Changerⁱᵐᵖˡ» go!"LastIndex") (PairV #x #y) (Val #(({ x with LastIndex' := y } : Changer.t)))
+class Changer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Changer.underlying Changer.t
+  underlying : go.UnderlyingDirectedEq Changer Changer.underlying
+  get_Tracker : ∀ (x : Changer.t), go.IsGoStepPureDetTagged under (StructFieldGet Changer.underlying go!"Tracker") #x (Val #(x.Tracker'))
+  set_Tracker : ∀ (x : Changer.t) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldSet Changer.underlying go!"Tracker") (PairV #x #y) (Val #(({ x with Tracker' := y } : Changer.t)))
+  get_LastIndex : ∀ (x : Changer.t), go.IsGoStepPureDetTagged under (StructFieldGet Changer.underlying go!"LastIndex") #x (Val #(x.LastIndex'))
+  set_LastIndex : ∀ (x : Changer.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Changer.underlying go!"LastIndex") (PairV #x #y) (Val #(({ x with LastIndex' := y } : Changer.t)))
 
-attribute [instance] Changer_Assumptions.Changer_type_repr
-  Changer_Assumptions.Changer_underlying
-  Changer_Assumptions.Changer_get_Tracker
-  Changer_Assumptions.Changer_set_Tracker
-  Changer_Assumptions.Changer_get_LastIndex
-  Changer_Assumptions.Changer_set_LastIndex
+attribute [instance] Changer.TypeAssumptions.type_repr
+  Changer.TypeAssumptions.underlying
+  Changer.TypeAssumptions.get_Tracker
+  Changer.TypeAssumptions.set_Tracker
+  Changer.TypeAssumptions.get_LastIndex
+  Changer.TypeAssumptions.set_LastIndex
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Changer_instance : Changer_Assumptions
+  Changer_instance : Changer.TypeAssumptions
   import_tracker_Assumption : _root_.Perennial.go_etcd_io.raft.v3.tracker.Assumptions
 
 attribute [instance] Assumptions.Changer_instance

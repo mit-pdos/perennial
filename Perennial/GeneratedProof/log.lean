@@ -27,7 +27,7 @@ instance Logger_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Logger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) log.Logger.t log.«Loggerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) log.Logger.t log.Logger.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

@@ -32,7 +32,7 @@ instance streamReader_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance streamReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.streamReader.t google_golang_org.grpc.«streamReaderⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.streamReader.t google_golang_org.grpc.streamReader.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -55,7 +55,7 @@ instance noCopy_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noCopy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.noCopy.t google_golang_org.grpc.«noCopyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.noCopy.t google_golang_org.grpc.noCopy.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -74,7 +74,7 @@ instance parser_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance parser_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.parser.t google_golang_org.grpc.«parserⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.parser.t google_golang_org.grpc.parser.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -93,7 +93,7 @@ instance payloadInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance payloadInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.payloadInfo.t google_golang_org.grpc.«payloadInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.payloadInfo.t google_golang_org.grpc.payloadInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -112,7 +112,7 @@ instance compressorInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance compressorInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.compressorInfo.t google_golang_org.grpc.«compressorInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.compressorInfo.t google_golang_org.grpc.compressorInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -135,7 +135,7 @@ instance rpcInfoContextKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance rpcInfoContextKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.rpcInfoContextKey.t google_golang_org.grpc.«rpcInfoContextKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.rpcInfoContextKey.t google_golang_org.grpc.rpcInfoContextKey.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -163,7 +163,7 @@ instance ServiceDesc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ServiceDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceDesc.t google_golang_org.grpc.«ServiceDescⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceDesc.t google_golang_org.grpc.ServiceDesc.underlying := by
   solve_into_val_typed_struct
 
 instance ServiceDesc_access_load_ServiceName (l : Loc) (v : google_golang_org.grpc.ServiceDesc.t) (dq : DFrac) :
@@ -270,7 +270,7 @@ instance serviceInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance serviceInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serviceInfo.t google_golang_org.grpc.«serviceInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serviceInfo.t google_golang_org.grpc.serviceInfo.underlying := by
   solve_into_val_typed_struct
 
 instance serviceInfo_access_load_serviceImpl (l : Loc) (v : google_golang_org.grpc.serviceInfo.t) (dq : DFrac) :
@@ -353,7 +353,7 @@ instance Server_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Server_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.Server.t google_golang_org.grpc.«Serverⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.Server.t google_golang_org.grpc.Server.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -372,7 +372,7 @@ instance serverOptions_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance serverOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverOptions.t google_golang_org.grpc.«serverOptionsⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverOptions.t google_golang_org.grpc.serverOptions.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -395,7 +395,7 @@ instance EmptyServerOption_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EmptyServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyServerOption.t google_golang_org.grpc.«EmptyServerOptionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyServerOption.t google_golang_org.grpc.EmptyServerOption.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -419,7 +419,7 @@ instance funcServerOption_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance funcServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.funcServerOption.t google_golang_org.grpc.«funcServerOptionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.funcServerOption.t google_golang_org.grpc.funcServerOption.underlying := by
   solve_into_val_typed_struct
 
 instance funcServerOption_access_load_f (l : Loc) (v : google_golang_org.grpc.funcServerOption.t) (dq : DFrac) :
@@ -459,7 +459,7 @@ instance joinServerOption_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance joinServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.joinServerOption.t google_golang_org.grpc.«joinServerOptionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.joinServerOption.t google_golang_org.grpc.joinServerOption.underlying := by
   solve_into_val_typed_struct
 
 instance joinServerOption_access_load_opts (l : Loc) (v : google_golang_org.grpc.joinServerOption.t) (dq : DFrac) :
@@ -499,7 +499,7 @@ instance MaxHeaderListSizeServerOption_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxHeaderListSizeServerOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxHeaderListSizeServerOption.t google_golang_org.grpc.«MaxHeaderListSizeServerOptionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxHeaderListSizeServerOption.t google_golang_org.grpc.MaxHeaderListSizeServerOption.underlying := by
   solve_into_val_typed_struct
 
 instance MaxHeaderListSizeServerOption_access_load_MaxHeaderListSize (l : Loc) (v : google_golang_org.grpc.MaxHeaderListSizeServerOption.t) (dq : DFrac) :
@@ -541,7 +541,7 @@ instance MethodInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MethodInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MethodInfo.t google_golang_org.grpc.«MethodInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MethodInfo.t google_golang_org.grpc.MethodInfo.underlying := by
   solve_into_val_typed_struct
 
 instance MethodInfo_access_load_Name (l : Loc) (v : google_golang_org.grpc.MethodInfo.t) (dq : DFrac) :
@@ -614,7 +614,7 @@ instance ServiceInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ServiceInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceInfo.t google_golang_org.grpc.«ServiceInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceInfo.t google_golang_org.grpc.ServiceInfo.underlying := by
   solve_into_val_typed_struct
 
 instance ServiceInfo_access_load_Methods (l : Loc) (v : google_golang_org.grpc.ServiceInfo.t) (dq : DFrac) :
@@ -665,7 +665,7 @@ instance listenSocket_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance listenSocket_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.listenSocket.t google_golang_org.grpc.«listenSocketⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.listenSocket.t google_golang_org.grpc.listenSocket.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -688,7 +688,7 @@ instance streamKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance streamKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.streamKey.t google_golang_org.grpc.«streamKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.streamKey.t google_golang_org.grpc.streamKey.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -707,7 +707,7 @@ instance ServerTransportStream_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ServerTransportStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServerTransportStream.t google_golang_org.grpc.«ServerTransportStreamⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServerTransportStream.t google_golang_org.grpc.ServerTransportStream.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -730,7 +730,7 @@ instance serverKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance serverKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverKey.t google_golang_org.grpc.«serverKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverKey.t google_golang_org.grpc.serverKey.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -755,7 +755,7 @@ instance atomicSemaphore_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance atomicSemaphore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.atomicSemaphore.t google_golang_org.grpc.«atomicSemaphoreⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.atomicSemaphore.t google_golang_org.grpc.atomicSemaphore.underlying := by
   solve_into_val_typed_struct
 
 instance atomicSemaphore_access_load_n (l : Loc) (v : google_golang_org.grpc.atomicSemaphore.t) (dq : DFrac) :
@@ -806,7 +806,7 @@ instance ServiceConfig_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ServiceConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceConfig.t google_golang_org.grpc.«ServiceConfigⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceConfig.t google_golang_org.grpc.ServiceConfig.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -830,7 +830,7 @@ instance healthCheckConfig_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance healthCheckConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.healthCheckConfig.t google_golang_org.grpc.«healthCheckConfigⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.healthCheckConfig.t google_golang_org.grpc.healthCheckConfig.underlying := by
   solve_into_val_typed_struct
 
 instance healthCheckConfig_access_load_ServiceName (l : Loc) (v : google_golang_org.grpc.healthCheckConfig.t) (dq : DFrac) :
@@ -865,7 +865,7 @@ instance jsonRetryPolicy_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance jsonRetryPolicy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonRetryPolicy.t google_golang_org.grpc.«jsonRetryPolicyⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonRetryPolicy.t google_golang_org.grpc.jsonRetryPolicy.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -890,7 +890,7 @@ instance retryThrottlingPolicy_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance retryThrottlingPolicy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.retryThrottlingPolicy.t google_golang_org.grpc.«retryThrottlingPolicyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.retryThrottlingPolicy.t google_golang_org.grpc.retryThrottlingPolicy.underlying := by
   solve_into_val_typed_struct
 
 instance retryThrottlingPolicy_access_load_MaxTokens (l : Loc) (v : google_golang_org.grpc.retryThrottlingPolicy.t) (dq : DFrac) :
@@ -947,7 +947,7 @@ instance jsonName_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance jsonName_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonName.t google_golang_org.grpc.«jsonNameⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonName.t google_golang_org.grpc.jsonName.underlying := by
   solve_into_val_typed_struct
 
 instance jsonName_access_load_Service (l : Loc) (v : google_golang_org.grpc.jsonName.t) (dq : DFrac) :
@@ -998,7 +998,7 @@ instance jsonMC_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance jsonMC_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonMC.t google_golang_org.grpc.«jsonMCⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonMC.t google_golang_org.grpc.jsonMC.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1017,7 +1017,7 @@ instance jsonSC_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance jsonSC_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonSC.t google_golang_org.grpc.«jsonSCⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonSC.t google_golang_org.grpc.jsonSC.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1036,7 +1036,7 @@ instance ClientStream_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ClientStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ClientStream.t google_golang_org.grpc.«ClientStreamⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ClientStream.t google_golang_org.grpc.ClientStream.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1055,7 +1055,7 @@ instance clientStream_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance clientStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.clientStream.t google_golang_org.grpc.«clientStreamⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.clientStream.t google_golang_org.grpc.clientStream.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1080,7 +1080,7 @@ instance replayOp_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance replayOp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.replayOp.t google_golang_org.grpc.«replayOpⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.replayOp.t google_golang_org.grpc.replayOp.underlying := by
   solve_into_val_typed_struct
 
 instance replayOp_access_load_op (l : Loc) (v : google_golang_org.grpc.replayOp.t) (dq : DFrac) :
@@ -1131,7 +1131,7 @@ instance csAttempt_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance csAttempt_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.csAttempt.t google_golang_org.grpc.«csAttemptⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.csAttempt.t google_golang_org.grpc.csAttempt.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1150,7 +1150,7 @@ instance addrConnStream_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance addrConnStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.addrConnStream.t google_golang_org.grpc.«addrConnStreamⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.addrConnStream.t google_golang_org.grpc.addrConnStream.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1169,7 +1169,7 @@ instance ServerStream_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ServerStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServerStream.t google_golang_org.grpc.«ServerStreamⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServerStream.t google_golang_org.grpc.ServerStream.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1188,7 +1188,7 @@ instance serverStream_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance serverStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverStream.t google_golang_org.grpc.«serverStreamⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverStream.t google_golang_org.grpc.serverStream.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1207,7 +1207,7 @@ instance firstLine_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance firstLine_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.firstLine.t google_golang_org.grpc.«firstLineⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.firstLine.t google_golang_org.grpc.firstLine.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1232,7 +1232,7 @@ instance payload_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance payload_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.payload.t google_golang_org.grpc.«payloadⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.payload.t google_golang_org.grpc.payload.underlying := by
   solve_into_val_typed_struct
 
 instance payload_access_load_sent (l : Loc) (v : google_golang_org.grpc.payload.t) (dq : DFrac) :
@@ -1289,7 +1289,7 @@ instance fmtStringer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fmtStringer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.fmtStringer.t google_golang_org.grpc.«fmtStringerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.fmtStringer.t google_golang_org.grpc.fmtStringer.underlying := by
   solve_into_val_typed_struct
 
 instance fmtStringer_access_load_format (l : Loc) (v : google_golang_org.grpc.fmtStringer.t) (dq : DFrac) :

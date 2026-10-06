@@ -67,7 +67,7 @@ noncomputable def NewTimeList [FfiSyntax] [GoGlobalContext] : GoString :=
 /-- New creates a Wait.
 
     go: wait.go:53:6 -/
-noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def New.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "res" (App (Val (GoInstruction (GoAlloc list'))) (App (Val (GoInstruction (GoZeroVal list'))) (Val #())))
@@ -95,7 +95,7 @@ noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore list'))) (Pair (Var "res") (Var "$r0")))))))))
 
 /-- go: wait.go:63:16 -/
-noncomputable def «list__Registerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def list.Register.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (App (Val wrapDefer)
@@ -148,7 +148,7 @@ noncomputable def «list__Registerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))
 
 /-- go: wait.go:76:16 -/
-noncomputable def «list__Triggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def list.Trigger.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (Lam "x"
@@ -193,7 +193,7 @@ noncomputable def «list__Triggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))))
 
 /-- go: wait.go:88:16 -/
-noncomputable def «list__IsRegisteredⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def list.IsRegistered.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (App (Val wrapDefer)
@@ -231,7 +231,7 @@ noncomputable def «list__IsRegisteredⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))
 
 /-- go: wait.go:100:6 -/
-noncomputable def «NewWithResponseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewWithResponse.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ch"
   (App (Val exceptionDo)
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (Var "ch"))
@@ -240,7 +240,7 @@ noncomputable def «NewWithResponseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (CompositeLiteral waitWithResponse))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.GoType.ChannelType go.ChanDir.recvonly go.any) (Var "$v0")))])))))))))
 
 /-- go: wait.go:104:28 -/
-noncomputable def «waitWithResponse__Registerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def waitWithResponse.Register.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (App (Val exceptionDo)
@@ -250,7 +250,7 @@ noncomputable def «waitWithResponse__Registerⁱᵐᵖˡ» [FfiSyntax] [GoGloba
   (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (App (Val (GoInstruction (StructFieldRef waitWithResponse go!"ch"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType waitWithResponse)))) (Var "w"))))))))))
 
 /-- go: wait.go:107:28 -/
-noncomputable def «waitWithResponse__Triggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def waitWithResponse.Trigger.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (Lam "x"
@@ -262,7 +262,7 @@ noncomputable def «waitWithResponse__Triggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
   (Val #())))))))))
 
 /-- go: wait.go:108:28 -/
-noncomputable def «waitWithResponse__IsRegisteredⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def waitWithResponse.IsRegistered.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (App (Val exceptionDo)
@@ -273,7 +273,7 @@ noncomputable def «waitWithResponse__IsRegisteredⁱᵐᵖˡ» [FfiSyntax] [GoG
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))))
 
 /-- go: wait_time.go:38:6 -/
-noncomputable def «NewTimeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewTimeList.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -281,7 +281,7 @@ noncomputable def «NewTimeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (CompositeLiteral timeList))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))) (Var "$v0")))])))))))
 
 /-- go: wait_time.go:42:21 -/
-noncomputable def «timeList__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def timeList.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "tl"
   (Lam "deadline"
   (App (Val wrapDefer)
@@ -324,7 +324,7 @@ noncomputable def «timeList__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl")))) (Val #()))))))))))
 
 /-- go: wait_time.go:56:21 -/
-noncomputable def «timeList__Triggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def timeList.Trigger.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "tl"
   (Lam "deadline"
   (App (Val wrapDefer)
@@ -406,13 +406,13 @@ namespace Wait
 abbrev t [FfiSyntax] : Type := interface.t
 end Wait
 
-@[reducible] def «Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Wait.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"IsRegistered" (go.signature.Signature [go.uint64] false [go.bool])), (go.InterfaceElem.MethodElem go!"Register" (go.signature.Signature [go.uint64] false [(go.GoType.ChannelType go.ChanDir.recvonly go.any)])), (go.InterfaceElem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64, go.any] false []))])
 
-class Wait_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Wait_underlying : go.UnderlyingDirectedEq Wait «Waitⁱᵐᵖˡ»
+class Wait.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Wait Wait.underlying
 
-attribute [instance] Wait_Assumptions.Wait_underlying
+attribute [instance] Wait.TypeAssumptions.underlying
 
 namespace list'
 structure t [FfiSyntax] where
@@ -423,35 +423,35 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end list'
 
-@[reducible] def list'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def list.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"e" (go.GoType.SliceType listElement))]
 
-@[irreducible] def list'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  list'fds_unsealed
+@[irreducible] def list.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  list.fieldsUnsealed
 
 instance equals_unfold_list [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold list'fds list'fds_unsealed :=
-  ⟨by unfold list'fds; rfl⟩
+    EqualsUnfold list.fields list.fieldsUnsealed :=
+  ⟨by unfold list.fields; rfl⟩
 
-@[reducible] def «list'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType list'fds)
+@[reducible] def list'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType list.fields)
 
-class list_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  list_type_repr : go.TypeReprUnderlying «list'ⁱᵐᵖˡ» list'.t
-  list_underlying : go.UnderlyingDirectedEq list' «list'ⁱᵐᵖˡ»
-  list_get_e : ∀ (x : list'.t), go.IsGoStepPureDetTagged under (StructFieldGet «list'ⁱᵐᵖˡ» go!"e") #x (Val #(x.e'))
-  list_set_e : ∀ (x : list'.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «list'ⁱᵐᵖˡ» go!"e") (PairV #x #y) (Val #(({ x with e' := y } : list'.t)))
-  list'ptr_IsRegistered_unfold : MethodUnfold (go.GoType.PointerType list') go!"IsRegistered" «list__IsRegisteredⁱᵐᵖˡ»
-  list'ptr_Register_unfold : MethodUnfold (go.GoType.PointerType list') go!"Register" «list__Registerⁱᵐᵖˡ»
-  list'ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType list') go!"Trigger" «list__Triggerⁱᵐᵖˡ»
+class list.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying list'.underlying list'.t
+  underlying : go.UnderlyingDirectedEq list' list'.underlying
+  get_e : ∀ (x : list'.t), go.IsGoStepPureDetTagged under (StructFieldGet list'.underlying go!"e") #x (Val #(x.e'))
+  set_e : ∀ (x : list'.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet list'.underlying go!"e") (PairV #x #y) (Val #(({ x with e' := y } : list'.t)))
+  ptr_IsRegistered_unfold : MethodUnfold (go.GoType.PointerType list') go!"IsRegistered" list.IsRegistered.impl
+  ptr_Register_unfold : MethodUnfold (go.GoType.PointerType list') go!"Register" list.Register.impl
+  ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType list') go!"Trigger" list.Trigger.impl
 
-attribute [instance] list_Assumptions.list_type_repr
-  list_Assumptions.list_underlying
-  list_Assumptions.list_get_e
-  list_Assumptions.list_set_e
-  list_Assumptions.list'ptr_IsRegistered_unfold
-  list_Assumptions.list'ptr_Register_unfold
-  list_Assumptions.list'ptr_Trigger_unfold
+attribute [instance] list.TypeAssumptions.type_repr
+  list.TypeAssumptions.underlying
+  list.TypeAssumptions.get_e
+  list.TypeAssumptions.set_e
+  list.TypeAssumptions.ptr_IsRegistered_unfold
+  list.TypeAssumptions.ptr_Register_unfold
+  list.TypeAssumptions.ptr_Trigger_unfold
 
 namespace listElement
 structure t [FfiSyntax] where
@@ -463,34 +463,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end listElement
 
-@[reducible] def listElement'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def listElement.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"l" _root_.Perennial.sync.RWMutex),
 (go.field_decl.FieldDecl go!"m" (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))]
 
-@[irreducible] def listElement'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  listElement'fds_unsealed
+@[irreducible] def listElement.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  listElement.fieldsUnsealed
 
 instance equals_unfold_listElement [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold listElement'fds listElement'fds_unsealed :=
-  ⟨by unfold listElement'fds; rfl⟩
+    EqualsUnfold listElement.fields listElement.fieldsUnsealed :=
+  ⟨by unfold listElement.fields; rfl⟩
 
-@[reducible] def «listElementⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType listElement'fds)
+@[reducible] def listElement.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType listElement.fields)
 
-class listElement_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  listElement_type_repr : go.TypeReprUnderlying «listElementⁱᵐᵖˡ» listElement.t
-  listElement_underlying : go.UnderlyingDirectedEq listElement «listElementⁱᵐᵖˡ»
-  listElement_get_l : ∀ (x : listElement.t), go.IsGoStepPureDetTagged under (StructFieldGet «listElementⁱᵐᵖˡ» go!"l") #x (Val #(x.l'))
-  listElement_set_l : ∀ (x : listElement.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «listElementⁱᵐᵖˡ» go!"l") (PairV #x #y) (Val #(({ x with l' := y } : listElement.t)))
-  listElement_get_m : ∀ (x : listElement.t), go.IsGoStepPureDetTagged under (StructFieldGet «listElementⁱᵐᵖˡ» go!"m") #x (Val #(x.m'))
-  listElement_set_m : ∀ (x : listElement.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «listElementⁱᵐᵖˡ» go!"m") (PairV #x #y) (Val #(({ x with m' := y } : listElement.t)))
+class listElement.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying listElement.underlying listElement.t
+  underlying : go.UnderlyingDirectedEq listElement listElement.underlying
+  get_l : ∀ (x : listElement.t), go.IsGoStepPureDetTagged under (StructFieldGet listElement.underlying go!"l") #x (Val #(x.l'))
+  set_l : ∀ (x : listElement.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet listElement.underlying go!"l") (PairV #x #y) (Val #(({ x with l' := y } : listElement.t)))
+  get_m : ∀ (x : listElement.t), go.IsGoStepPureDetTagged under (StructFieldGet listElement.underlying go!"m") #x (Val #(x.m'))
+  set_m : ∀ (x : listElement.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet listElement.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : listElement.t)))
 
-attribute [instance] listElement_Assumptions.listElement_type_repr
-  listElement_Assumptions.listElement_underlying
-  listElement_Assumptions.listElement_get_l
-  listElement_Assumptions.listElement_set_l
-  listElement_Assumptions.listElement_get_m
-  listElement_Assumptions.listElement_set_m
+attribute [instance] listElement.TypeAssumptions.type_repr
+  listElement.TypeAssumptions.underlying
+  listElement.TypeAssumptions.get_l
+  listElement.TypeAssumptions.set_l
+  listElement.TypeAssumptions.get_m
+  listElement.TypeAssumptions.set_m
 
 namespace waitWithResponse
 structure t [FfiSyntax] where
@@ -501,47 +501,47 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end waitWithResponse
 
-@[reducible] def waitWithResponse'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def waitWithResponse.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ch" (go.GoType.ChannelType go.ChanDir.recvonly go.any))]
 
-@[irreducible] def waitWithResponse'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  waitWithResponse'fds_unsealed
+@[irreducible] def waitWithResponse.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  waitWithResponse.fieldsUnsealed
 
 instance equals_unfold_waitWithResponse [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold waitWithResponse'fds waitWithResponse'fds_unsealed :=
-  ⟨by unfold waitWithResponse'fds; rfl⟩
+    EqualsUnfold waitWithResponse.fields waitWithResponse.fieldsUnsealed :=
+  ⟨by unfold waitWithResponse.fields; rfl⟩
 
-@[reducible] def «waitWithResponseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType waitWithResponse'fds)
+@[reducible] def waitWithResponse.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType waitWithResponse.fields)
 
-class waitWithResponse_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  waitWithResponse_type_repr : go.TypeReprUnderlying «waitWithResponseⁱᵐᵖˡ» waitWithResponse.t
-  waitWithResponse_underlying : go.UnderlyingDirectedEq waitWithResponse «waitWithResponseⁱᵐᵖˡ»
-  waitWithResponse_get_ch : ∀ (x : waitWithResponse.t), go.IsGoStepPureDetTagged under (StructFieldGet «waitWithResponseⁱᵐᵖˡ» go!"ch") #x (Val #(x.ch'))
-  waitWithResponse_set_ch : ∀ (x : waitWithResponse.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «waitWithResponseⁱᵐᵖˡ» go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : waitWithResponse.t)))
-  waitWithResponse'ptr_IsRegistered_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"IsRegistered" «waitWithResponse__IsRegisteredⁱᵐᵖˡ»
-  waitWithResponse'ptr_Register_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"Register" «waitWithResponse__Registerⁱᵐᵖˡ»
-  waitWithResponse'ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"Trigger" «waitWithResponse__Triggerⁱᵐᵖˡ»
+class waitWithResponse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying waitWithResponse.underlying waitWithResponse.t
+  underlying : go.UnderlyingDirectedEq waitWithResponse waitWithResponse.underlying
+  get_ch : ∀ (x : waitWithResponse.t), go.IsGoStepPureDetTagged under (StructFieldGet waitWithResponse.underlying go!"ch") #x (Val #(x.ch'))
+  set_ch : ∀ (x : waitWithResponse.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet waitWithResponse.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : waitWithResponse.t)))
+  ptr_IsRegistered_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"IsRegistered" waitWithResponse.IsRegistered.impl
+  ptr_Register_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"Register" waitWithResponse.Register.impl
+  ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"Trigger" waitWithResponse.Trigger.impl
 
-attribute [instance] waitWithResponse_Assumptions.waitWithResponse_type_repr
-  waitWithResponse_Assumptions.waitWithResponse_underlying
-  waitWithResponse_Assumptions.waitWithResponse_get_ch
-  waitWithResponse_Assumptions.waitWithResponse_set_ch
-  waitWithResponse_Assumptions.waitWithResponse'ptr_IsRegistered_unfold
-  waitWithResponse_Assumptions.waitWithResponse'ptr_Register_unfold
-  waitWithResponse_Assumptions.waitWithResponse'ptr_Trigger_unfold
+attribute [instance] waitWithResponse.TypeAssumptions.type_repr
+  waitWithResponse.TypeAssumptions.underlying
+  waitWithResponse.TypeAssumptions.get_ch
+  waitWithResponse.TypeAssumptions.set_ch
+  waitWithResponse.TypeAssumptions.ptr_IsRegistered_unfold
+  waitWithResponse.TypeAssumptions.ptr_Register_unfold
+  waitWithResponse.TypeAssumptions.ptr_Trigger_unfold
 
 namespace WaitTime
 abbrev t [FfiSyntax] : Type := interface.t
 end WaitTime
 
-@[reducible] def «WaitTimeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def WaitTime.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64] false [])), (go.InterfaceElem.MethodElem go!"Wait" (go.signature.Signature [go.uint64] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))])
 
-class WaitTime_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  WaitTime_underlying : go.UnderlyingDirectedEq WaitTime «WaitTimeⁱᵐᵖˡ»
+class WaitTime.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq WaitTime WaitTime.underlying
 
-attribute [instance] WaitTime_Assumptions.WaitTime_underlying
+attribute [instance] WaitTime.TypeAssumptions.underlying
 
 namespace timeList
 structure t [FfiSyntax] where
@@ -554,54 +554,54 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end timeList
 
-@[reducible] def timeList'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def timeList.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"l" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"lastTriggerDeadline" go.uint64),
 (go.field_decl.FieldDecl go!"m" (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))]
 
-@[irreducible] def timeList'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  timeList'fds_unsealed
+@[irreducible] def timeList.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  timeList.fieldsUnsealed
 
 instance equals_unfold_timeList [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold timeList'fds timeList'fds_unsealed :=
-  ⟨by unfold timeList'fds; rfl⟩
+    EqualsUnfold timeList.fields timeList.fieldsUnsealed :=
+  ⟨by unfold timeList.fields; rfl⟩
 
-@[reducible] def «timeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType timeList'fds)
+@[reducible] def timeList.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType timeList.fields)
 
-class timeList_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  timeList_type_repr : go.TypeReprUnderlying «timeListⁱᵐᵖˡ» timeList.t
-  timeList_underlying : go.UnderlyingDirectedEq timeList «timeListⁱᵐᵖˡ»
-  timeList_get_l : ∀ (x : timeList.t), go.IsGoStepPureDetTagged under (StructFieldGet «timeListⁱᵐᵖˡ» go!"l") #x (Val #(x.l'))
-  timeList_set_l : ∀ (x : timeList.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «timeListⁱᵐᵖˡ» go!"l") (PairV #x #y) (Val #(({ x with l' := y } : timeList.t)))
-  timeList_get_lastTriggerDeadline : ∀ (x : timeList.t), go.IsGoStepPureDetTagged under (StructFieldGet «timeListⁱᵐᵖˡ» go!"lastTriggerDeadline") #x (Val #(x.lastTriggerDeadline'))
-  timeList_set_lastTriggerDeadline : ∀ (x : timeList.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «timeListⁱᵐᵖˡ» go!"lastTriggerDeadline") (PairV #x #y) (Val #(({ x with lastTriggerDeadline' := y } : timeList.t)))
-  timeList_get_m : ∀ (x : timeList.t), go.IsGoStepPureDetTagged under (StructFieldGet «timeListⁱᵐᵖˡ» go!"m") #x (Val #(x.m'))
-  timeList_set_m : ∀ (x : timeList.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «timeListⁱᵐᵖˡ» go!"m") (PairV #x #y) (Val #(({ x with m' := y } : timeList.t)))
-  timeList'ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType timeList) go!"Trigger" «timeList__Triggerⁱᵐᵖˡ»
-  timeList'ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType timeList) go!"Wait" «timeList__Waitⁱᵐᵖˡ»
+class timeList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying timeList.underlying timeList.t
+  underlying : go.UnderlyingDirectedEq timeList timeList.underlying
+  get_l : ∀ (x : timeList.t), go.IsGoStepPureDetTagged under (StructFieldGet timeList.underlying go!"l") #x (Val #(x.l'))
+  set_l : ∀ (x : timeList.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet timeList.underlying go!"l") (PairV #x #y) (Val #(({ x with l' := y } : timeList.t)))
+  get_lastTriggerDeadline : ∀ (x : timeList.t), go.IsGoStepPureDetTagged under (StructFieldGet timeList.underlying go!"lastTriggerDeadline") #x (Val #(x.lastTriggerDeadline'))
+  set_lastTriggerDeadline : ∀ (x : timeList.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet timeList.underlying go!"lastTriggerDeadline") (PairV #x #y) (Val #(({ x with lastTriggerDeadline' := y } : timeList.t)))
+  get_m : ∀ (x : timeList.t), go.IsGoStepPureDetTagged under (StructFieldGet timeList.underlying go!"m") #x (Val #(x.m'))
+  set_m : ∀ (x : timeList.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet timeList.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : timeList.t)))
+  ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType timeList) go!"Trigger" timeList.Trigger.impl
+  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType timeList) go!"Wait" timeList.Wait.impl
 
-attribute [instance] timeList_Assumptions.timeList_type_repr
-  timeList_Assumptions.timeList_underlying
-  timeList_Assumptions.timeList_get_l
-  timeList_Assumptions.timeList_set_l
-  timeList_Assumptions.timeList_get_lastTriggerDeadline
-  timeList_Assumptions.timeList_set_lastTriggerDeadline
-  timeList_Assumptions.timeList_get_m
-  timeList_Assumptions.timeList_set_m
-  timeList_Assumptions.timeList'ptr_Trigger_unfold
-  timeList_Assumptions.timeList'ptr_Wait_unfold
+attribute [instance] timeList.TypeAssumptions.type_repr
+  timeList.TypeAssumptions.underlying
+  timeList.TypeAssumptions.get_l
+  timeList.TypeAssumptions.set_l
+  timeList.TypeAssumptions.get_lastTriggerDeadline
+  timeList.TypeAssumptions.set_lastTriggerDeadline
+  timeList.TypeAssumptions.get_m
+  timeList.TypeAssumptions.set_m
+  timeList.TypeAssumptions.ptr_Trigger_unfold
+  timeList.TypeAssumptions.ptr_Wait_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Wait_instance : Wait_Assumptions
-  list_instance : list_Assumptions
-  listElement_instance : listElement_Assumptions
-  waitWithResponse_instance : waitWithResponse_Assumptions
-  WaitTime_instance : WaitTime_Assumptions
-  timeList_instance : timeList_Assumptions
-  New_unfold : FuncUnfold New [] «Newⁱᵐᵖˡ»
-  NewWithResponse_unfold : FuncUnfold NewWithResponse [] «NewWithResponseⁱᵐᵖˡ»
-  NewTimeList_unfold : FuncUnfold NewTimeList [] «NewTimeListⁱᵐᵖˡ»
+  Wait_instance : Wait.TypeAssumptions
+  list_instance : list.TypeAssumptions
+  listElement_instance : listElement.TypeAssumptions
+  waitWithResponse_instance : waitWithResponse.TypeAssumptions
+  WaitTime_instance : WaitTime.TypeAssumptions
+  timeList_instance : timeList.TypeAssumptions
+  New_unfold : FuncUnfold New [] New.impl
+  NewWithResponse_unfold : FuncUnfold NewWithResponse [] NewWithResponse.impl
+  NewTimeList_unfold : FuncUnfold NewTimeList [] NewTimeList.impl
   import_log_Assumption : _root_.Perennial.log.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
 

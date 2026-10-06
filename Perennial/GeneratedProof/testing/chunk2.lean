@@ -80,7 +80,7 @@ instance common_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance common_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.common.t testing.«commonⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.common.t testing.common.underlying := by
   solve_into_val_typed_struct
 
 instance common_access_load_mu (l : Loc) (v : testing.common.t) (dq : DFrac) :
@@ -809,7 +809,7 @@ instance fuzzState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fuzzState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.fuzzState.t testing.«fuzzStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.fuzzState.t testing.fuzzState.underlying := by
   solve_into_val_typed_struct
 
 instance fuzzState_access_load_deps (l : Loc) (v : testing.fuzzState.t) (dq : DFrac) :
@@ -869,7 +869,7 @@ instance matcher_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance matcher_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.matcher.t testing.«matcherⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.matcher.t testing.matcher.underlying := by
   solve_into_val_typed_struct
 
 instance matcher_access_load_filter (l : Loc) (v : testing.matcher.t) (dq : DFrac) :
@@ -981,7 +981,7 @@ instance M_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance M_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.M.t testing.«Mⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.M.t testing.M.underlying := by
   solve_into_val_typed_struct
 
 instance M_access_load_deps (l : Loc) (v : testing.M.t) (dq : DFrac) :

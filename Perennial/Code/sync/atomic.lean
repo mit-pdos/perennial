@@ -205,7 +205,7 @@ noncomputable def runtime_procUnpin [FfiSyntax] [GoGlobalContext] : GoString :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:19:16 -/
-noncomputable def «Bool__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bool.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -217,7 +217,7 @@ noncomputable def «Bool__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- Store atomically stores val into x.
 
     go: type.go:22:16 -/
-noncomputable def «Bool__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bool.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -235,7 +235,7 @@ noncomputable def «Bool__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:25:16 -/
-noncomputable def «Bool__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bool.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -251,7 +251,7 @@ noncomputable def «Bool__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
     go: type.go:28:16 -/
-noncomputable def «Bool__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bool.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -271,7 +271,7 @@ noncomputable def «Bool__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
 /-- b32 returns a uint32 0 or 1 representing b.
 
     go: type.go:33:6 -/
-noncomputable def «b32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def b32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
@@ -287,7 +287,7 @@ noncomputable def «b32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:58:22 -/
-noncomputable def «Pointer__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Pointer.Load.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -299,7 +299,7 @@ noncomputable def «Pointer__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T 
 /-- Store atomically stores val into x.
 
     go: type.go:61:22 -/
-noncomputable def «Pointer__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Pointer.Store.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -316,7 +316,7 @@ noncomputable def «Pointer__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:64:22 -/
-noncomputable def «Pointer__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Pointer.Swap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -331,7 +331,7 @@ noncomputable def «Pointer__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:67:22 -/
-noncomputable def «Pointer__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Pointer.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -349,7 +349,7 @@ noncomputable def «Pointer__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:80:17 -/
-noncomputable def «Int32__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -361,7 +361,7 @@ noncomputable def «Int32__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- Store atomically stores val into x.
 
     go: type.go:83:17 -/
-noncomputable def «Int32__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -378,7 +378,7 @@ noncomputable def «Int32__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:86:17 -/
-noncomputable def «Int32__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -393,7 +393,7 @@ noncomputable def «Int32__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:89:17 -/
-noncomputable def «Int32__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -411,7 +411,7 @@ noncomputable def «Int32__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:94:17 -/
-noncomputable def «Int32__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exceptionDo)
@@ -427,7 +427,7 @@ noncomputable def «Int32__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     provided as mask and returns the old value.
 
     go: type.go:98:17 -/
-noncomputable def «Int32__Andⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.And.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -443,7 +443,7 @@ noncomputable def «Int32__Andⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     provided as mask and returns the old value.
 
     go: type.go:102:17 -/
-noncomputable def «Int32__Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -458,7 +458,7 @@ noncomputable def «Int32__Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:114:17 -/
-noncomputable def «Int64__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -470,7 +470,7 @@ noncomputable def «Int64__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- Store atomically stores val into x.
 
     go: type.go:117:17 -/
-noncomputable def «Int64__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -487,7 +487,7 @@ noncomputable def «Int64__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:120:17 -/
-noncomputable def «Int64__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -502,7 +502,7 @@ noncomputable def «Int64__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:123:17 -/
-noncomputable def «Int64__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -520,7 +520,7 @@ noncomputable def «Int64__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:128:17 -/
-noncomputable def «Int64__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exceptionDo)
@@ -536,7 +536,7 @@ noncomputable def «Int64__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     provided as mask and returns the old value.
 
     go: type.go:132:17 -/
-noncomputable def «Int64__Andⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.And.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -552,7 +552,7 @@ noncomputable def «Int64__Andⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     provided as mask and returns the old value.
 
     go: type.go:136:17 -/
-noncomputable def «Int64__Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -567,7 +567,7 @@ noncomputable def «Int64__Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:147:18 -/
-noncomputable def «Uint32__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -579,7 +579,7 @@ noncomputable def «Uint32__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- Store atomically stores val into x.
 
     go: type.go:150:18 -/
-noncomputable def «Uint32__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -596,7 +596,7 @@ noncomputable def «Uint32__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:153:18 -/
-noncomputable def «Uint32__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -611,7 +611,7 @@ noncomputable def «Uint32__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:156:18 -/
-noncomputable def «Uint32__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -629,7 +629,7 @@ noncomputable def «Uint32__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:161:18 -/
-noncomputable def «Uint32__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exceptionDo)
@@ -645,7 +645,7 @@ noncomputable def «Uint32__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     provided as mask and returns the old value.
 
     go: type.go:165:18 -/
-noncomputable def «Uint32__Andⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.And.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -661,7 +661,7 @@ noncomputable def «Uint32__Andⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     provided as mask and returns the old value.
 
     go: type.go:169:18 -/
-noncomputable def «Uint32__Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -676,7 +676,7 @@ noncomputable def «Uint32__Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:181:18 -/
-noncomputable def «Uint64__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -688,7 +688,7 @@ noncomputable def «Uint64__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- Store atomically stores val into x.
 
     go: type.go:184:18 -/
-noncomputable def «Uint64__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -705,7 +705,7 @@ noncomputable def «Uint64__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:187:18 -/
-noncomputable def «Uint64__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -720,7 +720,7 @@ noncomputable def «Uint64__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:190:18 -/
-noncomputable def «Uint64__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -738,7 +738,7 @@ noncomputable def «Uint64__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:195:18 -/
-noncomputable def «Uint64__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exceptionDo)
@@ -754,7 +754,7 @@ noncomputable def «Uint64__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     provided as mask and returns the old value.
 
     go: type.go:199:18 -/
-noncomputable def «Uint64__Andⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.And.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -770,7 +770,7 @@ noncomputable def «Uint64__Andⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     provided as mask and returns the old value.
 
     go: type.go:203:18 -/
-noncomputable def «Uint64__Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -786,7 +786,7 @@ noncomputable def «Uint64__Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     It returns nil if there has been no call to Store for this Value.
 
     go: value.go:28:17 -/
-noncomputable def «Value__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Value.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -836,7 +836,7 @@ noncomputable def «Value__Loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     Store of an inconsistent type panics, as does Store(nil).
 
     go: value.go:47:17 -/
-noncomputable def «Value__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Value.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "val"
   (App (Val exceptionDo)
@@ -932,7 +932,7 @@ noncomputable def «Value__Storeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     type. Swap of an inconsistent type panics, as does Swap(nil).
 
     go: value.go:90:17 -/
-noncomputable def «Value__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Value.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "new"
   (App (Val exceptionDo)
@@ -1036,7 +1036,7 @@ noncomputable def «Value__Swapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     CompareAndSwap(old, nil).
 
     go: value.go:134:17 -/
-noncomputable def «Value__CompareAndSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Value.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "old"
   (Lam "new"
@@ -1181,25 +1181,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noCopy
 
-@[reducible] def noCopy'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noCopy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noCopy'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  noCopy'fds_unsealed
+@[irreducible] def noCopy.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  noCopy.fieldsUnsealed
 
 instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold noCopy'fds noCopy'fds_unsealed :=
-  ⟨by unfold noCopy'fds; rfl⟩
+    EqualsUnfold noCopy.fields noCopy.fieldsUnsealed :=
+  ⟨by unfold noCopy.fields; rfl⟩
 
-@[reducible] def «noCopyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType noCopy'fds)
+@[reducible] def noCopy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType noCopy.fields)
 
-class noCopy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  noCopy_type_repr : go.TypeReprUnderlying «noCopyⁱᵐᵖˡ» noCopy.t
-  noCopy_underlying : go.UnderlyingDirectedEq noCopy «noCopyⁱᵐᵖˡ»
+class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying noCopy.underlying noCopy.t
+  underlying : go.UnderlyingDirectedEq noCopy noCopy.underlying
 
-attribute [instance] noCopy_Assumptions.noCopy_type_repr
-  noCopy_Assumptions.noCopy_underlying
+attribute [instance] noCopy.TypeAssumptions.type_repr
+  noCopy.TypeAssumptions.underlying
 
 namespace Bool'
 structure t [FfiSyntax] where
@@ -1211,42 +1211,42 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Bool'
 
-@[reducible] def Bool'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Bool.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
-@[irreducible] def Bool'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Bool'fds_unsealed
+@[irreducible] def Bool.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Bool.fieldsUnsealed
 
 instance equals_unfold_Bool [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Bool'fds Bool'fds_unsealed :=
-  ⟨by unfold Bool'fds; rfl⟩
+    EqualsUnfold Bool.fields Bool.fieldsUnsealed :=
+  ⟨by unfold Bool.fields; rfl⟩
 
-@[reducible] def «Bool'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Bool'fds)
+@[reducible] def Bool'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Bool.fields)
 
-class Bool_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Bool_type_repr : go.TypeReprUnderlying «Bool'ⁱᵐᵖˡ» Bool'.t
-  Bool_underlying : go.UnderlyingDirectedEq Bool' «Bool'ⁱᵐᵖˡ»
-  Bool_get__0 : ∀ (x : Bool'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Bool'ⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
-  Bool_set__0 : ∀ (x : Bool'.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Bool'ⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Bool'.t)))
-  Bool_get_v : ∀ (x : Bool'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Bool'ⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
-  Bool_set_v : ∀ (x : Bool'.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «Bool'ⁱᵐᵖˡ» go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Bool'.t)))
-  Bool'ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Bool') go!"CompareAndSwap" «Bool__CompareAndSwapⁱᵐᵖˡ»
-  Bool'ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Bool') go!"Load" «Bool__Loadⁱᵐᵖˡ»
-  Bool'ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Bool') go!"Store" «Bool__Storeⁱᵐᵖˡ»
-  Bool'ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Bool') go!"Swap" «Bool__Swapⁱᵐᵖˡ»
+class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Bool'.underlying Bool'.t
+  underlying : go.UnderlyingDirectedEq Bool' Bool'.underlying
+  get__0 : ∀ (x : Bool'.t), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : Bool'.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Bool'.t)))
+  get_v : ∀ (x : Bool'.t), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Bool'.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Bool'.t)))
+  ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Bool') go!"CompareAndSwap" Bool.CompareAndSwap.impl
+  ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Bool') go!"Load" Bool.Load.impl
+  ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Bool') go!"Store" Bool.Store.impl
+  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Bool') go!"Swap" Bool.Swap.impl
 
-attribute [instance] Bool_Assumptions.Bool_type_repr
-  Bool_Assumptions.Bool_underlying
-  Bool_Assumptions.Bool_get__0
-  Bool_Assumptions.Bool_set__0
-  Bool_Assumptions.Bool_get_v
-  Bool_Assumptions.Bool_set_v
-  Bool_Assumptions.Bool'ptr_CompareAndSwap_unfold
-  Bool_Assumptions.Bool'ptr_Load_unfold
-  Bool_Assumptions.Bool'ptr_Store_unfold
-  Bool_Assumptions.Bool'ptr_Swap_unfold
+attribute [instance] Bool.TypeAssumptions.type_repr
+  Bool.TypeAssumptions.underlying
+  Bool.TypeAssumptions.get__0
+  Bool.TypeAssumptions.set__0
+  Bool.TypeAssumptions.get_v
+  Bool.TypeAssumptions.set_v
+  Bool.TypeAssumptions.ptr_CompareAndSwap_unfold
+  Bool.TypeAssumptions.ptr_Load_unfold
+  Bool.TypeAssumptions.ptr_Store_unfold
+  Bool.TypeAssumptions.ptr_Swap_unfold
 
 namespace Pointer
 structure t [FfiSyntax] (T : Type) where
@@ -1259,47 +1259,47 @@ instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Pointer
 
-@[reducible] def Pointer'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] def Pointer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" (go.GoType.ArrayType 0 (go.GoType.PointerType T))),
 (go.field_decl.FieldDecl go!"_1" noCopy),
 (go.field_decl.FieldDecl go!"v" «unsafe».Pointer)]
 
-@[irreducible] def Pointer'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (Pointer'fds_unsealed T)
+@[irreducible] def Pointer.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (Pointer.fieldsUnsealed T)
 
 instance equals_unfold_Pointer [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (Pointer'fds T) (Pointer'fds_unsealed T) :=
-  ⟨by unfold Pointer'fds; rfl⟩
+    EqualsUnfold (Pointer.fields T) (Pointer.fieldsUnsealed T) :=
+  ⟨by unfold Pointer.fields; rfl⟩
 
-@[reducible] def «Pointerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (Pointer'fds T))
+@[reducible] def Pointer.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (Pointer.fields T))
 
-class Pointer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Pointer_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («Pointerⁱᵐᵖˡ» T) (Pointer.t T')
-  Pointer_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer T) («Pointerⁱᵐᵖˡ» T)
-  Pointer_get__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Pointerⁱᵐᵖˡ» T) go!"_0") #x (Val #(x._0'))
-  Pointer_set__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')) (y : (array.t Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet («Pointerⁱᵐᵖˡ» T) go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : (Pointer.t T'))))
-  Pointer_get__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Pointerⁱᵐᵖˡ» T) go!"_1") #x (Val #(x._1'))
-  Pointer_set__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet («Pointerⁱᵐᵖˡ» T) go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : (Pointer.t T'))))
-  Pointer_get_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Pointerⁱᵐᵖˡ» T) go!"v") #x (Val #(x.v'))
-  Pointer_set_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («Pointerⁱᵐᵖˡ» T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Pointer.t T'))))
-  Pointer'ptr_CompareAndSwap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer T)) go!"CompareAndSwap" («Pointer__CompareAndSwapⁱᵐᵖˡ» T)
-  Pointer'ptr_Load_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer T)) go!"Load" («Pointer__Loadⁱᵐᵖˡ» T)
-  Pointer'ptr_Store_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer T)) go!"Store" («Pointer__Storeⁱᵐᵖˡ» T)
-  Pointer'ptr_Swap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer T)) go!"Swap" («Pointer__Swapⁱᵐᵖˡ» T)
+class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Pointer.underlying T) (Pointer.t T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer T) (Pointer.underlying T)
+  get__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')) (y : (array.t Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : (Pointer.t T'))))
+  get__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_1") #x (Val #(x._1'))
+  set__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : (Pointer.t T'))))
+  get_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"v") #x (Val #(x.v'))
+  set_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Pointer.t T'))))
+  ptr_CompareAndSwap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer T)) go!"CompareAndSwap" (Pointer.CompareAndSwap.impl T)
+  ptr_Load_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer T)) go!"Load" (Pointer.Load.impl T)
+  ptr_Store_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer T)) go!"Store" (Pointer.Store.impl T)
+  ptr_Swap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer T)) go!"Swap" (Pointer.Swap.impl T)
 
-attribute [instance] Pointer_Assumptions.Pointer_type_repr
-  Pointer_Assumptions.Pointer_underlying
-  Pointer_Assumptions.Pointer_get__0
-  Pointer_Assumptions.Pointer_set__0
-  Pointer_Assumptions.Pointer_get__1
-  Pointer_Assumptions.Pointer_set__1
-  Pointer_Assumptions.Pointer_get_v
-  Pointer_Assumptions.Pointer_set_v
-  Pointer_Assumptions.Pointer'ptr_CompareAndSwap_unfold
-  Pointer_Assumptions.Pointer'ptr_Load_unfold
-  Pointer_Assumptions.Pointer'ptr_Store_unfold
-  Pointer_Assumptions.Pointer'ptr_Swap_unfold
+attribute [instance] Pointer.TypeAssumptions.type_repr
+  Pointer.TypeAssumptions.underlying
+  Pointer.TypeAssumptions.get__0
+  Pointer.TypeAssumptions.set__0
+  Pointer.TypeAssumptions.get__1
+  Pointer.TypeAssumptions.set__1
+  Pointer.TypeAssumptions.get_v
+  Pointer.TypeAssumptions.set_v
+  Pointer.TypeAssumptions.ptr_CompareAndSwap_unfold
+  Pointer.TypeAssumptions.ptr_Load_unfold
+  Pointer.TypeAssumptions.ptr_Store_unfold
+  Pointer.TypeAssumptions.ptr_Swap_unfold
 
 namespace Int32
 structure t [FfiSyntax] where
@@ -1311,48 +1311,48 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Int32
 
-@[reducible] def Int32'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Int32.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"v" go.int32)]
 
-@[irreducible] def Int32'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Int32'fds_unsealed
+@[irreducible] def Int32.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Int32.fieldsUnsealed
 
 instance equals_unfold_Int32 [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Int32'fds Int32'fds_unsealed :=
-  ⟨by unfold Int32'fds; rfl⟩
+    EqualsUnfold Int32.fields Int32.fieldsUnsealed :=
+  ⟨by unfold Int32.fields; rfl⟩
 
-@[reducible] def «Int32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Int32'fds)
+@[reducible] def Int32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Int32.fields)
 
-class Int32_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Int32_type_repr : go.TypeReprUnderlying «Int32ⁱᵐᵖˡ» Int32.t
-  Int32_underlying : go.UnderlyingDirectedEq Int32 «Int32ⁱᵐᵖˡ»
-  Int32_get__0 : ∀ (x : Int32.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int32ⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
-  Int32_set__0 : ∀ (x : Int32.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Int32ⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int32.t)))
-  Int32_get_v : ∀ (x : Int32.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int32ⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
-  Int32_set_v : ∀ (x : Int32.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «Int32ⁱᵐᵖˡ» go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int32.t)))
-  Int32'ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Add" «Int32__Addⁱᵐᵖˡ»
-  Int32'ptr_And_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"And" «Int32__Andⁱᵐᵖˡ»
-  Int32'ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"CompareAndSwap" «Int32__CompareAndSwapⁱᵐᵖˡ»
-  Int32'ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Load" «Int32__Loadⁱᵐᵖˡ»
-  Int32'ptr_Or_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Or" «Int32__Orⁱᵐᵖˡ»
-  Int32'ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Store" «Int32__Storeⁱᵐᵖˡ»
-  Int32'ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Swap" «Int32__Swapⁱᵐᵖˡ»
+class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Int32.underlying Int32.t
+  underlying : go.UnderlyingDirectedEq Int32 Int32.underlying
+  get__0 : ∀ (x : Int32.t), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : Int32.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int32.t)))
+  get_v : ∀ (x : Int32.t), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Int32.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int32.t)))
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Add" Int32.Add.impl
+  ptr_And_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"And" Int32.And.impl
+  ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"CompareAndSwap" Int32.CompareAndSwap.impl
+  ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Load" Int32.Load.impl
+  ptr_Or_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Or" Int32.Or.impl
+  ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Store" Int32.Store.impl
+  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Int32) go!"Swap" Int32.Swap.impl
 
-attribute [instance] Int32_Assumptions.Int32_type_repr
-  Int32_Assumptions.Int32_underlying
-  Int32_Assumptions.Int32_get__0
-  Int32_Assumptions.Int32_set__0
-  Int32_Assumptions.Int32_get_v
-  Int32_Assumptions.Int32_set_v
-  Int32_Assumptions.Int32'ptr_Add_unfold
-  Int32_Assumptions.Int32'ptr_And_unfold
-  Int32_Assumptions.Int32'ptr_CompareAndSwap_unfold
-  Int32_Assumptions.Int32'ptr_Load_unfold
-  Int32_Assumptions.Int32'ptr_Or_unfold
-  Int32_Assumptions.Int32'ptr_Store_unfold
-  Int32_Assumptions.Int32'ptr_Swap_unfold
+attribute [instance] Int32.TypeAssumptions.type_repr
+  Int32.TypeAssumptions.underlying
+  Int32.TypeAssumptions.get__0
+  Int32.TypeAssumptions.set__0
+  Int32.TypeAssumptions.get_v
+  Int32.TypeAssumptions.set_v
+  Int32.TypeAssumptions.ptr_Add_unfold
+  Int32.TypeAssumptions.ptr_And_unfold
+  Int32.TypeAssumptions.ptr_CompareAndSwap_unfold
+  Int32.TypeAssumptions.ptr_Load_unfold
+  Int32.TypeAssumptions.ptr_Or_unfold
+  Int32.TypeAssumptions.ptr_Store_unfold
+  Int32.TypeAssumptions.ptr_Swap_unfold
 
 namespace align64
 structure t [FfiSyntax] where
@@ -1362,25 +1362,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end align64
 
-@[reducible] def align64'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def align64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def align64'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  align64'fds_unsealed
+@[irreducible] def align64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  align64.fieldsUnsealed
 
 instance equals_unfold_align64 [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold align64'fds align64'fds_unsealed :=
-  ⟨by unfold align64'fds; rfl⟩
+    EqualsUnfold align64.fields align64.fieldsUnsealed :=
+  ⟨by unfold align64.fields; rfl⟩
 
-@[reducible] def «align64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType align64'fds)
+@[reducible] def align64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType align64.fields)
 
-class align64_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  align64_type_repr : go.TypeReprUnderlying «align64ⁱᵐᵖˡ» align64.t
-  align64_underlying : go.UnderlyingDirectedEq align64 «align64ⁱᵐᵖˡ»
+class align64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying align64.underlying align64.t
+  underlying : go.UnderlyingDirectedEq align64 align64.underlying
 
-attribute [instance] align64_Assumptions.align64_type_repr
-  align64_Assumptions.align64_underlying
+attribute [instance] align64.TypeAssumptions.type_repr
+  align64.TypeAssumptions.underlying
 
 namespace Int64
 structure t [FfiSyntax] where
@@ -1393,53 +1393,53 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Int64
 
-@[reducible] def Int64'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Int64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"_1" align64),
 (go.field_decl.FieldDecl go!"v" go.int64)]
 
-@[irreducible] def Int64'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Int64'fds_unsealed
+@[irreducible] def Int64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Int64.fieldsUnsealed
 
 instance equals_unfold_Int64 [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Int64'fds Int64'fds_unsealed :=
-  ⟨by unfold Int64'fds; rfl⟩
+    EqualsUnfold Int64.fields Int64.fieldsUnsealed :=
+  ⟨by unfold Int64.fields; rfl⟩
 
-@[reducible] def «Int64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Int64'fds)
+@[reducible] def Int64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Int64.fields)
 
-class Int64_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Int64_type_repr : go.TypeReprUnderlying «Int64ⁱᵐᵖˡ» Int64.t
-  Int64_underlying : go.UnderlyingDirectedEq Int64 «Int64ⁱᵐᵖˡ»
-  Int64_get__0 : ∀ (x : Int64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int64ⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
-  Int64_set__0 : ∀ (x : Int64.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Int64ⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int64.t)))
-  Int64_get__1 : ∀ (x : Int64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int64ⁱᵐᵖˡ» go!"_1") #x (Val #(x._1'))
-  Int64_set__1 : ∀ (x : Int64.t) (y : align64.t), go.IsGoStepPureDetTagged under (StructFieldSet «Int64ⁱᵐᵖˡ» go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Int64.t)))
-  Int64_get_v : ∀ (x : Int64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int64ⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
-  Int64_set_v : ∀ (x : Int64.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Int64ⁱᵐᵖˡ» go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int64.t)))
-  Int64'ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Add" «Int64__Addⁱᵐᵖˡ»
-  Int64'ptr_And_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"And" «Int64__Andⁱᵐᵖˡ»
-  Int64'ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"CompareAndSwap" «Int64__CompareAndSwapⁱᵐᵖˡ»
-  Int64'ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Load" «Int64__Loadⁱᵐᵖˡ»
-  Int64'ptr_Or_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Or" «Int64__Orⁱᵐᵖˡ»
-  Int64'ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Store" «Int64__Storeⁱᵐᵖˡ»
-  Int64'ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Swap" «Int64__Swapⁱᵐᵖˡ»
+class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Int64.underlying Int64.t
+  underlying : go.UnderlyingDirectedEq Int64 Int64.underlying
+  get__0 : ∀ (x : Int64.t), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : Int64.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int64.t)))
+  get__1 : ∀ (x : Int64.t), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_1") #x (Val #(x._1'))
+  set__1 : ∀ (x : Int64.t) (y : align64.t), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Int64.t)))
+  get_v : ∀ (x : Int64.t), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Int64.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int64.t)))
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Add" Int64.Add.impl
+  ptr_And_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"And" Int64.And.impl
+  ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"CompareAndSwap" Int64.CompareAndSwap.impl
+  ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Load" Int64.Load.impl
+  ptr_Or_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Or" Int64.Or.impl
+  ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Store" Int64.Store.impl
+  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Int64) go!"Swap" Int64.Swap.impl
 
-attribute [instance] Int64_Assumptions.Int64_type_repr
-  Int64_Assumptions.Int64_underlying
-  Int64_Assumptions.Int64_get__0
-  Int64_Assumptions.Int64_set__0
-  Int64_Assumptions.Int64_get__1
-  Int64_Assumptions.Int64_set__1
-  Int64_Assumptions.Int64_get_v
-  Int64_Assumptions.Int64_set_v
-  Int64_Assumptions.Int64'ptr_Add_unfold
-  Int64_Assumptions.Int64'ptr_And_unfold
-  Int64_Assumptions.Int64'ptr_CompareAndSwap_unfold
-  Int64_Assumptions.Int64'ptr_Load_unfold
-  Int64_Assumptions.Int64'ptr_Or_unfold
-  Int64_Assumptions.Int64'ptr_Store_unfold
-  Int64_Assumptions.Int64'ptr_Swap_unfold
+attribute [instance] Int64.TypeAssumptions.type_repr
+  Int64.TypeAssumptions.underlying
+  Int64.TypeAssumptions.get__0
+  Int64.TypeAssumptions.set__0
+  Int64.TypeAssumptions.get__1
+  Int64.TypeAssumptions.set__1
+  Int64.TypeAssumptions.get_v
+  Int64.TypeAssumptions.set_v
+  Int64.TypeAssumptions.ptr_Add_unfold
+  Int64.TypeAssumptions.ptr_And_unfold
+  Int64.TypeAssumptions.ptr_CompareAndSwap_unfold
+  Int64.TypeAssumptions.ptr_Load_unfold
+  Int64.TypeAssumptions.ptr_Or_unfold
+  Int64.TypeAssumptions.ptr_Store_unfold
+  Int64.TypeAssumptions.ptr_Swap_unfold
 
 namespace Uint32
 structure t [FfiSyntax] where
@@ -1451,48 +1451,48 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Uint32
 
-@[reducible] def Uint32'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uint32.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
-@[irreducible] def Uint32'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Uint32'fds_unsealed
+@[irreducible] def Uint32.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Uint32.fieldsUnsealed
 
 instance equals_unfold_Uint32 [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Uint32'fds Uint32'fds_unsealed :=
-  ⟨by unfold Uint32'fds; rfl⟩
+    EqualsUnfold Uint32.fields Uint32.fieldsUnsealed :=
+  ⟨by unfold Uint32.fields; rfl⟩
 
-@[reducible] def «Uint32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Uint32'fds)
+@[reducible] def Uint32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Uint32.fields)
 
-class Uint32_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Uint32_type_repr : go.TypeReprUnderlying «Uint32ⁱᵐᵖˡ» Uint32.t
-  Uint32_underlying : go.UnderlyingDirectedEq Uint32 «Uint32ⁱᵐᵖˡ»
-  Uint32_get__0 : ∀ (x : Uint32.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uint32ⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
-  Uint32_set__0 : ∀ (x : Uint32.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Uint32ⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint32.t)))
-  Uint32_get_v : ∀ (x : Uint32.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uint32ⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
-  Uint32_set_v : ∀ (x : Uint32.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «Uint32ⁱᵐᵖˡ» go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint32.t)))
-  Uint32'ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Add" «Uint32__Addⁱᵐᵖˡ»
-  Uint32'ptr_And_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"And" «Uint32__Andⁱᵐᵖˡ»
-  Uint32'ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"CompareAndSwap" «Uint32__CompareAndSwapⁱᵐᵖˡ»
-  Uint32'ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Load" «Uint32__Loadⁱᵐᵖˡ»
-  Uint32'ptr_Or_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Or" «Uint32__Orⁱᵐᵖˡ»
-  Uint32'ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Store" «Uint32__Storeⁱᵐᵖˡ»
-  Uint32'ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Swap" «Uint32__Swapⁱᵐᵖˡ»
+class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Uint32.underlying Uint32.t
+  underlying : go.UnderlyingDirectedEq Uint32 Uint32.underlying
+  get__0 : ∀ (x : Uint32.t), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : Uint32.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint32.t)))
+  get_v : ∀ (x : Uint32.t), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Uint32.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint32.t)))
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Add" Uint32.Add.impl
+  ptr_And_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"And" Uint32.And.impl
+  ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"CompareAndSwap" Uint32.CompareAndSwap.impl
+  ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Load" Uint32.Load.impl
+  ptr_Or_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Or" Uint32.Or.impl
+  ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Store" Uint32.Store.impl
+  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Uint32) go!"Swap" Uint32.Swap.impl
 
-attribute [instance] Uint32_Assumptions.Uint32_type_repr
-  Uint32_Assumptions.Uint32_underlying
-  Uint32_Assumptions.Uint32_get__0
-  Uint32_Assumptions.Uint32_set__0
-  Uint32_Assumptions.Uint32_get_v
-  Uint32_Assumptions.Uint32_set_v
-  Uint32_Assumptions.Uint32'ptr_Add_unfold
-  Uint32_Assumptions.Uint32'ptr_And_unfold
-  Uint32_Assumptions.Uint32'ptr_CompareAndSwap_unfold
-  Uint32_Assumptions.Uint32'ptr_Load_unfold
-  Uint32_Assumptions.Uint32'ptr_Or_unfold
-  Uint32_Assumptions.Uint32'ptr_Store_unfold
-  Uint32_Assumptions.Uint32'ptr_Swap_unfold
+attribute [instance] Uint32.TypeAssumptions.type_repr
+  Uint32.TypeAssumptions.underlying
+  Uint32.TypeAssumptions.get__0
+  Uint32.TypeAssumptions.set__0
+  Uint32.TypeAssumptions.get_v
+  Uint32.TypeAssumptions.set_v
+  Uint32.TypeAssumptions.ptr_Add_unfold
+  Uint32.TypeAssumptions.ptr_And_unfold
+  Uint32.TypeAssumptions.ptr_CompareAndSwap_unfold
+  Uint32.TypeAssumptions.ptr_Load_unfold
+  Uint32.TypeAssumptions.ptr_Or_unfold
+  Uint32.TypeAssumptions.ptr_Store_unfold
+  Uint32.TypeAssumptions.ptr_Swap_unfold
 
 namespace Uint64
 structure t [FfiSyntax] where
@@ -1505,53 +1505,53 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Uint64
 
-@[reducible] def Uint64'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uint64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"_1" align64),
 (go.field_decl.FieldDecl go!"v" go.uint64)]
 
-@[irreducible] def Uint64'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Uint64'fds_unsealed
+@[irreducible] def Uint64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Uint64.fieldsUnsealed
 
 instance equals_unfold_Uint64 [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Uint64'fds Uint64'fds_unsealed :=
-  ⟨by unfold Uint64'fds; rfl⟩
+    EqualsUnfold Uint64.fields Uint64.fieldsUnsealed :=
+  ⟨by unfold Uint64.fields; rfl⟩
 
-@[reducible] def «Uint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Uint64'fds)
+@[reducible] def Uint64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Uint64.fields)
 
-class Uint64_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Uint64_type_repr : go.TypeReprUnderlying «Uint64ⁱᵐᵖˡ» Uint64.t
-  Uint64_underlying : go.UnderlyingDirectedEq Uint64 «Uint64ⁱᵐᵖˡ»
-  Uint64_get__0 : ∀ (x : Uint64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uint64ⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
-  Uint64_set__0 : ∀ (x : Uint64.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Uint64ⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint64.t)))
-  Uint64_get__1 : ∀ (x : Uint64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uint64ⁱᵐᵖˡ» go!"_1") #x (Val #(x._1'))
-  Uint64_set__1 : ∀ (x : Uint64.t) (y : align64.t), go.IsGoStepPureDetTagged under (StructFieldSet «Uint64ⁱᵐᵖˡ» go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Uint64.t)))
-  Uint64_get_v : ∀ (x : Uint64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uint64ⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
-  Uint64_set_v : ∀ (x : Uint64.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Uint64ⁱᵐᵖˡ» go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint64.t)))
-  Uint64'ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Add" «Uint64__Addⁱᵐᵖˡ»
-  Uint64'ptr_And_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"And" «Uint64__Andⁱᵐᵖˡ»
-  Uint64'ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"CompareAndSwap" «Uint64__CompareAndSwapⁱᵐᵖˡ»
-  Uint64'ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Load" «Uint64__Loadⁱᵐᵖˡ»
-  Uint64'ptr_Or_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Or" «Uint64__Orⁱᵐᵖˡ»
-  Uint64'ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Store" «Uint64__Storeⁱᵐᵖˡ»
-  Uint64'ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Swap" «Uint64__Swapⁱᵐᵖˡ»
+class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Uint64.underlying Uint64.t
+  underlying : go.UnderlyingDirectedEq Uint64 Uint64.underlying
+  get__0 : ∀ (x : Uint64.t), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : Uint64.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint64.t)))
+  get__1 : ∀ (x : Uint64.t), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_1") #x (Val #(x._1'))
+  set__1 : ∀ (x : Uint64.t) (y : align64.t), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Uint64.t)))
+  get_v : ∀ (x : Uint64.t), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Uint64.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint64.t)))
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Add" Uint64.Add.impl
+  ptr_And_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"And" Uint64.And.impl
+  ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"CompareAndSwap" Uint64.CompareAndSwap.impl
+  ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Load" Uint64.Load.impl
+  ptr_Or_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Or" Uint64.Or.impl
+  ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Store" Uint64.Store.impl
+  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Uint64) go!"Swap" Uint64.Swap.impl
 
-attribute [instance] Uint64_Assumptions.Uint64_type_repr
-  Uint64_Assumptions.Uint64_underlying
-  Uint64_Assumptions.Uint64_get__0
-  Uint64_Assumptions.Uint64_set__0
-  Uint64_Assumptions.Uint64_get__1
-  Uint64_Assumptions.Uint64_set__1
-  Uint64_Assumptions.Uint64_get_v
-  Uint64_Assumptions.Uint64_set_v
-  Uint64_Assumptions.Uint64'ptr_Add_unfold
-  Uint64_Assumptions.Uint64'ptr_And_unfold
-  Uint64_Assumptions.Uint64'ptr_CompareAndSwap_unfold
-  Uint64_Assumptions.Uint64'ptr_Load_unfold
-  Uint64_Assumptions.Uint64'ptr_Or_unfold
-  Uint64_Assumptions.Uint64'ptr_Store_unfold
-  Uint64_Assumptions.Uint64'ptr_Swap_unfold
+attribute [instance] Uint64.TypeAssumptions.type_repr
+  Uint64.TypeAssumptions.underlying
+  Uint64.TypeAssumptions.get__0
+  Uint64.TypeAssumptions.set__0
+  Uint64.TypeAssumptions.get__1
+  Uint64.TypeAssumptions.set__1
+  Uint64.TypeAssumptions.get_v
+  Uint64.TypeAssumptions.set_v
+  Uint64.TypeAssumptions.ptr_Add_unfold
+  Uint64.TypeAssumptions.ptr_And_unfold
+  Uint64.TypeAssumptions.ptr_CompareAndSwap_unfold
+  Uint64.TypeAssumptions.ptr_Load_unfold
+  Uint64.TypeAssumptions.ptr_Or_unfold
+  Uint64.TypeAssumptions.ptr_Store_unfold
+  Uint64.TypeAssumptions.ptr_Swap_unfold
 
 namespace Uintptr
 structure t [FfiSyntax] where
@@ -1563,34 +1563,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Uintptr
 
-@[reducible] def Uintptr'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uintptr.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"v" go.uintptr)]
 
-@[irreducible] def Uintptr'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Uintptr'fds_unsealed
+@[irreducible] def Uintptr.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Uintptr.fieldsUnsealed
 
 instance equals_unfold_Uintptr [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Uintptr'fds Uintptr'fds_unsealed :=
-  ⟨by unfold Uintptr'fds; rfl⟩
+    EqualsUnfold Uintptr.fields Uintptr.fieldsUnsealed :=
+  ⟨by unfold Uintptr.fields; rfl⟩
 
-@[reducible] def «Uintptrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Uintptr'fds)
+@[reducible] def Uintptr.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Uintptr.fields)
 
-class Uintptr_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Uintptr_type_repr : go.TypeReprUnderlying «Uintptrⁱᵐᵖˡ» Uintptr.t
-  Uintptr_underlying : go.UnderlyingDirectedEq Uintptr «Uintptrⁱᵐᵖˡ»
-  Uintptr_get__0 : ∀ (x : Uintptr.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uintptrⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
-  Uintptr_set__0 : ∀ (x : Uintptr.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Uintptrⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uintptr.t)))
-  Uintptr_get_v : ∀ (x : Uintptr.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uintptrⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
-  Uintptr_set_v : ∀ (x : Uintptr.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Uintptrⁱᵐᵖˡ» go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uintptr.t)))
+class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Uintptr.underlying Uintptr.t
+  underlying : go.UnderlyingDirectedEq Uintptr Uintptr.underlying
+  get__0 : ∀ (x : Uintptr.t), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : Uintptr.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uintptr.t)))
+  get_v : ∀ (x : Uintptr.t), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Uintptr.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uintptr.t)))
 
-attribute [instance] Uintptr_Assumptions.Uintptr_type_repr
-  Uintptr_Assumptions.Uintptr_underlying
-  Uintptr_Assumptions.Uintptr_get__0
-  Uintptr_Assumptions.Uintptr_set__0
-  Uintptr_Assumptions.Uintptr_get_v
-  Uintptr_Assumptions.Uintptr_set_v
+attribute [instance] Uintptr.TypeAssumptions.type_repr
+  Uintptr.TypeAssumptions.underlying
+  Uintptr.TypeAssumptions.get__0
+  Uintptr.TypeAssumptions.set__0
+  Uintptr.TypeAssumptions.get_v
+  Uintptr.TypeAssumptions.set_v
 
 namespace Value
 structure t [FfiSyntax] where
@@ -1601,37 +1601,37 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end Value
 
-@[reducible] def Value'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Value.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"v" go.any)]
 
-@[irreducible] def Value'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Value'fds_unsealed
+@[irreducible] def Value.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Value.fieldsUnsealed
 
 instance equals_unfold_Value [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Value'fds Value'fds_unsealed :=
-  ⟨by unfold Value'fds; rfl⟩
+    EqualsUnfold Value.fields Value.fieldsUnsealed :=
+  ⟨by unfold Value.fields; rfl⟩
 
-@[reducible] def «Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Value'fds)
+@[reducible] def Value.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Value.fields)
 
-class Value_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Value_type_repr : go.TypeReprUnderlying «Valueⁱᵐᵖˡ» Value.t
-  Value_underlying : go.UnderlyingDirectedEq Value «Valueⁱᵐᵖˡ»
-  Value_get_v : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
-  Value_set_v : ∀ (x : Value.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Value.t)))
-  Value'ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Value) go!"CompareAndSwap" «Value__CompareAndSwapⁱᵐᵖˡ»
-  Value'ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Value) go!"Load" «Value__Loadⁱᵐᵖˡ»
-  Value'ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Value) go!"Store" «Value__Storeⁱᵐᵖˡ»
-  Value'ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Value) go!"Swap" «Value__Swapⁱᵐᵖˡ»
+class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Value.underlying Value.t
+  underlying : go.UnderlyingDirectedEq Value Value.underlying
+  get_v : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Value.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Value.t)))
+  ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Value) go!"CompareAndSwap" Value.CompareAndSwap.impl
+  ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Value) go!"Load" Value.Load.impl
+  ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Value) go!"Store" Value.Store.impl
+  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Value) go!"Swap" Value.Swap.impl
 
-attribute [instance] Value_Assumptions.Value_type_repr
-  Value_Assumptions.Value_underlying
-  Value_Assumptions.Value_get_v
-  Value_Assumptions.Value_set_v
-  Value_Assumptions.Value'ptr_CompareAndSwap_unfold
-  Value_Assumptions.Value'ptr_Load_unfold
-  Value_Assumptions.Value'ptr_Store_unfold
-  Value_Assumptions.Value'ptr_Swap_unfold
+attribute [instance] Value.TypeAssumptions.type_repr
+  Value.TypeAssumptions.underlying
+  Value.TypeAssumptions.get_v
+  Value.TypeAssumptions.set_v
+  Value.TypeAssumptions.ptr_CompareAndSwap_unfold
+  Value.TypeAssumptions.ptr_Load_unfold
+  Value.TypeAssumptions.ptr_Store_unfold
+  Value.TypeAssumptions.ptr_Swap_unfold
 
 namespace efaceWords
 structure t [FfiSyntax] where
@@ -1643,72 +1643,72 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end efaceWords
 
-@[reducible] def efaceWords'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def efaceWords.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"typ" «unsafe».Pointer),
 (go.field_decl.FieldDecl go!"data" «unsafe».Pointer)]
 
-@[irreducible] def efaceWords'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  efaceWords'fds_unsealed
+@[irreducible] def efaceWords.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  efaceWords.fieldsUnsealed
 
 instance equals_unfold_efaceWords [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold efaceWords'fds efaceWords'fds_unsealed :=
-  ⟨by unfold efaceWords'fds; rfl⟩
+    EqualsUnfold efaceWords.fields efaceWords.fieldsUnsealed :=
+  ⟨by unfold efaceWords.fields; rfl⟩
 
-@[reducible] def «efaceWordsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType efaceWords'fds)
+@[reducible] def efaceWords.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType efaceWords.fields)
 
-class efaceWords_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  efaceWords_type_repr : go.TypeReprUnderlying «efaceWordsⁱᵐᵖˡ» efaceWords.t
-  efaceWords_underlying : go.UnderlyingDirectedEq efaceWords «efaceWordsⁱᵐᵖˡ»
-  efaceWords_get_typ : ∀ (x : efaceWords.t), go.IsGoStepPureDetTagged under (StructFieldGet «efaceWordsⁱᵐᵖˡ» go!"typ") #x (Val #(x.typ'))
-  efaceWords_set_typ : ∀ (x : efaceWords.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «efaceWordsⁱᵐᵖˡ» go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : efaceWords.t)))
-  efaceWords_get_data : ∀ (x : efaceWords.t), go.IsGoStepPureDetTagged under (StructFieldGet «efaceWordsⁱᵐᵖˡ» go!"data") #x (Val #(x.data'))
-  efaceWords_set_data : ∀ (x : efaceWords.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «efaceWordsⁱᵐᵖˡ» go!"data") (PairV #x #y) (Val #(({ x with data' := y } : efaceWords.t)))
+class efaceWords.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying efaceWords.underlying efaceWords.t
+  underlying : go.UnderlyingDirectedEq efaceWords efaceWords.underlying
+  get_typ : ∀ (x : efaceWords.t), go.IsGoStepPureDetTagged under (StructFieldGet efaceWords.underlying go!"typ") #x (Val #(x.typ'))
+  set_typ : ∀ (x : efaceWords.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet efaceWords.underlying go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : efaceWords.t)))
+  get_data : ∀ (x : efaceWords.t), go.IsGoStepPureDetTagged under (StructFieldGet efaceWords.underlying go!"data") #x (Val #(x.data'))
+  set_data : ∀ (x : efaceWords.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet efaceWords.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : efaceWords.t)))
 
-attribute [instance] efaceWords_Assumptions.efaceWords_type_repr
-  efaceWords_Assumptions.efaceWords_underlying
-  efaceWords_Assumptions.efaceWords_get_typ
-  efaceWords_Assumptions.efaceWords_set_typ
-  efaceWords_Assumptions.efaceWords_get_data
-  efaceWords_Assumptions.efaceWords_set_data
+attribute [instance] efaceWords.TypeAssumptions.type_repr
+  efaceWords.TypeAssumptions.underlying
+  efaceWords.TypeAssumptions.get_typ
+  efaceWords.TypeAssumptions.set_typ
+  efaceWords.TypeAssumptions.get_data
+  efaceWords.TypeAssumptions.set_data
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Bool_instance : Bool_Assumptions
-  Pointer_instance : Pointer_Assumptions
-  Int32_instance : Int32_Assumptions
-  Int64_instance : Int64_Assumptions
-  Uint32_instance : Uint32_Assumptions
-  Uint64_instance : Uint64_Assumptions
-  Uintptr_instance : Uintptr_Assumptions
-  noCopy_instance : noCopy_Assumptions
-  align64_instance : align64_Assumptions
-  Value_instance : Value_Assumptions
-  efaceWords_instance : efaceWords_Assumptions
-  SwapInt32_unfold : FuncUnfold SwapInt32 [] «SwapInt32ⁱᵐᵖˡ»
-  SwapUint32_unfold : FuncUnfold SwapUint32 [] «SwapUint32ⁱᵐᵖˡ»
-  SwapPointer_unfold : FuncUnfold SwapPointer [] «SwapPointerⁱᵐᵖˡ»
-  CompareAndSwapInt32_unfold : FuncUnfold CompareAndSwapInt32 [] «CompareAndSwapInt32ⁱᵐᵖˡ»
-  CompareAndSwapUint32_unfold : FuncUnfold CompareAndSwapUint32 [] «CompareAndSwapUint32ⁱᵐᵖˡ»
-  CompareAndSwapPointer_unfold : FuncUnfold CompareAndSwapPointer [] «CompareAndSwapPointerⁱᵐᵖˡ»
-  AddInt32_unfold : FuncUnfold AddInt32 [] «AddInt32ⁱᵐᵖˡ»
-  AddUint32_unfold : FuncUnfold AddUint32 [] «AddUint32ⁱᵐᵖˡ»
-  LoadInt32_unfold : FuncUnfold LoadInt32 [] «LoadInt32ⁱᵐᵖˡ»
-  LoadUint32_unfold : FuncUnfold LoadUint32 [] «LoadUint32ⁱᵐᵖˡ»
-  LoadPointer_unfold : FuncUnfold LoadPointer [] «LoadPointerⁱᵐᵖˡ»
-  StoreInt32_unfold : FuncUnfold StoreInt32 [] «StoreInt32ⁱᵐᵖˡ»
-  StoreUint32_unfold : FuncUnfold StoreUint32 [] «StoreUint32ⁱᵐᵖˡ»
-  StorePointer_unfold : FuncUnfold StorePointer [] «StorePointerⁱᵐᵖˡ»
-  SwapInt64_unfold : FuncUnfold SwapInt64 [] «SwapInt64ⁱᵐᵖˡ»
-  SwapUint64_unfold : FuncUnfold SwapUint64 [] «SwapUint64ⁱᵐᵖˡ»
-  CompareAndSwapInt64_unfold : FuncUnfold CompareAndSwapInt64 [] «CompareAndSwapInt64ⁱᵐᵖˡ»
-  CompareAndSwapUint64_unfold : FuncUnfold CompareAndSwapUint64 [] «CompareAndSwapUint64ⁱᵐᵖˡ»
-  AddInt64_unfold : FuncUnfold AddInt64 [] «AddInt64ⁱᵐᵖˡ»
-  AddUint64_unfold : FuncUnfold AddUint64 [] «AddUint64ⁱᵐᵖˡ»
-  LoadInt64_unfold : FuncUnfold LoadInt64 [] «LoadInt64ⁱᵐᵖˡ»
-  LoadUint64_unfold : FuncUnfold LoadUint64 [] «LoadUint64ⁱᵐᵖˡ»
-  StoreInt64_unfold : FuncUnfold StoreInt64 [] «StoreInt64ⁱᵐᵖˡ»
-  StoreUint64_unfold : FuncUnfold StoreUint64 [] «StoreUint64ⁱᵐᵖˡ»
-  b32_unfold : FuncUnfold b32 [] «b32ⁱᵐᵖˡ»
+  Bool_instance : Bool.TypeAssumptions
+  Pointer_instance : Pointer.TypeAssumptions
+  Int32_instance : Int32.TypeAssumptions
+  Int64_instance : Int64.TypeAssumptions
+  Uint32_instance : Uint32.TypeAssumptions
+  Uint64_instance : Uint64.TypeAssumptions
+  Uintptr_instance : Uintptr.TypeAssumptions
+  noCopy_instance : noCopy.TypeAssumptions
+  align64_instance : align64.TypeAssumptions
+  Value_instance : Value.TypeAssumptions
+  efaceWords_instance : efaceWords.TypeAssumptions
+  SwapInt32_unfold : FuncUnfold SwapInt32 [] SwapInt32.impl
+  SwapUint32_unfold : FuncUnfold SwapUint32 [] SwapUint32.impl
+  SwapPointer_unfold : FuncUnfold SwapPointer [] SwapPointer.impl
+  CompareAndSwapInt32_unfold : FuncUnfold CompareAndSwapInt32 [] CompareAndSwapInt32.impl
+  CompareAndSwapUint32_unfold : FuncUnfold CompareAndSwapUint32 [] CompareAndSwapUint32.impl
+  CompareAndSwapPointer_unfold : FuncUnfold CompareAndSwapPointer [] CompareAndSwapPointer.impl
+  AddInt32_unfold : FuncUnfold AddInt32 [] AddInt32.impl
+  AddUint32_unfold : FuncUnfold AddUint32 [] AddUint32.impl
+  LoadInt32_unfold : FuncUnfold LoadInt32 [] LoadInt32.impl
+  LoadUint32_unfold : FuncUnfold LoadUint32 [] LoadUint32.impl
+  LoadPointer_unfold : FuncUnfold LoadPointer [] LoadPointer.impl
+  StoreInt32_unfold : FuncUnfold StoreInt32 [] StoreInt32.impl
+  StoreUint32_unfold : FuncUnfold StoreUint32 [] StoreUint32.impl
+  StorePointer_unfold : FuncUnfold StorePointer [] StorePointer.impl
+  SwapInt64_unfold : FuncUnfold SwapInt64 [] SwapInt64.impl
+  SwapUint64_unfold : FuncUnfold SwapUint64 [] SwapUint64.impl
+  CompareAndSwapInt64_unfold : FuncUnfold CompareAndSwapInt64 [] CompareAndSwapInt64.impl
+  CompareAndSwapUint64_unfold : FuncUnfold CompareAndSwapUint64 [] CompareAndSwapUint64.impl
+  AddInt64_unfold : FuncUnfold AddInt64 [] AddInt64.impl
+  AddUint64_unfold : FuncUnfold AddUint64 [] AddUint64.impl
+  LoadInt64_unfold : FuncUnfold LoadInt64 [] LoadInt64.impl
+  LoadUint64_unfold : FuncUnfold LoadUint64 [] LoadUint64.impl
+  StoreInt64_unfold : FuncUnfold StoreInt64 [] StoreInt64.impl
+  StoreUint64_unfold : FuncUnfold StoreUint64 [] StoreUint64.impl
+  b32_unfold : FuncUnfold b32 [] b32.impl
 
 attribute [instance] Assumptions.Bool_instance
   Assumptions.Pointer_instance

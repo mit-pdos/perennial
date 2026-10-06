@@ -144,12 +144,12 @@ axiom _RoundingMode_name [FfiSyntax] [GoGlobalContext] : val
 noncomputable def _Accuracy_index [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big._Accuracy_index"
 
-axiom _Accuracy_index'init [FfiSyntax] [GoGlobalContext] : val
+axiom _Accuracy_index.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def hasADX [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.hasADX"
 
-axiom hasADX'init [FfiSyntax] [GoGlobalContext] : val
+axiom hasADX.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def floatZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.floatZero"
@@ -157,32 +157,32 @@ noncomputable def floatZero [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def pow5tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.pow5tab"
 
-axiom pow5tab'init [FfiSyntax] [GoGlobalContext] : val
+axiom pow5tab.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def intOne [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.intOne"
 
-axiom intOne'init [FfiSyntax] [GoGlobalContext] : val
+axiom intOne.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def natOne [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natOne"
 
-axiom natOne'init [FfiSyntax] [GoGlobalContext] : val
+axiom natOne.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def natTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natTwo"
 
-axiom natTwo'init [FfiSyntax] [GoGlobalContext] : val
+axiom natTwo.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def natFive [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natFive"
 
-axiom natFive'init [FfiSyntax] [GoGlobalContext] : val
+axiom natFive.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def natTen [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natTen"
 
-axiom natTen'init [FfiSyntax] [GoGlobalContext] : val
+axiom natTen.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def stackPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.stackPool"
@@ -190,17 +190,17 @@ noncomputable def stackPool [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def errNoDigits [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.errNoDigits"
 
-axiom errNoDigits'init [FfiSyntax] [GoGlobalContext] : val
+axiom errNoDigits.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def errInvalSep [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.errInvalSep"
 
-axiom errInvalSep'init [FfiSyntax] [GoGlobalContext] : val
+axiom errInvalSep.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def leafSize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.leafSize"
 
-axiom leafSize'init [FfiSyntax] [GoGlobalContext] : val
+axiom leafSize.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def cacheBase10 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.cacheBase10"
@@ -208,22 +208,22 @@ noncomputable def cacheBase10 [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def divRecursiveThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.divRecursiveThreshold"
 
-axiom divRecursiveThreshold'init [FfiSyntax] [GoGlobalContext] : val
+axiom divRecursiveThreshold.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def karatsubaThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.karatsubaThreshold"
 
-axiom karatsubaThreshold'init [FfiSyntax] [GoGlobalContext] : val
+axiom karatsubaThreshold.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def basicSqrThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.basicSqrThreshold"
 
-axiom basicSqrThreshold'init [FfiSyntax] [GoGlobalContext] : val
+axiom basicSqrThreshold.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def karatsubaSqrThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.karatsubaSqrThreshold"
 
-axiom karatsubaSqrThreshold'init [FfiSyntax] [GoGlobalContext] : val
+axiom karatsubaSqrThreshold.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ratZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.ratZero"
@@ -231,7 +231,7 @@ noncomputable def ratZero [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def _RoundingMode_index [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big._RoundingMode_index"
 
-axiom _RoundingMode_index'init [FfiSyntax] [GoGlobalContext] : val
+axiom _RoundingMode_index.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def threeOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.threeOnce"
@@ -452,7 +452,7 @@ noncomputable def newFloat [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.math.big where
   pkgImportedPkgs := [pkg_id.fmt]
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -480,47 +480,47 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val _RoundingMode_index'init) (Val #())))))
+  (App (Val _RoundingMode_index.init) (Val #())))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val karatsubaSqrThreshold'init) (Val #()))))))
+  (App (Val karatsubaSqrThreshold.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val basicSqrThreshold'init) (Val #()))))))
+  (App (Val basicSqrThreshold.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val karatsubaThreshold'init) (Val #()))))))
+  (App (Val karatsubaThreshold.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val divRecursiveThreshold'init) (Val #()))))))
+  (App (Val divRecursiveThreshold.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val leafSize'init) (Val #()))))))
+  (App (Val leafSize.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val errInvalSep'init) (Val #()))))))
+  (App (Val errInvalSep.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val errNoDigits'init) (Val #()))))))
+  (App (Val errNoDigits.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val natTen'init) (Val #()))))))
+  (App (Val natTen.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val natFive'init) (Val #()))))))
+  (App (Val natFive.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val natTwo'init) (Val #()))))))
+  (App (Val natTwo.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val intOne'init) (Val #()))))))
+  (App (Val intOne.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val natOne'init) (Val #()))))))
+  (App (Val natOne.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val pow5tab'init) (Val #()))))))
+  (App (Val pow5tab.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val hasADX'init) (Val #()))))))
+  (App (Val hasADX.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _Accuracy_index'init) (Val #()))))))
+  (App (Val _Accuracy_index.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.fmt.initialize') (Val #()))))))))
 
@@ -528,13 +528,13 @@ namespace Word
 abbrev t [FfiSyntax] : Type := w64
 end Word
 
-@[reducible] def «Wordⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Word.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint
 
-class Word_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Word_underlying : go.UnderlyingDirectedEq Word «Wordⁱᵐᵖˡ»
+class Word.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Word Word.underlying
 
-attribute [instance] Word_Assumptions.Word_underlying
+attribute [instance] Word.TypeAssumptions.underlying
 
 namespace decimal
 structure t [FfiSyntax] where
@@ -546,82 +546,82 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end decimal
 
-@[reducible] def decimal'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def decimal.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mant" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"exp" go.int)]
 
-@[irreducible] def decimal'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  decimal'fds_unsealed
+@[irreducible] def decimal.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  decimal.fieldsUnsealed
 
 instance equals_unfold_decimal [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold decimal'fds decimal'fds_unsealed :=
-  ⟨by unfold decimal'fds; rfl⟩
+    EqualsUnfold decimal.fields decimal.fieldsUnsealed :=
+  ⟨by unfold decimal.fields; rfl⟩
 
-@[reducible] def «decimalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType decimal'fds)
+@[reducible] def decimal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType decimal.fields)
 
-class decimal_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  decimal_type_repr : go.TypeReprUnderlying «decimalⁱᵐᵖˡ» decimal.t
-  decimal_underlying : go.UnderlyingDirectedEq decimal «decimalⁱᵐᵖˡ»
-  decimal_get_mant : ∀ (x : decimal.t), go.IsGoStepPureDetTagged under (StructFieldGet «decimalⁱᵐᵖˡ» go!"mant") #x (Val #(x.mant'))
-  decimal_set_mant : ∀ (x : decimal.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «decimalⁱᵐᵖˡ» go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : decimal.t)))
-  decimal_get_exp : ∀ (x : decimal.t), go.IsGoStepPureDetTagged under (StructFieldGet «decimalⁱᵐᵖˡ» go!"exp") #x (Val #(x.exp'))
-  decimal_set_exp : ∀ (x : decimal.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «decimalⁱᵐᵖˡ» go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : decimal.t)))
+class decimal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying decimal.underlying decimal.t
+  underlying : go.UnderlyingDirectedEq decimal decimal.underlying
+  get_mant : ∀ (x : decimal.t), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"mant") #x (Val #(x.mant'))
+  set_mant : ∀ (x : decimal.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : decimal.t)))
+  get_exp : ∀ (x : decimal.t), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"exp") #x (Val #(x.exp'))
+  set_exp : ∀ (x : decimal.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : decimal.t)))
 
-attribute [instance] decimal_Assumptions.decimal_type_repr
-  decimal_Assumptions.decimal_underlying
-  decimal_Assumptions.decimal_get_mant
-  decimal_Assumptions.decimal_set_mant
-  decimal_Assumptions.decimal_get_exp
-  decimal_Assumptions.decimal_set_exp
+attribute [instance] decimal.TypeAssumptions.type_repr
+  decimal.TypeAssumptions.underlying
+  decimal.TypeAssumptions.get_mant
+  decimal.TypeAssumptions.set_mant
+  decimal.TypeAssumptions.get_exp
+  decimal.TypeAssumptions.set_exp
 
 namespace RoundingMode
 abbrev t [FfiSyntax] : Type := w8
 end RoundingMode
 
-@[reducible] def «RoundingModeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def RoundingMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.byte
 
-class RoundingMode_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  RoundingMode_underlying : go.UnderlyingDirectedEq RoundingMode «RoundingModeⁱᵐᵖˡ»
+class RoundingMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq RoundingMode RoundingMode.underlying
 
-attribute [instance] RoundingMode_Assumptions.RoundingMode_underlying
+attribute [instance] RoundingMode.TypeAssumptions.underlying
 
 namespace Accuracy
 abbrev t [FfiSyntax] : Type := w8
 end Accuracy
 
-@[reducible] def «Accuracyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Accuracy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int8
 
-class Accuracy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Accuracy_underlying : go.UnderlyingDirectedEq Accuracy «Accuracyⁱᵐᵖˡ»
+class Accuracy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Accuracy Accuracy.underlying
 
-attribute [instance] Accuracy_Assumptions.Accuracy_underlying
+attribute [instance] Accuracy.TypeAssumptions.underlying
 
 namespace form
 abbrev t [FfiSyntax] : Type := w8
 end form
 
-@[reducible] def «formⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def form.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.byte
 
-class form_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  form_underlying : go.UnderlyingDirectedEq form «formⁱᵐᵖˡ»
+class form.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq form form.underlying
 
-attribute [instance] form_Assumptions.form_underlying
+attribute [instance] form.TypeAssumptions.underlying
 
 namespace nat
 abbrev t [FfiSyntax] : Type := slice.t
 end nat
 
-@[reducible] def «natⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def nat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType Word)
 
-class nat_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  nat_underlying : go.UnderlyingDirectedEq nat «natⁱᵐᵖˡ»
+class nat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq nat nat.underlying
 
-attribute [instance] nat_Assumptions.nat_underlying
+attribute [instance] nat.TypeAssumptions.underlying
 
 namespace Float
 structure t [FfiSyntax] where
@@ -638,7 +638,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Float
 
-@[reducible] def Float'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Float.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"prec" go.uint32),
 (go.field_decl.FieldDecl go!"mode" RoundingMode),
 (go.field_decl.FieldDecl go!"acc" Accuracy),
@@ -647,50 +647,50 @@ end Float
 (go.field_decl.FieldDecl go!"mant" nat),
 (go.field_decl.FieldDecl go!"exp" go.int32)]
 
-@[irreducible] def Float'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Float'fds_unsealed
+@[irreducible] def Float.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Float.fieldsUnsealed
 
 instance equals_unfold_Float [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Float'fds Float'fds_unsealed :=
-  ⟨by unfold Float'fds; rfl⟩
+    EqualsUnfold Float.fields Float.fieldsUnsealed :=
+  ⟨by unfold Float.fields; rfl⟩
 
-@[reducible] def «Floatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Float'fds)
+@[reducible] def Float.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Float.fields)
 
-class Float_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Float_type_repr : go.TypeReprUnderlying «Floatⁱᵐᵖˡ» Float.t
-  Float_underlying : go.UnderlyingDirectedEq Float «Floatⁱᵐᵖˡ»
-  Float_get_prec : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet «Floatⁱᵐᵖˡ» go!"prec") #x (Val #(x.prec'))
-  Float_set_prec : ∀ (x : Float.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «Floatⁱᵐᵖˡ» go!"prec") (PairV #x #y) (Val #(({ x with prec' := y } : Float.t)))
-  Float_get_mode : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet «Floatⁱᵐᵖˡ» go!"mode") #x (Val #(x.mode'))
-  Float_set_mode : ∀ (x : Float.t) (y : RoundingMode.t), go.IsGoStepPureDetTagged under (StructFieldSet «Floatⁱᵐᵖˡ» go!"mode") (PairV #x #y) (Val #(({ x with mode' := y } : Float.t)))
-  Float_get_acc : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet «Floatⁱᵐᵖˡ» go!"acc") #x (Val #(x.acc'))
-  Float_set_acc : ∀ (x : Float.t) (y : Accuracy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Floatⁱᵐᵖˡ» go!"acc") (PairV #x #y) (Val #(({ x with acc' := y } : Float.t)))
-  Float_get_form : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet «Floatⁱᵐᵖˡ» go!"form") #x (Val #(x.form'))
-  Float_set_form : ∀ (x : Float.t) (y : form.t), go.IsGoStepPureDetTagged under (StructFieldSet «Floatⁱᵐᵖˡ» go!"form") (PairV #x #y) (Val #(({ x with form' := y } : Float.t)))
-  Float_get_neg : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet «Floatⁱᵐᵖˡ» go!"neg") #x (Val #(x.neg'))
-  Float_set_neg : ∀ (x : Float.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Floatⁱᵐᵖˡ» go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Float.t)))
-  Float_get_mant : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet «Floatⁱᵐᵖˡ» go!"mant") #x (Val #(x.mant'))
-  Float_set_mant : ∀ (x : Float.t) (y : nat.t), go.IsGoStepPureDetTagged under (StructFieldSet «Floatⁱᵐᵖˡ» go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : Float.t)))
-  Float_get_exp : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet «Floatⁱᵐᵖˡ» go!"exp") #x (Val #(x.exp'))
-  Float_set_exp : ∀ (x : Float.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «Floatⁱᵐᵖˡ» go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : Float.t)))
+class Float.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Float.underlying Float.t
+  underlying : go.UnderlyingDirectedEq Float Float.underlying
+  get_prec : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"prec") #x (Val #(x.prec'))
+  set_prec : ∀ (x : Float.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"prec") (PairV #x #y) (Val #(({ x with prec' := y } : Float.t)))
+  get_mode : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"mode") #x (Val #(x.mode'))
+  set_mode : ∀ (x : Float.t) (y : RoundingMode.t), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"mode") (PairV #x #y) (Val #(({ x with mode' := y } : Float.t)))
+  get_acc : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"acc") #x (Val #(x.acc'))
+  set_acc : ∀ (x : Float.t) (y : Accuracy.t), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"acc") (PairV #x #y) (Val #(({ x with acc' := y } : Float.t)))
+  get_form : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"form") #x (Val #(x.form'))
+  set_form : ∀ (x : Float.t) (y : form.t), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"form") (PairV #x #y) (Val #(({ x with form' := y } : Float.t)))
+  get_neg : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"neg") #x (Val #(x.neg'))
+  set_neg : ∀ (x : Float.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Float.t)))
+  get_mant : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"mant") #x (Val #(x.mant'))
+  set_mant : ∀ (x : Float.t) (y : nat.t), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : Float.t)))
+  get_exp : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"exp") #x (Val #(x.exp'))
+  set_exp : ∀ (x : Float.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : Float.t)))
 
-attribute [instance] Float_Assumptions.Float_type_repr
-  Float_Assumptions.Float_underlying
-  Float_Assumptions.Float_get_prec
-  Float_Assumptions.Float_set_prec
-  Float_Assumptions.Float_get_mode
-  Float_Assumptions.Float_set_mode
-  Float_Assumptions.Float_get_acc
-  Float_Assumptions.Float_set_acc
-  Float_Assumptions.Float_get_form
-  Float_Assumptions.Float_set_form
-  Float_Assumptions.Float_get_neg
-  Float_Assumptions.Float_set_neg
-  Float_Assumptions.Float_get_mant
-  Float_Assumptions.Float_set_mant
-  Float_Assumptions.Float_get_exp
-  Float_Assumptions.Float_set_exp
+attribute [instance] Float.TypeAssumptions.type_repr
+  Float.TypeAssumptions.underlying
+  Float.TypeAssumptions.get_prec
+  Float.TypeAssumptions.set_prec
+  Float.TypeAssumptions.get_mode
+  Float.TypeAssumptions.set_mode
+  Float.TypeAssumptions.get_acc
+  Float.TypeAssumptions.set_acc
+  Float.TypeAssumptions.get_form
+  Float.TypeAssumptions.set_form
+  Float.TypeAssumptions.get_neg
+  Float.TypeAssumptions.set_neg
+  Float.TypeAssumptions.get_mant
+  Float.TypeAssumptions.set_mant
+  Float.TypeAssumptions.get_exp
+  Float.TypeAssumptions.set_exp
 
 namespace ErrNaN
 structure t [FfiSyntax] where
@@ -701,29 +701,29 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end ErrNaN
 
-@[reducible] def ErrNaN'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ErrNaN.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"msg" go.string)]
 
-@[irreducible] def ErrNaN'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  ErrNaN'fds_unsealed
+@[irreducible] def ErrNaN.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  ErrNaN.fieldsUnsealed
 
 instance equals_unfold_ErrNaN [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold ErrNaN'fds ErrNaN'fds_unsealed :=
-  ⟨by unfold ErrNaN'fds; rfl⟩
+    EqualsUnfold ErrNaN.fields ErrNaN.fieldsUnsealed :=
+  ⟨by unfold ErrNaN.fields; rfl⟩
 
-@[reducible] def «ErrNaNⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType ErrNaN'fds)
+@[reducible] def ErrNaN.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ErrNaN.fields)
 
-class ErrNaN_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ErrNaN_type_repr : go.TypeReprUnderlying «ErrNaNⁱᵐᵖˡ» ErrNaN.t
-  ErrNaN_underlying : go.UnderlyingDirectedEq ErrNaN «ErrNaNⁱᵐᵖˡ»
-  ErrNaN_get_msg : ∀ (x : ErrNaN.t), go.IsGoStepPureDetTagged under (StructFieldGet «ErrNaNⁱᵐᵖˡ» go!"msg") #x (Val #(x.msg'))
-  ErrNaN_set_msg : ∀ (x : ErrNaN.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «ErrNaNⁱᵐᵖˡ» go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : ErrNaN.t)))
+class ErrNaN.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ErrNaN.underlying ErrNaN.t
+  underlying : go.UnderlyingDirectedEq ErrNaN ErrNaN.underlying
+  get_msg : ∀ (x : ErrNaN.t), go.IsGoStepPureDetTagged under (StructFieldGet ErrNaN.underlying go!"msg") #x (Val #(x.msg'))
+  set_msg : ∀ (x : ErrNaN.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ErrNaN.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : ErrNaN.t)))
 
-attribute [instance] ErrNaN_Assumptions.ErrNaN_type_repr
-  ErrNaN_Assumptions.ErrNaN_underlying
-  ErrNaN_Assumptions.ErrNaN_get_msg
-  ErrNaN_Assumptions.ErrNaN_set_msg
+attribute [instance] ErrNaN.TypeAssumptions.type_repr
+  ErrNaN.TypeAssumptions.underlying
+  ErrNaN.TypeAssumptions.get_msg
+  ErrNaN.TypeAssumptions.set_msg
 
 namespace Int'
 structure t [FfiSyntax] where
@@ -735,34 +735,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Int'
 
-@[reducible] def Int'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Int.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"neg" go.bool),
 (go.field_decl.FieldDecl go!"abs" nat)]
 
-@[irreducible] def Int'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Int'fds_unsealed
+@[irreducible] def Int.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Int.fieldsUnsealed
 
 instance equals_unfold_Int [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Int'fds Int'fds_unsealed :=
-  ⟨by unfold Int'fds; rfl⟩
+    EqualsUnfold Int.fields Int.fieldsUnsealed :=
+  ⟨by unfold Int.fields; rfl⟩
 
-@[reducible] def «Int'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Int'fds)
+@[reducible] def Int'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Int.fields)
 
-class Int_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Int_type_repr : go.TypeReprUnderlying «Int'ⁱᵐᵖˡ» Int'.t
-  Int_underlying : go.UnderlyingDirectedEq Int' «Int'ⁱᵐᵖˡ»
-  Int_get_neg : ∀ (x : Int'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int'ⁱᵐᵖˡ» go!"neg") #x (Val #(x.neg'))
-  Int_set_neg : ∀ (x : Int'.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Int'ⁱᵐᵖˡ» go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Int'.t)))
-  Int_get_abs : ∀ (x : Int'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int'ⁱᵐᵖˡ» go!"abs") #x (Val #(x.abs'))
-  Int_set_abs : ∀ (x : Int'.t) (y : nat.t), go.IsGoStepPureDetTagged under (StructFieldSet «Int'ⁱᵐᵖˡ» go!"abs") (PairV #x #y) (Val #(({ x with abs' := y } : Int'.t)))
+class Int.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Int'.underlying Int'.t
+  underlying : go.UnderlyingDirectedEq Int' Int'.underlying
+  get_neg : ∀ (x : Int'.t), go.IsGoStepPureDetTagged under (StructFieldGet Int'.underlying go!"neg") #x (Val #(x.neg'))
+  set_neg : ∀ (x : Int'.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Int'.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Int'.t)))
+  get_abs : ∀ (x : Int'.t), go.IsGoStepPureDetTagged under (StructFieldGet Int'.underlying go!"abs") #x (Val #(x.abs'))
+  set_abs : ∀ (x : Int'.t) (y : nat.t), go.IsGoStepPureDetTagged under (StructFieldSet Int'.underlying go!"abs") (PairV #x #y) (Val #(({ x with abs' := y } : Int'.t)))
 
-attribute [instance] Int_Assumptions.Int_type_repr
-  Int_Assumptions.Int_underlying
-  Int_Assumptions.Int_get_neg
-  Int_Assumptions.Int_set_neg
-  Int_Assumptions.Int_get_abs
-  Int_Assumptions.Int_set_abs
+attribute [instance] Int.TypeAssumptions.type_repr
+  Int.TypeAssumptions.underlying
+  Int.TypeAssumptions.get_neg
+  Int.TypeAssumptions.set_neg
+  Int.TypeAssumptions.get_abs
+  Int.TypeAssumptions.set_abs
 
 namespace byteReader
 structure t [FfiSyntax] where
@@ -773,29 +773,29 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end byteReader
 
-@[reducible] def byteReader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def byteReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"ScanState" _root_.Perennial.fmt.ScanState)]
 
-@[irreducible] def byteReader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  byteReader'fds_unsealed
+@[irreducible] def byteReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  byteReader.fieldsUnsealed
 
 instance equals_unfold_byteReader [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold byteReader'fds byteReader'fds_unsealed :=
-  ⟨by unfold byteReader'fds; rfl⟩
+    EqualsUnfold byteReader.fields byteReader.fieldsUnsealed :=
+  ⟨by unfold byteReader.fields; rfl⟩
 
-@[reducible] def «byteReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType byteReader'fds)
+@[reducible] def byteReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType byteReader.fields)
 
-class byteReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  byteReader_type_repr : go.TypeReprUnderlying «byteReaderⁱᵐᵖˡ» byteReader.t
-  byteReader_underlying : go.UnderlyingDirectedEq byteReader «byteReaderⁱᵐᵖˡ»
-  byteReader_get_ScanState : ∀ (x : byteReader.t), go.IsGoStepPureDetTagged under (StructFieldGet «byteReaderⁱᵐᵖˡ» go!"ScanState") #x (Val #(x.ScanState'))
-  byteReader_set_ScanState : ∀ (x : byteReader.t) (y : _root_.Perennial.fmt.ScanState.t), go.IsGoStepPureDetTagged under (StructFieldSet «byteReaderⁱᵐᵖˡ» go!"ScanState") (PairV #x #y) (Val #(({ x with ScanState' := y } : byteReader.t)))
+class byteReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying byteReader.underlying byteReader.t
+  underlying : go.UnderlyingDirectedEq byteReader byteReader.underlying
+  get_ScanState : ∀ (x : byteReader.t), go.IsGoStepPureDetTagged under (StructFieldGet byteReader.underlying go!"ScanState") #x (Val #(x.ScanState'))
+  set_ScanState : ∀ (x : byteReader.t) (y : _root_.Perennial.fmt.ScanState.t), go.IsGoStepPureDetTagged under (StructFieldSet byteReader.underlying go!"ScanState") (PairV #x #y) (Val #(({ x with ScanState' := y } : byteReader.t)))
 
-attribute [instance] byteReader_Assumptions.byteReader_type_repr
-  byteReader_Assumptions.byteReader_underlying
-  byteReader_Assumptions.byteReader_get_ScanState
-  byteReader_Assumptions.byteReader_set_ScanState
+attribute [instance] byteReader.TypeAssumptions.type_repr
+  byteReader.TypeAssumptions.underlying
+  byteReader.TypeAssumptions.get_ScanState
+  byteReader.TypeAssumptions.set_ScanState
 
 namespace stack
 structure t [FfiSyntax] where
@@ -806,29 +806,29 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end stack
 
-@[reducible] def stack'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def stack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"w" (go.GoType.SliceType Word))]
 
-@[irreducible] def stack'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  stack'fds_unsealed
+@[irreducible] def stack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  stack.fieldsUnsealed
 
 instance equals_unfold_stack [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold stack'fds stack'fds_unsealed :=
-  ⟨by unfold stack'fds; rfl⟩
+    EqualsUnfold stack.fields stack.fieldsUnsealed :=
+  ⟨by unfold stack.fields; rfl⟩
 
-@[reducible] def «stackⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType stack'fds)
+@[reducible] def stack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType stack.fields)
 
-class stack_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stack_type_repr : go.TypeReprUnderlying «stackⁱᵐᵖˡ» stack.t
-  stack_underlying : go.UnderlyingDirectedEq stack «stackⁱᵐᵖˡ»
-  stack_get_w : ∀ (x : stack.t), go.IsGoStepPureDetTagged under (StructFieldGet «stackⁱᵐᵖˡ» go!"w") #x (Val #(x.w'))
-  stack_set_w : ∀ (x : stack.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «stackⁱᵐᵖˡ» go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stack.t)))
+class stack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying stack.underlying stack.t
+  underlying : go.UnderlyingDirectedEq stack stack.underlying
+  get_w : ∀ (x : stack.t), go.IsGoStepPureDetTagged under (StructFieldGet stack.underlying go!"w") #x (Val #(x.w'))
+  set_w : ∀ (x : stack.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet stack.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stack.t)))
 
-attribute [instance] stack_Assumptions.stack_type_repr
-  stack_Assumptions.stack_underlying
-  stack_Assumptions.stack_get_w
-  stack_Assumptions.stack_set_w
+attribute [instance] stack.TypeAssumptions.type_repr
+  stack.TypeAssumptions.underlying
+  stack.TypeAssumptions.get_w
+  stack.TypeAssumptions.set_w
 
 namespace divisor
 structure t [FfiSyntax] where
@@ -841,39 +841,39 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end divisor
 
-@[reducible] def divisor'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def divisor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"bbb" nat),
 (go.field_decl.FieldDecl go!"nbits" go.int),
 (go.field_decl.FieldDecl go!"ndigits" go.int)]
 
-@[irreducible] def divisor'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  divisor'fds_unsealed
+@[irreducible] def divisor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  divisor.fieldsUnsealed
 
 instance equals_unfold_divisor [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold divisor'fds divisor'fds_unsealed :=
-  ⟨by unfold divisor'fds; rfl⟩
+    EqualsUnfold divisor.fields divisor.fieldsUnsealed :=
+  ⟨by unfold divisor.fields; rfl⟩
 
-@[reducible] def «divisorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType divisor'fds)
+@[reducible] def divisor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType divisor.fields)
 
-class divisor_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  divisor_type_repr : go.TypeReprUnderlying «divisorⁱᵐᵖˡ» divisor.t
-  divisor_underlying : go.UnderlyingDirectedEq divisor «divisorⁱᵐᵖˡ»
-  divisor_get_bbb : ∀ (x : divisor.t), go.IsGoStepPureDetTagged under (StructFieldGet «divisorⁱᵐᵖˡ» go!"bbb") #x (Val #(x.bbb'))
-  divisor_set_bbb : ∀ (x : divisor.t) (y : nat.t), go.IsGoStepPureDetTagged under (StructFieldSet «divisorⁱᵐᵖˡ» go!"bbb") (PairV #x #y) (Val #(({ x with bbb' := y } : divisor.t)))
-  divisor_get_nbits : ∀ (x : divisor.t), go.IsGoStepPureDetTagged under (StructFieldGet «divisorⁱᵐᵖˡ» go!"nbits") #x (Val #(x.nbits'))
-  divisor_set_nbits : ∀ (x : divisor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «divisorⁱᵐᵖˡ» go!"nbits") (PairV #x #y) (Val #(({ x with nbits' := y } : divisor.t)))
-  divisor_get_ndigits : ∀ (x : divisor.t), go.IsGoStepPureDetTagged under (StructFieldGet «divisorⁱᵐᵖˡ» go!"ndigits") #x (Val #(x.ndigits'))
-  divisor_set_ndigits : ∀ (x : divisor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «divisorⁱᵐᵖˡ» go!"ndigits") (PairV #x #y) (Val #(({ x with ndigits' := y } : divisor.t)))
+class divisor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying divisor.underlying divisor.t
+  underlying : go.UnderlyingDirectedEq divisor divisor.underlying
+  get_bbb : ∀ (x : divisor.t), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"bbb") #x (Val #(x.bbb'))
+  set_bbb : ∀ (x : divisor.t) (y : nat.t), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"bbb") (PairV #x #y) (Val #(({ x with bbb' := y } : divisor.t)))
+  get_nbits : ∀ (x : divisor.t), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"nbits") #x (Val #(x.nbits'))
+  set_nbits : ∀ (x : divisor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"nbits") (PairV #x #y) (Val #(({ x with nbits' := y } : divisor.t)))
+  get_ndigits : ∀ (x : divisor.t), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"ndigits") #x (Val #(x.ndigits'))
+  set_ndigits : ∀ (x : divisor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"ndigits") (PairV #x #y) (Val #(({ x with ndigits' := y } : divisor.t)))
 
-attribute [instance] divisor_Assumptions.divisor_type_repr
-  divisor_Assumptions.divisor_underlying
-  divisor_Assumptions.divisor_get_bbb
-  divisor_Assumptions.divisor_set_bbb
-  divisor_Assumptions.divisor_get_nbits
-  divisor_Assumptions.divisor_set_nbits
-  divisor_Assumptions.divisor_get_ndigits
-  divisor_Assumptions.divisor_set_ndigits
+attribute [instance] divisor.TypeAssumptions.type_repr
+  divisor.TypeAssumptions.underlying
+  divisor.TypeAssumptions.get_bbb
+  divisor.TypeAssumptions.set_bbb
+  divisor.TypeAssumptions.get_nbits
+  divisor.TypeAssumptions.set_nbits
+  divisor.TypeAssumptions.get_ndigits
+  divisor.TypeAssumptions.set_ndigits
 
 namespace Rat
 structure t [FfiSyntax] where
@@ -885,49 +885,49 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Rat
 
-@[reducible] def Rat'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Rat.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" Int'),
 (go.field_decl.FieldDecl go!"b" Int')]
 
-@[irreducible] def Rat'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Rat'fds_unsealed
+@[irreducible] def Rat.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Rat.fieldsUnsealed
 
 instance equals_unfold_Rat [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Rat'fds Rat'fds_unsealed :=
-  ⟨by unfold Rat'fds; rfl⟩
+    EqualsUnfold Rat.fields Rat.fieldsUnsealed :=
+  ⟨by unfold Rat.fields; rfl⟩
 
-@[reducible] def «Ratⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Rat'fds)
+@[reducible] def Rat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Rat.fields)
 
-class Rat_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Rat_type_repr : go.TypeReprUnderlying «Ratⁱᵐᵖˡ» Rat.t
-  Rat_underlying : go.UnderlyingDirectedEq Rat «Ratⁱᵐᵖˡ»
-  Rat_get_a : ∀ (x : Rat.t), go.IsGoStepPureDetTagged under (StructFieldGet «Ratⁱᵐᵖˡ» go!"a") #x (Val #(x.a'))
-  Rat_set_a : ∀ (x : Rat.t) (y : Int'.t), go.IsGoStepPureDetTagged under (StructFieldSet «Ratⁱᵐᵖˡ» go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Rat.t)))
-  Rat_get_b : ∀ (x : Rat.t), go.IsGoStepPureDetTagged under (StructFieldGet «Ratⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
-  Rat_set_b : ∀ (x : Rat.t) (y : Int'.t), go.IsGoStepPureDetTagged under (StructFieldSet «Ratⁱᵐᵖˡ» go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Rat.t)))
+class Rat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Rat.underlying Rat.t
+  underlying : go.UnderlyingDirectedEq Rat Rat.underlying
+  get_a : ∀ (x : Rat.t), go.IsGoStepPureDetTagged under (StructFieldGet Rat.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : Rat.t) (y : Int'.t), go.IsGoStepPureDetTagged under (StructFieldSet Rat.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Rat.t)))
+  get_b : ∀ (x : Rat.t), go.IsGoStepPureDetTagged under (StructFieldGet Rat.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : Rat.t) (y : Int'.t), go.IsGoStepPureDetTagged under (StructFieldSet Rat.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Rat.t)))
 
-attribute [instance] Rat_Assumptions.Rat_type_repr
-  Rat_Assumptions.Rat_underlying
-  Rat_Assumptions.Rat_get_a
-  Rat_Assumptions.Rat_set_a
-  Rat_Assumptions.Rat_get_b
-  Rat_Assumptions.Rat_set_b
+attribute [instance] Rat.TypeAssumptions.type_repr
+  Rat.TypeAssumptions.underlying
+  Rat.TypeAssumptions.get_a
+  Rat.TypeAssumptions.set_a
+  Rat.TypeAssumptions.get_b
+  Rat.TypeAssumptions.set_b
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Word_instance : Word_Assumptions
-  decimal_instance : decimal_Assumptions
-  Float_instance : Float_Assumptions
-  ErrNaN_instance : ErrNaN_Assumptions
-  form_instance : form_Assumptions
-  RoundingMode_instance : RoundingMode_Assumptions
-  Accuracy_instance : Accuracy_Assumptions
-  Int_instance : Int_Assumptions
-  byteReader_instance : byteReader_Assumptions
-  nat_instance : nat_Assumptions
-  stack_instance : stack_Assumptions
-  divisor_instance : divisor_Assumptions
-  Rat_instance : Rat_Assumptions
+  Word_instance : Word.TypeAssumptions
+  decimal_instance : decimal.TypeAssumptions
+  Float_instance : Float.TypeAssumptions
+  ErrNaN_instance : ErrNaN.TypeAssumptions
+  form_instance : form.TypeAssumptions
+  RoundingMode_instance : RoundingMode.TypeAssumptions
+  Accuracy_instance : Accuracy.TypeAssumptions
+  Int_instance : Int.TypeAssumptions
+  byteReader_instance : byteReader.TypeAssumptions
+  nat_instance : nat.TypeAssumptions
+  stack_instance : stack.TypeAssumptions
+  divisor_instance : divisor.TypeAssumptions
+  Rat_instance : Rat.TypeAssumptions
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
 
 attribute [instance] Assumptions.Word_instance

@@ -37,7 +37,7 @@ instance CompactionRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CompactionRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.CompactionRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«CompactionRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.CompactionRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.CompactionRequest.underlying := by
   solve_into_val_typed_struct
 
 instance CompactionRequest_access_load_Revision (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.CompactionRequest.t) (dq : DFrac) :
@@ -144,7 +144,7 @@ instance CompactionResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CompactionResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.CompactionResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«CompactionResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.CompactionResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.CompactionResponse.underlying := by
   solve_into_val_typed_struct
 
 instance CompactionResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.CompactionResponse.t) (dq : DFrac) :
@@ -234,7 +234,7 @@ instance HashRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance HashRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.HashRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«HashRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.HashRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.HashRequest.underlying := by
   solve_into_val_typed_struct
 
 instance HashRequest_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.HashRequest.t) (dq : DFrac) :
@@ -309,7 +309,7 @@ instance HashKVRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance HashKVRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.HashKVRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«HashKVRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.HashKVRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.HashKVRequest.underlying := by
   solve_into_val_typed_struct
 
 instance HashKVRequest_access_load_Revision (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.HashKVRequest.t) (dq : DFrac) :
@@ -403,7 +403,7 @@ instance HashKVResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance HashKVResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.HashKVResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«HashKVResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.HashKVResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.HashKVResponse.underlying := by
   solve_into_val_typed_struct
 
 instance HashKVResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.HashKVResponse.t) (dq : DFrac) :
@@ -543,7 +543,7 @@ instance HashResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance HashResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.HashResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«HashResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.HashResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.HashResponse.underlying := by
   solve_into_val_typed_struct
 
 instance HashResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.HashResponse.t) (dq : DFrac) :
@@ -649,7 +649,7 @@ instance SnapshotRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SnapshotRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.SnapshotRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«SnapshotRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.SnapshotRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.SnapshotRequest.underlying := by
   solve_into_val_typed_struct
 
 instance SnapshotRequest_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.SnapshotRequest.t) (dq : DFrac) :
@@ -727,7 +727,7 @@ instance SnapshotResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SnapshotResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.SnapshotResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«SnapshotResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.SnapshotResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.SnapshotResponse.underlying := by
   solve_into_val_typed_struct
 
 instance SnapshotResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.SnapshotResponse.t) (dq : DFrac) :
@@ -863,7 +863,7 @@ instance WatchRequest_CreateRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchRequest_CreateRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_CreateRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchRequest_CreateRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_CreateRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_CreateRequest.underlying := by
   solve_into_val_typed_struct
 
 instance WatchRequest_CreateRequest_access_load_CreateRequest (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_CreateRequest.t) (dq : DFrac) :
@@ -903,7 +903,7 @@ instance WatchRequest_CancelRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchRequest_CancelRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_CancelRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchRequest_CancelRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_CancelRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_CancelRequest.underlying := by
   solve_into_val_typed_struct
 
 instance WatchRequest_CancelRequest_access_load_CancelRequest (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_CancelRequest.t) (dq : DFrac) :
@@ -943,7 +943,7 @@ instance WatchRequest_ProgressRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchRequest_ProgressRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_ProgressRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchRequest_ProgressRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_ProgressRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_ProgressRequest.underlying := by
   solve_into_val_typed_struct
 
 instance WatchRequest_ProgressRequest_access_load_ProgressRequest (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest_ProgressRequest.t) (dq : DFrac) :
@@ -993,7 +993,7 @@ instance WatchCreateRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchCreateRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchCreateRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchCreateRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchCreateRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchCreateRequest.underlying := by
   solve_into_val_typed_struct
 
 instance WatchCreateRequest_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.WatchCreateRequest.t) (dq : DFrac) :
@@ -1196,7 +1196,7 @@ instance WatchCancelRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchCancelRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchCancelRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchCancelRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchCancelRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchCancelRequest.underlying := by
   solve_into_val_typed_struct
 
 instance WatchCancelRequest_access_load_WatchId (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.WatchCancelRequest.t) (dq : DFrac) :
@@ -1286,7 +1286,7 @@ instance WatchProgressRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchProgressRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchProgressRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchProgressRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchProgressRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchProgressRequest.underlying := by
   solve_into_val_typed_struct
 
 instance WatchProgressRequest_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.WatchProgressRequest.t) (dq : DFrac) :
@@ -1368,7 +1368,7 @@ instance WatchResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchResponse.underlying := by
   solve_into_val_typed_struct
 
 instance WatchResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.WatchResponse.t) (dq : DFrac) :

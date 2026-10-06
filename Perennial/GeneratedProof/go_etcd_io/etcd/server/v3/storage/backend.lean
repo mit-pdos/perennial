@@ -35,7 +35,7 @@ instance txReadBufferCache_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance txReadBufferCache_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.txReadBufferCache.t go_etcd_io.etcd.server.v3.storage.backend.«txReadBufferCacheⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.txReadBufferCache.t go_etcd_io.etcd.server.v3.storage.backend.txReadBufferCache.underlying := by
   solve_into_val_typed_struct
 
 instance txReadBufferCache_access_load_mu (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.txReadBufferCache.t) (dq : DFrac) :
@@ -102,7 +102,7 @@ instance backend_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance backend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.backend.t go_etcd_io.etcd.server.v3.storage.backend.«backendⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.backend.t go_etcd_io.etcd.server.v3.storage.backend.backend.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -121,7 +121,7 @@ instance BackendConfig_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance BackendConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.BackendConfig.t go_etcd_io.etcd.server.v3.storage.backend.«BackendConfigⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.BackendConfig.t go_etcd_io.etcd.server.v3.storage.backend.BackendConfig.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -140,7 +140,7 @@ instance snapshot_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance snapshot_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.snapshot.t go_etcd_io.etcd.server.v3.storage.backend.«snapshotⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.snapshot.t go_etcd_io.etcd.server.v3.storage.backend.snapshot.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -159,7 +159,7 @@ instance zapBoltLogger_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance zapBoltLogger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.zapBoltLogger.t go_etcd_io.etcd.server.v3.storage.backend.«zapBoltLoggerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.zapBoltLogger.t go_etcd_io.etcd.server.v3.storage.backend.zapBoltLogger.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -178,7 +178,7 @@ instance batchTx_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance batchTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.batchTx.t go_etcd_io.etcd.server.v3.storage.backend.«batchTxⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.batchTx.t go_etcd_io.etcd.server.v3.storage.backend.batchTx.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -202,7 +202,7 @@ instance txBuffer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance txBuffer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.txBuffer.t go_etcd_io.etcd.server.v3.storage.backend.«txBufferⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.txBuffer.t go_etcd_io.etcd.server.v3.storage.backend.txBuffer.underlying := by
   solve_into_val_typed_struct
 
 instance txBuffer_access_load_buckets (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.txBuffer.t) (dq : DFrac) :
@@ -243,7 +243,7 @@ instance txWriteBuffer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance txWriteBuffer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.txWriteBuffer.t go_etcd_io.etcd.server.v3.storage.backend.«txWriteBufferⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.txWriteBuffer.t go_etcd_io.etcd.server.v3.storage.backend.txWriteBuffer.underlying := by
   solve_into_val_typed_struct
 
 instance txWriteBuffer_access_load_txBuffer (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.txWriteBuffer.t) (dq : DFrac) :
@@ -301,7 +301,7 @@ instance batchTxBuffered_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance batchTxBuffered_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.batchTxBuffered.t go_etcd_io.etcd.server.v3.storage.backend.«batchTxBufferedⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.batchTxBuffered.t go_etcd_io.etcd.server.v3.storage.backend.batchTxBuffered.underlying := by
   solve_into_val_typed_struct
 
 instance batchTxBuffered_access_load_batchTx (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.batchTxBuffered.t) (dq : DFrac) :
@@ -373,7 +373,7 @@ instance hooks_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance hooks_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.hooks.t go_etcd_io.etcd.server.v3.storage.backend.«hooksⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.hooks.t go_etcd_io.etcd.server.v3.storage.backend.hooks.underlying := by
   solve_into_val_typed_struct
 
 instance hooks_access_load_onPreCommitUnsafe (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.hooks.t) (dq : DFrac) :
@@ -408,7 +408,7 @@ instance baseReadTx_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance baseReadTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.baseReadTx.t go_etcd_io.etcd.server.v3.storage.backend.«baseReadTxⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.baseReadTx.t go_etcd_io.etcd.server.v3.storage.backend.baseReadTx.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -432,7 +432,7 @@ instance readTx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance readTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.readTx.t go_etcd_io.etcd.server.v3.storage.backend.«readTxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.readTx.t go_etcd_io.etcd.server.v3.storage.backend.readTx.underlying := by
   solve_into_val_typed_struct
 
 instance readTx_access_load_baseReadTx (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.readTx.t) (dq : DFrac) :
@@ -472,7 +472,7 @@ instance concurrentReadTx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance concurrentReadTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.concurrentReadTx.t go_etcd_io.etcd.server.v3.storage.backend.«concurrentReadTxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.concurrentReadTx.t go_etcd_io.etcd.server.v3.storage.backend.concurrentReadTx.underlying := by
   solve_into_val_typed_struct
 
 instance concurrentReadTx_access_load_baseReadTx (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.concurrentReadTx.t) (dq : DFrac) :
@@ -513,7 +513,7 @@ instance txReadBuffer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance txReadBuffer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.txReadBuffer.t go_etcd_io.etcd.server.v3.storage.backend.«txReadBufferⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.txReadBuffer.t go_etcd_io.etcd.server.v3.storage.backend.txReadBuffer.underlying := by
   solve_into_val_typed_struct
 
 instance txReadBuffer_access_load_txBuffer (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.txReadBuffer.t) (dq : DFrac) :
@@ -570,7 +570,7 @@ instance kv_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance kv_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.kv.t go_etcd_io.etcd.server.v3.storage.backend.«kvⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.kv.t go_etcd_io.etcd.server.v3.storage.backend.kv.underlying := by
   solve_into_val_typed_struct
 
 instance kv_access_load_key (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.kv.t) (dq : DFrac) :
@@ -627,7 +627,7 @@ instance bucketBuffer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance bucketBuffer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.bucketBuffer.t go_etcd_io.etcd.server.v3.storage.backend.«bucketBufferⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.bucketBuffer.t go_etcd_io.etcd.server.v3.storage.backend.bucketBuffer.underlying := by
   solve_into_val_typed_struct
 
 instance bucketBuffer_access_load_buf (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.bucketBuffer.t) (dq : DFrac) :

@@ -44,7 +44,7 @@ instance LeaseGrantResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseGrantResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go_etcd_io.etcd.client.v3.«LeaseGrantResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseGrantResponse.t go_etcd_io.etcd.client.v3.LeaseGrantResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseGrantResponse_access_load_ResponseHeader (l : Loc) (v : go_etcd_io.etcd.client.v3.LeaseGrantResponse.t) (dq : DFrac) :
@@ -134,7 +134,7 @@ instance LeaseKeepAliveResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseKeepAliveResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseKeepAliveResponse.t go_etcd_io.etcd.client.v3.«LeaseKeepAliveResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseKeepAliveResponse.t go_etcd_io.etcd.client.v3.LeaseKeepAliveResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseKeepAliveResponse_access_load_ResponseHeader (l : Loc) (v : go_etcd_io.etcd.client.v3.LeaseKeepAliveResponse.t) (dq : DFrac) :
@@ -210,7 +210,7 @@ instance LeaseTimeToLiveResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseTimeToLiveResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseTimeToLiveResponse.t go_etcd_io.etcd.client.v3.«LeaseTimeToLiveResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseTimeToLiveResponse.t go_etcd_io.etcd.client.v3.LeaseTimeToLiveResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseTimeToLiveResponse_access_load_ResponseHeader (l : Loc) (v : go_etcd_io.etcd.client.v3.LeaseTimeToLiveResponse.t) (dq : DFrac) :
@@ -314,7 +314,7 @@ instance LeaseStatus_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseStatus_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseStatus.t go_etcd_io.etcd.client.v3.«LeaseStatusⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseStatus.t go_etcd_io.etcd.client.v3.LeaseStatus.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseStatus_access_load_ID (l : Loc) (v : go_etcd_io.etcd.client.v3.LeaseStatus.t) (dq : DFrac) :
@@ -381,7 +381,7 @@ instance Op_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Op_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Op.t go_etcd_io.etcd.client.v3.«Opⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Op.t go_etcd_io.etcd.client.v3.Op.underlying := by
   solve_into_val_typed_struct
 
 instance Op_access_load_t (l : Loc) (v : go_etcd_io.etcd.client.v3.Op.t) (dq : DFrac) :
@@ -854,7 +854,7 @@ instance LeaseOp_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseOp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseOp.t go_etcd_io.etcd.client.v3.«LeaseOpⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseOp.t go_etcd_io.etcd.client.v3.LeaseOp.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseOp_access_load_id (l : Loc) (v : go_etcd_io.etcd.client.v3.LeaseOp.t) (dq : DFrac) :
@@ -913,7 +913,7 @@ instance options_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance options_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.options.t go_etcd_io.etcd.client.v3.«optionsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.options.t go_etcd_io.etcd.client.v3.options.underlying := by
   solve_into_val_typed_struct
 
 instance options_access_load_retryPolicy (l : Loc) (v : go_etcd_io.etcd.client.v3.options.t) (dq : DFrac) :
@@ -1002,7 +1002,7 @@ instance SortOption_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SortOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.SortOption.t go_etcd_io.etcd.client.v3.«SortOptionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.SortOption.t go_etcd_io.etcd.client.v3.SortOption.underlying := by
   solve_into_val_typed_struct
 
 instance SortOption_access_load_Target (l : Loc) (v : go_etcd_io.etcd.client.v3.SortOption.t) (dq : DFrac) :
@@ -1064,7 +1064,7 @@ instance watcherStream_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance watcherStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watcherStream.t go_etcd_io.etcd.client.v3.«watcherStreamⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watcherStream.t go_etcd_io.etcd.client.v3.watcherStream.underlying := by
   solve_into_val_typed_struct
 
 instance watcherStream_access_load_initReq (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream.t) (dq : DFrac) :

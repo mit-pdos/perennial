@@ -35,7 +35,7 @@ instance selfCollector_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance selfCollector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.selfCollector.t github_com.prometheus.client_golang.prometheus.«selfCollectorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.selfCollector.t github_com.prometheus.client_golang.prometheus.selfCollector.underlying := by
   solve_into_val_typed_struct
 
 instance selfCollector_access_load_self (l : Loc) (v : github_com.prometheus.client_golang.prometheus.selfCollector.t) (dq : DFrac) :
@@ -80,7 +80,7 @@ instance Opts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Opts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Opts.t github_com.prometheus.client_golang.prometheus.«Optsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Opts.t github_com.prometheus.client_golang.prometheus.Opts.underlying := by
   solve_into_val_typed_struct
 
 instance Opts_access_load_Namespace (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Opts.t) (dq : DFrac) :
@@ -201,7 +201,7 @@ instance CounterVecOpts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CounterVecOpts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.CounterVecOpts.t github_com.prometheus.client_golang.prometheus.«CounterVecOptsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.CounterVecOpts.t github_com.prometheus.client_golang.prometheus.CounterVecOpts.underlying := by
   solve_into_val_typed_struct
 
 instance CounterVecOpts_access_load_CounterOpts (l : Loc) (v : github_com.prometheus.client_golang.prometheus.CounterVecOpts.t) (dq : DFrac) :
@@ -258,7 +258,7 @@ instance GaugeVecOpts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance GaugeVecOpts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.GaugeVecOpts.t github_com.prometheus.client_golang.prometheus.«GaugeVecOptsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.GaugeVecOpts.t github_com.prometheus.client_golang.prometheus.GaugeVecOpts.underlying := by
   solve_into_val_typed_struct
 
 instance GaugeVecOpts_access_load_GaugeOpts (l : Loc) (v : github_com.prometheus.client_golang.prometheus.GaugeVecOpts.t) (dq : DFrac) :
@@ -328,7 +328,7 @@ instance HistogramOpts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance HistogramOpts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.HistogramOpts.t github_com.prometheus.client_golang.prometheus.«HistogramOptsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.HistogramOpts.t github_com.prometheus.client_golang.prometheus.HistogramOpts.underlying := by
   solve_into_val_typed_struct
 
 instance HistogramOpts_access_load_Namespace (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramOpts.t) (dq : DFrac) :
@@ -593,7 +593,7 @@ instance ConstrainedLabel_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ConstrainedLabel_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.ConstrainedLabel.t github_com.prometheus.client_golang.prometheus.«ConstrainedLabelⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.ConstrainedLabel.t github_com.prometheus.client_golang.prometheus.ConstrainedLabel.underlying := by
   solve_into_val_typed_struct
 
 instance ConstrainedLabel_access_load_Name (l : Loc) (v : github_com.prometheus.client_golang.prometheus.ConstrainedLabel.t) (dq : DFrac) :
@@ -650,7 +650,7 @@ instance timestampedMetric_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timestampedMetric_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.timestampedMetric.t github_com.prometheus.client_golang.prometheus.«timestampedMetricⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.timestampedMetric.t github_com.prometheus.client_golang.prometheus.timestampedMetric.underlying := by
   solve_into_val_typed_struct
 
 instance timestampedMetric_access_load_Metric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.timestampedMetric.t) (dq : DFrac) :
@@ -707,7 +707,7 @@ instance withExemplarsMetric_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance withExemplarsMetric_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.withExemplarsMetric.t github_com.prometheus.client_golang.prometheus.«withExemplarsMetricⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.withExemplarsMetric.t github_com.prometheus.client_golang.prometheus.withExemplarsMetric.underlying := by
   solve_into_val_typed_struct
 
 instance withExemplarsMetric_access_load_Metric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.withExemplarsMetric.t) (dq : DFrac) :
@@ -765,7 +765,7 @@ instance Exemplar_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Exemplar_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Exemplar.t github_com.prometheus.client_golang.prometheus.«Exemplarⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Exemplar.t github_com.prometheus.client_golang.prometheus.Exemplar.underlying := by
   solve_into_val_typed_struct
 
 instance Exemplar_access_load_Value (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Exemplar.t) (dq : DFrac) :
@@ -838,7 +838,7 @@ instance AlreadyRegisteredError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AlreadyRegisteredError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.AlreadyRegisteredError.t github_com.prometheus.client_golang.prometheus.«AlreadyRegisteredErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.AlreadyRegisteredError.t github_com.prometheus.client_golang.prometheus.AlreadyRegisteredError.underlying := by
   solve_into_val_typed_struct
 
 instance AlreadyRegisteredError_access_load_ExistingCollector (l : Loc) (v : github_com.prometheus.client_golang.prometheus.AlreadyRegisteredError.t) (dq : DFrac) :
@@ -894,7 +894,7 @@ instance noTransactionGatherer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noTransactionGatherer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.noTransactionGatherer.t github_com.prometheus.client_golang.prometheus.«noTransactionGathererⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.noTransactionGatherer.t github_com.prometheus.client_golang.prometheus.noTransactionGatherer.underlying := by
   solve_into_val_typed_struct
 
 instance noTransactionGatherer_access_load_g (l : Loc) (v : github_com.prometheus.client_golang.prometheus.noTransactionGatherer.t) (dq : DFrac) :
@@ -943,7 +943,7 @@ instance SummaryOpts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SummaryOpts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.SummaryOpts.t github_com.prometheus.client_golang.prometheus.«SummaryOptsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.SummaryOpts.t github_com.prometheus.client_golang.prometheus.SummaryOpts.underlying := by
   solve_into_val_typed_struct
 
 instance SummaryOpts_access_load_Namespace (l : Loc) (v : github_com.prometheus.client_golang.prometheus.SummaryOpts.t) (dq : DFrac) :
@@ -1128,7 +1128,7 @@ instance Timer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Timer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Timer.t github_com.prometheus.client_golang.prometheus.«Timerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Timer.t github_com.prometheus.client_golang.prometheus.Timer.underlying := by
   solve_into_val_typed_struct
 
 instance Timer_access_load_begin (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Timer.t) (dq : DFrac) :
@@ -1185,7 +1185,7 @@ instance metricWithLabelValues_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance metricWithLabelValues_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.metricWithLabelValues.t github_com.prometheus.client_golang.prometheus.«metricWithLabelValuesⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.metricWithLabelValues.t github_com.prometheus.client_golang.prometheus.metricWithLabelValues.underlying := by
   solve_into_val_typed_struct
 
 instance metricWithLabelValues_access_load_values (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricWithLabelValues.t) (dq : DFrac) :
@@ -1243,7 +1243,7 @@ instance wrappingRegisterer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance wrappingRegisterer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.wrappingRegisterer.t github_com.prometheus.client_golang.prometheus.«wrappingRegistererⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.wrappingRegisterer.t github_com.prometheus.client_golang.prometheus.wrappingRegisterer.underlying := by
   solve_into_val_typed_struct
 
 instance wrappingRegisterer_access_load_wrappedRegisterer (l : Loc) (v : github_com.prometheus.client_golang.prometheus.wrappingRegisterer.t) (dq : DFrac) :
@@ -1317,7 +1317,7 @@ instance wrappingCollector_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance wrappingCollector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.wrappingCollector.t github_com.prometheus.client_golang.prometheus.«wrappingCollectorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.wrappingCollector.t github_com.prometheus.client_golang.prometheus.wrappingCollector.underlying := by
   solve_into_val_typed_struct
 
 instance wrappingCollector_access_load_wrappedCollector (l : Loc) (v : github_com.prometheus.client_golang.prometheus.wrappingCollector.t) (dq : DFrac) :
@@ -1391,7 +1391,7 @@ instance wrappingMetric_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance wrappingMetric_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.wrappingMetric.t github_com.prometheus.client_golang.prometheus.«wrappingMetricⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.wrappingMetric.t github_com.prometheus.client_golang.prometheus.wrappingMetric.underlying := by
   solve_into_val_typed_struct
 
 instance wrappingMetric_access_load_wrappedMetric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.wrappingMetric.t) (dq : DFrac) :

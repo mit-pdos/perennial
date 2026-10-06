@@ -41,7 +41,7 @@ noncomputable def lowbit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/idutil.lowbit"
 
 /-- go: id.go:56:6 -/
-noncomputable def «NewGeneratorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewGenerator.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "memberID"
   (Lam "now"
   (App (Val exceptionDo)
@@ -72,7 +72,7 @@ noncomputable def «NewGeneratorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- Next generates a id that is unique.
 
     go: id.go:67:21 -/
-noncomputable def «Generator__Nextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Generator.Next.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "g"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -95,7 +95,7 @@ noncomputable def «Generator__Nextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "suffix") (Var "$r0")))))))))))
 
 /-- go: id.go:73:6 -/
-noncomputable def «lowbitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def lowbit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "n"
   (App (Val exceptionDo)
@@ -130,41 +130,41 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Generator
 
-@[reducible] def Generator'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Generator.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"prefix" go.uint64),
 (go.field_decl.FieldDecl go!"suffix" go.uint64)]
 
-@[irreducible] def Generator'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Generator'fds_unsealed
+@[irreducible] def Generator.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Generator.fieldsUnsealed
 
 instance equals_unfold_Generator [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Generator'fds Generator'fds_unsealed :=
-  ⟨by unfold Generator'fds; rfl⟩
+    EqualsUnfold Generator.fields Generator.fieldsUnsealed :=
+  ⟨by unfold Generator.fields; rfl⟩
 
-@[reducible] def «Generatorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Generator'fds)
+@[reducible] def Generator.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Generator.fields)
 
-class Generator_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Generator_type_repr : go.TypeReprUnderlying «Generatorⁱᵐᵖˡ» Generator.t
-  Generator_underlying : go.UnderlyingDirectedEq Generator «Generatorⁱᵐᵖˡ»
-  Generator_get_prefix : ∀ (x : Generator.t), go.IsGoStepPureDetTagged under (StructFieldGet «Generatorⁱᵐᵖˡ» go!"prefix") #x (Val #(x.prefix'))
-  Generator_set_prefix : ∀ (x : Generator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Generatorⁱᵐᵖˡ» go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : Generator.t)))
-  Generator_get_suffix : ∀ (x : Generator.t), go.IsGoStepPureDetTagged under (StructFieldGet «Generatorⁱᵐᵖˡ» go!"suffix") #x (Val #(x.suffix'))
-  Generator_set_suffix : ∀ (x : Generator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Generatorⁱᵐᵖˡ» go!"suffix") (PairV #x #y) (Val #(({ x with suffix' := y } : Generator.t)))
-  Generator'ptr_Next_unfold : MethodUnfold (go.GoType.PointerType Generator) go!"Next" «Generator__Nextⁱᵐᵖˡ»
+class Generator.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Generator.underlying Generator.t
+  underlying : go.UnderlyingDirectedEq Generator Generator.underlying
+  get_prefix : ∀ (x : Generator.t), go.IsGoStepPureDetTagged under (StructFieldGet Generator.underlying go!"prefix") #x (Val #(x.prefix'))
+  set_prefix : ∀ (x : Generator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Generator.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : Generator.t)))
+  get_suffix : ∀ (x : Generator.t), go.IsGoStepPureDetTagged under (StructFieldGet Generator.underlying go!"suffix") #x (Val #(x.suffix'))
+  set_suffix : ∀ (x : Generator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Generator.underlying go!"suffix") (PairV #x #y) (Val #(({ x with suffix' := y } : Generator.t)))
+  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType Generator) go!"Next" Generator.Next.impl
 
-attribute [instance] Generator_Assumptions.Generator_type_repr
-  Generator_Assumptions.Generator_underlying
-  Generator_Assumptions.Generator_get_prefix
-  Generator_Assumptions.Generator_set_prefix
-  Generator_Assumptions.Generator_get_suffix
-  Generator_Assumptions.Generator_set_suffix
-  Generator_Assumptions.Generator'ptr_Next_unfold
+attribute [instance] Generator.TypeAssumptions.type_repr
+  Generator.TypeAssumptions.underlying
+  Generator.TypeAssumptions.get_prefix
+  Generator.TypeAssumptions.set_prefix
+  Generator.TypeAssumptions.get_suffix
+  Generator.TypeAssumptions.set_suffix
+  Generator.TypeAssumptions.ptr_Next_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Generator_instance : Generator_Assumptions
-  NewGenerator_unfold : FuncUnfold NewGenerator [] «NewGeneratorⁱᵐᵖˡ»
-  lowbit_unfold : FuncUnfold lowbit [] «lowbitⁱᵐᵖˡ»
+  Generator_instance : Generator.TypeAssumptions
+  NewGenerator_unfold : FuncUnfold NewGenerator [] NewGenerator.impl
+  lowbit_unfold : FuncUnfold lowbit [] lowbit.impl
   import_math_Assumption : _root_.Perennial.math.Assumptions
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
   import_time_Assumption : _root_.Perennial.time.Assumptions

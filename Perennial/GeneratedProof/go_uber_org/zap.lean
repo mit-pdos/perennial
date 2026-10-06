@@ -37,7 +37,7 @@ instance SamplingConfig_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SamplingConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.SamplingConfig.t go_uber_org.zap.«SamplingConfigⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.SamplingConfig.t go_uber_org.zap.SamplingConfig.underlying := by
   solve_into_val_typed_struct
 
 instance SamplingConfig_access_load_Initial (l : Loc) (v : go_uber_org.zap.SamplingConfig.t) (dq : DFrac) :
@@ -109,7 +109,7 @@ instance AtomicLevel_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AtomicLevel_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.AtomicLevel.t go_uber_org.zap.«AtomicLevelⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.AtomicLevel.t go_uber_org.zap.AtomicLevel.underlying := by
   solve_into_val_typed_struct
 
 instance AtomicLevel_access_load_l (l : Loc) (v : go_uber_org.zap.AtomicLevel.t) (dq : DFrac) :
@@ -158,7 +158,7 @@ instance Config_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Config_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.Config.t go_uber_org.zap.«Configⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.Config.t go_uber_org.zap.Config.underlying := by
   solve_into_val_typed_struct
 
 instance Config_access_load_Level (l : Loc) (v : go_uber_org.zap.Config.t) (dq : DFrac) :
@@ -342,7 +342,7 @@ instance errArrayElem_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance errArrayElem_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.errArrayElem.t go_uber_org.zap.«errArrayElemⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.errArrayElem.t go_uber_org.zap.errArrayElem.underlying := by
   solve_into_val_typed_struct
 
 instance errArrayElem_access_load_error (l : Loc) (v : go_uber_org.zap.errArrayElem.t) (dq : DFrac) :
@@ -382,7 +382,7 @@ instance loggerWriter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance loggerWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.loggerWriter.t go_uber_org.zap.«loggerWriterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.loggerWriter.t go_uber_org.zap.loggerWriter.underlying := by
   solve_into_val_typed_struct
 
 instance loggerWriter_access_load_logFunc (l : Loc) (v : go_uber_org.zap.loggerWriter.t) (dq : DFrac) :
@@ -431,7 +431,7 @@ instance Logger_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Logger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.Logger.t go_uber_org.zap.«Loggerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.Logger.t go_uber_org.zap.Logger.underlying := by
   solve_into_val_typed_struct
 
 instance Logger_access_load_core (l : Loc) (v : go_uber_org.zap.Logger.t) (dq : DFrac) :
@@ -615,7 +615,7 @@ instance errSinkNotFound_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance errSinkNotFound_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.errSinkNotFound.t go_uber_org.zap.«errSinkNotFoundⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.errSinkNotFound.t go_uber_org.zap.errSinkNotFound.underlying := by
   solve_into_val_typed_struct
 
 instance errSinkNotFound_access_load_scheme (l : Loc) (v : go_uber_org.zap.errSinkNotFound.t) (dq : DFrac) :
@@ -655,7 +655,7 @@ instance nopCloserSink_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nopCloserSink_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.nopCloserSink.t go_uber_org.zap.«nopCloserSinkⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.nopCloserSink.t go_uber_org.zap.nopCloserSink.underlying := by
   solve_into_val_typed_struct
 
 instance nopCloserSink_access_load_WriteSyncer (l : Loc) (v : go_uber_org.zap.nopCloserSink.t) (dq : DFrac) :
@@ -690,7 +690,7 @@ instance sinkRegistry_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance sinkRegistry_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.sinkRegistry.t go_uber_org.zap.«sinkRegistryⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.sinkRegistry.t go_uber_org.zap.sinkRegistry.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -714,7 +714,7 @@ instance SugaredLogger_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SugaredLogger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.SugaredLogger.t go_uber_org.zap.«SugaredLoggerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.SugaredLogger.t go_uber_org.zap.SugaredLogger.underlying := by
   solve_into_val_typed_struct
 
 instance SugaredLogger_access_load_base (l : Loc) (v : go_uber_org.zap.SugaredLogger.t) (dq : DFrac) :
@@ -756,7 +756,7 @@ instance invalidPair_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance invalidPair_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.invalidPair.t go_uber_org.zap.«invalidPairⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.invalidPair.t go_uber_org.zap.invalidPair.underlying := by
   solve_into_val_typed_struct
 
 instance invalidPair_access_load_position (l : Loc) (v : go_uber_org.zap.invalidPair.t) (dq : DFrac) :

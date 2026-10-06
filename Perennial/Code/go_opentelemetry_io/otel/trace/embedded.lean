@@ -35,7 +35,7 @@ attribute [irreducible] Span
 instance info' : PkgInfo pkg_id.go_opentelemetry_io.otel.trace.embedded where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -48,42 +48,42 @@ namespace TracerProvider
 abbrev t [FfiSyntax] : Type := interface.t
 end TracerProvider
 
-@[reducible] def «TracerProviderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def TracerProvider.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"tracerProvider" (go.signature.Signature [] false []))])
 
-class TracerProvider_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TracerProvider_underlying : go.UnderlyingDirectedEq TracerProvider «TracerProviderⁱᵐᵖˡ»
+class TracerProvider.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq TracerProvider TracerProvider.underlying
 
-attribute [instance] TracerProvider_Assumptions.TracerProvider_underlying
+attribute [instance] TracerProvider.TypeAssumptions.underlying
 
 namespace Tracer
 abbrev t [FfiSyntax] : Type := interface.t
 end Tracer
 
-@[reducible] def «Tracerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Tracer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"tracer" (go.signature.Signature [] false []))])
 
-class Tracer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Tracer_underlying : go.UnderlyingDirectedEq Tracer «Tracerⁱᵐᵖˡ»
+class Tracer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Tracer Tracer.underlying
 
-attribute [instance] Tracer_Assumptions.Tracer_underlying
+attribute [instance] Tracer.TypeAssumptions.underlying
 
 namespace Span
 abbrev t [FfiSyntax] : Type := interface.t
 end Span
 
-@[reducible] def «Spanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Span.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"span" (go.signature.Signature [] false []))])
 
-class Span_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Span_underlying : go.UnderlyingDirectedEq Span «Spanⁱᵐᵖˡ»
+class Span.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Span Span.underlying
 
-attribute [instance] Span_Assumptions.Span_underlying
+attribute [instance] Span.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TracerProvider_instance : TracerProvider_Assumptions
-  Tracer_instance : Tracer_Assumptions
-  Span_instance : Span_Assumptions
+  TracerProvider_instance : TracerProvider.TypeAssumptions
+  Tracer_instance : Tracer.TypeAssumptions
+  Span_instance : Span.TypeAssumptions
 
 attribute [instance] Assumptions.TracerProvider_instance
   Assumptions.Tracer_instance

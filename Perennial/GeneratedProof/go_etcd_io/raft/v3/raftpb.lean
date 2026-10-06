@@ -34,7 +34,7 @@ instance Entry_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Entry_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.Entry.t go_etcd_io.raft.v3.raftpb.«Entryⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.Entry.t go_etcd_io.raft.v3.raftpb.Entry.underlying := by
   solve_into_val_typed_struct
 
 instance Entry_access_load_Term (l : Loc) (v : go_etcd_io.raft.v3.raftpb.Entry.t) (dq : DFrac) :
@@ -126,7 +126,7 @@ instance ConfState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ConfState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.ConfState.t go_etcd_io.raft.v3.raftpb.«ConfStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.ConfState.t go_etcd_io.raft.v3.raftpb.ConfState.underlying := by
   solve_into_val_typed_struct
 
 instance ConfState_access_load_Voters (l : Loc) (v : go_etcd_io.raft.v3.raftpb.ConfState.t) (dq : DFrac) :
@@ -232,7 +232,7 @@ instance SnapshotMetadata_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SnapshotMetadata_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.SnapshotMetadata.t go_etcd_io.raft.v3.raftpb.«SnapshotMetadataⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.SnapshotMetadata.t go_etcd_io.raft.v3.raftpb.SnapshotMetadata.underlying := by
   solve_into_val_typed_struct
 
 instance SnapshotMetadata_access_load_ConfState (l : Loc) (v : go_etcd_io.raft.v3.raftpb.SnapshotMetadata.t) (dq : DFrac) :
@@ -305,7 +305,7 @@ instance Snapshot_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Snapshot_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.Snapshot.t go_etcd_io.raft.v3.raftpb.«Snapshotⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.Snapshot.t go_etcd_io.raft.v3.raftpb.Snapshot.underlying := by
   solve_into_val_typed_struct
 
 instance Snapshot_access_load_Data (l : Loc) (v : go_etcd_io.raft.v3.raftpb.Snapshot.t) (dq : DFrac) :
@@ -374,7 +374,7 @@ instance Message_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Message_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.Message.t go_etcd_io.raft.v3.raftpb.«Messageⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.Message.t go_etcd_io.raft.v3.raftpb.Message.underlying := by
   solve_into_val_typed_struct
 
 instance Message_access_load_Type (l : Loc) (v : go_etcd_io.raft.v3.raftpb.Message.t) (dq : DFrac) :
@@ -624,7 +624,7 @@ instance HardState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance HardState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.HardState.t go_etcd_io.raft.v3.raftpb.«HardStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.HardState.t go_etcd_io.raft.v3.raftpb.HardState.underlying := by
   solve_into_val_typed_struct
 
 instance HardState_access_load_Term (l : Loc) (v : go_etcd_io.raft.v3.raftpb.HardState.t) (dq : DFrac) :
@@ -699,7 +699,7 @@ instance ConfChange_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ConfChange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.ConfChange.t go_etcd_io.raft.v3.raftpb.«ConfChangeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.ConfChange.t go_etcd_io.raft.v3.raftpb.ConfChange.underlying := by
   solve_into_val_typed_struct
 
 instance ConfChange_access_load_Type (l : Loc) (v : go_etcd_io.raft.v3.raftpb.ConfChange.t) (dq : DFrac) :
@@ -788,7 +788,7 @@ instance ConfChangeSingle_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ConfChangeSingle_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.ConfChangeSingle.t go_etcd_io.raft.v3.raftpb.«ConfChangeSingleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.ConfChangeSingle.t go_etcd_io.raft.v3.raftpb.ConfChangeSingle.underlying := by
   solve_into_val_typed_struct
 
 instance ConfChangeSingle_access_load_Type (l : Loc) (v : go_etcd_io.raft.v3.raftpb.ConfChangeSingle.t) (dq : DFrac) :
@@ -846,7 +846,7 @@ instance ConfChangeV2_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ConfChangeV2_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.ConfChangeV2.t go_etcd_io.raft.v3.raftpb.«ConfChangeV2ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftpb.ConfChangeV2.t go_etcd_io.raft.v3.raftpb.ConfChangeV2.underlying := by
   solve_into_val_typed_struct
 
 instance ConfChangeV2_access_load_Transition (l : Loc) (v : go_etcd_io.raft.v3.raftpb.ConfChangeV2.t) (dq : DFrac) :

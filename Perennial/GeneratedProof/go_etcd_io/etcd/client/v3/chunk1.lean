@@ -34,7 +34,7 @@ instance authClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance authClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.authClient.t go_etcd_io.etcd.client.v3.«authClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.authClient.t go_etcd_io.etcd.client.v3.authClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -53,7 +53,7 @@ instance Client_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Client_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Client.t go_etcd_io.etcd.client.v3.«Clientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Client.t go_etcd_io.etcd.client.v3.Client.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -72,7 +72,7 @@ instance cluster_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance cluster_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.cluster.t go_etcd_io.etcd.client.v3.«clusterⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.cluster.t go_etcd_io.etcd.client.v3.cluster.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -97,7 +97,7 @@ instance CompactOp_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CompactOp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.CompactOp.t go_etcd_io.etcd.client.v3.«CompactOpⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.CompactOp.t go_etcd_io.etcd.client.v3.CompactOp.underlying := by
   solve_into_val_typed_struct
 
 instance CompactOp_access_load_revision (l : Loc) (v : go_etcd_io.etcd.client.v3.CompactOp.t) (dq : DFrac) :
@@ -148,7 +148,7 @@ instance Config_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Config_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Config.t go_etcd_io.etcd.client.v3.«Configⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Config.t go_etcd_io.etcd.client.v3.Config.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -180,7 +180,7 @@ instance ConfigSpec_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ConfigSpec_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.ConfigSpec.t go_etcd_io.etcd.client.v3.«ConfigSpecⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.ConfigSpec.t go_etcd_io.etcd.client.v3.ConfigSpec.underlying := by
   solve_into_val_typed_struct
 
 instance ConfigSpec_access_load_Endpoints (l : Loc) (v : go_etcd_io.etcd.client.v3.ConfigSpec.t) (dq : DFrac) :
@@ -353,7 +353,7 @@ instance SecureConfig_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SecureConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.SecureConfig.t go_etcd_io.etcd.client.v3.«SecureConfigⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.SecureConfig.t go_etcd_io.etcd.client.v3.SecureConfig.underlying := by
   solve_into_val_typed_struct
 
 instance SecureConfig_access_load_Cert (l : Loc) (v : go_etcd_io.etcd.client.v3.SecureConfig.t) (dq : DFrac) :
@@ -475,7 +475,7 @@ instance AuthConfig_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.AuthConfig.t go_etcd_io.etcd.client.v3.«AuthConfigⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.AuthConfig.t go_etcd_io.etcd.client.v3.AuthConfig.underlying := by
   solve_into_val_typed_struct
 
 instance AuthConfig_access_load_Username (l : Loc) (v : go_etcd_io.etcd.client.v3.AuthConfig.t) (dq : DFrac) :
@@ -550,7 +550,7 @@ instance OpResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance OpResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.OpResponse.t go_etcd_io.etcd.client.v3.«OpResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.OpResponse.t go_etcd_io.etcd.client.v3.OpResponse.underlying := by
   solve_into_val_typed_struct
 
 instance OpResponse_access_load_put (l : Loc) (v : go_etcd_io.etcd.client.v3.OpResponse.t) (dq : DFrac) :
@@ -633,7 +633,7 @@ instance kv_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance kv_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.kv.t go_etcd_io.etcd.client.v3.«kvⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.kv.t go_etcd_io.etcd.client.v3.kv.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -658,7 +658,7 @@ instance LeaseLeasesResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseLeasesResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseLeasesResponse.t go_etcd_io.etcd.client.v3.«LeaseLeasesResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.LeaseLeasesResponse.t go_etcd_io.etcd.client.v3.LeaseLeasesResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseLeasesResponse_access_load_ResponseHeader (l : Loc) (v : go_etcd_io.etcd.client.v3.LeaseLeasesResponse.t) (dq : DFrac) :
@@ -714,7 +714,7 @@ instance ErrKeepAliveHalted_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ErrKeepAliveHalted_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.ErrKeepAliveHalted.t go_etcd_io.etcd.client.v3.«ErrKeepAliveHaltedⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.ErrKeepAliveHalted.t go_etcd_io.etcd.client.v3.ErrKeepAliveHalted.underlying := by
   solve_into_val_typed_struct
 
 instance ErrKeepAliveHalted_access_load_Reason (l : Loc) (v : go_etcd_io.etcd.client.v3.ErrKeepAliveHalted.t) (dq : DFrac) :
@@ -749,7 +749,7 @@ instance lessor_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance lessor_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.lessor.t go_etcd_io.etcd.client.v3.«lessorⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.lessor.t go_etcd_io.etcd.client.v3.lessor.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -777,7 +777,7 @@ instance keepAlive_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance keepAlive_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.keepAlive.t go_etcd_io.etcd.client.v3.«keepAliveⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.keepAlive.t go_etcd_io.etcd.client.v3.keepAlive.underlying := by
   solve_into_val_typed_struct
 
 instance keepAlive_access_load_chs (l : Loc) (v : go_etcd_io.etcd.client.v3.keepAlive.t) (dq : DFrac) :
@@ -880,7 +880,7 @@ instance keepAliveCtxKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance keepAliveCtxKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.keepAliveCtxKey.t go_etcd_io.etcd.client.v3.«keepAliveCtxKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.keepAliveCtxKey.t go_etcd_io.etcd.client.v3.keepAliveCtxKey.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -906,7 +906,7 @@ instance SnapshotResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SnapshotResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.SnapshotResponse.t go_etcd_io.etcd.client.v3.«SnapshotResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.SnapshotResponse.t go_etcd_io.etcd.client.v3.SnapshotResponse.underlying := by
   solve_into_val_typed_struct
 
 instance SnapshotResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.client.v3.SnapshotResponse.t) (dq : DFrac) :
@@ -973,7 +973,7 @@ instance maintenance_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance maintenance_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.maintenance.t go_etcd_io.etcd.client.v3.«maintenanceⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.maintenance.t go_etcd_io.etcd.client.v3.maintenance.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -998,7 +998,7 @@ instance snapshotReadCloser_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance snapshotReadCloser_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.snapshotReadCloser.t go_etcd_io.etcd.client.v3.«snapshotReadCloserⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.snapshotReadCloser.t go_etcd_io.etcd.client.v3.snapshotReadCloser.underlying := by
   solve_into_val_typed_struct
 
 instance snapshotReadCloser_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.snapshotReadCloser.t) (dq : DFrac) :
@@ -1054,7 +1054,7 @@ instance retryKVClient_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance retryKVClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryKVClient.t go_etcd_io.etcd.client.v3.«retryKVClientⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryKVClient.t go_etcd_io.etcd.client.v3.retryKVClient.underlying := by
   solve_into_val_typed_struct
 
 instance retryKVClient_access_load_kc (l : Loc) (v : go_etcd_io.etcd.client.v3.retryKVClient.t) (dq : DFrac) :
@@ -1094,7 +1094,7 @@ instance retryLeaseClient_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance retryLeaseClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryLeaseClient.t go_etcd_io.etcd.client.v3.«retryLeaseClientⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryLeaseClient.t go_etcd_io.etcd.client.v3.retryLeaseClient.underlying := by
   solve_into_val_typed_struct
 
 instance retryLeaseClient_access_load_lc (l : Loc) (v : go_etcd_io.etcd.client.v3.retryLeaseClient.t) (dq : DFrac) :
@@ -1134,7 +1134,7 @@ instance retryClusterClient_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance retryClusterClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryClusterClient.t go_etcd_io.etcd.client.v3.«retryClusterClientⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryClusterClient.t go_etcd_io.etcd.client.v3.retryClusterClient.underlying := by
   solve_into_val_typed_struct
 
 instance retryClusterClient_access_load_cc (l : Loc) (v : go_etcd_io.etcd.client.v3.retryClusterClient.t) (dq : DFrac) :
@@ -1174,7 +1174,7 @@ instance retryMaintenanceClient_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance retryMaintenanceClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryMaintenanceClient.t go_etcd_io.etcd.client.v3.«retryMaintenanceClientⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryMaintenanceClient.t go_etcd_io.etcd.client.v3.retryMaintenanceClient.underlying := by
   solve_into_val_typed_struct
 
 instance retryMaintenanceClient_access_load_mc (l : Loc) (v : go_etcd_io.etcd.client.v3.retryMaintenanceClient.t) (dq : DFrac) :
@@ -1214,7 +1214,7 @@ instance retryAuthClient_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance retryAuthClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryAuthClient.t go_etcd_io.etcd.client.v3.«retryAuthClientⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryAuthClient.t go_etcd_io.etcd.client.v3.retryAuthClient.underlying := by
   solve_into_val_typed_struct
 
 instance retryAuthClient_access_load_ac (l : Loc) (v : go_etcd_io.etcd.client.v3.retryAuthClient.t) (dq : DFrac) :
@@ -1249,7 +1249,7 @@ instance serverStreamingRetryingStream_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance serverStreamingRetryingStream_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.serverStreamingRetryingStream.t go_etcd_io.etcd.client.v3.«serverStreamingRetryingStreamⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.serverStreamingRetryingStream.t go_etcd_io.etcd.client.v3.serverStreamingRetryingStream.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1268,7 +1268,7 @@ instance retryOption_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance retryOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryOption.t go_etcd_io.etcd.client.v3.«retryOptionⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryOption.t go_etcd_io.etcd.client.v3.retryOption.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1287,7 +1287,7 @@ instance txn_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance txn_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.txn.t go_etcd_io.etcd.client.v3.«txnⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.txn.t go_etcd_io.etcd.client.v3.txn.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1317,7 +1317,7 @@ instance WatchResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.WatchResponse.t go_etcd_io.etcd.client.v3.«WatchResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.WatchResponse.t go_etcd_io.etcd.client.v3.WatchResponse.underlying := by
   solve_into_val_typed_struct
 
 instance WatchResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.client.v3.WatchResponse.t) (dq : DFrac) :

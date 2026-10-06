@@ -32,7 +32,7 @@ instance EncoderID_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EncoderID_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».EncoderID.t go_opentelemetry_io.otel.«attribute».«EncoderIDⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».EncoderID.t go_opentelemetry_io.otel.«attribute».EncoderID.underlying := by
   solve_into_val_typed_struct
 
 instance EncoderID_access_load_value (l : Loc) (v : go_opentelemetry_io.otel.«attribute».EncoderID.t) (dq : DFrac) :
@@ -72,7 +72,7 @@ instance defaultAttrEncoder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance defaultAttrEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».defaultAttrEncoder.t go_opentelemetry_io.otel.«attribute».«defaultAttrEncoderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».defaultAttrEncoder.t go_opentelemetry_io.otel.«attribute».defaultAttrEncoder.underlying := by
   solve_into_val_typed_struct
 
 instance defaultAttrEncoder_access_load_pool (l : Loc) (v : go_opentelemetry_io.otel.«attribute».defaultAttrEncoder.t) (dq : DFrac) :
@@ -113,7 +113,7 @@ instance Iterator_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Iterator_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».Iterator.t go_opentelemetry_io.otel.«attribute».«Iteratorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».Iterator.t go_opentelemetry_io.otel.«attribute».Iterator.underlying := by
   solve_into_val_typed_struct
 
 instance Iterator_access_load_storage (l : Loc) (v : go_opentelemetry_io.otel.«attribute».Iterator.t) (dq : DFrac) :
@@ -172,7 +172,7 @@ instance Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».Value.t go_opentelemetry_io.otel.«attribute».«Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».Value.t go_opentelemetry_io.otel.«attribute».Value.underlying := by
   solve_into_val_typed_struct
 
 instance Value_access_load_vtype (l : Loc) (v : go_opentelemetry_io.otel.«attribute».Value.t) (dq : DFrac) :
@@ -261,7 +261,7 @@ instance KeyValue_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance KeyValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».KeyValue.t go_opentelemetry_io.otel.«attribute».«KeyValueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».KeyValue.t go_opentelemetry_io.otel.«attribute».KeyValue.underlying := by
   solve_into_val_typed_struct
 
 instance KeyValue_access_load_Key (l : Loc) (v : go_opentelemetry_io.otel.«attribute».KeyValue.t) (dq : DFrac) :
@@ -319,7 +319,7 @@ instance oneIterator_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance oneIterator_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».oneIterator.t go_opentelemetry_io.otel.«attribute».«oneIteratorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».oneIterator.t go_opentelemetry_io.otel.«attribute».oneIterator.underlying := by
   solve_into_val_typed_struct
 
 instance oneIterator_access_load_iter (l : Loc) (v : go_opentelemetry_io.otel.«attribute».oneIterator.t) (dq : DFrac) :
@@ -393,7 +393,7 @@ instance MergeIterator_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MergeIterator_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».MergeIterator.t go_opentelemetry_io.otel.«attribute».«MergeIteratorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».MergeIterator.t go_opentelemetry_io.otel.«attribute».MergeIterator.underlying := by
   solve_into_val_typed_struct
 
 instance MergeIterator_access_load_one (l : Loc) (v : go_opentelemetry_io.otel.«attribute».MergeIterator.t) (dq : DFrac) :
@@ -466,7 +466,7 @@ instance Set'_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Set'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».Set'.t go_opentelemetry_io.otel.«attribute».«Set'ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».Set'.t go_opentelemetry_io.otel.«attribute».Set'.underlying := by
   solve_into_val_typed_struct
 
 instance Set'_access_load_hash (l : Loc) (v : go_opentelemetry_io.otel.«attribute».Set'.t) (dq : DFrac) :
@@ -522,7 +522,7 @@ instance Distinct_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Distinct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».Distinct.t go_opentelemetry_io.otel.«attribute».«Distinctⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».Distinct.t go_opentelemetry_io.otel.«attribute».Distinct.underlying := by
   solve_into_val_typed_struct
 
 instance Distinct_access_load_hash (l : Loc) (v : go_opentelemetry_io.otel.«attribute».Distinct.t) (dq : DFrac) :
@@ -561,7 +561,7 @@ instance unknownValueType_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance unknownValueType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».unknownValueType.t go_opentelemetry_io.otel.«attribute».«unknownValueTypeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.«attribute».unknownValueType.t go_opentelemetry_io.otel.«attribute».unknownValueType.underlying := by
   solve_into_val_typed_struct
 
 end def_

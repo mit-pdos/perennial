@@ -34,7 +34,7 @@ instance deadlineExceededError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance deadlineExceededError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.deadlineExceededError.t context.«deadlineExceededErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.deadlineExceededError.t context.deadlineExceededError.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -57,7 +57,7 @@ instance emptyCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance emptyCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.emptyCtx.t context.«emptyCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.emptyCtx.t context.emptyCtx.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -81,7 +81,7 @@ instance backgroundCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance backgroundCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.backgroundCtx.t context.«backgroundCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.backgroundCtx.t context.backgroundCtx.underlying := by
   solve_into_val_typed_struct
 
 instance backgroundCtx_access_load_emptyCtx (l : Loc) (v : context.backgroundCtx.t) (dq : DFrac) :
@@ -121,7 +121,7 @@ instance todoCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance todoCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.todoCtx.t context.«todoCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.todoCtx.t context.todoCtx.underlying := by
   solve_into_val_typed_struct
 
 instance todoCtx_access_load_emptyCtx (l : Loc) (v : context.todoCtx.t) (dq : DFrac) :
@@ -166,7 +166,7 @@ instance cancelCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance cancelCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.cancelCtx.t context.«cancelCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.cancelCtx.t context.cancelCtx.underlying := by
   solve_into_val_typed_struct
 
 instance cancelCtx_access_load_Context (l : Loc) (v : context.cancelCtx.t) (dq : DFrac) :
@@ -288,7 +288,7 @@ instance afterFuncCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance afterFuncCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.afterFuncCtx.t context.«afterFuncCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.afterFuncCtx.t context.afterFuncCtx.underlying := by
   solve_into_val_typed_struct
 
 instance afterFuncCtx_access_load_cancelCtx (l : Loc) (v : context.afterFuncCtx.t) (dq : DFrac) :
@@ -361,7 +361,7 @@ instance stopCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stopCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.stopCtx.t context.«stopCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.stopCtx.t context.stopCtx.underlying := by
   solve_into_val_typed_struct
 
 instance stopCtx_access_load_Context (l : Loc) (v : context.stopCtx.t) (dq : DFrac) :
@@ -417,7 +417,7 @@ instance withoutCancelCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance withoutCancelCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.withoutCancelCtx.t context.«withoutCancelCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.withoutCancelCtx.t context.withoutCancelCtx.underlying := by
   solve_into_val_typed_struct
 
 instance withoutCancelCtx_access_load_c (l : Loc) (v : context.withoutCancelCtx.t) (dq : DFrac) :
@@ -459,7 +459,7 @@ instance timerCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timerCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.timerCtx.t context.«timerCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.timerCtx.t context.timerCtx.underlying := by
   solve_into_val_typed_struct
 
 instance timerCtx_access_load_cancelCtx (l : Loc) (v : context.timerCtx.t) (dq : DFrac) :
@@ -533,7 +533,7 @@ instance valueCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance valueCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.valueCtx.t context.«valueCtxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) context.valueCtx.t context.valueCtx.underlying := by
   solve_into_val_typed_struct
 
 instance valueCtx_access_load_Context (l : Loc) (v : context.valueCtx.t) (dq : DFrac) :

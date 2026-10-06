@@ -38,7 +38,7 @@ instance loggableValueCompare_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance loggableValueCompare_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.loggableValueCompare.t go_etcd_io.etcd.api.v3.etcdserverpb.«loggableValueCompareⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.loggableValueCompare.t go_etcd_io.etcd.api.v3.etcdserverpb.loggableValueCompare.underlying := by
   solve_into_val_typed_struct
 
 instance loggableValueCompare_access_load_Result (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.loggableValueCompare.t) (dq : DFrac) :
@@ -157,7 +157,7 @@ instance RangeRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RangeRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RangeRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«RangeRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RangeRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.RangeRequest.underlying := by
   solve_into_val_typed_struct
 
 instance RangeRequest_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RangeRequest.t) (dq : DFrac) :
@@ -440,7 +440,7 @@ instance RequestOp_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RequestOp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp.t go_etcd_io.etcd.api.v3.etcdserverpb.«RequestOpⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp.t go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp.underlying := by
   solve_into_val_typed_struct
 
 instance RequestOp_access_load_Request (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RequestOp.t) (dq : DFrac) :
@@ -531,7 +531,7 @@ instance ResponseOp_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ResponseOp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp.t go_etcd_io.etcd.api.v3.etcdserverpb.«ResponseOpⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp.t go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp.underlying := by
   solve_into_val_typed_struct
 
 instance ResponseOp_access_load_Response (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseOp.t) (dq : DFrac) :
@@ -626,7 +626,7 @@ instance Compare_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Compare_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare.t go_etcd_io.etcd.api.v3.etcdserverpb.«Compareⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Compare.t go_etcd_io.etcd.api.v3.etcdserverpb.Compare.underlying := by
   solve_into_val_typed_struct
 
 instance Compare_access_load_Result (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Compare.t) (dq : DFrac) :
@@ -781,7 +781,7 @@ instance WatchRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance WatchRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest.underlying := by
   solve_into_val_typed_struct
 
 instance WatchRequest_access_load_RequestUnion (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.WatchRequest.t) (dq : DFrac) :
@@ -874,7 +874,7 @@ instance AlarmRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AlarmRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AlarmRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«AlarmRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AlarmRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.AlarmRequest.underlying := by
   solve_into_val_typed_struct
 
 instance AlarmRequest_access_load_Action (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AlarmRequest.t) (dq : DFrac) :
@@ -998,7 +998,7 @@ instance AlarmMember_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AlarmMember_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember.t go_etcd_io.etcd.api.v3.etcdserverpb.«AlarmMemberⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember.t go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember.underlying := by
   solve_into_val_typed_struct
 
 instance AlarmMember_access_load_MemberID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember.t) (dq : DFrac) :
@@ -1106,7 +1106,7 @@ instance DowngradeRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance DowngradeRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DowngradeRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«DowngradeRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DowngradeRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.DowngradeRequest.underlying := by
   solve_into_val_typed_struct
 
 instance DowngradeRequest_access_load_Action (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DowngradeRequest.t) (dq : DFrac) :

@@ -43,7 +43,7 @@ instance mcentral_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance mcentral_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mcentral.t runtime.«mcentralⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.mcentral.t runtime.mcentral.underlying := by
   solve_into_val_typed_struct
 
 instance mcentral_access_load__0 (l : Loc) (v : runtime.mcentral.t) (dq : DFrac) :
@@ -133,7 +133,7 @@ instance stackWorkBuf_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stackWorkBuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stackWorkBuf.t runtime.«stackWorkBufⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.stackWorkBuf.t runtime.stackWorkBuf.underlying := by
   solve_into_val_typed_struct
 
 instance stackWorkBuf_access_load__0 (l : Loc) (v : runtime.stackWorkBuf.t) (dq : DFrac) :
@@ -207,7 +207,7 @@ instance stackObjectBuf_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stackObjectBuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stackObjectBuf.t runtime.«stackObjectBufⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.stackObjectBuf.t runtime.stackObjectBuf.underlying := by
   solve_into_val_typed_struct
 
 instance stackObjectBuf_access_load__0 (l : Loc) (v : runtime.stackObjectBuf.t) (dq : DFrac) :
@@ -280,7 +280,7 @@ instance spanSetBlock_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance spanSetBlock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.spanSetBlock.t runtime.«spanSetBlockⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.spanSetBlock.t runtime.spanSetBlock.underlying := by
   solve_into_val_typed_struct
 
 instance spanSetBlock_access_load_spanSetBlockHeader2 (l : Loc) (v : runtime.spanSetBlock.t) (dq : DFrac) :
@@ -353,7 +353,7 @@ instance mstats_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance mstats_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mstats.t runtime.«mstatsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.mstats.t runtime.mstats.underlying := by
   solve_into_val_typed_struct
 
 instance mstats_access_load_heapStats (l : Loc) (v : runtime.mstats.t) (dq : DFrac) :
@@ -683,7 +683,7 @@ instance pollDesc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pollDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pollDesc.t runtime.«pollDescⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.pollDesc.t runtime.pollDesc.underlying := by
   solve_into_val_typed_struct
 
 instance pollDesc_access_load__0 (l : Loc) (v : runtime.pollDesc.t) (dq : DFrac) :
@@ -1022,7 +1022,7 @@ instance synctestBubble_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance synctestBubble_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.synctestBubble.t runtime.«synctestBubbleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.synctestBubble.t runtime.synctestBubble.underlying := by
   solve_into_val_typed_struct
 
 instance synctestBubble_access_load_mu (l : Loc) (v : runtime.synctestBubble.t) (dq : DFrac) :
@@ -1240,7 +1240,7 @@ instance timeTimer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timeTimer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.timeTimer.t runtime.«timeTimerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.timeTimer.t runtime.timeTimer.underlying := by
   solve_into_val_typed_struct
 
 instance timeTimer_access_load_c (l : Loc) (v : runtime.timeTimer.t) (dq : DFrac) :

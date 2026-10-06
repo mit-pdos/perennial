@@ -30,7 +30,7 @@ instance nih_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nih_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.sys.nih.t internal.runtime.sys.«nihⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.sys.nih.t internal.runtime.sys.nih.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -54,7 +54,7 @@ instance NotInHeap_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance NotInHeap_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.sys.NotInHeap.t internal.runtime.sys.«NotInHeapⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.sys.NotInHeap.t internal.runtime.sys.NotInHeap.underlying := by
   solve_into_val_typed_struct
 
 instance NotInHeap_access_load__0 (l : Loc) (v : internal.runtime.sys.NotInHeap.t) (dq : DFrac) :

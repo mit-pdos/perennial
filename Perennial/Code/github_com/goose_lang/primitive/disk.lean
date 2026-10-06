@@ -37,7 +37,7 @@ attribute [irreducible] MemDisk
 @[reducible] def Block [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
-axiom «MemDiskⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom MemDisk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 noncomputable def implicitDisk [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.implicitDisk"
@@ -69,7 +69,7 @@ noncomputable def NewMemDisk [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive.disk where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -77,21 +77,21 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val _'init) (Val #())))))
+  (App (Val «_».init) (Val #())))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))))
+  (App (Val «_».init) (Val #()))))))))
 
 namespace Disk
 abbrev t [FfiSyntax] : Type := interface.t
 end Disk
 
-@[reducible] def «Diskⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Disk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Barrier" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [go.uint64] false [Block])), (go.InterfaceElem.MethodElem go!"ReadTo" (go.signature.Signature [go.uint64, Block] false [])), (go.InterfaceElem.MethodElem go!"Size" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [go.uint64, Block] false []))])
 
-class Disk_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Disk_underlying : go.UnderlyingDirectedEq Disk «Diskⁱᵐᵖˡ»
+class Disk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Disk Disk.underlying
 
-attribute [instance] Disk_Assumptions.Disk_underlying
+attribute [instance] Disk.TypeAssumptions.underlying
 
 namespace FileDisk
 structure t [FfiSyntax] where
@@ -103,34 +103,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end FileDisk
 
-@[reducible] def FileDisk'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def FileDisk.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"fd" go.int),
 (go.field_decl.FieldDecl go!"numBlocks" go.uint64)]
 
-@[irreducible] def FileDisk'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  FileDisk'fds_unsealed
+@[irreducible] def FileDisk.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  FileDisk.fieldsUnsealed
 
 instance equals_unfold_FileDisk [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold FileDisk'fds FileDisk'fds_unsealed :=
-  ⟨by unfold FileDisk'fds; rfl⟩
+    EqualsUnfold FileDisk.fields FileDisk.fieldsUnsealed :=
+  ⟨by unfold FileDisk.fields; rfl⟩
 
-@[reducible] def «FileDiskⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType FileDisk'fds)
+@[reducible] def FileDisk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType FileDisk.fields)
 
-class FileDisk_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  FileDisk_type_repr : go.TypeReprUnderlying «FileDiskⁱᵐᵖˡ» FileDisk.t
-  FileDisk_underlying : go.UnderlyingDirectedEq FileDisk «FileDiskⁱᵐᵖˡ»
-  FileDisk_get_fd : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet «FileDiskⁱᵐᵖˡ» go!"fd") #x (Val #(x.fd'))
-  FileDisk_set_fd : ∀ (x : FileDisk.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «FileDiskⁱᵐᵖˡ» go!"fd") (PairV #x #y) (Val #(({ x with fd' := y } : FileDisk.t)))
-  FileDisk_get_numBlocks : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet «FileDiskⁱᵐᵖˡ» go!"numBlocks") #x (Val #(x.numBlocks'))
-  FileDisk_set_numBlocks : ∀ (x : FileDisk.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «FileDiskⁱᵐᵖˡ» go!"numBlocks") (PairV #x #y) (Val #(({ x with numBlocks' := y } : FileDisk.t)))
+class FileDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying FileDisk.underlying FileDisk.t
+  underlying : go.UnderlyingDirectedEq FileDisk FileDisk.underlying
+  get_fd : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"fd") #x (Val #(x.fd'))
+  set_fd : ∀ (x : FileDisk.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"fd") (PairV #x #y) (Val #(({ x with fd' := y } : FileDisk.t)))
+  get_numBlocks : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"numBlocks") #x (Val #(x.numBlocks'))
+  set_numBlocks : ∀ (x : FileDisk.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"numBlocks") (PairV #x #y) (Val #(({ x with numBlocks' := y } : FileDisk.t)))
 
-attribute [instance] FileDisk_Assumptions.FileDisk_type_repr
-  FileDisk_Assumptions.FileDisk_underlying
-  FileDisk_Assumptions.FileDisk_get_fd
-  FileDisk_Assumptions.FileDisk_set_fd
-  FileDisk_Assumptions.FileDisk_get_numBlocks
-  FileDisk_Assumptions.FileDisk_set_numBlocks
+attribute [instance] FileDisk.TypeAssumptions.type_repr
+  FileDisk.TypeAssumptions.underlying
+  FileDisk.TypeAssumptions.get_fd
+  FileDisk.TypeAssumptions.set_fd
+  FileDisk.TypeAssumptions.get_numBlocks
+  FileDisk.TypeAssumptions.set_numBlocks
 
 namespace MemDisk
 axiom t : Type
@@ -138,24 +138,24 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end MemDisk
 
-class MemDisk_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  MemDisk_type_repr : go.TypeReprUnderlying «MemDiskⁱᵐᵖˡ» MemDisk.t
-  MemDisk_underlying : go.UnderlyingDirectedEq MemDisk «MemDiskⁱᵐᵖˡ»
-  «MemDiskⁱᵐᵖˡ_underlying» : go.IsUnderlying «MemDiskⁱᵐᵖˡ» «MemDiskⁱᵐᵖˡ»
+class MemDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying MemDisk.underlying MemDisk.t
+  underlying : go.UnderlyingDirectedEq MemDisk MemDisk.underlying
+  isUnderlying : go.IsUnderlying MemDisk.underlying MemDisk.underlying
 
-attribute [instance] MemDisk_Assumptions.MemDisk_type_repr
-  MemDisk_Assumptions.MemDisk_underlying
-  MemDisk_Assumptions.«MemDiskⁱᵐᵖˡ_underlying»
+attribute [instance] MemDisk.TypeAssumptions.type_repr
+  MemDisk.TypeAssumptions.underlying
+  MemDisk.TypeAssumptions.isUnderlying
 
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Disk_instance : Disk_Assumptions
-  FileDisk_instance : FileDisk_Assumptions
-  MemDisk_instance : MemDisk_Assumptions
-  Get_unfold : FuncUnfold Get [] «Getⁱᵐᵖˡ»
-  Read_unfold : FuncUnfold Read [] «Readⁱᵐᵖˡ»
-  Write_unfold : FuncUnfold Write [] «Writeⁱᵐᵖˡ»
-  Size_unfold : FuncUnfold Size [] «Sizeⁱᵐᵖˡ»
-  Barrier_unfold : FuncUnfold Barrier [] «Barrierⁱᵐᵖˡ»
+  Disk_instance : Disk.TypeAssumptions
+  FileDisk_instance : FileDisk.TypeAssumptions
+  MemDisk_instance : MemDisk.TypeAssumptions
+  Get_unfold : FuncUnfold Get [] Get.impl
+  Read_unfold : FuncUnfold Read [] Read.impl
+  Write_unfold : FuncUnfold Write [] Write.impl
+  Size_unfold : FuncUnfold Size [] Size.impl
+  Barrier_unfold : FuncUnfold Barrier [] Barrier.impl
 
 attribute [instance] Assumptions.Disk_instance
   Assumptions.FileDisk_instance

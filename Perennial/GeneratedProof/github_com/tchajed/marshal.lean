@@ -34,7 +34,7 @@ instance Enc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Enc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Enc.t github_com.tchajed.marshal.«Encⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Enc.t github_com.tchajed.marshal.Enc.underlying := by
   solve_into_val_typed_struct
 
 instance Enc_access_load_b (l : Loc) (v : github_com.tchajed.marshal.Enc.t) (dq : DFrac) :
@@ -91,7 +91,7 @@ instance Dec_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Dec_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Dec.t github_com.tchajed.marshal.«Decⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Dec.t github_com.tchajed.marshal.Dec.underlying := by
   solve_into_val_typed_struct
 
 instance Dec_access_load_b (l : Loc) (v : github_com.tchajed.marshal.Dec.t) (dq : DFrac) :

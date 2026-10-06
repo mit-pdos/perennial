@@ -83,7 +83,7 @@ noncomputable def NonBlockingSelect3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect3"
 
 /-- go: channel.go:31:6 -/
-noncomputable def «NewChannelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def NewChannel.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "cap"
   (App (Val exceptionDo)
   (Let "cap" (App (Val (GoInstruction (GoAlloc go.int))) (Var "cap"))
@@ -110,7 +110,7 @@ noncomputable def «NewChannelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
     statements simply call this in a for loop until it returns true.
 
     go: channel.go:46:22 -/
-noncomputable def «Channel__TrySendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "val"
   (Lam "blocking"
@@ -224,7 +224,7 @@ noncomputable def «Channel__TrySendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     c <- val
 
     go: channel.go:105:22 -/
-noncomputable def «Channel__Sendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "v"
   (App (Val exceptionDo)
@@ -259,7 +259,7 @@ noncomputable def «Channel__Sendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T 
     with another non-blocking send.
 
     go: channel.go:120:22 -/
-noncomputable def «Channel__TryReceiveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "blocking"
   (App (Val exceptionDo)
@@ -392,7 +392,7 @@ noncomputable def «Channel__TryReceiveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))))))
 
 /-- go: channel.go:189:22 -/
-noncomputable def «Channel__Receiveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -442,7 +442,7 @@ noncomputable def «Channel__Receiveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     the closer must still obtain the channel's lock
 
     go: channel.go:206:22 -/
-noncomputable def «Channel__tryCloseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -478,7 +478,7 @@ noncomputable def «Channel__tryCloseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
     close(c)
 
     go: channel.go:228:22 -/
-noncomputable def «Channel__Closeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -506,7 +506,7 @@ noncomputable def «Channel__Closeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T
     v := c<-
 
     go: channel.go:240:22 -/
-noncomputable def «Channel__ReceiveDiscardOkⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -535,7 +535,7 @@ noncomputable def «Channel__ReceiveDiscardOkⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
     semantics.
 
     go: channel.go:252:22 -/
-noncomputable def «Channel__Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -567,7 +567,7 @@ noncomputable def «Channel__Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T :
     cap(c)
 
     go: channel.go:266:22 -/
-noncomputable def «Channel__Capⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -584,7 +584,7 @@ noncomputable def «Channel__Capⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T :
 /-- c.Iter() returns an iterator that models a for range loop over the channel.
 
     go: channel.go:274:22 -/
-noncomputable def «Channel__Iterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Iter.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -643,7 +643,7 @@ noncomputable def «Channel__Iterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T 
     Returns (selected, received_value, ok)
 
     go: select.go:19:6 -/
-noncomputable def «NonBlockingSelect1ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def NonBlockingSelect1.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "ch"
   (Lam "dir"
   (Lam "value"
@@ -689,7 +689,7 @@ noncomputable def «NonBlockingSelect1ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
     Returns (caseIndex, received_value1, received_value2, ok)
 
     go: select.go:33:6 -/
-noncomputable def «BlockingSelect2ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
+noncomputable def BlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -782,7 +782,7 @@ noncomputable def «BlockingSelect2ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
     caseIndex = 2 means no selection
 
     go: select.go:73:6 -/
-noncomputable def «NonBlockingSelect2ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
+noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -938,7 +938,7 @@ noncomputable def «NonBlockingSelect2ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))))))))))))))))))))
 
 /-- go: select.go:135:6 -/
-noncomputable def «BlockingSelect3ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
+noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -1078,7 +1078,7 @@ noncomputable def «BlockingSelect3ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
     caseIndex = 3 means no selection
 
     go: select.go:189:6 -/
-noncomputable def «NonBlockingSelect3ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
+noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -1240,13 +1240,13 @@ namespace offerState
 abbrev t [FfiSyntax] : Type := w64
 end offerState
 
-@[reducible] def «offerStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def offerState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class offerState_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  offerState_underlying : go.UnderlyingDirectedEq offerState «offerStateⁱᵐᵖˡ»
+class offerState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq offerState offerState.underlying
 
-attribute [instance] offerState_Assumptions.offerState_underlying
+attribute [instance] offerState.TypeAssumptions.underlying
 
 namespace Channel
 structure t [FfiSyntax] (T : Type) where
@@ -1261,92 +1261,92 @@ instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Channel
 
-@[reducible] def Channel'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] def Channel.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"cap" go.int),
 (go.field_decl.FieldDecl go!"mu" (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)),
 (go.field_decl.FieldDecl go!"state" offerState),
 (go.field_decl.FieldDecl go!"buffer" (go.GoType.SliceType T)),
 (go.field_decl.FieldDecl go!"v" T)]
 
-@[irreducible] def Channel'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (Channel'fds_unsealed T)
+@[irreducible] def Channel.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (Channel.fieldsUnsealed T)
 
 instance equals_unfold_Channel [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (Channel'fds T) (Channel'fds_unsealed T) :=
-  ⟨by unfold Channel'fds; rfl⟩
+    EqualsUnfold (Channel.fields T) (Channel.fieldsUnsealed T) :=
+  ⟨by unfold Channel.fields; rfl⟩
 
-@[reducible] def «Channelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (Channel'fds T))
+@[reducible] def Channel.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (Channel.fields T))
 
-class Channel_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Channel_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («Channelⁱᵐᵖˡ» T) (Channel.t T')
-  Channel_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Channel T) («Channelⁱᵐᵖˡ» T)
-  Channel_get_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"cap") #x (Val #(x.cap'))
-  Channel_set_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : (Channel.t T'))))
-  Channel_get_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"mu") #x (Val #(x.mu'))
-  Channel_set_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (Channel.t T'))))
-  Channel_get_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"state") #x (Val #(x.state'))
-  Channel_set_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : offerState.t), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"state") (PairV #x #y) (Val #(({ x with state' := y } : (Channel.t T'))))
-  Channel_get_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"buffer") #x (Val #(x.buffer'))
-  Channel_set_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (Channel.t T'))))
-  Channel_get_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"v") #x (Val #(x.v'))
-  Channel_set_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Channel.t T'))))
-  Channel'ptr_Cap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Cap" («Channel__Capⁱᵐᵖˡ» T)
-  Channel'ptr_Close_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Close" («Channel__Closeⁱᵐᵖˡ» T)
-  Channel'ptr_Iter_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Iter" («Channel__Iterⁱᵐᵖˡ» T)
-  Channel'ptr_Len_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Len" («Channel__Lenⁱᵐᵖˡ» T)
-  Channel'ptr_Receive_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Receive" («Channel__Receiveⁱᵐᵖˡ» T)
-  Channel'ptr_ReceiveDiscardOk_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"ReceiveDiscardOk" («Channel__ReceiveDiscardOkⁱᵐᵖˡ» T)
-  Channel'ptr_Send_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Send" («Channel__Sendⁱᵐᵖˡ» T)
-  Channel'ptr_TryReceive_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"TryReceive" («Channel__TryReceiveⁱᵐᵖˡ» T)
-  Channel'ptr_TrySend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"TrySend" («Channel__TrySendⁱᵐᵖˡ» T)
-  Channel'ptr_tryClose_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"tryClose" («Channel__tryCloseⁱᵐᵖˡ» T)
+class Channel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Channel.underlying T) (Channel.t T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Channel T) (Channel.underlying T)
+  get_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"cap") #x (Val #(x.cap'))
+  set_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : (Channel.t T'))))
+  get_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (Channel.t T'))))
+  get_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"state") #x (Val #(x.state'))
+  set_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : offerState.t), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"state") (PairV #x #y) (Val #(({ x with state' := y } : (Channel.t T'))))
+  get_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"buffer") #x (Val #(x.buffer'))
+  set_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (Channel.t T'))))
+  get_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"v") #x (Val #(x.v'))
+  set_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Channel.t T'))))
+  ptr_Cap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Cap" (Channel.Cap.impl T)
+  ptr_Close_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Close" (Channel.Close.impl T)
+  ptr_Iter_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Iter" (Channel.Iter.impl T)
+  ptr_Len_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Len" (Channel.Len.impl T)
+  ptr_Receive_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Receive" (Channel.Receive.impl T)
+  ptr_ReceiveDiscardOk_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"ReceiveDiscardOk" (Channel.ReceiveDiscardOk.impl T)
+  ptr_Send_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Send" (Channel.Send.impl T)
+  ptr_TryReceive_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"TryReceive" (Channel.TryReceive.impl T)
+  ptr_TrySend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"TrySend" (Channel.TrySend.impl T)
+  ptr_tryClose_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"tryClose" (Channel.tryClose.impl T)
 
-attribute [instance] Channel_Assumptions.Channel_type_repr
-  Channel_Assumptions.Channel_underlying
-  Channel_Assumptions.Channel_get_cap
-  Channel_Assumptions.Channel_set_cap
-  Channel_Assumptions.Channel_get_mu
-  Channel_Assumptions.Channel_set_mu
-  Channel_Assumptions.Channel_get_state
-  Channel_Assumptions.Channel_set_state
-  Channel_Assumptions.Channel_get_buffer
-  Channel_Assumptions.Channel_set_buffer
-  Channel_Assumptions.Channel_get_v
-  Channel_Assumptions.Channel_set_v
-  Channel_Assumptions.Channel'ptr_Cap_unfold
-  Channel_Assumptions.Channel'ptr_Close_unfold
-  Channel_Assumptions.Channel'ptr_Iter_unfold
-  Channel_Assumptions.Channel'ptr_Len_unfold
-  Channel_Assumptions.Channel'ptr_Receive_unfold
-  Channel_Assumptions.Channel'ptr_ReceiveDiscardOk_unfold
-  Channel_Assumptions.Channel'ptr_Send_unfold
-  Channel_Assumptions.Channel'ptr_TryReceive_unfold
-  Channel_Assumptions.Channel'ptr_TrySend_unfold
-  Channel_Assumptions.Channel'ptr_tryClose_unfold
+attribute [instance] Channel.TypeAssumptions.type_repr
+  Channel.TypeAssumptions.underlying
+  Channel.TypeAssumptions.get_cap
+  Channel.TypeAssumptions.set_cap
+  Channel.TypeAssumptions.get_mu
+  Channel.TypeAssumptions.set_mu
+  Channel.TypeAssumptions.get_state
+  Channel.TypeAssumptions.set_state
+  Channel.TypeAssumptions.get_buffer
+  Channel.TypeAssumptions.set_buffer
+  Channel.TypeAssumptions.get_v
+  Channel.TypeAssumptions.set_v
+  Channel.TypeAssumptions.ptr_Cap_unfold
+  Channel.TypeAssumptions.ptr_Close_unfold
+  Channel.TypeAssumptions.ptr_Iter_unfold
+  Channel.TypeAssumptions.ptr_Len_unfold
+  Channel.TypeAssumptions.ptr_Receive_unfold
+  Channel.TypeAssumptions.ptr_ReceiveDiscardOk_unfold
+  Channel.TypeAssumptions.ptr_Send_unfold
+  Channel.TypeAssumptions.ptr_TryReceive_unfold
+  Channel.TypeAssumptions.ptr_TrySend_unfold
+  Channel.TypeAssumptions.ptr_tryClose_unfold
 
 namespace SelectDir
 abbrev t [FfiSyntax] : Type := w64
 end SelectDir
 
-@[reducible] def «SelectDirⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def SelectDir.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class SelectDir_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  SelectDir_underlying : go.UnderlyingDirectedEq SelectDir «SelectDirⁱᵐᵖˡ»
+class SelectDir.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq SelectDir SelectDir.underlying
 
-attribute [instance] SelectDir_Assumptions.SelectDir_underlying
+attribute [instance] SelectDir.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  offerState_instance : offerState_Assumptions
-  Channel_instance : Channel_Assumptions
-  SelectDir_instance : SelectDir_Assumptions
-  NewChannel_unfold : ∀ (T : go.GoType), FuncUnfold NewChannel [T] («NewChannelⁱᵐᵖˡ» T)
-  NonBlockingSelect1_unfold : ∀ (T : go.GoType), FuncUnfold NonBlockingSelect1 [T] («NonBlockingSelect1ⁱᵐᵖˡ» T)
-  BlockingSelect2_unfold : ∀ (T1 T2 : go.GoType), FuncUnfold BlockingSelect2 [T1, T2] («BlockingSelect2ⁱᵐᵖˡ» T1 T2)
-  NonBlockingSelect2_unfold : ∀ (T1 T2 : go.GoType), FuncUnfold NonBlockingSelect2 [T1, T2] («NonBlockingSelect2ⁱᵐᵖˡ» T1 T2)
-  BlockingSelect3_unfold : ∀ (T1 T2 T3 : go.GoType), FuncUnfold BlockingSelect3 [T1, T2, T3] («BlockingSelect3ⁱᵐᵖˡ» T1 T2 T3)
-  NonBlockingSelect3_unfold : ∀ (T1 T2 T3 : go.GoType), FuncUnfold NonBlockingSelect3 [T1, T2, T3] («NonBlockingSelect3ⁱᵐᵖˡ» T1 T2 T3)
+  offerState_instance : offerState.TypeAssumptions
+  Channel_instance : Channel.TypeAssumptions
+  SelectDir_instance : SelectDir.TypeAssumptions
+  NewChannel_unfold : ∀ (T : go.GoType), FuncUnfold NewChannel [T] (NewChannel.impl T)
+  NonBlockingSelect1_unfold : ∀ (T : go.GoType), FuncUnfold NonBlockingSelect1 [T] (NonBlockingSelect1.impl T)
+  BlockingSelect2_unfold : ∀ (T1 T2 : go.GoType), FuncUnfold BlockingSelect2 [T1, T2] (BlockingSelect2.impl T1 T2)
+  NonBlockingSelect2_unfold : ∀ (T1 T2 : go.GoType), FuncUnfold NonBlockingSelect2 [T1, T2] (NonBlockingSelect2.impl T1 T2)
+  BlockingSelect3_unfold : ∀ (T1 T2 T3 : go.GoType), FuncUnfold BlockingSelect3 [T1, T2, T3] (BlockingSelect3.impl T1 T2 T3)
+  NonBlockingSelect3_unfold : ∀ (T1 T2 T3 : go.GoType), FuncUnfold NonBlockingSelect3 [T1, T2, T3] (NonBlockingSelect3.impl T1 T2 T3)
   import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
 
 attribute [instance] Assumptions.offerState_instance

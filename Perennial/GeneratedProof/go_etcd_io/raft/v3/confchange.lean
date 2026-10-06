@@ -33,7 +33,7 @@ instance Changer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Changer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.confchange.Changer.t go_etcd_io.raft.v3.confchange.«Changerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.confchange.Changer.t go_etcd_io.raft.v3.confchange.Changer.underlying := by
   solve_into_val_typed_struct
 
 instance Changer_access_load_Tracker (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer.t) (dq : DFrac) :

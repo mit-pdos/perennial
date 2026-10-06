@@ -26,7 +26,7 @@ instance ServerConfig_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ServerConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.config.ServerConfig.t go_etcd_io.etcd.server.v3.config.«ServerConfigⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.config.ServerConfig.t go_etcd_io.etcd.server.v3.config.ServerConfig.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

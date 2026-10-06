@@ -47,7 +47,7 @@ instance leaseCache_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance leaseCache_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leaseCache.t go_etcd_io.etcd.client.v3.leasing.«leaseCacheⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leaseCache.t go_etcd_io.etcd.client.v3.leasing.leaseCache.underlying := by
   solve_into_val_typed_struct
 
 instance leaseCache_access_load_mu (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
@@ -137,7 +137,7 @@ instance leaseKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance leaseKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leaseKey.t go_etcd_io.etcd.client.v3.leasing.«leaseKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leaseKey.t go_etcd_io.etcd.client.v3.leasing.leaseKey.underlying := by
   solve_into_val_typed_struct
 
 instance leaseKey_access_load_response (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (dq : DFrac) :
@@ -218,7 +218,7 @@ instance leasingKV_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance leasingKV_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leasingKV.t go_etcd_io.etcd.client.v3.leasing.«leasingKVⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leasingKV.t go_etcd_io.etcd.client.v3.leasing.leasingKV.underlying := by
   solve_into_val_typed_struct
 
 instance leasingKV_access_load_cl (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
@@ -407,7 +407,7 @@ instance txnLeasing_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance txnLeasing_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go_etcd_io.etcd.client.v3.leasing.«txnLeasingⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go_etcd_io.etcd.client.v3.leasing.txnLeasing.underlying := by
   solve_into_val_typed_struct
 
 instance txnLeasing_access_load_Txn (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :

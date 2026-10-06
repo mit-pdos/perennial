@@ -38,7 +38,7 @@ instance JoinHandle_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance JoinHandle_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.std.JoinHandle.t github_com.goose_lang.std.«JoinHandleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.goose_lang.std.JoinHandle.t github_com.goose_lang.std.JoinHandle.underlying := by
   solve_into_val_typed_struct
 
 instance JoinHandle_access_load_mu (l : Loc) (v : github_com.goose_lang.std.JoinHandle.t) (dq : DFrac) :

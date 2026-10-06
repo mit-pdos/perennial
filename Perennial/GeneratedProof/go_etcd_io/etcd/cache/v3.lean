@@ -47,7 +47,7 @@ instance Config_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Config_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.Config.t go_etcd_io.etcd.cache.v3.«Configⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.Config.t go_etcd_io.etcd.cache.v3.Config.underlying := by
   solve_into_val_typed_struct
 
 instance Config_access_load_PerWatcherBufferSize (l : Loc) (v : go_etcd_io.etcd.cache.v3.Config.t) (dq : DFrac) :
@@ -225,7 +225,7 @@ instance Cache_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Cache_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.Cache.t go_etcd_io.etcd.cache.v3.«Cacheⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.Cache.t go_etcd_io.etcd.cache.v3.Cache.underlying := by
   solve_into_val_typed_struct
 
 instance Cache_access_load_prefix (l : Loc) (v : go_etcd_io.etcd.cache.v3.Cache.t) (dq : DFrac) :
@@ -424,7 +424,7 @@ instance realClock_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance realClock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.realClock.t go_etcd_io.etcd.cache.v3.«realClockⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.realClock.t go_etcd_io.etcd.cache.v3.realClock.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -448,7 +448,7 @@ instance realTimer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance realTimer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.realTimer.t go_etcd_io.etcd.cache.v3.«realTimerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.realTimer.t go_etcd_io.etcd.cache.v3.realTimer.underlying := by
   solve_into_val_typed_struct
 
 instance realTimer_access_load_timer (l : Loc) (v : go_etcd_io.etcd.cache.v3.realTimer.t) (dq : DFrac) :
@@ -492,7 +492,7 @@ instance ringBuffer_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ringBuffer_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.ringBuffer.t T') (go_etcd_io.etcd.cache.v3.«ringBufferⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.ringBuffer.t T') (go_etcd_io.etcd.cache.v3.ringBuffer.underlying T) := by
   solve_into_val_typed_struct
 
 instance ringBuffer_access_load_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer.t T')) (dq : DFrac) :
@@ -603,7 +603,7 @@ instance demux_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance demux_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.demux.t go_etcd_io.etcd.cache.v3.«demuxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.demux.t go_etcd_io.etcd.cache.v3.demux.underlying := by
   solve_into_val_typed_struct
 
 instance demux_access_load_mu (l : Loc) (v : go_etcd_io.etcd.cache.v3.demux.t) (dq : DFrac) :
@@ -756,7 +756,7 @@ instance notifier_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance notifier_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.notifier.t go_etcd_io.etcd.cache.v3.«notifierⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.notifier.t go_etcd_io.etcd.cache.v3.notifier.underlying := by
   solve_into_val_typed_struct
 
 instance notifier_access_load_mu (l : Loc) (v : go_etcd_io.etcd.cache.v3.notifier.t) (dq : DFrac) :
@@ -818,7 +818,7 @@ instance conditionalProgressRequestor_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance conditionalProgressRequestor_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.conditionalProgressRequestor.t go_etcd_io.etcd.cache.v3.«conditionalProgressRequestorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.conditionalProgressRequestor.t go_etcd_io.etcd.cache.v3.conditionalProgressRequestor.underlying := by
   solve_into_val_typed_struct
 
 instance conditionalProgressRequestor_access_load_mux (l : Loc) (v : go_etcd_io.etcd.cache.v3.conditionalProgressRequestor.t) (dq : DFrac) :
@@ -956,7 +956,7 @@ instance ready_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ready_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.ready.t go_etcd_io.etcd.cache.v3.«readyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.ready.t go_etcd_io.etcd.cache.v3.ready.underlying := by
   solve_into_val_typed_struct
 
 instance ready_access_load_mu (l : Loc) (v : go_etcd_io.etcd.cache.v3.ready.t) (dq : DFrac) :
@@ -1029,7 +1029,7 @@ instance entry_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance entry_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.entry.t T') (go_etcd_io.etcd.cache.v3.«entryⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (go_etcd_io.etcd.cache.v3.entry.t T') (go_etcd_io.etcd.cache.v3.entry.underlying T) := by
   solve_into_val_typed_struct
 
 instance entry_access_load_revision {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (go_etcd_io.etcd.cache.v3.entry.t T')) (dq : DFrac) :
@@ -1086,7 +1086,7 @@ instance snapshot_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance snapshot_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.snapshot.t go_etcd_io.etcd.cache.v3.«snapshotⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.snapshot.t go_etcd_io.etcd.cache.v3.snapshot.underlying := by
   solve_into_val_typed_struct
 
 instance snapshot_access_load_rev (l : Loc) (v : go_etcd_io.etcd.cache.v3.snapshot.t) (dq : DFrac) :
@@ -1146,7 +1146,7 @@ instance store_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance store_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.store.t go_etcd_io.etcd.cache.v3.«storeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.store.t go_etcd_io.etcd.cache.v3.store.underlying := by
   solve_into_val_typed_struct
 
 instance store_access_load_mu (l : Loc) (v : go_etcd_io.etcd.cache.v3.store.t) (dq : DFrac) :
@@ -1251,7 +1251,7 @@ instance kvItem_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance kvItem_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.kvItem.t go_etcd_io.etcd.cache.v3.«kvItemⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.kvItem.t go_etcd_io.etcd.cache.v3.kvItem.underlying := by
   solve_into_val_typed_struct
 
 instance kvItem_access_load_key (l : Loc) (v : go_etcd_io.etcd.cache.v3.kvItem.t) (dq : DFrac) :
@@ -1310,7 +1310,7 @@ instance watcher_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance watcher_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.watcher.t go_etcd_io.etcd.cache.v3.«watcherⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.cache.v3.watcher.t go_etcd_io.etcd.cache.v3.watcher.underlying := by
   solve_into_val_typed_struct
 
 instance watcher_access_load_respCh (l : Loc) (v : go_etcd_io.etcd.cache.v3.watcher.t) (dq : DFrac) :

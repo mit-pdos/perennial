@@ -68,22 +68,22 @@ noncomputable def xxx_messageInfo_DowngradeInfoSetRequest [FfiSyntax] [GoGlobalC
 noncomputable def fileDescriptor_949fe0d019050ef5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/membershippb.fileDescriptor_949fe0d019050ef5"
 
-axiom fileDescriptor_949fe0d019050ef5'init [FfiSyntax] [GoGlobalContext] : val
+axiom fileDescriptor_949fe0d019050ef5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrInvalidLengthMembership [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/membershippb.ErrInvalidLengthMembership"
 
-axiom ErrInvalidLengthMembership'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrInvalidLengthMembership.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrIntOverflowMembership [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/membershippb.ErrIntOverflowMembership"
 
-axiom ErrIntOverflowMembership'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrIntOverflowMembership.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrUnexpectedEndOfGroupMembership [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/membershippb.ErrUnexpectedEndOfGroupMembership"
 
-axiom ErrUnexpectedEndOfGroupMembership'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrUnexpectedEndOfGroupMembership.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def encodeVarintMembership [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/membershippb.encodeVarintMembership"
@@ -100,7 +100,7 @@ noncomputable def skipMembership [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.membershippb where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -113,19 +113,19 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val ErrUnexpectedEndOfGroupMembership'init) (Val #())))))
+  (App (Val ErrUnexpectedEndOfGroupMembership.init) (Val #())))))
   (App (Val doExecute)
-  (App (Val ErrIntOverflowMembership'init) (Val #()))))))
+  (App (Val ErrIntOverflowMembership.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrInvalidLengthMembership'init) (Val #()))))))
+  (App (Val ErrInvalidLengthMembership.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val fileDescriptor_949fe0d019050ef5'init) (Val #()))))))
+  (App (Val fileDescriptor_949fe0d019050ef5.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))))
+  (App (Val «_».init) (Val #()))))))))
 
 namespace RaftAttributes
 structure t [FfiSyntax] where
@@ -140,49 +140,49 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end RaftAttributes
 
-@[reducible] def RaftAttributes'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RaftAttributes.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"PeerUrls" (go.GoType.SliceType go.string)),
 (go.field_decl.FieldDecl go!"IsLearner" go.bool),
 (go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def RaftAttributes'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  RaftAttributes'fds_unsealed
+@[irreducible] def RaftAttributes.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  RaftAttributes.fieldsUnsealed
 
 instance equals_unfold_RaftAttributes [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold RaftAttributes'fds RaftAttributes'fds_unsealed :=
-  ⟨by unfold RaftAttributes'fds; rfl⟩
+    EqualsUnfold RaftAttributes.fields RaftAttributes.fieldsUnsealed :=
+  ⟨by unfold RaftAttributes.fields; rfl⟩
 
-@[reducible] def «RaftAttributesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType RaftAttributes'fds)
+@[reducible] def RaftAttributes.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType RaftAttributes.fields)
 
-class RaftAttributes_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  RaftAttributes_type_repr : go.TypeReprUnderlying «RaftAttributesⁱᵐᵖˡ» RaftAttributes.t
-  RaftAttributes_underlying : go.UnderlyingDirectedEq RaftAttributes «RaftAttributesⁱᵐᵖˡ»
-  RaftAttributes_get_PeerUrls : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «RaftAttributesⁱᵐᵖˡ» go!"PeerUrls") #x (Val #(x.PeerUrls'))
-  RaftAttributes_set_PeerUrls : ∀ (x : RaftAttributes.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «RaftAttributesⁱᵐᵖˡ» go!"PeerUrls") (PairV #x #y) (Val #(({ x with PeerUrls' := y } : RaftAttributes.t)))
-  RaftAttributes_get_IsLearner : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «RaftAttributesⁱᵐᵖˡ» go!"IsLearner") #x (Val #(x.IsLearner'))
-  RaftAttributes_set_IsLearner : ∀ (x : RaftAttributes.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «RaftAttributesⁱᵐᵖˡ» go!"IsLearner") (PairV #x #y) (Val #(({ x with IsLearner' := y } : RaftAttributes.t)))
-  RaftAttributes_get_XXX_NoUnkeyedLiteral : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «RaftAttributesⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
-  RaftAttributes_set_XXX_NoUnkeyedLiteral : ∀ (x : RaftAttributes.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «RaftAttributesⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : RaftAttributes.t)))
-  RaftAttributes_get_XXX_unrecognized : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «RaftAttributesⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  RaftAttributes_set_XXX_unrecognized : ∀ (x : RaftAttributes.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «RaftAttributesⁱᵐᵖˡ» go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : RaftAttributes.t)))
-  RaftAttributes_get_XXX_sizecache : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «RaftAttributesⁱᵐᵖˡ» go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
-  RaftAttributes_set_XXX_sizecache : ∀ (x : RaftAttributes.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «RaftAttributesⁱᵐᵖˡ» go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : RaftAttributes.t)))
+class RaftAttributes.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying RaftAttributes.underlying RaftAttributes.t
+  underlying : go.UnderlyingDirectedEq RaftAttributes RaftAttributes.underlying
+  get_PeerUrls : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet RaftAttributes.underlying go!"PeerUrls") #x (Val #(x.PeerUrls'))
+  set_PeerUrls : ∀ (x : RaftAttributes.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet RaftAttributes.underlying go!"PeerUrls") (PairV #x #y) (Val #(({ x with PeerUrls' := y } : RaftAttributes.t)))
+  get_IsLearner : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet RaftAttributes.underlying go!"IsLearner") #x (Val #(x.IsLearner'))
+  set_IsLearner : ∀ (x : RaftAttributes.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet RaftAttributes.underlying go!"IsLearner") (PairV #x #y) (Val #(({ x with IsLearner' := y } : RaftAttributes.t)))
+  get_XXX_NoUnkeyedLiteral : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet RaftAttributes.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
+  set_XXX_NoUnkeyedLiteral : ∀ (x : RaftAttributes.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet RaftAttributes.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : RaftAttributes.t)))
+  get_XXX_unrecognized : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet RaftAttributes.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
+  set_XXX_unrecognized : ∀ (x : RaftAttributes.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet RaftAttributes.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : RaftAttributes.t)))
+  get_XXX_sizecache : ∀ (x : RaftAttributes.t), go.IsGoStepPureDetTagged under (StructFieldGet RaftAttributes.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
+  set_XXX_sizecache : ∀ (x : RaftAttributes.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet RaftAttributes.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : RaftAttributes.t)))
 
-attribute [instance] RaftAttributes_Assumptions.RaftAttributes_type_repr
-  RaftAttributes_Assumptions.RaftAttributes_underlying
-  RaftAttributes_Assumptions.RaftAttributes_get_PeerUrls
-  RaftAttributes_Assumptions.RaftAttributes_set_PeerUrls
-  RaftAttributes_Assumptions.RaftAttributes_get_IsLearner
-  RaftAttributes_Assumptions.RaftAttributes_set_IsLearner
-  RaftAttributes_Assumptions.RaftAttributes_get_XXX_NoUnkeyedLiteral
-  RaftAttributes_Assumptions.RaftAttributes_set_XXX_NoUnkeyedLiteral
-  RaftAttributes_Assumptions.RaftAttributes_get_XXX_unrecognized
-  RaftAttributes_Assumptions.RaftAttributes_set_XXX_unrecognized
-  RaftAttributes_Assumptions.RaftAttributes_get_XXX_sizecache
-  RaftAttributes_Assumptions.RaftAttributes_set_XXX_sizecache
+attribute [instance] RaftAttributes.TypeAssumptions.type_repr
+  RaftAttributes.TypeAssumptions.underlying
+  RaftAttributes.TypeAssumptions.get_PeerUrls
+  RaftAttributes.TypeAssumptions.set_PeerUrls
+  RaftAttributes.TypeAssumptions.get_IsLearner
+  RaftAttributes.TypeAssumptions.set_IsLearner
+  RaftAttributes.TypeAssumptions.get_XXX_NoUnkeyedLiteral
+  RaftAttributes.TypeAssumptions.set_XXX_NoUnkeyedLiteral
+  RaftAttributes.TypeAssumptions.get_XXX_unrecognized
+  RaftAttributes.TypeAssumptions.set_XXX_unrecognized
+  RaftAttributes.TypeAssumptions.get_XXX_sizecache
+  RaftAttributes.TypeAssumptions.set_XXX_sizecache
 
 namespace Attributes
 structure t [FfiSyntax] where
@@ -197,49 +197,49 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Attributes
 
-@[reducible] def Attributes'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Attributes.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"ClientUrls" (go.GoType.SliceType go.string)),
 (go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def Attributes'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Attributes'fds_unsealed
+@[irreducible] def Attributes.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Attributes.fieldsUnsealed
 
 instance equals_unfold_Attributes [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Attributes'fds Attributes'fds_unsealed :=
-  ⟨by unfold Attributes'fds; rfl⟩
+    EqualsUnfold Attributes.fields Attributes.fieldsUnsealed :=
+  ⟨by unfold Attributes.fields; rfl⟩
 
-@[reducible] def «Attributesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Attributes'fds)
+@[reducible] def Attributes.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Attributes.fields)
 
-class Attributes_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Attributes_type_repr : go.TypeReprUnderlying «Attributesⁱᵐᵖˡ» Attributes.t
-  Attributes_underlying : go.UnderlyingDirectedEq Attributes «Attributesⁱᵐᵖˡ»
-  Attributes_get_Name : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «Attributesⁱᵐᵖˡ» go!"Name") #x (Val #(x.Name'))
-  Attributes_set_Name : ∀ (x : Attributes.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «Attributesⁱᵐᵖˡ» go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : Attributes.t)))
-  Attributes_get_ClientUrls : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «Attributesⁱᵐᵖˡ» go!"ClientUrls") #x (Val #(x.ClientUrls'))
-  Attributes_set_ClientUrls : ∀ (x : Attributes.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Attributesⁱᵐᵖˡ» go!"ClientUrls") (PairV #x #y) (Val #(({ x with ClientUrls' := y } : Attributes.t)))
-  Attributes_get_XXX_NoUnkeyedLiteral : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «Attributesⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
-  Attributes_set_XXX_NoUnkeyedLiteral : ∀ (x : Attributes.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «Attributesⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : Attributes.t)))
-  Attributes_get_XXX_unrecognized : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «Attributesⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  Attributes_set_XXX_unrecognized : ∀ (x : Attributes.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Attributesⁱᵐᵖˡ» go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : Attributes.t)))
-  Attributes_get_XXX_sizecache : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet «Attributesⁱᵐᵖˡ» go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
-  Attributes_set_XXX_sizecache : ∀ (x : Attributes.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «Attributesⁱᵐᵖˡ» go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : Attributes.t)))
+class Attributes.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Attributes.underlying Attributes.t
+  underlying : go.UnderlyingDirectedEq Attributes Attributes.underlying
+  get_Name : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet Attributes.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : Attributes.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Attributes.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : Attributes.t)))
+  get_ClientUrls : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet Attributes.underlying go!"ClientUrls") #x (Val #(x.ClientUrls'))
+  set_ClientUrls : ∀ (x : Attributes.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Attributes.underlying go!"ClientUrls") (PairV #x #y) (Val #(({ x with ClientUrls' := y } : Attributes.t)))
+  get_XXX_NoUnkeyedLiteral : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet Attributes.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
+  set_XXX_NoUnkeyedLiteral : ∀ (x : Attributes.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet Attributes.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : Attributes.t)))
+  get_XXX_unrecognized : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet Attributes.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
+  set_XXX_unrecognized : ∀ (x : Attributes.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Attributes.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : Attributes.t)))
+  get_XXX_sizecache : ∀ (x : Attributes.t), go.IsGoStepPureDetTagged under (StructFieldGet Attributes.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
+  set_XXX_sizecache : ∀ (x : Attributes.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Attributes.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : Attributes.t)))
 
-attribute [instance] Attributes_Assumptions.Attributes_type_repr
-  Attributes_Assumptions.Attributes_underlying
-  Attributes_Assumptions.Attributes_get_Name
-  Attributes_Assumptions.Attributes_set_Name
-  Attributes_Assumptions.Attributes_get_ClientUrls
-  Attributes_Assumptions.Attributes_set_ClientUrls
-  Attributes_Assumptions.Attributes_get_XXX_NoUnkeyedLiteral
-  Attributes_Assumptions.Attributes_set_XXX_NoUnkeyedLiteral
-  Attributes_Assumptions.Attributes_get_XXX_unrecognized
-  Attributes_Assumptions.Attributes_set_XXX_unrecognized
-  Attributes_Assumptions.Attributes_get_XXX_sizecache
-  Attributes_Assumptions.Attributes_set_XXX_sizecache
+attribute [instance] Attributes.TypeAssumptions.type_repr
+  Attributes.TypeAssumptions.underlying
+  Attributes.TypeAssumptions.get_Name
+  Attributes.TypeAssumptions.set_Name
+  Attributes.TypeAssumptions.get_ClientUrls
+  Attributes.TypeAssumptions.set_ClientUrls
+  Attributes.TypeAssumptions.get_XXX_NoUnkeyedLiteral
+  Attributes.TypeAssumptions.set_XXX_NoUnkeyedLiteral
+  Attributes.TypeAssumptions.get_XXX_unrecognized
+  Attributes.TypeAssumptions.set_XXX_unrecognized
+  Attributes.TypeAssumptions.get_XXX_sizecache
+  Attributes.TypeAssumptions.set_XXX_sizecache
 
 namespace Member
 structure t [FfiSyntax] where
@@ -255,7 +255,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Member
 
-@[reducible] def Member'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Member.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.FieldDecl go!"RaftAttributes" (go.GoType.PointerType RaftAttributes)),
 (go.field_decl.FieldDecl go!"MemberAttributes" (go.GoType.PointerType Attributes)),
@@ -263,46 +263,46 @@ end Member
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def Member'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Member'fds_unsealed
+@[irreducible] def Member.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Member.fieldsUnsealed
 
 instance equals_unfold_Member [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Member'fds Member'fds_unsealed :=
-  ⟨by unfold Member'fds; rfl⟩
+    EqualsUnfold Member.fields Member.fieldsUnsealed :=
+  ⟨by unfold Member.fields; rfl⟩
 
-@[reducible] def «Memberⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Member'fds)
+@[reducible] def Member.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Member.fields)
 
-class Member_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Member_type_repr : go.TypeReprUnderlying «Memberⁱᵐᵖˡ» Member.t
-  Member_underlying : go.UnderlyingDirectedEq Member «Memberⁱᵐᵖˡ»
-  Member_get_ID : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet «Memberⁱᵐᵖˡ» go!"ID") #x (Val #(x.ID'))
-  Member_set_ID : ∀ (x : Member.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Memberⁱᵐᵖˡ» go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : Member.t)))
-  Member_get_RaftAttributes : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet «Memberⁱᵐᵖˡ» go!"RaftAttributes") #x (Val #(x.RaftAttributes'))
-  Member_set_RaftAttributes : ∀ (x : Member.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Memberⁱᵐᵖˡ» go!"RaftAttributes") (PairV #x #y) (Val #(({ x with RaftAttributes' := y } : Member.t)))
-  Member_get_MemberAttributes : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet «Memberⁱᵐᵖˡ» go!"MemberAttributes") #x (Val #(x.MemberAttributes'))
-  Member_set_MemberAttributes : ∀ (x : Member.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Memberⁱᵐᵖˡ» go!"MemberAttributes") (PairV #x #y) (Val #(({ x with MemberAttributes' := y } : Member.t)))
-  Member_get_XXX_NoUnkeyedLiteral : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet «Memberⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
-  Member_set_XXX_NoUnkeyedLiteral : ∀ (x : Member.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «Memberⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : Member.t)))
-  Member_get_XXX_unrecognized : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet «Memberⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  Member_set_XXX_unrecognized : ∀ (x : Member.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Memberⁱᵐᵖˡ» go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : Member.t)))
-  Member_get_XXX_sizecache : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet «Memberⁱᵐᵖˡ» go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
-  Member_set_XXX_sizecache : ∀ (x : Member.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «Memberⁱᵐᵖˡ» go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : Member.t)))
+class Member.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Member.underlying Member.t
+  underlying : go.UnderlyingDirectedEq Member Member.underlying
+  get_ID : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet Member.underlying go!"ID") #x (Val #(x.ID'))
+  set_ID : ∀ (x : Member.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Member.underlying go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : Member.t)))
+  get_RaftAttributes : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet Member.underlying go!"RaftAttributes") #x (Val #(x.RaftAttributes'))
+  set_RaftAttributes : ∀ (x : Member.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Member.underlying go!"RaftAttributes") (PairV #x #y) (Val #(({ x with RaftAttributes' := y } : Member.t)))
+  get_MemberAttributes : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet Member.underlying go!"MemberAttributes") #x (Val #(x.MemberAttributes'))
+  set_MemberAttributes : ∀ (x : Member.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Member.underlying go!"MemberAttributes") (PairV #x #y) (Val #(({ x with MemberAttributes' := y } : Member.t)))
+  get_XXX_NoUnkeyedLiteral : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet Member.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
+  set_XXX_NoUnkeyedLiteral : ∀ (x : Member.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet Member.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : Member.t)))
+  get_XXX_unrecognized : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet Member.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
+  set_XXX_unrecognized : ∀ (x : Member.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Member.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : Member.t)))
+  get_XXX_sizecache : ∀ (x : Member.t), go.IsGoStepPureDetTagged under (StructFieldGet Member.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
+  set_XXX_sizecache : ∀ (x : Member.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Member.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : Member.t)))
 
-attribute [instance] Member_Assumptions.Member_type_repr
-  Member_Assumptions.Member_underlying
-  Member_Assumptions.Member_get_ID
-  Member_Assumptions.Member_set_ID
-  Member_Assumptions.Member_get_RaftAttributes
-  Member_Assumptions.Member_set_RaftAttributes
-  Member_Assumptions.Member_get_MemberAttributes
-  Member_Assumptions.Member_set_MemberAttributes
-  Member_Assumptions.Member_get_XXX_NoUnkeyedLiteral
-  Member_Assumptions.Member_set_XXX_NoUnkeyedLiteral
-  Member_Assumptions.Member_get_XXX_unrecognized
-  Member_Assumptions.Member_set_XXX_unrecognized
-  Member_Assumptions.Member_get_XXX_sizecache
-  Member_Assumptions.Member_set_XXX_sizecache
+attribute [instance] Member.TypeAssumptions.type_repr
+  Member.TypeAssumptions.underlying
+  Member.TypeAssumptions.get_ID
+  Member.TypeAssumptions.set_ID
+  Member.TypeAssumptions.get_RaftAttributes
+  Member.TypeAssumptions.set_RaftAttributes
+  Member.TypeAssumptions.get_MemberAttributes
+  Member.TypeAssumptions.set_MemberAttributes
+  Member.TypeAssumptions.get_XXX_NoUnkeyedLiteral
+  Member.TypeAssumptions.set_XXX_NoUnkeyedLiteral
+  Member.TypeAssumptions.get_XXX_unrecognized
+  Member.TypeAssumptions.set_XXX_unrecognized
+  Member.TypeAssumptions.get_XXX_sizecache
+  Member.TypeAssumptions.set_XXX_sizecache
 
 namespace ClusterVersionSetRequest
 structure t [FfiSyntax] where
@@ -316,44 +316,44 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end ClusterVersionSetRequest
 
-@[reducible] def ClusterVersionSetRequest'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ClusterVersionSetRequest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Ver" go.string),
 (go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def ClusterVersionSetRequest'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  ClusterVersionSetRequest'fds_unsealed
+@[irreducible] def ClusterVersionSetRequest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  ClusterVersionSetRequest.fieldsUnsealed
 
 instance equals_unfold_ClusterVersionSetRequest [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold ClusterVersionSetRequest'fds ClusterVersionSetRequest'fds_unsealed :=
-  ⟨by unfold ClusterVersionSetRequest'fds; rfl⟩
+    EqualsUnfold ClusterVersionSetRequest.fields ClusterVersionSetRequest.fieldsUnsealed :=
+  ⟨by unfold ClusterVersionSetRequest.fields; rfl⟩
 
-@[reducible] def «ClusterVersionSetRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType ClusterVersionSetRequest'fds)
+@[reducible] def ClusterVersionSetRequest.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ClusterVersionSetRequest.fields)
 
-class ClusterVersionSetRequest_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ClusterVersionSetRequest_type_repr : go.TypeReprUnderlying «ClusterVersionSetRequestⁱᵐᵖˡ» ClusterVersionSetRequest.t
-  ClusterVersionSetRequest_underlying : go.UnderlyingDirectedEq ClusterVersionSetRequest «ClusterVersionSetRequestⁱᵐᵖˡ»
-  ClusterVersionSetRequest_get_Ver : ∀ (x : ClusterVersionSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterVersionSetRequestⁱᵐᵖˡ» go!"Ver") #x (Val #(x.Ver'))
-  ClusterVersionSetRequest_set_Ver : ∀ (x : ClusterVersionSetRequest.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterVersionSetRequestⁱᵐᵖˡ» go!"Ver") (PairV #x #y) (Val #(({ x with Ver' := y } : ClusterVersionSetRequest.t)))
-  ClusterVersionSetRequest_get_XXX_NoUnkeyedLiteral : ∀ (x : ClusterVersionSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterVersionSetRequestⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
-  ClusterVersionSetRequest_set_XXX_NoUnkeyedLiteral : ∀ (x : ClusterVersionSetRequest.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterVersionSetRequestⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : ClusterVersionSetRequest.t)))
-  ClusterVersionSetRequest_get_XXX_unrecognized : ∀ (x : ClusterVersionSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterVersionSetRequestⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  ClusterVersionSetRequest_set_XXX_unrecognized : ∀ (x : ClusterVersionSetRequest.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterVersionSetRequestⁱᵐᵖˡ» go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : ClusterVersionSetRequest.t)))
-  ClusterVersionSetRequest_get_XXX_sizecache : ∀ (x : ClusterVersionSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterVersionSetRequestⁱᵐᵖˡ» go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
-  ClusterVersionSetRequest_set_XXX_sizecache : ∀ (x : ClusterVersionSetRequest.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterVersionSetRequestⁱᵐᵖˡ» go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : ClusterVersionSetRequest.t)))
+class ClusterVersionSetRequest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ClusterVersionSetRequest.underlying ClusterVersionSetRequest.t
+  underlying : go.UnderlyingDirectedEq ClusterVersionSetRequest ClusterVersionSetRequest.underlying
+  get_Ver : ∀ (x : ClusterVersionSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterVersionSetRequest.underlying go!"Ver") #x (Val #(x.Ver'))
+  set_Ver : ∀ (x : ClusterVersionSetRequest.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ClusterVersionSetRequest.underlying go!"Ver") (PairV #x #y) (Val #(({ x with Ver' := y } : ClusterVersionSetRequest.t)))
+  get_XXX_NoUnkeyedLiteral : ∀ (x : ClusterVersionSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterVersionSetRequest.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
+  set_XXX_NoUnkeyedLiteral : ∀ (x : ClusterVersionSetRequest.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet ClusterVersionSetRequest.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : ClusterVersionSetRequest.t)))
+  get_XXX_unrecognized : ∀ (x : ClusterVersionSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterVersionSetRequest.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
+  set_XXX_unrecognized : ∀ (x : ClusterVersionSetRequest.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ClusterVersionSetRequest.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : ClusterVersionSetRequest.t)))
+  get_XXX_sizecache : ∀ (x : ClusterVersionSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterVersionSetRequest.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
+  set_XXX_sizecache : ∀ (x : ClusterVersionSetRequest.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet ClusterVersionSetRequest.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : ClusterVersionSetRequest.t)))
 
-attribute [instance] ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_type_repr
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_underlying
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_get_Ver
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_set_Ver
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_get_XXX_NoUnkeyedLiteral
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_set_XXX_NoUnkeyedLiteral
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_get_XXX_unrecognized
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_set_XXX_unrecognized
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_get_XXX_sizecache
-  ClusterVersionSetRequest_Assumptions.ClusterVersionSetRequest_set_XXX_sizecache
+attribute [instance] ClusterVersionSetRequest.TypeAssumptions.type_repr
+  ClusterVersionSetRequest.TypeAssumptions.underlying
+  ClusterVersionSetRequest.TypeAssumptions.get_Ver
+  ClusterVersionSetRequest.TypeAssumptions.set_Ver
+  ClusterVersionSetRequest.TypeAssumptions.get_XXX_NoUnkeyedLiteral
+  ClusterVersionSetRequest.TypeAssumptions.set_XXX_NoUnkeyedLiteral
+  ClusterVersionSetRequest.TypeAssumptions.get_XXX_unrecognized
+  ClusterVersionSetRequest.TypeAssumptions.set_XXX_unrecognized
+  ClusterVersionSetRequest.TypeAssumptions.get_XXX_sizecache
+  ClusterVersionSetRequest.TypeAssumptions.set_XXX_sizecache
 
 namespace ClusterMemberAttrSetRequest
 structure t [FfiSyntax] where
@@ -368,49 +368,49 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end ClusterMemberAttrSetRequest
 
-@[reducible] def ClusterMemberAttrSetRequest'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ClusterMemberAttrSetRequest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Member_ID" go.uint64),
 (go.field_decl.FieldDecl go!"MemberAttributes" (go.GoType.PointerType Attributes)),
 (go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def ClusterMemberAttrSetRequest'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  ClusterMemberAttrSetRequest'fds_unsealed
+@[irreducible] def ClusterMemberAttrSetRequest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  ClusterMemberAttrSetRequest.fieldsUnsealed
 
 instance equals_unfold_ClusterMemberAttrSetRequest [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold ClusterMemberAttrSetRequest'fds ClusterMemberAttrSetRequest'fds_unsealed :=
-  ⟨by unfold ClusterMemberAttrSetRequest'fds; rfl⟩
+    EqualsUnfold ClusterMemberAttrSetRequest.fields ClusterMemberAttrSetRequest.fieldsUnsealed :=
+  ⟨by unfold ClusterMemberAttrSetRequest.fields; rfl⟩
 
-@[reducible] def «ClusterMemberAttrSetRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType ClusterMemberAttrSetRequest'fds)
+@[reducible] def ClusterMemberAttrSetRequest.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ClusterMemberAttrSetRequest.fields)
 
-class ClusterMemberAttrSetRequest_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ClusterMemberAttrSetRequest_type_repr : go.TypeReprUnderlying «ClusterMemberAttrSetRequestⁱᵐᵖˡ» ClusterMemberAttrSetRequest.t
-  ClusterMemberAttrSetRequest_underlying : go.UnderlyingDirectedEq ClusterMemberAttrSetRequest «ClusterMemberAttrSetRequestⁱᵐᵖˡ»
-  ClusterMemberAttrSetRequest_get_Member_ID : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"Member_ID") #x (Val #(x.Member_ID'))
-  ClusterMemberAttrSetRequest_set_Member_ID : ∀ (x : ClusterMemberAttrSetRequest.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"Member_ID") (PairV #x #y) (Val #(({ x with Member_ID' := y } : ClusterMemberAttrSetRequest.t)))
-  ClusterMemberAttrSetRequest_get_MemberAttributes : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"MemberAttributes") #x (Val #(x.MemberAttributes'))
-  ClusterMemberAttrSetRequest_set_MemberAttributes : ∀ (x : ClusterMemberAttrSetRequest.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"MemberAttributes") (PairV #x #y) (Val #(({ x with MemberAttributes' := y } : ClusterMemberAttrSetRequest.t)))
-  ClusterMemberAttrSetRequest_get_XXX_NoUnkeyedLiteral : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
-  ClusterMemberAttrSetRequest_set_XXX_NoUnkeyedLiteral : ∀ (x : ClusterMemberAttrSetRequest.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : ClusterMemberAttrSetRequest.t)))
-  ClusterMemberAttrSetRequest_get_XXX_unrecognized : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  ClusterMemberAttrSetRequest_set_XXX_unrecognized : ∀ (x : ClusterMemberAttrSetRequest.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : ClusterMemberAttrSetRequest.t)))
-  ClusterMemberAttrSetRequest_get_XXX_sizecache : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
-  ClusterMemberAttrSetRequest_set_XXX_sizecache : ∀ (x : ClusterMemberAttrSetRequest.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «ClusterMemberAttrSetRequestⁱᵐᵖˡ» go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : ClusterMemberAttrSetRequest.t)))
+class ClusterMemberAttrSetRequest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ClusterMemberAttrSetRequest.underlying ClusterMemberAttrSetRequest.t
+  underlying : go.UnderlyingDirectedEq ClusterMemberAttrSetRequest ClusterMemberAttrSetRequest.underlying
+  get_Member_ID : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterMemberAttrSetRequest.underlying go!"Member_ID") #x (Val #(x.Member_ID'))
+  set_Member_ID : ∀ (x : ClusterMemberAttrSetRequest.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ClusterMemberAttrSetRequest.underlying go!"Member_ID") (PairV #x #y) (Val #(({ x with Member_ID' := y } : ClusterMemberAttrSetRequest.t)))
+  get_MemberAttributes : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterMemberAttrSetRequest.underlying go!"MemberAttributes") #x (Val #(x.MemberAttributes'))
+  set_MemberAttributes : ∀ (x : ClusterMemberAttrSetRequest.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet ClusterMemberAttrSetRequest.underlying go!"MemberAttributes") (PairV #x #y) (Val #(({ x with MemberAttributes' := y } : ClusterMemberAttrSetRequest.t)))
+  get_XXX_NoUnkeyedLiteral : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterMemberAttrSetRequest.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
+  set_XXX_NoUnkeyedLiteral : ∀ (x : ClusterMemberAttrSetRequest.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet ClusterMemberAttrSetRequest.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : ClusterMemberAttrSetRequest.t)))
+  get_XXX_unrecognized : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterMemberAttrSetRequest.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
+  set_XXX_unrecognized : ∀ (x : ClusterMemberAttrSetRequest.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ClusterMemberAttrSetRequest.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : ClusterMemberAttrSetRequest.t)))
+  get_XXX_sizecache : ∀ (x : ClusterMemberAttrSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet ClusterMemberAttrSetRequest.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
+  set_XXX_sizecache : ∀ (x : ClusterMemberAttrSetRequest.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet ClusterMemberAttrSetRequest.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : ClusterMemberAttrSetRequest.t)))
 
-attribute [instance] ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_type_repr
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_underlying
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_get_Member_ID
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_set_Member_ID
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_get_MemberAttributes
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_set_MemberAttributes
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_get_XXX_NoUnkeyedLiteral
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_set_XXX_NoUnkeyedLiteral
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_get_XXX_unrecognized
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_set_XXX_unrecognized
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_get_XXX_sizecache
-  ClusterMemberAttrSetRequest_Assumptions.ClusterMemberAttrSetRequest_set_XXX_sizecache
+attribute [instance] ClusterMemberAttrSetRequest.TypeAssumptions.type_repr
+  ClusterMemberAttrSetRequest.TypeAssumptions.underlying
+  ClusterMemberAttrSetRequest.TypeAssumptions.get_Member_ID
+  ClusterMemberAttrSetRequest.TypeAssumptions.set_Member_ID
+  ClusterMemberAttrSetRequest.TypeAssumptions.get_MemberAttributes
+  ClusterMemberAttrSetRequest.TypeAssumptions.set_MemberAttributes
+  ClusterMemberAttrSetRequest.TypeAssumptions.get_XXX_NoUnkeyedLiteral
+  ClusterMemberAttrSetRequest.TypeAssumptions.set_XXX_NoUnkeyedLiteral
+  ClusterMemberAttrSetRequest.TypeAssumptions.get_XXX_unrecognized
+  ClusterMemberAttrSetRequest.TypeAssumptions.set_XXX_unrecognized
+  ClusterMemberAttrSetRequest.TypeAssumptions.get_XXX_sizecache
+  ClusterMemberAttrSetRequest.TypeAssumptions.set_XXX_sizecache
 
 namespace DowngradeInfoSetRequest
 structure t [FfiSyntax] where
@@ -425,57 +425,57 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end DowngradeInfoSetRequest
 
-@[reducible] def DowngradeInfoSetRequest'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def DowngradeInfoSetRequest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Enabled" go.bool),
 (go.field_decl.FieldDecl go!"Ver" go.string),
 (go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def DowngradeInfoSetRequest'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  DowngradeInfoSetRequest'fds_unsealed
+@[irreducible] def DowngradeInfoSetRequest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  DowngradeInfoSetRequest.fieldsUnsealed
 
 instance equals_unfold_DowngradeInfoSetRequest [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold DowngradeInfoSetRequest'fds DowngradeInfoSetRequest'fds_unsealed :=
-  ⟨by unfold DowngradeInfoSetRequest'fds; rfl⟩
+    EqualsUnfold DowngradeInfoSetRequest.fields DowngradeInfoSetRequest.fieldsUnsealed :=
+  ⟨by unfold DowngradeInfoSetRequest.fields; rfl⟩
 
-@[reducible] def «DowngradeInfoSetRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType DowngradeInfoSetRequest'fds)
+@[reducible] def DowngradeInfoSetRequest.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType DowngradeInfoSetRequest.fields)
 
-class DowngradeInfoSetRequest_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  DowngradeInfoSetRequest_type_repr : go.TypeReprUnderlying «DowngradeInfoSetRequestⁱᵐᵖˡ» DowngradeInfoSetRequest.t
-  DowngradeInfoSetRequest_underlying : go.UnderlyingDirectedEq DowngradeInfoSetRequest «DowngradeInfoSetRequestⁱᵐᵖˡ»
-  DowngradeInfoSetRequest_get_Enabled : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"Enabled") #x (Val #(x.Enabled'))
-  DowngradeInfoSetRequest_set_Enabled : ∀ (x : DowngradeInfoSetRequest.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"Enabled") (PairV #x #y) (Val #(({ x with Enabled' := y } : DowngradeInfoSetRequest.t)))
-  DowngradeInfoSetRequest_get_Ver : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"Ver") #x (Val #(x.Ver'))
-  DowngradeInfoSetRequest_set_Ver : ∀ (x : DowngradeInfoSetRequest.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"Ver") (PairV #x #y) (Val #(({ x with Ver' := y } : DowngradeInfoSetRequest.t)))
-  DowngradeInfoSetRequest_get_XXX_NoUnkeyedLiteral : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
-  DowngradeInfoSetRequest_set_XXX_NoUnkeyedLiteral : ∀ (x : DowngradeInfoSetRequest.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : DowngradeInfoSetRequest.t)))
-  DowngradeInfoSetRequest_get_XXX_unrecognized : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  DowngradeInfoSetRequest_set_XXX_unrecognized : ∀ (x : DowngradeInfoSetRequest.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : DowngradeInfoSetRequest.t)))
-  DowngradeInfoSetRequest_get_XXX_sizecache : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
-  DowngradeInfoSetRequest_set_XXX_sizecache : ∀ (x : DowngradeInfoSetRequest.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «DowngradeInfoSetRequestⁱᵐᵖˡ» go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : DowngradeInfoSetRequest.t)))
+class DowngradeInfoSetRequest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying DowngradeInfoSetRequest.underlying DowngradeInfoSetRequest.t
+  underlying : go.UnderlyingDirectedEq DowngradeInfoSetRequest DowngradeInfoSetRequest.underlying
+  get_Enabled : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet DowngradeInfoSetRequest.underlying go!"Enabled") #x (Val #(x.Enabled'))
+  set_Enabled : ∀ (x : DowngradeInfoSetRequest.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet DowngradeInfoSetRequest.underlying go!"Enabled") (PairV #x #y) (Val #(({ x with Enabled' := y } : DowngradeInfoSetRequest.t)))
+  get_Ver : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet DowngradeInfoSetRequest.underlying go!"Ver") #x (Val #(x.Ver'))
+  set_Ver : ∀ (x : DowngradeInfoSetRequest.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet DowngradeInfoSetRequest.underlying go!"Ver") (PairV #x #y) (Val #(({ x with Ver' := y } : DowngradeInfoSetRequest.t)))
+  get_XXX_NoUnkeyedLiteral : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet DowngradeInfoSetRequest.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
+  set_XXX_NoUnkeyedLiteral : ∀ (x : DowngradeInfoSetRequest.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet DowngradeInfoSetRequest.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : DowngradeInfoSetRequest.t)))
+  get_XXX_unrecognized : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet DowngradeInfoSetRequest.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
+  set_XXX_unrecognized : ∀ (x : DowngradeInfoSetRequest.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet DowngradeInfoSetRequest.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : DowngradeInfoSetRequest.t)))
+  get_XXX_sizecache : ∀ (x : DowngradeInfoSetRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet DowngradeInfoSetRequest.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
+  set_XXX_sizecache : ∀ (x : DowngradeInfoSetRequest.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet DowngradeInfoSetRequest.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : DowngradeInfoSetRequest.t)))
 
-attribute [instance] DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_type_repr
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_underlying
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_get_Enabled
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_set_Enabled
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_get_Ver
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_set_Ver
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_get_XXX_NoUnkeyedLiteral
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_set_XXX_NoUnkeyedLiteral
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_get_XXX_unrecognized
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_set_XXX_unrecognized
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_get_XXX_sizecache
-  DowngradeInfoSetRequest_Assumptions.DowngradeInfoSetRequest_set_XXX_sizecache
+attribute [instance] DowngradeInfoSetRequest.TypeAssumptions.type_repr
+  DowngradeInfoSetRequest.TypeAssumptions.underlying
+  DowngradeInfoSetRequest.TypeAssumptions.get_Enabled
+  DowngradeInfoSetRequest.TypeAssumptions.set_Enabled
+  DowngradeInfoSetRequest.TypeAssumptions.get_Ver
+  DowngradeInfoSetRequest.TypeAssumptions.set_Ver
+  DowngradeInfoSetRequest.TypeAssumptions.get_XXX_NoUnkeyedLiteral
+  DowngradeInfoSetRequest.TypeAssumptions.set_XXX_NoUnkeyedLiteral
+  DowngradeInfoSetRequest.TypeAssumptions.get_XXX_unrecognized
+  DowngradeInfoSetRequest.TypeAssumptions.set_XXX_unrecognized
+  DowngradeInfoSetRequest.TypeAssumptions.get_XXX_sizecache
+  DowngradeInfoSetRequest.TypeAssumptions.set_XXX_sizecache
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  RaftAttributes_instance : RaftAttributes_Assumptions
-  Attributes_instance : Attributes_Assumptions
-  Member_instance : Member_Assumptions
-  ClusterVersionSetRequest_instance : ClusterVersionSetRequest_Assumptions
-  ClusterMemberAttrSetRequest_instance : ClusterMemberAttrSetRequest_Assumptions
-  DowngradeInfoSetRequest_instance : DowngradeInfoSetRequest_Assumptions
+  RaftAttributes_instance : RaftAttributes.TypeAssumptions
+  Attributes_instance : Attributes.TypeAssumptions
+  Member_instance : Member.TypeAssumptions
+  ClusterVersionSetRequest_instance : ClusterVersionSetRequest.TypeAssumptions
+  ClusterMemberAttrSetRequest_instance : ClusterMemberAttrSetRequest.TypeAssumptions
+  DowngradeInfoSetRequest_instance : DowngradeInfoSetRequest.TypeAssumptions
 
 attribute [instance] Assumptions.RaftAttributes_instance
   Assumptions.Attributes_instance

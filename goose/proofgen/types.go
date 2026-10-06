@@ -191,7 +191,7 @@ func (tr *typesTranslator) newTypeDecl(spec *ast.TypeSpec, axiomatize bool) tmpl
 	if glang.Lean {
 		decl.PkgName = glang.LeanNamespace(tr.pkg.PkgPath)
 		decl.RawName = decl.Name
-		decl.ImplName = glang.LeanIdent(decl.Name + "ⁱᵐᵖˡ")
+		decl.ImplName = glang.LeanIdent(glang.TypeImpl(decl.Name))
 		decl.Name = glang.LeanIdent(spec.Name.Name)
 	}
 	return decl

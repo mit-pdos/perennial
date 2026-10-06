@@ -54,7 +54,7 @@ noncomputable def FromContextError [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.google_golang_org.grpc.status where
   pkgImportedPkgs := [pkg_id.google_golang_org.genproto.googleapis.rpc.status]
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon

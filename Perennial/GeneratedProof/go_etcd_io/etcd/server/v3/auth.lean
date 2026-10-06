@@ -31,7 +31,7 @@ instance tokenJWT_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance tokenJWT_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenJWT.t go_etcd_io.etcd.server.v3.auth.«tokenJWTⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenJWT.t go_etcd_io.etcd.server.v3.auth.tokenJWT.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -54,7 +54,7 @@ instance tokenNop_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance tokenNop_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenNop.t go_etcd_io.etcd.server.v3.auth.«tokenNopⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenNop.t go_etcd_io.etcd.server.v3.auth.tokenNop.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -73,7 +73,7 @@ instance jwtOptions_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance jwtOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.jwtOptions.t go_etcd_io.etcd.server.v3.auth.«jwtOptionsⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.jwtOptions.t go_etcd_io.etcd.server.v3.auth.jwtOptions.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -92,7 +92,7 @@ instance unifiedRangePermissions_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance unifiedRangePermissions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.unifiedRangePermissions.t go_etcd_io.etcd.server.v3.auth.«unifiedRangePermissionsⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.unifiedRangePermissions.t go_etcd_io.etcd.server.v3.auth.unifiedRangePermissions.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -121,7 +121,7 @@ instance simpleTokenTTLKeeper_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance simpleTokenTTLKeeper_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper.t go_etcd_io.etcd.server.v3.auth.«simpleTokenTTLKeeperⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper.t go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper.underlying := by
   solve_into_val_typed_struct
 
 instance simpleTokenTTLKeeper_access_load_tokens (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper.t) (dq : DFrac) :
@@ -236,7 +236,7 @@ instance tokenSimple_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance tokenSimple_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenSimple.t go_etcd_io.etcd.server.v3.auth.«tokenSimpleⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenSimple.t go_etcd_io.etcd.server.v3.auth.tokenSimple.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -261,7 +261,7 @@ instance AuthInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthInfo.t go_etcd_io.etcd.server.v3.auth.«AuthInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthInfo.t go_etcd_io.etcd.server.v3.auth.AuthInfo.underlying := by
   solve_into_val_typed_struct
 
 instance AuthInfo_access_load_Username (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.AuthInfo.t) (dq : DFrac) :
@@ -316,7 +316,7 @@ instance AuthenticateParamIndex_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthenticateParamIndex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamIndex.t go_etcd_io.etcd.server.v3.auth.«AuthenticateParamIndexⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamIndex.t go_etcd_io.etcd.server.v3.auth.AuthenticateParamIndex.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -339,7 +339,7 @@ instance AuthenticateParamSimpleTokenPrefix_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthenticateParamSimpleTokenPrefix_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamSimpleTokenPrefix.t go_etcd_io.etcd.server.v3.auth.«AuthenticateParamSimpleTokenPrefixⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.AuthenticateParamSimpleTokenPrefix.t go_etcd_io.etcd.server.v3.auth.AuthenticateParamSimpleTokenPrefix.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -358,7 +358,7 @@ instance authStore_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance authStore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.authStore.t go_etcd_io.etcd.server.v3.auth.«authStoreⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.authStore.t go_etcd_io.etcd.server.v3.auth.authStore.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

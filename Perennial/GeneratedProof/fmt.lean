@@ -36,7 +36,7 @@ instance wrapError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance wrapError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.wrapError.t fmt.«wrapErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) fmt.wrapError.t fmt.wrapError.underlying := by
   solve_into_val_typed_struct
 
 instance wrapError_access_load_msg (l : Loc) (v : fmt.wrapError.t) (dq : DFrac) :
@@ -93,7 +93,7 @@ instance wrapErrors_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance wrapErrors_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.wrapErrors.t fmt.«wrapErrorsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) fmt.wrapErrors.t fmt.wrapErrors.underlying := by
   solve_into_val_typed_struct
 
 instance wrapErrors_access_load_msg (l : Loc) (v : fmt.wrapErrors.t) (dq : DFrac) :
@@ -157,7 +157,7 @@ instance fmtFlags_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fmtFlags_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.fmtFlags.t fmt.«fmtFlagsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) fmt.fmtFlags.t fmt.fmtFlags.underlying := by
   solve_into_val_typed_struct
 
 instance fmtFlags_access_load_widPresent (l : Loc) (v : fmt.fmtFlags.t) (dq : DFrac) :
@@ -329,7 +329,7 @@ instance fmt_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fmt_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.fmt.t fmt.«fmtⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) fmt.fmt.t fmt.fmt.underlying := by
   solve_into_val_typed_struct
 
 instance fmt_access_load_buf (l : Loc) (v : fmt.fmt.t) (dq : DFrac) :
@@ -428,7 +428,7 @@ instance pp_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance pp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.pp.t fmt.«ppⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) fmt.pp.t fmt.pp.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -452,7 +452,7 @@ instance scanError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance scanError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.scanError.t fmt.«scanErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) fmt.scanError.t fmt.scanError.underlying := by
   solve_into_val_typed_struct
 
 instance scanError_access_load_err (l : Loc) (v : fmt.scanError.t) (dq : DFrac) :
@@ -497,7 +497,7 @@ instance ssave_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ssave_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.ssave.t fmt.«ssaveⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) fmt.ssave.t fmt.ssave.underlying := by
   solve_into_val_typed_struct
 
 instance ssave_access_load_validSave (l : Loc) (v : fmt.ssave.t) (dq : DFrac) :
@@ -621,7 +621,7 @@ instance ss_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ss_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.ss.t fmt.«ssⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) fmt.ss.t fmt.ss.underlying := by
   solve_into_val_typed_struct
 
 instance ss_access_load_rs (l : Loc) (v : fmt.ss.t) (dq : DFrac) :
@@ -720,7 +720,7 @@ instance readRune_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance readRune_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.readRune.t fmt.«readRuneⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) fmt.readRune.t fmt.readRune.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

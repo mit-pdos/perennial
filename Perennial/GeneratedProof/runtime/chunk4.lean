@@ -34,7 +34,7 @@ instance StackRecord_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance StackRecord_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.StackRecord.t runtime.«StackRecordⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.StackRecord.t runtime.StackRecord.underlying := by
   solve_into_val_typed_struct
 
 instance StackRecord_access_load_Stack0 (l : Loc) (v : runtime.StackRecord.t) (dq : DFrac) :
@@ -78,7 +78,7 @@ instance MemProfileRecord_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemProfileRecord_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.MemProfileRecord.t runtime.«MemProfileRecordⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.MemProfileRecord.t runtime.MemProfileRecord.underlying := by
   solve_into_val_typed_struct
 
 instance MemProfileRecord_access_load_AllocBytes (l : Loc) (v : runtime.MemProfileRecord.t) (dq : DFrac) :
@@ -184,7 +184,7 @@ instance addrRanges_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance addrRanges_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.addrRanges.t runtime.«addrRangesⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.addrRanges.t runtime.addrRanges.underlying := by
   solve_into_val_typed_struct
 
 instance addrRanges_access_load_ranges (l : Loc) (v : runtime.addrRanges.t) (dq : DFrac) :
@@ -256,7 +256,7 @@ instance atomicMSpanPointer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance atomicMSpanPointer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.atomicMSpanPointer.t runtime.«atomicMSpanPointerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.atomicMSpanPointer.t runtime.atomicMSpanPointer.underlying := by
   solve_into_val_typed_struct
 
 instance atomicMSpanPointer_access_load_p (l : Loc) (v : runtime.atomicMSpanPointer.t) (dq : DFrac) :
@@ -296,7 +296,7 @@ instance spanSetSpinePointer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance spanSetSpinePointer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.spanSetSpinePointer.t runtime.«spanSetSpinePointerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.spanSetSpinePointer.t runtime.spanSetSpinePointer.underlying := by
   solve_into_val_typed_struct
 
 instance spanSetSpinePointer_access_load_p (l : Loc) (v : runtime.spanSetSpinePointer.t) (dq : DFrac) :
@@ -331,7 +331,7 @@ instance MemStats_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance MemStats_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.MemStats.t runtime.«MemStatsⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) runtime.MemStats.t runtime.MemStats.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -357,7 +357,7 @@ instance wbBuf_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance wbBuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.wbBuf.t runtime.«wbBufⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.wbBuf.t runtime.wbBuf.underlying := by
   solve_into_val_typed_struct
 
 instance wbBuf_access_load_next (l : Loc) (v : runtime.wbBuf.t) (dq : DFrac) :
@@ -428,7 +428,7 @@ instance winlibcall_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance winlibcall_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.winlibcall.t runtime.«winlibcallⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.winlibcall.t runtime.winlibcall.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -452,7 +452,7 @@ instance note_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance note_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.note.t runtime.«noteⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.note.t runtime.note.underlying := by
   solve_into_val_typed_struct
 
 instance note_access_load_key (l : Loc) (v : runtime.note.t) (dq : DFrac) :
@@ -496,7 +496,7 @@ instance mOS_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance mOS_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mOS.t runtime.«mOSⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.mOS.t runtime.mOS.underlying := by
   solve_into_val_typed_struct
 
 instance mOS_access_load_profileTimer (l : Loc) (v : runtime.mOS.t) (dq : DFrac) :
@@ -608,7 +608,7 @@ instance perThreadSyscallArgs_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance perThreadSyscallArgs_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.perThreadSyscallArgs.t runtime.«perThreadSyscallArgsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.perThreadSyscallArgs.t runtime.perThreadSyscallArgs.underlying := by
   solve_into_val_typed_struct
 
 instance perThreadSyscallArgs_access_load_trap (l : Loc) (v : runtime.perThreadSyscallArgs.t) (dq : DFrac) :
@@ -776,7 +776,7 @@ instance PanicNilError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance PanicNilError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.PanicNilError.t runtime.«PanicNilErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.PanicNilError.t runtime.PanicNilError.underlying := by
   solve_into_val_typed_struct
 
 instance PanicNilError_access_load__0 (l : Loc) (v : runtime.PanicNilError.t) (dq : DFrac) :
@@ -816,7 +816,7 @@ instance Pinner_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Pinner_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.Pinner.t runtime.«Pinnerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.Pinner.t runtime.Pinner.underlying := by
   solve_into_val_typed_struct
 
 instance Pinner_access_load_pinner (l : Loc) (v : runtime.Pinner.t) (dq : DFrac) :
@@ -857,7 +857,7 @@ instance pinner_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pinner_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pinner.t runtime.«pinnerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.pinner.t runtime.pinner.underlying := by
   solve_into_val_typed_struct
 
 instance pinner_access_load_refs (l : Loc) (v : runtime.pinner.t) (dq : DFrac) :
@@ -915,7 +915,7 @@ instance pinState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pinState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pinState.t runtime.«pinStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.pinState.t runtime.pinState.underlying := by
   solve_into_val_typed_struct
 
 instance pinState_access_load_bytep (l : Loc) (v : runtime.pinState.t) (dq : DFrac) :
@@ -982,7 +982,7 @@ instance ptabEntry_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ptabEntry_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.ptabEntry.t runtime.«ptabEntryⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) runtime.ptabEntry.t runtime.ptabEntry.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1008,7 +1008,7 @@ instance suspendGState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance suspendGState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.suspendGState.t runtime.«suspendGStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.suspendGState.t runtime.suspendGState.underlying := by
   solve_into_val_typed_struct
 
 instance suspendGState_access_load_g (l : Loc) (v : runtime.suspendGState.t) (dq : DFrac) :
@@ -1119,7 +1119,7 @@ instance xRegs_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance xRegs_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.xRegs.t runtime.«xRegsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.xRegs.t runtime.xRegs.underlying := by
   solve_into_val_typed_struct
 
 instance xRegs_access_load_Z0 (l : Loc) (v : runtime.xRegs.t) (dq : DFrac) :
@@ -1783,7 +1783,7 @@ instance xRegPerG_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance xRegPerG_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.xRegPerG.t runtime.«xRegPerGⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.xRegPerG.t runtime.xRegPerG.underlying := by
   solve_into_val_typed_struct
 
 instance xRegPerG_access_load_state (l : Loc) (v : runtime.xRegPerG.t) (dq : DFrac) :
@@ -1826,7 +1826,7 @@ instance sysmontick_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sysmontick_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sysmontick.t runtime.«sysmontickⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.sysmontick.t runtime.sysmontick.underlying := by
   solve_into_val_typed_struct
 
 instance sysmontick_access_load_schedtick (l : Loc) (v : runtime.sysmontick.t) (dq : DFrac) :
@@ -1917,7 +1917,7 @@ instance syscallingThread_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance syscallingThread_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.syscallingThread.t runtime.«syscallingThreadⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.syscallingThread.t runtime.syscallingThread.underlying := by
   solve_into_val_typed_struct
 
 instance syscallingThread_access_load_gp (l : Loc) (v : runtime.syscallingThread.t) (dq : DFrac) :
@@ -2006,7 +2006,7 @@ instance randomOrder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance randomOrder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.randomOrder.t runtime.«randomOrderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.randomOrder.t runtime.randomOrder.underlying := by
   solve_into_val_typed_struct
 
 instance randomOrder_access_load_count (l : Loc) (v : runtime.randomOrder.t) (dq : DFrac) :
@@ -2065,7 +2065,7 @@ instance randomEnum_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance randomEnum_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.randomEnum.t runtime.«randomEnumⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.randomEnum.t runtime.randomEnum.underlying := by
   solve_into_val_typed_struct
 
 instance randomEnum_access_load_i (l : Loc) (v : runtime.randomEnum.t) (dq : DFrac) :
@@ -2154,7 +2154,7 @@ instance initTask_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance initTask_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.initTask.t runtime.«initTaskⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.initTask.t runtime.initTask.underlying := by
   solve_into_val_typed_struct
 
 instance initTask_access_load_state (l : Loc) (v : runtime.initTask.t) (dq : DFrac) :
@@ -2213,7 +2213,7 @@ instance tracestat_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance tracestat_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.tracestat.t runtime.«tracestatⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.tracestat.t runtime.tracestat.underlying := by
   solve_into_val_typed_struct
 
 instance tracestat_access_load_active (l : Loc) (v : runtime.tracestat.t) (dq : DFrac) :

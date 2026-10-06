@@ -40,7 +40,7 @@ instance Frames_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Frames_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.Frames.t runtime.«Framesⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.Frames.t runtime.Frames.underlying := by
   solve_into_val_typed_struct
 
 instance Frames_access_load_callers (l : Loc) (v : runtime.Frames.t) (dq : DFrac) :
@@ -134,7 +134,7 @@ instance timers_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timers_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.timers.t runtime.«timersⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.timers.t runtime.timers.underlying := by
   solve_into_val_typed_struct
 
 instance timers_access_load_mu (l : Loc) (v : runtime.timers.t) (dq : DFrac) :
@@ -272,7 +272,7 @@ instance wakeableSleep_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance wakeableSleep_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.wakeableSleep.t runtime.«wakeableSleepⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.wakeableSleep.t runtime.wakeableSleep.underlying := by
   solve_into_val_typed_struct
 
 instance wakeableSleep_access_load_timer (l : Loc) (v : runtime.wakeableSleep.t) (dq : DFrac) :
@@ -346,7 +346,7 @@ instance traceBuf_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceBuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceBuf.t runtime.«traceBufⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.traceBuf.t runtime.traceBuf.underlying := by
   solve_into_val_typed_struct
 
 instance traceBuf_access_load__0 (l : Loc) (v : runtime.traceBuf.t) (dq : DFrac) :
@@ -421,7 +421,7 @@ instance traceRegionAlloc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceRegionAlloc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceRegionAlloc.t runtime.«traceRegionAllocⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.traceRegionAlloc.t runtime.traceRegionAlloc.underlying := by
   solve_into_val_typed_struct
 
 instance traceRegionAlloc_access_load_lock (l : Loc) (v : runtime.traceRegionAlloc.t) (dq : DFrac) :
@@ -511,7 +511,7 @@ instance traceStringTable_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceStringTable_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceStringTable.t runtime.«traceStringTableⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.traceStringTable.t runtime.traceStringTable.underlying := by
   solve_into_val_typed_struct
 
 instance traceStringTable_access_load_lock (l : Loc) (v : runtime.traceStringTable.t) (dq : DFrac) :

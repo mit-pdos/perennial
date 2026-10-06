@@ -33,7 +33,7 @@ instance NumError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance NumError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strconv.NumError.t strconv.«NumErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) strconv.NumError.t strconv.NumError.underlying := by
   solve_into_val_typed_struct
 
 instance NumError_access_load_Func (l : Loc) (v : strconv.NumError.t) (dq : DFrac) :

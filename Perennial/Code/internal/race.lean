@@ -65,7 +65,7 @@ noncomputable def Errors [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.internal.race where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon

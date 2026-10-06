@@ -37,7 +37,7 @@ instance importantStruct_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance importantStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.importantStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«importantStructⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.importantStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.importantStruct.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -62,7 +62,7 @@ instance withInterface_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance withInterface_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«withInterfaceⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.underlying := by
   solve_into_val_typed_struct
 
 instance withInterface_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface.t) (dq : DFrac) :
@@ -103,7 +103,7 @@ instance diskWrapper_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance diskWrapper_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«diskWrapperⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.underlying := by
   solve_into_val_typed_struct
 
 instance diskWrapper_access_load_d (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.diskWrapper.t) (dq : DFrac) :
@@ -144,7 +144,7 @@ instance embedA_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance embedA_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«embedAⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.underlying := by
   solve_into_val_typed_struct
 
 instance embedA_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA.t) (dq : DFrac) :
@@ -185,7 +185,7 @@ instance embedB_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance embedB_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«embedBⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.underlying := by
   solve_into_val_typed_struct
 
 instance embedB_access_load_embedA (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB.t) (dq : DFrac) :
@@ -226,7 +226,7 @@ instance embedC_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance embedC_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«embedCⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.underlying := by
   solve_into_val_typed_struct
 
 instance embedC_access_load_embedB (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC.t) (dq : DFrac) :
@@ -267,7 +267,7 @@ instance embedD_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance embedD_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«embedDⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.underlying := by
   solve_into_val_typed_struct
 
 instance embedD_access_load_embedC (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD.t) (dq : DFrac) :
@@ -308,7 +308,7 @@ instance concreteFooer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance concreteFooer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«concreteFooerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.underlying := by
   solve_into_val_typed_struct
 
 instance concreteFooer_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concreteFooer.t) (dq : DFrac) :
@@ -349,7 +349,7 @@ instance FooerUser_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance FooerUser_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«FooerUserⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.underlying := by
   solve_into_val_typed_struct
 
 instance FooerUser_access_load_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser.t) (dq : DFrac) :
@@ -389,7 +389,7 @@ instance concrete1_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance concrete1_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concrete1.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«concrete1ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concrete1.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.concrete1.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -416,7 +416,7 @@ instance allTheLiterals_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance allTheLiterals_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«allTheLiteralsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.underlying := by
   solve_into_val_typed_struct
 
 instance allTheLiterals_access_load_int (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.allTheLiterals.t) (dq : DFrac) :
@@ -489,7 +489,7 @@ instance hasCondVar_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance hasCondVar_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«hasCondVarⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.underlying := by
   solve_into_val_typed_struct
 
 instance hasCondVar_access_load_cond (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.hasCondVar.t) (dq : DFrac) :
@@ -531,7 +531,7 @@ instance mapElem_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance mapElem_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«mapElemⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.underlying := by
   solve_into_val_typed_struct
 
 instance mapElem_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.mapElem.t) (dq : DFrac) :
@@ -588,7 +588,7 @@ instance containsPointer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance containsPointer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«containsPointerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.underlying := by
   solve_into_val_typed_struct
 
 instance containsPointer_access_load_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.containsPointer.t) (dq : DFrac) :
@@ -629,7 +629,7 @@ instance wrapExternalStruct_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance wrapExternalStruct_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«wrapExternalStructⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.underlying := by
   solve_into_val_typed_struct
 
 instance wrapExternalStruct_access_load_j (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapExternalStruct.t) (dq : DFrac) :
@@ -670,7 +670,7 @@ instance typing_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance typing_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«typingⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.underlying := by
   solve_into_val_typed_struct
 
 instance typing_access_load_proph (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing.t) (dq : DFrac) :
@@ -712,7 +712,7 @@ instance composite_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance composite_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«compositeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.underlying := by
   solve_into_val_typed_struct
 
 instance composite_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.composite.t) (dq : DFrac) :
@@ -768,7 +768,7 @@ instance R_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance R_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.R.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«Rⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.R.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.R.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -793,7 +793,7 @@ instance Other_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Other_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«Otherⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.underlying := by
   solve_into_val_typed_struct
 
 instance Other_access_load_RecursiveEmbedded (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other.t) (dq : DFrac) :
@@ -834,7 +834,7 @@ instance RecursiveEmbedded_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RecursiveEmbedded_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«RecursiveEmbeddedⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.underlying := by
   solve_into_val_typed_struct
 
 instance RecursiveEmbedded_access_load_Other (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded.t) (dq : DFrac) :
@@ -875,7 +875,7 @@ instance Block_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Block_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«Blockⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.underlying := by
   solve_into_val_typed_struct
 
 instance Block_access_load_Value (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Block.t) (dq : DFrac) :
@@ -916,7 +916,7 @@ instance thing_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance thing_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«thingⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.underlying := by
   solve_into_val_typed_struct
 
 instance thing_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.thing.t) (dq : DFrac) :
@@ -957,7 +957,7 @@ instance sliceOfThings_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sliceOfThings_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«sliceOfThingsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.underlying := by
   solve_into_val_typed_struct
 
 instance sliceOfThings_access_load_things (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings.t) (dq : DFrac) :
@@ -999,7 +999,7 @@ instance Point_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Point_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«Pointⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.underlying := by
   solve_into_val_typed_struct
 
 instance Point_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.t) (dq : DFrac) :
@@ -1057,7 +1057,7 @@ instance TwoInts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TwoInts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«TwoIntsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.underlying := by
   solve_into_val_typed_struct
 
 instance TwoInts_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts.t) (dq : DFrac) :
@@ -1116,7 +1116,7 @@ instance S_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance S_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«Sⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.underlying := by
   solve_into_val_typed_struct
 
 instance S_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S.t) (dq : DFrac) :
@@ -1189,7 +1189,7 @@ instance B_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance B_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«Bⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.underlying := by
   solve_into_val_typed_struct
 
 instance B_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B.t) (dq : DFrac) :
@@ -1229,7 +1229,7 @@ instance A_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance A_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.A.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.«Aⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.A.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.A.underlying := by
   solve_into_val_typed_struct
 
 end def_

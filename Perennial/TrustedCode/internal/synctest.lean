@@ -12,9 +12,9 @@ namespace internal.synctest
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-def «Runⁱᵐᵖˡ» : val := λ: "f", Panic "not supported"
+def Run.impl : val := λ: "f", Panic "not supported"
 
-def «IsInBubbleⁱᵐᵖˡ» : val := λ: <>, #false
+def IsInBubble.impl : val := λ: <>, #false
 
 end code
 end internal.synctest

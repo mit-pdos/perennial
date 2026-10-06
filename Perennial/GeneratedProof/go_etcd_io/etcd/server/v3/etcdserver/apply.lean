@@ -28,7 +28,7 @@ instance authApplierV3_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance authApplierV3_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.authApplierV3.t go_etcd_io.etcd.server.v3.etcdserver.apply.«authApplierV3ⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.authApplierV3.t go_etcd_io.etcd.server.v3.etcdserver.apply.authApplierV3.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -47,7 +47,7 @@ instance ApplierOptions_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ApplierOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.t go_etcd_io.etcd.server.v3.etcdserver.apply.«ApplierOptionsⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.t go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -71,7 +71,7 @@ instance applierV3backend_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance applierV3backend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applierV3backendⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.underlying := by
   solve_into_val_typed_struct
 
 instance applierV3backend_access_load_options (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3backend.t) (dq : DFrac) :
@@ -106,7 +106,7 @@ instance applierV3Capped_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance applierV3Capped_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Capped.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applierV3Cappedⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Capped.t go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Capped.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -125,7 +125,7 @@ instance applierV3_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance applierV3_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applierV3ⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3.t go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -149,7 +149,7 @@ instance applierV3Corrupt_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance applierV3Corrupt_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applierV3Corruptⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.underlying := by
   solve_into_val_typed_struct
 
 instance applierV3Corrupt_access_load_applierV3 (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Corrupt.t) (dq : DFrac) :
@@ -184,7 +184,7 @@ instance RaftStatusGetter_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance RaftStatusGetter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.RaftStatusGetter.t go_etcd_io.etcd.server.v3.etcdserver.apply.«RaftStatusGetterⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.RaftStatusGetter.t go_etcd_io.etcd.server.v3.etcdserver.apply.RaftStatusGetter.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -211,7 +211,7 @@ instance Result_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Result_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.Result.t go_etcd_io.etcd.server.v3.etcdserver.apply.«Resultⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.Result.t go_etcd_io.etcd.server.v3.etcdserver.apply.Result.underlying := by
   solve_into_val_typed_struct
 
 instance Result_access_load_Resp (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.Result.t) (dq : DFrac) :
@@ -294,7 +294,7 @@ instance applyFunc_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance applyFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applyFunc.t go_etcd_io.etcd.server.v3.etcdserver.apply.«applyFuncⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applyFunc.t go_etcd_io.etcd.server.v3.etcdserver.apply.applyFunc.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -313,7 +313,7 @@ instance quotaApplierV3_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance quotaApplierV3_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.quotaApplierV3.t go_etcd_io.etcd.server.v3.etcdserver.apply.«quotaApplierV3ⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.quotaApplierV3.t go_etcd_io.etcd.server.v3.etcdserver.apply.quotaApplierV3.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -332,7 +332,7 @@ instance UberApplier_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance UberApplier_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.UberApplier.t go_etcd_io.etcd.server.v3.etcdserver.apply.«UberApplierⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.UberApplier.t go_etcd_io.etcd.server.v3.etcdserver.apply.UberApplier.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -351,7 +351,7 @@ instance uberApplier_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance uberApplier_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.uberApplier.t go_etcd_io.etcd.server.v3.etcdserver.apply.«uberApplierⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.uberApplier.t go_etcd_io.etcd.server.v3.etcdserver.apply.uberApplier.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

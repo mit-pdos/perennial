@@ -37,7 +37,7 @@ instance AuthenticateResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthenticateResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthenticateResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthenticateResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse.t) (dq : DFrac) :
@@ -144,7 +144,7 @@ instance AuthUserAddResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthUserAddResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthUserAddResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthUserAddResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse.t) (dq : DFrac) :
@@ -236,7 +236,7 @@ instance AuthUserGetResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthUserGetResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthUserGetResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthUserGetResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse.t) (dq : DFrac) :
@@ -343,7 +343,7 @@ instance AuthUserDeleteResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthUserDeleteResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthUserDeleteResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthUserDeleteResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse.t) (dq : DFrac) :
@@ -434,7 +434,7 @@ instance AuthUserChangePasswordResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthUserChangePasswordResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthUserChangePasswordResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthUserChangePasswordResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse.t) (dq : DFrac) :
@@ -525,7 +525,7 @@ instance AuthUserGrantRoleResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthUserGrantRoleResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthUserGrantRoleResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthUserGrantRoleResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse.t) (dq : DFrac) :
@@ -616,7 +616,7 @@ instance AuthUserRevokeRoleResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthUserRevokeRoleResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthUserRevokeRoleResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthUserRevokeRoleResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse.t) (dq : DFrac) :
@@ -707,7 +707,7 @@ instance AuthRoleAddResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthRoleAddResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthRoleAddResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthRoleAddResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse.t) (dq : DFrac) :
@@ -790,7 +790,7 @@ instance AuthRoleGetResponse_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance AuthRoleGetResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthRoleGetResponseⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetResponse.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -818,7 +818,7 @@ instance AuthRoleListResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthRoleListResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthRoleListResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthRoleListResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse.t) (dq : DFrac) :
@@ -926,7 +926,7 @@ instance AuthUserListResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthUserListResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthUserListResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthUserListResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse.t) (dq : DFrac) :
@@ -1033,7 +1033,7 @@ instance AuthRoleDeleteResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthRoleDeleteResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthRoleDeleteResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthRoleDeleteResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse.t) (dq : DFrac) :
@@ -1124,7 +1124,7 @@ instance AuthRoleGrantPermissionResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthRoleGrantPermissionResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthRoleGrantPermissionResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthRoleGrantPermissionResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse.t) (dq : DFrac) :
@@ -1215,7 +1215,7 @@ instance AuthRoleRevokePermissionResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthRoleRevokePermissionResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthRoleRevokePermissionResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse.underlying := by
   solve_into_val_typed_struct
 
 instance AuthRoleRevokePermissionResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse.t) (dq : DFrac) :
@@ -1298,7 +1298,7 @@ instance KVClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance KVClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.KVClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«KVClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.KVClient.t go_etcd_io.etcd.api.v3.etcdserverpb.KVClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1317,7 +1317,7 @@ instance kVClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance kVClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.kVClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«kVClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.kVClient.t go_etcd_io.etcd.api.v3.etcdserverpb.kVClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1336,7 +1336,7 @@ instance KVServer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance KVServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.KVServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«KVServerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.KVServer.t go_etcd_io.etcd.api.v3.etcdserverpb.KVServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1359,7 +1359,7 @@ instance UnimplementedKVServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedKVServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedKVServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnimplementedKVServerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedKVServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedKVServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -1378,7 +1378,7 @@ instance WatchClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance WatchClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchClient.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

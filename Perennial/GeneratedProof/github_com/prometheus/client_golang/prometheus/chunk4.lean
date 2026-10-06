@@ -39,7 +39,7 @@ instance gauge_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance gauge_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.gauge.t github_com.prometheus.client_golang.prometheus.«gaugeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.gauge.t github_com.prometheus.client_golang.prometheus.gauge.underlying := by
   solve_into_val_typed_struct
 
 instance gauge_access_load_valBits (l : Loc) (v : github_com.prometheus.client_golang.prometheus.gauge.t) (dq : DFrac) :
@@ -133,7 +133,7 @@ instance batchHistogram_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance batchHistogram_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.batchHistogram.t github_com.prometheus.client_golang.prometheus.«batchHistogramⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.batchHistogram.t github_com.prometheus.client_golang.prometheus.batchHistogram.underlying := by
   solve_into_val_typed_struct
 
 instance batchHistogram_access_load_selfCollector (l : Loc) (v : github_com.prometheus.client_golang.prometheus.batchHistogram.t) (dq : DFrac) :
@@ -270,7 +270,7 @@ instance HistogramVecOpts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance HistogramVecOpts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.HistogramVecOpts.t github_com.prometheus.client_golang.prometheus.«HistogramVecOptsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.HistogramVecOpts.t github_com.prometheus.client_golang.prometheus.HistogramVecOpts.underlying := by
   solve_into_val_typed_struct
 
 instance HistogramVecOpts_access_load_HistogramOpts (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramVecOpts.t) (dq : DFrac) :
@@ -327,7 +327,7 @@ instance SummaryVecOpts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SummaryVecOpts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.SummaryVecOpts.t github_com.prometheus.client_golang.prometheus.«SummaryVecOptsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.SummaryVecOpts.t github_com.prometheus.client_golang.prometheus.SummaryVecOpts.underlying := by
   solve_into_val_typed_struct
 
 instance SummaryVecOpts_access_load_SummaryOpts (l : Loc) (v : github_com.prometheus.client_golang.prometheus.SummaryVecOpts.t) (dq : DFrac) :
@@ -387,7 +387,7 @@ instance valueFunc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance valueFunc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.valueFunc.t github_com.prometheus.client_golang.prometheus.«valueFuncⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.valueFunc.t github_com.prometheus.client_golang.prometheus.valueFunc.underlying := by
   solve_into_val_typed_struct
 
 instance valueFunc_access_load_selfCollector (l : Loc) (v : github_com.prometheus.client_golang.prometheus.valueFunc.t) (dq : DFrac) :

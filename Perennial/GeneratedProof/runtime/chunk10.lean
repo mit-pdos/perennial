@@ -43,7 +43,7 @@ instance gobuf_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance gobuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gobuf.t runtime.«gobufⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.gobuf.t runtime.gobuf.underlying := by
   solve_into_val_typed_struct
 
 instance gobuf_access_load_sp (l : Loc) (v : runtime.gobuf.t) (dq : DFrac) :
@@ -163,7 +163,7 @@ instance maybeTraceableChan_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance maybeTraceableChan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.maybeTraceableChan.t runtime.«maybeTraceableChanⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.maybeTraceableChan.t runtime.maybeTraceableChan.underlying := by
   solve_into_val_typed_struct
 
 instance maybeTraceableChan_access_load_maybeTraceablePtr (l : Loc) (v : runtime.maybeTraceableChan.t) (dq : DFrac) :
@@ -204,7 +204,7 @@ instance heldLockInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance heldLockInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.heldLockInfo.t runtime.«heldLockInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.heldLockInfo.t runtime.heldLockInfo.underlying := by
   solve_into_val_typed_struct
 
 instance heldLockInfo_access_load_lockAddr (l : Loc) (v : runtime.heldLockInfo.t) (dq : DFrac) :
@@ -260,7 +260,7 @@ instance gTraceState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance gTraceState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gTraceState.t runtime.«gTraceStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.gTraceState.t runtime.gTraceState.underlying := by
   solve_into_val_typed_struct
 
 instance gTraceState_access_load_traceSchedResourceState (l : Loc) (v : runtime.gTraceState.t) (dq : DFrac) :
@@ -301,7 +301,7 @@ instance mPadded_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance mPadded_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mPadded.t runtime.«mPaddedⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.mPadded.t runtime.mPadded.underlying := by
   solve_into_val_typed_struct
 
 instance mPadded_access_load_m (l : Loc) (v : runtime.mPadded.t) (dq : DFrac) :
@@ -360,7 +360,7 @@ instance runtimeSelect_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance runtimeSelect_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.runtimeSelect.t runtime.«runtimeSelectⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.runtimeSelect.t runtime.runtimeSelect.underlying := by
   solve_into_val_typed_struct
 
 instance runtimeSelect_access_load_dir (l : Loc) (v : runtime.runtimeSelect.t) (dq : DFrac) :
@@ -451,7 +451,7 @@ instance gsignalStack_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance gsignalStack_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gsignalStack.t runtime.«gsignalStackⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.gsignalStack.t runtime.gsignalStack.underlying := by
   solve_into_val_typed_struct
 
 instance gsignalStack_access_load_stack (l : Loc) (v : runtime.gsignalStack.t) (dq : DFrac) :
@@ -541,7 +541,7 @@ instance adjustinfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance adjustinfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.adjustinfo.t runtime.«adjustinfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.adjustinfo.t runtime.adjustinfo.underlying := by
   solve_into_val_typed_struct
 
 instance adjustinfo_access_load_old (l : Loc) (v : runtime.adjustinfo.t) (dq : DFrac) :
@@ -620,7 +620,7 @@ instance stkframe_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stkframe_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stkframe.t runtime.«stkframeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.stkframe.t runtime.stkframe.underlying := by
   solve_into_val_typed_struct
 
 instance stkframe_access_load_fn (l : Loc) (v : runtime.stkframe.t) (dq : DFrac) :
@@ -779,7 +779,7 @@ instance Frame_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Frame_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.Frame.t runtime.«Frameⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.Frame.t runtime.Frame.underlying := by
   solve_into_val_typed_struct
 
 instance Frame_access_load_PC (l : Loc) (v : runtime.Frame.t) (dq : DFrac) :
@@ -932,7 +932,7 @@ instance pcvalueCache_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pcvalueCache_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pcvalueCache.t runtime.«pcvalueCacheⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.pcvalueCache.t runtime.pcvalueCache.underlying := by
   solve_into_val_typed_struct
 
 instance pcvalueCache_access_load_entries (l : Loc) (v : runtime.pcvalueCache.t) (dq : DFrac) :
@@ -989,7 +989,7 @@ instance inlineUnwinder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance inlineUnwinder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.inlineUnwinder.t runtime.«inlineUnwinderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.inlineUnwinder.t runtime.inlineUnwinder.underlying := by
   solve_into_val_typed_struct
 
 instance inlineUnwinder_access_load_f (l : Loc) (v : runtime.inlineUnwinder.t) (dq : DFrac) :
@@ -1047,7 +1047,7 @@ instance specialBubble_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance specialBubble_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.specialBubble.t runtime.«specialBubbleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.specialBubble.t runtime.specialBubble.underlying := by
   solve_into_val_typed_struct
 
 instance specialBubble_access_load__0 (l : Loc) (v : runtime.specialBubble.t) (dq : DFrac) :
@@ -1122,7 +1122,7 @@ instance traceBufHeader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceBufHeader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceBufHeader.t runtime.«traceBufHeaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.traceBufHeader.t runtime.traceBufHeader.underlying := by
   solve_into_val_typed_struct
 
 instance traceBufHeader_access_load_link (l : Loc) (v : runtime.traceBufHeader.t) (dq : DFrac) :
@@ -1210,7 +1210,7 @@ instance traceEventWriter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceEventWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceEventWriter.t runtime.«traceEventWriterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.traceEventWriter.t runtime.traceEventWriter.underlying := by
   solve_into_val_typed_struct
 
 instance traceEventWriter_access_load_tl (l : Loc) (v : runtime.traceEventWriter.t) (dq : DFrac) :
@@ -1252,7 +1252,7 @@ instance traceRegionAllocBlock_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceRegionAllocBlock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceRegionAllocBlock.t runtime.«traceRegionAllocBlockⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.traceRegionAllocBlock.t runtime.traceRegionAllocBlock.underlying := by
   solve_into_val_typed_struct
 
 instance traceRegionAllocBlock_access_load__0 (l : Loc) (v : runtime.traceRegionAllocBlock.t) (dq : DFrac) :
@@ -1329,7 +1329,7 @@ instance pTraceState_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pTraceState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pTraceState.t runtime.«pTraceStateⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.pTraceState.t runtime.pTraceState.underlying := by
   solve_into_val_typed_struct
 
 instance pTraceState_access_load_traceSchedResourceState (l : Loc) (v : runtime.pTraceState.t) (dq : DFrac) :
@@ -1449,7 +1449,7 @@ instance traceStackTable_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceStackTable_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceStackTable.t runtime.«traceStackTableⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.traceStackTable.t runtime.traceStackTable.underlying := by
   solve_into_val_typed_struct
 
 instance traceStackTable_access_load_tab (l : Loc) (v : runtime.traceStackTable.t) (dq : DFrac) :
@@ -1489,7 +1489,7 @@ instance traceTypeTable_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceTypeTable_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceTypeTable.t runtime.«traceTypeTableⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.traceTypeTable.t runtime.traceTypeTable.underlying := by
   solve_into_val_typed_struct
 
 instance traceTypeTable_access_load_tab (l : Loc) (v : runtime.traceTypeTable.t) (dq : DFrac) :

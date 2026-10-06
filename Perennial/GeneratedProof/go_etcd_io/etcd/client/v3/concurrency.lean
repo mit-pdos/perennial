@@ -47,7 +47,7 @@ instance Election_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Election_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Election.t go_etcd_io.etcd.client.v3.concurrency.«Electionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Election.t go_etcd_io.etcd.client.v3.concurrency.Election.underlying := by
   solve_into_val_typed_struct
 
 instance Election_access_load_session (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (dq : DFrac) :
@@ -171,7 +171,7 @@ instance Mutex_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Mutex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Mutex.t go_etcd_io.etcd.client.v3.concurrency.«Mutexⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Mutex.t go_etcd_io.etcd.client.v3.concurrency.Mutex.underlying := by
   solve_into_val_typed_struct
 
 instance Mutex_access_load_s (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (dq : DFrac) :
@@ -275,7 +275,7 @@ instance lockerMutex_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lockerMutex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t go_etcd_io.etcd.client.v3.concurrency.«lockerMutexⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t go_etcd_io.etcd.client.v3.concurrency.lockerMutex.underlying := by
   solve_into_val_typed_struct
 
 instance lockerMutex_access_load_Mutex (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t) (dq : DFrac) :
@@ -320,7 +320,7 @@ instance Session_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Session_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Session.t go_etcd_io.etcd.client.v3.concurrency.«Sessionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Session.t go_etcd_io.etcd.client.v3.concurrency.Session.underlying := by
   solve_into_val_typed_struct
 
 instance Session_access_load_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (dq : DFrac) :
@@ -442,7 +442,7 @@ instance sessionOptions_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sessionOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go_etcd_io.etcd.client.v3.concurrency.«sessionOptionsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go_etcd_io.etcd.client.v3.concurrency.sessionOptions.underlying := by
   solve_into_val_typed_struct
 
 instance sessionOptions_access_load_ttl (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (dq : DFrac) :
@@ -514,7 +514,7 @@ instance stmError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmError.t go_etcd_io.etcd.client.v3.concurrency.«stmErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmError.t go_etcd_io.etcd.client.v3.concurrency.stmError.underlying := by
   solve_into_val_typed_struct
 
 instance stmError_access_load_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmError.t) (dq : DFrac) :
@@ -556,7 +556,7 @@ instance stmOptions_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go_etcd_io.etcd.client.v3.concurrency.«stmOptionsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go_etcd_io.etcd.client.v3.concurrency.stmOptions.underlying := by
   solve_into_val_typed_struct
 
 instance stmOptions_access_load_iso (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (dq : DFrac) :
@@ -629,7 +629,7 @@ instance stmResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go_etcd_io.etcd.client.v3.concurrency.«stmResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go_etcd_io.etcd.client.v3.concurrency.stmResponse.underlying := by
   solve_into_val_typed_struct
 
 instance stmResponse_access_load_resp (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse.t) (dq : DFrac) :
@@ -690,7 +690,7 @@ instance stm_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stm_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stm.t go_etcd_io.etcd.client.v3.concurrency.«stmⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stm.t go_etcd_io.etcd.client.v3.concurrency.stm.underlying := by
   solve_into_val_typed_struct
 
 instance stm_access_load_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (dq : DFrac) :
@@ -811,7 +811,7 @@ instance stmPut_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmPut_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmPut.t go_etcd_io.etcd.client.v3.concurrency.«stmPutⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmPut.t go_etcd_io.etcd.client.v3.concurrency.stmPut.underlying := by
   solve_into_val_typed_struct
 
 instance stmPut_access_load_val (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut.t) (dq : DFrac) :
@@ -868,7 +868,7 @@ instance stmSerializable_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmSerializable_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go_etcd_io.etcd.client.v3.concurrency.«stmSerializableⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go_etcd_io.etcd.client.v3.concurrency.stmSerializable.underlying := by
   solve_into_val_typed_struct
 
 instance stmSerializable_access_load_stm (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t) (dq : DFrac) :

@@ -30,7 +30,7 @@ instance BufferedWriteSyncer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance BufferedWriteSyncer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.BufferedWriteSyncer.t go_uber_org.zap.zapcore.«BufferedWriteSyncerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.BufferedWriteSyncer.t go_uber_org.zap.zapcore.BufferedWriteSyncer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -53,7 +53,7 @@ instance systemClock_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance systemClock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.systemClock.t go_uber_org.zap.zapcore.«systemClockⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.systemClock.t go_uber_org.zap.zapcore.systemClock.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -77,7 +77,7 @@ instance consoleEncoder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance consoleEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.consoleEncoder.t go_uber_org.zap.zapcore.«consoleEncoderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.consoleEncoder.t go_uber_org.zap.zapcore.consoleEncoder.underlying := by
   solve_into_val_typed_struct
 
 instance consoleEncoder_access_load_jsonEncoder (l : Loc) (v : go_uber_org.zap.zapcore.consoleEncoder.t) (dq : DFrac) :
@@ -116,7 +116,7 @@ instance nopCore_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nopCore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.nopCore.t go_uber_org.zap.zapcore.«nopCoreⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.nopCore.t go_uber_org.zap.zapcore.nopCore.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -135,7 +135,7 @@ instance Encoder_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Encoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Encoder.t go_uber_org.zap.zapcore.«Encoderⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Encoder.t go_uber_org.zap.zapcore.Encoder.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -161,7 +161,7 @@ instance ioCore_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ioCore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ioCore.t go_uber_org.zap.zapcore.«ioCoreⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.ioCore.t go_uber_org.zap.zapcore.ioCore.underlying := by
   solve_into_val_typed_struct
 
 instance ioCore_access_load_LevelEnabler (l : Loc) (v : go_uber_org.zap.zapcore.ioCore.t) (dq : DFrac) :
@@ -248,7 +248,7 @@ instance EncoderConfig_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EncoderConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.EncoderConfig.t go_uber_org.zap.zapcore.«EncoderConfigⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.EncoderConfig.t go_uber_org.zap.zapcore.EncoderConfig.underlying := by
   solve_into_val_typed_struct
 
 instance EncoderConfig_access_load_MessageKey (l : Loc) (v : go_uber_org.zap.zapcore.EncoderConfig.t) (dq : DFrac) :
@@ -532,7 +532,7 @@ instance EntryCaller_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EntryCaller_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.EntryCaller.t go_uber_org.zap.zapcore.«EntryCallerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.EntryCaller.t go_uber_org.zap.zapcore.EntryCaller.underlying := by
   solve_into_val_typed_struct
 
 instance EntryCaller_access_load_Defined (l : Loc) (v : go_uber_org.zap.zapcore.EntryCaller.t) (dq : DFrac) :
@@ -641,7 +641,7 @@ instance Entry_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Entry_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Entry.t go_uber_org.zap.zapcore.«Entryⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Entry.t go_uber_org.zap.zapcore.Entry.underlying := by
   solve_into_val_typed_struct
 
 instance Entry_access_load_Level (l : Loc) (v : go_uber_org.zap.zapcore.Entry.t) (dq : DFrac) :
@@ -765,7 +765,7 @@ instance CheckedEntry_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CheckedEntry_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.CheckedEntry.t go_uber_org.zap.zapcore.«CheckedEntryⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.CheckedEntry.t go_uber_org.zap.zapcore.CheckedEntry.underlying := by
   solve_into_val_typed_struct
 
 instance CheckedEntry_access_load_Entry (l : Loc) (v : go_uber_org.zap.zapcore.CheckedEntry.t) (dq : DFrac) :
@@ -869,7 +869,7 @@ instance errArrayElem_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance errArrayElem_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.errArrayElem.t go_uber_org.zap.zapcore.«errArrayElemⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.errArrayElem.t go_uber_org.zap.zapcore.errArrayElem.underlying := by
   solve_into_val_typed_struct
 
 instance errArrayElem_access_load_err (l : Loc) (v : go_uber_org.zap.zapcore.errArrayElem.t) (dq : DFrac) :
@@ -913,7 +913,7 @@ instance Field_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Field_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Field.t go_uber_org.zap.zapcore.«Fieldⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Field.t go_uber_org.zap.zapcore.Field.underlying := by
   solve_into_val_typed_struct
 
 instance Field_access_load_Key (l : Loc) (v : go_uber_org.zap.zapcore.Field.t) (dq : DFrac) :
@@ -1018,7 +1018,7 @@ instance hooked_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance hooked_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.hooked.t go_uber_org.zap.zapcore.«hookedⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.hooked.t go_uber_org.zap.zapcore.hooked.underlying := by
   solve_into_val_typed_struct
 
 instance hooked_access_load_Core (l : Loc) (v : go_uber_org.zap.zapcore.hooked.t) (dq : DFrac) :
@@ -1075,7 +1075,7 @@ instance levelFilterCore_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance levelFilterCore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.levelFilterCore.t go_uber_org.zap.zapcore.«levelFilterCoreⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.levelFilterCore.t go_uber_org.zap.zapcore.levelFilterCore.underlying := by
   solve_into_val_typed_struct
 
 instance levelFilterCore_access_load_core (l : Loc) (v : go_uber_org.zap.zapcore.levelFilterCore.t) (dq : DFrac) :
@@ -1126,7 +1126,7 @@ instance jsonEncoder_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance jsonEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.jsonEncoder.t go_uber_org.zap.zapcore.«jsonEncoderⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.jsonEncoder.t go_uber_org.zap.zapcore.jsonEncoder.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1153,7 +1153,7 @@ instance lazyWithCore_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lazyWithCore_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.lazyWithCore.t go_uber_org.zap.zapcore.«lazyWithCoreⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.lazyWithCore.t go_uber_org.zap.zapcore.lazyWithCore.underlying := by
   solve_into_val_typed_struct
 
 instance lazyWithCore_access_load_core (l : Loc) (v : go_uber_org.zap.zapcore.lazyWithCore.t) (dq : DFrac) :
@@ -1242,7 +1242,7 @@ instance MapObjectEncoder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MapObjectEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.MapObjectEncoder.t go_uber_org.zap.zapcore.«MapObjectEncoderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.MapObjectEncoder.t go_uber_org.zap.zapcore.MapObjectEncoder.underlying := by
   solve_into_val_typed_struct
 
 instance MapObjectEncoder_access_load_Fields (l : Loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder.t) (dq : DFrac) :
@@ -1298,7 +1298,7 @@ instance sliceArrayEncoder_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sliceArrayEncoder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.sliceArrayEncoder.t go_uber_org.zap.zapcore.«sliceArrayEncoderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.sliceArrayEncoder.t go_uber_org.zap.zapcore.sliceArrayEncoder.underlying := by
   solve_into_val_typed_struct
 
 instance sliceArrayEncoder_access_load_elems (l : Loc) (v : go_uber_org.zap.zapcore.sliceArrayEncoder.t) (dq : DFrac) :
@@ -1339,7 +1339,7 @@ instance counter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance counter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.counter.t go_uber_org.zap.zapcore.«counterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.counter.t go_uber_org.zap.zapcore.counter.underlying := by
   solve_into_val_typed_struct
 
 instance counter_access_load_resetAt (l : Loc) (v : go_uber_org.zap.zapcore.counter.t) (dq : DFrac) :
@@ -1400,7 +1400,7 @@ instance sampler_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sampler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.sampler.t go_uber_org.zap.zapcore.«samplerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.sampler.t go_uber_org.zap.zapcore.sampler.underlying := by
   solve_into_val_typed_struct
 
 instance sampler_access_load_Core (l : Loc) (v : go_uber_org.zap.zapcore.sampler.t) (dq : DFrac) :
@@ -1521,7 +1521,7 @@ instance lockedWriteSyncer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lockedWriteSyncer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.lockedWriteSyncer.t go_uber_org.zap.zapcore.«lockedWriteSyncerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.lockedWriteSyncer.t go_uber_org.zap.zapcore.lockedWriteSyncer.underlying := by
   solve_into_val_typed_struct
 
 instance lockedWriteSyncer_access_load_Mutex (l : Loc) (v : go_uber_org.zap.zapcore.lockedWriteSyncer.t) (dq : DFrac) :
@@ -1577,7 +1577,7 @@ instance writerWrapper_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance writerWrapper_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.writerWrapper.t go_uber_org.zap.zapcore.«writerWrapperⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.writerWrapper.t go_uber_org.zap.zapcore.writerWrapper.underlying := by
   solve_into_val_typed_struct
 
 instance writerWrapper_access_load_Writer (l : Loc) (v : go_uber_org.zap.zapcore.writerWrapper.t) (dq : DFrac) :

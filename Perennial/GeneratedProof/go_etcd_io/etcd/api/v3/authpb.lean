@@ -34,7 +34,7 @@ instance UserAddOptions_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UserAddOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go_etcd_io.etcd.api.v3.authpb.«UserAddOptionsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go_etcd_io.etcd.api.v3.authpb.UserAddOptions.underlying := by
   solve_into_val_typed_struct
 
 instance UserAddOptions_access_load_NoPassword (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (dq : DFrac) :
@@ -128,7 +128,7 @@ instance User_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance User_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.User.t go_etcd_io.etcd.api.v3.authpb.«Userⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.User.t go_etcd_io.etcd.api.v3.authpb.User.underlying := by
   solve_into_val_typed_struct
 
 instance User_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (dq : DFrac) :
@@ -269,7 +269,7 @@ instance Permission_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Permission_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.Permission.t go_etcd_io.etcd.api.v3.authpb.«Permissionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.Permission.t go_etcd_io.etcd.api.v3.authpb.Permission.underlying := by
   solve_into_val_typed_struct
 
 instance Permission_access_load_PermType (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (dq : DFrac) :
@@ -393,7 +393,7 @@ instance Role_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Role_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.Role.t go_etcd_io.etcd.api.v3.authpb.«Roleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.Role.t go_etcd_io.etcd.api.v3.authpb.Role.underlying := by
   solve_into_val_typed_struct
 
 instance Role_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (dq : DFrac) :

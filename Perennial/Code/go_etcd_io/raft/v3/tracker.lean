@@ -86,7 +86,7 @@ noncomputable def MakeProgressTracker [FfiSyntax] [GoGlobalContext] : GoString :
     that brings it from size < maxBytes to size >= maxBytes.
 
     go: inflights.go:46:6 -/
-noncomputable def «NewInflightsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewInflights.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "size"
   (Lam "maxBytes"
   (App (Val exceptionDo)
@@ -101,7 +101,7 @@ noncomputable def «NewInflightsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     the receiver.
 
     go: inflights.go:55:22 -/
-noncomputable def «Inflights__Cloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Inflights.Clone.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -126,7 +126,7 @@ noncomputable def «Inflights__Cloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     provide a monotonic sequence of indexes.
 
     go: inflights.go:65:22 -/
-noncomputable def «Inflights__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Inflights.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam "index"
   (Lam "bytes"
@@ -184,7 +184,7 @@ noncomputable def «Inflights__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     thousands of Raft groups per process.
 
     go: inflights.go:85:22 -/
-noncomputable def «Inflights__growⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Inflights.grow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -226,7 +226,7 @@ noncomputable def «Inflights__growⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- FreeLE frees the inflights smaller or equal to the given `to` flight.
 
     go: inflights.go:98:22 -/
-noncomputable def «Inflights__FreeLEⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Inflights.FreeLE.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam "to"
   (App (Val exceptionDo)
@@ -299,7 +299,7 @@ noncomputable def «Inflights__FreeLEⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
 /-- Full returns true if no more messages can be sent at the moment.
 
     go: inflights.go:131:22 -/
-noncomputable def «Inflights__Fullⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Inflights.Full.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -310,7 +310,7 @@ noncomputable def «Inflights__Fullⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- Count returns the number of inflight messages.
 
     go: inflights.go:136:22 -/
-noncomputable def «Inflights__Countⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Inflights.Count.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -321,7 +321,7 @@ noncomputable def «Inflights__Countⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- reset frees all inflights.
 
     go: inflights.go:139:22 -/
-noncomputable def «Inflights__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Inflights.reset.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "in"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -345,7 +345,7 @@ noncomputable def «Inflights__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     PendingSnapshot, and Inflights.
 
     go: progress.go:121:21 -/
-noncomputable def «Progress__ResetStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.ResetState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "state"
   (App (Val exceptionDo)
@@ -373,7 +373,7 @@ noncomputable def «Progress__ResetStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     optionally and if larger, the index of the pending snapshot.
 
     go: progress.go:130:21 -/
-noncomputable def «Progress__BecomeProbeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.BecomeProbe.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -413,7 +413,7 @@ noncomputable def «Progress__BecomeProbeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
 /-- BecomeReplicate transitions into StateReplicate, resetting Next to Match+1.
 
     go: progress.go:146:21 -/
-noncomputable def «Progress__BecomeReplicateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.BecomeReplicate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -433,7 +433,7 @@ noncomputable def «Progress__BecomeReplicateⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
     snapshot index.
 
     go: progress.go:153:21 -/
-noncomputable def «Progress__BecomeSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.BecomeSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "snapshoti"
   (App (Val exceptionDo)
@@ -465,7 +465,7 @@ noncomputable def «Progress__BecomeSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
     Must be used with StateProbe or StateReplicate.
 
     go: progress.go:165:21 -/
-noncomputable def «Progress__SentEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.SentEntries.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "entries"
   (Lam "bytes"
@@ -510,7 +510,7 @@ noncomputable def «Progress__SentEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     advance the follower's commit index.
 
     go: progress.go:189:21 -/
-noncomputable def «Progress__CanBumpCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.CanBumpCommit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "index"
   (App (Val exceptionDo)
@@ -522,7 +522,7 @@ noncomputable def «Progress__CanBumpCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
 /-- SentCommit updates the sentCommit.
 
     go: progress.go:198:21 -/
-noncomputable def «Progress__SentCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.SentCommit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "commit"
   (App (Val exceptionDo)
@@ -540,7 +540,7 @@ noncomputable def «Progress__SentCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     an outdated message. Otherwise it updates the progress and returns true.
 
     go: progress.go:205:21 -/
-noncomputable def «Progress__MaybeUpdateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.MaybeUpdate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "n"
   (App (Val exceptionDo)
@@ -582,7 +582,7 @@ noncomputable def «Progress__MaybeUpdateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     cleared for sending log entries.
 
     go: progress.go:226:21 -/
-noncomputable def «Progress__MaybeDecrToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.MaybeDecrTo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam "rejected"
   (Lam "matchHint"
@@ -647,7 +647,7 @@ noncomputable def «Progress__MaybeDecrToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     log entries again.
 
     go: progress.go:262:21 -/
-noncomputable def «Progress__IsPausedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.IsPaused.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -667,7 +667,7 @@ noncomputable def «Progress__IsPausedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))))))
 
 /-- go: progress.go:275:21 -/
-noncomputable def «Progress__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Progress.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "pr"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -749,7 +749,7 @@ noncomputable def «Progress__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- String prints the ProgressMap in sorted key order, one Progress per line.
 
     go: progress.go:303:22 -/
-noncomputable def «ProgressMap__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressMap.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -803,7 +803,7 @@ noncomputable def «ProgressMap__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "ids") (Var "$r0")))))))))))
 
 /-- go: state.go:42:21 -/
-noncomputable def «StateType__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def StateType.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "st"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -812,7 +812,7 @@ noncomputable def «StateType__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 3 go.string)))) (Pair (App (Val (GoInstruction (GlobalVarAddr prstmap))) (Val #())) (App (Val (GoInstruction (Convert StateType go.int))) (App (Val (GoInstruction (GoLoad StateType))) (Var "st")))))))))))
 
 /-- go: tracker.go:80:17 -/
-noncomputable def «Config__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Config.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -860,7 +860,7 @@ noncomputable def «Config__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- Clone returns a copy of the Config that shares no memory with the original.
 
     go: tracker.go:96:18 -/
-noncomputable def «Config__Cloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Config.Clone.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -913,7 +913,7 @@ noncomputable def «Config__Cloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
 /-- MakeProgressTracker initializes a ProgressTracker.
 
     go: tracker.go:129:6 -/
-noncomputable def «MakeProgressTrackerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MakeProgressTracker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "maxInflight"
   (Lam "maxBytes"
   (App (Val exceptionDo)
@@ -940,7 +940,7 @@ noncomputable def «MakeProgressTrackerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
 /-- ConfState returns a ConfState representing the active configuration.
 
     go: tracker.go:148:27 -/
-noncomputable def «ProgressTracker__ConfStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.ConfState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -957,7 +957,7 @@ noncomputable def «ProgressTracker__ConfStateⁱᵐᵖˡ» [FfiSyntax] [GoGloba
     (i.e. the leader) in the current configuration.
 
     go: tracker.go:160:27 -/
-noncomputable def «ProgressTracker__IsSingletonⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.IsSingleton.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -970,7 +970,7 @@ noncomputable def «ProgressTracker__IsSingletonⁱᵐᵖˡ» [FfiSyntax] [GoGlo
 /-- AckedIndex implements IndexLookuper.
 
     go: tracker.go:169:26 -/
-noncomputable def «matchAckIndexer__AckedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def matchAckIndexer.AckedIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "id"
   (App (Val exceptionDo)
@@ -1002,7 +1002,7 @@ noncomputable def «matchAckIndexer__AckedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     the voting members of the group have acknowledged.
 
     go: tracker.go:179:27 -/
-noncomputable def «ProgressTracker__Committedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.Committed.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1014,7 +1014,7 @@ noncomputable def «ProgressTracker__Committedⁱᵐᵖˡ» [FfiSyntax] [GoGloba
 /-- Visit invokes the supplied closure for all tracked progresses in stable order.
 
     go: tracker.go:184:27 -/
-noncomputable def «ProgressTracker__Visitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.Visit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "f"
   (App (Val exceptionDo)
@@ -1079,7 +1079,7 @@ noncomputable def «ProgressTracker__Visitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
     raft state machine. Otherwise, it returns false.
 
     go: tracker.go:208:27 -/
-noncomputable def «ProgressTracker__QuorumActiveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.QuorumActive.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1116,7 +1116,7 @@ noncomputable def «ProgressTracker__QuorumActiveⁱᵐᵖˡ» [FfiSyntax] [GoGl
 /-- VoterNodes returns a sorted slice of voters.
 
     go: tracker.go:221:27 -/
-noncomputable def «ProgressTracker__VoterNodesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.VoterNodes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1157,7 +1157,7 @@ noncomputable def «ProgressTracker__VoterNodesⁱᵐᵖˡ» [FfiSyntax] [GoGlob
 /-- LearnerNodes returns a sorted slice of learners.
 
     go: tracker.go:232:27 -/
-noncomputable def «ProgressTracker__LearnerNodesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.LearnerNodes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1200,7 +1200,7 @@ noncomputable def «ProgressTracker__LearnerNodesⁱᵐᵖˡ» [FfiSyntax] [GoGl
 /-- ResetVotes prepares for a new round of vote counting via recordVote.
 
     go: tracker.go:245:27 -/
-noncomputable def «ProgressTracker__ResetVotesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.ResetVotes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1216,7 +1216,7 @@ noncomputable def «ProgressTracker__ResetVotesⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     instance if v == true (and declined it otherwise).
 
     go: tracker.go:251:27 -/
-noncomputable def «ProgressTracker__RecordVoteⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.RecordVote.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "id"
   (Lam "v"
@@ -1250,7 +1250,7 @@ noncomputable def «ProgressTracker__RecordVoteⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     election outcome is known.
 
     go: tracker.go:260:27 -/
-noncomputable def «ProgressTracker__TallyVotesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ProgressTracker.TallyVotes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1354,34 +1354,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end inflight
 
-@[reducible] def inflight'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def inflight.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"index" go.uint64),
 (go.field_decl.FieldDecl go!"bytes" go.uint64)]
 
-@[irreducible] def inflight'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  inflight'fds_unsealed
+@[irreducible] def inflight.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  inflight.fieldsUnsealed
 
 instance equals_unfold_inflight [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold inflight'fds inflight'fds_unsealed :=
-  ⟨by unfold inflight'fds; rfl⟩
+    EqualsUnfold inflight.fields inflight.fieldsUnsealed :=
+  ⟨by unfold inflight.fields; rfl⟩
 
-@[reducible] def «inflightⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType inflight'fds)
+@[reducible] def inflight.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType inflight.fields)
 
-class inflight_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  inflight_type_repr : go.TypeReprUnderlying «inflightⁱᵐᵖˡ» inflight.t
-  inflight_underlying : go.UnderlyingDirectedEq inflight «inflightⁱᵐᵖˡ»
-  inflight_get_index : ∀ (x : inflight.t), go.IsGoStepPureDetTagged under (StructFieldGet «inflightⁱᵐᵖˡ» go!"index") #x (Val #(x.index'))
-  inflight_set_index : ∀ (x : inflight.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «inflightⁱᵐᵖˡ» go!"index") (PairV #x #y) (Val #(({ x with index' := y } : inflight.t)))
-  inflight_get_bytes : ∀ (x : inflight.t), go.IsGoStepPureDetTagged under (StructFieldGet «inflightⁱᵐᵖˡ» go!"bytes") #x (Val #(x.bytes'))
-  inflight_set_bytes : ∀ (x : inflight.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «inflightⁱᵐᵖˡ» go!"bytes") (PairV #x #y) (Val #(({ x with bytes' := y } : inflight.t)))
+class inflight.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying inflight.underlying inflight.t
+  underlying : go.UnderlyingDirectedEq inflight inflight.underlying
+  get_index : ∀ (x : inflight.t), go.IsGoStepPureDetTagged under (StructFieldGet inflight.underlying go!"index") #x (Val #(x.index'))
+  set_index : ∀ (x : inflight.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inflight.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : inflight.t)))
+  get_bytes : ∀ (x : inflight.t), go.IsGoStepPureDetTagged under (StructFieldGet inflight.underlying go!"bytes") #x (Val #(x.bytes'))
+  set_bytes : ∀ (x : inflight.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inflight.underlying go!"bytes") (PairV #x #y) (Val #(({ x with bytes' := y } : inflight.t)))
 
-attribute [instance] inflight_Assumptions.inflight_type_repr
-  inflight_Assumptions.inflight_underlying
-  inflight_Assumptions.inflight_get_index
-  inflight_Assumptions.inflight_set_index
-  inflight_Assumptions.inflight_get_bytes
-  inflight_Assumptions.inflight_set_bytes
+attribute [instance] inflight.TypeAssumptions.type_repr
+  inflight.TypeAssumptions.underlying
+  inflight.TypeAssumptions.get_index
+  inflight.TypeAssumptions.set_index
+  inflight.TypeAssumptions.get_bytes
+  inflight.TypeAssumptions.set_bytes
 
 namespace Inflights
 structure t [FfiSyntax] where
@@ -1397,7 +1397,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Inflights
 
-@[reducible] def Inflights'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Inflights.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"start" go.int),
 (go.field_decl.FieldDecl go!"count" go.int),
 (go.field_decl.FieldDecl go!"bytes" go.uint64),
@@ -1405,77 +1405,77 @@ end Inflights
 (go.field_decl.FieldDecl go!"maxBytes" go.uint64),
 (go.field_decl.FieldDecl go!"buffer" (go.GoType.SliceType inflight))]
 
-@[irreducible] def Inflights'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Inflights'fds_unsealed
+@[irreducible] def Inflights.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Inflights.fieldsUnsealed
 
 instance equals_unfold_Inflights [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Inflights'fds Inflights'fds_unsealed :=
-  ⟨by unfold Inflights'fds; rfl⟩
+    EqualsUnfold Inflights.fields Inflights.fieldsUnsealed :=
+  ⟨by unfold Inflights.fields; rfl⟩
 
-@[reducible] def «Inflightsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Inflights'fds)
+@[reducible] def Inflights.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Inflights.fields)
 
-class Inflights_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Inflights_type_repr : go.TypeReprUnderlying «Inflightsⁱᵐᵖˡ» Inflights.t
-  Inflights_underlying : go.UnderlyingDirectedEq Inflights «Inflightsⁱᵐᵖˡ»
-  Inflights_get_start : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet «Inflightsⁱᵐᵖˡ» go!"start") #x (Val #(x.start'))
-  Inflights_set_start : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Inflightsⁱᵐᵖˡ» go!"start") (PairV #x #y) (Val #(({ x with start' := y } : Inflights.t)))
-  Inflights_get_count : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet «Inflightsⁱᵐᵖˡ» go!"count") #x (Val #(x.count'))
-  Inflights_set_count : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Inflightsⁱᵐᵖˡ» go!"count") (PairV #x #y) (Val #(({ x with count' := y } : Inflights.t)))
-  Inflights_get_bytes : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet «Inflightsⁱᵐᵖˡ» go!"bytes") #x (Val #(x.bytes'))
-  Inflights_set_bytes : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Inflightsⁱᵐᵖˡ» go!"bytes") (PairV #x #y) (Val #(({ x with bytes' := y } : Inflights.t)))
-  Inflights_get_size : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet «Inflightsⁱᵐᵖˡ» go!"size") #x (Val #(x.size'))
-  Inflights_set_size : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Inflightsⁱᵐᵖˡ» go!"size") (PairV #x #y) (Val #(({ x with size' := y } : Inflights.t)))
-  Inflights_get_maxBytes : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet «Inflightsⁱᵐᵖˡ» go!"maxBytes") #x (Val #(x.maxBytes'))
-  Inflights_set_maxBytes : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Inflightsⁱᵐᵖˡ» go!"maxBytes") (PairV #x #y) (Val #(({ x with maxBytes' := y } : Inflights.t)))
-  Inflights_get_buffer : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet «Inflightsⁱᵐᵖˡ» go!"buffer") #x (Val #(x.buffer'))
-  Inflights_set_buffer : ∀ (x : Inflights.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Inflightsⁱᵐᵖˡ» go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : Inflights.t)))
-  Inflights'ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"Add" «Inflights__Addⁱᵐᵖˡ»
-  Inflights'ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"Clone" «Inflights__Cloneⁱᵐᵖˡ»
-  Inflights'ptr_Count_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"Count" «Inflights__Countⁱᵐᵖˡ»
-  Inflights'ptr_FreeLE_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"FreeLE" «Inflights__FreeLEⁱᵐᵖˡ»
-  Inflights'ptr_Full_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"Full" «Inflights__Fullⁱᵐᵖˡ»
-  Inflights'ptr_grow_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"grow" «Inflights__growⁱᵐᵖˡ»
-  Inflights'ptr_reset_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"reset" «Inflights__resetⁱᵐᵖˡ»
+class Inflights.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Inflights.underlying Inflights.t
+  underlying : go.UnderlyingDirectedEq Inflights Inflights.underlying
+  get_start : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet Inflights.underlying go!"start") #x (Val #(x.start'))
+  set_start : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"start") (PairV #x #y) (Val #(({ x with start' := y } : Inflights.t)))
+  get_count : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet Inflights.underlying go!"count") #x (Val #(x.count'))
+  set_count : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : Inflights.t)))
+  get_bytes : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet Inflights.underlying go!"bytes") #x (Val #(x.bytes'))
+  set_bytes : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"bytes") (PairV #x #y) (Val #(({ x with bytes' := y } : Inflights.t)))
+  get_size : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet Inflights.underlying go!"size") #x (Val #(x.size'))
+  set_size : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"size") (PairV #x #y) (Val #(({ x with size' := y } : Inflights.t)))
+  get_maxBytes : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet Inflights.underlying go!"maxBytes") #x (Val #(x.maxBytes'))
+  set_maxBytes : ∀ (x : Inflights.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"maxBytes") (PairV #x #y) (Val #(({ x with maxBytes' := y } : Inflights.t)))
+  get_buffer : ∀ (x : Inflights.t), go.IsGoStepPureDetTagged under (StructFieldGet Inflights.underlying go!"buffer") #x (Val #(x.buffer'))
+  set_buffer : ∀ (x : Inflights.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : Inflights.t)))
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"Add" Inflights.Add.impl
+  ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"Clone" Inflights.Clone.impl
+  ptr_Count_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"Count" Inflights.Count.impl
+  ptr_FreeLE_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"FreeLE" Inflights.FreeLE.impl
+  ptr_Full_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"Full" Inflights.Full.impl
+  ptr_grow_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"grow" Inflights.grow.impl
+  ptr_reset_unfold : MethodUnfold (go.GoType.PointerType Inflights) go!"reset" Inflights.reset.impl
 
-attribute [instance] Inflights_Assumptions.Inflights_type_repr
-  Inflights_Assumptions.Inflights_underlying
-  Inflights_Assumptions.Inflights_get_start
-  Inflights_Assumptions.Inflights_set_start
-  Inflights_Assumptions.Inflights_get_count
-  Inflights_Assumptions.Inflights_set_count
-  Inflights_Assumptions.Inflights_get_bytes
-  Inflights_Assumptions.Inflights_set_bytes
-  Inflights_Assumptions.Inflights_get_size
-  Inflights_Assumptions.Inflights_set_size
-  Inflights_Assumptions.Inflights_get_maxBytes
-  Inflights_Assumptions.Inflights_set_maxBytes
-  Inflights_Assumptions.Inflights_get_buffer
-  Inflights_Assumptions.Inflights_set_buffer
-  Inflights_Assumptions.Inflights'ptr_Add_unfold
-  Inflights_Assumptions.Inflights'ptr_Clone_unfold
-  Inflights_Assumptions.Inflights'ptr_Count_unfold
-  Inflights_Assumptions.Inflights'ptr_FreeLE_unfold
-  Inflights_Assumptions.Inflights'ptr_Full_unfold
-  Inflights_Assumptions.Inflights'ptr_grow_unfold
-  Inflights_Assumptions.Inflights'ptr_reset_unfold
+attribute [instance] Inflights.TypeAssumptions.type_repr
+  Inflights.TypeAssumptions.underlying
+  Inflights.TypeAssumptions.get_start
+  Inflights.TypeAssumptions.set_start
+  Inflights.TypeAssumptions.get_count
+  Inflights.TypeAssumptions.set_count
+  Inflights.TypeAssumptions.get_bytes
+  Inflights.TypeAssumptions.set_bytes
+  Inflights.TypeAssumptions.get_size
+  Inflights.TypeAssumptions.set_size
+  Inflights.TypeAssumptions.get_maxBytes
+  Inflights.TypeAssumptions.set_maxBytes
+  Inflights.TypeAssumptions.get_buffer
+  Inflights.TypeAssumptions.set_buffer
+  Inflights.TypeAssumptions.ptr_Add_unfold
+  Inflights.TypeAssumptions.ptr_Clone_unfold
+  Inflights.TypeAssumptions.ptr_Count_unfold
+  Inflights.TypeAssumptions.ptr_FreeLE_unfold
+  Inflights.TypeAssumptions.ptr_Full_unfold
+  Inflights.TypeAssumptions.ptr_grow_unfold
+  Inflights.TypeAssumptions.ptr_reset_unfold
 
 namespace StateType
 abbrev t [FfiSyntax] : Type := w64
 end StateType
 
-@[reducible] def «StateTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def StateType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class StateType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StateType_underlying : go.UnderlyingDirectedEq StateType «StateTypeⁱᵐᵖˡ»
-  StateType_String_unfold : MethodUnfold StateType go!"String" «StateType__Stringⁱᵐᵖˡ»
-  StateType'ptr_String_unfold : MethodUnfold (go.GoType.PointerType StateType) go!"String" (LamV "$r"
+class StateType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq StateType StateType.underlying
+  String_unfold : MethodUnfold StateType go!"String" StateType.String.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType StateType) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve StateType go!"String"))) (App (Val (GoInstruction (GoLoad StateType))) (Var "$r"))))
 
-attribute [instance] StateType_Assumptions.StateType_underlying
-  StateType_Assumptions.StateType_String_unfold
-  StateType_Assumptions.StateType'ptr_String_unfold
+attribute [instance] StateType.TypeAssumptions.underlying
+  StateType.TypeAssumptions.String_unfold
+  StateType.TypeAssumptions.ptr_String_unfold
 
 namespace Progress
 structure t [FfiSyntax] where
@@ -1494,7 +1494,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Progress
 
-@[reducible] def Progress'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Progress.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Match" go.uint64),
 (go.field_decl.FieldDecl go!"Next" go.uint64),
 (go.field_decl.FieldDecl go!"sentCommit" go.uint64),
@@ -1505,97 +1505,97 @@ end Progress
 (go.field_decl.FieldDecl go!"Inflights" (go.GoType.PointerType Inflights)),
 (go.field_decl.FieldDecl go!"IsLearner" go.bool)]
 
-@[irreducible] def Progress'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Progress'fds_unsealed
+@[irreducible] def Progress.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Progress.fieldsUnsealed
 
 instance equals_unfold_Progress [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Progress'fds Progress'fds_unsealed :=
-  ⟨by unfold Progress'fds; rfl⟩
+    EqualsUnfold Progress.fields Progress.fieldsUnsealed :=
+  ⟨by unfold Progress.fields; rfl⟩
 
-@[reducible] def «Progressⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Progress'fds)
+@[reducible] def Progress.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Progress.fields)
 
-class Progress_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Progress_type_repr : go.TypeReprUnderlying «Progressⁱᵐᵖˡ» Progress.t
-  Progress_underlying : go.UnderlyingDirectedEq Progress «Progressⁱᵐᵖˡ»
-  Progress_get_Match : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"Match") #x (Val #(x.Match'))
-  Progress_set_Match : ∀ (x : Progress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"Match") (PairV #x #y) (Val #(({ x with Match' := y } : Progress.t)))
-  Progress_get_Next : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"Next") #x (Val #(x.Next'))
-  Progress_set_Next : ∀ (x : Progress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"Next") (PairV #x #y) (Val #(({ x with Next' := y } : Progress.t)))
-  Progress_get_sentCommit : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"sentCommit") #x (Val #(x.sentCommit'))
-  Progress_set_sentCommit : ∀ (x : Progress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"sentCommit") (PairV #x #y) (Val #(({ x with sentCommit' := y } : Progress.t)))
-  Progress_get_State : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"State") #x (Val #(x.State'))
-  Progress_set_State : ∀ (x : Progress.t) (y : StateType.t), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"State") (PairV #x #y) (Val #(({ x with State' := y } : Progress.t)))
-  Progress_get_PendingSnapshot : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"PendingSnapshot") #x (Val #(x.PendingSnapshot'))
-  Progress_set_PendingSnapshot : ∀ (x : Progress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"PendingSnapshot") (PairV #x #y) (Val #(({ x with PendingSnapshot' := y } : Progress.t)))
-  Progress_get_RecentActive : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"RecentActive") #x (Val #(x.RecentActive'))
-  Progress_set_RecentActive : ∀ (x : Progress.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"RecentActive") (PairV #x #y) (Val #(({ x with RecentActive' := y } : Progress.t)))
-  Progress_get_MsgAppFlowPaused : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"MsgAppFlowPaused") #x (Val #(x.MsgAppFlowPaused'))
-  Progress_set_MsgAppFlowPaused : ∀ (x : Progress.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"MsgAppFlowPaused") (PairV #x #y) (Val #(({ x with MsgAppFlowPaused' := y } : Progress.t)))
-  Progress_get_Inflights : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"Inflights") #x (Val #(x.Inflights'))
-  Progress_set_Inflights : ∀ (x : Progress.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"Inflights") (PairV #x #y) (Val #(({ x with Inflights' := y } : Progress.t)))
-  Progress_get_IsLearner : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet «Progressⁱᵐᵖˡ» go!"IsLearner") #x (Val #(x.IsLearner'))
-  Progress_set_IsLearner : ∀ (x : Progress.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Progressⁱᵐᵖˡ» go!"IsLearner") (PairV #x #y) (Val #(({ x with IsLearner' := y } : Progress.t)))
-  Progress'ptr_BecomeProbe_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"BecomeProbe" «Progress__BecomeProbeⁱᵐᵖˡ»
-  Progress'ptr_BecomeReplicate_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"BecomeReplicate" «Progress__BecomeReplicateⁱᵐᵖˡ»
-  Progress'ptr_BecomeSnapshot_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"BecomeSnapshot" «Progress__BecomeSnapshotⁱᵐᵖˡ»
-  Progress'ptr_CanBumpCommit_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"CanBumpCommit" «Progress__CanBumpCommitⁱᵐᵖˡ»
-  Progress'ptr_IsPaused_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"IsPaused" «Progress__IsPausedⁱᵐᵖˡ»
-  Progress'ptr_MaybeDecrTo_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"MaybeDecrTo" «Progress__MaybeDecrToⁱᵐᵖˡ»
-  Progress'ptr_MaybeUpdate_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"MaybeUpdate" «Progress__MaybeUpdateⁱᵐᵖˡ»
-  Progress'ptr_ResetState_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"ResetState" «Progress__ResetStateⁱᵐᵖˡ»
-  Progress'ptr_SentCommit_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"SentCommit" «Progress__SentCommitⁱᵐᵖˡ»
-  Progress'ptr_SentEntries_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"SentEntries" «Progress__SentEntriesⁱᵐᵖˡ»
-  Progress'ptr_String_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"String" «Progress__Stringⁱᵐᵖˡ»
+class Progress.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Progress.underlying Progress.t
+  underlying : go.UnderlyingDirectedEq Progress Progress.underlying
+  get_Match : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"Match") #x (Val #(x.Match'))
+  set_Match : ∀ (x : Progress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"Match") (PairV #x #y) (Val #(({ x with Match' := y } : Progress.t)))
+  get_Next : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"Next") #x (Val #(x.Next'))
+  set_Next : ∀ (x : Progress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"Next") (PairV #x #y) (Val #(({ x with Next' := y } : Progress.t)))
+  get_sentCommit : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"sentCommit") #x (Val #(x.sentCommit'))
+  set_sentCommit : ∀ (x : Progress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"sentCommit") (PairV #x #y) (Val #(({ x with sentCommit' := y } : Progress.t)))
+  get_State : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"State") #x (Val #(x.State'))
+  set_State : ∀ (x : Progress.t) (y : StateType.t), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"State") (PairV #x #y) (Val #(({ x with State' := y } : Progress.t)))
+  get_PendingSnapshot : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"PendingSnapshot") #x (Val #(x.PendingSnapshot'))
+  set_PendingSnapshot : ∀ (x : Progress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"PendingSnapshot") (PairV #x #y) (Val #(({ x with PendingSnapshot' := y } : Progress.t)))
+  get_RecentActive : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"RecentActive") #x (Val #(x.RecentActive'))
+  set_RecentActive : ∀ (x : Progress.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"RecentActive") (PairV #x #y) (Val #(({ x with RecentActive' := y } : Progress.t)))
+  get_MsgAppFlowPaused : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"MsgAppFlowPaused") #x (Val #(x.MsgAppFlowPaused'))
+  set_MsgAppFlowPaused : ∀ (x : Progress.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"MsgAppFlowPaused") (PairV #x #y) (Val #(({ x with MsgAppFlowPaused' := y } : Progress.t)))
+  get_Inflights : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"Inflights") #x (Val #(x.Inflights'))
+  set_Inflights : ∀ (x : Progress.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"Inflights") (PairV #x #y) (Val #(({ x with Inflights' := y } : Progress.t)))
+  get_IsLearner : ∀ (x : Progress.t), go.IsGoStepPureDetTagged under (StructFieldGet Progress.underlying go!"IsLearner") #x (Val #(x.IsLearner'))
+  set_IsLearner : ∀ (x : Progress.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Progress.underlying go!"IsLearner") (PairV #x #y) (Val #(({ x with IsLearner' := y } : Progress.t)))
+  ptr_BecomeProbe_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"BecomeProbe" Progress.BecomeProbe.impl
+  ptr_BecomeReplicate_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"BecomeReplicate" Progress.BecomeReplicate.impl
+  ptr_BecomeSnapshot_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"BecomeSnapshot" Progress.BecomeSnapshot.impl
+  ptr_CanBumpCommit_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"CanBumpCommit" Progress.CanBumpCommit.impl
+  ptr_IsPaused_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"IsPaused" Progress.IsPaused.impl
+  ptr_MaybeDecrTo_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"MaybeDecrTo" Progress.MaybeDecrTo.impl
+  ptr_MaybeUpdate_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"MaybeUpdate" Progress.MaybeUpdate.impl
+  ptr_ResetState_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"ResetState" Progress.ResetState.impl
+  ptr_SentCommit_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"SentCommit" Progress.SentCommit.impl
+  ptr_SentEntries_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"SentEntries" Progress.SentEntries.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType Progress) go!"String" Progress.String.impl
 
-attribute [instance] Progress_Assumptions.Progress_type_repr
-  Progress_Assumptions.Progress_underlying
-  Progress_Assumptions.Progress_get_Match
-  Progress_Assumptions.Progress_set_Match
-  Progress_Assumptions.Progress_get_Next
-  Progress_Assumptions.Progress_set_Next
-  Progress_Assumptions.Progress_get_sentCommit
-  Progress_Assumptions.Progress_set_sentCommit
-  Progress_Assumptions.Progress_get_State
-  Progress_Assumptions.Progress_set_State
-  Progress_Assumptions.Progress_get_PendingSnapshot
-  Progress_Assumptions.Progress_set_PendingSnapshot
-  Progress_Assumptions.Progress_get_RecentActive
-  Progress_Assumptions.Progress_set_RecentActive
-  Progress_Assumptions.Progress_get_MsgAppFlowPaused
-  Progress_Assumptions.Progress_set_MsgAppFlowPaused
-  Progress_Assumptions.Progress_get_Inflights
-  Progress_Assumptions.Progress_set_Inflights
-  Progress_Assumptions.Progress_get_IsLearner
-  Progress_Assumptions.Progress_set_IsLearner
-  Progress_Assumptions.Progress'ptr_BecomeProbe_unfold
-  Progress_Assumptions.Progress'ptr_BecomeReplicate_unfold
-  Progress_Assumptions.Progress'ptr_BecomeSnapshot_unfold
-  Progress_Assumptions.Progress'ptr_CanBumpCommit_unfold
-  Progress_Assumptions.Progress'ptr_IsPaused_unfold
-  Progress_Assumptions.Progress'ptr_MaybeDecrTo_unfold
-  Progress_Assumptions.Progress'ptr_MaybeUpdate_unfold
-  Progress_Assumptions.Progress'ptr_ResetState_unfold
-  Progress_Assumptions.Progress'ptr_SentCommit_unfold
-  Progress_Assumptions.Progress'ptr_SentEntries_unfold
-  Progress_Assumptions.Progress'ptr_String_unfold
+attribute [instance] Progress.TypeAssumptions.type_repr
+  Progress.TypeAssumptions.underlying
+  Progress.TypeAssumptions.get_Match
+  Progress.TypeAssumptions.set_Match
+  Progress.TypeAssumptions.get_Next
+  Progress.TypeAssumptions.set_Next
+  Progress.TypeAssumptions.get_sentCommit
+  Progress.TypeAssumptions.set_sentCommit
+  Progress.TypeAssumptions.get_State
+  Progress.TypeAssumptions.set_State
+  Progress.TypeAssumptions.get_PendingSnapshot
+  Progress.TypeAssumptions.set_PendingSnapshot
+  Progress.TypeAssumptions.get_RecentActive
+  Progress.TypeAssumptions.set_RecentActive
+  Progress.TypeAssumptions.get_MsgAppFlowPaused
+  Progress.TypeAssumptions.set_MsgAppFlowPaused
+  Progress.TypeAssumptions.get_Inflights
+  Progress.TypeAssumptions.set_Inflights
+  Progress.TypeAssumptions.get_IsLearner
+  Progress.TypeAssumptions.set_IsLearner
+  Progress.TypeAssumptions.ptr_BecomeProbe_unfold
+  Progress.TypeAssumptions.ptr_BecomeReplicate_unfold
+  Progress.TypeAssumptions.ptr_BecomeSnapshot_unfold
+  Progress.TypeAssumptions.ptr_CanBumpCommit_unfold
+  Progress.TypeAssumptions.ptr_IsPaused_unfold
+  Progress.TypeAssumptions.ptr_MaybeDecrTo_unfold
+  Progress.TypeAssumptions.ptr_MaybeUpdate_unfold
+  Progress.TypeAssumptions.ptr_ResetState_unfold
+  Progress.TypeAssumptions.ptr_SentCommit_unfold
+  Progress.TypeAssumptions.ptr_SentEntries_unfold
+  Progress.TypeAssumptions.ptr_String_unfold
 
 namespace ProgressMap
 abbrev t [FfiSyntax] : Type := map.t
 end ProgressMap
 
-@[reducible] def «ProgressMapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def ProgressMap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 (go.GoType.PointerType Progress))
 
-class ProgressMap_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ProgressMap_underlying : go.UnderlyingDirectedEq ProgressMap «ProgressMapⁱᵐᵖˡ»
-  ProgressMap_String_unfold : MethodUnfold ProgressMap go!"String" «ProgressMap__Stringⁱᵐᵖˡ»
-  ProgressMap'ptr_String_unfold : MethodUnfold (go.GoType.PointerType ProgressMap) go!"String" (LamV "$r"
+class ProgressMap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq ProgressMap ProgressMap.underlying
+  String_unfold : MethodUnfold ProgressMap go!"String" ProgressMap.String.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType ProgressMap) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve ProgressMap go!"String"))) (App (Val (GoInstruction (GoLoad ProgressMap))) (Var "$r"))))
 
-attribute [instance] ProgressMap_Assumptions.ProgressMap_underlying
-  ProgressMap_Assumptions.ProgressMap_String_unfold
-  ProgressMap_Assumptions.ProgressMap'ptr_String_unfold
+attribute [instance] ProgressMap.TypeAssumptions.underlying
+  ProgressMap.TypeAssumptions.String_unfold
+  ProgressMap.TypeAssumptions.ptr_String_unfold
 
 namespace Config
 structure t [FfiSyntax] where
@@ -1609,51 +1609,51 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Config
 
-@[reducible] def Config'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Config.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Voters" _root_.Perennial.go_etcd_io.raft.v3.quorum.JointConfig),
 (go.field_decl.FieldDecl go!"AutoLeave" go.bool),
 (go.field_decl.FieldDecl go!"Learners" (go.GoType.MapType go.uint64 (go.GoType.StructType []))),
 (go.field_decl.FieldDecl go!"LearnersNext" (go.GoType.MapType go.uint64 (go.GoType.StructType [])))]
 
-@[irreducible] def Config'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Config'fds_unsealed
+@[irreducible] def Config.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Config.fieldsUnsealed
 
 instance equals_unfold_Config [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Config'fds Config'fds_unsealed :=
-  ⟨by unfold Config'fds; rfl⟩
+    EqualsUnfold Config.fields Config.fieldsUnsealed :=
+  ⟨by unfold Config.fields; rfl⟩
 
-@[reducible] def «Configⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Config'fds)
+@[reducible] def Config.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Config.fields)
 
-class Config_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Config_type_repr : go.TypeReprUnderlying «Configⁱᵐᵖˡ» Config.t
-  Config_underlying : go.UnderlyingDirectedEq Config «Configⁱᵐᵖˡ»
-  Config_get_Voters : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"Voters") #x (Val #(x.Voters'))
-  Config_set_Voters : ∀ (x : Config.t) (y : _root_.Perennial.go_etcd_io.raft.v3.quorum.JointConfig.t), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Voters") (PairV #x #y) (Val #(({ x with Voters' := y } : Config.t)))
-  Config_get_AutoLeave : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"AutoLeave") #x (Val #(x.AutoLeave'))
-  Config_set_AutoLeave : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"AutoLeave") (PairV #x #y) (Val #(({ x with AutoLeave' := y } : Config.t)))
-  Config_get_Learners : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"Learners") #x (Val #(x.Learners'))
-  Config_set_Learners : ∀ (x : Config.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Learners") (PairV #x #y) (Val #(({ x with Learners' := y } : Config.t)))
-  Config_get_LearnersNext : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"LearnersNext") #x (Val #(x.LearnersNext'))
-  Config_set_LearnersNext : ∀ (x : Config.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"LearnersNext") (PairV #x #y) (Val #(({ x with LearnersNext' := y } : Config.t)))
-  Config_String_unfold : MethodUnfold Config go!"String" «Config__Stringⁱᵐᵖˡ»
-  Config'ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType Config) go!"Clone" «Config__Cloneⁱᵐᵖˡ»
-  Config'ptr_String_unfold : MethodUnfold (go.GoType.PointerType Config) go!"String" (LamV "$r"
+class Config.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Config.underlying Config.t
+  underlying : go.UnderlyingDirectedEq Config Config.underlying
+  get_Voters : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"Voters") #x (Val #(x.Voters'))
+  set_Voters : ∀ (x : Config.t) (y : _root_.Perennial.go_etcd_io.raft.v3.quorum.JointConfig.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"Voters") (PairV #x #y) (Val #(({ x with Voters' := y } : Config.t)))
+  get_AutoLeave : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"AutoLeave") #x (Val #(x.AutoLeave'))
+  set_AutoLeave : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"AutoLeave") (PairV #x #y) (Val #(({ x with AutoLeave' := y } : Config.t)))
+  get_Learners : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"Learners") #x (Val #(x.Learners'))
+  set_Learners : ∀ (x : Config.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"Learners") (PairV #x #y) (Val #(({ x with Learners' := y } : Config.t)))
+  get_LearnersNext : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"LearnersNext") #x (Val #(x.LearnersNext'))
+  set_LearnersNext : ∀ (x : Config.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"LearnersNext") (PairV #x #y) (Val #(({ x with LearnersNext' := y } : Config.t)))
+  String_unfold : MethodUnfold Config go!"String" Config.String.impl
+  ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType Config) go!"Clone" Config.Clone.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType Config) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Config go!"String"))) (App (Val (GoInstruction (GoLoad Config))) (Var "$r"))))
 
-attribute [instance] Config_Assumptions.Config_type_repr
-  Config_Assumptions.Config_underlying
-  Config_Assumptions.Config_get_Voters
-  Config_Assumptions.Config_set_Voters
-  Config_Assumptions.Config_get_AutoLeave
-  Config_Assumptions.Config_set_AutoLeave
-  Config_Assumptions.Config_get_Learners
-  Config_Assumptions.Config_set_Learners
-  Config_Assumptions.Config_get_LearnersNext
-  Config_Assumptions.Config_set_LearnersNext
-  Config_Assumptions.Config_String_unfold
-  Config_Assumptions.Config'ptr_Clone_unfold
-  Config_Assumptions.Config'ptr_String_unfold
+attribute [instance] Config.TypeAssumptions.type_repr
+  Config.TypeAssumptions.underlying
+  Config.TypeAssumptions.get_Voters
+  Config.TypeAssumptions.set_Voters
+  Config.TypeAssumptions.get_AutoLeave
+  Config.TypeAssumptions.set_AutoLeave
+  Config.TypeAssumptions.get_Learners
+  Config.TypeAssumptions.set_Learners
+  Config.TypeAssumptions.get_LearnersNext
+  Config.TypeAssumptions.set_LearnersNext
+  Config.TypeAssumptions.String_unfold
+  Config.TypeAssumptions.ptr_Clone_unfold
+  Config.TypeAssumptions.ptr_String_unfold
 
 namespace ProgressTracker
 structure t [FfiSyntax] where
@@ -1668,107 +1668,107 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end ProgressTracker
 
-@[reducible] def ProgressTracker'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ProgressTracker.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Config" Config),
 (go.field_decl.FieldDecl go!"Progress" ProgressMap),
 (go.field_decl.FieldDecl go!"Votes" (go.GoType.MapType go.uint64 go.bool)),
 (go.field_decl.FieldDecl go!"MaxInflight" go.int),
 (go.field_decl.FieldDecl go!"MaxInflightBytes" go.uint64)]
 
-@[irreducible] def ProgressTracker'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  ProgressTracker'fds_unsealed
+@[irreducible] def ProgressTracker.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  ProgressTracker.fieldsUnsealed
 
 instance equals_unfold_ProgressTracker [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold ProgressTracker'fds ProgressTracker'fds_unsealed :=
-  ⟨by unfold ProgressTracker'fds; rfl⟩
+    EqualsUnfold ProgressTracker.fields ProgressTracker.fieldsUnsealed :=
+  ⟨by unfold ProgressTracker.fields; rfl⟩
 
-@[reducible] def «ProgressTrackerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType ProgressTracker'fds)
+@[reducible] def ProgressTracker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ProgressTracker.fields)
 
-class ProgressTracker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ProgressTracker_type_repr : go.TypeReprUnderlying «ProgressTrackerⁱᵐᵖˡ» ProgressTracker.t
-  ProgressTracker_underlying : go.UnderlyingDirectedEq ProgressTracker «ProgressTrackerⁱᵐᵖˡ»
-  ProgressTracker_get_Config : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet «ProgressTrackerⁱᵐᵖˡ» go!"Config") #x (Val #(x.Config'))
-  ProgressTracker_set_Config : ∀ (x : ProgressTracker.t) (y : Config.t), go.IsGoStepPureDetTagged under (StructFieldSet «ProgressTrackerⁱᵐᵖˡ» go!"Config") (PairV #x #y) (Val #(({ x with Config' := y } : ProgressTracker.t)))
-  ProgressTracker_get_Progress : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet «ProgressTrackerⁱᵐᵖˡ» go!"Progress") #x (Val #(x.Progress'))
-  ProgressTracker_set_Progress : ∀ (x : ProgressTracker.t) (y : ProgressMap.t), go.IsGoStepPureDetTagged under (StructFieldSet «ProgressTrackerⁱᵐᵖˡ» go!"Progress") (PairV #x #y) (Val #(({ x with Progress' := y } : ProgressTracker.t)))
-  ProgressTracker_get_Votes : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet «ProgressTrackerⁱᵐᵖˡ» go!"Votes") #x (Val #(x.Votes'))
-  ProgressTracker_set_Votes : ∀ (x : ProgressTracker.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «ProgressTrackerⁱᵐᵖˡ» go!"Votes") (PairV #x #y) (Val #(({ x with Votes' := y } : ProgressTracker.t)))
-  ProgressTracker_get_MaxInflight : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet «ProgressTrackerⁱᵐᵖˡ» go!"MaxInflight") #x (Val #(x.MaxInflight'))
-  ProgressTracker_set_MaxInflight : ∀ (x : ProgressTracker.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ProgressTrackerⁱᵐᵖˡ» go!"MaxInflight") (PairV #x #y) (Val #(({ x with MaxInflight' := y } : ProgressTracker.t)))
-  ProgressTracker_get_MaxInflightBytes : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet «ProgressTrackerⁱᵐᵖˡ» go!"MaxInflightBytes") #x (Val #(x.MaxInflightBytes'))
-  ProgressTracker_set_MaxInflightBytes : ∀ (x : ProgressTracker.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ProgressTrackerⁱᵐᵖˡ» go!"MaxInflightBytes") (PairV #x #y) (Val #(({ x with MaxInflightBytes' := y } : ProgressTracker.t)))
-  ProgressTracker_String_unfold : MethodUnfold ProgressTracker go!"String" (LamV "$r"
+class ProgressTracker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ProgressTracker.underlying ProgressTracker.t
+  underlying : go.UnderlyingDirectedEq ProgressTracker ProgressTracker.underlying
+  get_Config : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"Config") #x (Val #(x.Config'))
+  set_Config : ∀ (x : ProgressTracker.t) (y : Config.t), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"Config") (PairV #x #y) (Val #(({ x with Config' := y } : ProgressTracker.t)))
+  get_Progress : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"Progress") #x (Val #(x.Progress'))
+  set_Progress : ∀ (x : ProgressTracker.t) (y : ProgressMap.t), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"Progress") (PairV #x #y) (Val #(({ x with Progress' := y } : ProgressTracker.t)))
+  get_Votes : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"Votes") #x (Val #(x.Votes'))
+  set_Votes : ∀ (x : ProgressTracker.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"Votes") (PairV #x #y) (Val #(({ x with Votes' := y } : ProgressTracker.t)))
+  get_MaxInflight : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"MaxInflight") #x (Val #(x.MaxInflight'))
+  set_MaxInflight : ∀ (x : ProgressTracker.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"MaxInflight") (PairV #x #y) (Val #(({ x with MaxInflight' := y } : ProgressTracker.t)))
+  get_MaxInflightBytes : ∀ (x : ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"MaxInflightBytes") #x (Val #(x.MaxInflightBytes'))
+  set_MaxInflightBytes : ∀ (x : ProgressTracker.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"MaxInflightBytes") (PairV #x #y) (Val #(({ x with MaxInflightBytes' := y } : ProgressTracker.t)))
+  String_unfold : MethodUnfold ProgressTracker go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Config go!"String"))) (App (Val (GoInstruction (StructFieldGet ProgressTracker go!"Config"))) (Var "$r"))))
-  ProgressTracker'ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"Clone" (LamV "$r"
+  ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"Clone" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Config) go!"Clone"))) (App (Val (GoInstruction (StructFieldRef ProgressTracker go!"Config"))) (Var "$r"))))
-  ProgressTracker'ptr_Committed_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"Committed" «ProgressTracker__Committedⁱᵐᵖˡ»
-  ProgressTracker'ptr_ConfState_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"ConfState" «ProgressTracker__ConfStateⁱᵐᵖˡ»
-  ProgressTracker'ptr_IsSingleton_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"IsSingleton" «ProgressTracker__IsSingletonⁱᵐᵖˡ»
-  ProgressTracker'ptr_LearnerNodes_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"LearnerNodes" «ProgressTracker__LearnerNodesⁱᵐᵖˡ»
-  ProgressTracker'ptr_QuorumActive_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"QuorumActive" «ProgressTracker__QuorumActiveⁱᵐᵖˡ»
-  ProgressTracker'ptr_RecordVote_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"RecordVote" «ProgressTracker__RecordVoteⁱᵐᵖˡ»
-  ProgressTracker'ptr_ResetVotes_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"ResetVotes" «ProgressTracker__ResetVotesⁱᵐᵖˡ»
-  ProgressTracker'ptr_String_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"String" (LamV "$r"
+  ptr_Committed_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"Committed" ProgressTracker.Committed.impl
+  ptr_ConfState_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"ConfState" ProgressTracker.ConfState.impl
+  ptr_IsSingleton_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"IsSingleton" ProgressTracker.IsSingleton.impl
+  ptr_LearnerNodes_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"LearnerNodes" ProgressTracker.LearnerNodes.impl
+  ptr_QuorumActive_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"QuorumActive" ProgressTracker.QuorumActive.impl
+  ptr_RecordVote_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"RecordVote" ProgressTracker.RecordVote.impl
+  ptr_ResetVotes_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"ResetVotes" ProgressTracker.ResetVotes.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Config) go!"String"))) (App (Val (GoInstruction (StructFieldRef ProgressTracker go!"Config"))) (Var "$r"))))
-  ProgressTracker'ptr_TallyVotes_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"TallyVotes" «ProgressTracker__TallyVotesⁱᵐᵖˡ»
-  ProgressTracker'ptr_Visit_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"Visit" «ProgressTracker__Visitⁱᵐᵖˡ»
-  ProgressTracker'ptr_VoterNodes_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"VoterNodes" «ProgressTracker__VoterNodesⁱᵐᵖˡ»
+  ptr_TallyVotes_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"TallyVotes" ProgressTracker.TallyVotes.impl
+  ptr_Visit_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"Visit" ProgressTracker.Visit.impl
+  ptr_VoterNodes_unfold : MethodUnfold (go.GoType.PointerType ProgressTracker) go!"VoterNodes" ProgressTracker.VoterNodes.impl
 
-attribute [instance] ProgressTracker_Assumptions.ProgressTracker_type_repr
-  ProgressTracker_Assumptions.ProgressTracker_underlying
-  ProgressTracker_Assumptions.ProgressTracker_get_Config
-  ProgressTracker_Assumptions.ProgressTracker_set_Config
-  ProgressTracker_Assumptions.ProgressTracker_get_Progress
-  ProgressTracker_Assumptions.ProgressTracker_set_Progress
-  ProgressTracker_Assumptions.ProgressTracker_get_Votes
-  ProgressTracker_Assumptions.ProgressTracker_set_Votes
-  ProgressTracker_Assumptions.ProgressTracker_get_MaxInflight
-  ProgressTracker_Assumptions.ProgressTracker_set_MaxInflight
-  ProgressTracker_Assumptions.ProgressTracker_get_MaxInflightBytes
-  ProgressTracker_Assumptions.ProgressTracker_set_MaxInflightBytes
-  ProgressTracker_Assumptions.ProgressTracker_String_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_Clone_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_Committed_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_ConfState_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_IsSingleton_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_LearnerNodes_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_QuorumActive_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_RecordVote_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_ResetVotes_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_String_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_TallyVotes_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_Visit_unfold
-  ProgressTracker_Assumptions.ProgressTracker'ptr_VoterNodes_unfold
+attribute [instance] ProgressTracker.TypeAssumptions.type_repr
+  ProgressTracker.TypeAssumptions.underlying
+  ProgressTracker.TypeAssumptions.get_Config
+  ProgressTracker.TypeAssumptions.set_Config
+  ProgressTracker.TypeAssumptions.get_Progress
+  ProgressTracker.TypeAssumptions.set_Progress
+  ProgressTracker.TypeAssumptions.get_Votes
+  ProgressTracker.TypeAssumptions.set_Votes
+  ProgressTracker.TypeAssumptions.get_MaxInflight
+  ProgressTracker.TypeAssumptions.set_MaxInflight
+  ProgressTracker.TypeAssumptions.get_MaxInflightBytes
+  ProgressTracker.TypeAssumptions.set_MaxInflightBytes
+  ProgressTracker.TypeAssumptions.String_unfold
+  ProgressTracker.TypeAssumptions.ptr_Clone_unfold
+  ProgressTracker.TypeAssumptions.ptr_Committed_unfold
+  ProgressTracker.TypeAssumptions.ptr_ConfState_unfold
+  ProgressTracker.TypeAssumptions.ptr_IsSingleton_unfold
+  ProgressTracker.TypeAssumptions.ptr_LearnerNodes_unfold
+  ProgressTracker.TypeAssumptions.ptr_QuorumActive_unfold
+  ProgressTracker.TypeAssumptions.ptr_RecordVote_unfold
+  ProgressTracker.TypeAssumptions.ptr_ResetVotes_unfold
+  ProgressTracker.TypeAssumptions.ptr_String_unfold
+  ProgressTracker.TypeAssumptions.ptr_TallyVotes_unfold
+  ProgressTracker.TypeAssumptions.ptr_Visit_unfold
+  ProgressTracker.TypeAssumptions.ptr_VoterNodes_unfold
 
 namespace matchAckIndexer
 abbrev t [FfiSyntax] : Type := map.t
 end matchAckIndexer
 
-@[reducible] def «matchAckIndexerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def matchAckIndexer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 (go.GoType.PointerType Progress))
 
-class matchAckIndexer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  matchAckIndexer_underlying : go.UnderlyingDirectedEq matchAckIndexer «matchAckIndexerⁱᵐᵖˡ»
-  matchAckIndexer_AckedIndex_unfold : MethodUnfold matchAckIndexer go!"AckedIndex" «matchAckIndexer__AckedIndexⁱᵐᵖˡ»
-  matchAckIndexer'ptr_AckedIndex_unfold : MethodUnfold (go.GoType.PointerType matchAckIndexer) go!"AckedIndex" (LamV "$r"
+class matchAckIndexer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq matchAckIndexer matchAckIndexer.underlying
+  AckedIndex_unfold : MethodUnfold matchAckIndexer go!"AckedIndex" matchAckIndexer.AckedIndex.impl
+  ptr_AckedIndex_unfold : MethodUnfold (go.GoType.PointerType matchAckIndexer) go!"AckedIndex" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve matchAckIndexer go!"AckedIndex"))) (App (Val (GoInstruction (GoLoad matchAckIndexer))) (Var "$r"))))
 
-attribute [instance] matchAckIndexer_Assumptions.matchAckIndexer_underlying
-  matchAckIndexer_Assumptions.matchAckIndexer_AckedIndex_unfold
-  matchAckIndexer_Assumptions.matchAckIndexer'ptr_AckedIndex_unfold
+attribute [instance] matchAckIndexer.TypeAssumptions.underlying
+  matchAckIndexer.TypeAssumptions.AckedIndex_unfold
+  matchAckIndexer.TypeAssumptions.ptr_AckedIndex_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  inflight_instance : inflight_Assumptions
-  Inflights_instance : Inflights_Assumptions
-  Progress_instance : Progress_Assumptions
-  ProgressMap_instance : ProgressMap_Assumptions
-  StateType_instance : StateType_Assumptions
-  Config_instance : Config_Assumptions
-  ProgressTracker_instance : ProgressTracker_Assumptions
-  matchAckIndexer_instance : matchAckIndexer_Assumptions
-  NewInflights_unfold : FuncUnfold NewInflights [] «NewInflightsⁱᵐᵖˡ»
-  MakeProgressTracker_unfold : FuncUnfold MakeProgressTracker [] «MakeProgressTrackerⁱᵐᵖˡ»
+  inflight_instance : inflight.TypeAssumptions
+  Inflights_instance : Inflights.TypeAssumptions
+  Progress_instance : Progress.TypeAssumptions
+  ProgressMap_instance : ProgressMap.TypeAssumptions
+  StateType_instance : StateType.TypeAssumptions
+  Config_instance : Config.TypeAssumptions
+  ProgressTracker_instance : ProgressTracker.TypeAssumptions
+  matchAckIndexer_instance : matchAckIndexer.TypeAssumptions
+  NewInflights_unfold : FuncUnfold NewInflights [] NewInflights.impl
+  MakeProgressTracker_unfold : FuncUnfold MakeProgressTracker [] MakeProgressTracker.impl
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
   import_slices_Assumption : _root_.Perennial.slices.Assumptions
   import_strings_Assumption : _root_.Perennial.strings.Assumptions

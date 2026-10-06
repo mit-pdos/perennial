@@ -288,7 +288,7 @@ noncomputable def rotateOrdered [FfiSyntax] [GoGlobalContext] : GoString :=
     The function should return 0 for incomparable items.
 
     go: sort.go:30:6 -/
-noncomputable def «SortFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (S E : go.GoType) : val :=
+noncomputable def SortFunc.impl [FfiSyntax] [GoGlobalContext] (S E : go.GoType) : val :=
   (LamV "x"
   (Lam "cmp"
   (App (Val exceptionDo)
@@ -313,7 +313,7 @@ noncomputable def «SortFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (S E : g
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))))))
 
 /-- go: sort.go:181:20 -/
-noncomputable def «xorshift__Nextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def xorshift.Next.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -331,7 +331,7 @@ noncomputable def «xorshift__Nextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(13 : Int)))))))))))))))
 
 /-- go: sort.go:188:6 -/
-noncomputable def «nextPowerOfTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def nextPowerOfTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "length"
   (App (Val exceptionDo)
   (Let "length" (App (Val (GoInstruction (GoAlloc go.int))) (Var "length"))
@@ -342,7 +342,7 @@ noncomputable def «nextPowerOfTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- insertionSortCmpFunc sorts data[a:b] using insertion sort.
 
     go: zsortanyfunc.go:10:6 -/
-noncomputable def «insertionSortCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def insertionSortCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -389,7 +389,7 @@ noncomputable def «insertionSortCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     first is an offset into the array where the root of the heap lies.
 
     go: zsortanyfunc.go:20:6 -/
-noncomputable def «siftDownCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def siftDownCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "lo"
   (Lam "hi"
@@ -452,7 +452,7 @@ noncomputable def «siftDownCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "root") (Var "$r0")))))))))))))))))))
 
 /-- go: zsortanyfunc.go:38:6 -/
-noncomputable def «heapSortCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def heapSortCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -532,7 +532,7 @@ noncomputable def «heapSortCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
     limit is the number of allowed bad (very unbalanced) pivots before falling back to heapsort.
 
     go: zsortanyfunc.go:61:6 -/
-noncomputable def «pdqsortCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def pdqsortCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -750,7 +750,7 @@ noncomputable def «pdqsortCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E
     On return, data[newpivot] = p
 
     go: zsortanyfunc.go:135:6 -/
-noncomputable def «partitionCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partitionCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -884,7 +884,7 @@ noncomputable def «partitionCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     It assumed that data[a:b] does not contain elements smaller than the data[pivot].
 
     go: zsortanyfunc.go:173:6 -/
-noncomputable def «partitionEqualCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partitionEqualCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -962,7 +962,7 @@ noncomputable def «partitionEqualCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
 /-- partialInsertionSortCmpFunc partially sorts a slice, returns true if the slice is sorted at the end.
 
     go: zsortanyfunc.go:195:6 -/
-noncomputable def «partialInsertionSortCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partialInsertionSortCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1081,7 +1081,7 @@ noncomputable def «partialInsertionSortCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     that might cause imbalanced partitions in quicksort.
 
     go: zsortanyfunc.go:240:6 -/
-noncomputable def «breakPatternsCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def breakPatternsCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1149,7 +1149,7 @@ noncomputable def «breakPatternsCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     [shortestNinther,∞): uses the Tukey ninther method.
 
     go: zsortanyfunc.go:261:6 -/
-noncomputable def «choosePivotCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def choosePivotCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1237,7 +1237,7 @@ noncomputable def «choosePivotCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
 /-- order2CmpFunc returns x,y where data[x] <= data[y], where x,y=a,b or x,y=b,a.
 
     go: zsortanyfunc.go:298:6 -/
-noncomputable def «order2CmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def order2CmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1266,7 +1266,7 @@ noncomputable def «order2CmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E 
 /-- medianCmpFunc returns x where data[x] is the median of data[a],data[b],data[c], where x is a, b, or c.
 
     go: zsortanyfunc.go:307:6 -/
-noncomputable def «medianCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def medianCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1334,7 +1334,7 @@ noncomputable def «medianCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E 
 /-- medianAdjacentCmpFunc finds the median of data[a - 1], data[a], data[a + 1] and stores the index into a.
 
     go: zsortanyfunc.go:315:6 -/
-noncomputable def «medianAdjacentCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def medianAdjacentCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "swaps"
@@ -1354,7 +1354,7 @@ noncomputable def «medianAdjacentCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))))))))))))
 
 /-- go: zsortanyfunc.go:319:6 -/
-noncomputable def «reverseRangeCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def reverseRangeCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1396,7 +1396,7 @@ noncomputable def «reverseRangeCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
 /-- go: zsortanyfunc.go:329:6 -/
-noncomputable def «swapRangeCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def swapRangeCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1430,7 +1430,7 @@ noncomputable def «swapRangeCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))))
 
 /-- go: zsortanyfunc.go:335:6 -/
-noncomputable def «stableCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def stableCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "n"
   (Lam "cmp"
@@ -1552,7 +1552,7 @@ noncomputable def «stableCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E 
     which improves performance.
 
     go: zsortanyfunc.go:378:6 -/
-noncomputable def «symMergeCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def symMergeCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
@@ -1769,7 +1769,7 @@ noncomputable def «symMergeCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (
     and it assumes non-degenerate arguments: a < m && m < b.
 
     go: zsortanyfunc.go:464:6 -/
-noncomputable def «rotateCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def rotateCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
@@ -1831,7 +1831,7 @@ noncomputable def «rotateCmpFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (E 
 instance info' : PkgInfo pkg_id.slices where
   pkgImportedPkgs := [pkg_id.math.bits]
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -1844,50 +1844,50 @@ namespace sortedHint
 abbrev t [FfiSyntax] : Type := w64
 end sortedHint
 
-@[reducible] def «sortedHintⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def sortedHint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class sortedHint_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  sortedHint_underlying : go.UnderlyingDirectedEq sortedHint «sortedHintⁱᵐᵖˡ»
+class sortedHint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq sortedHint sortedHint.underlying
 
-attribute [instance] sortedHint_Assumptions.sortedHint_underlying
+attribute [instance] sortedHint.TypeAssumptions.underlying
 
 namespace xorshift
 abbrev t [FfiSyntax] : Type := w64
 end xorshift
 
-@[reducible] def «xorshiftⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def xorshift.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class xorshift_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  xorshift_underlying : go.UnderlyingDirectedEq xorshift «xorshiftⁱᵐᵖˡ»
-  xorshift'ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift) go!"Next" «xorshift__Nextⁱᵐᵖˡ»
+class xorshift.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq xorshift xorshift.underlying
+  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift) go!"Next" xorshift.Next.impl
 
-attribute [instance] xorshift_Assumptions.xorshift_underlying
-  xorshift_Assumptions.xorshift'ptr_Next_unfold
+attribute [instance] xorshift.TypeAssumptions.underlying
+  xorshift.TypeAssumptions.ptr_Next_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  sortedHint_instance : sortedHint_Assumptions
-  xorshift_instance : xorshift_Assumptions
-  SortFunc_unfold : ∀ (S E : go.GoType), FuncUnfold SortFunc [S, E] («SortFuncⁱᵐᵖˡ» S E)
-  nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] «nextPowerOfTwoⁱᵐᵖˡ»
-  insertionSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold insertionSortCmpFunc [E] («insertionSortCmpFuncⁱᵐᵖˡ» E)
-  siftDownCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold siftDownCmpFunc [E] («siftDownCmpFuncⁱᵐᵖˡ» E)
-  heapSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold heapSortCmpFunc [E] («heapSortCmpFuncⁱᵐᵖˡ» E)
-  pdqsortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold pdqsortCmpFunc [E] («pdqsortCmpFuncⁱᵐᵖˡ» E)
-  partitionCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partitionCmpFunc [E] («partitionCmpFuncⁱᵐᵖˡ» E)
-  partitionEqualCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partitionEqualCmpFunc [E] («partitionEqualCmpFuncⁱᵐᵖˡ» E)
-  partialInsertionSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partialInsertionSortCmpFunc [E] («partialInsertionSortCmpFuncⁱᵐᵖˡ» E)
-  breakPatternsCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold breakPatternsCmpFunc [E] («breakPatternsCmpFuncⁱᵐᵖˡ» E)
-  choosePivotCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold choosePivotCmpFunc [E] («choosePivotCmpFuncⁱᵐᵖˡ» E)
-  order2CmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold order2CmpFunc [E] («order2CmpFuncⁱᵐᵖˡ» E)
-  medianCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold medianCmpFunc [E] («medianCmpFuncⁱᵐᵖˡ» E)
-  medianAdjacentCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold medianAdjacentCmpFunc [E] («medianAdjacentCmpFuncⁱᵐᵖˡ» E)
-  reverseRangeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold reverseRangeCmpFunc [E] («reverseRangeCmpFuncⁱᵐᵖˡ» E)
-  swapRangeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold swapRangeCmpFunc [E] («swapRangeCmpFuncⁱᵐᵖˡ» E)
-  stableCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold stableCmpFunc [E] («stableCmpFuncⁱᵐᵖˡ» E)
-  symMergeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold symMergeCmpFunc [E] («symMergeCmpFuncⁱᵐᵖˡ» E)
-  rotateCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold rotateCmpFunc [E] («rotateCmpFuncⁱᵐᵖˡ» E)
+  sortedHint_instance : sortedHint.TypeAssumptions
+  xorshift_instance : xorshift.TypeAssumptions
+  SortFunc_unfold : ∀ (S E : go.GoType), FuncUnfold SortFunc [S, E] (SortFunc.impl S E)
+  nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
+  insertionSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold insertionSortCmpFunc [E] (insertionSortCmpFunc.impl E)
+  siftDownCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold siftDownCmpFunc [E] (siftDownCmpFunc.impl E)
+  heapSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold heapSortCmpFunc [E] (heapSortCmpFunc.impl E)
+  pdqsortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold pdqsortCmpFunc [E] (pdqsortCmpFunc.impl E)
+  partitionCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partitionCmpFunc [E] (partitionCmpFunc.impl E)
+  partitionEqualCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partitionEqualCmpFunc [E] (partitionEqualCmpFunc.impl E)
+  partialInsertionSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partialInsertionSortCmpFunc [E] (partialInsertionSortCmpFunc.impl E)
+  breakPatternsCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold breakPatternsCmpFunc [E] (breakPatternsCmpFunc.impl E)
+  choosePivotCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold choosePivotCmpFunc [E] (choosePivotCmpFunc.impl E)
+  order2CmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold order2CmpFunc [E] (order2CmpFunc.impl E)
+  medianCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold medianCmpFunc [E] (medianCmpFunc.impl E)
+  medianAdjacentCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold medianAdjacentCmpFunc [E] (medianAdjacentCmpFunc.impl E)
+  reverseRangeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold reverseRangeCmpFunc [E] (reverseRangeCmpFunc.impl E)
+  swapRangeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold swapRangeCmpFunc [E] (swapRangeCmpFunc.impl E)
+  stableCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold stableCmpFunc [E] (stableCmpFunc.impl E)
+  symMergeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold symMergeCmpFunc [E] (symMergeCmpFunc.impl E)
+  rotateCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold rotateCmpFunc [E] (rotateCmpFunc.impl E)
   import_bits_Assumption : _root_.Perennial.math.bits.Assumptions
 
 attribute [instance] Assumptions.sortedHint_instance

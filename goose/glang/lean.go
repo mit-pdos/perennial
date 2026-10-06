@@ -229,10 +229,81 @@ func LeanRename(s string) string {
 	return s
 }
 
+// leanEncoded translates the Rocq-style encodings of generated names into Lean
+// namespaces: Xⁱᵐᵖˡ -> X.impl, T__Mⁱᵐᵖˡ (method M of T) -> T.M.impl,
+// X'underlying -> X.underlying (see TypeImpl), X'fds -> X.fields,
+// X'fds_unsealed -> X.fieldsUnsealed, X'init -> X.init,
+// X_Assumptions -> X.TypeAssumptions (the per-type assumptions class; the
+// package-level class is `Assumptions`, and a type named like its package
+// would make `pkg.Assumptions` ambiguous). ok is false if s has none of these forms.
+func leanEncoded(s string) (string, bool) {
+	prefix, last := "", s
+	if i := strings.LastIndex(s, "."); i >= 0 {
+		prefix, last = s[:i], s[i+1:]
+	}
+	q := func(c string) string {
+		if c == "_" {
+			return "«_»"
+		}
+		return LeanQuoteComponent(c)
+	}
+	var comps []string
+	switch {
+	case strings.HasSuffix(last, "ⁱᵐᵖˡ"):
+		base := strings.TrimSuffix(last, "ⁱᵐᵖˡ")
+		if t, m, ok := strings.Cut(base, "__"); ok {
+			comps = []string{q(t), q(m), "impl"}
+		} else {
+			comps = []string{q(base), "impl"}
+		}
+	case strings.HasSuffix(last, "'underlying") && last != "'underlying":
+		comps = []string{q(strings.TrimSuffix(last, "'underlying")), "underlying"}
+	case strings.HasSuffix(last, "'fds_unsealed") && last != "'fds_unsealed":
+		comps = []string{q(strings.TrimSuffix(last, "'fds_unsealed")), "fieldsUnsealed"}
+	case strings.HasSuffix(last, "'fds") && last != "'fds":
+		comps = []string{q(strings.TrimSuffix(last, "'fds")), "fields"}
+	case strings.HasSuffix(last, "'init") && last != "'init":
+		comps = []string{q(strings.TrimSuffix(last, "'init")), "init"}
+	case strings.HasSuffix(last, "_Assumptions") && last != "_Assumptions":
+		comps = []string{q(strings.TrimSuffix(last, "_Assumptions")), "TypeAssumptions"}
+	default:
+		return "", false
+	}
+	r := strings.Join(comps, ".")
+	if prefix != "" {
+		r = LeanQuote(prefix) + "." + r
+	}
+	return r, true
+}
+
+// TypeImpl is the name of the definition of the underlying type of a Go named
+// type: Rocq's Xⁱᵐᵖˡ (shared with function implementations), in Lean
+// X.underlying, distinct from the X.impl of functions and methods (a method M
+// named like its type T has T.T.impl, which `T.impl` would resolve to inside
+// namespace T).
+func TypeImpl(name string) string {
+	if Lean {
+		return name + "'underlying"
+	}
+	return name + "ⁱᵐᵖˡ"
+}
+
+// LeanEncodedName renders a generated name: the Lean form of a Rocq-style
+// encoded name (see leanEncoded), or the quoted name.
+func LeanEncodedName(s string) string {
+	if r, ok := leanEncoded(s); ok {
+		return r
+	}
+	return LeanQuote(s)
+}
+
 // LeanIdent renders a (possibly qualified) Gallina identifier as a Lean
 // identifier: applies the keyword renaming of the Rocq printer (plus
 // LeanShadowNames) to the last component, and quotes components as needed.
 func LeanIdent(s string) string {
+	if r, ok := leanEncoded(s); ok {
+		return r
+	}
 	if c, ok := leanConstructors[s]; ok {
 		return c
 	}
@@ -1101,7 +1172,7 @@ func (d TypeDecl) LeanDecl() string {
 		typeParams += fmt.Sprintf(" (%s : go.GoType)", LeanIdent(t))
 	}
 	attr := ""
-	if strings.HasSuffix(d.Name, "ⁱᵐᵖˡ") || d.Alias {
+	if strings.HasSuffix(d.Name, "ⁱᵐᵖˡ") || strings.HasSuffix(d.Name, "'underlying") || d.Alias {
 		// unfolded by the struct tactics of the theory; aliases are reducible so
 		// that instances for the aliased type apply
 		attr = "@[reducible] "

@@ -28,7 +28,7 @@ instance watchClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance watchClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.watchClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«watchClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.watchClient.t go_etcd_io.etcd.api.v3.etcdserverpb.watchClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -47,7 +47,7 @@ instance WatchServer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance WatchServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«WatchServerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -70,7 +70,7 @@ instance UnimplementedWatchServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedWatchServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnimplementedWatchServerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -89,7 +89,7 @@ instance LeaseClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance LeaseClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -108,7 +108,7 @@ instance leaseClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance leaseClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«leaseClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient.t go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -127,7 +127,7 @@ instance LeaseServer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance LeaseServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseServerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -150,7 +150,7 @@ instance UnimplementedLeaseServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedLeaseServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnimplementedLeaseServerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -169,7 +169,7 @@ instance ClusterClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ClusterClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«ClusterClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient.t go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -188,7 +188,7 @@ instance clusterClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance clusterClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«clusterClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient.t go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -207,7 +207,7 @@ instance ClusterServer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ClusterServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«ClusterServerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer.t go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -230,7 +230,7 @@ instance UnimplementedClusterServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedClusterServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnimplementedClusterServerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -249,7 +249,7 @@ instance MaintenanceClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance MaintenanceClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«MaintenanceClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient.t go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -268,7 +268,7 @@ instance maintenanceClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance maintenanceClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«maintenanceClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient.t go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -287,7 +287,7 @@ instance MaintenanceServer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance MaintenanceServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«MaintenanceServerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer.t go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -310,7 +310,7 @@ instance UnimplementedMaintenanceServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedMaintenanceServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnimplementedMaintenanceServerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -329,7 +329,7 @@ instance AuthClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance AuthClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -348,7 +348,7 @@ instance authClient_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance authClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.authClient.t go_etcd_io.etcd.api.v3.etcdserverpb.«authClientⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.authClient.t go_etcd_io.etcd.api.v3.etcdserverpb.authClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -367,7 +367,7 @@ instance AuthServer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance AuthServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«AuthServerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -390,7 +390,7 @@ instance UnimplementedAuthServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedAuthServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer.t go_etcd_io.etcd.api.v3.etcdserverpb.«UnimplementedAuthServerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer.underlying := by
   solve_into_val_typed_struct
 
 end def_

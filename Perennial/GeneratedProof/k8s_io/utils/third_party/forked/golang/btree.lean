@@ -35,7 +35,7 @@ instance FreeList_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance FreeList_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.FreeList.t T') (k8s_io.utils.third_party.forked.golang.btree.«FreeListⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.FreeList.t T') (k8s_io.utils.third_party.forked.golang.btree.FreeList.underlying T) := by
   solve_into_val_typed_struct
 
 instance FreeList_access_load_mu {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (k8s_io.utils.third_party.forked.golang.btree.FreeList.t T')) (dq : DFrac) :
@@ -93,7 +93,7 @@ instance node_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance node_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.node.t T') (k8s_io.utils.third_party.forked.golang.btree.«nodeⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.node.t T') (k8s_io.utils.third_party.forked.golang.btree.node.underlying T) := by
   solve_into_val_typed_struct
 
 instance node_access_load_items {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (k8s_io.utils.third_party.forked.golang.btree.node.t T')) (dq : DFrac) :
@@ -166,7 +166,7 @@ instance optionalItem_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance optionalItem_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.optionalItem.t T') (k8s_io.utils.third_party.forked.golang.btree.«optionalItemⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.optionalItem.t T') (k8s_io.utils.third_party.forked.golang.btree.optionalItem.underlying T) := by
   solve_into_val_typed_struct
 
 instance optionalItem_access_load_item {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (k8s_io.utils.third_party.forked.golang.btree.optionalItem.t T')) (dq : DFrac) :
@@ -225,7 +225,7 @@ instance BTree_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance BTree_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.BTree.t T') (k8s_io.utils.third_party.forked.golang.btree.«BTreeⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.BTree.t T') (k8s_io.utils.third_party.forked.golang.btree.BTree.underlying T) := by
   solve_into_val_typed_struct
 
 instance BTree_access_load_degree {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (k8s_io.utils.third_party.forked.golang.btree.BTree.t T')) (dq : DFrac) :
@@ -314,7 +314,7 @@ instance copyOnWriteContext_typed_pointsto {T' : Type} [TypedPointsto (GF := GF)
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance copyOnWriteContext_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.copyOnWriteContext.t T') (k8s_io.utils.third_party.forked.golang.btree.«copyOnWriteContextⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (k8s_io.utils.third_party.forked.golang.btree.copyOnWriteContext.t T') (k8s_io.utils.third_party.forked.golang.btree.copyOnWriteContext.underlying T) := by
   solve_into_val_typed_struct
 
 instance copyOnWriteContext_access_load_freelist {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (k8s_io.utils.third_party.forked.golang.btree.copyOnWriteContext.t T')) (dq : DFrac) :

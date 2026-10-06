@@ -37,7 +37,7 @@ instance LeaseLeasesResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LeaseLeasesResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«LeaseLeasesResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse.underlying := by
   solve_into_val_typed_struct
 
 instance LeaseLeasesResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse.t) (dq : DFrac) :
@@ -148,7 +148,7 @@ instance Member_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Member_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Member.t go_etcd_io.etcd.api.v3.etcdserverpb.«Memberⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Member.t go_etcd_io.etcd.api.v3.etcdserverpb.Member.underlying := by
   solve_into_val_typed_struct
 
 instance Member_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Member.t) (dq : DFrac) :
@@ -304,7 +304,7 @@ instance MemberAddRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberAddRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberAddRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest.underlying := by
   solve_into_val_typed_struct
 
 instance MemberAddRequest_access_load_PeerURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest.t) (dq : DFrac) :
@@ -413,7 +413,7 @@ instance MemberAddResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberAddResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberAddResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse.underlying := by
   solve_into_val_typed_struct
 
 instance MemberAddResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse.t) (dq : DFrac) :
@@ -536,7 +536,7 @@ instance MemberRemoveRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberRemoveRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberRemoveRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveRequest.underlying := by
   solve_into_val_typed_struct
 
 instance MemberRemoveRequest_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveRequest.t) (dq : DFrac) :
@@ -628,7 +628,7 @@ instance MemberRemoveResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberRemoveResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberRemoveResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse.underlying := by
   solve_into_val_typed_struct
 
 instance MemberRemoveResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse.t) (dq : DFrac) :
@@ -736,7 +736,7 @@ instance MemberUpdateRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberUpdateRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberUpdateRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest.underlying := by
   solve_into_val_typed_struct
 
 instance MemberUpdateRequest_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest.t) (dq : DFrac) :
@@ -844,7 +844,7 @@ instance MemberUpdateResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberUpdateResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberUpdateResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse.underlying := by
   solve_into_val_typed_struct
 
 instance MemberUpdateResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse.t) (dq : DFrac) :
@@ -951,7 +951,7 @@ instance MemberListRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberListRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberListRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberListRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberListRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberListRequest.underlying := by
   solve_into_val_typed_struct
 
 instance MemberListRequest_access_load_Linearizable (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberListRequest.t) (dq : DFrac) :
@@ -1043,7 +1043,7 @@ instance MemberListResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberListResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberListResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse.underlying := by
   solve_into_val_typed_struct
 
 instance MemberListResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse.t) (dq : DFrac) :
@@ -1150,7 +1150,7 @@ instance MemberPromoteRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberPromoteRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberPromoteRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteRequest.underlying := by
   solve_into_val_typed_struct
 
 instance MemberPromoteRequest_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteRequest.t) (dq : DFrac) :
@@ -1242,7 +1242,7 @@ instance MemberPromoteResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MemberPromoteResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«MemberPromoteResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse.underlying := by
   solve_into_val_typed_struct
 
 instance MemberPromoteResponse_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse.t) (dq : DFrac) :
@@ -1348,7 +1348,7 @@ instance DefragmentRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance DefragmentRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DefragmentRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«DefragmentRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.DefragmentRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.DefragmentRequest.underlying := by
   solve_into_val_typed_struct
 
 instance DefragmentRequest_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DefragmentRequest.t) (dq : DFrac) :

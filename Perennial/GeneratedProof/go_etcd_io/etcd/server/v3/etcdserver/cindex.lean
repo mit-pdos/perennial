@@ -40,7 +40,7 @@ instance consistentIndex_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance consistentIndex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go_etcd_io.etcd.server.v3.etcdserver.cindex.«consistentIndexⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.underlying := by
   solve_into_val_typed_struct
 
 instance consistentIndex_access_load_consistentIndex (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.consistentIndex.t) (dq : DFrac) :
@@ -161,7 +161,7 @@ instance fakeConsistentIndex_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fakeConsistentIndex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go_etcd_io.etcd.server.v3.etcdserver.cindex.«fakeConsistentIndexⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.underlying := by
   solve_into_val_typed_struct
 
 instance fakeConsistentIndex_access_load_index (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.cindex.fakeConsistentIndex.t) (dq : DFrac) :

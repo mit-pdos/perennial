@@ -39,7 +39,7 @@ theorem wp_New (msg : GoString) :
 
 theorem wp_errorType_init :
     {{ (True : IProp GF) }}
-      (App (Val errorType'init) (Val #()))
+      (App (Val errorType.init) (Val #()))
     {{ RET #(); True }} := by
   -- Unprovable: `errorType'init` is opaque (an axiom in Perennial/Code/errors.lean, as in
   -- Rocq): `var errorType = reflectlite.TypeOf((*error)(nil)).Elem()` is not translated

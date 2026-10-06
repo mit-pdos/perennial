@@ -59,7 +59,7 @@ instance raftLog_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance raftLog_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftLog.t go_etcd_io.raft.v3.«raftLogⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.raftLog.t go_etcd_io.raft.v3.raftLog.underlying := by
   solve_into_val_typed_struct
 
 instance raftLog_access_load_storage (l : Loc) (v : go_etcd_io.raft.v3.raftLog.t) (dq : DFrac) :
@@ -231,7 +231,7 @@ instance BasicStatus_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance BasicStatus_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.BasicStatus.t go_etcd_io.raft.v3.«BasicStatusⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.BasicStatus.t go_etcd_io.raft.v3.BasicStatus.underlying := by
   solve_into_val_typed_struct
 
 instance BasicStatus_access_load_ID (l : Loc) (v : go_etcd_io.raft.v3.BasicStatus.t) (dq : DFrac) :

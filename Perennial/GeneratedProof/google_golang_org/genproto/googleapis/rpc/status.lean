@@ -26,7 +26,7 @@ instance Status_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Status_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.genproto.googleapis.rpc.status.Status.t google_golang_org.genproto.googleapis.rpc.status.«Statusⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) google_golang_org.genproto.googleapis.rpc.status.Status.t google_golang_org.genproto.googleapis.rpc.status.Status.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

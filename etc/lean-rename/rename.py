@@ -52,6 +52,12 @@ ap.add_argument("--report", default=None)
 ap.add_argument("--include-generated", action="store_true",
                 help="phase B: also rename names used by generated code, rewriting the generated files "
                      "(goose/proofgen must be changed to emit the new names)")
+ap.add_argument("--encodings", action="store_true",
+                help="phase B2: replace the Rocq-style name encodings of generated declarations "
+                     "(«Xⁱᵐᵖˡ», «T__Mⁱᵐᵖˡ», X'fds, X'init, X_Assumptions) by Lean namespaces")
+ap.add_argument("--no-generated-edits", action="store_true",
+                help="with --include-generated: plan renames as usual but edit only hand-written files "
+                     "(the generated files come from goose)")
 ap.add_argument("--ilean", default=None, help="directory holding the .ilean files (default: .lake/build/lib/lean)")
 args = ap.parse_args()
 
@@ -304,16 +310,79 @@ for n in list(rename):
     if deferred(n):
         del rename[n]
 
+
+# Lean keywords (goose's list): such components are written «quoted»
+_lg = open(os.path.join(ROOT, "goose/glang/lean.go"), encoding="utf-8").read()
+KEYWORDS = set(re.search(r"strings\.Fields\(`([^`]*)`\)", _lg).group(1).split())
+
+
+def unq(c):
+    return c[1:-1] if c.startswith("«") and c.endswith("»") else c
+
+
+def render(c):
+    u = unq(c)
+    if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_'!?]*", u) and u not in KEYWORDS and u != "_":
+        return u
+    return "«" + u + "»"
+
+
+def encoding_rename(n):
+    """Lean form of a Rocq-style encoded last component (dotted), or None."""
+    comps = split_name(n)
+    last = comps[-1]
+    raw = last[1:-1] if last.startswith("«") and last.endswith("»") else last
+    parent = comps[-2] if len(comps) > 1 else ""
+    q = render
+    # fields of a per-type assumptions class `X_Assumptions`: drop the `X_` prefix
+    if parent.endswith("_Assumptions"):
+        x = parent[: -len("_Assumptions")]
+        if raw == x + "ⁱᵐᵖˡ_underlying":
+            return "isUnderlying"
+        for pre, rep in ((x + "'ptr_", "ptr_"), (x + "_", "")):
+            if raw.startswith(pre) and len(raw) > len(pre):
+                return q(rep + raw[len(pre):])
+        return None
+    # fix-up of an earlier run: X'.impl of a primed type X' is X'.underlying
+    if raw == "impl" and len(comps) > 2 and comps[-2].endswith("'") and \
+            ".".join(comps[:-2] + [comps[-2].rstrip("'"), "TypeAssumptions"]) in inv:
+        return "underlying"
+    if raw.endswith("ⁱᵐᵖˡ"):
+        base = raw[: -len("ⁱᵐᵖˡ")]
+        if "__" in base:
+            t, m = base.split("__", 1)
+            return ".".join([q(t), q(m), "impl"])
+        # the underlying type of a named type (which has an assumptions class,
+        # named after the unprimed Go name) is X.underlying (see glang.TypeImpl),
+        # a function's body X.impl
+        if any(".".join(comps[:-1] + [b + "_Assumptions"]) in inv for b in (base, base.rstrip("'"))):
+            return q(base) + ".underlying"
+        return q(base) + ".impl"
+    for suf, rep in (("'fds_unsealed", "fieldsUnsealed"), ("'fds", "fields"), ("'init", "init")):
+        if raw.endswith(suf) and len(raw) > len(suf):
+            return q(raw[: -len(suf)]) + "." + rep
+    if raw.endswith("_Assumptions") and len(raw) > len("_Assumptions"):
+        return q(raw[: -len("_Assumptions")]) + ".TypeAssumptions"
+    return None
+
+
+if args.encodings:
+    rename, extra_ns = {}, {}
+    for n in inv:
+        e = encoding_rename(n)
+        if e is not None:
+            rename[n] = e
+
 # ---------------------------------------------------------------- full new names
 def new_full(n):
     comps = split_name(n)
     out = []
     for i in range(len(comps) - 1):
         pre = ".".join(comps[: i + 1])
-        out.append(rename[pre] if pre in rename else comps[i])
+        out.extend(split_name(rename[pre]) if pre in rename else [comps[i]])
     if n in extra_ns:
         out.append(extra_ns[n])
-    out.append(rename.get(n, comps[-1]))
+    out.extend(split_name(rename[n]) if n in rename else [comps[-1]])
     return out
 
 
@@ -350,6 +419,8 @@ def responsible(n):
 # open (e.g. `Header`, `RWMutex`): keep the old name
 gen_short = {split_name(n)[-1] for n, (m, k, s) in inv.items() if is_generated(m)}
 for n in list(rename):
+    if args.encodings:
+        break
     if rename[n] in gen_short and rename[n] != cand[n][3]:
         rename.pop(n)
         extra_ns.pop(n, None)
@@ -401,16 +472,21 @@ def plan_edit(mod, r, n):
     if tt.startswith("_root_."):
         lead, tt = lead + "_root_.", tt[len("_root_."):]
     T = split_name(tt)
-    if T == O[-len(T):]:
+    Tu, Ou = [unq(c) for c in T], [unq(c) for c in O]
+    if Tu == Ou[-len(T):]:
         hidden = O[: len(O) - len(T)]
         Nh = new_full(".".join(hidden)) if hidden else []
         if N[: len(Nh)] == Nh:
-            new = ".".join(N[len(Nh):])
+            out = N[len(Nh):]
         else:
-            new = ".".join(N[len(hidden):]) if len(N) >= len(hidden) else None
-        if new is None:
+            out = N[len(hidden):] if len(N) >= len(hidden) else None
+        if out is None:
             skipped.append((mod, r, n, t))
             return
+        # keep the source spelling of components that do not change
+        k = len(out)
+        new = ".".join(T[i - k + len(T)] if 0 <= i - k + len(T) < len(T) and unq(out[i]) == Tu[i - k + len(T)]
+                       else render(out[i]) for i in range(k))
     elif T[-1] == O[-1] and n not in extra_ns:
         new = ".".join(T[:-1] + [N[-1]])       # dot notation `x.field`
     else:
@@ -421,10 +497,10 @@ def plan_edit(mod, r, n):
 
 
 for n in affected:
-    if n in defs:
+    if n in defs and not (args.no_generated_edits and is_generated(defs[n][0])):
         plan_edit(*defs[n], n)
     for (mod, r) in uses.get(n, []):
-        if is_generated(mod) and not args.include_generated:
+        if is_generated(mod) and (not args.include_generated or args.no_generated_edits):
             continue
         plan_edit(mod, r, n)
 

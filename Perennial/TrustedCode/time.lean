@@ -12,15 +12,15 @@ namespace time
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-def «newTimerⁱᵐᵖˡ» : val :=
+def newTimer.impl : val :=
   λ: "when" "period" "f" "arg" "cp", #()
 
-def «runtimeNanoⁱᵐᵖˡ» : val :=
+def runtimeNano.impl : val :=
   λ: <>, ArbitraryInt
 
 -- TODO: could avoid making this trusted by verifying the real implementation,
 -- which requires verifying `internal/godebug`.
-def «syncTimerⁱᵐᵖˡ» : val :=
+def syncTimer.impl : val :=
   λ: "c",
      if: ArbitraryInt =⟨go.int64⟩ #(W64 0) then "c"
      else #chan.nil
@@ -36,7 +36,7 @@ def arbitraryTime : val :=
         KeyedElement (some (KeyField go!"loc")) (ElementExpression «unsafe».Pointer #null)
      ])
 
-def «Afterⁱᵐᵖˡ» : val :=
+def After.impl : val :=
   λ: "d",
     let: "ch" := FuncResolve go.make2 [go.ChannelType go.sendrecv (go.Named go!"time.Time" [])]
       #() #(W64 0) in
@@ -44,7 +44,7 @@ def «Afterⁱᵐᵖˡ» : val :=
     Fork (chan.send (go.Named go!"time.Time" []) "ch" (arbitraryTime #())) ;;
     "ch"
 
-def «Sleepⁱᵐᵖˡ» : val :=
+def Sleep.impl : val :=
   λ: "d", #()
 
 end code

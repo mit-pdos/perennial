@@ -66,7 +66,7 @@ noncomputable def WaitTimeout [FfiSyntax] [GoGlobalContext] : GoString :=
 /-- Assert(b) panics if b doesn't hold
 
     go: goose_std.go:13:6 -/
-noncomputable def «Assertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Assert.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
@@ -83,7 +83,7 @@ noncomputable def «Assertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Returns true if x + y does not overflow
 
     go: goose_std.go:20:6 -/
-noncomputable def «SumNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SumNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -99,7 +99,7 @@ noncomputable def «SumNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     *Use with care* - if the assumption is violated this function will panic.
 
     go: goose_std.go:27:6 -/
-noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SumAssumeNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -111,7 +111,7 @@ noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.std.std_core.SumAssumeNoOverflow []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: goose_std.go:31:6 -/
-noncomputable def «SignedSumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SignedSumAssumeNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -127,7 +127,7 @@ noncomputable def «SignedSumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
 /-- BytesEqual returns if the two byte slices are equal.
 
     go: goose_std.go:37:6 -/
-noncomputable def «BytesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def BytesEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -182,7 +182,7 @@ noncomputable def «BytesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     [reference]: https://pkg.go.dev/bytes#Clone
 
     go: goose_std.go:58:6 -/
-noncomputable def «BytesCloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def BytesClone.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -203,7 +203,7 @@ noncomputable def «BytesCloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     no longer safe to append to the first slice.
 
     go: goose_std.go:69:6 -/
-noncomputable def «SliceSplitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def SliceSplit.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "xs"
   (Lam "n"
   (App (Val exceptionDo)
@@ -215,7 +215,7 @@ noncomputable def «SliceSplitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
   (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs")))))))))))))
 
 /-- go: goose_std.go:84:6 -/
-noncomputable def «newJoinHandleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newJoinHandle.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "mu" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
@@ -236,7 +236,7 @@ noncomputable def «newJoinHandleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "mu") (Var "$r0")))))))))
 
 /-- go: goose_std.go:94:22 -/
-noncomputable def «JoinHandle__finishⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JoinHandle.finish.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -266,7 +266,7 @@ noncomputable def «JoinHandle__finishⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
     result value.
 
     go: goose_std.go:108:6 -/
-noncomputable def «Spawnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Spawn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
@@ -293,7 +293,7 @@ noncomputable def «Spawnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType JoinHandle)))) (Pair (Var "h") (Var "$r0"))))))))))
 
 /-- go: goose_std.go:117:22 -/
-noncomputable def «JoinHandle__Joinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JoinHandle.Join.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -330,7 +330,7 @@ noncomputable def «JoinHandle__Joinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     and condition variables since these are modeled in Goose
 
     go: goose_std.go:136:6 -/
-noncomputable def «Multiparⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Multipar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "num"
   (Lam "op"
   (App (Val exceptionDo)
@@ -416,7 +416,7 @@ noncomputable def «Multiparⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     application to a value.
 
     go: goose_std.go:167:6 -/
-noncomputable def «Skipⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Skip.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
@@ -429,7 +429,7 @@ noncomputable def «Skipⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     ourselves.
 
     go: goose_std.go:174:6 -/
-noncomputable def «WaitTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WaitTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "cond"
   (Lam "timeoutMs"
   (App (Val exceptionDo)
@@ -510,58 +510,58 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end JoinHandle
 
-@[reducible] def JoinHandle'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def JoinHandle.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" (go.GoType.PointerType _root_.Perennial.sync.Mutex)),
 (go.field_decl.FieldDecl go!"done" go.bool),
 (go.field_decl.FieldDecl go!"cond" (go.GoType.PointerType _root_.Perennial.sync.Cond))]
 
-@[irreducible] def JoinHandle'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  JoinHandle'fds_unsealed
+@[irreducible] def JoinHandle.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  JoinHandle.fieldsUnsealed
 
 instance equals_unfold_JoinHandle [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold JoinHandle'fds JoinHandle'fds_unsealed :=
-  ⟨by unfold JoinHandle'fds; rfl⟩
+    EqualsUnfold JoinHandle.fields JoinHandle.fieldsUnsealed :=
+  ⟨by unfold JoinHandle.fields; rfl⟩
 
-@[reducible] def «JoinHandleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType JoinHandle'fds)
+@[reducible] def JoinHandle.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType JoinHandle.fields)
 
-class JoinHandle_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  JoinHandle_type_repr : go.TypeReprUnderlying «JoinHandleⁱᵐᵖˡ» JoinHandle.t
-  JoinHandle_underlying : go.UnderlyingDirectedEq JoinHandle «JoinHandleⁱᵐᵖˡ»
-  JoinHandle_get_mu : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet «JoinHandleⁱᵐᵖˡ» go!"mu") #x (Val #(x.mu'))
-  JoinHandle_set_mu : ∀ (x : JoinHandle.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «JoinHandleⁱᵐᵖˡ» go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : JoinHandle.t)))
-  JoinHandle_get_done : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet «JoinHandleⁱᵐᵖˡ» go!"done") #x (Val #(x.done'))
-  JoinHandle_set_done : ∀ (x : JoinHandle.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «JoinHandleⁱᵐᵖˡ» go!"done") (PairV #x #y) (Val #(({ x with done' := y } : JoinHandle.t)))
-  JoinHandle_get_cond : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet «JoinHandleⁱᵐᵖˡ» go!"cond") #x (Val #(x.cond'))
-  JoinHandle_set_cond : ∀ (x : JoinHandle.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «JoinHandleⁱᵐᵖˡ» go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : JoinHandle.t)))
-  JoinHandle'ptr_Join_unfold : MethodUnfold (go.GoType.PointerType JoinHandle) go!"Join" «JoinHandle__Joinⁱᵐᵖˡ»
-  JoinHandle'ptr_finish_unfold : MethodUnfold (go.GoType.PointerType JoinHandle) go!"finish" «JoinHandle__finishⁱᵐᵖˡ»
+class JoinHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying JoinHandle.underlying JoinHandle.t
+  underlying : go.UnderlyingDirectedEq JoinHandle JoinHandle.underlying
+  get_mu : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : JoinHandle.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : JoinHandle.t)))
+  get_done : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"done") #x (Val #(x.done'))
+  set_done : ∀ (x : JoinHandle.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : JoinHandle.t)))
+  get_cond : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"cond") #x (Val #(x.cond'))
+  set_cond : ∀ (x : JoinHandle.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : JoinHandle.t)))
+  ptr_Join_unfold : MethodUnfold (go.GoType.PointerType JoinHandle) go!"Join" JoinHandle.Join.impl
+  ptr_finish_unfold : MethodUnfold (go.GoType.PointerType JoinHandle) go!"finish" JoinHandle.finish.impl
 
-attribute [instance] JoinHandle_Assumptions.JoinHandle_type_repr
-  JoinHandle_Assumptions.JoinHandle_underlying
-  JoinHandle_Assumptions.JoinHandle_get_mu
-  JoinHandle_Assumptions.JoinHandle_set_mu
-  JoinHandle_Assumptions.JoinHandle_get_done
-  JoinHandle_Assumptions.JoinHandle_set_done
-  JoinHandle_Assumptions.JoinHandle_get_cond
-  JoinHandle_Assumptions.JoinHandle_set_cond
-  JoinHandle_Assumptions.JoinHandle'ptr_Join_unfold
-  JoinHandle_Assumptions.JoinHandle'ptr_finish_unfold
+attribute [instance] JoinHandle.TypeAssumptions.type_repr
+  JoinHandle.TypeAssumptions.underlying
+  JoinHandle.TypeAssumptions.get_mu
+  JoinHandle.TypeAssumptions.set_mu
+  JoinHandle.TypeAssumptions.get_done
+  JoinHandle.TypeAssumptions.set_done
+  JoinHandle.TypeAssumptions.get_cond
+  JoinHandle.TypeAssumptions.set_cond
+  JoinHandle.TypeAssumptions.ptr_Join_unfold
+  JoinHandle.TypeAssumptions.ptr_finish_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  JoinHandle_instance : JoinHandle_Assumptions
-  Assert_unfold : FuncUnfold Assert [] «Assertⁱᵐᵖˡ»
-  SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] «SumNoOverflowⁱᵐᵖˡ»
-  SumAssumeNoOverflow_unfold : FuncUnfold SumAssumeNoOverflow [] «SumAssumeNoOverflowⁱᵐᵖˡ»
-  SignedSumAssumeNoOverflow_unfold : FuncUnfold SignedSumAssumeNoOverflow [] «SignedSumAssumeNoOverflowⁱᵐᵖˡ»
-  BytesEqual_unfold : FuncUnfold BytesEqual [] «BytesEqualⁱᵐᵖˡ»
-  BytesClone_unfold : FuncUnfold BytesClone [] «BytesCloneⁱᵐᵖˡ»
-  SliceSplit_unfold : ∀ (T : go.GoType), FuncUnfold SliceSplit [T] («SliceSplitⁱᵐᵖˡ» T)
-  newJoinHandle_unfold : FuncUnfold newJoinHandle [] «newJoinHandleⁱᵐᵖˡ»
-  Spawn_unfold : FuncUnfold Spawn [] «Spawnⁱᵐᵖˡ»
-  Multipar_unfold : FuncUnfold Multipar [] «Multiparⁱᵐᵖˡ»
-  Skip_unfold : FuncUnfold Skip [] «Skipⁱᵐᵖˡ»
-  WaitTimeout_unfold : FuncUnfold WaitTimeout [] «WaitTimeoutⁱᵐᵖˡ»
+  JoinHandle_instance : JoinHandle.TypeAssumptions
+  Assert_unfold : FuncUnfold Assert [] Assert.impl
+  SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] SumNoOverflow.impl
+  SumAssumeNoOverflow_unfold : FuncUnfold SumAssumeNoOverflow [] SumAssumeNoOverflow.impl
+  SignedSumAssumeNoOverflow_unfold : FuncUnfold SignedSumAssumeNoOverflow [] SignedSumAssumeNoOverflow.impl
+  BytesEqual_unfold : FuncUnfold BytesEqual [] BytesEqual.impl
+  BytesClone_unfold : FuncUnfold BytesClone [] BytesClone.impl
+  SliceSplit_unfold : ∀ (T : go.GoType), FuncUnfold SliceSplit [T] (SliceSplit.impl T)
+  newJoinHandle_unfold : FuncUnfold newJoinHandle [] newJoinHandle.impl
+  Spawn_unfold : FuncUnfold Spawn [] Spawn.impl
+  Multipar_unfold : FuncUnfold Multipar [] Multipar.impl
+  Skip_unfold : FuncUnfold Skip [] Skip.impl
+  WaitTimeout_unfold : FuncUnfold WaitTimeout [] WaitTimeout.impl
   import_math_Assumption : _root_.Perennial.math.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_time_Assumption : _root_.Perennial.time.Assumptions

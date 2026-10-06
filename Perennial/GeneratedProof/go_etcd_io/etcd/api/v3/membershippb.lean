@@ -35,7 +35,7 @@ instance RaftAttributes_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RaftAttributes_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.RaftAttributes.t go_etcd_io.etcd.api.v3.membershippb.«RaftAttributesⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.RaftAttributes.t go_etcd_io.etcd.api.v3.membershippb.RaftAttributes.underlying := by
   solve_into_val_typed_struct
 
 instance RaftAttributes_access_load_PeerUrls (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.RaftAttributes.t) (dq : DFrac) :
@@ -143,7 +143,7 @@ instance Attributes_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Attributes_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.Attributes.t go_etcd_io.etcd.api.v3.membershippb.«Attributesⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.Attributes.t go_etcd_io.etcd.api.v3.membershippb.Attributes.underlying := by
   solve_into_val_typed_struct
 
 instance Attributes_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.Attributes.t) (dq : DFrac) :
@@ -252,7 +252,7 @@ instance Member_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Member_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.Member.t go_etcd_io.etcd.api.v3.membershippb.«Memberⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.Member.t go_etcd_io.etcd.api.v3.membershippb.Member.underlying := by
   solve_into_val_typed_struct
 
 instance Member_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.Member.t) (dq : DFrac) :
@@ -375,7 +375,7 @@ instance ClusterVersionSetRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ClusterVersionSetRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.ClusterVersionSetRequest.t go_etcd_io.etcd.api.v3.membershippb.«ClusterVersionSetRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.ClusterVersionSetRequest.t go_etcd_io.etcd.api.v3.membershippb.ClusterVersionSetRequest.underlying := by
   solve_into_val_typed_struct
 
 instance ClusterVersionSetRequest_access_load_Ver (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.ClusterVersionSetRequest.t) (dq : DFrac) :
@@ -467,7 +467,7 @@ instance ClusterMemberAttrSetRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ClusterMemberAttrSetRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.ClusterMemberAttrSetRequest.t go_etcd_io.etcd.api.v3.membershippb.«ClusterMemberAttrSetRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.ClusterMemberAttrSetRequest.t go_etcd_io.etcd.api.v3.membershippb.ClusterMemberAttrSetRequest.underlying := by
   solve_into_val_typed_struct
 
 instance ClusterMemberAttrSetRequest_access_load_Member_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.ClusterMemberAttrSetRequest.t) (dq : DFrac) :
@@ -575,7 +575,7 @@ instance DowngradeInfoSetRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance DowngradeInfoSetRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.DowngradeInfoSetRequest.t go_etcd_io.etcd.api.v3.membershippb.«DowngradeInfoSetRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.membershippb.DowngradeInfoSetRequest.t go_etcd_io.etcd.api.v3.membershippb.DowngradeInfoSetRequest.underlying := by
   solve_into_val_typed_struct
 
 instance DowngradeInfoSetRequest_access_load_Enabled (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.DowngradeInfoSetRequest.t) (dq : DFrac) :

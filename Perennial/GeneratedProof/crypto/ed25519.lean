@@ -26,7 +26,7 @@ instance Options_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Options_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) crypto.ed25519.Options.t crypto.ed25519.«Optionsⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) crypto.ed25519.Options.t crypto.ed25519.Options.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

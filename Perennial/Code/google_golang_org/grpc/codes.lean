@@ -72,7 +72,7 @@ axiom _maxCode [FfiSyntax] [GoGlobalContext] : val
 noncomputable def strToCode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/grpc/codes.strToCode"
 
-axiom strToCode'init [FfiSyntax] [GoGlobalContext] : val
+axiom strToCode.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def canonicalString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/grpc/codes.canonicalString"
@@ -80,29 +80,29 @@ noncomputable def canonicalString [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.google_golang_org.grpc.codes where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.google_golang_org.grpc.codes)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
-  (App (Val strToCode'init) (Val #())))))))
+  (App (Val strToCode.init) (Val #())))))))
 
 namespace Code
 abbrev t [FfiSyntax] : Type := w32
 end Code
 
-@[reducible] def «Codeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Code.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
-class Code_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Code_underlying : go.UnderlyingDirectedEq Code «Codeⁱᵐᵖˡ»
+class Code.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Code Code.underlying
 
-attribute [instance] Code_Assumptions.Code_underlying
+attribute [instance] Code.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Code_instance : Code_Assumptions
+  Code_instance : Code.TypeAssumptions
 
 attribute [instance] Assumptions.Code_instance
 

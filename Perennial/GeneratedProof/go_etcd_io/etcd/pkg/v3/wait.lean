@@ -33,7 +33,7 @@ instance list'_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance list'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.wait.list'.t go_etcd_io.etcd.pkg.v3.wait.«list'ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.wait.list'.t go_etcd_io.etcd.pkg.v3.wait.list'.underlying := by
   solve_into_val_typed_struct
 
 instance list'_access_load_e (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.list'.t) (dq : DFrac) :
@@ -74,7 +74,7 @@ instance listElement_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance listElement_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.wait.listElement.t go_etcd_io.etcd.pkg.v3.wait.«listElementⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.wait.listElement.t go_etcd_io.etcd.pkg.v3.wait.listElement.underlying := by
   solve_into_val_typed_struct
 
 instance listElement_access_load_l (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.listElement.t) (dq : DFrac) :
@@ -130,7 +130,7 @@ instance waitWithResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance waitWithResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.wait.waitWithResponse.t go_etcd_io.etcd.pkg.v3.wait.«waitWithResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.wait.waitWithResponse.t go_etcd_io.etcd.pkg.v3.wait.waitWithResponse.underlying := by
   solve_into_val_typed_struct
 
 instance waitWithResponse_access_load_ch (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.waitWithResponse.t) (dq : DFrac) :
@@ -172,7 +172,7 @@ instance timeList_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timeList_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.wait.timeList.t go_etcd_io.etcd.pkg.v3.wait.«timeListⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.wait.timeList.t go_etcd_io.etcd.pkg.v3.wait.timeList.underlying := by
   solve_into_val_typed_struct
 
 instance timeList_access_load_l (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.timeList.t) (dq : DFrac) :

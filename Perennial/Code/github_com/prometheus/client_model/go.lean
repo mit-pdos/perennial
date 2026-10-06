@@ -82,29 +82,29 @@ def MetricFamily [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] MetricFamily
 
-axiom «LabelPairⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom LabelPair.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Gaugeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Gauge.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Counterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Counter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Quantileⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Quantile.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Summaryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Summary.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Untypedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Untyped.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Histogramⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Histogram.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Bucketⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Bucket.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «BucketSpanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom BucketSpan.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Exemplarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Exemplar.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Metricⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Metric.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «MetricFamilyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom MetricFamily.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom MetricType_COUNTER [FfiSyntax] [GoGlobalContext] : val
 
@@ -121,12 +121,12 @@ axiom MetricType_GAUGE_HISTOGRAM [FfiSyntax] [GoGlobalContext] : val
 noncomputable def MetricType_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.MetricType_name"
 
-axiom MetricType_name'init [FfiSyntax] [GoGlobalContext] : val
+axiom MetricType_name.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def MetricType_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.MetricType_value"
 
-axiom MetricType_value'init [FfiSyntax] [GoGlobalContext] : val
+axiom MetricType_value.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def File_io_prometheus_client_metrics_proto [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.File_io_prometheus_client_metrics_proto"
@@ -134,7 +134,7 @@ noncomputable def File_io_prometheus_client_metrics_proto [FfiSyntax] [GoGlobalC
 noncomputable def file_io_prometheus_client_metrics_proto_rawDesc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_rawDesc"
 
-axiom file_io_prometheus_client_metrics_proto_rawDesc'init [FfiSyntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_rawDesc.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def file_io_prometheus_client_metrics_proto_rawDescOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_rawDescOnce"
@@ -142,27 +142,27 @@ noncomputable def file_io_prometheus_client_metrics_proto_rawDescOnce [FfiSyntax
 noncomputable def file_io_prometheus_client_metrics_proto_rawDescData [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_rawDescData"
 
-axiom file_io_prometheus_client_metrics_proto_rawDescData'init [FfiSyntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_rawDescData.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def file_io_prometheus_client_metrics_proto_enumTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_enumTypes"
 
-axiom file_io_prometheus_client_metrics_proto_enumTypes'init [FfiSyntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_enumTypes.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def file_io_prometheus_client_metrics_proto_msgTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_msgTypes"
 
-axiom file_io_prometheus_client_metrics_proto_msgTypes'init [FfiSyntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_msgTypes.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def file_io_prometheus_client_metrics_proto_goTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_goTypes"
 
-axiom file_io_prometheus_client_metrics_proto_goTypes'init [FfiSyntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_goTypes.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def file_io_prometheus_client_metrics_proto_depIdxs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_depIdxs"
 
-axiom file_io_prometheus_client_metrics_proto_depIdxs'init [FfiSyntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_depIdxs.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def file_io_prometheus_client_metrics_proto_rawDescGZIP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_rawDescGZIP"
@@ -173,7 +173,7 @@ noncomputable def file_io_prometheus_client_metrics_proto_init [FfiSyntax] [GoGl
 instance info' : PkgInfo pkg_id.github_com.prometheus.client_model.go where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -187,33 +187,33 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val file_io_prometheus_client_metrics_proto_depIdxs'init) (Val #())))))
+  (App (Val file_io_prometheus_client_metrics_proto_depIdxs.init) (Val #())))))
   (App (Val doExecute)
-  (App (Val file_io_prometheus_client_metrics_proto_goTypes'init) (Val #()))))))
+  (App (Val file_io_prometheus_client_metrics_proto_goTypes.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val file_io_prometheus_client_metrics_proto_msgTypes'init) (Val #()))))))
+  (App (Val file_io_prometheus_client_metrics_proto_msgTypes.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val file_io_prometheus_client_metrics_proto_enumTypes'init) (Val #()))))))
+  (App (Val file_io_prometheus_client_metrics_proto_enumTypes.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val file_io_prometheus_client_metrics_proto_rawDescData'init) (Val #()))))))
+  (App (Val file_io_prometheus_client_metrics_proto_rawDescData.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val file_io_prometheus_client_metrics_proto_rawDesc'init) (Val #()))))))
+  (App (Val file_io_prometheus_client_metrics_proto_rawDesc.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val MetricType_value'init) (Val #()))))))
+  (App (Val MetricType_value.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val MetricType_name'init) (Val #()))))))))
+  (App (Val MetricType_name.init) (Val #()))))))))
 
 namespace MetricType
 abbrev t [FfiSyntax] : Type := w32
 end MetricType
 
-@[reducible] def «MetricTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def MetricType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class MetricType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  MetricType_underlying : go.UnderlyingDirectedEq MetricType «MetricTypeⁱᵐᵖˡ»
+class MetricType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq MetricType MetricType.underlying
 
-attribute [instance] MetricType_Assumptions.MetricType_underlying
+attribute [instance] MetricType.TypeAssumptions.underlying
 
 namespace LabelPair
 axiom t : Type
@@ -221,14 +221,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end LabelPair
 
-class LabelPair_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LabelPair_type_repr : go.TypeReprUnderlying «LabelPairⁱᵐᵖˡ» LabelPair.t
-  LabelPair_underlying : go.UnderlyingDirectedEq LabelPair «LabelPairⁱᵐᵖˡ»
-  «LabelPairⁱᵐᵖˡ_underlying» : go.IsUnderlying «LabelPairⁱᵐᵖˡ» «LabelPairⁱᵐᵖˡ»
+class LabelPair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying LabelPair.underlying LabelPair.t
+  underlying : go.UnderlyingDirectedEq LabelPair LabelPair.underlying
+  isUnderlying : go.IsUnderlying LabelPair.underlying LabelPair.underlying
 
-attribute [instance] LabelPair_Assumptions.LabelPair_type_repr
-  LabelPair_Assumptions.LabelPair_underlying
-  LabelPair_Assumptions.«LabelPairⁱᵐᵖˡ_underlying»
+attribute [instance] LabelPair.TypeAssumptions.type_repr
+  LabelPair.TypeAssumptions.underlying
+  LabelPair.TypeAssumptions.isUnderlying
 
 namespace Gauge
 axiom t : Type
@@ -236,14 +236,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Gauge
 
-class Gauge_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Gauge_type_repr : go.TypeReprUnderlying «Gaugeⁱᵐᵖˡ» Gauge.t
-  Gauge_underlying : go.UnderlyingDirectedEq Gauge «Gaugeⁱᵐᵖˡ»
-  «Gaugeⁱᵐᵖˡ_underlying» : go.IsUnderlying «Gaugeⁱᵐᵖˡ» «Gaugeⁱᵐᵖˡ»
+class Gauge.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Gauge.underlying Gauge.t
+  underlying : go.UnderlyingDirectedEq Gauge Gauge.underlying
+  isUnderlying : go.IsUnderlying Gauge.underlying Gauge.underlying
 
-attribute [instance] Gauge_Assumptions.Gauge_type_repr
-  Gauge_Assumptions.Gauge_underlying
-  Gauge_Assumptions.«Gaugeⁱᵐᵖˡ_underlying»
+attribute [instance] Gauge.TypeAssumptions.type_repr
+  Gauge.TypeAssumptions.underlying
+  Gauge.TypeAssumptions.isUnderlying
 
 namespace Counter
 axiom t : Type
@@ -251,14 +251,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Counter
 
-class Counter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Counter_type_repr : go.TypeReprUnderlying «Counterⁱᵐᵖˡ» Counter.t
-  Counter_underlying : go.UnderlyingDirectedEq Counter «Counterⁱᵐᵖˡ»
-  «Counterⁱᵐᵖˡ_underlying» : go.IsUnderlying «Counterⁱᵐᵖˡ» «Counterⁱᵐᵖˡ»
+class Counter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Counter.underlying Counter.t
+  underlying : go.UnderlyingDirectedEq Counter Counter.underlying
+  isUnderlying : go.IsUnderlying Counter.underlying Counter.underlying
 
-attribute [instance] Counter_Assumptions.Counter_type_repr
-  Counter_Assumptions.Counter_underlying
-  Counter_Assumptions.«Counterⁱᵐᵖˡ_underlying»
+attribute [instance] Counter.TypeAssumptions.type_repr
+  Counter.TypeAssumptions.underlying
+  Counter.TypeAssumptions.isUnderlying
 
 namespace Quantile
 axiom t : Type
@@ -266,14 +266,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Quantile
 
-class Quantile_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Quantile_type_repr : go.TypeReprUnderlying «Quantileⁱᵐᵖˡ» Quantile.t
-  Quantile_underlying : go.UnderlyingDirectedEq Quantile «Quantileⁱᵐᵖˡ»
-  «Quantileⁱᵐᵖˡ_underlying» : go.IsUnderlying «Quantileⁱᵐᵖˡ» «Quantileⁱᵐᵖˡ»
+class Quantile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Quantile.underlying Quantile.t
+  underlying : go.UnderlyingDirectedEq Quantile Quantile.underlying
+  isUnderlying : go.IsUnderlying Quantile.underlying Quantile.underlying
 
-attribute [instance] Quantile_Assumptions.Quantile_type_repr
-  Quantile_Assumptions.Quantile_underlying
-  Quantile_Assumptions.«Quantileⁱᵐᵖˡ_underlying»
+attribute [instance] Quantile.TypeAssumptions.type_repr
+  Quantile.TypeAssumptions.underlying
+  Quantile.TypeAssumptions.isUnderlying
 
 namespace Summary
 axiom t : Type
@@ -281,14 +281,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Summary
 
-class Summary_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Summary_type_repr : go.TypeReprUnderlying «Summaryⁱᵐᵖˡ» Summary.t
-  Summary_underlying : go.UnderlyingDirectedEq Summary «Summaryⁱᵐᵖˡ»
-  «Summaryⁱᵐᵖˡ_underlying» : go.IsUnderlying «Summaryⁱᵐᵖˡ» «Summaryⁱᵐᵖˡ»
+class Summary.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Summary.underlying Summary.t
+  underlying : go.UnderlyingDirectedEq Summary Summary.underlying
+  isUnderlying : go.IsUnderlying Summary.underlying Summary.underlying
 
-attribute [instance] Summary_Assumptions.Summary_type_repr
-  Summary_Assumptions.Summary_underlying
-  Summary_Assumptions.«Summaryⁱᵐᵖˡ_underlying»
+attribute [instance] Summary.TypeAssumptions.type_repr
+  Summary.TypeAssumptions.underlying
+  Summary.TypeAssumptions.isUnderlying
 
 namespace Untyped
 axiom t : Type
@@ -296,14 +296,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Untyped
 
-class Untyped_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Untyped_type_repr : go.TypeReprUnderlying «Untypedⁱᵐᵖˡ» Untyped.t
-  Untyped_underlying : go.UnderlyingDirectedEq Untyped «Untypedⁱᵐᵖˡ»
-  «Untypedⁱᵐᵖˡ_underlying» : go.IsUnderlying «Untypedⁱᵐᵖˡ» «Untypedⁱᵐᵖˡ»
+class Untyped.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Untyped.underlying Untyped.t
+  underlying : go.UnderlyingDirectedEq Untyped Untyped.underlying
+  isUnderlying : go.IsUnderlying Untyped.underlying Untyped.underlying
 
-attribute [instance] Untyped_Assumptions.Untyped_type_repr
-  Untyped_Assumptions.Untyped_underlying
-  Untyped_Assumptions.«Untypedⁱᵐᵖˡ_underlying»
+attribute [instance] Untyped.TypeAssumptions.type_repr
+  Untyped.TypeAssumptions.underlying
+  Untyped.TypeAssumptions.isUnderlying
 
 namespace Histogram
 axiom t : Type
@@ -311,14 +311,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Histogram
 
-class Histogram_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Histogram_type_repr : go.TypeReprUnderlying «Histogramⁱᵐᵖˡ» Histogram.t
-  Histogram_underlying : go.UnderlyingDirectedEq Histogram «Histogramⁱᵐᵖˡ»
-  «Histogramⁱᵐᵖˡ_underlying» : go.IsUnderlying «Histogramⁱᵐᵖˡ» «Histogramⁱᵐᵖˡ»
+class Histogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Histogram.underlying Histogram.t
+  underlying : go.UnderlyingDirectedEq Histogram Histogram.underlying
+  isUnderlying : go.IsUnderlying Histogram.underlying Histogram.underlying
 
-attribute [instance] Histogram_Assumptions.Histogram_type_repr
-  Histogram_Assumptions.Histogram_underlying
-  Histogram_Assumptions.«Histogramⁱᵐᵖˡ_underlying»
+attribute [instance] Histogram.TypeAssumptions.type_repr
+  Histogram.TypeAssumptions.underlying
+  Histogram.TypeAssumptions.isUnderlying
 
 namespace Bucket
 axiom t : Type
@@ -326,14 +326,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Bucket
 
-class Bucket_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Bucket_type_repr : go.TypeReprUnderlying «Bucketⁱᵐᵖˡ» Bucket.t
-  Bucket_underlying : go.UnderlyingDirectedEq Bucket «Bucketⁱᵐᵖˡ»
-  «Bucketⁱᵐᵖˡ_underlying» : go.IsUnderlying «Bucketⁱᵐᵖˡ» «Bucketⁱᵐᵖˡ»
+class Bucket.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Bucket.underlying Bucket.t
+  underlying : go.UnderlyingDirectedEq Bucket Bucket.underlying
+  isUnderlying : go.IsUnderlying Bucket.underlying Bucket.underlying
 
-attribute [instance] Bucket_Assumptions.Bucket_type_repr
-  Bucket_Assumptions.Bucket_underlying
-  Bucket_Assumptions.«Bucketⁱᵐᵖˡ_underlying»
+attribute [instance] Bucket.TypeAssumptions.type_repr
+  Bucket.TypeAssumptions.underlying
+  Bucket.TypeAssumptions.isUnderlying
 
 namespace BucketSpan
 axiom t : Type
@@ -341,14 +341,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end BucketSpan
 
-class BucketSpan_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  BucketSpan_type_repr : go.TypeReprUnderlying «BucketSpanⁱᵐᵖˡ» BucketSpan.t
-  BucketSpan_underlying : go.UnderlyingDirectedEq BucketSpan «BucketSpanⁱᵐᵖˡ»
-  «BucketSpanⁱᵐᵖˡ_underlying» : go.IsUnderlying «BucketSpanⁱᵐᵖˡ» «BucketSpanⁱᵐᵖˡ»
+class BucketSpan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying BucketSpan.underlying BucketSpan.t
+  underlying : go.UnderlyingDirectedEq BucketSpan BucketSpan.underlying
+  isUnderlying : go.IsUnderlying BucketSpan.underlying BucketSpan.underlying
 
-attribute [instance] BucketSpan_Assumptions.BucketSpan_type_repr
-  BucketSpan_Assumptions.BucketSpan_underlying
-  BucketSpan_Assumptions.«BucketSpanⁱᵐᵖˡ_underlying»
+attribute [instance] BucketSpan.TypeAssumptions.type_repr
+  BucketSpan.TypeAssumptions.underlying
+  BucketSpan.TypeAssumptions.isUnderlying
 
 namespace Exemplar
 axiom t : Type
@@ -356,14 +356,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Exemplar
 
-class Exemplar_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Exemplar_type_repr : go.TypeReprUnderlying «Exemplarⁱᵐᵖˡ» Exemplar.t
-  Exemplar_underlying : go.UnderlyingDirectedEq Exemplar «Exemplarⁱᵐᵖˡ»
-  «Exemplarⁱᵐᵖˡ_underlying» : go.IsUnderlying «Exemplarⁱᵐᵖˡ» «Exemplarⁱᵐᵖˡ»
+class Exemplar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Exemplar.underlying Exemplar.t
+  underlying : go.UnderlyingDirectedEq Exemplar Exemplar.underlying
+  isUnderlying : go.IsUnderlying Exemplar.underlying Exemplar.underlying
 
-attribute [instance] Exemplar_Assumptions.Exemplar_type_repr
-  Exemplar_Assumptions.Exemplar_underlying
-  Exemplar_Assumptions.«Exemplarⁱᵐᵖˡ_underlying»
+attribute [instance] Exemplar.TypeAssumptions.type_repr
+  Exemplar.TypeAssumptions.underlying
+  Exemplar.TypeAssumptions.isUnderlying
 
 namespace Metric
 axiom t : Type
@@ -371,14 +371,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Metric
 
-class Metric_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Metric_type_repr : go.TypeReprUnderlying «Metricⁱᵐᵖˡ» Metric.t
-  Metric_underlying : go.UnderlyingDirectedEq Metric «Metricⁱᵐᵖˡ»
-  «Metricⁱᵐᵖˡ_underlying» : go.IsUnderlying «Metricⁱᵐᵖˡ» «Metricⁱᵐᵖˡ»
+class Metric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Metric.underlying Metric.t
+  underlying : go.UnderlyingDirectedEq Metric Metric.underlying
+  isUnderlying : go.IsUnderlying Metric.underlying Metric.underlying
 
-attribute [instance] Metric_Assumptions.Metric_type_repr
-  Metric_Assumptions.Metric_underlying
-  Metric_Assumptions.«Metricⁱᵐᵖˡ_underlying»
+attribute [instance] Metric.TypeAssumptions.type_repr
+  Metric.TypeAssumptions.underlying
+  Metric.TypeAssumptions.isUnderlying
 
 namespace MetricFamily
 axiom t : Type
@@ -386,29 +386,29 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end MetricFamily
 
-class MetricFamily_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  MetricFamily_type_repr : go.TypeReprUnderlying «MetricFamilyⁱᵐᵖˡ» MetricFamily.t
-  MetricFamily_underlying : go.UnderlyingDirectedEq MetricFamily «MetricFamilyⁱᵐᵖˡ»
-  «MetricFamilyⁱᵐᵖˡ_underlying» : go.IsUnderlying «MetricFamilyⁱᵐᵖˡ» «MetricFamilyⁱᵐᵖˡ»
+class MetricFamily.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying MetricFamily.underlying MetricFamily.t
+  underlying : go.UnderlyingDirectedEq MetricFamily MetricFamily.underlying
+  isUnderlying : go.IsUnderlying MetricFamily.underlying MetricFamily.underlying
 
-attribute [instance] MetricFamily_Assumptions.MetricFamily_type_repr
-  MetricFamily_Assumptions.MetricFamily_underlying
-  MetricFamily_Assumptions.«MetricFamilyⁱᵐᵖˡ_underlying»
+attribute [instance] MetricFamily.TypeAssumptions.type_repr
+  MetricFamily.TypeAssumptions.underlying
+  MetricFamily.TypeAssumptions.isUnderlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  MetricType_instance : MetricType_Assumptions
-  LabelPair_instance : LabelPair_Assumptions
-  Gauge_instance : Gauge_Assumptions
-  Counter_instance : Counter_Assumptions
-  Quantile_instance : Quantile_Assumptions
-  Summary_instance : Summary_Assumptions
-  Untyped_instance : Untyped_Assumptions
-  Histogram_instance : Histogram_Assumptions
-  Bucket_instance : Bucket_Assumptions
-  BucketSpan_instance : BucketSpan_Assumptions
-  Exemplar_instance : Exemplar_Assumptions
-  Metric_instance : Metric_Assumptions
-  MetricFamily_instance : MetricFamily_Assumptions
+  MetricType_instance : MetricType.TypeAssumptions
+  LabelPair_instance : LabelPair.TypeAssumptions
+  Gauge_instance : Gauge.TypeAssumptions
+  Counter_instance : Counter.TypeAssumptions
+  Quantile_instance : Quantile.TypeAssumptions
+  Summary_instance : Summary.TypeAssumptions
+  Untyped_instance : Untyped.TypeAssumptions
+  Histogram_instance : Histogram.TypeAssumptions
+  Bucket_instance : Bucket.TypeAssumptions
+  BucketSpan_instance : BucketSpan.TypeAssumptions
+  Exemplar_instance : Exemplar.TypeAssumptions
+  Metric_instance : Metric.TypeAssumptions
+  MetricFamily_instance : MetricFamily.TypeAssumptions
 
 attribute [instance] Assumptions.MetricType_instance
   Assumptions.LabelPair_instance

@@ -35,27 +35,27 @@ section disk
 attribute [local instance] disk_op disk_model
 variable [GoGlobalContext]
 
-def «Getⁱᵐᵖˡ» : val :=
+def Get.impl : val :=
   λ: <>, ExtV ()
 
-def «Readⁱᵐᵖˡ» : val :=
+def Read.impl : val :=
   λ: "a",
   let: "p" := ExternalOp DiskOp.ReadOp "a" in
   FullSlice (go.ArrayType 4096 go.byte) ("p", #(W64 0), #(W64 4096), #(W64 4096))
 
-def «ReadToⁱᵐᵖˡ» : val :=
+def ReadTo.impl : val :=
   λ: "a" "buf",
   let: "p" := ExternalOp DiskOp.ReadOp "a" in
   FuncResolve "copy" [go.SliceType go.byte] #() "buf" ("p", #(W64 4096), #(W64 4096))
 
-def «Writeⁱᵐᵖˡ» : val :=
+def Write.impl : val :=
   λ: "a" "b",
   ExternalOp DiskOp.WriteOp ("a", IndexRef (go.SliceType go.byte) ("b", #(W64 0)))
 
-def «Barrierⁱᵐᵖˡ» : val :=
+def Barrier.impl : val :=
   λ: <>, #()
 
-def «Sizeⁱᵐᵖˡ» : val :=
+def Size.impl : val :=
   λ: "v",
      ExternalOp DiskOp.SizeOp "v"
 

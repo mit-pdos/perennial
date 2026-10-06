@@ -37,7 +37,7 @@ instance inflight_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance inflight_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.inflight.t go_etcd_io.raft.v3.tracker.«inflightⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.inflight.t go_etcd_io.raft.v3.tracker.inflight.underlying := by
   solve_into_val_typed_struct
 
 instance inflight_access_load_index (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight.t) (dq : DFrac) :
@@ -98,7 +98,7 @@ instance Inflights_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Inflights_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Inflights.t go_etcd_io.raft.v3.tracker.«Inflightsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Inflights.t go_etcd_io.raft.v3.tracker.Inflights.underlying := by
   solve_into_val_typed_struct
 
 instance Inflights_access_load_start (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (dq : DFrac) :
@@ -226,7 +226,7 @@ instance Progress_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Progress_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Progress.t go_etcd_io.raft.v3.tracker.«Progressⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Progress.t go_etcd_io.raft.v3.tracker.Progress.underlying := by
   solve_into_val_typed_struct
 
 instance Progress_access_load_Match (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
@@ -397,7 +397,7 @@ instance Config_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Config_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Config.t go_etcd_io.raft.v3.tracker.«Configⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Config.t go_etcd_io.raft.v3.tracker.Config.underlying := by
   solve_into_val_typed_struct
 
 instance Config_access_load_Voters (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (dq : DFrac) :
@@ -489,7 +489,7 @@ instance ProgressTracker_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ProgressTracker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.ProgressTracker.t go_etcd_io.raft.v3.tracker.«ProgressTrackerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.ProgressTracker.t go_etcd_io.raft.v3.tracker.ProgressTracker.underlying := by
   solve_into_val_typed_struct
 
 instance ProgressTracker_access_load_Config (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (dq : DFrac) :

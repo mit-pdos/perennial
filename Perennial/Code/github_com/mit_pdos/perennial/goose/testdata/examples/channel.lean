@@ -174,7 +174,7 @@ noncomputable def select_nb_full_buffer_not_ready [FfiSyntax] [GoGlobalContext] 
 /-- prog3 from Actris 2.0 intro: https://arxiv.org/pdf/2010.15030
 
     go: actris_example.go:4:6 -/
-noncomputable def «DSPExampleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DSPExample.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "signal" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Val #())))
@@ -226,7 +226,7 @@ noncomputable def «DSPExampleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Pair (Var "c") (Var "$r0")))))))))))
 
 /-- go: cv_unverified.go:14:6 -/
-noncomputable def «NewCondⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewCond.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "L"
   (App (Val exceptionDo)
   (Let "L" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock))) (Var "L"))
@@ -237,7 +237,7 @@ noncomputable def «NewCondⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Wait blocks until signaled. Caller must hold c.L; will hold c.L on return.
 
     go: cv_unverified.go:19:16 -/
-noncomputable def «Cond__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -269,7 +269,7 @@ noncomputable def «Cond__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- Signal wakes one waiter (FIFO). Caller must hold c.L.
 
     go: cv_unverified.go:29:16 -/
-noncomputable def «Cond__Signalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Signal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -309,7 +309,7 @@ noncomputable def «Cond__Signalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- Broadcast wakes all waiters. Caller must hold c.L.
 
     go: cv_unverified.go:40:16 -/
-noncomputable def «Cond__Broadcastⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Broadcast.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -337,7 +337,7 @@ noncomputable def «Cond__Broadcastⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$value"))))))))))))))))
 
 /-- go: cv_unverified.go:47:16 -/
-noncomputable def «Cond__WaitForⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.WaitFor.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "d"
   (App (Val exceptionDo)
@@ -443,7 +443,7 @@ noncomputable def «Cond__WaitForⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (Val #())))))))))
 
 /-- go: cv_unverified.go:92:16 -/
-noncomputable def «Cond__WaitUntilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.WaitUntil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "deadline"
   (App (Val exceptionDo)
@@ -457,14 +457,14 @@ noncomputable def «Cond__WaitUntilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- Fake syscall for demonstration.
 
     go: examples.go:8:6 -/
-noncomputable def «sys_hello_worldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def sys_hello_world.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Val #(go!"Hello, World!")))))
 
 /-- go: examples.go:12:6 -/
-noncomputable def «HelloWorldAsyncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HelloWorldAsync.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Val #())))
@@ -489,7 +489,7 @@ noncomputable def «HelloWorldAsyncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:20:6 -/
-noncomputable def «HelloWorldSyncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HelloWorldSync.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -498,7 +498,7 @@ noncomputable def «HelloWorldSyncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- Simulates the error/done channel components of Context
 
     go: examples.go:25:6 -/
-noncomputable def «HelloWorldCancellableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HelloWorldCancellable.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "done"
   (Lam "err"
   (App (Val exceptionDo)
@@ -526,7 +526,7 @@ noncomputable def «HelloWorldCancellableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
 /-- Uses cancellation as a timeout mechanism.
 
     go: examples.go:36:6 -/
-noncomputable def «HelloWorldWithTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HelloWorldWithTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "done" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
@@ -565,7 +565,7 @@ noncomputable def «HelloWorldWithTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "done") (Var "$r0")))))))))
 
 /-- go: examples.go:50:6 -/
-noncomputable def «simple_joinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def simple_join.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
@@ -598,7 +598,7 @@ noncomputable def «simple_joinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:63:6 -/
-noncomputable def «simple_multi_joinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def simple_multi_join.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
@@ -652,7 +652,7 @@ noncomputable def «simple_multi_joinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:81:6 -/
-noncomputable def «exchangePointerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def exchangePointer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -712,7 +712,7 @@ noncomputable def «exchangePointerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: examples.go:101:6 -/
-noncomputable def «BroadcastExampleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def BroadcastExample.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -811,7 +811,7 @@ noncomputable def «BroadcastExampleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- https://go.dev/tour/concurrency/4
 
     go: fibonacci.go:4:6 -/
-noncomputable def «fibonacciⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def fibonacci.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "c"
   (App (Val exceptionDo)
@@ -858,7 +858,7 @@ noncomputable def «fibonacciⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0")))))))))))))))
 
 /-- go: fibonacci.go:13:6 -/
-noncomputable def «fib_consumerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def fib_consumer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Val #())))
@@ -897,7 +897,7 @@ noncomputable def «fib_consumerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Pair (Var "c") (Var "$r0")))))))))
 
 /-- go: google_search.go:3:6 -/
-noncomputable def «Webⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Web.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -905,7 +905,7 @@ noncomputable def «Webⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!".html"))))))))
 
 /-- go: google_search.go:7:6 -/
-noncomputable def «Imageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Image.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -913,7 +913,7 @@ noncomputable def «Imageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!".png"))))))))
 
 /-- go: google_search.go:11:6 -/
-noncomputable def «Videoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Video.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -923,7 +923,7 @@ noncomputable def «Videoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- https://go.dev/talks/2012/concurrency.slide#46
 
     go: google_search.go:16:6 -/
-noncomputable def «Googleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Google.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1007,7 +1007,7 @@ noncomputable def «Googleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Toy functions that resemble search query servers.
 
     go: hedged.go:13:6 -/
-noncomputable def «GetPrimaryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def GetPrimary.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1015,7 +1015,7 @@ noncomputable def «GetPrimaryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!"_primary.html"))))))))
 
 /-- go: hedged.go:17:6 -/
-noncomputable def «GetSecondaryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def GetSecondary.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1032,7 +1032,7 @@ noncomputable def «GetSecondaryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     https://www.barroso.org/publications/TheTailAtScale.pdf page 7 for discussion on hedging.
 
     go: hedged.go:29:6 -/
-noncomputable def «CancellableHedgedRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CancellableHedgedRequest.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "query"
   (Lam "threshold"
   (Lam "errStr"
@@ -1118,7 +1118,7 @@ noncomputable def «CancellableHedgedRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv Result)))) (Pair (Var "c") (Var "$r0"))))))))))))))))
 
 /-- go: higher_order.go:8:6 -/
-noncomputable def «mkRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def mkRequest.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f"))
@@ -1128,7 +1128,7 @@ noncomputable def «mkRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (CompositeLiteral request))) (LiteralValue [(KeyedElement (some (KeyField go!"f")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [go.string])) (Var "$v0"))), (KeyedElement (some (KeyField go!"result")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv go.string) (Var "$v1")))]))))))))
 
 /-- go: higher_order.go:12:6 -/
-noncomputable def «ho_workerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ho_worker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv request)))) (Var "c"))
@@ -1148,7 +1148,7 @@ noncomputable def «ho_workerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore request))) (Pair (Var "r") (Var "$key")))))))))))))
 
 /-- go: higher_order.go:18:6 -/
-noncomputable def «HigherOrderExampleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HigherOrderExample.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv request)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv request)))) (Val #())))
@@ -1224,7 +1224,7 @@ noncomputable def «HigherOrderExampleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
 /-- load writes the next letter into the buffer.
 
     go: leaky_buffer_unverified.go:9:6 -/
-noncomputable def «loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def load.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "letter"
   (App (Val exceptionDo)
@@ -1240,7 +1240,7 @@ noncomputable def «loadⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- process consumes the buffer and appends it to the output.
 
     go: leaky_buffer_unverified.go:14:6 -/
-noncomputable def «processⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def process.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "output"
   (App (Val exceptionDo)
@@ -1254,7 +1254,7 @@ noncomputable def «processⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.strings.ToUpper []))) (Val #())) (Var "$a0"))))))))))))))
 
 /-- go: leaky_buffer_unverified.go:18:6 -/
-noncomputable def «clientⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def client.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "input"
   (Lam "freeList"
   (Lam "serverChan"
@@ -1304,7 +1304,7 @@ noncomputable def «clientⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "letter") (Var "$value")))))))))))))))))))
 
 /-- go: leaky_buffer_unverified.go:39:6 -/
-noncomputable def «serverⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def server.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "output"
   (Lam "freeList"
   (Lam "serverChan"
@@ -1357,7 +1357,7 @@ noncomputable def «serverⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))))))))
 
 /-- go: leaky_buffer_unverified.go:61:6 -/
-noncomputable def «LeakyBufferPipelineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeakyBufferPipeline.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1421,7 +1421,7 @@ noncomputable def «LeakyBufferPipelineⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.byte))))) (Pair (Var "freeList") (Var "$r0"))))))))))
 
 /-- go: muxer.go:14:6 -/
-noncomputable def «mkStreamⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def mkStream.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string]))))) (Var "f"))
@@ -1432,7 +1432,7 @@ noncomputable def «mkStreamⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral streamold))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv go.string) (Var "$v0"))), (KeyedElement none (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv go.string) (Var "$v1"))), (KeyedElement none (ElementExpression (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string])) (Var "$v2")))])))))))))
 
 /-- go: muxer.go:18:6 -/
-noncomputable def «Asyncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Async.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f"))
@@ -1458,7 +1458,7 @@ noncomputable def «Asyncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Pair (Var "ch") (Var "$r0"))))))))))
 
 /-- go: muxer.go:26:6 -/
-noncomputable def «Serveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Serve.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string]))))) (Var "f"))
@@ -1491,7 +1491,7 @@ noncomputable def «Serveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stream))) (Pair (Var "s") (Var "$r0"))))))))))
 
 /-- go: muxer.go:39:6 -/
-noncomputable def «appWrldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def appWrld.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
@@ -1499,7 +1499,7 @@ noncomputable def «appWrldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(go!", World!"))))))))
 
 /-- go: muxer.go:43:6 -/
-noncomputable def «Clientⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Client.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "hw" (App (Val (GoInstruction (GoAlloc stream))) (App (Val (GoInstruction (GoZeroVal stream))) (Val #())))
@@ -1517,7 +1517,7 @@ noncomputable def «Clientⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stream))) (Pair (Var "hw") (Var "$r0")))))))))
 
 /-- go: muxer.go:49:6 -/
-noncomputable def «MapServerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MapServer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc streamold))) (Var "s"))
@@ -1540,7 +1540,7 @@ noncomputable def «MapServerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (Val #())))))))
 
 /-- go: muxer.go:56:6 -/
-noncomputable def «ClientOldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ClientOld.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "comma" (App (Val (GoInstruction (GoAlloc streamold))) (App (Val (GoInstruction (GoZeroVal streamold))) (Val #())))
@@ -1589,7 +1589,7 @@ noncomputable def «ClientOldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore streamold))) (Pair (Var "comma") (Var "$r0")))))))))
 
 /-- go: muxer.go:71:6 -/
-noncomputable def «Muxerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Muxer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv streamold)))) (Var "c"))
@@ -1610,7 +1610,7 @@ noncomputable def «Muxerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore streamold))) (Pair (Var "s") (Var "$key")))))))))))))
 
 /-- go: muxer.go:77:6 -/
-noncomputable def «makeGreetingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def makeGreeting.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "mux" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv streamold)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv streamold)))) (Val #())))
@@ -1668,7 +1668,7 @@ noncomputable def «makeGreetingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv streamold)))) (Pair (Var "mux") (Var "$r0")))))))))
 
 /-- go: muxer_unverified.go:3:6 -/
-noncomputable def «CancellableMapServerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CancellableMapServer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "done"
   (App (Val exceptionDo)
@@ -1715,7 +1715,7 @@ noncomputable def «CancellableMapServerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
 /-- 4. CancellableMuxer - muxer with cancellation
 
     go: muxer_unverified.go:18:6 -/
-noncomputable def «CancellableMuxerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CancellableMuxer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "done"
   (Lam "errMsg"
@@ -1762,7 +1762,7 @@ noncomputable def «CancellableMuxerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- Example with 2 nonblocking ops that should not match.
 
     go: select_tricky_examples.go:4:6 -/
-noncomputable def «select_nb_not_readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def select_nb_not_ready.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1796,7 +1796,7 @@ noncomputable def «select_nb_not_readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$r0"))))))))))
 
 /-- go: select_tricky_examples.go:21:6 -/
-noncomputable def «select_nb_guaranteed_readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def select_nb_guaranteed_ready.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1821,7 +1821,7 @@ noncomputable def «select_nb_guaranteed_readyⁱᵐᵖˡ» [FfiSyntax] [GoGloba
 /-- Non-blocking send cannot send on a full buffer
 
     go: select_tricky_examples.go:34:6 -/
-noncomputable def «select_nb_full_buffer_not_readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def select_nb_full_buffer_not_ready.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1870,44 +1870,44 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Cond
 
-@[reducible] def Cond'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Cond.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"L" _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock),
 (go.field_decl.FieldDecl go!"waiters" (go.GoType.SliceType (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))]
 
-@[irreducible] def Cond'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Cond'fds_unsealed
+@[irreducible] def Cond.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Cond.fieldsUnsealed
 
 instance equals_unfold_Cond [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Cond'fds Cond'fds_unsealed :=
-  ⟨by unfold Cond'fds; rfl⟩
+    EqualsUnfold Cond.fields Cond.fieldsUnsealed :=
+  ⟨by unfold Cond.fields; rfl⟩
 
-@[reducible] def «Condⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Cond'fds)
+@[reducible] def Cond.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Cond.fields)
 
-class Cond_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Cond_type_repr : go.TypeReprUnderlying «Condⁱᵐᵖˡ» Cond.t
-  Cond_underlying : go.UnderlyingDirectedEq Cond «Condⁱᵐᵖˡ»
-  Cond_get_L : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet «Condⁱᵐᵖˡ» go!"L") #x (Val #(x.L'))
-  Cond_set_L : ∀ (x : Cond.t) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t), go.IsGoStepPureDetTagged under (StructFieldSet «Condⁱᵐᵖˡ» go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond.t)))
-  Cond_get_waiters : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet «Condⁱᵐᵖˡ» go!"waiters") #x (Val #(x.waiters'))
-  Cond_set_waiters : ∀ (x : Cond.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Condⁱᵐᵖˡ» go!"waiters") (PairV #x #y) (Val #(({ x with waiters' := y } : Cond.t)))
-  Cond'ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Broadcast" «Cond__Broadcastⁱᵐᵖˡ»
-  Cond'ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Signal" «Cond__Signalⁱᵐᵖˡ»
-  Cond'ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Wait" «Cond__Waitⁱᵐᵖˡ»
-  Cond'ptr_WaitFor_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"WaitFor" «Cond__WaitForⁱᵐᵖˡ»
-  Cond'ptr_WaitUntil_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"WaitUntil" «Cond__WaitUntilⁱᵐᵖˡ»
+class Cond.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Cond.underlying Cond.t
+  underlying : go.UnderlyingDirectedEq Cond Cond.underlying
+  get_L : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
+  set_L : ∀ (x : Cond.t) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond.t)))
+  get_waiters : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"waiters") #x (Val #(x.waiters'))
+  set_waiters : ∀ (x : Cond.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"waiters") (PairV #x #y) (Val #(({ x with waiters' := y } : Cond.t)))
+  ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Broadcast" Cond.Broadcast.impl
+  ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Signal" Cond.Signal.impl
+  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Wait" Cond.Wait.impl
+  ptr_WaitFor_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"WaitFor" Cond.WaitFor.impl
+  ptr_WaitUntil_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"WaitUntil" Cond.WaitUntil.impl
 
-attribute [instance] Cond_Assumptions.Cond_type_repr
-  Cond_Assumptions.Cond_underlying
-  Cond_Assumptions.Cond_get_L
-  Cond_Assumptions.Cond_set_L
-  Cond_Assumptions.Cond_get_waiters
-  Cond_Assumptions.Cond_set_waiters
-  Cond_Assumptions.Cond'ptr_Broadcast_unfold
-  Cond_Assumptions.Cond'ptr_Signal_unfold
-  Cond_Assumptions.Cond'ptr_Wait_unfold
-  Cond_Assumptions.Cond'ptr_WaitFor_unfold
-  Cond_Assumptions.Cond'ptr_WaitUntil_unfold
+attribute [instance] Cond.TypeAssumptions.type_repr
+  Cond.TypeAssumptions.underlying
+  Cond.TypeAssumptions.get_L
+  Cond.TypeAssumptions.set_L
+  Cond.TypeAssumptions.get_waiters
+  Cond.TypeAssumptions.set_waiters
+  Cond.TypeAssumptions.ptr_Broadcast_unfold
+  Cond.TypeAssumptions.ptr_Signal_unfold
+  Cond.TypeAssumptions.ptr_Wait_unfold
+  Cond.TypeAssumptions.ptr_WaitFor_unfold
+  Cond.TypeAssumptions.ptr_WaitUntil_unfold
 
 namespace Result
 structure t [FfiSyntax] where
@@ -1919,34 +1919,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Result
 
-@[reducible] def Result'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Result.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"value" go.string),
 (go.field_decl.FieldDecl go!"primary_won" go.bool)]
 
-@[irreducible] def Result'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Result'fds_unsealed
+@[irreducible] def Result.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Result.fieldsUnsealed
 
 instance equals_unfold_Result [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Result'fds Result'fds_unsealed :=
-  ⟨by unfold Result'fds; rfl⟩
+    EqualsUnfold Result.fields Result.fieldsUnsealed :=
+  ⟨by unfold Result.fields; rfl⟩
 
-@[reducible] def «Resultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Result'fds)
+@[reducible] def Result.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Result.fields)
 
-class Result_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Result_type_repr : go.TypeReprUnderlying «Resultⁱᵐᵖˡ» Result.t
-  Result_underlying : go.UnderlyingDirectedEq Result «Resultⁱᵐᵖˡ»
-  Result_get_value : ∀ (x : Result.t), go.IsGoStepPureDetTagged under (StructFieldGet «Resultⁱᵐᵖˡ» go!"value") #x (Val #(x.value'))
-  Result_set_value : ∀ (x : Result.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «Resultⁱᵐᵖˡ» go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Result.t)))
-  Result_get_primary_won : ∀ (x : Result.t), go.IsGoStepPureDetTagged under (StructFieldGet «Resultⁱᵐᵖˡ» go!"primary_won") #x (Val #(x.primary_won'))
-  Result_set_primary_won : ∀ (x : Result.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Resultⁱᵐᵖˡ» go!"primary_won") (PairV #x #y) (Val #(({ x with primary_won' := y } : Result.t)))
+class Result.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Result.underlying Result.t
+  underlying : go.UnderlyingDirectedEq Result Result.underlying
+  get_value : ∀ (x : Result.t), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"value") #x (Val #(x.value'))
+  set_value : ∀ (x : Result.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Result.t)))
+  get_primary_won : ∀ (x : Result.t), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"primary_won") #x (Val #(x.primary_won'))
+  set_primary_won : ∀ (x : Result.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"primary_won") (PairV #x #y) (Val #(({ x with primary_won' := y } : Result.t)))
 
-attribute [instance] Result_Assumptions.Result_type_repr
-  Result_Assumptions.Result_underlying
-  Result_Assumptions.Result_get_value
-  Result_Assumptions.Result_set_value
-  Result_Assumptions.Result_get_primary_won
-  Result_Assumptions.Result_set_primary_won
+attribute [instance] Result.TypeAssumptions.type_repr
+  Result.TypeAssumptions.underlying
+  Result.TypeAssumptions.get_value
+  Result.TypeAssumptions.set_value
+  Result.TypeAssumptions.get_primary_won
+  Result.TypeAssumptions.set_primary_won
 
 namespace request
 structure t [FfiSyntax] where
@@ -1958,34 +1958,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end request
 
-@[reducible] def request'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def request.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))),
 (go.field_decl.FieldDecl go!"result" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] def request'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  request'fds_unsealed
+@[irreducible] def request.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  request.fieldsUnsealed
 
 instance equals_unfold_request [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold request'fds request'fds_unsealed :=
-  ⟨by unfold request'fds; rfl⟩
+    EqualsUnfold request.fields request.fieldsUnsealed :=
+  ⟨by unfold request.fields; rfl⟩
 
-@[reducible] def «requestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType request'fds)
+@[reducible] def request.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType request.fields)
 
-class request_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  request_type_repr : go.TypeReprUnderlying «requestⁱᵐᵖˡ» request.t
-  request_underlying : go.UnderlyingDirectedEq request «requestⁱᵐᵖˡ»
-  request_get_f : ∀ (x : request.t), go.IsGoStepPureDetTagged under (StructFieldGet «requestⁱᵐᵖˡ» go!"f") #x (Val #(x.f'))
-  request_set_f : ∀ (x : request.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «requestⁱᵐᵖˡ» go!"f") (PairV #x #y) (Val #(({ x with f' := y } : request.t)))
-  request_get_result : ∀ (x : request.t), go.IsGoStepPureDetTagged under (StructFieldGet «requestⁱᵐᵖˡ» go!"result") #x (Val #(x.result'))
-  request_set_result : ∀ (x : request.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «requestⁱᵐᵖˡ» go!"result") (PairV #x #y) (Val #(({ x with result' := y } : request.t)))
+class request.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying request.underlying request.t
+  underlying : go.UnderlyingDirectedEq request request.underlying
+  get_f : ∀ (x : request.t), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : request.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : request.t)))
+  get_result : ∀ (x : request.t), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"result") #x (Val #(x.result'))
+  set_result : ∀ (x : request.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : request.t)))
 
-attribute [instance] request_Assumptions.request_type_repr
-  request_Assumptions.request_underlying
-  request_Assumptions.request_get_f
-  request_Assumptions.request_set_f
-  request_Assumptions.request_get_result
-  request_Assumptions.request_set_result
+attribute [instance] request.TypeAssumptions.type_repr
+  request.TypeAssumptions.underlying
+  request.TypeAssumptions.get_f
+  request.TypeAssumptions.set_f
+  request.TypeAssumptions.get_result
+  request.TypeAssumptions.set_result
 
 namespace stream
 structure t [FfiSyntax] where
@@ -1997,34 +1997,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end stream
 
-@[reducible] def stream'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def stream.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"res" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] def stream'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  stream'fds_unsealed
+@[irreducible] def stream.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  stream.fieldsUnsealed
 
 instance equals_unfold_stream [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold stream'fds stream'fds_unsealed :=
-  ⟨by unfold stream'fds; rfl⟩
+    EqualsUnfold stream.fields stream.fieldsUnsealed :=
+  ⟨by unfold stream.fields; rfl⟩
 
-@[reducible] def «streamⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType stream'fds)
+@[reducible] def stream.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType stream.fields)
 
-class stream_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stream_type_repr : go.TypeReprUnderlying «streamⁱᵐᵖˡ» stream.t
-  stream_underlying : go.UnderlyingDirectedEq stream «streamⁱᵐᵖˡ»
-  stream_get_req : ∀ (x : stream.t), go.IsGoStepPureDetTagged under (StructFieldGet «streamⁱᵐᵖˡ» go!"req") #x (Val #(x.req'))
-  stream_set_req : ∀ (x : stream.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «streamⁱᵐᵖˡ» go!"req") (PairV #x #y) (Val #(({ x with req' := y } : stream.t)))
-  stream_get_res : ∀ (x : stream.t), go.IsGoStepPureDetTagged under (StructFieldGet «streamⁱᵐᵖˡ» go!"res") #x (Val #(x.res'))
-  stream_set_res : ∀ (x : stream.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «streamⁱᵐᵖˡ» go!"res") (PairV #x #y) (Val #(({ x with res' := y } : stream.t)))
+class stream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying stream.underlying stream.t
+  underlying : go.UnderlyingDirectedEq stream stream.underlying
+  get_req : ∀ (x : stream.t), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"req") #x (Val #(x.req'))
+  set_req : ∀ (x : stream.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : stream.t)))
+  get_res : ∀ (x : stream.t), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"res") #x (Val #(x.res'))
+  set_res : ∀ (x : stream.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : stream.t)))
 
-attribute [instance] stream_Assumptions.stream_type_repr
-  stream_Assumptions.stream_underlying
-  stream_Assumptions.stream_get_req
-  stream_Assumptions.stream_set_req
-  stream_Assumptions.stream_get_res
-  stream_Assumptions.stream_set_res
+attribute [instance] stream.TypeAssumptions.type_repr
+  stream.TypeAssumptions.underlying
+  stream.TypeAssumptions.get_req
+  stream.TypeAssumptions.set_req
+  stream.TypeAssumptions.get_res
+  stream.TypeAssumptions.set_res
 
 namespace streamold
 structure t [FfiSyntax] where
@@ -2037,88 +2037,88 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end streamold
 
-@[reducible] def streamold'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def streamold.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"res" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string])))]
 
-@[irreducible] def streamold'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  streamold'fds_unsealed
+@[irreducible] def streamold.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  streamold.fieldsUnsealed
 
 instance equals_unfold_streamold [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold streamold'fds streamold'fds_unsealed :=
-  ⟨by unfold streamold'fds; rfl⟩
+    EqualsUnfold streamold.fields streamold.fieldsUnsealed :=
+  ⟨by unfold streamold.fields; rfl⟩
 
-@[reducible] def «streamoldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType streamold'fds)
+@[reducible] def streamold.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType streamold.fields)
 
-class streamold_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  streamold_type_repr : go.TypeReprUnderlying «streamoldⁱᵐᵖˡ» streamold.t
-  streamold_underlying : go.UnderlyingDirectedEq streamold «streamoldⁱᵐᵖˡ»
-  streamold_get_req : ∀ (x : streamold.t), go.IsGoStepPureDetTagged under (StructFieldGet «streamoldⁱᵐᵖˡ» go!"req") #x (Val #(x.req'))
-  streamold_set_req : ∀ (x : streamold.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «streamoldⁱᵐᵖˡ» go!"req") (PairV #x #y) (Val #(({ x with req' := y } : streamold.t)))
-  streamold_get_res : ∀ (x : streamold.t), go.IsGoStepPureDetTagged under (StructFieldGet «streamoldⁱᵐᵖˡ» go!"res") #x (Val #(x.res'))
-  streamold_set_res : ∀ (x : streamold.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «streamoldⁱᵐᵖˡ» go!"res") (PairV #x #y) (Val #(({ x with res' := y } : streamold.t)))
-  streamold_get_f : ∀ (x : streamold.t), go.IsGoStepPureDetTagged under (StructFieldGet «streamoldⁱᵐᵖˡ» go!"f") #x (Val #(x.f'))
-  streamold_set_f : ∀ (x : streamold.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «streamoldⁱᵐᵖˡ» go!"f") (PairV #x #y) (Val #(({ x with f' := y } : streamold.t)))
+class streamold.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying streamold.underlying streamold.t
+  underlying : go.UnderlyingDirectedEq streamold streamold.underlying
+  get_req : ∀ (x : streamold.t), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"req") #x (Val #(x.req'))
+  set_req : ∀ (x : streamold.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : streamold.t)))
+  get_res : ∀ (x : streamold.t), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"res") #x (Val #(x.res'))
+  set_res : ∀ (x : streamold.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : streamold.t)))
+  get_f : ∀ (x : streamold.t), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : streamold.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : streamold.t)))
 
-attribute [instance] streamold_Assumptions.streamold_type_repr
-  streamold_Assumptions.streamold_underlying
-  streamold_Assumptions.streamold_get_req
-  streamold_Assumptions.streamold_set_req
-  streamold_Assumptions.streamold_get_res
-  streamold_Assumptions.streamold_set_res
-  streamold_Assumptions.streamold_get_f
-  streamold_Assumptions.streamold_set_f
+attribute [instance] streamold.TypeAssumptions.type_repr
+  streamold.TypeAssumptions.underlying
+  streamold.TypeAssumptions.get_req
+  streamold.TypeAssumptions.set_req
+  streamold.TypeAssumptions.get_res
+  streamold.TypeAssumptions.set_res
+  streamold.TypeAssumptions.get_f
+  streamold.TypeAssumptions.set_f
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Cond_instance : Cond_Assumptions
-  Result_instance : Result_Assumptions
-  request_instance : request_Assumptions
-  stream_instance : stream_Assumptions
-  streamold_instance : streamold_Assumptions
-  DSPExample_unfold : FuncUnfold DSPExample [] «DSPExampleⁱᵐᵖˡ»
-  NewCond_unfold : FuncUnfold NewCond [] «NewCondⁱᵐᵖˡ»
-  sys_hello_world_unfold : FuncUnfold sys_hello_world [] «sys_hello_worldⁱᵐᵖˡ»
-  HelloWorldAsync_unfold : FuncUnfold HelloWorldAsync [] «HelloWorldAsyncⁱᵐᵖˡ»
-  HelloWorldSync_unfold : FuncUnfold HelloWorldSync [] «HelloWorldSyncⁱᵐᵖˡ»
-  HelloWorldCancellable_unfold : FuncUnfold HelloWorldCancellable [] «HelloWorldCancellableⁱᵐᵖˡ»
-  HelloWorldWithTimeout_unfold : FuncUnfold HelloWorldWithTimeout [] «HelloWorldWithTimeoutⁱᵐᵖˡ»
-  simple_join_unfold : FuncUnfold simple_join [] «simple_joinⁱᵐᵖˡ»
-  simple_multi_join_unfold : FuncUnfold simple_multi_join [] «simple_multi_joinⁱᵐᵖˡ»
-  exchangePointer_unfold : FuncUnfold exchangePointer [] «exchangePointerⁱᵐᵖˡ»
-  BroadcastExample_unfold : FuncUnfold BroadcastExample [] «BroadcastExampleⁱᵐᵖˡ»
-  fibonacci_unfold : FuncUnfold fibonacci [] «fibonacciⁱᵐᵖˡ»
-  fib_consumer_unfold : FuncUnfold fib_consumer [] «fib_consumerⁱᵐᵖˡ»
-  Web_unfold : FuncUnfold Web [] «Webⁱᵐᵖˡ»
-  Image_unfold : FuncUnfold Image [] «Imageⁱᵐᵖˡ»
-  Video_unfold : FuncUnfold Video [] «Videoⁱᵐᵖˡ»
-  Google_unfold : FuncUnfold Google [] «Googleⁱᵐᵖˡ»
-  GetPrimary_unfold : FuncUnfold GetPrimary [] «GetPrimaryⁱᵐᵖˡ»
-  GetSecondary_unfold : FuncUnfold GetSecondary [] «GetSecondaryⁱᵐᵖˡ»
-  CancellableHedgedRequest_unfold : FuncUnfold CancellableHedgedRequest [] «CancellableHedgedRequestⁱᵐᵖˡ»
-  mkRequest_unfold : FuncUnfold mkRequest [] «mkRequestⁱᵐᵖˡ»
-  ho_worker_unfold : FuncUnfold ho_worker [] «ho_workerⁱᵐᵖˡ»
-  HigherOrderExample_unfold : FuncUnfold HigherOrderExample [] «HigherOrderExampleⁱᵐᵖˡ»
-  load_unfold : FuncUnfold load [] «loadⁱᵐᵖˡ»
-  process_unfold : FuncUnfold process [] «processⁱᵐᵖˡ»
-  client_unfold : FuncUnfold client [] «clientⁱᵐᵖˡ»
-  server_unfold : FuncUnfold server [] «serverⁱᵐᵖˡ»
-  LeakyBufferPipeline_unfold : FuncUnfold LeakyBufferPipeline [] «LeakyBufferPipelineⁱᵐᵖˡ»
-  mkStream_unfold : FuncUnfold mkStream [] «mkStreamⁱᵐᵖˡ»
-  Async_unfold : FuncUnfold Async [] «Asyncⁱᵐᵖˡ»
-  Serve_unfold : FuncUnfold Serve [] «Serveⁱᵐᵖˡ»
-  appWrld_unfold : FuncUnfold appWrld [] «appWrldⁱᵐᵖˡ»
-  Client_unfold : FuncUnfold Client [] «Clientⁱᵐᵖˡ»
-  MapServer_unfold : FuncUnfold MapServer [] «MapServerⁱᵐᵖˡ»
-  ClientOld_unfold : FuncUnfold ClientOld [] «ClientOldⁱᵐᵖˡ»
-  Muxer_unfold : FuncUnfold Muxer [] «Muxerⁱᵐᵖˡ»
-  makeGreeting_unfold : FuncUnfold makeGreeting [] «makeGreetingⁱᵐᵖˡ»
-  CancellableMapServer_unfold : FuncUnfold CancellableMapServer [] «CancellableMapServerⁱᵐᵖˡ»
-  CancellableMuxer_unfold : FuncUnfold CancellableMuxer [] «CancellableMuxerⁱᵐᵖˡ»
-  select_nb_not_ready_unfold : FuncUnfold select_nb_not_ready [] «select_nb_not_readyⁱᵐᵖˡ»
-  select_nb_guaranteed_ready_unfold : FuncUnfold select_nb_guaranteed_ready [] «select_nb_guaranteed_readyⁱᵐᵖˡ»
-  select_nb_full_buffer_not_ready_unfold : FuncUnfold select_nb_full_buffer_not_ready [] «select_nb_full_buffer_not_readyⁱᵐᵖˡ»
+  Cond_instance : Cond.TypeAssumptions
+  Result_instance : Result.TypeAssumptions
+  request_instance : request.TypeAssumptions
+  stream_instance : stream.TypeAssumptions
+  streamold_instance : streamold.TypeAssumptions
+  DSPExample_unfold : FuncUnfold DSPExample [] DSPExample.impl
+  NewCond_unfold : FuncUnfold NewCond [] NewCond.impl
+  sys_hello_world_unfold : FuncUnfold sys_hello_world [] sys_hello_world.impl
+  HelloWorldAsync_unfold : FuncUnfold HelloWorldAsync [] HelloWorldAsync.impl
+  HelloWorldSync_unfold : FuncUnfold HelloWorldSync [] HelloWorldSync.impl
+  HelloWorldCancellable_unfold : FuncUnfold HelloWorldCancellable [] HelloWorldCancellable.impl
+  HelloWorldWithTimeout_unfold : FuncUnfold HelloWorldWithTimeout [] HelloWorldWithTimeout.impl
+  simple_join_unfold : FuncUnfold simple_join [] simple_join.impl
+  simple_multi_join_unfold : FuncUnfold simple_multi_join [] simple_multi_join.impl
+  exchangePointer_unfold : FuncUnfold exchangePointer [] exchangePointer.impl
+  BroadcastExample_unfold : FuncUnfold BroadcastExample [] BroadcastExample.impl
+  fibonacci_unfold : FuncUnfold fibonacci [] fibonacci.impl
+  fib_consumer_unfold : FuncUnfold fib_consumer [] fib_consumer.impl
+  Web_unfold : FuncUnfold Web [] Web.impl
+  Image_unfold : FuncUnfold Image [] Image.impl
+  Video_unfold : FuncUnfold Video [] Video.impl
+  Google_unfold : FuncUnfold Google [] Google.impl
+  GetPrimary_unfold : FuncUnfold GetPrimary [] GetPrimary.impl
+  GetSecondary_unfold : FuncUnfold GetSecondary [] GetSecondary.impl
+  CancellableHedgedRequest_unfold : FuncUnfold CancellableHedgedRequest [] CancellableHedgedRequest.impl
+  mkRequest_unfold : FuncUnfold mkRequest [] mkRequest.impl
+  ho_worker_unfold : FuncUnfold ho_worker [] ho_worker.impl
+  HigherOrderExample_unfold : FuncUnfold HigherOrderExample [] HigherOrderExample.impl
+  load_unfold : FuncUnfold load [] load.impl
+  process_unfold : FuncUnfold process [] process.impl
+  client_unfold : FuncUnfold client [] client.impl
+  server_unfold : FuncUnfold server [] server.impl
+  LeakyBufferPipeline_unfold : FuncUnfold LeakyBufferPipeline [] LeakyBufferPipeline.impl
+  mkStream_unfold : FuncUnfold mkStream [] mkStream.impl
+  Async_unfold : FuncUnfold Async [] Async.impl
+  Serve_unfold : FuncUnfold Serve [] Serve.impl
+  appWrld_unfold : FuncUnfold appWrld [] appWrld.impl
+  Client_unfold : FuncUnfold Client [] Client.impl
+  MapServer_unfold : FuncUnfold MapServer [] MapServer.impl
+  ClientOld_unfold : FuncUnfold ClientOld [] ClientOld.impl
+  Muxer_unfold : FuncUnfold Muxer [] Muxer.impl
+  makeGreeting_unfold : FuncUnfold makeGreeting [] makeGreeting.impl
+  CancellableMapServer_unfold : FuncUnfold CancellableMapServer [] CancellableMapServer.impl
+  CancellableMuxer_unfold : FuncUnfold CancellableMuxer [] CancellableMuxer.impl
+  select_nb_not_ready_unfold : FuncUnfold select_nb_not_ready [] select_nb_not_ready.impl
+  select_nb_guaranteed_ready_unfold : FuncUnfold select_nb_guaranteed_ready [] select_nb_guaranteed_ready.impl
+  select_nb_full_buffer_not_ready_unfold : FuncUnfold select_nb_full_buffer_not_ready [] select_nb_full_buffer_not_ready.impl
   import_time_Assumption : _root_.Perennial.time.Assumptions
   import_lock_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Assumptions
   import_strings_Assumption : _root_.Perennial.strings.Assumptions

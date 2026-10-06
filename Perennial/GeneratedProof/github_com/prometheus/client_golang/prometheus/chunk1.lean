@@ -29,7 +29,7 @@ instance counter_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance counter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.counter.t github_com.prometheus.client_golang.prometheus.«counterⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.counter.t github_com.prometheus.client_golang.prometheus.counter.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -53,7 +53,7 @@ instance CounterVec_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CounterVec_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.CounterVec.t github_com.prometheus.client_golang.prometheus.«CounterVecⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.CounterVec.t github_com.prometheus.client_golang.prometheus.CounterVec.underlying := by
   solve_into_val_typed_struct
 
 instance CounterVec_access_load_MetricVec (l : Loc) (v : github_com.prometheus.client_golang.prometheus.CounterVec.t) (dq : DFrac) :
@@ -99,7 +99,7 @@ instance Desc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Desc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Desc.t github_com.prometheus.client_golang.prometheus.«Descⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Desc.t github_com.prometheus.client_golang.prometheus.Desc.underlying := by
   solve_into_val_typed_struct
 
 instance Desc_access_load_fqName (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Desc.t) (dq : DFrac) :
@@ -235,7 +235,7 @@ instance expvarCollector_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance expvarCollector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.expvarCollector.t github_com.prometheus.client_golang.prometheus.«expvarCollectorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.expvarCollector.t github_com.prometheus.client_golang.prometheus.expvarCollector.underlying := by
   solve_into_val_typed_struct
 
 instance expvarCollector_access_load_exports (l : Loc) (v : github_com.prometheus.client_golang.prometheus.expvarCollector.t) (dq : DFrac) :
@@ -275,7 +275,7 @@ instance GaugeVec_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance GaugeVec_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.GaugeVec.t github_com.prometheus.client_golang.prometheus.«GaugeVecⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.GaugeVec.t github_com.prometheus.client_golang.prometheus.GaugeVec.underlying := by
   solve_into_val_typed_struct
 
 instance GaugeVec_access_load_MetricVec (l : Loc) (v : github_com.prometheus.client_golang.prometheus.GaugeVec.t) (dq : DFrac) :
@@ -319,7 +319,7 @@ instance baseGoCollector_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance baseGoCollector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.baseGoCollector.t github_com.prometheus.client_golang.prometheus.«baseGoCollectorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.baseGoCollector.t github_com.prometheus.client_golang.prometheus.baseGoCollector.underlying := by
   solve_into_val_typed_struct
 
 instance baseGoCollector_access_load_goroutinesDesc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.baseGoCollector.t) (dq : DFrac) :
@@ -418,7 +418,7 @@ instance memStatsMetrics_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance memStatsMetrics_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.memStatsMetrics.t github_com.prometheus.client_golang.prometheus.«memStatsMetricsⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.memStatsMetrics.t github_com.prometheus.client_golang.prometheus.memStatsMetrics.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -437,7 +437,7 @@ instance goCollector_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance goCollector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.goCollector.t github_com.prometheus.client_golang.prometheus.«goCollectorⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.goCollector.t github_com.prometheus.client_golang.prometheus.goCollector.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -456,7 +456,7 @@ instance rmMetricDesc_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance rmMetricDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.rmMetricDesc.t github_com.prometheus.client_golang.prometheus.«rmMetricDescⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.rmMetricDesc.t github_com.prometheus.client_golang.prometheus.rmMetricDesc.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -488,7 +488,7 @@ instance histogramCounts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance histogramCounts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.histogramCounts.t github_com.prometheus.client_golang.prometheus.«histogramCountsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.histogramCounts.t github_com.prometheus.client_golang.prometheus.histogramCounts.underlying := by
   solve_into_val_typed_struct
 
 instance histogramCounts_access_load_sumBits (l : Loc) (v : github_com.prometheus.client_golang.prometheus.histogramCounts.t) (dq : DFrac) :
@@ -651,7 +651,7 @@ instance histogram_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance histogram_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.histogram.t github_com.prometheus.client_golang.prometheus.«histogramⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.histogram.t github_com.prometheus.client_golang.prometheus.histogram.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -675,7 +675,7 @@ instance HistogramVec_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance HistogramVec_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.HistogramVec.t github_com.prometheus.client_golang.prometheus.«HistogramVecⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.HistogramVec.t github_com.prometheus.client_golang.prometheus.HistogramVec.underlying := by
   solve_into_val_typed_struct
 
 instance HistogramVec_access_load_MetricVec (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramVec.t) (dq : DFrac) :
@@ -710,7 +710,7 @@ instance constHistogram_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance constHistogram_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.constHistogram.t github_com.prometheus.client_golang.prometheus.«constHistogramⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.constHistogram.t github_com.prometheus.client_golang.prometheus.constHistogram.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -736,7 +736,7 @@ instance nativeExemplars_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nativeExemplars_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.nativeExemplars.t github_com.prometheus.client_golang.prometheus.«nativeExemplarsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.nativeExemplars.t github_com.prometheus.client_golang.prometheus.nativeExemplars.underlying := by
   solve_into_val_typed_struct
 
 instance nativeExemplars_access_load_Mutex (l : Loc) (v : github_com.prometheus.client_golang.prometheus.nativeExemplars.t) (dq : DFrac) :
@@ -810,7 +810,7 @@ instance constNativeHistogram_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance constNativeHistogram_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.constNativeHistogram.t github_com.prometheus.client_golang.prometheus.«constNativeHistogramⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.constNativeHistogram.t github_com.prometheus.client_golang.prometheus.constNativeHistogram.underlying := by
   solve_into_val_typed_struct
 
 instance constNativeHistogram_access_load_desc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.constNativeHistogram.t) (dq : DFrac) :
@@ -883,7 +883,7 @@ instance compiledLabels_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance compiledLabels_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.compiledLabels.t github_com.prometheus.client_golang.prometheus.«compiledLabelsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.compiledLabels.t github_com.prometheus.client_golang.prometheus.compiledLabels.underlying := by
   solve_into_val_typed_struct
 
 instance compiledLabels_access_load_names (l : Loc) (v : github_com.prometheus.client_golang.prometheus.compiledLabels.t) (dq : DFrac) :
@@ -940,7 +940,7 @@ instance invalidMetric_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance invalidMetric_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.invalidMetric.t github_com.prometheus.client_golang.prometheus.«invalidMetricⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.invalidMetric.t github_com.prometheus.client_golang.prometheus.invalidMetric.underlying := by
   solve_into_val_typed_struct
 
 instance invalidMetric_access_load_desc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.invalidMetric.t) (dq : DFrac) :
@@ -1008,7 +1008,7 @@ instance processCollector_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance processCollector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.processCollector.t github_com.prometheus.client_golang.prometheus.«processCollectorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.processCollector.t github_com.prometheus.client_golang.prometheus.processCollector.underlying := by
   solve_into_val_typed_struct
 
 instance processCollector_access_load_collectFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.processCollector.t) (dq : DFrac) :
@@ -1242,7 +1242,7 @@ instance ProcessCollectorOpts_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ProcessCollectorOpts_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.ProcessCollectorOpts.t github_com.prometheus.client_golang.prometheus.«ProcessCollectorOptsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.ProcessCollectorOpts.t github_com.prometheus.client_golang.prometheus.ProcessCollectorOpts.underlying := by
   solve_into_val_typed_struct
 
 instance ProcessCollectorOpts_access_load_PidFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.ProcessCollectorOpts.t) (dq : DFrac) :
@@ -1319,7 +1319,7 @@ instance Registry_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Registry_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Registry.t github_com.prometheus.client_golang.prometheus.«Registryⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.Registry.t github_com.prometheus.client_golang.prometheus.Registry.underlying := by
   solve_into_val_typed_struct
 
 instance Registry_access_load_mtx (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry.t) (dq : DFrac) :

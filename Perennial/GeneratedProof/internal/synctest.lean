@@ -32,7 +32,7 @@ instance Bubble_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Bubble_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.synctest.Bubble.t internal.synctest.«Bubbleⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.synctest.Bubble.t internal.synctest.Bubble.underlying := by
   solve_into_val_typed_struct
 
 instance Bubble_access_load_b (l : Loc) (v : internal.synctest.Bubble.t) (dq : DFrac) :

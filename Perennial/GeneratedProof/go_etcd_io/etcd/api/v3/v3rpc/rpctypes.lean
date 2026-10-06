@@ -34,7 +34,7 @@ instance EtcdError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EtcdError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go_etcd_io.etcd.api.v3.v3rpc.rpctypes.«EtcdErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.underlying := by
   solve_into_val_typed_struct
 
 instance EtcdError_access_load_code (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (dq : DFrac) :
@@ -89,7 +89,7 @@ instance TokenFieldNameGRPCKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TokenFieldNameGRPCKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.t go_etcd_io.etcd.api.v3.v3rpc.rpctypes.«TokenFieldNameGRPCKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.t go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.underlying := by
   solve_into_val_typed_struct
 
 end def_

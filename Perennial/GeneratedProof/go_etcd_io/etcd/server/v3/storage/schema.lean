@@ -35,7 +35,7 @@ instance setKeyAction_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance setKeyAction_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go_etcd_io.etcd.server.v3.storage.schema.«setKeyActionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.underlying := by
   solve_into_val_typed_struct
 
 instance setKeyAction_access_load_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (dq : DFrac) :
@@ -108,7 +108,7 @@ instance deleteKeyAction_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance deleteKeyAction_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go_etcd_io.etcd.server.v3.storage.schema.«deleteKeyActionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.underlying := by
   solve_into_val_typed_struct
 
 instance deleteKeyAction_access_load_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t) (dq : DFrac) :
@@ -159,7 +159,7 @@ instance alarmBackend_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance alarmBackend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.alarmBackend.t go_etcd_io.etcd.server.v3.storage.schema.«alarmBackendⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.alarmBackend.t go_etcd_io.etcd.server.v3.storage.schema.alarmBackend.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -178,7 +178,7 @@ instance authBackend_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance authBackend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBackend.t go_etcd_io.etcd.server.v3.storage.schema.«authBackendⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBackend.t go_etcd_io.etcd.server.v3.storage.schema.authBackend.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -197,7 +197,7 @@ instance authReadTx_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance authReadTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authReadTx.t go_etcd_io.etcd.server.v3.storage.schema.«authReadTxⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authReadTx.t go_etcd_io.etcd.server.v3.storage.schema.authReadTx.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -216,7 +216,7 @@ instance authBatchTx_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance authBatchTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBatchTx.t go_etcd_io.etcd.server.v3.storage.schema.«authBatchTxⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBatchTx.t go_etcd_io.etcd.server.v3.storage.schema.authBatchTx.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -242,7 +242,7 @@ instance bucket_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance bucket_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.bucket.t go_etcd_io.etcd.server.v3.storage.schema.«bucketⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.bucket.t go_etcd_io.etcd.server.v3.storage.schema.bucket.underlying := by
   solve_into_val_typed_struct
 
 instance bucket_access_load_id (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (dq : DFrac) :
@@ -315,7 +315,7 @@ instance simpleSchemaChange_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance simpleSchemaChange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go_etcd_io.etcd.server.v3.storage.schema.«simpleSchemaChangeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.underlying := by
   solve_into_val_typed_struct
 
 instance simpleSchemaChange_access_load_upgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (dq : DFrac) :
@@ -366,7 +366,7 @@ instance membershipBackend_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance membershipBackend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.membershipBackend.t go_etcd_io.etcd.server.v3.storage.schema.«membershipBackendⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.membershipBackend.t go_etcd_io.etcd.server.v3.storage.schema.membershipBackend.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -385,7 +385,7 @@ instance migrationStep_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance migrationStep_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationStep.t go_etcd_io.etcd.server.v3.storage.schema.«migrationStepⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationStep.t go_etcd_io.etcd.server.v3.storage.schema.migrationStep.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

@@ -49,7 +49,7 @@ instance serverVersionAdapter_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance serverVersionAdapter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.serverVersionAdapter.t go_etcd_io.etcd.server.v3.etcdserver.«serverVersionAdapterⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.serverVersionAdapter.t go_etcd_io.etcd.server.v3.etcdserver.serverVersionAdapter.underlying := by
   solve_into_val_typed_struct
 
 instance serverVersionAdapter_access_load_EtcdServer (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.serverVersionAdapter.t) (dq : DFrac) :
@@ -84,7 +84,7 @@ instance bootstrappedServer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance bootstrappedServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedServer.t go_etcd_io.etcd.server.v3.etcdserver.«bootstrappedServerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedServer.t go_etcd_io.etcd.server.v3.etcdserver.bootstrappedServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -109,7 +109,7 @@ instance bootstrappedStorage_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance bootstrappedStorage_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedStorage.t go_etcd_io.etcd.server.v3.etcdserver.«bootstrappedStorageⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedStorage.t go_etcd_io.etcd.server.v3.etcdserver.bootstrappedStorage.underlying := by
   solve_into_val_typed_struct
 
 instance bootstrappedStorage_access_load_backend (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.bootstrappedStorage.t) (dq : DFrac) :
@@ -160,7 +160,7 @@ instance bootstrappedBackend_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance bootstrappedBackend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedBackend.t go_etcd_io.etcd.server.v3.etcdserver.«bootstrappedBackendⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedBackend.t go_etcd_io.etcd.server.v3.etcdserver.bootstrappedBackend.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -179,7 +179,7 @@ instance bootstrappedCluster_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance bootstrappedCluster_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedCluster.t go_etcd_io.etcd.server.v3.etcdserver.«bootstrappedClusterⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedCluster.t go_etcd_io.etcd.server.v3.etcdserver.bootstrappedCluster.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -198,7 +198,7 @@ instance bootstrappedRaft_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance bootstrappedRaft_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedRaft.t go_etcd_io.etcd.server.v3.etcdserver.«bootstrappedRaftⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedRaft.t go_etcd_io.etcd.server.v3.etcdserver.bootstrappedRaft.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -217,7 +217,7 @@ instance snapshotMetadata_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance snapshotMetadata_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.snapshotMetadata.t go_etcd_io.etcd.server.v3.etcdserver.«snapshotMetadataⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.snapshotMetadata.t go_etcd_io.etcd.server.v3.etcdserver.snapshotMetadata.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -236,7 +236,7 @@ instance bootstrappedWAL_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance bootstrappedWAL_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedWAL.t go_etcd_io.etcd.server.v3.etcdserver.«bootstrappedWALⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedWAL.t go_etcd_io.etcd.server.v3.etcdserver.bootstrappedWAL.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -255,7 +255,7 @@ instance corruptionChecker_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance corruptionChecker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.corruptionChecker.t go_etcd_io.etcd.server.v3.etcdserver.«corruptionCheckerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.corruptionChecker.t go_etcd_io.etcd.server.v3.etcdserver.corruptionChecker.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -274,7 +274,7 @@ instance Hasher_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Hasher_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Hasher.t go_etcd_io.etcd.server.v3.etcdserver.«Hasherⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Hasher.t go_etcd_io.etcd.server.v3.etcdserver.Hasher.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -293,7 +293,7 @@ instance hasherAdapter_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance hasherAdapter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.hasherAdapter.t go_etcd_io.etcd.server.v3.etcdserver.«hasherAdapterⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.hasherAdapter.t go_etcd_io.etcd.server.v3.etcdserver.hasherAdapter.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -312,7 +312,7 @@ instance peerInfo_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance peerInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.peerInfo.t go_etcd_io.etcd.server.v3.etcdserver.«peerInfoⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.peerInfo.t go_etcd_io.etcd.server.v3.etcdserver.peerInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -338,7 +338,7 @@ instance peerHashKVResp_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance peerHashKVResp_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.peerHashKVResp.t go_etcd_io.etcd.server.v3.etcdserver.«peerHashKVRespⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.peerHashKVResp.t go_etcd_io.etcd.server.v3.etcdserver.peerHashKVResp.underlying := by
   solve_into_val_typed_struct
 
 instance peerHashKVResp_access_load_peerInfo (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.peerHashKVResp.t) (dq : DFrac) :
@@ -405,7 +405,7 @@ instance hashKVHandler_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance hashKVHandler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.hashKVHandler.t go_etcd_io.etcd.server.v3.etcdserver.«hashKVHandlerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.hashKVHandler.t go_etcd_io.etcd.server.v3.etcdserver.hashKVHandler.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -432,7 +432,7 @@ instance toApply_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance toApply_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.toApply.t go_etcd_io.etcd.server.v3.etcdserver.«toApplyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.toApply.t go_etcd_io.etcd.server.v3.etcdserver.toApply.underlying := by
   solve_into_val_typed_struct
 
 instance toApply_access_load_entries (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.toApply.t) (dq : DFrac) :
@@ -515,7 +515,7 @@ instance raftNode_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance raftNode_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftNode.t go_etcd_io.etcd.server.v3.etcdserver.«raftNodeⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftNode.t go_etcd_io.etcd.server.v3.etcdserver.raftNode.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -534,7 +534,7 @@ instance raftNodeConfig_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance raftNodeConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftNodeConfig.t go_etcd_io.etcd.server.v3.etcdserver.«raftNodeConfigⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftNodeConfig.t go_etcd_io.etcd.server.v3.etcdserver.raftNodeConfig.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -553,7 +553,7 @@ instance Response_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Response_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Response.t go_etcd_io.etcd.server.v3.etcdserver.«Responseⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Response.t go_etcd_io.etcd.server.v3.etcdserver.Response.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -572,7 +572,7 @@ instance ServerV2_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ServerV2_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerV2.t go_etcd_io.etcd.server.v3.etcdserver.«ServerV2ⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerV2.t go_etcd_io.etcd.server.v3.etcdserver.ServerV2.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -591,7 +591,7 @@ instance Server_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Server_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Server.t go_etcd_io.etcd.server.v3.etcdserver.«Serverⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Server.t go_etcd_io.etcd.server.v3.etcdserver.Server.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -610,7 +610,7 @@ instance EtcdServer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance EtcdServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.EtcdServer.t go_etcd_io.etcd.server.v3.etcdserver.«EtcdServerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.EtcdServer.t go_etcd_io.etcd.server.v3.etcdserver.EtcdServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -629,7 +629,7 @@ instance ServerPeer_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ServerPeer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerPeer.t go_etcd_io.etcd.server.v3.etcdserver.«ServerPeerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerPeer.t go_etcd_io.etcd.server.v3.etcdserver.ServerPeer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -648,7 +648,7 @@ instance ServerPeerV2_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance ServerPeerV2_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerPeerV2.t go_etcd_io.etcd.server.v3.etcdserver.«ServerPeerV2ⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerPeerV2.t go_etcd_io.etcd.server.v3.etcdserver.ServerPeerV2.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -667,7 +667,7 @@ instance downgradeEnabledHandler_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance downgradeEnabledHandler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.downgradeEnabledHandler.t go_etcd_io.etcd.server.v3.etcdserver.«downgradeEnabledHandlerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.downgradeEnabledHandler.t go_etcd_io.etcd.server.v3.etcdserver.downgradeEnabledHandler.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -695,7 +695,7 @@ instance etcdProgress_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance etcdProgress_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.etcdProgress.t go_etcd_io.etcd.server.v3.etcdserver.«etcdProgressⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.etcdProgress.t go_etcd_io.etcd.server.v3.etcdserver.etcdProgress.underlying := by
   solve_into_val_typed_struct
 
 instance etcdProgress_access_load_confState (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.etcdProgress.t) (dq : DFrac) :
@@ -802,7 +802,7 @@ instance raftReadyHandler_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance raftReadyHandler_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler.t go_etcd_io.etcd.server.v3.etcdserver.«raftReadyHandlerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler.t go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler.underlying := by
   solve_into_val_typed_struct
 
 instance raftReadyHandler_access_load_getLead (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler.t) (dq : DFrac) :
@@ -885,7 +885,7 @@ instance confChangeResponse_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance confChangeResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.confChangeResponse.t go_etcd_io.etcd.server.v3.etcdserver.«confChangeResponseⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.confChangeResponse.t go_etcd_io.etcd.server.v3.etcdserver.confChangeResponse.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -912,7 +912,7 @@ instance AccessController_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AccessController_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.AccessController.t go_etcd_io.etcd.server.v3.etcdserver.«AccessControllerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.AccessController.t go_etcd_io.etcd.server.v3.etcdserver.AccessController.underlying := by
   solve_into_val_typed_struct
 
 instance AccessController_access_load_corsMu (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.AccessController.t) (dq : DFrac) :
@@ -1001,7 +1001,7 @@ instance notifier_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance notifier_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.notifier.t go_etcd_io.etcd.server.v3.etcdserver.«notifierⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.notifier.t go_etcd_io.etcd.server.v3.etcdserver.notifier.underlying := by
   solve_into_val_typed_struct
 
 instance notifier_access_load_c (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.notifier.t) (dq : DFrac) :
@@ -1052,7 +1052,7 @@ instance Lessor_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance Lessor_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Lessor.t go_etcd_io.etcd.server.v3.etcdserver.«Lessorⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Lessor.t go_etcd_io.etcd.server.v3.etcdserver.Lessor.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -1071,7 +1071,7 @@ instance zapRaftLogger_typed_pointsto :
   sorry -- Rocq: Admitted
 
 instance zapRaftLogger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.zapRaftLogger.t go_etcd_io.etcd.server.v3.etcdserver.«zapRaftLoggerⁱᵐᵖˡ» :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.zapRaftLogger.t go_etcd_io.etcd.server.v3.etcdserver.zapRaftLogger.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

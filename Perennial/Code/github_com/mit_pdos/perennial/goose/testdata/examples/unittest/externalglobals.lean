@@ -23,7 +23,7 @@ noncomputable def f [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.f"
 
 /-- go: g.go:7:6 -/
-noncomputable def «fⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def f.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -44,7 +44,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.initialize') (Val #())))))))
 
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  f_unfold : FuncUnfold f [] «fⁱᵐᵖˡ»
+  f_unfold : FuncUnfold f [] f.impl
   import_unittest_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions
 
 attribute [instance] Assumptions.f_unfold

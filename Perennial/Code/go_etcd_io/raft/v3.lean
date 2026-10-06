@@ -540,7 +540,7 @@ noncomputable def extend [FfiSyntax] [GoGlobalContext] : GoString :=
     which stores the desired ConfState as its InitialState.
 
     go: bootstrap.go:30:20 -/
-noncomputable def «RawNode__Bootstrapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.Bootstrap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "peers"
   (App (Val exceptionDo)
@@ -676,7 +676,7 @@ noncomputable def «RawNode__Bootstrapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
     latest snapshot.
 
     go: log.go:67:6 -/
-noncomputable def «newLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newLog.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "storage"
   (Lam "logger"
   (App (Val exceptionDo)
@@ -692,7 +692,7 @@ noncomputable def «newLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     message size.
 
     go: log.go:73:6 -/
-noncomputable def «newLogWithSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newLogWithSize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "storage"
   (Lam "logger"
   (Lam "maxApplyingEntsSize"
@@ -753,7 +753,7 @@ noncomputable def «newLogWithSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "firstIndex") (Var "$r0")))))))))))))))))))
 
 /-- go: log.go:100:19 -/
-noncomputable def «raftLog__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -774,7 +774,7 @@ noncomputable def «raftLog__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     it returns (last index of new entries, true).
 
     go: log.go:107:19 -/
-noncomputable def «raftLog__maybeAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.maybeAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "a"
   (Lam "committed"
@@ -845,7 +845,7 @@ noncomputable def «raftLog__maybeAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (Val #())))))))))))))
 
 /-- go: log.go:131:19 -/
-noncomputable def «raftLog__appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.append.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "ents"
   (App (Val exceptionDo)
@@ -892,7 +892,7 @@ noncomputable def «raftLog__appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     The index of the given entries MUST be continuously increasing.
 
     go: log.go:152:19 -/
-noncomputable def «raftLog__findConflictⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.findConflict.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "ents"
   (App (Val exceptionDo)
@@ -954,7 +954,7 @@ noncomputable def «raftLog__findConflictⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     of appends.
 
     go: log.go:180:19 -/
-noncomputable def «raftLog__findConflictByTermⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.findConflictByTerm.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "index"
   (Lam "term"
@@ -997,7 +997,7 @@ noncomputable def «raftLog__findConflictByTermⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     local stable log and are not already in-progress.
 
     go: log.go:196:19 -/
-noncomputable def «raftLog__nextUnstableEntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.nextUnstableEnts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1009,7 +1009,7 @@ noncomputable def «raftLog__nextUnstableEntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
     written to the local stable log and are not already in-progress.
 
     go: log.go:202:19 -/
-noncomputable def «raftLog__hasNextUnstableEntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.hasNextUnstableEnts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1023,7 +1023,7 @@ noncomputable def «raftLog__hasNextUnstableEntsⁱᵐᵖˡ» [FfiSyntax] [GoGlo
     written to the local stable log.
 
     go: log.go:209:19 -/
-noncomputable def «raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.hasNextOrInProgressUnstableEnts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1039,7 +1039,7 @@ noncomputable def «raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ» [FfiSy
     to reside locally on stable storage will be returned.
 
     go: log.go:218:19 -/
-noncomputable def «raftLog__nextCommittedEntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.nextCommittedEnts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "allowUnstable"
   (App (Val exceptionDo)
@@ -1122,7 +1122,7 @@ noncomputable def «raftLog__nextCommittedEntsⁱᵐᵖˡ» [FfiSyntax] [GoGloba
     This is a fast check without heavy raftLog.slice() in nextCommittedEnts().
 
     go: log.go:246:19 -/
-noncomputable def «raftLog__hasNextCommittedEntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.hasNextCommittedEnts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "allowUnstable"
   (App (Val exceptionDo)
@@ -1160,7 +1160,7 @@ noncomputable def «raftLog__hasNextCommittedEntsⁱᵐᵖˡ» [FfiSyntax] [GoGl
     can be applied.
 
     go: log.go:265:19 -/
-noncomputable def «raftLog__maxAppliableIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.maxAppliableIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "allowUnstable"
   (App (Val exceptionDo)
@@ -1187,7 +1187,7 @@ noncomputable def «raftLog__maxAppliableIndexⁱᵐᵖˡ» [FfiSyntax] [GoGloba
     be applied to the local storage and is not already in-progress.
 
     go: log.go:275:19 -/
-noncomputable def «raftLog__nextUnstableSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.nextUnstableSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1199,7 +1199,7 @@ noncomputable def «raftLog__nextUnstableSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGl
     be applied to the local storage and is not already in-progress.
 
     go: log.go:281:19 -/
-noncomputable def «raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.hasNextUnstableSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1211,7 +1211,7 @@ noncomputable def «raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ» [FfiSyntax] [G
     applying or in the process of being applied.
 
     go: log.go:287:19 -/
-noncomputable def «raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.hasNextOrInProgressSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1220,7 +1220,7 @@ noncomputable def «raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ» [FfiSyntax
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot)))) (App (Val (GoInstruction (StructFieldRef unstable go!"snapshot"))) (App (Val (GoInstruction (StructFieldRef raftLog go!"unstable"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raftLog)))) (Var "l"))))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot)))) (Val UntypedNil))))))))))
 
 /-- go: log.go:291:19 -/
-noncomputable def «raftLog__snapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.snapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1238,7 +1238,7 @@ noncomputable def «raftLog__snapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (Val #()))))))))
 
 /-- go: log.go:298:19 -/
-noncomputable def «raftLog__firstIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.firstIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1286,7 +1286,7 @@ noncomputable def «raftLog__firstIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
 /-- go: log.go:309:19 -/
-noncomputable def «raftLog__lastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.lastIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1334,7 +1334,7 @@ noncomputable def «raftLog__lastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
 /-- go: log.go:320:19 -/
-noncomputable def «raftLog__commitToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.commitTo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "tocommit"
   (App (Val exceptionDo)
@@ -1361,7 +1361,7 @@ noncomputable def «raftLog__commitToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (Val #())))))))))
 
 /-- go: log.go:330:19 -/
-noncomputable def «raftLog__appliedToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.appliedTo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (Lam "size"
@@ -1405,7 +1405,7 @@ noncomputable def «raftLog__appliedToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (Val #()))))))))))))
 
 /-- go: log.go:345:19 -/
-noncomputable def «raftLog__acceptApplyingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.acceptApplying.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (Lam "size"
@@ -1442,7 +1442,7 @@ noncomputable def «raftLog__acceptApplyingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (Val #()))))))))))))))
 
 /-- go: log.go:365:19 -/
-noncomputable def «raftLog__stableToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.stableTo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "id"
   (App (Val exceptionDo)
@@ -1456,7 +1456,7 @@ noncomputable def «raftLog__stableToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType unstable) go!"stableTo"))) (App (Val (GoInstruction (StructFieldRef raftLog go!"unstable"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raftLog)))) (Var "l")))) (Var "$a0"))))))))))
 
 /-- go: log.go:367:19 -/
-noncomputable def «raftLog__stableSnapToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.stableSnapTo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (App (Val exceptionDo)
@@ -1475,7 +1475,7 @@ noncomputable def «raftLog__stableSnapToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     to Ready().
 
     go: log.go:373:19 -/
-noncomputable def «raftLog__acceptUnstableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.acceptUnstable.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1489,7 +1489,7 @@ noncomputable def «raftLog__acceptUnstableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
 /-- lastEntryID returns the ID of the last entry in the log.
 
     go: log.go:376:19 -/
-noncomputable def «raftLog__lastEntryIDⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.lastEntryID.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1529,7 +1529,7 @@ noncomputable def «raftLog__lastEntryIDⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "index") (Var "$r0")))))))))))
 
 /-- go: log.go:385:19 -/
-noncomputable def «raftLog__termⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.term.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (App (Val exceptionDo)
@@ -1598,7 +1598,7 @@ noncomputable def «raftLog__termⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "t") (Var "$r0"))))))))))))))))))
 
 /-- go: log.go:413:19 -/
-noncomputable def «raftLog__entriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.entries.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "i"
   (Lam "maxSize"
@@ -1624,7 +1624,7 @@ noncomputable def «raftLog__entriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- allEntries returns all entries in the log.
 
     go: log.go:421:19 -/
-noncomputable def «raftLog__allEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.allEntries.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1669,7 +1669,7 @@ noncomputable def «raftLog__allEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
     the same, the given log is up-to-date.
 
     go: log.go:440:19 -/
-noncomputable def «raftLog__isUpToDateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.isUpToDate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "their"
   (App (Val exceptionDo)
@@ -1684,7 +1684,7 @@ noncomputable def «raftLog__isUpToDateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore entryID))) (Pair (Var "our") (Var "$r0"))))))))))))
 
 /-- go: log.go:445:19 -/
-noncomputable def «raftLog__matchTermⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.matchTerm.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "id"
   (App (Val exceptionDo)
@@ -1714,7 +1714,7 @@ noncomputable def «raftLog__matchTermⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "t") (Var "$r0")))))))))))))))))
 
 /-- go: log.go:453:19 -/
-noncomputable def «raftLog__maybeCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.maybeCommit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "at"
   (App (Val exceptionDo)
@@ -1735,7 +1735,7 @@ noncomputable def «raftLog__maybeCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (Val #())))))))))
 
 /-- go: log.go:464:19 -/
-noncomputable def «raftLog__restoreⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.restore.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "s"
   (App (Val exceptionDo)
@@ -1772,7 +1772,7 @@ noncomputable def «raftLog__restoreⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     immediately. This can be used to stop the scan early ("break" the loop).
 
     go: log.go:480:19 -/
-noncomputable def «raftLog__scanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.scan.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "lo"
   (Lam "hi"
@@ -1840,7 +1840,7 @@ noncomputable def «raftLog__scanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
 /-- slice returns a slice of log entries from lo through hi-1, inclusive.
 
     go: log.go:497:19 -/
-noncomputable def «raftLog__sliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.slice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "lo"
   (Lam "hi"
@@ -1977,7 +1977,7 @@ noncomputable def «raftLog__sliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- l.firstIndex <= lo <= hi <= l.firstIndex + len(l.entries)
 
     go: log.go:549:19 -/
-noncomputable def «raftLog__mustCheckOutOfBoundsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.mustCheckOutOfBounds.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "lo"
   (Lam "hi"
@@ -2027,7 +2027,7 @@ noncomputable def «raftLog__mustCheckOutOfBoundsⁱᵐᵖˡ» [FfiSyntax] [GoGl
   (Val #())))))))))))
 
 /-- go: log.go:565:19 -/
-noncomputable def «raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raftLog.zeroTermOnOutOfBounds.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "t"
   (Lam "err"
@@ -2060,7 +2060,7 @@ noncomputable def «raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ» [FfiSyntax] [GoG
     if it has a snapshot.
 
     go: log_unstable.go:54:20 -/
-noncomputable def «unstable__maybeFirstIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.maybeFirstIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2078,7 +2078,7 @@ noncomputable def «unstable__maybeFirstIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
     unstable entry or snapshot.
 
     go: log_unstable.go:63:20 -/
-noncomputable def «unstable__maybeLastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.maybeLastIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2108,7 +2108,7 @@ noncomputable def «unstable__maybeLastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
     is any.
 
     go: log_unstable.go:75:20 -/
-noncomputable def «unstable__maybeTermⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.maybeTerm.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "i"
   (App (Val exceptionDo)
@@ -2158,7 +2158,7 @@ noncomputable def «unstable__maybeTermⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
     of being written to storage.
 
     go: log_unstable.go:96:20 -/
-noncomputable def «unstable__nextEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.nextEntries.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2183,7 +2183,7 @@ noncomputable def «unstable__nextEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     in the process of being written to storage.
 
     go: log_unstable.go:106:20 -/
-noncomputable def «unstable__nextSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.nextSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2204,7 +2204,7 @@ noncomputable def «unstable__nextSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
     from those methods, until the next call to acceptInProgress.
 
     go: log_unstable.go:118:20 -/
-noncomputable def «unstable__acceptInProgressⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.acceptInProgress.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2236,7 +2236,7 @@ noncomputable def «unstable__acceptInProgressⁱᵐᵖˡ» [FfiSyntax] [GoGloba
     in newStorageAppendRespMsg.
 
     go: log_unstable.go:134:20 -/
-noncomputable def «unstable__stableToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.stableTo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "id"
   (App (Val exceptionDo)
@@ -2327,7 +2327,7 @@ noncomputable def «unstable__stableToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
     entries wouldn't be safe because clients might still be using them.
 
     go: log_unstable.go:166:20 -/
-noncomputable def «unstable__shrinkEntriesArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.shrinkEntriesArray.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2362,7 +2362,7 @@ noncomputable def «unstable__shrinkEntriesArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlo
   (Val #()))))))))))
 
 /-- go: log_unstable.go:181:20 -/
-noncomputable def «unstable__stableSnapToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.stableSnapTo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "i"
   (App (Val exceptionDo)
@@ -2383,7 +2383,7 @@ noncomputable def «unstable__stableSnapToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (Val #())))))))))
 
 /-- go: log_unstable.go:188:20 -/
-noncomputable def «unstable__restoreⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.restore.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "s"
   (App (Val exceptionDo)
@@ -2413,7 +2413,7 @@ noncomputable def «unstable__restoreⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef unstable go!"offset"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType unstable)))) (Var "u"))) (Var "$r0"))))))))))))
 
 /-- go: log_unstable.go:196:20 -/
-noncomputable def «unstable__truncateAndAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.truncateAndAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "ents"
   (App (Val exceptionDo)
@@ -2488,7 +2488,7 @@ noncomputable def «unstable__truncateAndAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     similarly, and document how the client can use them.
 
     go: log_unstable.go:228:20 -/
-noncomputable def «unstable__sliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.slice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "lo"
   (Lam "hi"
@@ -2508,7 +2508,7 @@ noncomputable def «unstable__sliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- u.offset <= lo <= hi <= u.offset+len(u.entries)
 
     go: log_unstable.go:237:20 -/
-noncomputable def «unstable__mustCheckOutOfBoundsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def unstable.mustCheckOutOfBounds.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam "lo"
   (Lam "hi"
@@ -2548,7 +2548,7 @@ noncomputable def «unstable__mustCheckOutOfBoundsⁱᵐᵖˡ» [FfiSyntax] [GoG
   (Val #()))))))))))))
 
 /-- go: logger.go:45:6 -/
-noncomputable def «SetLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SetLogger.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Logger))) (Var "l"))
@@ -2566,7 +2566,7 @@ noncomputable def «SetLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr raftLoggerMu))) (Val #()))) (Val #()))))))))
 
 /-- go: logger.go:51:6 -/
-noncomputable def «ResetDefaultLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ResetDefaultLogger.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2577,7 +2577,7 @@ noncomputable def «ResetDefaultLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (App (Val (GoInstruction (FuncResolve SetLogger []))) (Val #())) (Var "$a0")))))))
 
 /-- go: logger.go:55:6 -/
-noncomputable def «getLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def getLogger.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val wrapDefer)
   (Lam "$defer"
@@ -2595,7 +2595,7 @@ noncomputable def «getLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr raftLoggerMu))) (Val #()))) (Val #())))))))
 
 /-- go: logger.go:78:25 -/
-noncomputable def «DefaultLogger__EnableTimestampsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.EnableTimestamps.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2608,7 +2608,7 @@ noncomputable def «DefaultLogger__EnableTimestampsⁱᵐᵖˡ» [FfiSyntax] [Go
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"SetFlags"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")))))))))
 
 /-- go: logger.go:82:25 -/
-noncomputable def «DefaultLogger__EnableDebugⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.EnableDebug.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -2621,7 +2621,7 @@ noncomputable def «DefaultLogger__EnableDebugⁱᵐᵖˡ» [FfiSyntax] [GoGloba
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"debug"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$r0"))))))))))
 
 /-- go: logger.go:86:25 -/
-noncomputable def «DefaultLogger__Debugⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Debug.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exceptionDo)
@@ -2642,7 +2642,7 @@ noncomputable def «DefaultLogger__Debugⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (Val #())))))))))
 
 /-- go: logger.go:92:25 -/
-noncomputable def «DefaultLogger__Debugfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Debugf.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2666,7 +2666,7 @@ noncomputable def «DefaultLogger__Debugfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (Val #())))))))))))
 
 /-- go: logger.go:98:25 -/
-noncomputable def «DefaultLogger__Infoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Info.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exceptionDo)
@@ -2684,7 +2684,7 @@ noncomputable def «DefaultLogger__Infoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: logger.go:102:25 -/
-noncomputable def «DefaultLogger__Infofⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Infof.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2705,7 +2705,7 @@ noncomputable def «DefaultLogger__Infofⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: logger.go:106:25 -/
-noncomputable def «DefaultLogger__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Error.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exceptionDo)
@@ -2723,7 +2723,7 @@ noncomputable def «DefaultLogger__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: logger.go:110:25 -/
-noncomputable def «DefaultLogger__Errorfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Errorf.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2744,7 +2744,7 @@ noncomputable def «DefaultLogger__Errorfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: logger.go:114:25 -/
-noncomputable def «DefaultLogger__Warningⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Warning.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exceptionDo)
@@ -2762,7 +2762,7 @@ noncomputable def «DefaultLogger__Warningⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: logger.go:118:25 -/
-noncomputable def «DefaultLogger__Warningfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Warningf.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2783,7 +2783,7 @@ noncomputable def «DefaultLogger__Warningfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: logger.go:122:25 -/
-noncomputable def «DefaultLogger__Fatalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Fatal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exceptionDo)
@@ -2805,7 +2805,7 @@ noncomputable def «DefaultLogger__Fatalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- go: logger.go:127:25 -/
-noncomputable def «DefaultLogger__Fatalfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Fatalf.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2830,7 +2830,7 @@ noncomputable def «DefaultLogger__Fatalfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType DefaultLogger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))) (Var "$a0")) (Var "$a1"))))))))))))))
 
 /-- go: logger.go:132:25 -/
-noncomputable def «DefaultLogger__Panicⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Panic.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "v"
   (App (Val exceptionDo)
@@ -2844,7 +2844,7 @@ noncomputable def «DefaultLogger__Panicⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Panic"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))))) (Var "$a0"))))))))))
 
 /-- go: logger.go:136:25 -/
-noncomputable def «DefaultLogger__Panicfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DefaultLogger.Panicf.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "format"
   (Lam "v"
@@ -2861,7 +2861,7 @@ noncomputable def «DefaultLogger__Panicfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Panicf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType DefaultLogger)))) (Var "l"))))) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: logger.go:140:6 -/
-noncomputable def «headerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def header.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "lvl"
   (Lam "msg"
   (App (Val exceptionDo)
@@ -2875,7 +2875,7 @@ noncomputable def «headerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: node.go:45:21 -/
-noncomputable def «SoftState__equalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SoftState.equal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
   (App (Val exceptionDo)
@@ -2885,7 +2885,7 @@ noncomputable def «SoftState__equalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SoftState go!"Lead"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType SoftState)))) (Var "a")))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SoftState go!"Lead"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType SoftState)))) (Var "b")))))) (App (Val (GoInstruction (GoOp GoEquals StateType))) (Pair (App (Val (GoInstruction (GoLoad StateType))) (App (Val (GoInstruction (StructFieldRef SoftState go!"RaftState"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType SoftState)))) (Var "a")))) (App (Val (GoInstruction (GoLoad StateType))) (App (Val (GoInstruction (StructFieldRef SoftState go!"RaftState"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType SoftState)))) (Var "b")))))) (Val #false))))))))
 
 /-- go: node.go:117:6 -/
-noncomputable def «isHardStateEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def isHardStateEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
   (App (Val exceptionDo)
@@ -2897,7 +2897,7 @@ noncomputable def «isHardStateEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- IsEmptyHardState returns true if the given HardState is empty.
 
     go: node.go:122:6 -/
-noncomputable def «IsEmptyHardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def IsEmptyHardState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "st"
   (App (Val exceptionDo)
   (Let "st" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState))) (Var "st"))
@@ -2909,7 +2909,7 @@ noncomputable def «IsEmptyHardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- IsEmptySnap returns true if the given Snapshot is empty.
 
     go: node.go:127:6 -/
-noncomputable def «IsEmptySnapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def IsEmptySnap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "sp"
   (App (Val exceptionDo)
   (Let "sp" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot))) (Var "sp"))
@@ -2917,7 +2917,7 @@ noncomputable def «IsEmptySnapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.SnapshotMetadata go!"Index"))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot go!"Metadata"))) (Var "sp")))) (Val #(W64 0))))))))
 
 /-- go: node.go:250:6 -/
-noncomputable def «setupNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def setupNode.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "peers"
   (App (Val exceptionDo)
@@ -2981,7 +2981,7 @@ noncomputable def «setupNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
     Peers must not be zero length; call RestartNode in that case.
 
     go: node.go:271:6 -/
-noncomputable def «StartNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def StartNode.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "peers"
   (App (Val exceptionDo)
@@ -3008,7 +3008,7 @@ noncomputable def «StartNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
     has been applied to it; otherwise use zero.
 
     go: node.go:281:6 -/
-noncomputable def «RestartNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RestartNode.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Config)))) (Var "c"))
@@ -3048,7 +3048,7 @@ noncomputable def «RestartNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType RawNode)))) (Pair (Var "rn") (Var "$r0")))))))))))))))
 
 /-- go: node.go:312:6 -/
-noncomputable def «newNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newNode.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (App (Val exceptionDo)
   (Let "rn" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RawNode)))) (Var "rn"))
@@ -3067,7 +3067,7 @@ noncomputable def «newNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral node))) (LiteralValue [(KeyedElement (some (KeyField go!"propc")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv msgWithResult) (Var "$v0"))), (KeyedElement (some (KeyField go!"recvc")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message) (Var "$v1"))), (KeyedElement (some (KeyField go!"confc")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeV2) (Var "$v2"))), (KeyedElement (some (KeyField go!"confstatec")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState) (Var "$v3"))), (KeyedElement (some (KeyField go!"readyc")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv Ready) (Var "$v4"))), (KeyedElement (some (KeyField go!"advancec")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (Var "$v5"))), (KeyedElement (some (KeyField go!"tickc")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (Var "$v6"))), (KeyedElement (some (KeyField go!"done")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (Var "$v7"))), (KeyedElement (some (KeyField go!"stop")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (Var "$v8"))), (KeyedElement (some (KeyField go!"status")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.ChannelType go.ChanDir.sendrecv Status)) (Var "$v9"))), (KeyedElement (some (KeyField go!"rn")) (ElementExpression (go.GoType.PointerType RawNode) (Var "$v10")))])))))))))))))))))
 
 /-- go: node.go:331:16 -/
-noncomputable def «node__Stopⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.Stop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -3088,7 +3088,7 @@ noncomputable def «node__Stopⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (Val #()))))])))))))))))
 
 /-- go: node.go:343:16 -/
-noncomputable def «node__runⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.run.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -3368,7 +3368,7 @@ noncomputable def «node__runⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
     and heartbeat timeouts are in units of ticks.
 
     go: node.go:458:16 -/
-noncomputable def «node__Tickⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.Tick.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -3390,7 +3390,7 @@ noncomputable def «node__Tickⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (Val #()))))]))))))))))
 
 /-- go: node.go:467:16 -/
-noncomputable def «node__Campaignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.Campaign.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (App (Val exceptionDo)
@@ -3403,7 +3403,7 @@ noncomputable def «node__Campaignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType node) go!"step"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: node.go:469:16 -/
-noncomputable def «node__Proposeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.Propose.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "data"
@@ -3420,7 +3420,7 @@ noncomputable def «node__Proposeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType node) go!"stepWait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- go: node.go:473:16 -/
-noncomputable def «node__Stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.Step.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "m"
@@ -3442,7 +3442,7 @@ noncomputable def «node__Stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (Val #())))))))))))
 
 /-- go: node.go:482:6 -/
-noncomputable def «confChangeToMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def confChangeToMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeI))) (Var "c"))
@@ -3480,7 +3480,7 @@ noncomputable def «confChangeToMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.EntryType))) (Pair (Var "typ") (Var "$r0"))))))))))))))))))
 
 /-- go: node.go:490:16 -/
-noncomputable def «node__ProposeConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.ProposeConfChange.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "cc"
@@ -3514,7 +3514,7 @@ noncomputable def «node__ProposeConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message))) (Pair (Var "msg") (Var "$r0")))))))))))))))))))
 
 /-- go: node.go:498:16 -/
-noncomputable def «node__stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.step.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "m"
@@ -3529,7 +3529,7 @@ noncomputable def «node__stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType node) go!"stepWithWaitOption"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))))
 
 /-- go: node.go:502:16 -/
-noncomputable def «node__stepWaitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.stepWait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "m"
@@ -3547,7 +3547,7 @@ noncomputable def «node__stepWaitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     if any.
 
     go: node.go:508:16 -/
-noncomputable def «node__stepWithWaitOptionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.stepWithWaitOption.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "m"
@@ -3632,7 +3632,7 @@ noncomputable def «node__stepWithWaitOptionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
   (Val #())))))))))))))
 
 /-- go: node.go:547:16 -/
-noncomputable def «node__Readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.Ready.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -3641,7 +3641,7 @@ noncomputable def «node__Readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv Ready) (go.GoType.ChannelType go.ChanDir.recvonly Ready)))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv Ready)))) (App (Val (GoInstruction (StructFieldRef node go!"readyc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType node)))) (Var "n"))))))))))
 
 /-- go: node.go:549:16 -/
-noncomputable def «node__Advanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.Advance.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -3659,7 +3659,7 @@ noncomputable def «node__Advanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (Val #()))))]))))))))))
 
 /-- go: node.go:556:16 -/
-noncomputable def «node__ApplyConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.ApplyConfChange.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "cc"
   (App (Val exceptionDo)
@@ -3692,7 +3692,7 @@ noncomputable def «node__ApplyConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (Val #()))))]))))))))))))
 
 /-- go: node.go:569:16 -/
-noncomputable def «node__Statusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.Status.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -3712,7 +3712,7 @@ noncomputable def «node__Statusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv Status)))) (Pair (Var "c") (Var "$r0")))))))))))
 
 /-- go: node.go:579:16 -/
-noncomputable def «node__ReportUnreachableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.ReportUnreachable.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "id"
   (App (Val exceptionDo)
@@ -3733,7 +3733,7 @@ noncomputable def «node__ReportUnreachableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (Val #()))))])))))))))))
 
 /-- go: node.go:586:16 -/
-noncomputable def «node__ReportSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.ReportSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "id"
   (Lam "status"
@@ -3762,7 +3762,7 @@ noncomputable def «node__ReportSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "rej") (Var "$r0")))))))))))))))
 
 /-- go: node.go:595:16 -/
-noncomputable def «node__TransferLeadershipⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.TransferLeadership.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "lead"
@@ -3792,7 +3792,7 @@ noncomputable def «node__TransferLeadershipⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
   (Val #()))))]))))))))))))))))
 
 /-- go: node.go:604:16 -/
-noncomputable def «node__ForgetLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.ForgetLeader.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (App (Val exceptionDo)
@@ -3805,7 +3805,7 @@ noncomputable def «node__ForgetLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType node) go!"step"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: node.go:608:16 -/
-noncomputable def «node__ReadIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def node.ReadIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "ctx"
   (Lam "rctx"
@@ -3822,7 +3822,7 @@ noncomputable def «node__ReadIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType node) go!"step"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType node)))) (Var "n"))) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- go: raft.go:95:22 -/
-noncomputable def «lockedRand__Intnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def lockedRand.Intn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "n"
   (App (Val exceptionDo)
@@ -3853,7 +3853,7 @@ noncomputable def «lockedRand__Intnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef lockedRand go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType lockedRand)))) (Var "r")))) (Val #())))))))))
 
 /-- go: raft.go:119:21 -/
-noncomputable def «StateType__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def StateType.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "st"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -3862,7 +3862,7 @@ noncomputable def «StateType__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 4 go.string)))) (Pair (App (Val (GoInstruction (GlobalVarAddr stmap))) (Val #())) (App (Val (GoInstruction (Convert StateType go.int))) (App (Val (GoInstruction (GoLoad StateType))) (Var "st")))))))))))
 
 /-- go: raft.go:291:18 -/
-noncomputable def «Config__validateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Config.validate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -3953,7 +3953,7 @@ noncomputable def «Config__validateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (Val #()))))))))
 
 /-- go: raft.go:437:6 -/
-noncomputable def «newRaftⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newRaft.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Config)))) (Var "c"))
@@ -4135,7 +4135,7 @@ noncomputable def «newRaftⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))))))
 
 /-- go: raft.go:498:16 -/
-noncomputable def «raft__hasLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.hasLeader.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4144,7 +4144,7 @@ noncomputable def «raft__hasLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef raft go!"lead"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r")))) (Val None')))))))))
 
 /-- go: raft.go:500:16 -/
-noncomputable def «raft__softStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.softState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4155,7 +4155,7 @@ noncomputable def «raft__softStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (CompositeLiteral SoftState))) (LiteralValue [(KeyedElement (some (KeyField go!"Lead")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"RaftState")) (ElementExpression StateType (Var "$v1")))])))))))))
 
 /-- go: raft.go:502:16 -/
-noncomputable def «raft__hardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.hardState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4170,7 +4170,7 @@ noncomputable def «raft__hardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     sending the message (as part of next Ready message processing).
 
     go: raft.go:512:16 -/
-noncomputable def «raft__sendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.send.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -4249,7 +4249,7 @@ noncomputable def «raft__sendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     current commit index to the given peer.
 
     go: raft.go:603:16 -/
-noncomputable def «raft__sendAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.sendAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (App (Val exceptionDo)
@@ -4274,7 +4274,7 @@ noncomputable def «raft__sendAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     message.
 
     go: raft.go:616:16 -/
-noncomputable def «raft__maybeSendAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.maybeSendAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (Lam "sendIfEmpty"
@@ -4380,7 +4380,7 @@ noncomputable def «raft__maybeSendAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     node. Returns true iff the snapshot message has been emitted successfully.
 
     go: raft.go:664:16 -/
-noncomputable def «raft__maybeSendSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.maybeSendSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (Lam "pr"
@@ -4488,7 +4488,7 @@ noncomputable def «raft__maybeSendSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
 /-- sendHeartbeat sends a heartbeat RPC to the given peer.
 
     go: raft.go:692:16 -/
-noncomputable def «raft__sendHeartbeatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.sendHeartbeat.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (Lam "ctx"
@@ -4527,7 +4527,7 @@ noncomputable def «raft__sendHeartbeatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
     according to the progress recorded in r.trk.
 
     go: raft.go:712:16 -/
-noncomputable def «raft__bcastAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.bcastAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4557,7 +4557,7 @@ noncomputable def «raft__bcastAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
 /-- bcastHeartbeat sends RPC, without entries to all the peers.
 
     go: raft.go:722:16 -/
-noncomputable def «raft__bcastHeartbeatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.bcastHeartbeat.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4570,7 +4570,7 @@ noncomputable def «raft__bcastHeartbeatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType raft) go!"bcastHeartbeatWithCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r"))) (Var "$a0")))))))))
 
 /-- go: raft.go:726:16 -/
-noncomputable def «raft__bcastHeartbeatWithCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.bcastHeartbeatWithCtx.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "ctx"
   (App (Val exceptionDo)
@@ -4600,7 +4600,7 @@ noncomputable def «raft__bcastHeartbeatWithCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlob
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker) go!"Visit"))) (App (Val (GoInstruction (StructFieldRef raft go!"trk"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r")))) (Var "$a0"))))))))))
 
 /-- go: raft.go:735:16 -/
-noncomputable def «raft__appliedToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.appliedTo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "index"
   (Lam "size"
@@ -4672,7 +4672,7 @@ noncomputable def «raft__appliedToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "oldApplied") (Var "$r0")))))))))))))))
 
 /-- go: raft.go:764:16 -/
-noncomputable def «raft__appliedSnapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.appliedSnap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "snap"
   (App (Val exceptionDo)
@@ -4700,7 +4700,7 @@ noncomputable def «raft__appliedSnapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
     only be called in StateLeader.
 
     go: raft.go:773:16 -/
-noncomputable def «raft__maybeCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.maybeCommit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val wrapDefer)
@@ -4721,7 +4721,7 @@ noncomputable def «raft__maybeCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (Var "$oldf") (Val #()))))))))))))))))
 
 /-- go: raft.go:779:16 -/
-noncomputable def «raft__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.reset.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "term"
   (App (Val exceptionDo)
@@ -4803,7 +4803,7 @@ noncomputable def «raft__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (Val #()))))))))))
 
 /-- go: raft.go:810:16 -/
-noncomputable def «raft__appendEntryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.appendEntry.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "es"
   (App (Val exceptionDo)
@@ -4867,7 +4867,7 @@ noncomputable def «raft__appendEntryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
 /-- tickElection is run by followers and candidates after r.electionTimeout.
 
     go: raft.go:845:16 -/
-noncomputable def «raft__tickElectionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.tickElection.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4905,7 +4905,7 @@ noncomputable def «raft__tickElectionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
 /-- tickHeartbeat is run by leaders to send a MsgBeat after r.heartbeatTimeout.
 
     go: raft.go:857:16 -/
-noncomputable def «raft__tickHeartbeatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.tickHeartbeat.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -4983,7 +4983,7 @@ noncomputable def «raft__tickHeartbeatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef raft go!"heartbeatElapsed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef raft go!"heartbeatElapsed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r")))) (Val #(W64 1)))))))))))))
 
 /-- go: raft.go:886:16 -/
-noncomputable def «raft__becomeFollowerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.becomeFollower.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "term"
   (Lam "lead"
@@ -5026,7 +5026,7 @@ noncomputable def «raft__becomeFollowerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (Val (GoInstruction (GoStore stepFunc))) (Pair (App (Val (GoInstruction (StructFieldRef raft go!"step"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r"))) (Var "$r0"))))))))))))))
 
 /-- go: raft.go:897:16 -/
-noncomputable def «raft__becomeCandidateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.becomeCandidate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -5073,7 +5073,7 @@ noncomputable def «raft__becomeCandidateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (Val #())))))))))
 
 /-- go: raft.go:912:16 -/
-noncomputable def «raft__becomePreCandidateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.becomePreCandidate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -5115,7 +5115,7 @@ noncomputable def «raft__becomePreCandidateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
   (Val #())))))))))
 
 /-- go: raft.go:928:16 -/
-noncomputable def «raft__becomeLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.becomeLeader.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -5194,7 +5194,7 @@ noncomputable def «raft__becomeLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (Val #())))))))))
 
 /-- go: raft.go:968:16 -/
-noncomputable def «raft__hupⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.hup.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "t"
   (App (Val exceptionDo)
@@ -5252,7 +5252,7 @@ noncomputable def «raft__hupⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (Val #()))))))))))
 
 /-- go: raft.go:990:16 -/
-noncomputable def «raft__hasUnappliedConfChangesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.hasUnappliedConfChanges.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -5332,7 +5332,7 @@ noncomputable def «raft__hasUnappliedConfChangesⁱᵐᵖˡ» [FfiSyntax] [GoGl
     called after verifying that this is a legitimate transition.
 
     go: raft.go:1020:16 -/
-noncomputable def «raft__campaignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.campaign.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "t"
   (App (Val exceptionDo)
@@ -5463,7 +5463,7 @@ noncomputable def «raft__campaignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (Val #()))))))))))
 
 /-- go: raft.go:1070:16 -/
-noncomputable def «raft__pollⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.poll.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "id"
   (Lam "t"
@@ -5507,7 +5507,7 @@ noncomputable def «raft__pollⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (App (App (Val (GoInstruction (MethodResolve Logger go!"Infof"))) (App (Val (GoInstruction (GoLoad Logger))) (App (Val (GoInstruction (StructFieldRef raft go!"logger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r"))))) (Var "$a0")) (Var "$a1")))))))))))))))))))
 
 /-- go: raft.go:1080:16 -/
-noncomputable def «raft__Stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.Step.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -5795,7 +5795,7 @@ noncomputable def «raft__Stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (App (App (Val (GoInstruction (FuncResolve traceReceiveMessage []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: raft.go:1262:6 -/
-noncomputable def «stepLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def stepLeader.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -6408,7 +6408,7 @@ noncomputable def «stepLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     whether they respond to MsgVoteResp or MsgPreVoteResp.
 
     go: raft.go:1660:6 -/
-noncomputable def «stepCandidateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def stepCandidate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -6527,7 +6527,7 @@ noncomputable def «stepCandidateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType))) (Pair (Var "myVoteRespType") (Var "$r0")))))))))))))
 
 /-- go: raft.go:1705:6 -/
-noncomputable def «stepFollowerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def stepFollower.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -6716,7 +6716,7 @@ noncomputable def «stepFollowerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- logSliceFromMsgApp extracts the appended logSlice from a MsgApp message.
 
     go: raft.go:1769:6 -/
-noncomputable def «logSliceFromMsgAppⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def logSliceFromMsgApp.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
   (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message)))) (Var "m"))
@@ -6729,7 +6729,7 @@ noncomputable def «logSliceFromMsgAppⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (CompositeLiteral logSlice))) (LiteralValue [(KeyedElement (some (KeyField go!"term")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"prev")) (ElementExpression entryID (Var "$v1"))), (KeyedElement (some (KeyField go!"entries")) (ElementExpression (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry) (Var "$v2")))])))))))))
 
 /-- go: raft.go:1778:16 -/
-noncomputable def «raft__handleAppendEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.handleAppendEntries.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -6834,7 +6834,7 @@ noncomputable def «raft__handleAppendEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
   (App (Val (GoInstruction (GoStore logSlice))) (Pair (Var "a") (Var "$r0")))))))))))))
 
 /-- go: raft.go:1822:16 -/
-noncomputable def «raft__handleHeartbeatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.handleHeartbeat.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -6855,7 +6855,7 @@ noncomputable def «raft__handleHeartbeatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType raftLog) go!"commitTo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raftLog)))) (App (Val (GoInstruction (StructFieldRef raft go!"raftLog"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r"))))) (Var "$a0")))))))))))
 
 /-- go: raft.go:1827:16 -/
-noncomputable def «raft__handleSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.handleSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -6920,7 +6920,7 @@ noncomputable def «raft__handleSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     ignored, either because it was obsolete or because of an error.
 
     go: raft.go:1849:16 -/
-noncomputable def «raft__restoreⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.restore.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "s"
   (App (Val exceptionDo)
@@ -7120,7 +7120,7 @@ noncomputable def «raft__restoreⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     which is true when its own id is in progress list.
 
     go: raft.go:1934:16 -/
-noncomputable def «raft__promotableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.promotable.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7134,7 +7134,7 @@ noncomputable def «raft__promotableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.tracker.Progress)))) (Pair (Var "pr") (Var "$r0")))))))))))
 
 /-- go: raft.go:1939:16 -/
-noncomputable def «raft__applyConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.applyConfChange.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "cc"
   (App (Val exceptionDo)
@@ -7226,7 +7226,7 @@ noncomputable def «raft__applyConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     The inputs usually result from restoring a ConfState or applying a ConfChange.
 
     go: raft.go:1967:16 -/
-noncomputable def «raft__switchToConfigⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.switchToConfig.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "cfg"
   (Lam "trk"
@@ -7342,7 +7342,7 @@ noncomputable def «raft__switchToConfigⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (App (App (Val (GoInstruction (FuncResolve traceConfChangeEvent []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))))
 
 /-- go: raft.go:2025:16 -/
-noncomputable def «raft__loadStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.loadState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "state"
   (App (Val exceptionDo)
@@ -7380,7 +7380,7 @@ noncomputable def «raft__loadStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     [electiontimeout, 2 * electiontimeout - 1].
 
     go: raft.go:2037:16 -/
-noncomputable def «raft__pastElectionTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.pastElectionTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7389,7 +7389,7 @@ noncomputable def «raft__pastElectionTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef raft go!"electionElapsed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r")))) (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef raft go!"randomizedElectionTimeout"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r")))))))))))
 
 /-- go: raft.go:2041:16 -/
-noncomputable def «raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.resetRandomizedElectionTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7403,7 +7403,7 @@ noncomputable def «raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ» [FfiSyntax
   (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef raft go!"randomizedElectionTimeout"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r"))) (Var "$r0"))))))))))
 
 /-- go: raft.go:2045:16 -/
-noncomputable def «raft__sendTimeoutNowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.sendTimeoutNow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "to"
   (App (Val exceptionDo)
@@ -7419,7 +7419,7 @@ noncomputable def «raft__sendTimeoutNowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType raft) go!"send"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r"))) (Var "$a0"))))))))))
 
 /-- go: raft.go:2049:16 -/
-noncomputable def «raft__abortLeaderTransferⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.abortLeaderTransfer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7434,7 +7434,7 @@ noncomputable def «raft__abortLeaderTransferⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
 /-- committedEntryInCurrentTerm return true if the peer has committed an entry in its term.
 
     go: raft.go:2054:16 -/
-noncomputable def «raft__committedEntryInCurrentTermⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.committedEntryInCurrentTerm.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7452,7 +7452,7 @@ noncomputable def «raft__committedEntryInCurrentTermⁱᵐᵖˡ» [FfiSyntax] [
     itself, a blank value will be returned.
 
     go: raft.go:2062:16 -/
-noncomputable def «raft__responseToReadIndexReqⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.responseToReadIndexReq.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "req"
   (Lam "readIndex"
@@ -7492,7 +7492,7 @@ noncomputable def «raft__responseToReadIndexReqⁱᵐᵖˡ» [FfiSyntax] [GoGlo
     entry at a new leader's term, as well as leaving a joint configuration.
 
     go: raft.go:2086:16 -/
-noncomputable def «raft__increaseUncommittedSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.increaseUncommittedSize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "ents"
   (App (Val exceptionDo)
@@ -7520,7 +7520,7 @@ noncomputable def «raft__increaseUncommittedSizeⁱᵐᵖˡ» [FfiSyntax] [GoGl
     the uncommitted entry size limit.
 
     go: raft.go:2104:16 -/
-noncomputable def «raft__reduceUncommittedSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def raft.reduceUncommittedSize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "s"
   (App (Val exceptionDo)
@@ -7537,7 +7537,7 @@ noncomputable def «raft__reduceUncommittedSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlob
   (App (Val (GoInstruction (GoStore entryPayloadSize))) (Pair (App (Val (GoInstruction (StructFieldRef raft go!"uncommittedSize"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoSub entryPayloadSize))) (Pair (App (Val (GoInstruction (GoLoad entryPayloadSize))) (App (Val (GoInstruction (StructFieldRef raft go!"uncommittedSize"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType raft)))) (Var "r")))) (App (Val (GoInstruction (GoLoad entryPayloadSize))) (Var "s"))))))))))))))
 
 /-- go: raft.go:2115:6 -/
-noncomputable def «releasePendingReadIndexMessagesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def releasePendingReadIndexMessages.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (App (Val exceptionDo)
   (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType raft)))) (Var "r"))
@@ -7588,7 +7588,7 @@ noncomputable def «releasePendingReadIndexMessagesⁱᵐᵖˡ» [FfiSyntax] [Go
   (Val #()))))))))
 
 /-- go: raft.go:2134:6 -/
-noncomputable def «sendMsgReadIndexResponseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def sendMsgReadIndexResponse.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "m"
   (App (Val exceptionDo)
@@ -7637,7 +7637,7 @@ noncomputable def «sendMsgReadIndexResponseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
     stores the desired ConfState as its InitialState.
 
     go: rawnode.go:51:6 -/
-noncomputable def «NewRawNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewRawNode.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "config"
   (App (Val exceptionDo)
   (Let "config" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Config)))) (Var "config"))
@@ -7676,7 +7676,7 @@ noncomputable def «NewRawNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- Tick advances the internal logical clock by a single tick.
 
     go: rawnode.go:64:20 -/
-noncomputable def «RawNode__Tickⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.Tick.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7699,7 +7699,7 @@ noncomputable def «RawNode__Tickⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     DEPRECATED: This method will be removed in a future release.
 
     go: rawnode.go:78:20 -/
-noncomputable def «RawNode__TickQuiescedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.TickQuiesced.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7713,7 +7713,7 @@ noncomputable def «RawNode__TickQuiescedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
 /-- Campaign causes this RawNode to transition to candidate state.
 
     go: rawnode.go:83:20 -/
-noncomputable def «RawNode__Campaignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.Campaign.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7726,7 +7726,7 @@ noncomputable def «RawNode__Campaignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
 /-- Propose proposes data be appended to the raft log.
 
     go: rawnode.go:90:20 -/
-noncomputable def «RawNode__Proposeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.Propose.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "data"
   (App (Val exceptionDo)
@@ -7744,7 +7744,7 @@ noncomputable def «RawNode__Proposeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     details.
 
     go: rawnode.go:101:20 -/
-noncomputable def «RawNode__ProposeConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.ProposeConfChange.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "cc"
   (App (Val exceptionDo)
@@ -7779,7 +7779,7 @@ noncomputable def «RawNode__ProposeConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGloba
     the configuration change, in which case no call must take place.
 
     go: rawnode.go:112:20 -/
-noncomputable def «RawNode__ApplyConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.ApplyConfChange.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "cc"
   (App (Val exceptionDo)
@@ -7797,7 +7797,7 @@ noncomputable def «RawNode__ApplyConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
 /-- Step advances the state machine using the given message.
 
     go: rawnode.go:118:20 -/
-noncomputable def «RawNode__Stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.Step.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "m"
   (App (Val exceptionDo)
@@ -7829,7 +7829,7 @@ noncomputable def «RawNode__Stepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     passed back via Advance().
 
     go: rawnode.go:133:20 -/
-noncomputable def «RawNode__Readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.Ready.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7850,7 +7850,7 @@ noncomputable def «RawNode__Readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     is no obligation that the Ready must be handled.
 
     go: rawnode.go:141:20 -/
-noncomputable def «RawNode__readyWithoutAcceptⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.readyWithoutAccept.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -7989,7 +7989,7 @@ noncomputable def «RawNode__readyWithoutAcceptⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     that a synchronous write to persistent storage is required.
 
     go: rawnode.go:193:6 -/
-noncomputable def «MustSyncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MustSync.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "st"
   (Lam "prevst"
   (Lam "entsnum"
@@ -8001,7 +8001,7 @@ noncomputable def «MustSyncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "entsnum")) (Val #(W64 0))))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState go!"Vote"))) (Var "st"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState go!"Vote"))) (Var "prevst"))))))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState go!"Term"))) (Var "st"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState go!"Term"))) (Var "prevst")))))))))))))))
 
 /-- go: rawnode.go:202:6 -/
-noncomputable def «needStorageAppendMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def needStorageAppendMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exceptionDo)
@@ -8015,7 +8015,7 @@ noncomputable def «needStorageAppendMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))))))))
 
 /-- go: rawnode.go:212:6 -/
-noncomputable def «needStorageAppendRespMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def needStorageAppendRespMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exceptionDo)
@@ -8032,7 +8032,7 @@ noncomputable def «needStorageAppendRespMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
     with AsyncStorageWrites.
 
     go: rawnode.go:225:6 -/
-noncomputable def «newStorageAppendMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newStorageAppendMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exceptionDo)
@@ -8103,7 +8103,7 @@ noncomputable def «newStorageAppendMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
     storage.
 
     go: rawnode.go:268:6 -/
-noncomputable def «newStorageAppendRespMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newStorageAppendRespMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exceptionDo)
@@ -8151,7 +8151,7 @@ noncomputable def «newStorageAppendRespMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message))) (Pair (Var "m") (Var "$r0"))))))))))))
 
 /-- go: rawnode.go:368:6 -/
-noncomputable def «needStorageApplyMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def needStorageApplyMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rd"
   (App (Val exceptionDo)
   (Let "rd" (App (Val (GoInstruction (GoAlloc Ready))) (Var "rd"))
@@ -8160,7 +8160,7 @@ noncomputable def «needStorageApplyMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)]))) (Val #())) (Var "$a0"))) (Val #(W64 0))))))))
 
 /-- go: rawnode.go:369:6 -/
-noncomputable def «needStorageApplyRespMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def needStorageApplyRespMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rd"
   (App (Val exceptionDo)
   (Let "rd" (App (Val (GoInstruction (GoAlloc Ready))) (Var "rd"))
@@ -8174,7 +8174,7 @@ noncomputable def «needStorageApplyRespMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
     message is processed. Used with AsyncStorageWrites.
 
     go: rawnode.go:375:6 -/
-noncomputable def «newStorageApplyMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newStorageApplyMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "rd"
   (App (Val exceptionDo)
@@ -8202,7 +8202,7 @@ noncomputable def «newStorageApplyMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
     prior Ready structs) have been applied to the local state machine.
 
     go: rawnode.go:392:6 -/
-noncomputable def «newStorageApplyRespMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newStorageApplyRespMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "ents"
   (App (Val exceptionDo)
@@ -8221,7 +8221,7 @@ noncomputable def «newStorageApplyRespMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
     this call and the prior call to Ready().
 
     go: rawnode.go:405:20 -/
-noncomputable def «RawNode__acceptReadyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.acceptReady.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "rd"
   (App (Val exceptionDo)
@@ -8365,7 +8365,7 @@ noncomputable def «RawNode__acceptReadyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     stable storage.
 
     go: rawnode.go:448:20 -/
-noncomputable def «RawNode__applyUnstableEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.applyUnstableEntries.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8376,7 +8376,7 @@ noncomputable def «RawNode__applyUnstableEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGl
 /-- HasReady called when RawNode user need to check if any Ready pending.
 
     go: rawnode.go:453:20 -/
-noncomputable def «RawNode__HasReadyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.HasReady.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8450,7 +8450,7 @@ noncomputable def «RawNode__HasReadyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
     the local append and apply threads take its place.
 
     go: rawnode.go:482:20 -/
-noncomputable def «RawNode__Advanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.Advance.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8496,7 +8496,7 @@ noncomputable def «RawNode__Advanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     BasicStatus and WithProgress for allocation-friendlier choices.
 
     go: rawnode.go:498:20 -/
-noncomputable def «RawNode__Statusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.Status.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8514,7 +8514,7 @@ noncomputable def «RawNode__Statusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     Progress map; see WithProgress for an allocation-free way to inspect it.
 
     go: rawnode.go:505:20 -/
-noncomputable def «RawNode__BasicStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.BasicStatus.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8527,7 +8527,7 @@ noncomputable def «RawNode__BasicStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     peers.
 
     go: rawnode.go:521:20 -/
-noncomputable def «RawNode__WithProgressⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.WithProgress.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "visitor"
   (App (Val exceptionDo)
@@ -8576,7 +8576,7 @@ noncomputable def «RawNode__WithProgressⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
 /-- ReportUnreachable reports the given node is not reachable for the last send.
 
     go: rawnode.go:534:20 -/
-noncomputable def «RawNode__ReportUnreachableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.ReportUnreachable.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "id"
   (App (Val exceptionDo)
@@ -8595,7 +8595,7 @@ noncomputable def «RawNode__ReportUnreachableⁱᵐᵖˡ» [FfiSyntax] [GoGloba
 /-- ReportSnapshot reports the status of the sent snapshot.
 
     go: rawnode.go:539:20 -/
-noncomputable def «RawNode__ReportSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.ReportSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "id"
   (Lam "status"
@@ -8622,7 +8622,7 @@ noncomputable def «RawNode__ReportSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
 /-- TransferLeader tries to transfer leadership to the given transferee.
 
     go: rawnode.go:546:20 -/
-noncomputable def «RawNode__TransferLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.TransferLeader.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "transferee"
   (App (Val exceptionDo)
@@ -8642,7 +8642,7 @@ noncomputable def «RawNode__TransferLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
     See (Node).ForgetLeader for details.
 
     go: rawnode.go:552:20 -/
-noncomputable def «RawNode__ForgetLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.ForgetLeader.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8658,7 +8658,7 @@ noncomputable def «RawNode__ForgetLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     processed safely. The read state will have the same rctx attached.
 
     go: rawnode.go:560:20 -/
-noncomputable def «RawNode__ReadIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RawNode.ReadIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rn"
   (Lam "rctx"
   (App (Val exceptionDo)
@@ -8676,7 +8676,7 @@ noncomputable def «RawNode__ReadIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (Var "$r0")))))))))
 
 /-- go: read_only.go:49:6 -/
-noncomputable def «newReadOnlyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newReadOnly.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "option"
   (App (Val exceptionDo)
   (Let "option" (App (Val (GoInstruction (GoAlloc ReadOnlyOption))) (Var "option"))
@@ -8691,7 +8691,7 @@ noncomputable def «newReadOnlyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     `req` is the original read only request message from the local or remote node.
 
     go: read_only.go:60:21 -/
-noncomputable def «readOnly__addRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def readOnly.addRequest.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam "commitIndex"
   (Lam "req"
@@ -8714,7 +8714,7 @@ noncomputable def «readOnly__addRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
 /-- recvAck notifies the `readOnly` of an acknowledgment of a heartbeat response.
 
     go: read_only.go:65:21 -/
-noncomputable def «readOnly__recvAckⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def readOnly.recvAck.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam "from"
   (Lam "ctx"
@@ -8739,7 +8739,7 @@ noncomputable def «readOnly__recvAckⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
 /-- AckedIndex allows for using `CommittedIndex` in `maybeAdvance`.
 
     go: read_only.go:72:21 -/
-noncomputable def «readOnly__AckedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def readOnly.AckedIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam "voterID"
   (App (Val exceptionDo)
@@ -8765,7 +8765,7 @@ noncomputable def «readOnly__AckedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     configuration to confirm and return as many unconfirmed reads as possible.
 
     go: read_only.go:79:21 -/
-noncomputable def «readOnly__maybeAdvanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def readOnly.maybeAdvance.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam "c"
   (App (Val exceptionDo)
@@ -8805,7 +8805,7 @@ noncomputable def «readOnly__maybeAdvanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
     all currently unconfirmed reads.
 
     go: read_only.go:93:21 -/
-noncomputable def «readOnly__heartbeatCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def readOnly.heartbeatCtx.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ro"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8837,28 +8837,28 @@ noncomputable def «readOnly__heartbeatCtxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (Val #()))))))))
 
 /-- go: state_trace_nop.go:30:6 -/
-noncomputable def «traceInitStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceInitState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:32:6 -/
-noncomputable def «traceReadyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceReady.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:34:6 -/
-noncomputable def «traceCommitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceCommit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:36:6 -/
-noncomputable def «traceReplicateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceReplicate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8866,28 +8866,28 @@ noncomputable def «traceReplicateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
   (Val #())))))
 
 /-- go: state_trace_nop.go:38:6 -/
-noncomputable def «traceBecomeFollowerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceBecomeFollower.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:40:6 -/
-noncomputable def «traceBecomeCandidateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceBecomeCandidate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:42:6 -/
-noncomputable def «traceBecomeLeaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceBecomeLeader.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))
 
 /-- go: state_trace_nop.go:44:6 -/
-noncomputable def «traceChangeConfEventⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceChangeConfEvent.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8895,7 +8895,7 @@ noncomputable def «traceChangeConfEventⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (Val #())))))
 
 /-- go: state_trace_nop.go:46:6 -/
-noncomputable def «traceConfChangeEventⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceConfChangeEvent.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8903,7 +8903,7 @@ noncomputable def «traceConfChangeEventⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
   (Val #())))))
 
 /-- go: state_trace_nop.go:48:6 -/
-noncomputable def «traceSendMessageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceSendMessage.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8911,7 +8911,7 @@ noncomputable def «traceSendMessageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (Val #())))))
 
 /-- go: state_trace_nop.go:50:6 -/
-noncomputable def «traceReceiveMessageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def traceReceiveMessage.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -8919,7 +8919,7 @@ noncomputable def «traceReceiveMessageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (Val #())))))
 
 /-- go: status.go:44:6 -/
-noncomputable def «getProgressCopyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def getProgressCopy.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (App (Val exceptionDo)
   (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType raft)))) (Var "r"))
@@ -8959,7 +8959,7 @@ noncomputable def «getProgressCopyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 _root_.Perennial.go_etcd_io.raft.v3.tracker.Progress)))) (Pair (Var "m") (Var "$r0"))))))))))
 
 /-- go: status.go:56:6 -/
-noncomputable def «getBasicStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def getBasicStatus.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (App (Val exceptionDo)
   (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType raft)))) (Var "r"))
@@ -8988,7 +8988,7 @@ noncomputable def «getBasicStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- getStatus gets a copy of the current raft status.
 
     go: status.go:68:6 -/
-noncomputable def «getStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def getStatus.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (App (Val exceptionDo)
   (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType raft)))) (Var "r"))
@@ -9017,7 +9017,7 @@ noncomputable def «getStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
     TODO: try to simplify this by introducing ID type into raft
 
     go: status.go:80:17 -/
-noncomputable def «Status__MarshalJSONⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Status.MarshalJSON.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9082,7 +9082,7 @@ noncomputable def «Status__MarshalJSONⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "j") (Var "$r0")))))))))))
 
 /-- go: status.go:99:17 -/
-noncomputable def «Status__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Status.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9115,7 +9115,7 @@ noncomputable def «Status__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- NewMemoryStorage creates an empty MemoryStorage.
 
     go: storage.go:113:6 -/
-noncomputable def «NewMemoryStorageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewMemoryStorage.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -9125,7 +9125,7 @@ noncomputable def «NewMemoryStorageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- InitialState implements the Storage interface.
 
     go: storage.go:121:26 -/
-noncomputable def «MemoryStorage__InitialStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.InitialState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9139,7 +9139,7 @@ noncomputable def «MemoryStorage__InitialStateⁱᵐᵖˡ» [FfiSyntax] [GoGlob
 /-- SetHardState saves the current HardState.
 
     go: storage.go:127:26 -/
-noncomputable def «MemoryStorage__SetHardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.SetHardState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "st"
   (App (Val wrapDefer)
@@ -9166,7 +9166,7 @@ noncomputable def «MemoryStorage__SetHardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlob
 /-- Entries implements the Storage interface.
 
     go: storage.go:135:26 -/
-noncomputable def «MemoryStorage__Entriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.Entries.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "lo"
   (Lam "hi"
@@ -9235,7 +9235,7 @@ noncomputable def «MemoryStorage__Entriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
 /-- Term implements the Storage interface.
 
     go: storage.go:159:26 -/
-noncomputable def «MemoryStorage__Termⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.Term.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "i"
   (App (Val wrapDefer)
@@ -9279,7 +9279,7 @@ noncomputable def «MemoryStorage__Termⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
 /-- LastIndex implements the Storage interface.
 
     go: storage.go:174:26 -/
-noncomputable def «MemoryStorage__LastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.LastIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val wrapDefer)
@@ -9302,7 +9302,7 @@ noncomputable def «MemoryStorage__LastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType MemoryStorage) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType MemoryStorage)))) (Var "ms"))) (Val #())))))))))
 
 /-- go: storage.go:181:26 -/
-noncomputable def «MemoryStorage__lastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.lastIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9314,7 +9314,7 @@ noncomputable def «MemoryStorage__lastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
 /-- FirstIndex implements the Storage interface.
 
     go: storage.go:186:26 -/
-noncomputable def «MemoryStorage__FirstIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.FirstIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val wrapDefer)
@@ -9337,7 +9337,7 @@ noncomputable def «MemoryStorage__FirstIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType MemoryStorage) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType MemoryStorage)))) (Var "ms"))) (Val #())))))))))
 
 /-- go: storage.go:193:26 -/
-noncomputable def «MemoryStorage__firstIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.firstIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9348,7 +9348,7 @@ noncomputable def «MemoryStorage__firstIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
 /-- Snapshot implements the Storage interface.
 
     go: storage.go:198:26 -/
-noncomputable def «MemoryStorage__Snapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.Snapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam BAnon
   (App (Val wrapDefer)
@@ -9374,7 +9374,7 @@ noncomputable def «MemoryStorage__Snapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
     those of the given snapshot.
 
     go: storage.go:207:26 -/
-noncomputable def «MemoryStorage__ApplySnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.ApplySnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "snap"
   (App (Val wrapDefer)
@@ -9426,7 +9426,7 @@ noncomputable def «MemoryStorage__ApplySnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlo
     the result of the last ApplyConfChange must be passed in.
 
     go: storage.go:230:26 -/
-noncomputable def «MemoryStorage__CreateSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.CreateSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "i"
   (Lam "cs"
@@ -9495,7 +9495,7 @@ noncomputable def «MemoryStorage__CreateSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGl
     greater than raftLog.applied.
 
     go: storage.go:254:26 -/
-noncomputable def «MemoryStorage__Compactⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.Compact.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "compactIndex"
   (App (Val wrapDefer)
@@ -9571,7 +9571,7 @@ noncomputable def «MemoryStorage__Compactⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
     entries[0].Index > ms.entries[0].Index
 
     go: storage.go:280:26 -/
-noncomputable def «MemoryStorage__Appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MemoryStorage.Append.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ms"
   (Lam "entries"
   (App (Val wrapDefer)
@@ -9654,7 +9654,7 @@ noncomputable def «MemoryStorage__Appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
 /-- pbEntryID returns the ID of the given pb.Entry.
 
     go: types.go:34:6 -/
-noncomputable def «pbEntryIDⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def pbEntryID.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "entry"
   (App (Val exceptionDo)
   (Let "entry" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)))) (Var "entry"))
@@ -9667,7 +9667,7 @@ noncomputable def «pbEntryIDⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
     prev.index if there are no entries.
 
     go: types.go:78:19 -/
-noncomputable def «logSlice__lastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def logSlice.lastIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9680,7 +9680,7 @@ noncomputable def «logSlice__lastIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
     there are no entries.
 
     go: types.go:84:19 -/
-noncomputable def «logSlice__lastEntryIDⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def logSlice.lastEntryID.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9705,7 +9705,7 @@ noncomputable def «logSlice__lastEntryIDⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     comment for details on what constitutes a valid raft log slice.
 
     go: types.go:93:19 -/
-noncomputable def «logSlice__validⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def logSlice.valid.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9758,7 +9758,7 @@ noncomputable def «logSlice__validⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore entryID))) (Pair (Var "prev") (Var "$r0")))))))))))
 
 /-- go: util.go:25:21 -/
-noncomputable def «StateType__MarshalJSONⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def StateType.MarshalJSON.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "st"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -9770,7 +9770,7 @@ noncomputable def «StateType__MarshalJSONⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1"))))) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))))
 
 /-- go: util.go:52:6 -/
-noncomputable def «isMsgInArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def isMsgInArray.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "msgt"
   (Lam "arr"
   (App (Val exceptionDo)
@@ -9786,7 +9786,7 @@ noncomputable def «isMsgInArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: util.go:57:6 -/
-noncomputable def «IsLocalMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def IsLocalMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "msgt"
   (App (Val exceptionDo)
   (Let "msgt" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType))) (Var "msgt"))
@@ -9797,7 +9797,7 @@ noncomputable def «IsLocalMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (App (App (Val (GoInstruction (FuncResolve isMsgInArray []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:61:6 -/
-noncomputable def «IsResponseMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def IsResponseMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "msgt"
   (App (Val exceptionDo)
   (Let "msgt" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType))) (Var "msgt"))
@@ -9808,7 +9808,7 @@ noncomputable def «IsResponseMsgⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (App (App (Val (GoInstruction (FuncResolve isMsgInArray []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:65:6 -/
-noncomputable def «IsLocalMsgTargetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def IsLocalMsgTarget.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "id"
   (App (Val exceptionDo)
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
@@ -9818,7 +9818,7 @@ noncomputable def «IsLocalMsgTargetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
 /-- voteResponseType maps vote and prevote message types to their corresponding responses.
 
     go: util.go:70:6 -/
-noncomputable def «voteRespMsgTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def voteRespMsgType.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "msgt"
   (App (Val exceptionDo)
   (Let "msgt" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType))) (Var "msgt"))
@@ -9837,7 +9837,7 @@ noncomputable def «voteRespMsgTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))))
 
 /-- go: util.go:81:6 -/
-noncomputable def «DescribeHardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DescribeHardState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hs"
   (App (Val exceptionDo)
   (Let "hs" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState))) (Var "hs"))
@@ -9870,7 +9870,7 @@ noncomputable def «DescribeHardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Fprintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))
 
 /-- go: util.go:91:6 -/
-noncomputable def «DescribeSoftStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DescribeSoftState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ss"
   (App (Val exceptionDo)
   (Let "ss" (App (Val (GoInstruction (GoAlloc SoftState))) (Var "ss"))
@@ -9882,7 +9882,7 @@ noncomputable def «DescribeSoftStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:95:6 -/
-noncomputable def «DescribeConfStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DescribeConfState.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "state"
   (App (Val exceptionDo)
   (Let "state" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState))) (Var "state"))
@@ -9897,7 +9897,7 @@ noncomputable def «DescribeConfStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:102:6 -/
-noncomputable def «DescribeSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DescribeSnapshot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "snap"
   (App (Val exceptionDo)
   (Let "snap" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot))) (Var "snap"))
@@ -9916,7 +9916,7 @@ noncomputable def «DescribeSnapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.SnapshotMetadata))) (Pair (Var "m") (Var "$r0"))))))))))
 
 /-- go: util.go:107:6 -/
-noncomputable def «DescribeReadyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DescribeReady.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rd"
   (Lam "f"
   (App (Val exceptionDo)
@@ -10056,7 +10056,7 @@ noncomputable def «DescribeReadyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     Message for debugging.
 
     go: util.go:150:6 -/
-noncomputable def «DescribeMessageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DescribeMessage.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "f"
   (App (Val exceptionDo)
@@ -10069,7 +10069,7 @@ noncomputable def «DescribeMessageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (App (App (App (Val (GoInstruction (FuncResolve describeMessageWithIndent []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))
 
 /-- go: util.go:154:6 -/
-noncomputable def «describeMessageWithIndentⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def describeMessageWithIndent.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "indent"
   (Lam "m"
   (Lam "f"
@@ -10239,7 +10239,7 @@ noncomputable def «describeMessageWithIndentⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
   (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Fprintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))))))
 
 /-- go: util.go:191:6 -/
-noncomputable def «describeTargetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def describeTarget.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "id"
   (App (Val exceptionDo)
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
@@ -10263,7 +10263,7 @@ noncomputable def «describeTargetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     Entry for debugging.
 
     go: util.go:206:6 -/
-noncomputable def «DescribeEntryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DescribeEntry.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "f"
   (App (Val exceptionDo)
@@ -10355,7 +10355,7 @@ noncomputable def «DescribeEntryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     each.
 
     go: util.go:244:6 -/
-noncomputable def «DescribeEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DescribeEntries.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ents"
   (Lam "f"
   (App (Val exceptionDo)
@@ -10391,7 +10391,7 @@ noncomputable def «DescribeEntriesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry))) (Pair (Var "e") (Var "$value")))))))))))))))))
 
 /-- go: util.go:256:6 -/
-noncomputable def «entsSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def entsSize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ents"
   (App (Val exceptionDo)
   (Let "ents" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)))) (Var "ents"))
@@ -10419,7 +10419,7 @@ noncomputable def «entsSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     entry exceeds maxSize, a non-empty slice with just this entry is returned.
 
     go: util.go:268:6 -/
-noncomputable def «limitSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def limitSize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ents"
   (Lam "maxSize"
   (App (Val exceptionDo)
@@ -10464,7 +10464,7 @@ noncomputable def «limitSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- payloadSize is the size of the payload of the provided entry.
 
     go: util.go:289:6 -/
-noncomputable def «payloadSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def payloadSize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (App (Val exceptionDo)
   (Let "e" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry))) (Var "e"))
@@ -10475,7 +10475,7 @@ noncomputable def «payloadSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- payloadsSize is the size of the payloads of the provided entries.
 
     go: util.go:294:6 -/
-noncomputable def «payloadsSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def payloadsSize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ents"
   (App (Val exceptionDo)
   (Let "ents" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)))) (Var "ents"))
@@ -10499,7 +10499,7 @@ noncomputable def «payloadsSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry))) (Pair (Var "e") (Var "$value")))))))))))))))
 
 /-- go: util.go:302:6 -/
-noncomputable def «assertConfStatesEquivalentⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def assertConfStatesEquivalent.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "cs1"
   (Lam "cs2"
@@ -10535,7 +10535,7 @@ noncomputable def «assertConfStatesEquivalentⁱᵐᵖˡ» [FfiSyntax] [GoGloba
     append to dst, so there is no sense in allocating more than needed.
 
     go: util.go:316:6 -/
-noncomputable def «extendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def extend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "dst"
   (Lam "vals"
   (App (Val exceptionDo)
@@ -10802,25 +10802,25 @@ namespace Storage
 abbrev t [FfiSyntax] : Type := interface.t
 end Storage
 
-@[reducible] def «Storageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Storage.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Entries" (go.signature.Signature [go.uint64, go.uint64, go.uint64] false [(go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry), go.error])), (go.InterfaceElem.MethodElem go!"FirstIndex" (go.signature.Signature [] false [go.uint64, go.error])), (go.InterfaceElem.MethodElem go!"InitialState" (go.signature.Signature [] false [_root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState, _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState, go.error])), (go.InterfaceElem.MethodElem go!"LastIndex" (go.signature.Signature [] false [go.uint64, go.error])), (go.InterfaceElem.MethodElem go!"Snapshot" (go.signature.Signature [] false [_root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot, go.error])), (go.InterfaceElem.MethodElem go!"Term" (go.signature.Signature [go.uint64] false [go.uint64, go.error]))])
 
-class Storage_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Storage_underlying : go.UnderlyingDirectedEq Storage «Storageⁱᵐᵖˡ»
+class Storage.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Storage Storage.underlying
 
-attribute [instance] Storage_Assumptions.Storage_underlying
+attribute [instance] Storage.TypeAssumptions.underlying
 
 namespace Logger
 abbrev t [FfiSyntax] : Type := interface.t
 end Logger
 
-@[reducible] def «Loggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Logger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Debug" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Debugf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Fatal" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Fatalf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Info" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Infof" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Panic" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Panicf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Warning" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Warningf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true []))])
 
-class Logger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Logger_underlying : go.UnderlyingDirectedEq Logger «Loggerⁱᵐᵖˡ»
+class Logger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Logger Logger.underlying
 
-attribute [instance] Logger_Assumptions.Logger_underlying
+attribute [instance] Logger.TypeAssumptions.underlying
 
 namespace unstable
 structure t [FfiSyntax] where
@@ -10836,7 +10836,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end unstable
 
-@[reducible] def unstable'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def unstable.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"snapshot" (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot)),
 (go.field_decl.FieldDecl go!"entries" (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)),
 (go.field_decl.FieldDecl go!"offset" go.uint64),
@@ -10844,84 +10844,84 @@ end unstable
 (go.field_decl.FieldDecl go!"offsetInProgress" go.uint64),
 (go.field_decl.FieldDecl go!"logger" Logger)]
 
-@[irreducible] def unstable'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  unstable'fds_unsealed
+@[irreducible] def unstable.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  unstable.fieldsUnsealed
 
 instance equals_unfold_unstable [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold unstable'fds unstable'fds_unsealed :=
-  ⟨by unfold unstable'fds; rfl⟩
+    EqualsUnfold unstable.fields unstable.fieldsUnsealed :=
+  ⟨by unfold unstable.fields; rfl⟩
 
-@[reducible] def «unstableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType unstable'fds)
+@[reducible] def unstable.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType unstable.fields)
 
-class unstable_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  unstable_type_repr : go.TypeReprUnderlying «unstableⁱᵐᵖˡ» unstable.t
-  unstable_underlying : go.UnderlyingDirectedEq unstable «unstableⁱᵐᵖˡ»
-  unstable_get_snapshot : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet «unstableⁱᵐᵖˡ» go!"snapshot") #x (Val #(x.snapshot'))
-  unstable_set_snapshot : ∀ (x : unstable.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «unstableⁱᵐᵖˡ» go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : unstable.t)))
-  unstable_get_entries : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet «unstableⁱᵐᵖˡ» go!"entries") #x (Val #(x.entries'))
-  unstable_set_entries : ∀ (x : unstable.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «unstableⁱᵐᵖˡ» go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : unstable.t)))
-  unstable_get_offset : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet «unstableⁱᵐᵖˡ» go!"offset") #x (Val #(x.offset'))
-  unstable_set_offset : ∀ (x : unstable.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «unstableⁱᵐᵖˡ» go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : unstable.t)))
-  unstable_get_snapshotInProgress : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet «unstableⁱᵐᵖˡ» go!"snapshotInProgress") #x (Val #(x.snapshotInProgress'))
-  unstable_set_snapshotInProgress : ∀ (x : unstable.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «unstableⁱᵐᵖˡ» go!"snapshotInProgress") (PairV #x #y) (Val #(({ x with snapshotInProgress' := y } : unstable.t)))
-  unstable_get_offsetInProgress : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet «unstableⁱᵐᵖˡ» go!"offsetInProgress") #x (Val #(x.offsetInProgress'))
-  unstable_set_offsetInProgress : ∀ (x : unstable.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «unstableⁱᵐᵖˡ» go!"offsetInProgress") (PairV #x #y) (Val #(({ x with offsetInProgress' := y } : unstable.t)))
-  unstable_get_logger : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet «unstableⁱᵐᵖˡ» go!"logger") #x (Val #(x.logger'))
-  unstable_set_logger : ∀ (x : unstable.t) (y : Logger.t), go.IsGoStepPureDetTagged under (StructFieldSet «unstableⁱᵐᵖˡ» go!"logger") (PairV #x #y) (Val #(({ x with logger' := y } : unstable.t)))
-  unstable'ptr_acceptInProgress_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"acceptInProgress" «unstable__acceptInProgressⁱᵐᵖˡ»
-  unstable'ptr_maybeFirstIndex_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"maybeFirstIndex" «unstable__maybeFirstIndexⁱᵐᵖˡ»
-  unstable'ptr_maybeLastIndex_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"maybeLastIndex" «unstable__maybeLastIndexⁱᵐᵖˡ»
-  unstable'ptr_maybeTerm_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"maybeTerm" «unstable__maybeTermⁱᵐᵖˡ»
-  unstable'ptr_mustCheckOutOfBounds_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"mustCheckOutOfBounds" «unstable__mustCheckOutOfBoundsⁱᵐᵖˡ»
-  unstable'ptr_nextEntries_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"nextEntries" «unstable__nextEntriesⁱᵐᵖˡ»
-  unstable'ptr_nextSnapshot_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"nextSnapshot" «unstable__nextSnapshotⁱᵐᵖˡ»
-  unstable'ptr_restore_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"restore" «unstable__restoreⁱᵐᵖˡ»
-  unstable'ptr_shrinkEntriesArray_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"shrinkEntriesArray" «unstable__shrinkEntriesArrayⁱᵐᵖˡ»
-  unstable'ptr_slice_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"slice" «unstable__sliceⁱᵐᵖˡ»
-  unstable'ptr_stableSnapTo_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"stableSnapTo" «unstable__stableSnapToⁱᵐᵖˡ»
-  unstable'ptr_stableTo_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"stableTo" «unstable__stableToⁱᵐᵖˡ»
-  unstable'ptr_truncateAndAppend_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"truncateAndAppend" «unstable__truncateAndAppendⁱᵐᵖˡ»
+class unstable.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying unstable.underlying unstable.t
+  underlying : go.UnderlyingDirectedEq unstable unstable.underlying
+  get_snapshot : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"snapshot") #x (Val #(x.snapshot'))
+  set_snapshot : ∀ (x : unstable.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : unstable.t)))
+  get_entries : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"entries") #x (Val #(x.entries'))
+  set_entries : ∀ (x : unstable.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : unstable.t)))
+  get_offset : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"offset") #x (Val #(x.offset'))
+  set_offset : ∀ (x : unstable.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : unstable.t)))
+  get_snapshotInProgress : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"snapshotInProgress") #x (Val #(x.snapshotInProgress'))
+  set_snapshotInProgress : ∀ (x : unstable.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"snapshotInProgress") (PairV #x #y) (Val #(({ x with snapshotInProgress' := y } : unstable.t)))
+  get_offsetInProgress : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"offsetInProgress") #x (Val #(x.offsetInProgress'))
+  set_offsetInProgress : ∀ (x : unstable.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"offsetInProgress") (PairV #x #y) (Val #(({ x with offsetInProgress' := y } : unstable.t)))
+  get_logger : ∀ (x : unstable.t), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"logger") #x (Val #(x.logger'))
+  set_logger : ∀ (x : unstable.t) (y : Logger.t), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"logger") (PairV #x #y) (Val #(({ x with logger' := y } : unstable.t)))
+  ptr_acceptInProgress_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"acceptInProgress" unstable.acceptInProgress.impl
+  ptr_maybeFirstIndex_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"maybeFirstIndex" unstable.maybeFirstIndex.impl
+  ptr_maybeLastIndex_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"maybeLastIndex" unstable.maybeLastIndex.impl
+  ptr_maybeTerm_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"maybeTerm" unstable.maybeTerm.impl
+  ptr_mustCheckOutOfBounds_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"mustCheckOutOfBounds" unstable.mustCheckOutOfBounds.impl
+  ptr_nextEntries_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"nextEntries" unstable.nextEntries.impl
+  ptr_nextSnapshot_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"nextSnapshot" unstable.nextSnapshot.impl
+  ptr_restore_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"restore" unstable.restore.impl
+  ptr_shrinkEntriesArray_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"shrinkEntriesArray" unstable.shrinkEntriesArray.impl
+  ptr_slice_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"slice" unstable.slice.impl
+  ptr_stableSnapTo_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"stableSnapTo" unstable.stableSnapTo.impl
+  ptr_stableTo_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"stableTo" unstable.stableTo.impl
+  ptr_truncateAndAppend_unfold : MethodUnfold (go.GoType.PointerType unstable) go!"truncateAndAppend" unstable.truncateAndAppend.impl
 
-attribute [instance] unstable_Assumptions.unstable_type_repr
-  unstable_Assumptions.unstable_underlying
-  unstable_Assumptions.unstable_get_snapshot
-  unstable_Assumptions.unstable_set_snapshot
-  unstable_Assumptions.unstable_get_entries
-  unstable_Assumptions.unstable_set_entries
-  unstable_Assumptions.unstable_get_offset
-  unstable_Assumptions.unstable_set_offset
-  unstable_Assumptions.unstable_get_snapshotInProgress
-  unstable_Assumptions.unstable_set_snapshotInProgress
-  unstable_Assumptions.unstable_get_offsetInProgress
-  unstable_Assumptions.unstable_set_offsetInProgress
-  unstable_Assumptions.unstable_get_logger
-  unstable_Assumptions.unstable_set_logger
-  unstable_Assumptions.unstable'ptr_acceptInProgress_unfold
-  unstable_Assumptions.unstable'ptr_maybeFirstIndex_unfold
-  unstable_Assumptions.unstable'ptr_maybeLastIndex_unfold
-  unstable_Assumptions.unstable'ptr_maybeTerm_unfold
-  unstable_Assumptions.unstable'ptr_mustCheckOutOfBounds_unfold
-  unstable_Assumptions.unstable'ptr_nextEntries_unfold
-  unstable_Assumptions.unstable'ptr_nextSnapshot_unfold
-  unstable_Assumptions.unstable'ptr_restore_unfold
-  unstable_Assumptions.unstable'ptr_shrinkEntriesArray_unfold
-  unstable_Assumptions.unstable'ptr_slice_unfold
-  unstable_Assumptions.unstable'ptr_stableSnapTo_unfold
-  unstable_Assumptions.unstable'ptr_stableTo_unfold
-  unstable_Assumptions.unstable'ptr_truncateAndAppend_unfold
+attribute [instance] unstable.TypeAssumptions.type_repr
+  unstable.TypeAssumptions.underlying
+  unstable.TypeAssumptions.get_snapshot
+  unstable.TypeAssumptions.set_snapshot
+  unstable.TypeAssumptions.get_entries
+  unstable.TypeAssumptions.set_entries
+  unstable.TypeAssumptions.get_offset
+  unstable.TypeAssumptions.set_offset
+  unstable.TypeAssumptions.get_snapshotInProgress
+  unstable.TypeAssumptions.set_snapshotInProgress
+  unstable.TypeAssumptions.get_offsetInProgress
+  unstable.TypeAssumptions.set_offsetInProgress
+  unstable.TypeAssumptions.get_logger
+  unstable.TypeAssumptions.set_logger
+  unstable.TypeAssumptions.ptr_acceptInProgress_unfold
+  unstable.TypeAssumptions.ptr_maybeFirstIndex_unfold
+  unstable.TypeAssumptions.ptr_maybeLastIndex_unfold
+  unstable.TypeAssumptions.ptr_maybeTerm_unfold
+  unstable.TypeAssumptions.ptr_mustCheckOutOfBounds_unfold
+  unstable.TypeAssumptions.ptr_nextEntries_unfold
+  unstable.TypeAssumptions.ptr_nextSnapshot_unfold
+  unstable.TypeAssumptions.ptr_restore_unfold
+  unstable.TypeAssumptions.ptr_shrinkEntriesArray_unfold
+  unstable.TypeAssumptions.ptr_slice_unfold
+  unstable.TypeAssumptions.ptr_stableSnapTo_unfold
+  unstable.TypeAssumptions.ptr_stableTo_unfold
+  unstable.TypeAssumptions.ptr_truncateAndAppend_unfold
 
 namespace entryEncodingSize
 abbrev t [FfiSyntax] : Type := w64
 end entryEncodingSize
 
-@[reducible] def «entryEncodingSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def entryEncodingSize.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class entryEncodingSize_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  entryEncodingSize_underlying : go.UnderlyingDirectedEq entryEncodingSize «entryEncodingSizeⁱᵐᵖˡ»
+class entryEncodingSize.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq entryEncodingSize entryEncodingSize.underlying
 
-attribute [instance] entryEncodingSize_Assumptions.entryEncodingSize_underlying
+attribute [instance] entryEncodingSize.TypeAssumptions.underlying
 
 namespace raftLog
 structure t [FfiSyntax] where
@@ -10940,7 +10940,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end raftLog
 
-@[reducible] def raftLog'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def raftLog.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"storage" Storage),
 (go.field_decl.FieldDecl go!"unstable" unstable),
 (go.field_decl.FieldDecl go!"committed" go.uint64),
@@ -10951,128 +10951,128 @@ end raftLog
 (go.field_decl.FieldDecl go!"applyingEntsSize" entryEncodingSize),
 (go.field_decl.FieldDecl go!"applyingEntsPaused" go.bool)]
 
-@[irreducible] def raftLog'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  raftLog'fds_unsealed
+@[irreducible] def raftLog.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  raftLog.fieldsUnsealed
 
 instance equals_unfold_raftLog [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold raftLog'fds raftLog'fds_unsealed :=
-  ⟨by unfold raftLog'fds; rfl⟩
+    EqualsUnfold raftLog.fields raftLog.fieldsUnsealed :=
+  ⟨by unfold raftLog.fields; rfl⟩
 
-@[reducible] def «raftLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType raftLog'fds)
+@[reducible] def raftLog.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType raftLog.fields)
 
-class raftLog_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  raftLog_type_repr : go.TypeReprUnderlying «raftLogⁱᵐᵖˡ» raftLog.t
-  raftLog_underlying : go.UnderlyingDirectedEq raftLog «raftLogⁱᵐᵖˡ»
-  raftLog_get_storage : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"storage") #x (Val #(x.storage'))
-  raftLog_set_storage : ∀ (x : raftLog.t) (y : Storage.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"storage") (PairV #x #y) (Val #(({ x with storage' := y } : raftLog.t)))
-  raftLog_get_unstable : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"unstable") #x (Val #(x.unstable'))
-  raftLog_set_unstable : ∀ (x : raftLog.t) (y : unstable.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"unstable") (PairV #x #y) (Val #(({ x with unstable' := y } : raftLog.t)))
-  raftLog_get_committed : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"committed") #x (Val #(x.committed'))
-  raftLog_set_committed : ∀ (x : raftLog.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"committed") (PairV #x #y) (Val #(({ x with committed' := y } : raftLog.t)))
-  raftLog_get_applying : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"applying") #x (Val #(x.applying'))
-  raftLog_set_applying : ∀ (x : raftLog.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"applying") (PairV #x #y) (Val #(({ x with applying' := y } : raftLog.t)))
-  raftLog_get_applied : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"applied") #x (Val #(x.applied'))
-  raftLog_set_applied : ∀ (x : raftLog.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"applied") (PairV #x #y) (Val #(({ x with applied' := y } : raftLog.t)))
-  raftLog_get_logger : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"logger") #x (Val #(x.logger'))
-  raftLog_set_logger : ∀ (x : raftLog.t) (y : Logger.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"logger") (PairV #x #y) (Val #(({ x with logger' := y } : raftLog.t)))
-  raftLog_get_maxApplyingEntsSize : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"maxApplyingEntsSize") #x (Val #(x.maxApplyingEntsSize'))
-  raftLog_set_maxApplyingEntsSize : ∀ (x : raftLog.t) (y : entryEncodingSize.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"maxApplyingEntsSize") (PairV #x #y) (Val #(({ x with maxApplyingEntsSize' := y } : raftLog.t)))
-  raftLog_get_applyingEntsSize : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"applyingEntsSize") #x (Val #(x.applyingEntsSize'))
-  raftLog_set_applyingEntsSize : ∀ (x : raftLog.t) (y : entryEncodingSize.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"applyingEntsSize") (PairV #x #y) (Val #(({ x with applyingEntsSize' := y } : raftLog.t)))
-  raftLog_get_applyingEntsPaused : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftLogⁱᵐᵖˡ» go!"applyingEntsPaused") #x (Val #(x.applyingEntsPaused'))
-  raftLog_set_applyingEntsPaused : ∀ (x : raftLog.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «raftLogⁱᵐᵖˡ» go!"applyingEntsPaused") (PairV #x #y) (Val #(({ x with applyingEntsPaused' := y } : raftLog.t)))
-  raftLog'ptr_String_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"String" «raftLog__Stringⁱᵐᵖˡ»
-  raftLog'ptr_acceptApplying_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"acceptApplying" «raftLog__acceptApplyingⁱᵐᵖˡ»
-  raftLog'ptr_acceptUnstable_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"acceptUnstable" «raftLog__acceptUnstableⁱᵐᵖˡ»
-  raftLog'ptr_allEntries_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"allEntries" «raftLog__allEntriesⁱᵐᵖˡ»
-  raftLog'ptr_append_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"append" «raftLog__appendⁱᵐᵖˡ»
-  raftLog'ptr_appliedTo_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"appliedTo" «raftLog__appliedToⁱᵐᵖˡ»
-  raftLog'ptr_commitTo_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"commitTo" «raftLog__commitToⁱᵐᵖˡ»
-  raftLog'ptr_entries_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"entries" «raftLog__entriesⁱᵐᵖˡ»
-  raftLog'ptr_findConflict_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"findConflict" «raftLog__findConflictⁱᵐᵖˡ»
-  raftLog'ptr_findConflictByTerm_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"findConflictByTerm" «raftLog__findConflictByTermⁱᵐᵖˡ»
-  raftLog'ptr_firstIndex_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"firstIndex" «raftLog__firstIndexⁱᵐᵖˡ»
-  raftLog'ptr_hasNextCommittedEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextCommittedEnts" «raftLog__hasNextCommittedEntsⁱᵐᵖˡ»
-  raftLog'ptr_hasNextOrInProgressSnapshot_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextOrInProgressSnapshot" «raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ»
-  raftLog'ptr_hasNextOrInProgressUnstableEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextOrInProgressUnstableEnts" «raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ»
-  raftLog'ptr_hasNextUnstableEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextUnstableEnts" «raftLog__hasNextUnstableEntsⁱᵐᵖˡ»
-  raftLog'ptr_hasNextUnstableSnapshot_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextUnstableSnapshot" «raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ»
-  raftLog'ptr_isUpToDate_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"isUpToDate" «raftLog__isUpToDateⁱᵐᵖˡ»
-  raftLog'ptr_lastEntryID_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"lastEntryID" «raftLog__lastEntryIDⁱᵐᵖˡ»
-  raftLog'ptr_lastIndex_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"lastIndex" «raftLog__lastIndexⁱᵐᵖˡ»
-  raftLog'ptr_matchTerm_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"matchTerm" «raftLog__matchTermⁱᵐᵖˡ»
-  raftLog'ptr_maxAppliableIndex_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"maxAppliableIndex" «raftLog__maxAppliableIndexⁱᵐᵖˡ»
-  raftLog'ptr_maybeAppend_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"maybeAppend" «raftLog__maybeAppendⁱᵐᵖˡ»
-  raftLog'ptr_maybeCommit_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"maybeCommit" «raftLog__maybeCommitⁱᵐᵖˡ»
-  raftLog'ptr_mustCheckOutOfBounds_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"mustCheckOutOfBounds" «raftLog__mustCheckOutOfBoundsⁱᵐᵖˡ»
-  raftLog'ptr_nextCommittedEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"nextCommittedEnts" «raftLog__nextCommittedEntsⁱᵐᵖˡ»
-  raftLog'ptr_nextUnstableEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"nextUnstableEnts" «raftLog__nextUnstableEntsⁱᵐᵖˡ»
-  raftLog'ptr_nextUnstableSnapshot_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"nextUnstableSnapshot" «raftLog__nextUnstableSnapshotⁱᵐᵖˡ»
-  raftLog'ptr_restore_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"restore" «raftLog__restoreⁱᵐᵖˡ»
-  raftLog'ptr_scan_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"scan" «raftLog__scanⁱᵐᵖˡ»
-  raftLog'ptr_slice_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"slice" «raftLog__sliceⁱᵐᵖˡ»
-  raftLog'ptr_snapshot_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"snapshot" «raftLog__snapshotⁱᵐᵖˡ»
-  raftLog'ptr_stableSnapTo_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"stableSnapTo" «raftLog__stableSnapToⁱᵐᵖˡ»
-  raftLog'ptr_stableTo_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"stableTo" «raftLog__stableToⁱᵐᵖˡ»
-  raftLog'ptr_term_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"term" «raftLog__termⁱᵐᵖˡ»
-  raftLog'ptr_zeroTermOnOutOfBounds_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"zeroTermOnOutOfBounds" «raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ»
+class raftLog.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying raftLog.underlying raftLog.t
+  underlying : go.UnderlyingDirectedEq raftLog raftLog.underlying
+  get_storage : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"storage") #x (Val #(x.storage'))
+  set_storage : ∀ (x : raftLog.t) (y : Storage.t), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"storage") (PairV #x #y) (Val #(({ x with storage' := y } : raftLog.t)))
+  get_unstable : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"unstable") #x (Val #(x.unstable'))
+  set_unstable : ∀ (x : raftLog.t) (y : unstable.t), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"unstable") (PairV #x #y) (Val #(({ x with unstable' := y } : raftLog.t)))
+  get_committed : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"committed") #x (Val #(x.committed'))
+  set_committed : ∀ (x : raftLog.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"committed") (PairV #x #y) (Val #(({ x with committed' := y } : raftLog.t)))
+  get_applying : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"applying") #x (Val #(x.applying'))
+  set_applying : ∀ (x : raftLog.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"applying") (PairV #x #y) (Val #(({ x with applying' := y } : raftLog.t)))
+  get_applied : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"applied") #x (Val #(x.applied'))
+  set_applied : ∀ (x : raftLog.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"applied") (PairV #x #y) (Val #(({ x with applied' := y } : raftLog.t)))
+  get_logger : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"logger") #x (Val #(x.logger'))
+  set_logger : ∀ (x : raftLog.t) (y : Logger.t), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"logger") (PairV #x #y) (Val #(({ x with logger' := y } : raftLog.t)))
+  get_maxApplyingEntsSize : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"maxApplyingEntsSize") #x (Val #(x.maxApplyingEntsSize'))
+  set_maxApplyingEntsSize : ∀ (x : raftLog.t) (y : entryEncodingSize.t), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"maxApplyingEntsSize") (PairV #x #y) (Val #(({ x with maxApplyingEntsSize' := y } : raftLog.t)))
+  get_applyingEntsSize : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"applyingEntsSize") #x (Val #(x.applyingEntsSize'))
+  set_applyingEntsSize : ∀ (x : raftLog.t) (y : entryEncodingSize.t), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"applyingEntsSize") (PairV #x #y) (Val #(({ x with applyingEntsSize' := y } : raftLog.t)))
+  get_applyingEntsPaused : ∀ (x : raftLog.t), go.IsGoStepPureDetTagged under (StructFieldGet raftLog.underlying go!"applyingEntsPaused") #x (Val #(x.applyingEntsPaused'))
+  set_applyingEntsPaused : ∀ (x : raftLog.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raftLog.underlying go!"applyingEntsPaused") (PairV #x #y) (Val #(({ x with applyingEntsPaused' := y } : raftLog.t)))
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"String" raftLog.String.impl
+  ptr_acceptApplying_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"acceptApplying" raftLog.acceptApplying.impl
+  ptr_acceptUnstable_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"acceptUnstable" raftLog.acceptUnstable.impl
+  ptr_allEntries_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"allEntries" raftLog.allEntries.impl
+  ptr_append_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"append" raftLog.append.impl
+  ptr_appliedTo_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"appliedTo" raftLog.appliedTo.impl
+  ptr_commitTo_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"commitTo" raftLog.commitTo.impl
+  ptr_entries_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"entries" raftLog.entries.impl
+  ptr_findConflict_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"findConflict" raftLog.findConflict.impl
+  ptr_findConflictByTerm_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"findConflictByTerm" raftLog.findConflictByTerm.impl
+  ptr_firstIndex_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"firstIndex" raftLog.firstIndex.impl
+  ptr_hasNextCommittedEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextCommittedEnts" raftLog.hasNextCommittedEnts.impl
+  ptr_hasNextOrInProgressSnapshot_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextOrInProgressSnapshot" raftLog.hasNextOrInProgressSnapshot.impl
+  ptr_hasNextOrInProgressUnstableEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextOrInProgressUnstableEnts" raftLog.hasNextOrInProgressUnstableEnts.impl
+  ptr_hasNextUnstableEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextUnstableEnts" raftLog.hasNextUnstableEnts.impl
+  ptr_hasNextUnstableSnapshot_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"hasNextUnstableSnapshot" raftLog.hasNextUnstableSnapshot.impl
+  ptr_isUpToDate_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"isUpToDate" raftLog.isUpToDate.impl
+  ptr_lastEntryID_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"lastEntryID" raftLog.lastEntryID.impl
+  ptr_lastIndex_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"lastIndex" raftLog.lastIndex.impl
+  ptr_matchTerm_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"matchTerm" raftLog.matchTerm.impl
+  ptr_maxAppliableIndex_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"maxAppliableIndex" raftLog.maxAppliableIndex.impl
+  ptr_maybeAppend_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"maybeAppend" raftLog.maybeAppend.impl
+  ptr_maybeCommit_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"maybeCommit" raftLog.maybeCommit.impl
+  ptr_mustCheckOutOfBounds_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"mustCheckOutOfBounds" raftLog.mustCheckOutOfBounds.impl
+  ptr_nextCommittedEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"nextCommittedEnts" raftLog.nextCommittedEnts.impl
+  ptr_nextUnstableEnts_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"nextUnstableEnts" raftLog.nextUnstableEnts.impl
+  ptr_nextUnstableSnapshot_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"nextUnstableSnapshot" raftLog.nextUnstableSnapshot.impl
+  ptr_restore_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"restore" raftLog.restore.impl
+  ptr_scan_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"scan" raftLog.scan.impl
+  ptr_slice_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"slice" raftLog.slice.impl
+  ptr_snapshot_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"snapshot" raftLog.snapshot.impl
+  ptr_stableSnapTo_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"stableSnapTo" raftLog.stableSnapTo.impl
+  ptr_stableTo_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"stableTo" raftLog.stableTo.impl
+  ptr_term_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"term" raftLog.term.impl
+  ptr_zeroTermOnOutOfBounds_unfold : MethodUnfold (go.GoType.PointerType raftLog) go!"zeroTermOnOutOfBounds" raftLog.zeroTermOnOutOfBounds.impl
 
-attribute [instance] raftLog_Assumptions.raftLog_type_repr
-  raftLog_Assumptions.raftLog_underlying
-  raftLog_Assumptions.raftLog_get_storage
-  raftLog_Assumptions.raftLog_set_storage
-  raftLog_Assumptions.raftLog_get_unstable
-  raftLog_Assumptions.raftLog_set_unstable
-  raftLog_Assumptions.raftLog_get_committed
-  raftLog_Assumptions.raftLog_set_committed
-  raftLog_Assumptions.raftLog_get_applying
-  raftLog_Assumptions.raftLog_set_applying
-  raftLog_Assumptions.raftLog_get_applied
-  raftLog_Assumptions.raftLog_set_applied
-  raftLog_Assumptions.raftLog_get_logger
-  raftLog_Assumptions.raftLog_set_logger
-  raftLog_Assumptions.raftLog_get_maxApplyingEntsSize
-  raftLog_Assumptions.raftLog_set_maxApplyingEntsSize
-  raftLog_Assumptions.raftLog_get_applyingEntsSize
-  raftLog_Assumptions.raftLog_set_applyingEntsSize
-  raftLog_Assumptions.raftLog_get_applyingEntsPaused
-  raftLog_Assumptions.raftLog_set_applyingEntsPaused
-  raftLog_Assumptions.raftLog'ptr_String_unfold
-  raftLog_Assumptions.raftLog'ptr_acceptApplying_unfold
-  raftLog_Assumptions.raftLog'ptr_acceptUnstable_unfold
-  raftLog_Assumptions.raftLog'ptr_allEntries_unfold
-  raftLog_Assumptions.raftLog'ptr_append_unfold
-  raftLog_Assumptions.raftLog'ptr_appliedTo_unfold
-  raftLog_Assumptions.raftLog'ptr_commitTo_unfold
-  raftLog_Assumptions.raftLog'ptr_entries_unfold
-  raftLog_Assumptions.raftLog'ptr_findConflict_unfold
-  raftLog_Assumptions.raftLog'ptr_findConflictByTerm_unfold
-  raftLog_Assumptions.raftLog'ptr_firstIndex_unfold
-  raftLog_Assumptions.raftLog'ptr_hasNextCommittedEnts_unfold
-  raftLog_Assumptions.raftLog'ptr_hasNextOrInProgressSnapshot_unfold
-  raftLog_Assumptions.raftLog'ptr_hasNextOrInProgressUnstableEnts_unfold
-  raftLog_Assumptions.raftLog'ptr_hasNextUnstableEnts_unfold
-  raftLog_Assumptions.raftLog'ptr_hasNextUnstableSnapshot_unfold
-  raftLog_Assumptions.raftLog'ptr_isUpToDate_unfold
-  raftLog_Assumptions.raftLog'ptr_lastEntryID_unfold
-  raftLog_Assumptions.raftLog'ptr_lastIndex_unfold
-  raftLog_Assumptions.raftLog'ptr_matchTerm_unfold
-  raftLog_Assumptions.raftLog'ptr_maxAppliableIndex_unfold
-  raftLog_Assumptions.raftLog'ptr_maybeAppend_unfold
-  raftLog_Assumptions.raftLog'ptr_maybeCommit_unfold
-  raftLog_Assumptions.raftLog'ptr_mustCheckOutOfBounds_unfold
-  raftLog_Assumptions.raftLog'ptr_nextCommittedEnts_unfold
-  raftLog_Assumptions.raftLog'ptr_nextUnstableEnts_unfold
-  raftLog_Assumptions.raftLog'ptr_nextUnstableSnapshot_unfold
-  raftLog_Assumptions.raftLog'ptr_restore_unfold
-  raftLog_Assumptions.raftLog'ptr_scan_unfold
-  raftLog_Assumptions.raftLog'ptr_slice_unfold
-  raftLog_Assumptions.raftLog'ptr_snapshot_unfold
-  raftLog_Assumptions.raftLog'ptr_stableSnapTo_unfold
-  raftLog_Assumptions.raftLog'ptr_stableTo_unfold
-  raftLog_Assumptions.raftLog'ptr_term_unfold
-  raftLog_Assumptions.raftLog'ptr_zeroTermOnOutOfBounds_unfold
+attribute [instance] raftLog.TypeAssumptions.type_repr
+  raftLog.TypeAssumptions.underlying
+  raftLog.TypeAssumptions.get_storage
+  raftLog.TypeAssumptions.set_storage
+  raftLog.TypeAssumptions.get_unstable
+  raftLog.TypeAssumptions.set_unstable
+  raftLog.TypeAssumptions.get_committed
+  raftLog.TypeAssumptions.set_committed
+  raftLog.TypeAssumptions.get_applying
+  raftLog.TypeAssumptions.set_applying
+  raftLog.TypeAssumptions.get_applied
+  raftLog.TypeAssumptions.set_applied
+  raftLog.TypeAssumptions.get_logger
+  raftLog.TypeAssumptions.set_logger
+  raftLog.TypeAssumptions.get_maxApplyingEntsSize
+  raftLog.TypeAssumptions.set_maxApplyingEntsSize
+  raftLog.TypeAssumptions.get_applyingEntsSize
+  raftLog.TypeAssumptions.set_applyingEntsSize
+  raftLog.TypeAssumptions.get_applyingEntsPaused
+  raftLog.TypeAssumptions.set_applyingEntsPaused
+  raftLog.TypeAssumptions.ptr_String_unfold
+  raftLog.TypeAssumptions.ptr_acceptApplying_unfold
+  raftLog.TypeAssumptions.ptr_acceptUnstable_unfold
+  raftLog.TypeAssumptions.ptr_allEntries_unfold
+  raftLog.TypeAssumptions.ptr_append_unfold
+  raftLog.TypeAssumptions.ptr_appliedTo_unfold
+  raftLog.TypeAssumptions.ptr_commitTo_unfold
+  raftLog.TypeAssumptions.ptr_entries_unfold
+  raftLog.TypeAssumptions.ptr_findConflict_unfold
+  raftLog.TypeAssumptions.ptr_findConflictByTerm_unfold
+  raftLog.TypeAssumptions.ptr_firstIndex_unfold
+  raftLog.TypeAssumptions.ptr_hasNextCommittedEnts_unfold
+  raftLog.TypeAssumptions.ptr_hasNextOrInProgressSnapshot_unfold
+  raftLog.TypeAssumptions.ptr_hasNextOrInProgressUnstableEnts_unfold
+  raftLog.TypeAssumptions.ptr_hasNextUnstableEnts_unfold
+  raftLog.TypeAssumptions.ptr_hasNextUnstableSnapshot_unfold
+  raftLog.TypeAssumptions.ptr_isUpToDate_unfold
+  raftLog.TypeAssumptions.ptr_lastEntryID_unfold
+  raftLog.TypeAssumptions.ptr_lastIndex_unfold
+  raftLog.TypeAssumptions.ptr_matchTerm_unfold
+  raftLog.TypeAssumptions.ptr_maxAppliableIndex_unfold
+  raftLog.TypeAssumptions.ptr_maybeAppend_unfold
+  raftLog.TypeAssumptions.ptr_maybeCommit_unfold
+  raftLog.TypeAssumptions.ptr_mustCheckOutOfBounds_unfold
+  raftLog.TypeAssumptions.ptr_nextCommittedEnts_unfold
+  raftLog.TypeAssumptions.ptr_nextUnstableEnts_unfold
+  raftLog.TypeAssumptions.ptr_nextUnstableSnapshot_unfold
+  raftLog.TypeAssumptions.ptr_restore_unfold
+  raftLog.TypeAssumptions.ptr_scan_unfold
+  raftLog.TypeAssumptions.ptr_slice_unfold
+  raftLog.TypeAssumptions.ptr_snapshot_unfold
+  raftLog.TypeAssumptions.ptr_stableSnapTo_unfold
+  raftLog.TypeAssumptions.ptr_stableTo_unfold
+  raftLog.TypeAssumptions.ptr_term_unfold
+  raftLog.TypeAssumptions.ptr_zeroTermOnOutOfBounds_unfold
 
 namespace DefaultLogger
 structure t [FfiSyntax] where
@@ -11084,174 +11084,174 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end DefaultLogger
 
-@[reducible] def DefaultLogger'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def DefaultLogger.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Logger" (go.GoType.PointerType _root_.Perennial.log.Logger)),
 (go.field_decl.FieldDecl go!"debug" go.bool)]
 
-@[irreducible] def DefaultLogger'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  DefaultLogger'fds_unsealed
+@[irreducible] def DefaultLogger.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  DefaultLogger.fieldsUnsealed
 
 instance equals_unfold_DefaultLogger [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold DefaultLogger'fds DefaultLogger'fds_unsealed :=
-  ⟨by unfold DefaultLogger'fds; rfl⟩
+    EqualsUnfold DefaultLogger.fields DefaultLogger.fieldsUnsealed :=
+  ⟨by unfold DefaultLogger.fields; rfl⟩
 
-@[reducible] def «DefaultLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType DefaultLogger'fds)
+@[reducible] def DefaultLogger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType DefaultLogger.fields)
 
-class DefaultLogger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  DefaultLogger_type_repr : go.TypeReprUnderlying «DefaultLoggerⁱᵐᵖˡ» DefaultLogger.t
-  DefaultLogger_underlying : go.UnderlyingDirectedEq DefaultLogger «DefaultLoggerⁱᵐᵖˡ»
-  DefaultLogger_get_Logger : ∀ (x : DefaultLogger.t), go.IsGoStepPureDetTagged under (StructFieldGet «DefaultLoggerⁱᵐᵖˡ» go!"Logger") #x (Val #(x.Logger'))
-  DefaultLogger_set_Logger : ∀ (x : DefaultLogger.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «DefaultLoggerⁱᵐᵖˡ» go!"Logger") (PairV #x #y) (Val #(({ x with Logger' := y } : DefaultLogger.t)))
-  DefaultLogger_get_debug : ∀ (x : DefaultLogger.t), go.IsGoStepPureDetTagged under (StructFieldGet «DefaultLoggerⁱᵐᵖˡ» go!"debug") #x (Val #(x.debug'))
-  DefaultLogger_set_debug : ∀ (x : DefaultLogger.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «DefaultLoggerⁱᵐᵖˡ» go!"debug") (PairV #x #y) (Val #(({ x with debug' := y } : DefaultLogger.t)))
-  DefaultLogger_Fatalln_unfold : MethodUnfold DefaultLogger go!"Fatalln" (LamV "$r"
+class DefaultLogger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying DefaultLogger.underlying DefaultLogger.t
+  underlying : go.UnderlyingDirectedEq DefaultLogger DefaultLogger.underlying
+  get_Logger : ∀ (x : DefaultLogger.t), go.IsGoStepPureDetTagged under (StructFieldGet DefaultLogger.underlying go!"Logger") #x (Val #(x.Logger'))
+  set_Logger : ∀ (x : DefaultLogger.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet DefaultLogger.underlying go!"Logger") (PairV #x #y) (Val #(({ x with Logger' := y } : DefaultLogger.t)))
+  get_debug : ∀ (x : DefaultLogger.t), go.IsGoStepPureDetTagged under (StructFieldGet DefaultLogger.underlying go!"debug") #x (Val #(x.debug'))
+  set_debug : ∀ (x : DefaultLogger.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet DefaultLogger.underlying go!"debug") (PairV #x #y) (Val #(({ x with debug' := y } : DefaultLogger.t)))
+  Fatalln_unfold : MethodUnfold DefaultLogger go!"Fatalln" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Fatalln"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_Flags_unfold : MethodUnfold DefaultLogger go!"Flags" (LamV "$r"
+  Flags_unfold : MethodUnfold DefaultLogger go!"Flags" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Flags"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_Output_unfold : MethodUnfold DefaultLogger go!"Output" (LamV "$r"
+  Output_unfold : MethodUnfold DefaultLogger go!"Output" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Output"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_Panicln_unfold : MethodUnfold DefaultLogger go!"Panicln" (LamV "$r"
+  Panicln_unfold : MethodUnfold DefaultLogger go!"Panicln" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Panicln"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_Prefix_unfold : MethodUnfold DefaultLogger go!"Prefix" (LamV "$r"
+  Prefix_unfold : MethodUnfold DefaultLogger go!"Prefix" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Prefix"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_Print_unfold : MethodUnfold DefaultLogger go!"Print" (LamV "$r"
+  Print_unfold : MethodUnfold DefaultLogger go!"Print" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Print"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_Printf_unfold : MethodUnfold DefaultLogger go!"Printf" (LamV "$r"
+  Printf_unfold : MethodUnfold DefaultLogger go!"Printf" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Printf"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_Println_unfold : MethodUnfold DefaultLogger go!"Println" (LamV "$r"
+  Println_unfold : MethodUnfold DefaultLogger go!"Println" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Println"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_SetFlags_unfold : MethodUnfold DefaultLogger go!"SetFlags" (LamV "$r"
+  SetFlags_unfold : MethodUnfold DefaultLogger go!"SetFlags" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"SetFlags"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_SetOutput_unfold : MethodUnfold DefaultLogger go!"SetOutput" (LamV "$r"
+  SetOutput_unfold : MethodUnfold DefaultLogger go!"SetOutput" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"SetOutput"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_SetPrefix_unfold : MethodUnfold DefaultLogger go!"SetPrefix" (LamV "$r"
+  SetPrefix_unfold : MethodUnfold DefaultLogger go!"SetPrefix" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"SetPrefix"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_Writer_unfold : MethodUnfold DefaultLogger go!"Writer" (LamV "$r"
+  Writer_unfold : MethodUnfold DefaultLogger go!"Writer" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Writer"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger_output_unfold : MethodUnfold DefaultLogger go!"output" (LamV "$r"
+  output_unfold : MethodUnfold DefaultLogger go!"output" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"output"))) (App (Val (GoInstruction (StructFieldGet DefaultLogger go!"Logger"))) (Var "$r"))))
-  DefaultLogger'ptr_Debug_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Debug" «DefaultLogger__Debugⁱᵐᵖˡ»
-  DefaultLogger'ptr_Debugf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Debugf" «DefaultLogger__Debugfⁱᵐᵖˡ»
-  DefaultLogger'ptr_EnableDebug_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"EnableDebug" «DefaultLogger__EnableDebugⁱᵐᵖˡ»
-  DefaultLogger'ptr_EnableTimestamps_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"EnableTimestamps" «DefaultLogger__EnableTimestampsⁱᵐᵖˡ»
-  DefaultLogger'ptr_Error_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Error" «DefaultLogger__Errorⁱᵐᵖˡ»
-  DefaultLogger'ptr_Errorf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Errorf" «DefaultLogger__Errorfⁱᵐᵖˡ»
-  DefaultLogger'ptr_Fatal_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Fatal" «DefaultLogger__Fatalⁱᵐᵖˡ»
-  DefaultLogger'ptr_Fatalf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Fatalf" «DefaultLogger__Fatalfⁱᵐᵖˡ»
-  DefaultLogger'ptr_Fatalln_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Fatalln" (LamV "$r"
+  ptr_Debug_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Debug" DefaultLogger.Debug.impl
+  ptr_Debugf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Debugf" DefaultLogger.Debugf.impl
+  ptr_EnableDebug_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"EnableDebug" DefaultLogger.EnableDebug.impl
+  ptr_EnableTimestamps_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"EnableTimestamps" DefaultLogger.EnableTimestamps.impl
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Error" DefaultLogger.Error.impl
+  ptr_Errorf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Errorf" DefaultLogger.Errorf.impl
+  ptr_Fatal_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Fatal" DefaultLogger.Fatal.impl
+  ptr_Fatalf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Fatalf" DefaultLogger.Fatalf.impl
+  ptr_Fatalln_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Fatalln" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Fatalln"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_Flags_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Flags" (LamV "$r"
+  ptr_Flags_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Flags" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Flags"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_Info_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Info" «DefaultLogger__Infoⁱᵐᵖˡ»
-  DefaultLogger'ptr_Infof_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Infof" «DefaultLogger__Infofⁱᵐᵖˡ»
-  DefaultLogger'ptr_Output_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Output" (LamV "$r"
+  ptr_Info_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Info" DefaultLogger.Info.impl
+  ptr_Infof_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Infof" DefaultLogger.Infof.impl
+  ptr_Output_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Output" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_Panic_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Panic" «DefaultLogger__Panicⁱᵐᵖˡ»
-  DefaultLogger'ptr_Panicf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Panicf" «DefaultLogger__Panicfⁱᵐᵖˡ»
-  DefaultLogger'ptr_Panicln_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Panicln" (LamV "$r"
+  ptr_Panic_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Panic" DefaultLogger.Panic.impl
+  ptr_Panicf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Panicf" DefaultLogger.Panicf.impl
+  ptr_Panicln_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Panicln" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Panicln"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_Prefix_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Prefix" (LamV "$r"
+  ptr_Prefix_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Prefix" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Prefix"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_Print_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Print" (LamV "$r"
+  ptr_Print_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Print" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Print"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_Printf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Printf" (LamV "$r"
+  ptr_Printf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Printf" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Printf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_Println_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Println" (LamV "$r"
+  ptr_Println_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Println" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Println"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_SetFlags_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"SetFlags" (LamV "$r"
+  ptr_SetFlags_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"SetFlags" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"SetFlags"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_SetOutput_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"SetOutput" (LamV "$r"
+  ptr_SetOutput_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"SetOutput" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"SetOutput"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_SetPrefix_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"SetPrefix" (LamV "$r"
+  ptr_SetPrefix_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"SetPrefix" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"SetPrefix"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_Warning_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Warning" «DefaultLogger__Warningⁱᵐᵖˡ»
-  DefaultLogger'ptr_Warningf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Warningf" «DefaultLogger__Warningfⁱᵐᵖˡ»
-  DefaultLogger'ptr_Writer_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Writer" (LamV "$r"
+  ptr_Warning_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Warning" DefaultLogger.Warning.impl
+  ptr_Warningf_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Warningf" DefaultLogger.Warningf.impl
+  ptr_Writer_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"Writer" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"Writer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
-  DefaultLogger'ptr_output_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"output" (LamV "$r"
+  ptr_output_unfold : MethodUnfold (go.GoType.PointerType DefaultLogger) go!"output" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.log.Logger) go!"output"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.log.Logger)))) (App (Val (GoInstruction (StructFieldRef DefaultLogger go!"Logger"))) (Var "$r")))))
 
-attribute [instance] DefaultLogger_Assumptions.DefaultLogger_type_repr
-  DefaultLogger_Assumptions.DefaultLogger_underlying
-  DefaultLogger_Assumptions.DefaultLogger_get_Logger
-  DefaultLogger_Assumptions.DefaultLogger_set_Logger
-  DefaultLogger_Assumptions.DefaultLogger_get_debug
-  DefaultLogger_Assumptions.DefaultLogger_set_debug
-  DefaultLogger_Assumptions.DefaultLogger_Fatalln_unfold
-  DefaultLogger_Assumptions.DefaultLogger_Flags_unfold
-  DefaultLogger_Assumptions.DefaultLogger_Output_unfold
-  DefaultLogger_Assumptions.DefaultLogger_Panicln_unfold
-  DefaultLogger_Assumptions.DefaultLogger_Prefix_unfold
-  DefaultLogger_Assumptions.DefaultLogger_Print_unfold
-  DefaultLogger_Assumptions.DefaultLogger_Printf_unfold
-  DefaultLogger_Assumptions.DefaultLogger_Println_unfold
-  DefaultLogger_Assumptions.DefaultLogger_SetFlags_unfold
-  DefaultLogger_Assumptions.DefaultLogger_SetOutput_unfold
-  DefaultLogger_Assumptions.DefaultLogger_SetPrefix_unfold
-  DefaultLogger_Assumptions.DefaultLogger_Writer_unfold
-  DefaultLogger_Assumptions.DefaultLogger_output_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Debug_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Debugf_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_EnableDebug_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_EnableTimestamps_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Error_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Errorf_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Fatal_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Fatalf_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Fatalln_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Flags_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Info_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Infof_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Output_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Panic_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Panicf_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Panicln_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Prefix_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Print_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Printf_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Println_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_SetFlags_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_SetOutput_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_SetPrefix_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Warning_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Warningf_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_Writer_unfold
-  DefaultLogger_Assumptions.DefaultLogger'ptr_output_unfold
+attribute [instance] DefaultLogger.TypeAssumptions.type_repr
+  DefaultLogger.TypeAssumptions.underlying
+  DefaultLogger.TypeAssumptions.get_Logger
+  DefaultLogger.TypeAssumptions.set_Logger
+  DefaultLogger.TypeAssumptions.get_debug
+  DefaultLogger.TypeAssumptions.set_debug
+  DefaultLogger.TypeAssumptions.Fatalln_unfold
+  DefaultLogger.TypeAssumptions.Flags_unfold
+  DefaultLogger.TypeAssumptions.Output_unfold
+  DefaultLogger.TypeAssumptions.Panicln_unfold
+  DefaultLogger.TypeAssumptions.Prefix_unfold
+  DefaultLogger.TypeAssumptions.Print_unfold
+  DefaultLogger.TypeAssumptions.Printf_unfold
+  DefaultLogger.TypeAssumptions.Println_unfold
+  DefaultLogger.TypeAssumptions.SetFlags_unfold
+  DefaultLogger.TypeAssumptions.SetOutput_unfold
+  DefaultLogger.TypeAssumptions.SetPrefix_unfold
+  DefaultLogger.TypeAssumptions.Writer_unfold
+  DefaultLogger.TypeAssumptions.output_unfold
+  DefaultLogger.TypeAssumptions.ptr_Debug_unfold
+  DefaultLogger.TypeAssumptions.ptr_Debugf_unfold
+  DefaultLogger.TypeAssumptions.ptr_EnableDebug_unfold
+  DefaultLogger.TypeAssumptions.ptr_EnableTimestamps_unfold
+  DefaultLogger.TypeAssumptions.ptr_Error_unfold
+  DefaultLogger.TypeAssumptions.ptr_Errorf_unfold
+  DefaultLogger.TypeAssumptions.ptr_Fatal_unfold
+  DefaultLogger.TypeAssumptions.ptr_Fatalf_unfold
+  DefaultLogger.TypeAssumptions.ptr_Fatalln_unfold
+  DefaultLogger.TypeAssumptions.ptr_Flags_unfold
+  DefaultLogger.TypeAssumptions.ptr_Info_unfold
+  DefaultLogger.TypeAssumptions.ptr_Infof_unfold
+  DefaultLogger.TypeAssumptions.ptr_Output_unfold
+  DefaultLogger.TypeAssumptions.ptr_Panic_unfold
+  DefaultLogger.TypeAssumptions.ptr_Panicf_unfold
+  DefaultLogger.TypeAssumptions.ptr_Panicln_unfold
+  DefaultLogger.TypeAssumptions.ptr_Prefix_unfold
+  DefaultLogger.TypeAssumptions.ptr_Print_unfold
+  DefaultLogger.TypeAssumptions.ptr_Printf_unfold
+  DefaultLogger.TypeAssumptions.ptr_Println_unfold
+  DefaultLogger.TypeAssumptions.ptr_SetFlags_unfold
+  DefaultLogger.TypeAssumptions.ptr_SetOutput_unfold
+  DefaultLogger.TypeAssumptions.ptr_SetPrefix_unfold
+  DefaultLogger.TypeAssumptions.ptr_Warning_unfold
+  DefaultLogger.TypeAssumptions.ptr_Warningf_unfold
+  DefaultLogger.TypeAssumptions.ptr_Writer_unfold
+  DefaultLogger.TypeAssumptions.ptr_output_unfold
 
 namespace SnapshotStatus
 abbrev t [FfiSyntax] : Type := w64
 end SnapshotStatus
 
-@[reducible] def «SnapshotStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def SnapshotStatus.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class SnapshotStatus_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  SnapshotStatus_underlying : go.UnderlyingDirectedEq SnapshotStatus «SnapshotStatusⁱᵐᵖˡ»
+class SnapshotStatus.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq SnapshotStatus SnapshotStatus.underlying
 
-attribute [instance] SnapshotStatus_Assumptions.SnapshotStatus_underlying
+attribute [instance] SnapshotStatus.TypeAssumptions.underlying
 
 namespace StateType
 abbrev t [FfiSyntax] : Type := w64
 end StateType
 
-@[reducible] def «StateTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def StateType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class StateType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StateType_underlying : go.UnderlyingDirectedEq StateType «StateTypeⁱᵐᵖˡ»
-  StateType_MarshalJSON_unfold : MethodUnfold StateType go!"MarshalJSON" «StateType__MarshalJSONⁱᵐᵖˡ»
-  StateType_String_unfold : MethodUnfold StateType go!"String" «StateType__Stringⁱᵐᵖˡ»
-  StateType'ptr_MarshalJSON_unfold : MethodUnfold (go.GoType.PointerType StateType) go!"MarshalJSON" (LamV "$r"
+class StateType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq StateType StateType.underlying
+  MarshalJSON_unfold : MethodUnfold StateType go!"MarshalJSON" StateType.MarshalJSON.impl
+  String_unfold : MethodUnfold StateType go!"String" StateType.String.impl
+  ptr_MarshalJSON_unfold : MethodUnfold (go.GoType.PointerType StateType) go!"MarshalJSON" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve StateType go!"MarshalJSON"))) (App (Val (GoInstruction (GoLoad StateType))) (Var "$r"))))
-  StateType'ptr_String_unfold : MethodUnfold (go.GoType.PointerType StateType) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType StateType) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve StateType go!"String"))) (App (Val (GoInstruction (GoLoad StateType))) (Var "$r"))))
 
-attribute [instance] StateType_Assumptions.StateType_underlying
-  StateType_Assumptions.StateType_MarshalJSON_unfold
-  StateType_Assumptions.StateType_String_unfold
-  StateType_Assumptions.StateType'ptr_MarshalJSON_unfold
-  StateType_Assumptions.StateType'ptr_String_unfold
+attribute [instance] StateType.TypeAssumptions.underlying
+  StateType.TypeAssumptions.MarshalJSON_unfold
+  StateType.TypeAssumptions.String_unfold
+  StateType.TypeAssumptions.ptr_MarshalJSON_unfold
+  StateType.TypeAssumptions.ptr_String_unfold
 
 namespace SoftState
 structure t [FfiSyntax] where
@@ -11263,36 +11263,36 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end SoftState
 
-@[reducible] def SoftState'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SoftState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Lead" go.uint64),
 (go.field_decl.FieldDecl go!"RaftState" StateType)]
 
-@[irreducible] def SoftState'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  SoftState'fds_unsealed
+@[irreducible] def SoftState.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  SoftState.fieldsUnsealed
 
 instance equals_unfold_SoftState [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold SoftState'fds SoftState'fds_unsealed :=
-  ⟨by unfold SoftState'fds; rfl⟩
+    EqualsUnfold SoftState.fields SoftState.fieldsUnsealed :=
+  ⟨by unfold SoftState.fields; rfl⟩
 
-@[reducible] def «SoftStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType SoftState'fds)
+@[reducible] def SoftState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SoftState.fields)
 
-class SoftState_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  SoftState_type_repr : go.TypeReprUnderlying «SoftStateⁱᵐᵖˡ» SoftState.t
-  SoftState_underlying : go.UnderlyingDirectedEq SoftState «SoftStateⁱᵐᵖˡ»
-  SoftState_get_Lead : ∀ (x : SoftState.t), go.IsGoStepPureDetTagged under (StructFieldGet «SoftStateⁱᵐᵖˡ» go!"Lead") #x (Val #(x.Lead'))
-  SoftState_set_Lead : ∀ (x : SoftState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «SoftStateⁱᵐᵖˡ» go!"Lead") (PairV #x #y) (Val #(({ x with Lead' := y } : SoftState.t)))
-  SoftState_get_RaftState : ∀ (x : SoftState.t), go.IsGoStepPureDetTagged under (StructFieldGet «SoftStateⁱᵐᵖˡ» go!"RaftState") #x (Val #(x.RaftState'))
-  SoftState_set_RaftState : ∀ (x : SoftState.t) (y : StateType.t), go.IsGoStepPureDetTagged under (StructFieldSet «SoftStateⁱᵐᵖˡ» go!"RaftState") (PairV #x #y) (Val #(({ x with RaftState' := y } : SoftState.t)))
-  SoftState'ptr_equal_unfold : MethodUnfold (go.GoType.PointerType SoftState) go!"equal" «SoftState__equalⁱᵐᵖˡ»
+class SoftState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying SoftState.underlying SoftState.t
+  underlying : go.UnderlyingDirectedEq SoftState SoftState.underlying
+  get_Lead : ∀ (x : SoftState.t), go.IsGoStepPureDetTagged under (StructFieldGet SoftState.underlying go!"Lead") #x (Val #(x.Lead'))
+  set_Lead : ∀ (x : SoftState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SoftState.underlying go!"Lead") (PairV #x #y) (Val #(({ x with Lead' := y } : SoftState.t)))
+  get_RaftState : ∀ (x : SoftState.t), go.IsGoStepPureDetTagged under (StructFieldGet SoftState.underlying go!"RaftState") #x (Val #(x.RaftState'))
+  set_RaftState : ∀ (x : SoftState.t) (y : StateType.t), go.IsGoStepPureDetTagged under (StructFieldSet SoftState.underlying go!"RaftState") (PairV #x #y) (Val #(({ x with RaftState' := y } : SoftState.t)))
+  ptr_equal_unfold : MethodUnfold (go.GoType.PointerType SoftState) go!"equal" SoftState.equal.impl
 
-attribute [instance] SoftState_Assumptions.SoftState_type_repr
-  SoftState_Assumptions.SoftState_underlying
-  SoftState_Assumptions.SoftState_get_Lead
-  SoftState_Assumptions.SoftState_set_Lead
-  SoftState_Assumptions.SoftState_get_RaftState
-  SoftState_Assumptions.SoftState_set_RaftState
-  SoftState_Assumptions.SoftState'ptr_equal_unfold
+attribute [instance] SoftState.TypeAssumptions.type_repr
+  SoftState.TypeAssumptions.underlying
+  SoftState.TypeAssumptions.get_Lead
+  SoftState.TypeAssumptions.set_Lead
+  SoftState.TypeAssumptions.get_RaftState
+  SoftState.TypeAssumptions.set_RaftState
+  SoftState.TypeAssumptions.ptr_equal_unfold
 
 namespace Ready
 structure t [FfiSyntax] where
@@ -11310,7 +11310,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Ready
 
-@[reducible] def Ready'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Ready.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"SoftState" (go.GoType.PointerType SoftState)),
 (go.field_decl.EmbeddedField go!"HardState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState),
 (go.field_decl.FieldDecl go!"ReadStates" (go.GoType.SliceType ReadState)),
@@ -11320,114 +11320,114 @@ end Ready
 (go.field_decl.FieldDecl go!"Messages" (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message)),
 (go.field_decl.FieldDecl go!"MustSync" go.bool)]
 
-@[irreducible] def Ready'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Ready'fds_unsealed
+@[irreducible] def Ready.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Ready.fieldsUnsealed
 
 instance equals_unfold_Ready [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Ready'fds Ready'fds_unsealed :=
-  ⟨by unfold Ready'fds; rfl⟩
+    EqualsUnfold Ready.fields Ready.fieldsUnsealed :=
+  ⟨by unfold Ready.fields; rfl⟩
 
-@[reducible] def «Readyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Ready'fds)
+@[reducible] def Ready.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Ready.fields)
 
-class Ready_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Ready_type_repr : go.TypeReprUnderlying «Readyⁱᵐᵖˡ» Ready.t
-  Ready_underlying : go.UnderlyingDirectedEq Ready «Readyⁱᵐᵖˡ»
-  Ready_get_SoftState : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readyⁱᵐᵖˡ» go!"SoftState") #x (Val #(x.SoftState'))
-  Ready_set_SoftState : ∀ (x : Ready.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Readyⁱᵐᵖˡ» go!"SoftState") (PairV #x #y) (Val #(({ x with SoftState' := y } : Ready.t)))
-  Ready_get_HardState : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readyⁱᵐᵖˡ» go!"HardState") #x (Val #(x.HardState'))
-  Ready_set_HardState : ∀ (x : Ready.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.t), go.IsGoStepPureDetTagged under (StructFieldSet «Readyⁱᵐᵖˡ» go!"HardState") (PairV #x #y) (Val #(({ x with HardState' := y } : Ready.t)))
-  Ready_get_ReadStates : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readyⁱᵐᵖˡ» go!"ReadStates") #x (Val #(x.ReadStates'))
-  Ready_set_ReadStates : ∀ (x : Ready.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Readyⁱᵐᵖˡ» go!"ReadStates") (PairV #x #y) (Val #(({ x with ReadStates' := y } : Ready.t)))
-  Ready_get_Entries : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readyⁱᵐᵖˡ» go!"Entries") #x (Val #(x.Entries'))
-  Ready_set_Entries : ∀ (x : Ready.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Readyⁱᵐᵖˡ» go!"Entries") (PairV #x #y) (Val #(({ x with Entries' := y } : Ready.t)))
-  Ready_get_Snapshot : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readyⁱᵐᵖˡ» go!"Snapshot") #x (Val #(x.Snapshot'))
-  Ready_set_Snapshot : ∀ (x : Ready.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.t), go.IsGoStepPureDetTagged under (StructFieldSet «Readyⁱᵐᵖˡ» go!"Snapshot") (PairV #x #y) (Val #(({ x with Snapshot' := y } : Ready.t)))
-  Ready_get_CommittedEntries : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readyⁱᵐᵖˡ» go!"CommittedEntries") #x (Val #(x.CommittedEntries'))
-  Ready_set_CommittedEntries : ∀ (x : Ready.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Readyⁱᵐᵖˡ» go!"CommittedEntries") (PairV #x #y) (Val #(({ x with CommittedEntries' := y } : Ready.t)))
-  Ready_get_Messages : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readyⁱᵐᵖˡ» go!"Messages") #x (Val #(x.Messages'))
-  Ready_set_Messages : ∀ (x : Ready.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Readyⁱᵐᵖˡ» go!"Messages") (PairV #x #y) (Val #(({ x with Messages' := y } : Ready.t)))
-  Ready_get_MustSync : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readyⁱᵐᵖˡ» go!"MustSync") #x (Val #(x.MustSync'))
-  Ready_set_MustSync : ∀ (x : Ready.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Readyⁱᵐᵖˡ» go!"MustSync") (PairV #x #y) (Val #(({ x with MustSync' := y } : Ready.t)))
-  Ready_equal_unfold : MethodUnfold Ready go!"equal" (LamV "$r"
+class Ready.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Ready.underlying Ready.t
+  underlying : go.UnderlyingDirectedEq Ready Ready.underlying
+  get_SoftState : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"SoftState") #x (Val #(x.SoftState'))
+  set_SoftState : ∀ (x : Ready.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"SoftState") (PairV #x #y) (Val #(({ x with SoftState' := y } : Ready.t)))
+  get_HardState : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"HardState") #x (Val #(x.HardState'))
+  set_HardState : ∀ (x : Ready.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"HardState") (PairV #x #y) (Val #(({ x with HardState' := y } : Ready.t)))
+  get_ReadStates : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"ReadStates") #x (Val #(x.ReadStates'))
+  set_ReadStates : ∀ (x : Ready.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"ReadStates") (PairV #x #y) (Val #(({ x with ReadStates' := y } : Ready.t)))
+  get_Entries : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"Entries") #x (Val #(x.Entries'))
+  set_Entries : ∀ (x : Ready.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"Entries") (PairV #x #y) (Val #(({ x with Entries' := y } : Ready.t)))
+  get_Snapshot : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"Snapshot") #x (Val #(x.Snapshot'))
+  set_Snapshot : ∀ (x : Ready.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"Snapshot") (PairV #x #y) (Val #(({ x with Snapshot' := y } : Ready.t)))
+  get_CommittedEntries : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"CommittedEntries") #x (Val #(x.CommittedEntries'))
+  set_CommittedEntries : ∀ (x : Ready.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"CommittedEntries") (PairV #x #y) (Val #(({ x with CommittedEntries' := y } : Ready.t)))
+  get_Messages : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"Messages") #x (Val #(x.Messages'))
+  set_Messages : ∀ (x : Ready.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"Messages") (PairV #x #y) (Val #(({ x with Messages' := y } : Ready.t)))
+  get_MustSync : ∀ (x : Ready.t), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"MustSync") #x (Val #(x.MustSync'))
+  set_MustSync : ∀ (x : Ready.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"MustSync") (PairV #x #y) (Val #(({ x with MustSync' := y } : Ready.t)))
+  equal_unfold : MethodUnfold Ready go!"equal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType SoftState) go!"equal"))) (App (Val (GoInstruction (StructFieldGet Ready go!"SoftState"))) (Var "$r"))))
-  Ready'ptr_Descriptor_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Descriptor" (LamV "$r"
+  ptr_Descriptor_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Descriptor" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Descriptor"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_Marshal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Marshal" (LamV "$r"
+  ptr_Marshal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Marshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Marshal"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_MarshalTo_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"MarshalTo" (LamV "$r"
+  ptr_MarshalTo_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"MarshalTo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"MarshalTo"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_MarshalToSizedBuffer_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"MarshalToSizedBuffer" (LamV "$r"
+  ptr_MarshalToSizedBuffer_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"MarshalToSizedBuffer" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"MarshalToSizedBuffer"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_ProtoMessage_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"ProtoMessage" (LamV "$r"
+  ptr_ProtoMessage_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"ProtoMessage" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"ProtoMessage"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Reset" (LamV "$r"
+  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Reset" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Reset"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_Size_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Size" (LamV "$r"
+  ptr_Size_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Size" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Size"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_String_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"String"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Unmarshal" (LamV "$r"
+  ptr_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"Unmarshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Unmarshal"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_XXX_DiscardUnknown_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_DiscardUnknown" (LamV "$r"
+  ptr_XXX_DiscardUnknown_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_DiscardUnknown" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_DiscardUnknown"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_XXX_Marshal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_Marshal" (LamV "$r"
+  ptr_XXX_Marshal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_Marshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_Marshal"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_XXX_Merge_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_Merge" (LamV "$r"
+  ptr_XXX_Merge_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_Merge" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_Merge"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_XXX_Size_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_Size" (LamV "$r"
+  ptr_XXX_Size_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_Size" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_Size"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_XXX_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_Unmarshal" (LamV "$r"
+  ptr_XXX_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"XXX_Unmarshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_Unmarshal"))) (App (Val (GoInstruction (StructFieldRef Ready go!"HardState"))) (Var "$r"))))
-  Ready'ptr_equal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"equal" (LamV "$r"
+  ptr_equal_unfold : MethodUnfold (go.GoType.PointerType Ready) go!"equal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType SoftState) go!"equal"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType SoftState)))) (App (Val (GoInstruction (StructFieldRef Ready go!"SoftState"))) (Var "$r")))))
 
-attribute [instance] Ready_Assumptions.Ready_type_repr
-  Ready_Assumptions.Ready_underlying
-  Ready_Assumptions.Ready_get_SoftState
-  Ready_Assumptions.Ready_set_SoftState
-  Ready_Assumptions.Ready_get_HardState
-  Ready_Assumptions.Ready_set_HardState
-  Ready_Assumptions.Ready_get_ReadStates
-  Ready_Assumptions.Ready_set_ReadStates
-  Ready_Assumptions.Ready_get_Entries
-  Ready_Assumptions.Ready_set_Entries
-  Ready_Assumptions.Ready_get_Snapshot
-  Ready_Assumptions.Ready_set_Snapshot
-  Ready_Assumptions.Ready_get_CommittedEntries
-  Ready_Assumptions.Ready_set_CommittedEntries
-  Ready_Assumptions.Ready_get_Messages
-  Ready_Assumptions.Ready_set_Messages
-  Ready_Assumptions.Ready_get_MustSync
-  Ready_Assumptions.Ready_set_MustSync
-  Ready_Assumptions.Ready_equal_unfold
-  Ready_Assumptions.Ready'ptr_Descriptor_unfold
-  Ready_Assumptions.Ready'ptr_Marshal_unfold
-  Ready_Assumptions.Ready'ptr_MarshalTo_unfold
-  Ready_Assumptions.Ready'ptr_MarshalToSizedBuffer_unfold
-  Ready_Assumptions.Ready'ptr_ProtoMessage_unfold
-  Ready_Assumptions.Ready'ptr_Reset_unfold
-  Ready_Assumptions.Ready'ptr_Size_unfold
-  Ready_Assumptions.Ready'ptr_String_unfold
-  Ready_Assumptions.Ready'ptr_Unmarshal_unfold
-  Ready_Assumptions.Ready'ptr_XXX_DiscardUnknown_unfold
-  Ready_Assumptions.Ready'ptr_XXX_Marshal_unfold
-  Ready_Assumptions.Ready'ptr_XXX_Merge_unfold
-  Ready_Assumptions.Ready'ptr_XXX_Size_unfold
-  Ready_Assumptions.Ready'ptr_XXX_Unmarshal_unfold
-  Ready_Assumptions.Ready'ptr_equal_unfold
+attribute [instance] Ready.TypeAssumptions.type_repr
+  Ready.TypeAssumptions.underlying
+  Ready.TypeAssumptions.get_SoftState
+  Ready.TypeAssumptions.set_SoftState
+  Ready.TypeAssumptions.get_HardState
+  Ready.TypeAssumptions.set_HardState
+  Ready.TypeAssumptions.get_ReadStates
+  Ready.TypeAssumptions.set_ReadStates
+  Ready.TypeAssumptions.get_Entries
+  Ready.TypeAssumptions.set_Entries
+  Ready.TypeAssumptions.get_Snapshot
+  Ready.TypeAssumptions.set_Snapshot
+  Ready.TypeAssumptions.get_CommittedEntries
+  Ready.TypeAssumptions.set_CommittedEntries
+  Ready.TypeAssumptions.get_Messages
+  Ready.TypeAssumptions.set_Messages
+  Ready.TypeAssumptions.get_MustSync
+  Ready.TypeAssumptions.set_MustSync
+  Ready.TypeAssumptions.equal_unfold
+  Ready.TypeAssumptions.ptr_Descriptor_unfold
+  Ready.TypeAssumptions.ptr_Marshal_unfold
+  Ready.TypeAssumptions.ptr_MarshalTo_unfold
+  Ready.TypeAssumptions.ptr_MarshalToSizedBuffer_unfold
+  Ready.TypeAssumptions.ptr_ProtoMessage_unfold
+  Ready.TypeAssumptions.ptr_Reset_unfold
+  Ready.TypeAssumptions.ptr_Size_unfold
+  Ready.TypeAssumptions.ptr_String_unfold
+  Ready.TypeAssumptions.ptr_Unmarshal_unfold
+  Ready.TypeAssumptions.ptr_XXX_DiscardUnknown_unfold
+  Ready.TypeAssumptions.ptr_XXX_Marshal_unfold
+  Ready.TypeAssumptions.ptr_XXX_Merge_unfold
+  Ready.TypeAssumptions.ptr_XXX_Size_unfold
+  Ready.TypeAssumptions.ptr_XXX_Unmarshal_unfold
+  Ready.TypeAssumptions.ptr_equal_unfold
 
 namespace Node
 abbrev t [FfiSyntax] : Type := interface.t
 end Node
 
-@[reducible] def «Nodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Node.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Advance" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"ApplyConfChange" (go.signature.Signature [_root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeI] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState)])), (go.InterfaceElem.MethodElem go!"Campaign" (go.signature.Signature [_root_.Perennial.context.Context] false [go.error])), (go.InterfaceElem.MethodElem go!"ForgetLeader" (go.signature.Signature [_root_.Perennial.context.Context] false [go.error])), (go.InterfaceElem.MethodElem go!"Propose" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.SliceType go.byte)] false [go.error])), (go.InterfaceElem.MethodElem go!"ProposeConfChange" (go.signature.Signature [_root_.Perennial.context.Context, _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeI] false [go.error])), (go.InterfaceElem.MethodElem go!"ReadIndex" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.SliceType go.byte)] false [go.error])), (go.InterfaceElem.MethodElem go!"Ready" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly Ready)])), (go.InterfaceElem.MethodElem go!"ReportSnapshot" (go.signature.Signature [go.uint64, SnapshotStatus] false [])), (go.InterfaceElem.MethodElem go!"ReportUnreachable" (go.signature.Signature [go.uint64] false [])), (go.InterfaceElem.MethodElem go!"Status" (go.signature.Signature [] false [Status])), (go.InterfaceElem.MethodElem go!"Step" (go.signature.Signature [_root_.Perennial.context.Context, _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message] false [go.error])), (go.InterfaceElem.MethodElem go!"Stop" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Tick" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"TransferLeadership" (go.signature.Signature [_root_.Perennial.context.Context, go.uint64, go.uint64] false []))])
 
-class Node_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Node_underlying : go.UnderlyingDirectedEq Node «Nodeⁱᵐᵖˡ»
+class Node.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Node Node.underlying
 
-attribute [instance] Node_Assumptions.Node_underlying
+attribute [instance] Node.TypeAssumptions.underlying
 
 namespace Peer
 structure t [FfiSyntax] where
@@ -11439,34 +11439,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Peer
 
-@[reducible] def Peer'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Peer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.FieldDecl go!"Context" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def Peer'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Peer'fds_unsealed
+@[irreducible] def Peer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Peer.fieldsUnsealed
 
 instance equals_unfold_Peer [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Peer'fds Peer'fds_unsealed :=
-  ⟨by unfold Peer'fds; rfl⟩
+    EqualsUnfold Peer.fields Peer.fieldsUnsealed :=
+  ⟨by unfold Peer.fields; rfl⟩
 
-@[reducible] def «Peerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Peer'fds)
+@[reducible] def Peer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Peer.fields)
 
-class Peer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Peer_type_repr : go.TypeReprUnderlying «Peerⁱᵐᵖˡ» Peer.t
-  Peer_underlying : go.UnderlyingDirectedEq Peer «Peerⁱᵐᵖˡ»
-  Peer_get_ID : ∀ (x : Peer.t), go.IsGoStepPureDetTagged under (StructFieldGet «Peerⁱᵐᵖˡ» go!"ID") #x (Val #(x.ID'))
-  Peer_set_ID : ∀ (x : Peer.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Peerⁱᵐᵖˡ» go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : Peer.t)))
-  Peer_get_Context : ∀ (x : Peer.t), go.IsGoStepPureDetTagged under (StructFieldGet «Peerⁱᵐᵖˡ» go!"Context") #x (Val #(x.Context'))
-  Peer_set_Context : ∀ (x : Peer.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Peerⁱᵐᵖˡ» go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : Peer.t)))
+class Peer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Peer.underlying Peer.t
+  underlying : go.UnderlyingDirectedEq Peer Peer.underlying
+  get_ID : ∀ (x : Peer.t), go.IsGoStepPureDetTagged under (StructFieldGet Peer.underlying go!"ID") #x (Val #(x.ID'))
+  set_ID : ∀ (x : Peer.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Peer.underlying go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : Peer.t)))
+  get_Context : ∀ (x : Peer.t), go.IsGoStepPureDetTagged under (StructFieldGet Peer.underlying go!"Context") #x (Val #(x.Context'))
+  set_Context : ∀ (x : Peer.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Peer.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : Peer.t)))
 
-attribute [instance] Peer_Assumptions.Peer_type_repr
-  Peer_Assumptions.Peer_underlying
-  Peer_Assumptions.Peer_get_ID
-  Peer_Assumptions.Peer_set_ID
-  Peer_Assumptions.Peer_get_Context
-  Peer_Assumptions.Peer_set_Context
+attribute [instance] Peer.TypeAssumptions.type_repr
+  Peer.TypeAssumptions.underlying
+  Peer.TypeAssumptions.get_ID
+  Peer.TypeAssumptions.set_ID
+  Peer.TypeAssumptions.get_Context
+  Peer.TypeAssumptions.set_Context
 
 namespace msgWithResult
 structure t [FfiSyntax] where
@@ -11478,34 +11478,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end msgWithResult
 
-@[reducible] def msgWithResult'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def msgWithResult.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"m" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message),
 (go.field_decl.FieldDecl go!"result" (go.GoType.ChannelType go.ChanDir.sendrecv go.error))]
 
-@[irreducible] def msgWithResult'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  msgWithResult'fds_unsealed
+@[irreducible] def msgWithResult.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  msgWithResult.fieldsUnsealed
 
 instance equals_unfold_msgWithResult [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold msgWithResult'fds msgWithResult'fds_unsealed :=
-  ⟨by unfold msgWithResult'fds; rfl⟩
+    EqualsUnfold msgWithResult.fields msgWithResult.fieldsUnsealed :=
+  ⟨by unfold msgWithResult.fields; rfl⟩
 
-@[reducible] def «msgWithResultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType msgWithResult'fds)
+@[reducible] def msgWithResult.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType msgWithResult.fields)
 
-class msgWithResult_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  msgWithResult_type_repr : go.TypeReprUnderlying «msgWithResultⁱᵐᵖˡ» msgWithResult.t
-  msgWithResult_underlying : go.UnderlyingDirectedEq msgWithResult «msgWithResultⁱᵐᵖˡ»
-  msgWithResult_get_m : ∀ (x : msgWithResult.t), go.IsGoStepPureDetTagged under (StructFieldGet «msgWithResultⁱᵐᵖˡ» go!"m") #x (Val #(x.m'))
-  msgWithResult_set_m : ∀ (x : msgWithResult.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message.t), go.IsGoStepPureDetTagged under (StructFieldSet «msgWithResultⁱᵐᵖˡ» go!"m") (PairV #x #y) (Val #(({ x with m' := y } : msgWithResult.t)))
-  msgWithResult_get_result : ∀ (x : msgWithResult.t), go.IsGoStepPureDetTagged under (StructFieldGet «msgWithResultⁱᵐᵖˡ» go!"result") #x (Val #(x.result'))
-  msgWithResult_set_result : ∀ (x : msgWithResult.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «msgWithResultⁱᵐᵖˡ» go!"result") (PairV #x #y) (Val #(({ x with result' := y } : msgWithResult.t)))
+class msgWithResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying msgWithResult.underlying msgWithResult.t
+  underlying : go.UnderlyingDirectedEq msgWithResult msgWithResult.underlying
+  get_m : ∀ (x : msgWithResult.t), go.IsGoStepPureDetTagged under (StructFieldGet msgWithResult.underlying go!"m") #x (Val #(x.m'))
+  set_m : ∀ (x : msgWithResult.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message.t), go.IsGoStepPureDetTagged under (StructFieldSet msgWithResult.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : msgWithResult.t)))
+  get_result : ∀ (x : msgWithResult.t), go.IsGoStepPureDetTagged under (StructFieldGet msgWithResult.underlying go!"result") #x (Val #(x.result'))
+  set_result : ∀ (x : msgWithResult.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet msgWithResult.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : msgWithResult.t)))
 
-attribute [instance] msgWithResult_Assumptions.msgWithResult_type_repr
-  msgWithResult_Assumptions.msgWithResult_underlying
-  msgWithResult_Assumptions.msgWithResult_get_m
-  msgWithResult_Assumptions.msgWithResult_set_m
-  msgWithResult_Assumptions.msgWithResult_get_result
-  msgWithResult_Assumptions.msgWithResult_set_result
+attribute [instance] msgWithResult.TypeAssumptions.type_repr
+  msgWithResult.TypeAssumptions.underlying
+  msgWithResult.TypeAssumptions.get_m
+  msgWithResult.TypeAssumptions.set_m
+  msgWithResult.TypeAssumptions.get_result
+  msgWithResult.TypeAssumptions.set_result
 
 namespace node
 structure t [FfiSyntax] where
@@ -11526,7 +11526,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end node
 
-@[reducible] def node'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def node.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"propc" (go.GoType.ChannelType go.ChanDir.sendrecv msgWithResult)),
 (go.field_decl.FieldDecl go!"recvc" (go.GoType.ChannelType go.ChanDir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message)),
 (go.field_decl.FieldDecl go!"confc" (go.GoType.ChannelType go.ChanDir.sendrecv _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeV2)),
@@ -11539,116 +11539,116 @@ end node
 (go.field_decl.FieldDecl go!"status" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.ChannelType go.ChanDir.sendrecv Status))),
 (go.field_decl.FieldDecl go!"rn" (go.GoType.PointerType RawNode))]
 
-@[irreducible] def node'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  node'fds_unsealed
+@[irreducible] def node.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  node.fieldsUnsealed
 
 instance equals_unfold_node [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold node'fds node'fds_unsealed :=
-  ⟨by unfold node'fds; rfl⟩
+    EqualsUnfold node.fields node.fieldsUnsealed :=
+  ⟨by unfold node.fields; rfl⟩
 
-@[reducible] def «nodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType node'fds)
+@[reducible] def node.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType node.fields)
 
-class node_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  node_type_repr : go.TypeReprUnderlying «nodeⁱᵐᵖˡ» node.t
-  node_underlying : go.UnderlyingDirectedEq node «nodeⁱᵐᵖˡ»
-  node_get_propc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"propc") #x (Val #(x.propc'))
-  node_set_propc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"propc") (PairV #x #y) (Val #(({ x with propc' := y } : node.t)))
-  node_get_recvc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"recvc") #x (Val #(x.recvc'))
-  node_set_recvc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"recvc") (PairV #x #y) (Val #(({ x with recvc' := y } : node.t)))
-  node_get_confc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"confc") #x (Val #(x.confc'))
-  node_set_confc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"confc") (PairV #x #y) (Val #(({ x with confc' := y } : node.t)))
-  node_get_confstatec : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"confstatec") #x (Val #(x.confstatec'))
-  node_set_confstatec : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"confstatec") (PairV #x #y) (Val #(({ x with confstatec' := y } : node.t)))
-  node_get_readyc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"readyc") #x (Val #(x.readyc'))
-  node_set_readyc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"readyc") (PairV #x #y) (Val #(({ x with readyc' := y } : node.t)))
-  node_get_advancec : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"advancec") #x (Val #(x.advancec'))
-  node_set_advancec : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"advancec") (PairV #x #y) (Val #(({ x with advancec' := y } : node.t)))
-  node_get_tickc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"tickc") #x (Val #(x.tickc'))
-  node_set_tickc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"tickc") (PairV #x #y) (Val #(({ x with tickc' := y } : node.t)))
-  node_get_done : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"done") #x (Val #(x.done'))
-  node_set_done : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"done") (PairV #x #y) (Val #(({ x with done' := y } : node.t)))
-  node_get_stop : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"stop") #x (Val #(x.stop'))
-  node_set_stop : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : node.t)))
-  node_get_status : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"status") #x (Val #(x.status'))
-  node_set_status : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"status") (PairV #x #y) (Val #(({ x with status' := y } : node.t)))
-  node_get_rn : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet «nodeⁱᵐᵖˡ» go!"rn") #x (Val #(x.rn'))
-  node_set_rn : ∀ (x : node.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «nodeⁱᵐᵖˡ» go!"rn") (PairV #x #y) (Val #(({ x with rn' := y } : node.t)))
-  node'ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType node) go!"Advance" «node__Advanceⁱᵐᵖˡ»
-  node'ptr_ApplyConfChange_unfold : MethodUnfold (go.GoType.PointerType node) go!"ApplyConfChange" «node__ApplyConfChangeⁱᵐᵖˡ»
-  node'ptr_Campaign_unfold : MethodUnfold (go.GoType.PointerType node) go!"Campaign" «node__Campaignⁱᵐᵖˡ»
-  node'ptr_ForgetLeader_unfold : MethodUnfold (go.GoType.PointerType node) go!"ForgetLeader" «node__ForgetLeaderⁱᵐᵖˡ»
-  node'ptr_Propose_unfold : MethodUnfold (go.GoType.PointerType node) go!"Propose" «node__Proposeⁱᵐᵖˡ»
-  node'ptr_ProposeConfChange_unfold : MethodUnfold (go.GoType.PointerType node) go!"ProposeConfChange" «node__ProposeConfChangeⁱᵐᵖˡ»
-  node'ptr_ReadIndex_unfold : MethodUnfold (go.GoType.PointerType node) go!"ReadIndex" «node__ReadIndexⁱᵐᵖˡ»
-  node'ptr_Ready_unfold : MethodUnfold (go.GoType.PointerType node) go!"Ready" «node__Readyⁱᵐᵖˡ»
-  node'ptr_ReportSnapshot_unfold : MethodUnfold (go.GoType.PointerType node) go!"ReportSnapshot" «node__ReportSnapshotⁱᵐᵖˡ»
-  node'ptr_ReportUnreachable_unfold : MethodUnfold (go.GoType.PointerType node) go!"ReportUnreachable" «node__ReportUnreachableⁱᵐᵖˡ»
-  node'ptr_Status_unfold : MethodUnfold (go.GoType.PointerType node) go!"Status" «node__Statusⁱᵐᵖˡ»
-  node'ptr_Step_unfold : MethodUnfold (go.GoType.PointerType node) go!"Step" «node__Stepⁱᵐᵖˡ»
-  node'ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType node) go!"Stop" «node__Stopⁱᵐᵖˡ»
-  node'ptr_Tick_unfold : MethodUnfold (go.GoType.PointerType node) go!"Tick" «node__Tickⁱᵐᵖˡ»
-  node'ptr_TransferLeadership_unfold : MethodUnfold (go.GoType.PointerType node) go!"TransferLeadership" «node__TransferLeadershipⁱᵐᵖˡ»
-  node'ptr_run_unfold : MethodUnfold (go.GoType.PointerType node) go!"run" «node__runⁱᵐᵖˡ»
-  node'ptr_step_unfold : MethodUnfold (go.GoType.PointerType node) go!"step" «node__stepⁱᵐᵖˡ»
-  node'ptr_stepWait_unfold : MethodUnfold (go.GoType.PointerType node) go!"stepWait" «node__stepWaitⁱᵐᵖˡ»
-  node'ptr_stepWithWaitOption_unfold : MethodUnfold (go.GoType.PointerType node) go!"stepWithWaitOption" «node__stepWithWaitOptionⁱᵐᵖˡ»
+class node.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying node.underlying node.t
+  underlying : go.UnderlyingDirectedEq node node.underlying
+  get_propc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"propc") #x (Val #(x.propc'))
+  set_propc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"propc") (PairV #x #y) (Val #(({ x with propc' := y } : node.t)))
+  get_recvc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"recvc") #x (Val #(x.recvc'))
+  set_recvc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"recvc") (PairV #x #y) (Val #(({ x with recvc' := y } : node.t)))
+  get_confc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"confc") #x (Val #(x.confc'))
+  set_confc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"confc") (PairV #x #y) (Val #(({ x with confc' := y } : node.t)))
+  get_confstatec : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"confstatec") #x (Val #(x.confstatec'))
+  set_confstatec : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"confstatec") (PairV #x #y) (Val #(({ x with confstatec' := y } : node.t)))
+  get_readyc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"readyc") #x (Val #(x.readyc'))
+  set_readyc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"readyc") (PairV #x #y) (Val #(({ x with readyc' := y } : node.t)))
+  get_advancec : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"advancec") #x (Val #(x.advancec'))
+  set_advancec : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"advancec") (PairV #x #y) (Val #(({ x with advancec' := y } : node.t)))
+  get_tickc : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"tickc") #x (Val #(x.tickc'))
+  set_tickc : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"tickc") (PairV #x #y) (Val #(({ x with tickc' := y } : node.t)))
+  get_done : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"done") #x (Val #(x.done'))
+  set_done : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : node.t)))
+  get_stop : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"stop") #x (Val #(x.stop'))
+  set_stop : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : node.t)))
+  get_status : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"status") #x (Val #(x.status'))
+  set_status : ∀ (x : node.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"status") (PairV #x #y) (Val #(({ x with status' := y } : node.t)))
+  get_rn : ∀ (x : node.t), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"rn") #x (Val #(x.rn'))
+  set_rn : ∀ (x : node.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"rn") (PairV #x #y) (Val #(({ x with rn' := y } : node.t)))
+  ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType node) go!"Advance" node.Advance.impl
+  ptr_ApplyConfChange_unfold : MethodUnfold (go.GoType.PointerType node) go!"ApplyConfChange" node.ApplyConfChange.impl
+  ptr_Campaign_unfold : MethodUnfold (go.GoType.PointerType node) go!"Campaign" node.Campaign.impl
+  ptr_ForgetLeader_unfold : MethodUnfold (go.GoType.PointerType node) go!"ForgetLeader" node.ForgetLeader.impl
+  ptr_Propose_unfold : MethodUnfold (go.GoType.PointerType node) go!"Propose" node.Propose.impl
+  ptr_ProposeConfChange_unfold : MethodUnfold (go.GoType.PointerType node) go!"ProposeConfChange" node.ProposeConfChange.impl
+  ptr_ReadIndex_unfold : MethodUnfold (go.GoType.PointerType node) go!"ReadIndex" node.ReadIndex.impl
+  ptr_Ready_unfold : MethodUnfold (go.GoType.PointerType node) go!"Ready" node.Ready.impl
+  ptr_ReportSnapshot_unfold : MethodUnfold (go.GoType.PointerType node) go!"ReportSnapshot" node.ReportSnapshot.impl
+  ptr_ReportUnreachable_unfold : MethodUnfold (go.GoType.PointerType node) go!"ReportUnreachable" node.ReportUnreachable.impl
+  ptr_Status_unfold : MethodUnfold (go.GoType.PointerType node) go!"Status" node.Status.impl
+  ptr_Step_unfold : MethodUnfold (go.GoType.PointerType node) go!"Step" node.Step.impl
+  ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType node) go!"Stop" node.Stop.impl
+  ptr_Tick_unfold : MethodUnfold (go.GoType.PointerType node) go!"Tick" node.Tick.impl
+  ptr_TransferLeadership_unfold : MethodUnfold (go.GoType.PointerType node) go!"TransferLeadership" node.TransferLeadership.impl
+  ptr_run_unfold : MethodUnfold (go.GoType.PointerType node) go!"run" node.run.impl
+  ptr_step_unfold : MethodUnfold (go.GoType.PointerType node) go!"step" node.step.impl
+  ptr_stepWait_unfold : MethodUnfold (go.GoType.PointerType node) go!"stepWait" node.stepWait.impl
+  ptr_stepWithWaitOption_unfold : MethodUnfold (go.GoType.PointerType node) go!"stepWithWaitOption" node.stepWithWaitOption.impl
 
-attribute [instance] node_Assumptions.node_type_repr
-  node_Assumptions.node_underlying
-  node_Assumptions.node_get_propc
-  node_Assumptions.node_set_propc
-  node_Assumptions.node_get_recvc
-  node_Assumptions.node_set_recvc
-  node_Assumptions.node_get_confc
-  node_Assumptions.node_set_confc
-  node_Assumptions.node_get_confstatec
-  node_Assumptions.node_set_confstatec
-  node_Assumptions.node_get_readyc
-  node_Assumptions.node_set_readyc
-  node_Assumptions.node_get_advancec
-  node_Assumptions.node_set_advancec
-  node_Assumptions.node_get_tickc
-  node_Assumptions.node_set_tickc
-  node_Assumptions.node_get_done
-  node_Assumptions.node_set_done
-  node_Assumptions.node_get_stop
-  node_Assumptions.node_set_stop
-  node_Assumptions.node_get_status
-  node_Assumptions.node_set_status
-  node_Assumptions.node_get_rn
-  node_Assumptions.node_set_rn
-  node_Assumptions.node'ptr_Advance_unfold
-  node_Assumptions.node'ptr_ApplyConfChange_unfold
-  node_Assumptions.node'ptr_Campaign_unfold
-  node_Assumptions.node'ptr_ForgetLeader_unfold
-  node_Assumptions.node'ptr_Propose_unfold
-  node_Assumptions.node'ptr_ProposeConfChange_unfold
-  node_Assumptions.node'ptr_ReadIndex_unfold
-  node_Assumptions.node'ptr_Ready_unfold
-  node_Assumptions.node'ptr_ReportSnapshot_unfold
-  node_Assumptions.node'ptr_ReportUnreachable_unfold
-  node_Assumptions.node'ptr_Status_unfold
-  node_Assumptions.node'ptr_Step_unfold
-  node_Assumptions.node'ptr_Stop_unfold
-  node_Assumptions.node'ptr_Tick_unfold
-  node_Assumptions.node'ptr_TransferLeadership_unfold
-  node_Assumptions.node'ptr_run_unfold
-  node_Assumptions.node'ptr_step_unfold
-  node_Assumptions.node'ptr_stepWait_unfold
-  node_Assumptions.node'ptr_stepWithWaitOption_unfold
+attribute [instance] node.TypeAssumptions.type_repr
+  node.TypeAssumptions.underlying
+  node.TypeAssumptions.get_propc
+  node.TypeAssumptions.set_propc
+  node.TypeAssumptions.get_recvc
+  node.TypeAssumptions.set_recvc
+  node.TypeAssumptions.get_confc
+  node.TypeAssumptions.set_confc
+  node.TypeAssumptions.get_confstatec
+  node.TypeAssumptions.set_confstatec
+  node.TypeAssumptions.get_readyc
+  node.TypeAssumptions.set_readyc
+  node.TypeAssumptions.get_advancec
+  node.TypeAssumptions.set_advancec
+  node.TypeAssumptions.get_tickc
+  node.TypeAssumptions.set_tickc
+  node.TypeAssumptions.get_done
+  node.TypeAssumptions.set_done
+  node.TypeAssumptions.get_stop
+  node.TypeAssumptions.set_stop
+  node.TypeAssumptions.get_status
+  node.TypeAssumptions.set_status
+  node.TypeAssumptions.get_rn
+  node.TypeAssumptions.set_rn
+  node.TypeAssumptions.ptr_Advance_unfold
+  node.TypeAssumptions.ptr_ApplyConfChange_unfold
+  node.TypeAssumptions.ptr_Campaign_unfold
+  node.TypeAssumptions.ptr_ForgetLeader_unfold
+  node.TypeAssumptions.ptr_Propose_unfold
+  node.TypeAssumptions.ptr_ProposeConfChange_unfold
+  node.TypeAssumptions.ptr_ReadIndex_unfold
+  node.TypeAssumptions.ptr_Ready_unfold
+  node.TypeAssumptions.ptr_ReportSnapshot_unfold
+  node.TypeAssumptions.ptr_ReportUnreachable_unfold
+  node.TypeAssumptions.ptr_Status_unfold
+  node.TypeAssumptions.ptr_Step_unfold
+  node.TypeAssumptions.ptr_Stop_unfold
+  node.TypeAssumptions.ptr_Tick_unfold
+  node.TypeAssumptions.ptr_TransferLeadership_unfold
+  node.TypeAssumptions.ptr_run_unfold
+  node.TypeAssumptions.ptr_step_unfold
+  node.TypeAssumptions.ptr_stepWait_unfold
+  node.TypeAssumptions.ptr_stepWithWaitOption_unfold
 
 namespace ReadOnlyOption
 abbrev t [FfiSyntax] : Type := w64
 end ReadOnlyOption
 
-@[reducible] def «ReadOnlyOptionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def ReadOnlyOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class ReadOnlyOption_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ReadOnlyOption_underlying : go.UnderlyingDirectedEq ReadOnlyOption «ReadOnlyOptionⁱᵐᵖˡ»
+class ReadOnlyOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq ReadOnlyOption ReadOnlyOption.underlying
 
-attribute [instance] ReadOnlyOption_Assumptions.ReadOnlyOption_underlying
+attribute [instance] ReadOnlyOption.TypeAssumptions.underlying
 
 namespace lockedRand
 structure t [FfiSyntax] where
@@ -11659,55 +11659,55 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end lockedRand
 
-@[reducible] def lockedRand'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def lockedRand.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex)]
 
-@[irreducible] def lockedRand'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  lockedRand'fds_unsealed
+@[irreducible] def lockedRand.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  lockedRand.fieldsUnsealed
 
 instance equals_unfold_lockedRand [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold lockedRand'fds lockedRand'fds_unsealed :=
-  ⟨by unfold lockedRand'fds; rfl⟩
+    EqualsUnfold lockedRand.fields lockedRand.fieldsUnsealed :=
+  ⟨by unfold lockedRand.fields; rfl⟩
 
-@[reducible] def «lockedRandⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType lockedRand'fds)
+@[reducible] def lockedRand.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType lockedRand.fields)
 
-class lockedRand_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  lockedRand_type_repr : go.TypeReprUnderlying «lockedRandⁱᵐᵖˡ» lockedRand.t
-  lockedRand_underlying : go.UnderlyingDirectedEq lockedRand «lockedRandⁱᵐᵖˡ»
-  lockedRand_get_mu : ∀ (x : lockedRand.t), go.IsGoStepPureDetTagged under (StructFieldGet «lockedRandⁱᵐᵖˡ» go!"mu") #x (Val #(x.mu'))
-  lockedRand_set_mu : ∀ (x : lockedRand.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «lockedRandⁱᵐᵖˡ» go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : lockedRand.t)))
-  lockedRand'ptr_Intn_unfold : MethodUnfold (go.GoType.PointerType lockedRand) go!"Intn" «lockedRand__Intnⁱᵐᵖˡ»
+class lockedRand.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying lockedRand.underlying lockedRand.t
+  underlying : go.UnderlyingDirectedEq lockedRand lockedRand.underlying
+  get_mu : ∀ (x : lockedRand.t), go.IsGoStepPureDetTagged under (StructFieldGet lockedRand.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : lockedRand.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet lockedRand.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : lockedRand.t)))
+  ptr_Intn_unfold : MethodUnfold (go.GoType.PointerType lockedRand) go!"Intn" lockedRand.Intn.impl
 
-attribute [instance] lockedRand_Assumptions.lockedRand_type_repr
-  lockedRand_Assumptions.lockedRand_underlying
-  lockedRand_Assumptions.lockedRand_get_mu
-  lockedRand_Assumptions.lockedRand_set_mu
-  lockedRand_Assumptions.lockedRand'ptr_Intn_unfold
+attribute [instance] lockedRand.TypeAssumptions.type_repr
+  lockedRand.TypeAssumptions.underlying
+  lockedRand.TypeAssumptions.get_mu
+  lockedRand.TypeAssumptions.set_mu
+  lockedRand.TypeAssumptions.ptr_Intn_unfold
 
 namespace CampaignType
 abbrev t [FfiSyntax] : Type := GoString
 end CampaignType
 
-@[reducible] def «CampaignTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def CampaignType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class CampaignType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  CampaignType_underlying : go.UnderlyingDirectedEq CampaignType «CampaignTypeⁱᵐᵖˡ»
+class CampaignType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq CampaignType CampaignType.underlying
 
-attribute [instance] CampaignType_Assumptions.CampaignType_underlying
+attribute [instance] CampaignType.TypeAssumptions.underlying
 
 namespace TraceLogger
 abbrev t [FfiSyntax] : Type := interface.t
 end TraceLogger
 
-@[reducible] def «TraceLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def TraceLogger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [])
 
-class TraceLogger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TraceLogger_underlying : go.UnderlyingDirectedEq TraceLogger «TraceLoggerⁱᵐᵖˡ»
+class TraceLogger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq TraceLogger TraceLogger.underlying
 
-attribute [instance] TraceLogger_Assumptions.TraceLogger_underlying
+attribute [instance] TraceLogger.TypeAssumptions.underlying
 
 namespace Config
 structure t [FfiSyntax] where
@@ -11736,7 +11736,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Config
 
-@[reducible] def Config'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Config.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.FieldDecl go!"ElectionTick" go.int),
 (go.field_decl.FieldDecl go!"HeartbeatTick" go.int),
@@ -11757,124 +11757,124 @@ end Config
 (go.field_decl.FieldDecl go!"StepDownOnRemoval" go.bool),
 (go.field_decl.FieldDecl go!"TraceLogger" TraceLogger)]
 
-@[irreducible] def Config'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Config'fds_unsealed
+@[irreducible] def Config.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Config.fieldsUnsealed
 
 instance equals_unfold_Config [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Config'fds Config'fds_unsealed :=
-  ⟨by unfold Config'fds; rfl⟩
+    EqualsUnfold Config.fields Config.fieldsUnsealed :=
+  ⟨by unfold Config.fields; rfl⟩
 
-@[reducible] def «Configⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Config'fds)
+@[reducible] def Config.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Config.fields)
 
-class Config_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Config_type_repr : go.TypeReprUnderlying «Configⁱᵐᵖˡ» Config.t
-  Config_underlying : go.UnderlyingDirectedEq Config «Configⁱᵐᵖˡ»
-  Config_get_ID : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"ID") #x (Val #(x.ID'))
-  Config_set_ID : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : Config.t)))
-  Config_get_ElectionTick : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"ElectionTick") #x (Val #(x.ElectionTick'))
-  Config_set_ElectionTick : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"ElectionTick") (PairV #x #y) (Val #(({ x with ElectionTick' := y } : Config.t)))
-  Config_get_HeartbeatTick : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"HeartbeatTick") #x (Val #(x.HeartbeatTick'))
-  Config_set_HeartbeatTick : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"HeartbeatTick") (PairV #x #y) (Val #(({ x with HeartbeatTick' := y } : Config.t)))
-  Config_get_Storage : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"Storage") #x (Val #(x.Storage'))
-  Config_set_Storage : ∀ (x : Config.t) (y : Storage.t), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Storage") (PairV #x #y) (Val #(({ x with Storage' := y } : Config.t)))
-  Config_get_Applied : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"Applied") #x (Val #(x.Applied'))
-  Config_set_Applied : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Applied") (PairV #x #y) (Val #(({ x with Applied' := y } : Config.t)))
-  Config_get_AsyncStorageWrites : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"AsyncStorageWrites") #x (Val #(x.AsyncStorageWrites'))
-  Config_set_AsyncStorageWrites : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"AsyncStorageWrites") (PairV #x #y) (Val #(({ x with AsyncStorageWrites' := y } : Config.t)))
-  Config_get_MaxSizePerMsg : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"MaxSizePerMsg") #x (Val #(x.MaxSizePerMsg'))
-  Config_set_MaxSizePerMsg : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"MaxSizePerMsg") (PairV #x #y) (Val #(({ x with MaxSizePerMsg' := y } : Config.t)))
-  Config_get_MaxCommittedSizePerReady : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"MaxCommittedSizePerReady") #x (Val #(x.MaxCommittedSizePerReady'))
-  Config_set_MaxCommittedSizePerReady : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"MaxCommittedSizePerReady") (PairV #x #y) (Val #(({ x with MaxCommittedSizePerReady' := y } : Config.t)))
-  Config_get_MaxUncommittedEntriesSize : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"MaxUncommittedEntriesSize") #x (Val #(x.MaxUncommittedEntriesSize'))
-  Config_set_MaxUncommittedEntriesSize : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"MaxUncommittedEntriesSize") (PairV #x #y) (Val #(({ x with MaxUncommittedEntriesSize' := y } : Config.t)))
-  Config_get_MaxInflightMsgs : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"MaxInflightMsgs") #x (Val #(x.MaxInflightMsgs'))
-  Config_set_MaxInflightMsgs : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"MaxInflightMsgs") (PairV #x #y) (Val #(({ x with MaxInflightMsgs' := y } : Config.t)))
-  Config_get_MaxInflightBytes : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"MaxInflightBytes") #x (Val #(x.MaxInflightBytes'))
-  Config_set_MaxInflightBytes : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"MaxInflightBytes") (PairV #x #y) (Val #(({ x with MaxInflightBytes' := y } : Config.t)))
-  Config_get_CheckQuorum : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"CheckQuorum") #x (Val #(x.CheckQuorum'))
-  Config_set_CheckQuorum : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"CheckQuorum") (PairV #x #y) (Val #(({ x with CheckQuorum' := y } : Config.t)))
-  Config_get_PreVote : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"PreVote") #x (Val #(x.PreVote'))
-  Config_set_PreVote : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"PreVote") (PairV #x #y) (Val #(({ x with PreVote' := y } : Config.t)))
-  Config_get_ReadOnlyOption : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"ReadOnlyOption") #x (Val #(x.ReadOnlyOption'))
-  Config_set_ReadOnlyOption : ∀ (x : Config.t) (y : ReadOnlyOption.t), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"ReadOnlyOption") (PairV #x #y) (Val #(({ x with ReadOnlyOption' := y } : Config.t)))
-  Config_get_Logger : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"Logger") #x (Val #(x.Logger'))
-  Config_set_Logger : ∀ (x : Config.t) (y : Logger.t), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Logger") (PairV #x #y) (Val #(({ x with Logger' := y } : Config.t)))
-  Config_get_DisableProposalForwarding : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"DisableProposalForwarding") #x (Val #(x.DisableProposalForwarding'))
-  Config_set_DisableProposalForwarding : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"DisableProposalForwarding") (PairV #x #y) (Val #(({ x with DisableProposalForwarding' := y } : Config.t)))
-  Config_get_DisableConfChangeValidation : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"DisableConfChangeValidation") #x (Val #(x.DisableConfChangeValidation'))
-  Config_set_DisableConfChangeValidation : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"DisableConfChangeValidation") (PairV #x #y) (Val #(({ x with DisableConfChangeValidation' := y } : Config.t)))
-  Config_get_StepDownOnRemoval : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"StepDownOnRemoval") #x (Val #(x.StepDownOnRemoval'))
-  Config_set_StepDownOnRemoval : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"StepDownOnRemoval") (PairV #x #y) (Val #(({ x with StepDownOnRemoval' := y } : Config.t)))
-  Config_get_TraceLogger : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"TraceLogger") #x (Val #(x.TraceLogger'))
-  Config_set_TraceLogger : ∀ (x : Config.t) (y : TraceLogger.t), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"TraceLogger") (PairV #x #y) (Val #(({ x with TraceLogger' := y } : Config.t)))
-  Config'ptr_validate_unfold : MethodUnfold (go.GoType.PointerType Config) go!"validate" «Config__validateⁱᵐᵖˡ»
+class Config.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Config.underlying Config.t
+  underlying : go.UnderlyingDirectedEq Config Config.underlying
+  get_ID : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"ID") #x (Val #(x.ID'))
+  set_ID : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : Config.t)))
+  get_ElectionTick : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"ElectionTick") #x (Val #(x.ElectionTick'))
+  set_ElectionTick : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"ElectionTick") (PairV #x #y) (Val #(({ x with ElectionTick' := y } : Config.t)))
+  get_HeartbeatTick : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"HeartbeatTick") #x (Val #(x.HeartbeatTick'))
+  set_HeartbeatTick : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"HeartbeatTick") (PairV #x #y) (Val #(({ x with HeartbeatTick' := y } : Config.t)))
+  get_Storage : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"Storage") #x (Val #(x.Storage'))
+  set_Storage : ∀ (x : Config.t) (y : Storage.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"Storage") (PairV #x #y) (Val #(({ x with Storage' := y } : Config.t)))
+  get_Applied : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"Applied") #x (Val #(x.Applied'))
+  set_Applied : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"Applied") (PairV #x #y) (Val #(({ x with Applied' := y } : Config.t)))
+  get_AsyncStorageWrites : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"AsyncStorageWrites") #x (Val #(x.AsyncStorageWrites'))
+  set_AsyncStorageWrites : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"AsyncStorageWrites") (PairV #x #y) (Val #(({ x with AsyncStorageWrites' := y } : Config.t)))
+  get_MaxSizePerMsg : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"MaxSizePerMsg") #x (Val #(x.MaxSizePerMsg'))
+  set_MaxSizePerMsg : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"MaxSizePerMsg") (PairV #x #y) (Val #(({ x with MaxSizePerMsg' := y } : Config.t)))
+  get_MaxCommittedSizePerReady : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"MaxCommittedSizePerReady") #x (Val #(x.MaxCommittedSizePerReady'))
+  set_MaxCommittedSizePerReady : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"MaxCommittedSizePerReady") (PairV #x #y) (Val #(({ x with MaxCommittedSizePerReady' := y } : Config.t)))
+  get_MaxUncommittedEntriesSize : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"MaxUncommittedEntriesSize") #x (Val #(x.MaxUncommittedEntriesSize'))
+  set_MaxUncommittedEntriesSize : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"MaxUncommittedEntriesSize") (PairV #x #y) (Val #(({ x with MaxUncommittedEntriesSize' := y } : Config.t)))
+  get_MaxInflightMsgs : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"MaxInflightMsgs") #x (Val #(x.MaxInflightMsgs'))
+  set_MaxInflightMsgs : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"MaxInflightMsgs") (PairV #x #y) (Val #(({ x with MaxInflightMsgs' := y } : Config.t)))
+  get_MaxInflightBytes : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"MaxInflightBytes") #x (Val #(x.MaxInflightBytes'))
+  set_MaxInflightBytes : ∀ (x : Config.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"MaxInflightBytes") (PairV #x #y) (Val #(({ x with MaxInflightBytes' := y } : Config.t)))
+  get_CheckQuorum : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"CheckQuorum") #x (Val #(x.CheckQuorum'))
+  set_CheckQuorum : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"CheckQuorum") (PairV #x #y) (Val #(({ x with CheckQuorum' := y } : Config.t)))
+  get_PreVote : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"PreVote") #x (Val #(x.PreVote'))
+  set_PreVote : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"PreVote") (PairV #x #y) (Val #(({ x with PreVote' := y } : Config.t)))
+  get_ReadOnlyOption : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"ReadOnlyOption") #x (Val #(x.ReadOnlyOption'))
+  set_ReadOnlyOption : ∀ (x : Config.t) (y : ReadOnlyOption.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"ReadOnlyOption") (PairV #x #y) (Val #(({ x with ReadOnlyOption' := y } : Config.t)))
+  get_Logger : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"Logger") #x (Val #(x.Logger'))
+  set_Logger : ∀ (x : Config.t) (y : Logger.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"Logger") (PairV #x #y) (Val #(({ x with Logger' := y } : Config.t)))
+  get_DisableProposalForwarding : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"DisableProposalForwarding") #x (Val #(x.DisableProposalForwarding'))
+  set_DisableProposalForwarding : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"DisableProposalForwarding") (PairV #x #y) (Val #(({ x with DisableProposalForwarding' := y } : Config.t)))
+  get_DisableConfChangeValidation : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"DisableConfChangeValidation") #x (Val #(x.DisableConfChangeValidation'))
+  set_DisableConfChangeValidation : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"DisableConfChangeValidation") (PairV #x #y) (Val #(({ x with DisableConfChangeValidation' := y } : Config.t)))
+  get_StepDownOnRemoval : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"StepDownOnRemoval") #x (Val #(x.StepDownOnRemoval'))
+  set_StepDownOnRemoval : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"StepDownOnRemoval") (PairV #x #y) (Val #(({ x with StepDownOnRemoval' := y } : Config.t)))
+  get_TraceLogger : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"TraceLogger") #x (Val #(x.TraceLogger'))
+  set_TraceLogger : ∀ (x : Config.t) (y : TraceLogger.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"TraceLogger") (PairV #x #y) (Val #(({ x with TraceLogger' := y } : Config.t)))
+  ptr_validate_unfold : MethodUnfold (go.GoType.PointerType Config) go!"validate" Config.validate.impl
 
-attribute [instance] Config_Assumptions.Config_type_repr
-  Config_Assumptions.Config_underlying
-  Config_Assumptions.Config_get_ID
-  Config_Assumptions.Config_set_ID
-  Config_Assumptions.Config_get_ElectionTick
-  Config_Assumptions.Config_set_ElectionTick
-  Config_Assumptions.Config_get_HeartbeatTick
-  Config_Assumptions.Config_set_HeartbeatTick
-  Config_Assumptions.Config_get_Storage
-  Config_Assumptions.Config_set_Storage
-  Config_Assumptions.Config_get_Applied
-  Config_Assumptions.Config_set_Applied
-  Config_Assumptions.Config_get_AsyncStorageWrites
-  Config_Assumptions.Config_set_AsyncStorageWrites
-  Config_Assumptions.Config_get_MaxSizePerMsg
-  Config_Assumptions.Config_set_MaxSizePerMsg
-  Config_Assumptions.Config_get_MaxCommittedSizePerReady
-  Config_Assumptions.Config_set_MaxCommittedSizePerReady
-  Config_Assumptions.Config_get_MaxUncommittedEntriesSize
-  Config_Assumptions.Config_set_MaxUncommittedEntriesSize
-  Config_Assumptions.Config_get_MaxInflightMsgs
-  Config_Assumptions.Config_set_MaxInflightMsgs
-  Config_Assumptions.Config_get_MaxInflightBytes
-  Config_Assumptions.Config_set_MaxInflightBytes
-  Config_Assumptions.Config_get_CheckQuorum
-  Config_Assumptions.Config_set_CheckQuorum
-  Config_Assumptions.Config_get_PreVote
-  Config_Assumptions.Config_set_PreVote
-  Config_Assumptions.Config_get_ReadOnlyOption
-  Config_Assumptions.Config_set_ReadOnlyOption
-  Config_Assumptions.Config_get_Logger
-  Config_Assumptions.Config_set_Logger
-  Config_Assumptions.Config_get_DisableProposalForwarding
-  Config_Assumptions.Config_set_DisableProposalForwarding
-  Config_Assumptions.Config_get_DisableConfChangeValidation
-  Config_Assumptions.Config_set_DisableConfChangeValidation
-  Config_Assumptions.Config_get_StepDownOnRemoval
-  Config_Assumptions.Config_set_StepDownOnRemoval
-  Config_Assumptions.Config_get_TraceLogger
-  Config_Assumptions.Config_set_TraceLogger
-  Config_Assumptions.Config'ptr_validate_unfold
+attribute [instance] Config.TypeAssumptions.type_repr
+  Config.TypeAssumptions.underlying
+  Config.TypeAssumptions.get_ID
+  Config.TypeAssumptions.set_ID
+  Config.TypeAssumptions.get_ElectionTick
+  Config.TypeAssumptions.set_ElectionTick
+  Config.TypeAssumptions.get_HeartbeatTick
+  Config.TypeAssumptions.set_HeartbeatTick
+  Config.TypeAssumptions.get_Storage
+  Config.TypeAssumptions.set_Storage
+  Config.TypeAssumptions.get_Applied
+  Config.TypeAssumptions.set_Applied
+  Config.TypeAssumptions.get_AsyncStorageWrites
+  Config.TypeAssumptions.set_AsyncStorageWrites
+  Config.TypeAssumptions.get_MaxSizePerMsg
+  Config.TypeAssumptions.set_MaxSizePerMsg
+  Config.TypeAssumptions.get_MaxCommittedSizePerReady
+  Config.TypeAssumptions.set_MaxCommittedSizePerReady
+  Config.TypeAssumptions.get_MaxUncommittedEntriesSize
+  Config.TypeAssumptions.set_MaxUncommittedEntriesSize
+  Config.TypeAssumptions.get_MaxInflightMsgs
+  Config.TypeAssumptions.set_MaxInflightMsgs
+  Config.TypeAssumptions.get_MaxInflightBytes
+  Config.TypeAssumptions.set_MaxInflightBytes
+  Config.TypeAssumptions.get_CheckQuorum
+  Config.TypeAssumptions.set_CheckQuorum
+  Config.TypeAssumptions.get_PreVote
+  Config.TypeAssumptions.set_PreVote
+  Config.TypeAssumptions.get_ReadOnlyOption
+  Config.TypeAssumptions.set_ReadOnlyOption
+  Config.TypeAssumptions.get_Logger
+  Config.TypeAssumptions.set_Logger
+  Config.TypeAssumptions.get_DisableProposalForwarding
+  Config.TypeAssumptions.set_DisableProposalForwarding
+  Config.TypeAssumptions.get_DisableConfChangeValidation
+  Config.TypeAssumptions.set_DisableConfChangeValidation
+  Config.TypeAssumptions.get_StepDownOnRemoval
+  Config.TypeAssumptions.set_StepDownOnRemoval
+  Config.TypeAssumptions.get_TraceLogger
+  Config.TypeAssumptions.set_TraceLogger
+  Config.TypeAssumptions.ptr_validate_unfold
 
 namespace entryPayloadSize
 abbrev t [FfiSyntax] : Type := w64
 end entryPayloadSize
 
-@[reducible] def «entryPayloadSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def entryPayloadSize.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class entryPayloadSize_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  entryPayloadSize_underlying : go.UnderlyingDirectedEq entryPayloadSize «entryPayloadSizeⁱᵐᵖˡ»
+class entryPayloadSize.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq entryPayloadSize entryPayloadSize.underlying
 
-attribute [instance] entryPayloadSize_Assumptions.entryPayloadSize_underlying
+attribute [instance] entryPayloadSize.TypeAssumptions.underlying
 
 namespace stepFunc
 abbrev t [FfiSyntax] : Type := func.t
 end stepFunc
 
-@[reducible] def «stepFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def stepFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType raft), _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message] false [go.error]))
 
-class stepFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stepFunc_underlying : go.UnderlyingDirectedEq stepFunc «stepFuncⁱᵐᵖˡ»
+class stepFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq stepFunc stepFunc.underlying
 
-attribute [instance] stepFunc_Assumptions.stepFunc_underlying
+attribute [instance] stepFunc.TypeAssumptions.underlying
 
 namespace raft
 structure t [FfiSyntax] where
@@ -11916,7 +11916,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end raft
 
-@[reducible] def raft'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def raft.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"id" go.uint64),
 (go.field_decl.FieldDecl go!"Term" go.uint64),
 (go.field_decl.FieldDecl go!"Vote" go.uint64),
@@ -11950,236 +11950,236 @@ end raft
 (go.field_decl.FieldDecl go!"pendingReadIndexMessages" (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message)),
 (go.field_decl.FieldDecl go!"traceLogger" TraceLogger)]
 
-@[irreducible] def raft'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  raft'fds_unsealed
+@[irreducible] def raft.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  raft.fieldsUnsealed
 
 instance equals_unfold_raft [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold raft'fds raft'fds_unsealed :=
-  ⟨by unfold raft'fds; rfl⟩
+    EqualsUnfold raft.fields raft.fieldsUnsealed :=
+  ⟨by unfold raft.fields; rfl⟩
 
-@[reducible] def «raftⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType raft'fds)
+@[reducible] def raft.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType raft.fields)
 
-class raft_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  raft_type_repr : go.TypeReprUnderlying «raftⁱᵐᵖˡ» raft.t
-  raft_underlying : go.UnderlyingDirectedEq raft «raftⁱᵐᵖˡ»
-  raft_get_id : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"id") #x (Val #(x.id'))
-  raft_set_id : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"id") (PairV #x #y) (Val #(({ x with id' := y } : raft.t)))
-  raft_get_Term : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"Term") #x (Val #(x.Term'))
-  raft_set_Term : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"Term") (PairV #x #y) (Val #(({ x with Term' := y } : raft.t)))
-  raft_get_Vote : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"Vote") #x (Val #(x.Vote'))
-  raft_set_Vote : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"Vote") (PairV #x #y) (Val #(({ x with Vote' := y } : raft.t)))
-  raft_get_readStates : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"readStates") #x (Val #(x.readStates'))
-  raft_set_readStates : ∀ (x : raft.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"readStates") (PairV #x #y) (Val #(({ x with readStates' := y } : raft.t)))
-  raft_get_raftLog : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"raftLog") #x (Val #(x.raftLog'))
-  raft_set_raftLog : ∀ (x : raft.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"raftLog") (PairV #x #y) (Val #(({ x with raftLog' := y } : raft.t)))
-  raft_get_maxMsgSize : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"maxMsgSize") #x (Val #(x.maxMsgSize'))
-  raft_set_maxMsgSize : ∀ (x : raft.t) (y : entryEncodingSize.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"maxMsgSize") (PairV #x #y) (Val #(({ x with maxMsgSize' := y } : raft.t)))
-  raft_get_maxUncommittedSize : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"maxUncommittedSize") #x (Val #(x.maxUncommittedSize'))
-  raft_set_maxUncommittedSize : ∀ (x : raft.t) (y : entryPayloadSize.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"maxUncommittedSize") (PairV #x #y) (Val #(({ x with maxUncommittedSize' := y } : raft.t)))
-  raft_get_trk : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"trk") #x (Val #(x.trk'))
-  raft_set_trk : ∀ (x : raft.t) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"trk") (PairV #x #y) (Val #(({ x with trk' := y } : raft.t)))
-  raft_get_state : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"state") #x (Val #(x.state'))
-  raft_set_state : ∀ (x : raft.t) (y : StateType.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"state") (PairV #x #y) (Val #(({ x with state' := y } : raft.t)))
-  raft_get_isLearner : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"isLearner") #x (Val #(x.isLearner'))
-  raft_set_isLearner : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"isLearner") (PairV #x #y) (Val #(({ x with isLearner' := y } : raft.t)))
-  raft_get_msgs : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"msgs") #x (Val #(x.msgs'))
-  raft_set_msgs : ∀ (x : raft.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"msgs") (PairV #x #y) (Val #(({ x with msgs' := y } : raft.t)))
-  raft_get_msgsAfterAppend : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"msgsAfterAppend") #x (Val #(x.msgsAfterAppend'))
-  raft_set_msgsAfterAppend : ∀ (x : raft.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"msgsAfterAppend") (PairV #x #y) (Val #(({ x with msgsAfterAppend' := y } : raft.t)))
-  raft_get_lead : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"lead") #x (Val #(x.lead'))
-  raft_set_lead : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"lead") (PairV #x #y) (Val #(({ x with lead' := y } : raft.t)))
-  raft_get_leadTransferee : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"leadTransferee") #x (Val #(x.leadTransferee'))
-  raft_set_leadTransferee : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"leadTransferee") (PairV #x #y) (Val #(({ x with leadTransferee' := y } : raft.t)))
-  raft_get_pendingConfIndex : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"pendingConfIndex") #x (Val #(x.pendingConfIndex'))
-  raft_set_pendingConfIndex : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"pendingConfIndex") (PairV #x #y) (Val #(({ x with pendingConfIndex' := y } : raft.t)))
-  raft_get_disableConfChangeValidation : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"disableConfChangeValidation") #x (Val #(x.disableConfChangeValidation'))
-  raft_set_disableConfChangeValidation : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"disableConfChangeValidation") (PairV #x #y) (Val #(({ x with disableConfChangeValidation' := y } : raft.t)))
-  raft_get_uncommittedSize : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"uncommittedSize") #x (Val #(x.uncommittedSize'))
-  raft_set_uncommittedSize : ∀ (x : raft.t) (y : entryPayloadSize.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"uncommittedSize") (PairV #x #y) (Val #(({ x with uncommittedSize' := y } : raft.t)))
-  raft_get_readOnly : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"readOnly") #x (Val #(x.readOnly'))
-  raft_set_readOnly : ∀ (x : raft.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"readOnly") (PairV #x #y) (Val #(({ x with readOnly' := y } : raft.t)))
-  raft_get_electionElapsed : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"electionElapsed") #x (Val #(x.electionElapsed'))
-  raft_set_electionElapsed : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"electionElapsed") (PairV #x #y) (Val #(({ x with electionElapsed' := y } : raft.t)))
-  raft_get_heartbeatElapsed : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"heartbeatElapsed") #x (Val #(x.heartbeatElapsed'))
-  raft_set_heartbeatElapsed : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"heartbeatElapsed") (PairV #x #y) (Val #(({ x with heartbeatElapsed' := y } : raft.t)))
-  raft_get_checkQuorum : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"checkQuorum") #x (Val #(x.checkQuorum'))
-  raft_set_checkQuorum : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"checkQuorum") (PairV #x #y) (Val #(({ x with checkQuorum' := y } : raft.t)))
-  raft_get_preVote : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"preVote") #x (Val #(x.preVote'))
-  raft_set_preVote : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"preVote") (PairV #x #y) (Val #(({ x with preVote' := y } : raft.t)))
-  raft_get_heartbeatTimeout : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"heartbeatTimeout") #x (Val #(x.heartbeatTimeout'))
-  raft_set_heartbeatTimeout : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"heartbeatTimeout") (PairV #x #y) (Val #(({ x with heartbeatTimeout' := y } : raft.t)))
-  raft_get_electionTimeout : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"electionTimeout") #x (Val #(x.electionTimeout'))
-  raft_set_electionTimeout : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"electionTimeout") (PairV #x #y) (Val #(({ x with electionTimeout' := y } : raft.t)))
-  raft_get_randomizedElectionTimeout : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"randomizedElectionTimeout") #x (Val #(x.randomizedElectionTimeout'))
-  raft_set_randomizedElectionTimeout : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"randomizedElectionTimeout") (PairV #x #y) (Val #(({ x with randomizedElectionTimeout' := y } : raft.t)))
-  raft_get_disableProposalForwarding : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"disableProposalForwarding") #x (Val #(x.disableProposalForwarding'))
-  raft_set_disableProposalForwarding : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"disableProposalForwarding") (PairV #x #y) (Val #(({ x with disableProposalForwarding' := y } : raft.t)))
-  raft_get_stepDownOnRemoval : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"stepDownOnRemoval") #x (Val #(x.stepDownOnRemoval'))
-  raft_set_stepDownOnRemoval : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"stepDownOnRemoval") (PairV #x #y) (Val #(({ x with stepDownOnRemoval' := y } : raft.t)))
-  raft_get_tick : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"tick") #x (Val #(x.tick'))
-  raft_set_tick : ∀ (x : raft.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"tick") (PairV #x #y) (Val #(({ x with tick' := y } : raft.t)))
-  raft_get_step : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"step") #x (Val #(x.step'))
-  raft_set_step : ∀ (x : raft.t) (y : stepFunc.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"step") (PairV #x #y) (Val #(({ x with step' := y } : raft.t)))
-  raft_get_logger : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"logger") #x (Val #(x.logger'))
-  raft_set_logger : ∀ (x : raft.t) (y : Logger.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"logger") (PairV #x #y) (Val #(({ x with logger' := y } : raft.t)))
-  raft_get_pendingReadIndexMessages : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"pendingReadIndexMessages") #x (Val #(x.pendingReadIndexMessages'))
-  raft_set_pendingReadIndexMessages : ∀ (x : raft.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"pendingReadIndexMessages") (PairV #x #y) (Val #(({ x with pendingReadIndexMessages' := y } : raft.t)))
-  raft_get_traceLogger : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet «raftⁱᵐᵖˡ» go!"traceLogger") #x (Val #(x.traceLogger'))
-  raft_set_traceLogger : ∀ (x : raft.t) (y : TraceLogger.t), go.IsGoStepPureDetTagged under (StructFieldSet «raftⁱᵐᵖˡ» go!"traceLogger") (PairV #x #y) (Val #(({ x with traceLogger' := y } : raft.t)))
-  raft'ptr_Step_unfold : MethodUnfold (go.GoType.PointerType raft) go!"Step" «raft__Stepⁱᵐᵖˡ»
-  raft'ptr_abortLeaderTransfer_unfold : MethodUnfold (go.GoType.PointerType raft) go!"abortLeaderTransfer" «raft__abortLeaderTransferⁱᵐᵖˡ»
-  raft'ptr_appendEntry_unfold : MethodUnfold (go.GoType.PointerType raft) go!"appendEntry" «raft__appendEntryⁱᵐᵖˡ»
-  raft'ptr_appliedSnap_unfold : MethodUnfold (go.GoType.PointerType raft) go!"appliedSnap" «raft__appliedSnapⁱᵐᵖˡ»
-  raft'ptr_appliedTo_unfold : MethodUnfold (go.GoType.PointerType raft) go!"appliedTo" «raft__appliedToⁱᵐᵖˡ»
-  raft'ptr_applyConfChange_unfold : MethodUnfold (go.GoType.PointerType raft) go!"applyConfChange" «raft__applyConfChangeⁱᵐᵖˡ»
-  raft'ptr_bcastAppend_unfold : MethodUnfold (go.GoType.PointerType raft) go!"bcastAppend" «raft__bcastAppendⁱᵐᵖˡ»
-  raft'ptr_bcastHeartbeat_unfold : MethodUnfold (go.GoType.PointerType raft) go!"bcastHeartbeat" «raft__bcastHeartbeatⁱᵐᵖˡ»
-  raft'ptr_bcastHeartbeatWithCtx_unfold : MethodUnfold (go.GoType.PointerType raft) go!"bcastHeartbeatWithCtx" «raft__bcastHeartbeatWithCtxⁱᵐᵖˡ»
-  raft'ptr_becomeCandidate_unfold : MethodUnfold (go.GoType.PointerType raft) go!"becomeCandidate" «raft__becomeCandidateⁱᵐᵖˡ»
-  raft'ptr_becomeFollower_unfold : MethodUnfold (go.GoType.PointerType raft) go!"becomeFollower" «raft__becomeFollowerⁱᵐᵖˡ»
-  raft'ptr_becomeLeader_unfold : MethodUnfold (go.GoType.PointerType raft) go!"becomeLeader" «raft__becomeLeaderⁱᵐᵖˡ»
-  raft'ptr_becomePreCandidate_unfold : MethodUnfold (go.GoType.PointerType raft) go!"becomePreCandidate" «raft__becomePreCandidateⁱᵐᵖˡ»
-  raft'ptr_campaign_unfold : MethodUnfold (go.GoType.PointerType raft) go!"campaign" «raft__campaignⁱᵐᵖˡ»
-  raft'ptr_committedEntryInCurrentTerm_unfold : MethodUnfold (go.GoType.PointerType raft) go!"committedEntryInCurrentTerm" «raft__committedEntryInCurrentTermⁱᵐᵖˡ»
-  raft'ptr_handleAppendEntries_unfold : MethodUnfold (go.GoType.PointerType raft) go!"handleAppendEntries" «raft__handleAppendEntriesⁱᵐᵖˡ»
-  raft'ptr_handleHeartbeat_unfold : MethodUnfold (go.GoType.PointerType raft) go!"handleHeartbeat" «raft__handleHeartbeatⁱᵐᵖˡ»
-  raft'ptr_handleSnapshot_unfold : MethodUnfold (go.GoType.PointerType raft) go!"handleSnapshot" «raft__handleSnapshotⁱᵐᵖˡ»
-  raft'ptr_hardState_unfold : MethodUnfold (go.GoType.PointerType raft) go!"hardState" «raft__hardStateⁱᵐᵖˡ»
-  raft'ptr_hasLeader_unfold : MethodUnfold (go.GoType.PointerType raft) go!"hasLeader" «raft__hasLeaderⁱᵐᵖˡ»
-  raft'ptr_hasUnappliedConfChanges_unfold : MethodUnfold (go.GoType.PointerType raft) go!"hasUnappliedConfChanges" «raft__hasUnappliedConfChangesⁱᵐᵖˡ»
-  raft'ptr_hup_unfold : MethodUnfold (go.GoType.PointerType raft) go!"hup" «raft__hupⁱᵐᵖˡ»
-  raft'ptr_increaseUncommittedSize_unfold : MethodUnfold (go.GoType.PointerType raft) go!"increaseUncommittedSize" «raft__increaseUncommittedSizeⁱᵐᵖˡ»
-  raft'ptr_loadState_unfold : MethodUnfold (go.GoType.PointerType raft) go!"loadState" «raft__loadStateⁱᵐᵖˡ»
-  raft'ptr_maybeCommit_unfold : MethodUnfold (go.GoType.PointerType raft) go!"maybeCommit" «raft__maybeCommitⁱᵐᵖˡ»
-  raft'ptr_maybeSendAppend_unfold : MethodUnfold (go.GoType.PointerType raft) go!"maybeSendAppend" «raft__maybeSendAppendⁱᵐᵖˡ»
-  raft'ptr_maybeSendSnapshot_unfold : MethodUnfold (go.GoType.PointerType raft) go!"maybeSendSnapshot" «raft__maybeSendSnapshotⁱᵐᵖˡ»
-  raft'ptr_pastElectionTimeout_unfold : MethodUnfold (go.GoType.PointerType raft) go!"pastElectionTimeout" «raft__pastElectionTimeoutⁱᵐᵖˡ»
-  raft'ptr_poll_unfold : MethodUnfold (go.GoType.PointerType raft) go!"poll" «raft__pollⁱᵐᵖˡ»
-  raft'ptr_promotable_unfold : MethodUnfold (go.GoType.PointerType raft) go!"promotable" «raft__promotableⁱᵐᵖˡ»
-  raft'ptr_reduceUncommittedSize_unfold : MethodUnfold (go.GoType.PointerType raft) go!"reduceUncommittedSize" «raft__reduceUncommittedSizeⁱᵐᵖˡ»
-  raft'ptr_reset_unfold : MethodUnfold (go.GoType.PointerType raft) go!"reset" «raft__resetⁱᵐᵖˡ»
-  raft'ptr_resetRandomizedElectionTimeout_unfold : MethodUnfold (go.GoType.PointerType raft) go!"resetRandomizedElectionTimeout" «raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ»
-  raft'ptr_responseToReadIndexReq_unfold : MethodUnfold (go.GoType.PointerType raft) go!"responseToReadIndexReq" «raft__responseToReadIndexReqⁱᵐᵖˡ»
-  raft'ptr_restore_unfold : MethodUnfold (go.GoType.PointerType raft) go!"restore" «raft__restoreⁱᵐᵖˡ»
-  raft'ptr_send_unfold : MethodUnfold (go.GoType.PointerType raft) go!"send" «raft__sendⁱᵐᵖˡ»
-  raft'ptr_sendAppend_unfold : MethodUnfold (go.GoType.PointerType raft) go!"sendAppend" «raft__sendAppendⁱᵐᵖˡ»
-  raft'ptr_sendHeartbeat_unfold : MethodUnfold (go.GoType.PointerType raft) go!"sendHeartbeat" «raft__sendHeartbeatⁱᵐᵖˡ»
-  raft'ptr_sendTimeoutNow_unfold : MethodUnfold (go.GoType.PointerType raft) go!"sendTimeoutNow" «raft__sendTimeoutNowⁱᵐᵖˡ»
-  raft'ptr_softState_unfold : MethodUnfold (go.GoType.PointerType raft) go!"softState" «raft__softStateⁱᵐᵖˡ»
-  raft'ptr_switchToConfig_unfold : MethodUnfold (go.GoType.PointerType raft) go!"switchToConfig" «raft__switchToConfigⁱᵐᵖˡ»
-  raft'ptr_tickElection_unfold : MethodUnfold (go.GoType.PointerType raft) go!"tickElection" «raft__tickElectionⁱᵐᵖˡ»
-  raft'ptr_tickHeartbeat_unfold : MethodUnfold (go.GoType.PointerType raft) go!"tickHeartbeat" «raft__tickHeartbeatⁱᵐᵖˡ»
+class raft.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying raft.underlying raft.t
+  underlying : go.UnderlyingDirectedEq raft raft.underlying
+  get_id : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"id") #x (Val #(x.id'))
+  set_id : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : raft.t)))
+  get_Term : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"Term") #x (Val #(x.Term'))
+  set_Term : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"Term") (PairV #x #y) (Val #(({ x with Term' := y } : raft.t)))
+  get_Vote : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"Vote") #x (Val #(x.Vote'))
+  set_Vote : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"Vote") (PairV #x #y) (Val #(({ x with Vote' := y } : raft.t)))
+  get_readStates : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"readStates") #x (Val #(x.readStates'))
+  set_readStates : ∀ (x : raft.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"readStates") (PairV #x #y) (Val #(({ x with readStates' := y } : raft.t)))
+  get_raftLog : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"raftLog") #x (Val #(x.raftLog'))
+  set_raftLog : ∀ (x : raft.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"raftLog") (PairV #x #y) (Val #(({ x with raftLog' := y } : raft.t)))
+  get_maxMsgSize : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"maxMsgSize") #x (Val #(x.maxMsgSize'))
+  set_maxMsgSize : ∀ (x : raft.t) (y : entryEncodingSize.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"maxMsgSize") (PairV #x #y) (Val #(({ x with maxMsgSize' := y } : raft.t)))
+  get_maxUncommittedSize : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"maxUncommittedSize") #x (Val #(x.maxUncommittedSize'))
+  set_maxUncommittedSize : ∀ (x : raft.t) (y : entryPayloadSize.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"maxUncommittedSize") (PairV #x #y) (Val #(({ x with maxUncommittedSize' := y } : raft.t)))
+  get_trk : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"trk") #x (Val #(x.trk'))
+  set_trk : ∀ (x : raft.t) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"trk") (PairV #x #y) (Val #(({ x with trk' := y } : raft.t)))
+  get_state : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"state") #x (Val #(x.state'))
+  set_state : ∀ (x : raft.t) (y : StateType.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : raft.t)))
+  get_isLearner : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"isLearner") #x (Val #(x.isLearner'))
+  set_isLearner : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"isLearner") (PairV #x #y) (Val #(({ x with isLearner' := y } : raft.t)))
+  get_msgs : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"msgs") #x (Val #(x.msgs'))
+  set_msgs : ∀ (x : raft.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"msgs") (PairV #x #y) (Val #(({ x with msgs' := y } : raft.t)))
+  get_msgsAfterAppend : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"msgsAfterAppend") #x (Val #(x.msgsAfterAppend'))
+  set_msgsAfterAppend : ∀ (x : raft.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"msgsAfterAppend") (PairV #x #y) (Val #(({ x with msgsAfterAppend' := y } : raft.t)))
+  get_lead : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"lead") #x (Val #(x.lead'))
+  set_lead : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"lead") (PairV #x #y) (Val #(({ x with lead' := y } : raft.t)))
+  get_leadTransferee : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"leadTransferee") #x (Val #(x.leadTransferee'))
+  set_leadTransferee : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"leadTransferee") (PairV #x #y) (Val #(({ x with leadTransferee' := y } : raft.t)))
+  get_pendingConfIndex : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"pendingConfIndex") #x (Val #(x.pendingConfIndex'))
+  set_pendingConfIndex : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"pendingConfIndex") (PairV #x #y) (Val #(({ x with pendingConfIndex' := y } : raft.t)))
+  get_disableConfChangeValidation : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"disableConfChangeValidation") #x (Val #(x.disableConfChangeValidation'))
+  set_disableConfChangeValidation : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"disableConfChangeValidation") (PairV #x #y) (Val #(({ x with disableConfChangeValidation' := y } : raft.t)))
+  get_uncommittedSize : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"uncommittedSize") #x (Val #(x.uncommittedSize'))
+  set_uncommittedSize : ∀ (x : raft.t) (y : entryPayloadSize.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"uncommittedSize") (PairV #x #y) (Val #(({ x with uncommittedSize' := y } : raft.t)))
+  get_readOnly : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"readOnly") #x (Val #(x.readOnly'))
+  set_readOnly : ∀ (x : raft.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"readOnly") (PairV #x #y) (Val #(({ x with readOnly' := y } : raft.t)))
+  get_electionElapsed : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"electionElapsed") #x (Val #(x.electionElapsed'))
+  set_electionElapsed : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"electionElapsed") (PairV #x #y) (Val #(({ x with electionElapsed' := y } : raft.t)))
+  get_heartbeatElapsed : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"heartbeatElapsed") #x (Val #(x.heartbeatElapsed'))
+  set_heartbeatElapsed : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"heartbeatElapsed") (PairV #x #y) (Val #(({ x with heartbeatElapsed' := y } : raft.t)))
+  get_checkQuorum : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"checkQuorum") #x (Val #(x.checkQuorum'))
+  set_checkQuorum : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"checkQuorum") (PairV #x #y) (Val #(({ x with checkQuorum' := y } : raft.t)))
+  get_preVote : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"preVote") #x (Val #(x.preVote'))
+  set_preVote : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"preVote") (PairV #x #y) (Val #(({ x with preVote' := y } : raft.t)))
+  get_heartbeatTimeout : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"heartbeatTimeout") #x (Val #(x.heartbeatTimeout'))
+  set_heartbeatTimeout : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"heartbeatTimeout") (PairV #x #y) (Val #(({ x with heartbeatTimeout' := y } : raft.t)))
+  get_electionTimeout : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"electionTimeout") #x (Val #(x.electionTimeout'))
+  set_electionTimeout : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"electionTimeout") (PairV #x #y) (Val #(({ x with electionTimeout' := y } : raft.t)))
+  get_randomizedElectionTimeout : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"randomizedElectionTimeout") #x (Val #(x.randomizedElectionTimeout'))
+  set_randomizedElectionTimeout : ∀ (x : raft.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"randomizedElectionTimeout") (PairV #x #y) (Val #(({ x with randomizedElectionTimeout' := y } : raft.t)))
+  get_disableProposalForwarding : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"disableProposalForwarding") #x (Val #(x.disableProposalForwarding'))
+  set_disableProposalForwarding : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"disableProposalForwarding") (PairV #x #y) (Val #(({ x with disableProposalForwarding' := y } : raft.t)))
+  get_stepDownOnRemoval : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"stepDownOnRemoval") #x (Val #(x.stepDownOnRemoval'))
+  set_stepDownOnRemoval : ∀ (x : raft.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"stepDownOnRemoval") (PairV #x #y) (Val #(({ x with stepDownOnRemoval' := y } : raft.t)))
+  get_tick : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"tick") #x (Val #(x.tick'))
+  set_tick : ∀ (x : raft.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"tick") (PairV #x #y) (Val #(({ x with tick' := y } : raft.t)))
+  get_step : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"step") #x (Val #(x.step'))
+  set_step : ∀ (x : raft.t) (y : stepFunc.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"step") (PairV #x #y) (Val #(({ x with step' := y } : raft.t)))
+  get_logger : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"logger") #x (Val #(x.logger'))
+  set_logger : ∀ (x : raft.t) (y : Logger.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"logger") (PairV #x #y) (Val #(({ x with logger' := y } : raft.t)))
+  get_pendingReadIndexMessages : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"pendingReadIndexMessages") #x (Val #(x.pendingReadIndexMessages'))
+  set_pendingReadIndexMessages : ∀ (x : raft.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"pendingReadIndexMessages") (PairV #x #y) (Val #(({ x with pendingReadIndexMessages' := y } : raft.t)))
+  get_traceLogger : ∀ (x : raft.t), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"traceLogger") #x (Val #(x.traceLogger'))
+  set_traceLogger : ∀ (x : raft.t) (y : TraceLogger.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"traceLogger") (PairV #x #y) (Val #(({ x with traceLogger' := y } : raft.t)))
+  ptr_Step_unfold : MethodUnfold (go.GoType.PointerType raft) go!"Step" raft.Step.impl
+  ptr_abortLeaderTransfer_unfold : MethodUnfold (go.GoType.PointerType raft) go!"abortLeaderTransfer" raft.abortLeaderTransfer.impl
+  ptr_appendEntry_unfold : MethodUnfold (go.GoType.PointerType raft) go!"appendEntry" raft.appendEntry.impl
+  ptr_appliedSnap_unfold : MethodUnfold (go.GoType.PointerType raft) go!"appliedSnap" raft.appliedSnap.impl
+  ptr_appliedTo_unfold : MethodUnfold (go.GoType.PointerType raft) go!"appliedTo" raft.appliedTo.impl
+  ptr_applyConfChange_unfold : MethodUnfold (go.GoType.PointerType raft) go!"applyConfChange" raft.applyConfChange.impl
+  ptr_bcastAppend_unfold : MethodUnfold (go.GoType.PointerType raft) go!"bcastAppend" raft.bcastAppend.impl
+  ptr_bcastHeartbeat_unfold : MethodUnfold (go.GoType.PointerType raft) go!"bcastHeartbeat" raft.bcastHeartbeat.impl
+  ptr_bcastHeartbeatWithCtx_unfold : MethodUnfold (go.GoType.PointerType raft) go!"bcastHeartbeatWithCtx" raft.bcastHeartbeatWithCtx.impl
+  ptr_becomeCandidate_unfold : MethodUnfold (go.GoType.PointerType raft) go!"becomeCandidate" raft.becomeCandidate.impl
+  ptr_becomeFollower_unfold : MethodUnfold (go.GoType.PointerType raft) go!"becomeFollower" raft.becomeFollower.impl
+  ptr_becomeLeader_unfold : MethodUnfold (go.GoType.PointerType raft) go!"becomeLeader" raft.becomeLeader.impl
+  ptr_becomePreCandidate_unfold : MethodUnfold (go.GoType.PointerType raft) go!"becomePreCandidate" raft.becomePreCandidate.impl
+  ptr_campaign_unfold : MethodUnfold (go.GoType.PointerType raft) go!"campaign" raft.campaign.impl
+  ptr_committedEntryInCurrentTerm_unfold : MethodUnfold (go.GoType.PointerType raft) go!"committedEntryInCurrentTerm" raft.committedEntryInCurrentTerm.impl
+  ptr_handleAppendEntries_unfold : MethodUnfold (go.GoType.PointerType raft) go!"handleAppendEntries" raft.handleAppendEntries.impl
+  ptr_handleHeartbeat_unfold : MethodUnfold (go.GoType.PointerType raft) go!"handleHeartbeat" raft.handleHeartbeat.impl
+  ptr_handleSnapshot_unfold : MethodUnfold (go.GoType.PointerType raft) go!"handleSnapshot" raft.handleSnapshot.impl
+  ptr_hardState_unfold : MethodUnfold (go.GoType.PointerType raft) go!"hardState" raft.hardState.impl
+  ptr_hasLeader_unfold : MethodUnfold (go.GoType.PointerType raft) go!"hasLeader" raft.hasLeader.impl
+  ptr_hasUnappliedConfChanges_unfold : MethodUnfold (go.GoType.PointerType raft) go!"hasUnappliedConfChanges" raft.hasUnappliedConfChanges.impl
+  ptr_hup_unfold : MethodUnfold (go.GoType.PointerType raft) go!"hup" raft.hup.impl
+  ptr_increaseUncommittedSize_unfold : MethodUnfold (go.GoType.PointerType raft) go!"increaseUncommittedSize" raft.increaseUncommittedSize.impl
+  ptr_loadState_unfold : MethodUnfold (go.GoType.PointerType raft) go!"loadState" raft.loadState.impl
+  ptr_maybeCommit_unfold : MethodUnfold (go.GoType.PointerType raft) go!"maybeCommit" raft.maybeCommit.impl
+  ptr_maybeSendAppend_unfold : MethodUnfold (go.GoType.PointerType raft) go!"maybeSendAppend" raft.maybeSendAppend.impl
+  ptr_maybeSendSnapshot_unfold : MethodUnfold (go.GoType.PointerType raft) go!"maybeSendSnapshot" raft.maybeSendSnapshot.impl
+  ptr_pastElectionTimeout_unfold : MethodUnfold (go.GoType.PointerType raft) go!"pastElectionTimeout" raft.pastElectionTimeout.impl
+  ptr_poll_unfold : MethodUnfold (go.GoType.PointerType raft) go!"poll" raft.poll.impl
+  ptr_promotable_unfold : MethodUnfold (go.GoType.PointerType raft) go!"promotable" raft.promotable.impl
+  ptr_reduceUncommittedSize_unfold : MethodUnfold (go.GoType.PointerType raft) go!"reduceUncommittedSize" raft.reduceUncommittedSize.impl
+  ptr_reset_unfold : MethodUnfold (go.GoType.PointerType raft) go!"reset" raft.reset.impl
+  ptr_resetRandomizedElectionTimeout_unfold : MethodUnfold (go.GoType.PointerType raft) go!"resetRandomizedElectionTimeout" raft.resetRandomizedElectionTimeout.impl
+  ptr_responseToReadIndexReq_unfold : MethodUnfold (go.GoType.PointerType raft) go!"responseToReadIndexReq" raft.responseToReadIndexReq.impl
+  ptr_restore_unfold : MethodUnfold (go.GoType.PointerType raft) go!"restore" raft.restore.impl
+  ptr_send_unfold : MethodUnfold (go.GoType.PointerType raft) go!"send" raft.send.impl
+  ptr_sendAppend_unfold : MethodUnfold (go.GoType.PointerType raft) go!"sendAppend" raft.sendAppend.impl
+  ptr_sendHeartbeat_unfold : MethodUnfold (go.GoType.PointerType raft) go!"sendHeartbeat" raft.sendHeartbeat.impl
+  ptr_sendTimeoutNow_unfold : MethodUnfold (go.GoType.PointerType raft) go!"sendTimeoutNow" raft.sendTimeoutNow.impl
+  ptr_softState_unfold : MethodUnfold (go.GoType.PointerType raft) go!"softState" raft.softState.impl
+  ptr_switchToConfig_unfold : MethodUnfold (go.GoType.PointerType raft) go!"switchToConfig" raft.switchToConfig.impl
+  ptr_tickElection_unfold : MethodUnfold (go.GoType.PointerType raft) go!"tickElection" raft.tickElection.impl
+  ptr_tickHeartbeat_unfold : MethodUnfold (go.GoType.PointerType raft) go!"tickHeartbeat" raft.tickHeartbeat.impl
 
-attribute [instance] raft_Assumptions.raft_type_repr
-  raft_Assumptions.raft_underlying
-  raft_Assumptions.raft_get_id
-  raft_Assumptions.raft_set_id
-  raft_Assumptions.raft_get_Term
-  raft_Assumptions.raft_set_Term
-  raft_Assumptions.raft_get_Vote
-  raft_Assumptions.raft_set_Vote
-  raft_Assumptions.raft_get_readStates
-  raft_Assumptions.raft_set_readStates
-  raft_Assumptions.raft_get_raftLog
-  raft_Assumptions.raft_set_raftLog
-  raft_Assumptions.raft_get_maxMsgSize
-  raft_Assumptions.raft_set_maxMsgSize
-  raft_Assumptions.raft_get_maxUncommittedSize
-  raft_Assumptions.raft_set_maxUncommittedSize
-  raft_Assumptions.raft_get_trk
-  raft_Assumptions.raft_set_trk
-  raft_Assumptions.raft_get_state
-  raft_Assumptions.raft_set_state
-  raft_Assumptions.raft_get_isLearner
-  raft_Assumptions.raft_set_isLearner
-  raft_Assumptions.raft_get_msgs
-  raft_Assumptions.raft_set_msgs
-  raft_Assumptions.raft_get_msgsAfterAppend
-  raft_Assumptions.raft_set_msgsAfterAppend
-  raft_Assumptions.raft_get_lead
-  raft_Assumptions.raft_set_lead
-  raft_Assumptions.raft_get_leadTransferee
-  raft_Assumptions.raft_set_leadTransferee
-  raft_Assumptions.raft_get_pendingConfIndex
-  raft_Assumptions.raft_set_pendingConfIndex
-  raft_Assumptions.raft_get_disableConfChangeValidation
-  raft_Assumptions.raft_set_disableConfChangeValidation
-  raft_Assumptions.raft_get_uncommittedSize
-  raft_Assumptions.raft_set_uncommittedSize
-  raft_Assumptions.raft_get_readOnly
-  raft_Assumptions.raft_set_readOnly
-  raft_Assumptions.raft_get_electionElapsed
-  raft_Assumptions.raft_set_electionElapsed
-  raft_Assumptions.raft_get_heartbeatElapsed
-  raft_Assumptions.raft_set_heartbeatElapsed
-  raft_Assumptions.raft_get_checkQuorum
-  raft_Assumptions.raft_set_checkQuorum
-  raft_Assumptions.raft_get_preVote
-  raft_Assumptions.raft_set_preVote
-  raft_Assumptions.raft_get_heartbeatTimeout
-  raft_Assumptions.raft_set_heartbeatTimeout
-  raft_Assumptions.raft_get_electionTimeout
-  raft_Assumptions.raft_set_electionTimeout
-  raft_Assumptions.raft_get_randomizedElectionTimeout
-  raft_Assumptions.raft_set_randomizedElectionTimeout
-  raft_Assumptions.raft_get_disableProposalForwarding
-  raft_Assumptions.raft_set_disableProposalForwarding
-  raft_Assumptions.raft_get_stepDownOnRemoval
-  raft_Assumptions.raft_set_stepDownOnRemoval
-  raft_Assumptions.raft_get_tick
-  raft_Assumptions.raft_set_tick
-  raft_Assumptions.raft_get_step
-  raft_Assumptions.raft_set_step
-  raft_Assumptions.raft_get_logger
-  raft_Assumptions.raft_set_logger
-  raft_Assumptions.raft_get_pendingReadIndexMessages
-  raft_Assumptions.raft_set_pendingReadIndexMessages
-  raft_Assumptions.raft_get_traceLogger
-  raft_Assumptions.raft_set_traceLogger
-  raft_Assumptions.raft'ptr_Step_unfold
-  raft_Assumptions.raft'ptr_abortLeaderTransfer_unfold
-  raft_Assumptions.raft'ptr_appendEntry_unfold
-  raft_Assumptions.raft'ptr_appliedSnap_unfold
-  raft_Assumptions.raft'ptr_appliedTo_unfold
-  raft_Assumptions.raft'ptr_applyConfChange_unfold
-  raft_Assumptions.raft'ptr_bcastAppend_unfold
-  raft_Assumptions.raft'ptr_bcastHeartbeat_unfold
-  raft_Assumptions.raft'ptr_bcastHeartbeatWithCtx_unfold
-  raft_Assumptions.raft'ptr_becomeCandidate_unfold
-  raft_Assumptions.raft'ptr_becomeFollower_unfold
-  raft_Assumptions.raft'ptr_becomeLeader_unfold
-  raft_Assumptions.raft'ptr_becomePreCandidate_unfold
-  raft_Assumptions.raft'ptr_campaign_unfold
-  raft_Assumptions.raft'ptr_committedEntryInCurrentTerm_unfold
-  raft_Assumptions.raft'ptr_handleAppendEntries_unfold
-  raft_Assumptions.raft'ptr_handleHeartbeat_unfold
-  raft_Assumptions.raft'ptr_handleSnapshot_unfold
-  raft_Assumptions.raft'ptr_hardState_unfold
-  raft_Assumptions.raft'ptr_hasLeader_unfold
-  raft_Assumptions.raft'ptr_hasUnappliedConfChanges_unfold
-  raft_Assumptions.raft'ptr_hup_unfold
-  raft_Assumptions.raft'ptr_increaseUncommittedSize_unfold
-  raft_Assumptions.raft'ptr_loadState_unfold
-  raft_Assumptions.raft'ptr_maybeCommit_unfold
-  raft_Assumptions.raft'ptr_maybeSendAppend_unfold
-  raft_Assumptions.raft'ptr_maybeSendSnapshot_unfold
-  raft_Assumptions.raft'ptr_pastElectionTimeout_unfold
-  raft_Assumptions.raft'ptr_poll_unfold
-  raft_Assumptions.raft'ptr_promotable_unfold
-  raft_Assumptions.raft'ptr_reduceUncommittedSize_unfold
-  raft_Assumptions.raft'ptr_reset_unfold
-  raft_Assumptions.raft'ptr_resetRandomizedElectionTimeout_unfold
-  raft_Assumptions.raft'ptr_responseToReadIndexReq_unfold
-  raft_Assumptions.raft'ptr_restore_unfold
-  raft_Assumptions.raft'ptr_send_unfold
-  raft_Assumptions.raft'ptr_sendAppend_unfold
-  raft_Assumptions.raft'ptr_sendHeartbeat_unfold
-  raft_Assumptions.raft'ptr_sendTimeoutNow_unfold
-  raft_Assumptions.raft'ptr_softState_unfold
-  raft_Assumptions.raft'ptr_switchToConfig_unfold
-  raft_Assumptions.raft'ptr_tickElection_unfold
-  raft_Assumptions.raft'ptr_tickHeartbeat_unfold
+attribute [instance] raft.TypeAssumptions.type_repr
+  raft.TypeAssumptions.underlying
+  raft.TypeAssumptions.get_id
+  raft.TypeAssumptions.set_id
+  raft.TypeAssumptions.get_Term
+  raft.TypeAssumptions.set_Term
+  raft.TypeAssumptions.get_Vote
+  raft.TypeAssumptions.set_Vote
+  raft.TypeAssumptions.get_readStates
+  raft.TypeAssumptions.set_readStates
+  raft.TypeAssumptions.get_raftLog
+  raft.TypeAssumptions.set_raftLog
+  raft.TypeAssumptions.get_maxMsgSize
+  raft.TypeAssumptions.set_maxMsgSize
+  raft.TypeAssumptions.get_maxUncommittedSize
+  raft.TypeAssumptions.set_maxUncommittedSize
+  raft.TypeAssumptions.get_trk
+  raft.TypeAssumptions.set_trk
+  raft.TypeAssumptions.get_state
+  raft.TypeAssumptions.set_state
+  raft.TypeAssumptions.get_isLearner
+  raft.TypeAssumptions.set_isLearner
+  raft.TypeAssumptions.get_msgs
+  raft.TypeAssumptions.set_msgs
+  raft.TypeAssumptions.get_msgsAfterAppend
+  raft.TypeAssumptions.set_msgsAfterAppend
+  raft.TypeAssumptions.get_lead
+  raft.TypeAssumptions.set_lead
+  raft.TypeAssumptions.get_leadTransferee
+  raft.TypeAssumptions.set_leadTransferee
+  raft.TypeAssumptions.get_pendingConfIndex
+  raft.TypeAssumptions.set_pendingConfIndex
+  raft.TypeAssumptions.get_disableConfChangeValidation
+  raft.TypeAssumptions.set_disableConfChangeValidation
+  raft.TypeAssumptions.get_uncommittedSize
+  raft.TypeAssumptions.set_uncommittedSize
+  raft.TypeAssumptions.get_readOnly
+  raft.TypeAssumptions.set_readOnly
+  raft.TypeAssumptions.get_electionElapsed
+  raft.TypeAssumptions.set_electionElapsed
+  raft.TypeAssumptions.get_heartbeatElapsed
+  raft.TypeAssumptions.set_heartbeatElapsed
+  raft.TypeAssumptions.get_checkQuorum
+  raft.TypeAssumptions.set_checkQuorum
+  raft.TypeAssumptions.get_preVote
+  raft.TypeAssumptions.set_preVote
+  raft.TypeAssumptions.get_heartbeatTimeout
+  raft.TypeAssumptions.set_heartbeatTimeout
+  raft.TypeAssumptions.get_electionTimeout
+  raft.TypeAssumptions.set_electionTimeout
+  raft.TypeAssumptions.get_randomizedElectionTimeout
+  raft.TypeAssumptions.set_randomizedElectionTimeout
+  raft.TypeAssumptions.get_disableProposalForwarding
+  raft.TypeAssumptions.set_disableProposalForwarding
+  raft.TypeAssumptions.get_stepDownOnRemoval
+  raft.TypeAssumptions.set_stepDownOnRemoval
+  raft.TypeAssumptions.get_tick
+  raft.TypeAssumptions.set_tick
+  raft.TypeAssumptions.get_step
+  raft.TypeAssumptions.set_step
+  raft.TypeAssumptions.get_logger
+  raft.TypeAssumptions.set_logger
+  raft.TypeAssumptions.get_pendingReadIndexMessages
+  raft.TypeAssumptions.set_pendingReadIndexMessages
+  raft.TypeAssumptions.get_traceLogger
+  raft.TypeAssumptions.set_traceLogger
+  raft.TypeAssumptions.ptr_Step_unfold
+  raft.TypeAssumptions.ptr_abortLeaderTransfer_unfold
+  raft.TypeAssumptions.ptr_appendEntry_unfold
+  raft.TypeAssumptions.ptr_appliedSnap_unfold
+  raft.TypeAssumptions.ptr_appliedTo_unfold
+  raft.TypeAssumptions.ptr_applyConfChange_unfold
+  raft.TypeAssumptions.ptr_bcastAppend_unfold
+  raft.TypeAssumptions.ptr_bcastHeartbeat_unfold
+  raft.TypeAssumptions.ptr_bcastHeartbeatWithCtx_unfold
+  raft.TypeAssumptions.ptr_becomeCandidate_unfold
+  raft.TypeAssumptions.ptr_becomeFollower_unfold
+  raft.TypeAssumptions.ptr_becomeLeader_unfold
+  raft.TypeAssumptions.ptr_becomePreCandidate_unfold
+  raft.TypeAssumptions.ptr_campaign_unfold
+  raft.TypeAssumptions.ptr_committedEntryInCurrentTerm_unfold
+  raft.TypeAssumptions.ptr_handleAppendEntries_unfold
+  raft.TypeAssumptions.ptr_handleHeartbeat_unfold
+  raft.TypeAssumptions.ptr_handleSnapshot_unfold
+  raft.TypeAssumptions.ptr_hardState_unfold
+  raft.TypeAssumptions.ptr_hasLeader_unfold
+  raft.TypeAssumptions.ptr_hasUnappliedConfChanges_unfold
+  raft.TypeAssumptions.ptr_hup_unfold
+  raft.TypeAssumptions.ptr_increaseUncommittedSize_unfold
+  raft.TypeAssumptions.ptr_loadState_unfold
+  raft.TypeAssumptions.ptr_maybeCommit_unfold
+  raft.TypeAssumptions.ptr_maybeSendAppend_unfold
+  raft.TypeAssumptions.ptr_maybeSendSnapshot_unfold
+  raft.TypeAssumptions.ptr_pastElectionTimeout_unfold
+  raft.TypeAssumptions.ptr_poll_unfold
+  raft.TypeAssumptions.ptr_promotable_unfold
+  raft.TypeAssumptions.ptr_reduceUncommittedSize_unfold
+  raft.TypeAssumptions.ptr_reset_unfold
+  raft.TypeAssumptions.ptr_resetRandomizedElectionTimeout_unfold
+  raft.TypeAssumptions.ptr_responseToReadIndexReq_unfold
+  raft.TypeAssumptions.ptr_restore_unfold
+  raft.TypeAssumptions.ptr_send_unfold
+  raft.TypeAssumptions.ptr_sendAppend_unfold
+  raft.TypeAssumptions.ptr_sendHeartbeat_unfold
+  raft.TypeAssumptions.ptr_sendTimeoutNow_unfold
+  raft.TypeAssumptions.ptr_softState_unfold
+  raft.TypeAssumptions.ptr_switchToConfig_unfold
+  raft.TypeAssumptions.ptr_tickElection_unfold
+  raft.TypeAssumptions.ptr_tickHeartbeat_unfold
 
 namespace RawNode
 structure t [FfiSyntax] where
@@ -12194,105 +12194,105 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end RawNode
 
-@[reducible] def RawNode'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RawNode.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"raft" (go.GoType.PointerType raft)),
 (go.field_decl.FieldDecl go!"asyncStorageWrites" go.bool),
 (go.field_decl.FieldDecl go!"prevSoftSt" (go.GoType.PointerType SoftState)),
 (go.field_decl.FieldDecl go!"prevHardSt" _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState),
 (go.field_decl.FieldDecl go!"stepsOnAdvance" (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message))]
 
-@[irreducible] def RawNode'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  RawNode'fds_unsealed
+@[irreducible] def RawNode.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  RawNode.fieldsUnsealed
 
 instance equals_unfold_RawNode [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold RawNode'fds RawNode'fds_unsealed :=
-  ⟨by unfold RawNode'fds; rfl⟩
+    EqualsUnfold RawNode.fields RawNode.fieldsUnsealed :=
+  ⟨by unfold RawNode.fields; rfl⟩
 
-@[reducible] def «RawNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType RawNode'fds)
+@[reducible] def RawNode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType RawNode.fields)
 
-class RawNode_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  RawNode_type_repr : go.TypeReprUnderlying «RawNodeⁱᵐᵖˡ» RawNode.t
-  RawNode_underlying : go.UnderlyingDirectedEq RawNode «RawNodeⁱᵐᵖˡ»
-  RawNode_get_raft : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet «RawNodeⁱᵐᵖˡ» go!"raft") #x (Val #(x.raft'))
-  RawNode_set_raft : ∀ (x : RawNode.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «RawNodeⁱᵐᵖˡ» go!"raft") (PairV #x #y) (Val #(({ x with raft' := y } : RawNode.t)))
-  RawNode_get_asyncStorageWrites : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet «RawNodeⁱᵐᵖˡ» go!"asyncStorageWrites") #x (Val #(x.asyncStorageWrites'))
-  RawNode_set_asyncStorageWrites : ∀ (x : RawNode.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «RawNodeⁱᵐᵖˡ» go!"asyncStorageWrites") (PairV #x #y) (Val #(({ x with asyncStorageWrites' := y } : RawNode.t)))
-  RawNode_get_prevSoftSt : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet «RawNodeⁱᵐᵖˡ» go!"prevSoftSt") #x (Val #(x.prevSoftSt'))
-  RawNode_set_prevSoftSt : ∀ (x : RawNode.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «RawNodeⁱᵐᵖˡ» go!"prevSoftSt") (PairV #x #y) (Val #(({ x with prevSoftSt' := y } : RawNode.t)))
-  RawNode_get_prevHardSt : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet «RawNodeⁱᵐᵖˡ» go!"prevHardSt") #x (Val #(x.prevHardSt'))
-  RawNode_set_prevHardSt : ∀ (x : RawNode.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.t), go.IsGoStepPureDetTagged under (StructFieldSet «RawNodeⁱᵐᵖˡ» go!"prevHardSt") (PairV #x #y) (Val #(({ x with prevHardSt' := y } : RawNode.t)))
-  RawNode_get_stepsOnAdvance : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet «RawNodeⁱᵐᵖˡ» go!"stepsOnAdvance") #x (Val #(x.stepsOnAdvance'))
-  RawNode_set_stepsOnAdvance : ∀ (x : RawNode.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «RawNodeⁱᵐᵖˡ» go!"stepsOnAdvance") (PairV #x #y) (Val #(({ x with stepsOnAdvance' := y } : RawNode.t)))
-  RawNode'ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Advance" «RawNode__Advanceⁱᵐᵖˡ»
-  RawNode'ptr_ApplyConfChange_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ApplyConfChange" «RawNode__ApplyConfChangeⁱᵐᵖˡ»
-  RawNode'ptr_BasicStatus_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"BasicStatus" «RawNode__BasicStatusⁱᵐᵖˡ»
-  RawNode'ptr_Bootstrap_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Bootstrap" «RawNode__Bootstrapⁱᵐᵖˡ»
-  RawNode'ptr_Campaign_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Campaign" «RawNode__Campaignⁱᵐᵖˡ»
-  RawNode'ptr_ForgetLeader_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ForgetLeader" «RawNode__ForgetLeaderⁱᵐᵖˡ»
-  RawNode'ptr_HasReady_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"HasReady" «RawNode__HasReadyⁱᵐᵖˡ»
-  RawNode'ptr_Propose_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Propose" «RawNode__Proposeⁱᵐᵖˡ»
-  RawNode'ptr_ProposeConfChange_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ProposeConfChange" «RawNode__ProposeConfChangeⁱᵐᵖˡ»
-  RawNode'ptr_ReadIndex_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ReadIndex" «RawNode__ReadIndexⁱᵐᵖˡ»
-  RawNode'ptr_Ready_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Ready" «RawNode__Readyⁱᵐᵖˡ»
-  RawNode'ptr_ReportSnapshot_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ReportSnapshot" «RawNode__ReportSnapshotⁱᵐᵖˡ»
-  RawNode'ptr_ReportUnreachable_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ReportUnreachable" «RawNode__ReportUnreachableⁱᵐᵖˡ»
-  RawNode'ptr_Status_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Status" «RawNode__Statusⁱᵐᵖˡ»
-  RawNode'ptr_Step_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Step" «RawNode__Stepⁱᵐᵖˡ»
-  RawNode'ptr_Tick_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Tick" «RawNode__Tickⁱᵐᵖˡ»
-  RawNode'ptr_TickQuiesced_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"TickQuiesced" «RawNode__TickQuiescedⁱᵐᵖˡ»
-  RawNode'ptr_TransferLeader_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"TransferLeader" «RawNode__TransferLeaderⁱᵐᵖˡ»
-  RawNode'ptr_WithProgress_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"WithProgress" «RawNode__WithProgressⁱᵐᵖˡ»
-  RawNode'ptr_acceptReady_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"acceptReady" «RawNode__acceptReadyⁱᵐᵖˡ»
-  RawNode'ptr_applyUnstableEntries_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"applyUnstableEntries" «RawNode__applyUnstableEntriesⁱᵐᵖˡ»
-  RawNode'ptr_readyWithoutAccept_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"readyWithoutAccept" «RawNode__readyWithoutAcceptⁱᵐᵖˡ»
+class RawNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying RawNode.underlying RawNode.t
+  underlying : go.UnderlyingDirectedEq RawNode RawNode.underlying
+  get_raft : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet RawNode.underlying go!"raft") #x (Val #(x.raft'))
+  set_raft : ∀ (x : RawNode.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet RawNode.underlying go!"raft") (PairV #x #y) (Val #(({ x with raft' := y } : RawNode.t)))
+  get_asyncStorageWrites : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet RawNode.underlying go!"asyncStorageWrites") #x (Val #(x.asyncStorageWrites'))
+  set_asyncStorageWrites : ∀ (x : RawNode.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet RawNode.underlying go!"asyncStorageWrites") (PairV #x #y) (Val #(({ x with asyncStorageWrites' := y } : RawNode.t)))
+  get_prevSoftSt : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet RawNode.underlying go!"prevSoftSt") #x (Val #(x.prevSoftSt'))
+  set_prevSoftSt : ∀ (x : RawNode.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet RawNode.underlying go!"prevSoftSt") (PairV #x #y) (Val #(({ x with prevSoftSt' := y } : RawNode.t)))
+  get_prevHardSt : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet RawNode.underlying go!"prevHardSt") #x (Val #(x.prevHardSt'))
+  set_prevHardSt : ∀ (x : RawNode.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.t), go.IsGoStepPureDetTagged under (StructFieldSet RawNode.underlying go!"prevHardSt") (PairV #x #y) (Val #(({ x with prevHardSt' := y } : RawNode.t)))
+  get_stepsOnAdvance : ∀ (x : RawNode.t), go.IsGoStepPureDetTagged under (StructFieldGet RawNode.underlying go!"stepsOnAdvance") #x (Val #(x.stepsOnAdvance'))
+  set_stepsOnAdvance : ∀ (x : RawNode.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet RawNode.underlying go!"stepsOnAdvance") (PairV #x #y) (Val #(({ x with stepsOnAdvance' := y } : RawNode.t)))
+  ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Advance" RawNode.Advance.impl
+  ptr_ApplyConfChange_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ApplyConfChange" RawNode.ApplyConfChange.impl
+  ptr_BasicStatus_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"BasicStatus" RawNode.BasicStatus.impl
+  ptr_Bootstrap_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Bootstrap" RawNode.Bootstrap.impl
+  ptr_Campaign_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Campaign" RawNode.Campaign.impl
+  ptr_ForgetLeader_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ForgetLeader" RawNode.ForgetLeader.impl
+  ptr_HasReady_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"HasReady" RawNode.HasReady.impl
+  ptr_Propose_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Propose" RawNode.Propose.impl
+  ptr_ProposeConfChange_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ProposeConfChange" RawNode.ProposeConfChange.impl
+  ptr_ReadIndex_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ReadIndex" RawNode.ReadIndex.impl
+  ptr_Ready_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Ready" RawNode.Ready.impl
+  ptr_ReportSnapshot_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ReportSnapshot" RawNode.ReportSnapshot.impl
+  ptr_ReportUnreachable_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"ReportUnreachable" RawNode.ReportUnreachable.impl
+  ptr_Status_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Status" RawNode.Status.impl
+  ptr_Step_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Step" RawNode.Step.impl
+  ptr_Tick_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"Tick" RawNode.Tick.impl
+  ptr_TickQuiesced_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"TickQuiesced" RawNode.TickQuiesced.impl
+  ptr_TransferLeader_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"TransferLeader" RawNode.TransferLeader.impl
+  ptr_WithProgress_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"WithProgress" RawNode.WithProgress.impl
+  ptr_acceptReady_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"acceptReady" RawNode.acceptReady.impl
+  ptr_applyUnstableEntries_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"applyUnstableEntries" RawNode.applyUnstableEntries.impl
+  ptr_readyWithoutAccept_unfold : MethodUnfold (go.GoType.PointerType RawNode) go!"readyWithoutAccept" RawNode.readyWithoutAccept.impl
 
-attribute [instance] RawNode_Assumptions.RawNode_type_repr
-  RawNode_Assumptions.RawNode_underlying
-  RawNode_Assumptions.RawNode_get_raft
-  RawNode_Assumptions.RawNode_set_raft
-  RawNode_Assumptions.RawNode_get_asyncStorageWrites
-  RawNode_Assumptions.RawNode_set_asyncStorageWrites
-  RawNode_Assumptions.RawNode_get_prevSoftSt
-  RawNode_Assumptions.RawNode_set_prevSoftSt
-  RawNode_Assumptions.RawNode_get_prevHardSt
-  RawNode_Assumptions.RawNode_set_prevHardSt
-  RawNode_Assumptions.RawNode_get_stepsOnAdvance
-  RawNode_Assumptions.RawNode_set_stepsOnAdvance
-  RawNode_Assumptions.RawNode'ptr_Advance_unfold
-  RawNode_Assumptions.RawNode'ptr_ApplyConfChange_unfold
-  RawNode_Assumptions.RawNode'ptr_BasicStatus_unfold
-  RawNode_Assumptions.RawNode'ptr_Bootstrap_unfold
-  RawNode_Assumptions.RawNode'ptr_Campaign_unfold
-  RawNode_Assumptions.RawNode'ptr_ForgetLeader_unfold
-  RawNode_Assumptions.RawNode'ptr_HasReady_unfold
-  RawNode_Assumptions.RawNode'ptr_Propose_unfold
-  RawNode_Assumptions.RawNode'ptr_ProposeConfChange_unfold
-  RawNode_Assumptions.RawNode'ptr_ReadIndex_unfold
-  RawNode_Assumptions.RawNode'ptr_Ready_unfold
-  RawNode_Assumptions.RawNode'ptr_ReportSnapshot_unfold
-  RawNode_Assumptions.RawNode'ptr_ReportUnreachable_unfold
-  RawNode_Assumptions.RawNode'ptr_Status_unfold
-  RawNode_Assumptions.RawNode'ptr_Step_unfold
-  RawNode_Assumptions.RawNode'ptr_Tick_unfold
-  RawNode_Assumptions.RawNode'ptr_TickQuiesced_unfold
-  RawNode_Assumptions.RawNode'ptr_TransferLeader_unfold
-  RawNode_Assumptions.RawNode'ptr_WithProgress_unfold
-  RawNode_Assumptions.RawNode'ptr_acceptReady_unfold
-  RawNode_Assumptions.RawNode'ptr_applyUnstableEntries_unfold
-  RawNode_Assumptions.RawNode'ptr_readyWithoutAccept_unfold
+attribute [instance] RawNode.TypeAssumptions.type_repr
+  RawNode.TypeAssumptions.underlying
+  RawNode.TypeAssumptions.get_raft
+  RawNode.TypeAssumptions.set_raft
+  RawNode.TypeAssumptions.get_asyncStorageWrites
+  RawNode.TypeAssumptions.set_asyncStorageWrites
+  RawNode.TypeAssumptions.get_prevSoftSt
+  RawNode.TypeAssumptions.set_prevSoftSt
+  RawNode.TypeAssumptions.get_prevHardSt
+  RawNode.TypeAssumptions.set_prevHardSt
+  RawNode.TypeAssumptions.get_stepsOnAdvance
+  RawNode.TypeAssumptions.set_stepsOnAdvance
+  RawNode.TypeAssumptions.ptr_Advance_unfold
+  RawNode.TypeAssumptions.ptr_ApplyConfChange_unfold
+  RawNode.TypeAssumptions.ptr_BasicStatus_unfold
+  RawNode.TypeAssumptions.ptr_Bootstrap_unfold
+  RawNode.TypeAssumptions.ptr_Campaign_unfold
+  RawNode.TypeAssumptions.ptr_ForgetLeader_unfold
+  RawNode.TypeAssumptions.ptr_HasReady_unfold
+  RawNode.TypeAssumptions.ptr_Propose_unfold
+  RawNode.TypeAssumptions.ptr_ProposeConfChange_unfold
+  RawNode.TypeAssumptions.ptr_ReadIndex_unfold
+  RawNode.TypeAssumptions.ptr_Ready_unfold
+  RawNode.TypeAssumptions.ptr_ReportSnapshot_unfold
+  RawNode.TypeAssumptions.ptr_ReportUnreachable_unfold
+  RawNode.TypeAssumptions.ptr_Status_unfold
+  RawNode.TypeAssumptions.ptr_Step_unfold
+  RawNode.TypeAssumptions.ptr_Tick_unfold
+  RawNode.TypeAssumptions.ptr_TickQuiesced_unfold
+  RawNode.TypeAssumptions.ptr_TransferLeader_unfold
+  RawNode.TypeAssumptions.ptr_WithProgress_unfold
+  RawNode.TypeAssumptions.ptr_acceptReady_unfold
+  RawNode.TypeAssumptions.ptr_applyUnstableEntries_unfold
+  RawNode.TypeAssumptions.ptr_readyWithoutAccept_unfold
 
 namespace ProgressType
 abbrev t [FfiSyntax] : Type := w8
 end ProgressType
 
-@[reducible] def «ProgressTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def ProgressType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.byte
 
-class ProgressType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ProgressType_underlying : go.UnderlyingDirectedEq ProgressType «ProgressTypeⁱᵐᵖˡ»
+class ProgressType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq ProgressType ProgressType.underlying
 
-attribute [instance] ProgressType_Assumptions.ProgressType_underlying
+attribute [instance] ProgressType.TypeAssumptions.underlying
 
 namespace ReadState
 structure t [FfiSyntax] where
@@ -12304,34 +12304,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end ReadState
 
-@[reducible] def ReadState'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ReadState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Index" go.uint64),
 (go.field_decl.FieldDecl go!"RequestCtx" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def ReadState'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  ReadState'fds_unsealed
+@[irreducible] def ReadState.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  ReadState.fieldsUnsealed
 
 instance equals_unfold_ReadState [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold ReadState'fds ReadState'fds_unsealed :=
-  ⟨by unfold ReadState'fds; rfl⟩
+    EqualsUnfold ReadState.fields ReadState.fieldsUnsealed :=
+  ⟨by unfold ReadState.fields; rfl⟩
 
-@[reducible] def «ReadStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType ReadState'fds)
+@[reducible] def ReadState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ReadState.fields)
 
-class ReadState_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ReadState_type_repr : go.TypeReprUnderlying «ReadStateⁱᵐᵖˡ» ReadState.t
-  ReadState_underlying : go.UnderlyingDirectedEq ReadState «ReadStateⁱᵐᵖˡ»
-  ReadState_get_Index : ∀ (x : ReadState.t), go.IsGoStepPureDetTagged under (StructFieldGet «ReadStateⁱᵐᵖˡ» go!"Index") #x (Val #(x.Index'))
-  ReadState_set_Index : ∀ (x : ReadState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ReadStateⁱᵐᵖˡ» go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : ReadState.t)))
-  ReadState_get_RequestCtx : ∀ (x : ReadState.t), go.IsGoStepPureDetTagged under (StructFieldGet «ReadStateⁱᵐᵖˡ» go!"RequestCtx") #x (Val #(x.RequestCtx'))
-  ReadState_set_RequestCtx : ∀ (x : ReadState.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «ReadStateⁱᵐᵖˡ» go!"RequestCtx") (PairV #x #y) (Val #(({ x with RequestCtx' := y } : ReadState.t)))
+class ReadState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ReadState.underlying ReadState.t
+  underlying : go.UnderlyingDirectedEq ReadState ReadState.underlying
+  get_Index : ∀ (x : ReadState.t), go.IsGoStepPureDetTagged under (StructFieldGet ReadState.underlying go!"Index") #x (Val #(x.Index'))
+  set_Index : ∀ (x : ReadState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ReadState.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : ReadState.t)))
+  get_RequestCtx : ∀ (x : ReadState.t), go.IsGoStepPureDetTagged under (StructFieldGet ReadState.underlying go!"RequestCtx") #x (Val #(x.RequestCtx'))
+  set_RequestCtx : ∀ (x : ReadState.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ReadState.underlying go!"RequestCtx") (PairV #x #y) (Val #(({ x with RequestCtx' := y } : ReadState.t)))
 
-attribute [instance] ReadState_Assumptions.ReadState_type_repr
-  ReadState_Assumptions.ReadState_underlying
-  ReadState_Assumptions.ReadState_get_Index
-  ReadState_Assumptions.ReadState_set_Index
-  ReadState_Assumptions.ReadState_get_RequestCtx
-  ReadState_Assumptions.ReadState_set_RequestCtx
+attribute [instance] ReadState.TypeAssumptions.type_repr
+  ReadState.TypeAssumptions.underlying
+  ReadState.TypeAssumptions.get_Index
+  ReadState.TypeAssumptions.set_Index
+  ReadState.TypeAssumptions.get_RequestCtx
+  ReadState.TypeAssumptions.set_RequestCtx
 
 namespace readIndexRequest
 structure t [FfiSyntax] where
@@ -12343,34 +12343,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end readIndexRequest
 
-@[reducible] def readIndexRequest'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def readIndexRequest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message),
 (go.field_decl.FieldDecl go!"index" go.uint64)]
 
-@[irreducible] def readIndexRequest'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  readIndexRequest'fds_unsealed
+@[irreducible] def readIndexRequest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  readIndexRequest.fieldsUnsealed
 
 instance equals_unfold_readIndexRequest [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold readIndexRequest'fds readIndexRequest'fds_unsealed :=
-  ⟨by unfold readIndexRequest'fds; rfl⟩
+    EqualsUnfold readIndexRequest.fields readIndexRequest.fieldsUnsealed :=
+  ⟨by unfold readIndexRequest.fields; rfl⟩
 
-@[reducible] def «readIndexRequestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType readIndexRequest'fds)
+@[reducible] def readIndexRequest.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType readIndexRequest.fields)
 
-class readIndexRequest_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  readIndexRequest_type_repr : go.TypeReprUnderlying «readIndexRequestⁱᵐᵖˡ» readIndexRequest.t
-  readIndexRequest_underlying : go.UnderlyingDirectedEq readIndexRequest «readIndexRequestⁱᵐᵖˡ»
-  readIndexRequest_get_req : ∀ (x : readIndexRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «readIndexRequestⁱᵐᵖˡ» go!"req") #x (Val #(x.req'))
-  readIndexRequest_set_req : ∀ (x : readIndexRequest.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message.t), go.IsGoStepPureDetTagged under (StructFieldSet «readIndexRequestⁱᵐᵖˡ» go!"req") (PairV #x #y) (Val #(({ x with req' := y } : readIndexRequest.t)))
-  readIndexRequest_get_index : ∀ (x : readIndexRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet «readIndexRequestⁱᵐᵖˡ» go!"index") #x (Val #(x.index'))
-  readIndexRequest_set_index : ∀ (x : readIndexRequest.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «readIndexRequestⁱᵐᵖˡ» go!"index") (PairV #x #y) (Val #(({ x with index' := y } : readIndexRequest.t)))
+class readIndexRequest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying readIndexRequest.underlying readIndexRequest.t
+  underlying : go.UnderlyingDirectedEq readIndexRequest readIndexRequest.underlying
+  get_req : ∀ (x : readIndexRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet readIndexRequest.underlying go!"req") #x (Val #(x.req'))
+  set_req : ∀ (x : readIndexRequest.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message.t), go.IsGoStepPureDetTagged under (StructFieldSet readIndexRequest.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : readIndexRequest.t)))
+  get_index : ∀ (x : readIndexRequest.t), go.IsGoStepPureDetTagged under (StructFieldGet readIndexRequest.underlying go!"index") #x (Val #(x.index'))
+  set_index : ∀ (x : readIndexRequest.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet readIndexRequest.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : readIndexRequest.t)))
 
-attribute [instance] readIndexRequest_Assumptions.readIndexRequest_type_repr
-  readIndexRequest_Assumptions.readIndexRequest_underlying
-  readIndexRequest_Assumptions.readIndexRequest_get_req
-  readIndexRequest_Assumptions.readIndexRequest_set_req
-  readIndexRequest_Assumptions.readIndexRequest_get_index
-  readIndexRequest_Assumptions.readIndexRequest_set_index
+attribute [instance] readIndexRequest.TypeAssumptions.type_repr
+  readIndexRequest.TypeAssumptions.underlying
+  readIndexRequest.TypeAssumptions.get_req
+  readIndexRequest.TypeAssumptions.set_req
+  readIndexRequest.TypeAssumptions.get_index
+  readIndexRequest.TypeAssumptions.set_index
 
 namespace readOnly
 structure t [FfiSyntax] where
@@ -12384,54 +12384,54 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end readOnly
 
-@[reducible] def readOnly'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def readOnly.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"option" ReadOnlyOption),
 (go.field_decl.FieldDecl go!"acks" (go.GoType.MapType go.uint64 go.uint64)),
 (go.field_decl.FieldDecl go!"unconfirmedReads" (go.GoType.SliceType (go.GoType.PointerType readIndexRequest))),
 (go.field_decl.FieldDecl go!"confirmedReads" go.uint64)]
 
-@[irreducible] def readOnly'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  readOnly'fds_unsealed
+@[irreducible] def readOnly.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  readOnly.fieldsUnsealed
 
 instance equals_unfold_readOnly [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold readOnly'fds readOnly'fds_unsealed :=
-  ⟨by unfold readOnly'fds; rfl⟩
+    EqualsUnfold readOnly.fields readOnly.fieldsUnsealed :=
+  ⟨by unfold readOnly.fields; rfl⟩
 
-@[reducible] def «readOnlyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType readOnly'fds)
+@[reducible] def readOnly.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType readOnly.fields)
 
-class readOnly_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  readOnly_type_repr : go.TypeReprUnderlying «readOnlyⁱᵐᵖˡ» readOnly.t
-  readOnly_underlying : go.UnderlyingDirectedEq readOnly «readOnlyⁱᵐᵖˡ»
-  readOnly_get_option : ∀ (x : readOnly.t), go.IsGoStepPureDetTagged under (StructFieldGet «readOnlyⁱᵐᵖˡ» go!"option") #x (Val #(x.option'))
-  readOnly_set_option : ∀ (x : readOnly.t) (y : ReadOnlyOption.t), go.IsGoStepPureDetTagged under (StructFieldSet «readOnlyⁱᵐᵖˡ» go!"option") (PairV #x #y) (Val #(({ x with option' := y } : readOnly.t)))
-  readOnly_get_acks : ∀ (x : readOnly.t), go.IsGoStepPureDetTagged under (StructFieldGet «readOnlyⁱᵐᵖˡ» go!"acks") #x (Val #(x.acks'))
-  readOnly_set_acks : ∀ (x : readOnly.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «readOnlyⁱᵐᵖˡ» go!"acks") (PairV #x #y) (Val #(({ x with acks' := y } : readOnly.t)))
-  readOnly_get_unconfirmedReads : ∀ (x : readOnly.t), go.IsGoStepPureDetTagged under (StructFieldGet «readOnlyⁱᵐᵖˡ» go!"unconfirmedReads") #x (Val #(x.unconfirmedReads'))
-  readOnly_set_unconfirmedReads : ∀ (x : readOnly.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «readOnlyⁱᵐᵖˡ» go!"unconfirmedReads") (PairV #x #y) (Val #(({ x with unconfirmedReads' := y } : readOnly.t)))
-  readOnly_get_confirmedReads : ∀ (x : readOnly.t), go.IsGoStepPureDetTagged under (StructFieldGet «readOnlyⁱᵐᵖˡ» go!"confirmedReads") #x (Val #(x.confirmedReads'))
-  readOnly_set_confirmedReads : ∀ (x : readOnly.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «readOnlyⁱᵐᵖˡ» go!"confirmedReads") (PairV #x #y) (Val #(({ x with confirmedReads' := y } : readOnly.t)))
-  readOnly'ptr_AckedIndex_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"AckedIndex" «readOnly__AckedIndexⁱᵐᵖˡ»
-  readOnly'ptr_addRequest_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"addRequest" «readOnly__addRequestⁱᵐᵖˡ»
-  readOnly'ptr_heartbeatCtx_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"heartbeatCtx" «readOnly__heartbeatCtxⁱᵐᵖˡ»
-  readOnly'ptr_maybeAdvance_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"maybeAdvance" «readOnly__maybeAdvanceⁱᵐᵖˡ»
-  readOnly'ptr_recvAck_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"recvAck" «readOnly__recvAckⁱᵐᵖˡ»
+class readOnly.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying readOnly.underlying readOnly.t
+  underlying : go.UnderlyingDirectedEq readOnly readOnly.underlying
+  get_option : ∀ (x : readOnly.t), go.IsGoStepPureDetTagged under (StructFieldGet readOnly.underlying go!"option") #x (Val #(x.option'))
+  «set_option» : ∀ (x : readOnly.t) (y : ReadOnlyOption.t), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"option") (PairV #x #y) (Val #(({ x with option' := y } : readOnly.t)))
+  get_acks : ∀ (x : readOnly.t), go.IsGoStepPureDetTagged under (StructFieldGet readOnly.underlying go!"acks") #x (Val #(x.acks'))
+  set_acks : ∀ (x : readOnly.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"acks") (PairV #x #y) (Val #(({ x with acks' := y } : readOnly.t)))
+  get_unconfirmedReads : ∀ (x : readOnly.t), go.IsGoStepPureDetTagged under (StructFieldGet readOnly.underlying go!"unconfirmedReads") #x (Val #(x.unconfirmedReads'))
+  set_unconfirmedReads : ∀ (x : readOnly.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"unconfirmedReads") (PairV #x #y) (Val #(({ x with unconfirmedReads' := y } : readOnly.t)))
+  get_confirmedReads : ∀ (x : readOnly.t), go.IsGoStepPureDetTagged under (StructFieldGet readOnly.underlying go!"confirmedReads") #x (Val #(x.confirmedReads'))
+  set_confirmedReads : ∀ (x : readOnly.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"confirmedReads") (PairV #x #y) (Val #(({ x with confirmedReads' := y } : readOnly.t)))
+  ptr_AckedIndex_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"AckedIndex" readOnly.AckedIndex.impl
+  ptr_addRequest_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"addRequest" readOnly.addRequest.impl
+  ptr_heartbeatCtx_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"heartbeatCtx" readOnly.heartbeatCtx.impl
+  ptr_maybeAdvance_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"maybeAdvance" readOnly.maybeAdvance.impl
+  ptr_recvAck_unfold : MethodUnfold (go.GoType.PointerType readOnly) go!"recvAck" readOnly.recvAck.impl
 
-attribute [instance] readOnly_Assumptions.readOnly_type_repr
-  readOnly_Assumptions.readOnly_underlying
-  readOnly_Assumptions.readOnly_get_option
-  readOnly_Assumptions.readOnly_set_option
-  readOnly_Assumptions.readOnly_get_acks
-  readOnly_Assumptions.readOnly_set_acks
-  readOnly_Assumptions.readOnly_get_unconfirmedReads
-  readOnly_Assumptions.readOnly_set_unconfirmedReads
-  readOnly_Assumptions.readOnly_get_confirmedReads
-  readOnly_Assumptions.readOnly_set_confirmedReads
-  readOnly_Assumptions.readOnly'ptr_AckedIndex_unfold
-  readOnly_Assumptions.readOnly'ptr_addRequest_unfold
-  readOnly_Assumptions.readOnly'ptr_heartbeatCtx_unfold
-  readOnly_Assumptions.readOnly'ptr_maybeAdvance_unfold
-  readOnly_Assumptions.readOnly'ptr_recvAck_unfold
+attribute [instance] readOnly.TypeAssumptions.type_repr
+  readOnly.TypeAssumptions.underlying
+  readOnly.TypeAssumptions.get_option
+  readOnly.TypeAssumptions.«set_option»
+  readOnly.TypeAssumptions.get_acks
+  readOnly.TypeAssumptions.set_acks
+  readOnly.TypeAssumptions.get_unconfirmedReads
+  readOnly.TypeAssumptions.set_unconfirmedReads
+  readOnly.TypeAssumptions.get_confirmedReads
+  readOnly.TypeAssumptions.set_confirmedReads
+  readOnly.TypeAssumptions.ptr_AckedIndex_unfold
+  readOnly.TypeAssumptions.ptr_addRequest_unfold
+  readOnly.TypeAssumptions.ptr_heartbeatCtx_unfold
+  readOnly.TypeAssumptions.ptr_maybeAdvance_unfold
+  readOnly.TypeAssumptions.ptr_recvAck_unfold
 
 namespace TracingEvent
 structure t [FfiSyntax] where
@@ -12441,25 +12441,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end TracingEvent
 
-@[reducible] def TracingEvent'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TracingEvent.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def TracingEvent'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  TracingEvent'fds_unsealed
+@[irreducible] def TracingEvent.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  TracingEvent.fieldsUnsealed
 
 instance equals_unfold_TracingEvent [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold TracingEvent'fds TracingEvent'fds_unsealed :=
-  ⟨by unfold TracingEvent'fds; rfl⟩
+    EqualsUnfold TracingEvent.fields TracingEvent.fieldsUnsealed :=
+  ⟨by unfold TracingEvent.fields; rfl⟩
 
-@[reducible] def «TracingEventⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType TracingEvent'fds)
+@[reducible] def TracingEvent.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType TracingEvent.fields)
 
-class TracingEvent_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TracingEvent_type_repr : go.TypeReprUnderlying «TracingEventⁱᵐᵖˡ» TracingEvent.t
-  TracingEvent_underlying : go.UnderlyingDirectedEq TracingEvent «TracingEventⁱᵐᵖˡ»
+class TracingEvent.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying TracingEvent.underlying TracingEvent.t
+  underlying : go.UnderlyingDirectedEq TracingEvent TracingEvent.underlying
 
-attribute [instance] TracingEvent_Assumptions.TracingEvent_type_repr
-  TracingEvent_Assumptions.TracingEvent_underlying
+attribute [instance] TracingEvent.TypeAssumptions.type_repr
+  TracingEvent.TypeAssumptions.underlying
 
 namespace BasicStatus
 structure t [FfiSyntax] where
@@ -12474,94 +12474,94 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end BasicStatus
 
-@[reducible] def BasicStatus'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def BasicStatus.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ID" go.uint64),
 (go.field_decl.EmbeddedField go!"HardState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState),
 (go.field_decl.EmbeddedField go!"SoftState" SoftState),
 (go.field_decl.FieldDecl go!"Applied" go.uint64),
 (go.field_decl.FieldDecl go!"LeadTransferee" go.uint64)]
 
-@[irreducible] def BasicStatus'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  BasicStatus'fds_unsealed
+@[irreducible] def BasicStatus.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  BasicStatus.fieldsUnsealed
 
 instance equals_unfold_BasicStatus [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold BasicStatus'fds BasicStatus'fds_unsealed :=
-  ⟨by unfold BasicStatus'fds; rfl⟩
+    EqualsUnfold BasicStatus.fields BasicStatus.fieldsUnsealed :=
+  ⟨by unfold BasicStatus.fields; rfl⟩
 
-@[reducible] def «BasicStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType BasicStatus'fds)
+@[reducible] def BasicStatus.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType BasicStatus.fields)
 
-class BasicStatus_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  BasicStatus_type_repr : go.TypeReprUnderlying «BasicStatusⁱᵐᵖˡ» BasicStatus.t
-  BasicStatus_underlying : go.UnderlyingDirectedEq BasicStatus «BasicStatusⁱᵐᵖˡ»
-  BasicStatus_get_ID : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet «BasicStatusⁱᵐᵖˡ» go!"ID") #x (Val #(x.ID'))
-  BasicStatus_set_ID : ∀ (x : BasicStatus.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «BasicStatusⁱᵐᵖˡ» go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : BasicStatus.t)))
-  BasicStatus_get_HardState : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet «BasicStatusⁱᵐᵖˡ» go!"HardState") #x (Val #(x.HardState'))
-  BasicStatus_set_HardState : ∀ (x : BasicStatus.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.t), go.IsGoStepPureDetTagged under (StructFieldSet «BasicStatusⁱᵐᵖˡ» go!"HardState") (PairV #x #y) (Val #(({ x with HardState' := y } : BasicStatus.t)))
-  BasicStatus_get_SoftState : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet «BasicStatusⁱᵐᵖˡ» go!"SoftState") #x (Val #(x.SoftState'))
-  BasicStatus_set_SoftState : ∀ (x : BasicStatus.t) (y : SoftState.t), go.IsGoStepPureDetTagged under (StructFieldSet «BasicStatusⁱᵐᵖˡ» go!"SoftState") (PairV #x #y) (Val #(({ x with SoftState' := y } : BasicStatus.t)))
-  BasicStatus_get_Applied : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet «BasicStatusⁱᵐᵖˡ» go!"Applied") #x (Val #(x.Applied'))
-  BasicStatus_set_Applied : ∀ (x : BasicStatus.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «BasicStatusⁱᵐᵖˡ» go!"Applied") (PairV #x #y) (Val #(({ x with Applied' := y } : BasicStatus.t)))
-  BasicStatus_get_LeadTransferee : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet «BasicStatusⁱᵐᵖˡ» go!"LeadTransferee") #x (Val #(x.LeadTransferee'))
-  BasicStatus_set_LeadTransferee : ∀ (x : BasicStatus.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «BasicStatusⁱᵐᵖˡ» go!"LeadTransferee") (PairV #x #y) (Val #(({ x with LeadTransferee' := y } : BasicStatus.t)))
-  BasicStatus'ptr_Descriptor_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Descriptor" (LamV "$r"
+class BasicStatus.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying BasicStatus.underlying BasicStatus.t
+  underlying : go.UnderlyingDirectedEq BasicStatus BasicStatus.underlying
+  get_ID : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet BasicStatus.underlying go!"ID") #x (Val #(x.ID'))
+  set_ID : ∀ (x : BasicStatus.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BasicStatus.underlying go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : BasicStatus.t)))
+  get_HardState : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet BasicStatus.underlying go!"HardState") #x (Val #(x.HardState'))
+  set_HardState : ∀ (x : BasicStatus.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.t), go.IsGoStepPureDetTagged under (StructFieldSet BasicStatus.underlying go!"HardState") (PairV #x #y) (Val #(({ x with HardState' := y } : BasicStatus.t)))
+  get_SoftState : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet BasicStatus.underlying go!"SoftState") #x (Val #(x.SoftState'))
+  set_SoftState : ∀ (x : BasicStatus.t) (y : SoftState.t), go.IsGoStepPureDetTagged under (StructFieldSet BasicStatus.underlying go!"SoftState") (PairV #x #y) (Val #(({ x with SoftState' := y } : BasicStatus.t)))
+  get_Applied : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet BasicStatus.underlying go!"Applied") #x (Val #(x.Applied'))
+  set_Applied : ∀ (x : BasicStatus.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BasicStatus.underlying go!"Applied") (PairV #x #y) (Val #(({ x with Applied' := y } : BasicStatus.t)))
+  get_LeadTransferee : ∀ (x : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldGet BasicStatus.underlying go!"LeadTransferee") #x (Val #(x.LeadTransferee'))
+  set_LeadTransferee : ∀ (x : BasicStatus.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BasicStatus.underlying go!"LeadTransferee") (PairV #x #y) (Val #(({ x with LeadTransferee' := y } : BasicStatus.t)))
+  ptr_Descriptor_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Descriptor" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Descriptor"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_Marshal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Marshal" (LamV "$r"
+  ptr_Marshal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Marshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Marshal"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_MarshalTo_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"MarshalTo" (LamV "$r"
+  ptr_MarshalTo_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"MarshalTo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"MarshalTo"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_MarshalToSizedBuffer_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"MarshalToSizedBuffer" (LamV "$r"
+  ptr_MarshalToSizedBuffer_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"MarshalToSizedBuffer" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"MarshalToSizedBuffer"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_ProtoMessage_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"ProtoMessage" (LamV "$r"
+  ptr_ProtoMessage_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"ProtoMessage" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"ProtoMessage"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Reset" (LamV "$r"
+  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Reset" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Reset"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_Size_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Size" (LamV "$r"
+  ptr_Size_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Size" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Size"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_String_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"String"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Unmarshal" (LamV "$r"
+  ptr_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"Unmarshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"Unmarshal"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_XXX_DiscardUnknown_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_DiscardUnknown" (LamV "$r"
+  ptr_XXX_DiscardUnknown_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_DiscardUnknown" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_DiscardUnknown"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_XXX_Marshal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_Marshal" (LamV "$r"
+  ptr_XXX_Marshal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_Marshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_Marshal"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_XXX_Merge_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_Merge" (LamV "$r"
+  ptr_XXX_Merge_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_Merge" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_Merge"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_XXX_Size_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_Size" (LamV "$r"
+  ptr_XXX_Size_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_Size" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_Size"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_XXX_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_Unmarshal" (LamV "$r"
+  ptr_XXX_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"XXX_Unmarshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState) go!"XXX_Unmarshal"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"HardState"))) (Var "$r"))))
-  BasicStatus'ptr_equal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"equal" (LamV "$r"
+  ptr_equal_unfold : MethodUnfold (go.GoType.PointerType BasicStatus) go!"equal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType SoftState) go!"equal"))) (App (Val (GoInstruction (StructFieldRef BasicStatus go!"SoftState"))) (Var "$r"))))
 
-attribute [instance] BasicStatus_Assumptions.BasicStatus_type_repr
-  BasicStatus_Assumptions.BasicStatus_underlying
-  BasicStatus_Assumptions.BasicStatus_get_ID
-  BasicStatus_Assumptions.BasicStatus_set_ID
-  BasicStatus_Assumptions.BasicStatus_get_HardState
-  BasicStatus_Assumptions.BasicStatus_set_HardState
-  BasicStatus_Assumptions.BasicStatus_get_SoftState
-  BasicStatus_Assumptions.BasicStatus_set_SoftState
-  BasicStatus_Assumptions.BasicStatus_get_Applied
-  BasicStatus_Assumptions.BasicStatus_set_Applied
-  BasicStatus_Assumptions.BasicStatus_get_LeadTransferee
-  BasicStatus_Assumptions.BasicStatus_set_LeadTransferee
-  BasicStatus_Assumptions.BasicStatus'ptr_Descriptor_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_Marshal_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_MarshalTo_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_MarshalToSizedBuffer_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_ProtoMessage_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_Reset_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_Size_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_String_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_Unmarshal_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_XXX_DiscardUnknown_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_XXX_Marshal_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_XXX_Merge_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_XXX_Size_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_XXX_Unmarshal_unfold
-  BasicStatus_Assumptions.BasicStatus'ptr_equal_unfold
+attribute [instance] BasicStatus.TypeAssumptions.type_repr
+  BasicStatus.TypeAssumptions.underlying
+  BasicStatus.TypeAssumptions.get_ID
+  BasicStatus.TypeAssumptions.set_ID
+  BasicStatus.TypeAssumptions.get_HardState
+  BasicStatus.TypeAssumptions.set_HardState
+  BasicStatus.TypeAssumptions.get_SoftState
+  BasicStatus.TypeAssumptions.set_SoftState
+  BasicStatus.TypeAssumptions.get_Applied
+  BasicStatus.TypeAssumptions.set_Applied
+  BasicStatus.TypeAssumptions.get_LeadTransferee
+  BasicStatus.TypeAssumptions.set_LeadTransferee
+  BasicStatus.TypeAssumptions.ptr_Descriptor_unfold
+  BasicStatus.TypeAssumptions.ptr_Marshal_unfold
+  BasicStatus.TypeAssumptions.ptr_MarshalTo_unfold
+  BasicStatus.TypeAssumptions.ptr_MarshalToSizedBuffer_unfold
+  BasicStatus.TypeAssumptions.ptr_ProtoMessage_unfold
+  BasicStatus.TypeAssumptions.ptr_Reset_unfold
+  BasicStatus.TypeAssumptions.ptr_Size_unfold
+  BasicStatus.TypeAssumptions.ptr_String_unfold
+  BasicStatus.TypeAssumptions.ptr_Unmarshal_unfold
+  BasicStatus.TypeAssumptions.ptr_XXX_DiscardUnknown_unfold
+  BasicStatus.TypeAssumptions.ptr_XXX_Marshal_unfold
+  BasicStatus.TypeAssumptions.ptr_XXX_Merge_unfold
+  BasicStatus.TypeAssumptions.ptr_XXX_Size_unfold
+  BasicStatus.TypeAssumptions.ptr_XXX_Unmarshal_unfold
+  BasicStatus.TypeAssumptions.ptr_equal_unfold
 
 namespace Status
 structure t [FfiSyntax] where
@@ -12574,91 +12574,91 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Status
 
-@[reducible] def Status'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Status.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"BasicStatus" BasicStatus),
 (go.field_decl.FieldDecl go!"Config" _root_.Perennial.go_etcd_io.raft.v3.tracker.Config),
 (go.field_decl.FieldDecl go!"Progress" (go.GoType.MapType go.uint64 _root_.Perennial.go_etcd_io.raft.v3.tracker.Progress))]
 
-@[irreducible] def Status'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Status'fds_unsealed
+@[irreducible] def Status.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Status.fieldsUnsealed
 
 instance equals_unfold_Status [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Status'fds Status'fds_unsealed :=
-  ⟨by unfold Status'fds; rfl⟩
+    EqualsUnfold Status.fields Status.fieldsUnsealed :=
+  ⟨by unfold Status.fields; rfl⟩
 
-@[reducible] def «Statusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Status'fds)
+@[reducible] def Status.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Status.fields)
 
-class Status_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Status_type_repr : go.TypeReprUnderlying «Statusⁱᵐᵖˡ» Status.t
-  Status_underlying : go.UnderlyingDirectedEq Status «Statusⁱᵐᵖˡ»
-  Status_get_BasicStatus : ∀ (x : Status.t), go.IsGoStepPureDetTagged under (StructFieldGet «Statusⁱᵐᵖˡ» go!"BasicStatus") #x (Val #(x.BasicStatus'))
-  Status_set_BasicStatus : ∀ (x : Status.t) (y : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldSet «Statusⁱᵐᵖˡ» go!"BasicStatus") (PairV #x #y) (Val #(({ x with BasicStatus' := y } : Status.t)))
-  Status_get_Config : ∀ (x : Status.t), go.IsGoStepPureDetTagged under (StructFieldGet «Statusⁱᵐᵖˡ» go!"Config") #x (Val #(x.Config'))
-  Status_set_Config : ∀ (x : Status.t) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.Config.t), go.IsGoStepPureDetTagged under (StructFieldSet «Statusⁱᵐᵖˡ» go!"Config") (PairV #x #y) (Val #(({ x with Config' := y } : Status.t)))
-  Status_get_Progress : ∀ (x : Status.t), go.IsGoStepPureDetTagged under (StructFieldGet «Statusⁱᵐᵖˡ» go!"Progress") #x (Val #(x.Progress'))
-  Status_set_Progress : ∀ (x : Status.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «Statusⁱᵐᵖˡ» go!"Progress") (PairV #x #y) (Val #(({ x with Progress' := y } : Status.t)))
-  Status_MarshalJSON_unfold : MethodUnfold Status go!"MarshalJSON" «Status__MarshalJSONⁱᵐᵖˡ»
-  Status_String_unfold : MethodUnfold Status go!"String" «Status__Stringⁱᵐᵖˡ»
-  Status'ptr_Descriptor_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Descriptor" (LamV "$r"
+class Status.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Status.underlying Status.t
+  underlying : go.UnderlyingDirectedEq Status Status.underlying
+  get_BasicStatus : ∀ (x : Status.t), go.IsGoStepPureDetTagged under (StructFieldGet Status.underlying go!"BasicStatus") #x (Val #(x.BasicStatus'))
+  set_BasicStatus : ∀ (x : Status.t) (y : BasicStatus.t), go.IsGoStepPureDetTagged under (StructFieldSet Status.underlying go!"BasicStatus") (PairV #x #y) (Val #(({ x with BasicStatus' := y } : Status.t)))
+  get_Config : ∀ (x : Status.t), go.IsGoStepPureDetTagged under (StructFieldGet Status.underlying go!"Config") #x (Val #(x.Config'))
+  set_Config : ∀ (x : Status.t) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.Config.t), go.IsGoStepPureDetTagged under (StructFieldSet Status.underlying go!"Config") (PairV #x #y) (Val #(({ x with Config' := y } : Status.t)))
+  get_Progress : ∀ (x : Status.t), go.IsGoStepPureDetTagged under (StructFieldGet Status.underlying go!"Progress") #x (Val #(x.Progress'))
+  set_Progress : ∀ (x : Status.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Status.underlying go!"Progress") (PairV #x #y) (Val #(({ x with Progress' := y } : Status.t)))
+  MarshalJSON_unfold : MethodUnfold Status go!"MarshalJSON" Status.MarshalJSON.impl
+  String_unfold : MethodUnfold Status go!"String" Status.String.impl
+  ptr_Descriptor_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Descriptor" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"Descriptor"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_Marshal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Marshal" (LamV "$r"
+  ptr_Marshal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Marshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"Marshal"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_MarshalJSON_unfold : MethodUnfold (go.GoType.PointerType Status) go!"MarshalJSON" (LamV "$r"
+  ptr_MarshalJSON_unfold : MethodUnfold (go.GoType.PointerType Status) go!"MarshalJSON" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Status go!"MarshalJSON"))) (App (Val (GoInstruction (GoLoad Status))) (Var "$r"))))
-  Status'ptr_MarshalTo_unfold : MethodUnfold (go.GoType.PointerType Status) go!"MarshalTo" (LamV "$r"
+  ptr_MarshalTo_unfold : MethodUnfold (go.GoType.PointerType Status) go!"MarshalTo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"MarshalTo"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_MarshalToSizedBuffer_unfold : MethodUnfold (go.GoType.PointerType Status) go!"MarshalToSizedBuffer" (LamV "$r"
+  ptr_MarshalToSizedBuffer_unfold : MethodUnfold (go.GoType.PointerType Status) go!"MarshalToSizedBuffer" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"MarshalToSizedBuffer"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_ProtoMessage_unfold : MethodUnfold (go.GoType.PointerType Status) go!"ProtoMessage" (LamV "$r"
+  ptr_ProtoMessage_unfold : MethodUnfold (go.GoType.PointerType Status) go!"ProtoMessage" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"ProtoMessage"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Reset" (LamV "$r"
+  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Reset" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"Reset"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_Size_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Size" (LamV "$r"
+  ptr_Size_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Size" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"Size"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_String_unfold : MethodUnfold (go.GoType.PointerType Status) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType Status) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Status go!"String"))) (App (Val (GoInstruction (GoLoad Status))) (Var "$r"))))
-  Status'ptr_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Unmarshal" (LamV "$r"
+  ptr_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"Unmarshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"Unmarshal"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_XXX_DiscardUnknown_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_DiscardUnknown" (LamV "$r"
+  ptr_XXX_DiscardUnknown_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_DiscardUnknown" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"XXX_DiscardUnknown"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_XXX_Marshal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_Marshal" (LamV "$r"
+  ptr_XXX_Marshal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_Marshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"XXX_Marshal"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_XXX_Merge_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_Merge" (LamV "$r"
+  ptr_XXX_Merge_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_Merge" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"XXX_Merge"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_XXX_Size_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_Size" (LamV "$r"
+  ptr_XXX_Size_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_Size" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"XXX_Size"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_XXX_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_Unmarshal" (LamV "$r"
+  ptr_XXX_Unmarshal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"XXX_Unmarshal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"XXX_Unmarshal"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
-  Status'ptr_equal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"equal" (LamV "$r"
+  ptr_equal_unfold : MethodUnfold (go.GoType.PointerType Status) go!"equal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType BasicStatus) go!"equal"))) (App (Val (GoInstruction (StructFieldRef Status go!"BasicStatus"))) (Var "$r"))))
 
-attribute [instance] Status_Assumptions.Status_type_repr
-  Status_Assumptions.Status_underlying
-  Status_Assumptions.Status_get_BasicStatus
-  Status_Assumptions.Status_set_BasicStatus
-  Status_Assumptions.Status_get_Config
-  Status_Assumptions.Status_set_Config
-  Status_Assumptions.Status_get_Progress
-  Status_Assumptions.Status_set_Progress
-  Status_Assumptions.Status_MarshalJSON_unfold
-  Status_Assumptions.Status_String_unfold
-  Status_Assumptions.Status'ptr_Descriptor_unfold
-  Status_Assumptions.Status'ptr_Marshal_unfold
-  Status_Assumptions.Status'ptr_MarshalJSON_unfold
-  Status_Assumptions.Status'ptr_MarshalTo_unfold
-  Status_Assumptions.Status'ptr_MarshalToSizedBuffer_unfold
-  Status_Assumptions.Status'ptr_ProtoMessage_unfold
-  Status_Assumptions.Status'ptr_Reset_unfold
-  Status_Assumptions.Status'ptr_Size_unfold
-  Status_Assumptions.Status'ptr_String_unfold
-  Status_Assumptions.Status'ptr_Unmarshal_unfold
-  Status_Assumptions.Status'ptr_XXX_DiscardUnknown_unfold
-  Status_Assumptions.Status'ptr_XXX_Marshal_unfold
-  Status_Assumptions.Status'ptr_XXX_Merge_unfold
-  Status_Assumptions.Status'ptr_XXX_Size_unfold
-  Status_Assumptions.Status'ptr_XXX_Unmarshal_unfold
-  Status_Assumptions.Status'ptr_equal_unfold
+attribute [instance] Status.TypeAssumptions.type_repr
+  Status.TypeAssumptions.underlying
+  Status.TypeAssumptions.get_BasicStatus
+  Status.TypeAssumptions.set_BasicStatus
+  Status.TypeAssumptions.get_Config
+  Status.TypeAssumptions.set_Config
+  Status.TypeAssumptions.get_Progress
+  Status.TypeAssumptions.set_Progress
+  Status.TypeAssumptions.MarshalJSON_unfold
+  Status.TypeAssumptions.String_unfold
+  Status.TypeAssumptions.ptr_Descriptor_unfold
+  Status.TypeAssumptions.ptr_Marshal_unfold
+  Status.TypeAssumptions.ptr_MarshalJSON_unfold
+  Status.TypeAssumptions.ptr_MarshalTo_unfold
+  Status.TypeAssumptions.ptr_MarshalToSizedBuffer_unfold
+  Status.TypeAssumptions.ptr_ProtoMessage_unfold
+  Status.TypeAssumptions.ptr_Reset_unfold
+  Status.TypeAssumptions.ptr_Size_unfold
+  Status.TypeAssumptions.ptr_String_unfold
+  Status.TypeAssumptions.ptr_Unmarshal_unfold
+  Status.TypeAssumptions.ptr_XXX_DiscardUnknown_unfold
+  Status.TypeAssumptions.ptr_XXX_Marshal_unfold
+  Status.TypeAssumptions.ptr_XXX_Merge_unfold
+  Status.TypeAssumptions.ptr_XXX_Size_unfold
+  Status.TypeAssumptions.ptr_XXX_Unmarshal_unfold
+  Status.TypeAssumptions.ptr_equal_unfold
 
 namespace inMemStorageCallStats
 structure t [FfiSyntax] where
@@ -12674,7 +12674,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end inMemStorageCallStats
 
-@[reducible] def inMemStorageCallStats'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def inMemStorageCallStats.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"initialState" go.int),
 (go.field_decl.FieldDecl go!"firstIndex" go.int),
 (go.field_decl.FieldDecl go!"lastIndex" go.int),
@@ -12682,46 +12682,46 @@ end inMemStorageCallStats
 (go.field_decl.FieldDecl go!"term" go.int),
 (go.field_decl.FieldDecl go!"snapshot" go.int)]
 
-@[irreducible] def inMemStorageCallStats'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  inMemStorageCallStats'fds_unsealed
+@[irreducible] def inMemStorageCallStats.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  inMemStorageCallStats.fieldsUnsealed
 
 instance equals_unfold_inMemStorageCallStats [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold inMemStorageCallStats'fds inMemStorageCallStats'fds_unsealed :=
-  ⟨by unfold inMemStorageCallStats'fds; rfl⟩
+    EqualsUnfold inMemStorageCallStats.fields inMemStorageCallStats.fieldsUnsealed :=
+  ⟨by unfold inMemStorageCallStats.fields; rfl⟩
 
-@[reducible] def «inMemStorageCallStatsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType inMemStorageCallStats'fds)
+@[reducible] def inMemStorageCallStats.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType inMemStorageCallStats.fields)
 
-class inMemStorageCallStats_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  inMemStorageCallStats_type_repr : go.TypeReprUnderlying «inMemStorageCallStatsⁱᵐᵖˡ» inMemStorageCallStats.t
-  inMemStorageCallStats_underlying : go.UnderlyingDirectedEq inMemStorageCallStats «inMemStorageCallStatsⁱᵐᵖˡ»
-  inMemStorageCallStats_get_initialState : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet «inMemStorageCallStatsⁱᵐᵖˡ» go!"initialState") #x (Val #(x.initialState'))
-  inMemStorageCallStats_set_initialState : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «inMemStorageCallStatsⁱᵐᵖˡ» go!"initialState") (PairV #x #y) (Val #(({ x with initialState' := y } : inMemStorageCallStats.t)))
-  inMemStorageCallStats_get_firstIndex : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet «inMemStorageCallStatsⁱᵐᵖˡ» go!"firstIndex") #x (Val #(x.firstIndex'))
-  inMemStorageCallStats_set_firstIndex : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «inMemStorageCallStatsⁱᵐᵖˡ» go!"firstIndex") (PairV #x #y) (Val #(({ x with firstIndex' := y } : inMemStorageCallStats.t)))
-  inMemStorageCallStats_get_lastIndex : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet «inMemStorageCallStatsⁱᵐᵖˡ» go!"lastIndex") #x (Val #(x.lastIndex'))
-  inMemStorageCallStats_set_lastIndex : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «inMemStorageCallStatsⁱᵐᵖˡ» go!"lastIndex") (PairV #x #y) (Val #(({ x with lastIndex' := y } : inMemStorageCallStats.t)))
-  inMemStorageCallStats_get_entries : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet «inMemStorageCallStatsⁱᵐᵖˡ» go!"entries") #x (Val #(x.entries'))
-  inMemStorageCallStats_set_entries : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «inMemStorageCallStatsⁱᵐᵖˡ» go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : inMemStorageCallStats.t)))
-  inMemStorageCallStats_get_term : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet «inMemStorageCallStatsⁱᵐᵖˡ» go!"term") #x (Val #(x.term'))
-  inMemStorageCallStats_set_term : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «inMemStorageCallStatsⁱᵐᵖˡ» go!"term") (PairV #x #y) (Val #(({ x with term' := y } : inMemStorageCallStats.t)))
-  inMemStorageCallStats_get_snapshot : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet «inMemStorageCallStatsⁱᵐᵖˡ» go!"snapshot") #x (Val #(x.snapshot'))
-  inMemStorageCallStats_set_snapshot : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «inMemStorageCallStatsⁱᵐᵖˡ» go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : inMemStorageCallStats.t)))
+class inMemStorageCallStats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying inMemStorageCallStats.underlying inMemStorageCallStats.t
+  underlying : go.UnderlyingDirectedEq inMemStorageCallStats inMemStorageCallStats.underlying
+  get_initialState : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet inMemStorageCallStats.underlying go!"initialState") #x (Val #(x.initialState'))
+  set_initialState : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inMemStorageCallStats.underlying go!"initialState") (PairV #x #y) (Val #(({ x with initialState' := y } : inMemStorageCallStats.t)))
+  get_firstIndex : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet inMemStorageCallStats.underlying go!"firstIndex") #x (Val #(x.firstIndex'))
+  set_firstIndex : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inMemStorageCallStats.underlying go!"firstIndex") (PairV #x #y) (Val #(({ x with firstIndex' := y } : inMemStorageCallStats.t)))
+  get_lastIndex : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet inMemStorageCallStats.underlying go!"lastIndex") #x (Val #(x.lastIndex'))
+  set_lastIndex : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inMemStorageCallStats.underlying go!"lastIndex") (PairV #x #y) (Val #(({ x with lastIndex' := y } : inMemStorageCallStats.t)))
+  get_entries : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet inMemStorageCallStats.underlying go!"entries") #x (Val #(x.entries'))
+  set_entries : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inMemStorageCallStats.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : inMemStorageCallStats.t)))
+  get_term : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet inMemStorageCallStats.underlying go!"term") #x (Val #(x.term'))
+  set_term : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inMemStorageCallStats.underlying go!"term") (PairV #x #y) (Val #(({ x with term' := y } : inMemStorageCallStats.t)))
+  get_snapshot : ∀ (x : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldGet inMemStorageCallStats.underlying go!"snapshot") #x (Val #(x.snapshot'))
+  set_snapshot : ∀ (x : inMemStorageCallStats.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inMemStorageCallStats.underlying go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : inMemStorageCallStats.t)))
 
-attribute [instance] inMemStorageCallStats_Assumptions.inMemStorageCallStats_type_repr
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_underlying
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_get_initialState
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_set_initialState
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_get_firstIndex
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_set_firstIndex
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_get_lastIndex
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_set_lastIndex
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_get_entries
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_set_entries
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_get_term
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_set_term
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_get_snapshot
-  inMemStorageCallStats_Assumptions.inMemStorageCallStats_set_snapshot
+attribute [instance] inMemStorageCallStats.TypeAssumptions.type_repr
+  inMemStorageCallStats.TypeAssumptions.underlying
+  inMemStorageCallStats.TypeAssumptions.get_initialState
+  inMemStorageCallStats.TypeAssumptions.set_initialState
+  inMemStorageCallStats.TypeAssumptions.get_firstIndex
+  inMemStorageCallStats.TypeAssumptions.set_firstIndex
+  inMemStorageCallStats.TypeAssumptions.get_lastIndex
+  inMemStorageCallStats.TypeAssumptions.set_lastIndex
+  inMemStorageCallStats.TypeAssumptions.get_entries
+  inMemStorageCallStats.TypeAssumptions.set_entries
+  inMemStorageCallStats.TypeAssumptions.get_term
+  inMemStorageCallStats.TypeAssumptions.set_term
+  inMemStorageCallStats.TypeAssumptions.get_snapshot
+  inMemStorageCallStats.TypeAssumptions.set_snapshot
 
 namespace MemoryStorage
 structure t [FfiSyntax] where
@@ -12736,84 +12736,84 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end MemoryStorage
 
-@[reducible] def MemoryStorage'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def MemoryStorage.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Mutex" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"hardState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState),
 (go.field_decl.FieldDecl go!"snapshot" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot),
 (go.field_decl.FieldDecl go!"ents" (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)),
 (go.field_decl.FieldDecl go!"callStats" inMemStorageCallStats)]
 
-@[irreducible] def MemoryStorage'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  MemoryStorage'fds_unsealed
+@[irreducible] def MemoryStorage.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  MemoryStorage.fieldsUnsealed
 
 instance equals_unfold_MemoryStorage [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold MemoryStorage'fds MemoryStorage'fds_unsealed :=
-  ⟨by unfold MemoryStorage'fds; rfl⟩
+    EqualsUnfold MemoryStorage.fields MemoryStorage.fieldsUnsealed :=
+  ⟨by unfold MemoryStorage.fields; rfl⟩
 
-@[reducible] def «MemoryStorageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType MemoryStorage'fds)
+@[reducible] def MemoryStorage.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType MemoryStorage.fields)
 
-class MemoryStorage_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  MemoryStorage_type_repr : go.TypeReprUnderlying «MemoryStorageⁱᵐᵖˡ» MemoryStorage.t
-  MemoryStorage_underlying : go.UnderlyingDirectedEq MemoryStorage «MemoryStorageⁱᵐᵖˡ»
-  MemoryStorage_get_Mutex : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet «MemoryStorageⁱᵐᵖˡ» go!"Mutex") #x (Val #(x.Mutex'))
-  MemoryStorage_set_Mutex : ∀ (x : MemoryStorage.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «MemoryStorageⁱᵐᵖˡ» go!"Mutex") (PairV #x #y) (Val #(({ x with Mutex' := y } : MemoryStorage.t)))
-  MemoryStorage_get_hardState : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet «MemoryStorageⁱᵐᵖˡ» go!"hardState") #x (Val #(x.hardState'))
-  MemoryStorage_set_hardState : ∀ (x : MemoryStorage.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.t), go.IsGoStepPureDetTagged under (StructFieldSet «MemoryStorageⁱᵐᵖˡ» go!"hardState") (PairV #x #y) (Val #(({ x with hardState' := y } : MemoryStorage.t)))
-  MemoryStorage_get_snapshot : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet «MemoryStorageⁱᵐᵖˡ» go!"snapshot") #x (Val #(x.snapshot'))
-  MemoryStorage_set_snapshot : ∀ (x : MemoryStorage.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.t), go.IsGoStepPureDetTagged under (StructFieldSet «MemoryStorageⁱᵐᵖˡ» go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : MemoryStorage.t)))
-  MemoryStorage_get_ents : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet «MemoryStorageⁱᵐᵖˡ» go!"ents") #x (Val #(x.ents'))
-  MemoryStorage_set_ents : ∀ (x : MemoryStorage.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «MemoryStorageⁱᵐᵖˡ» go!"ents") (PairV #x #y) (Val #(({ x with ents' := y } : MemoryStorage.t)))
-  MemoryStorage_get_callStats : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet «MemoryStorageⁱᵐᵖˡ» go!"callStats") #x (Val #(x.callStats'))
-  MemoryStorage_set_callStats : ∀ (x : MemoryStorage.t) (y : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldSet «MemoryStorageⁱᵐᵖˡ» go!"callStats") (PairV #x #y) (Val #(({ x with callStats' := y } : MemoryStorage.t)))
-  MemoryStorage'ptr_Append_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Append" «MemoryStorage__Appendⁱᵐᵖˡ»
-  MemoryStorage'ptr_ApplySnapshot_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"ApplySnapshot" «MemoryStorage__ApplySnapshotⁱᵐᵖˡ»
-  MemoryStorage'ptr_Compact_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Compact" «MemoryStorage__Compactⁱᵐᵖˡ»
-  MemoryStorage'ptr_CreateSnapshot_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"CreateSnapshot" «MemoryStorage__CreateSnapshotⁱᵐᵖˡ»
-  MemoryStorage'ptr_Entries_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Entries" «MemoryStorage__Entriesⁱᵐᵖˡ»
-  MemoryStorage'ptr_FirstIndex_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"FirstIndex" «MemoryStorage__FirstIndexⁱᵐᵖˡ»
-  MemoryStorage'ptr_InitialState_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"InitialState" «MemoryStorage__InitialStateⁱᵐᵖˡ»
-  MemoryStorage'ptr_LastIndex_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"LastIndex" «MemoryStorage__LastIndexⁱᵐᵖˡ»
-  MemoryStorage'ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Lock" (LamV "$r"
+class MemoryStorage.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying MemoryStorage.underlying MemoryStorage.t
+  underlying : go.UnderlyingDirectedEq MemoryStorage MemoryStorage.underlying
+  get_Mutex : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet MemoryStorage.underlying go!"Mutex") #x (Val #(x.Mutex'))
+  set_Mutex : ∀ (x : MemoryStorage.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"Mutex") (PairV #x #y) (Val #(({ x with Mutex' := y } : MemoryStorage.t)))
+  get_hardState : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet MemoryStorage.underlying go!"hardState") #x (Val #(x.hardState'))
+  set_hardState : ∀ (x : MemoryStorage.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.t), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"hardState") (PairV #x #y) (Val #(({ x with hardState' := y } : MemoryStorage.t)))
+  get_snapshot : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet MemoryStorage.underlying go!"snapshot") #x (Val #(x.snapshot'))
+  set_snapshot : ∀ (x : MemoryStorage.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.t), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : MemoryStorage.t)))
+  get_ents : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet MemoryStorage.underlying go!"ents") #x (Val #(x.ents'))
+  set_ents : ∀ (x : MemoryStorage.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"ents") (PairV #x #y) (Val #(({ x with ents' := y } : MemoryStorage.t)))
+  get_callStats : ∀ (x : MemoryStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet MemoryStorage.underlying go!"callStats") #x (Val #(x.callStats'))
+  set_callStats : ∀ (x : MemoryStorage.t) (y : inMemStorageCallStats.t), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"callStats") (PairV #x #y) (Val #(({ x with callStats' := y } : MemoryStorage.t)))
+  ptr_Append_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Append" MemoryStorage.Append.impl
+  ptr_ApplySnapshot_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"ApplySnapshot" MemoryStorage.ApplySnapshot.impl
+  ptr_Compact_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Compact" MemoryStorage.Compact.impl
+  ptr_CreateSnapshot_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"CreateSnapshot" MemoryStorage.CreateSnapshot.impl
+  ptr_Entries_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Entries" MemoryStorage.Entries.impl
+  ptr_FirstIndex_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"FirstIndex" MemoryStorage.FirstIndex.impl
+  ptr_InitialState_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"InitialState" MemoryStorage.InitialState.impl
+  ptr_LastIndex_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"LastIndex" MemoryStorage.LastIndex.impl
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Lock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef MemoryStorage go!"Mutex"))) (Var "$r"))))
-  MemoryStorage'ptr_SetHardState_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"SetHardState" «MemoryStorage__SetHardStateⁱᵐᵖˡ»
-  MemoryStorage'ptr_Snapshot_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Snapshot" «MemoryStorage__Snapshotⁱᵐᵖˡ»
-  MemoryStorage'ptr_Term_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Term" «MemoryStorage__Termⁱᵐᵖˡ»
-  MemoryStorage'ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"TryLock" (LamV "$r"
+  ptr_SetHardState_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"SetHardState" MemoryStorage.SetHardState.impl
+  ptr_Snapshot_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Snapshot" MemoryStorage.Snapshot.impl
+  ptr_Term_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Term" MemoryStorage.Term.impl
+  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"TryLock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"TryLock"))) (App (Val (GoInstruction (StructFieldRef MemoryStorage go!"Mutex"))) (Var "$r"))))
-  MemoryStorage'ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Unlock" (LamV "$r"
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"Unlock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef MemoryStorage go!"Mutex"))) (Var "$r"))))
-  MemoryStorage'ptr_firstIndex_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"firstIndex" «MemoryStorage__firstIndexⁱᵐᵖˡ»
-  MemoryStorage'ptr_lastIndex_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"lastIndex" «MemoryStorage__lastIndexⁱᵐᵖˡ»
+  ptr_firstIndex_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"firstIndex" MemoryStorage.firstIndex.impl
+  ptr_lastIndex_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage) go!"lastIndex" MemoryStorage.lastIndex.impl
 
-attribute [instance] MemoryStorage_Assumptions.MemoryStorage_type_repr
-  MemoryStorage_Assumptions.MemoryStorage_underlying
-  MemoryStorage_Assumptions.MemoryStorage_get_Mutex
-  MemoryStorage_Assumptions.MemoryStorage_set_Mutex
-  MemoryStorage_Assumptions.MemoryStorage_get_hardState
-  MemoryStorage_Assumptions.MemoryStorage_set_hardState
-  MemoryStorage_Assumptions.MemoryStorage_get_snapshot
-  MemoryStorage_Assumptions.MemoryStorage_set_snapshot
-  MemoryStorage_Assumptions.MemoryStorage_get_ents
-  MemoryStorage_Assumptions.MemoryStorage_set_ents
-  MemoryStorage_Assumptions.MemoryStorage_get_callStats
-  MemoryStorage_Assumptions.MemoryStorage_set_callStats
-  MemoryStorage_Assumptions.MemoryStorage'ptr_Append_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_ApplySnapshot_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_Compact_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_CreateSnapshot_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_Entries_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_FirstIndex_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_InitialState_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_LastIndex_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_Lock_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_SetHardState_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_Snapshot_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_Term_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_TryLock_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_Unlock_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_firstIndex_unfold
-  MemoryStorage_Assumptions.MemoryStorage'ptr_lastIndex_unfold
+attribute [instance] MemoryStorage.TypeAssumptions.type_repr
+  MemoryStorage.TypeAssumptions.underlying
+  MemoryStorage.TypeAssumptions.get_Mutex
+  MemoryStorage.TypeAssumptions.set_Mutex
+  MemoryStorage.TypeAssumptions.get_hardState
+  MemoryStorage.TypeAssumptions.set_hardState
+  MemoryStorage.TypeAssumptions.get_snapshot
+  MemoryStorage.TypeAssumptions.set_snapshot
+  MemoryStorage.TypeAssumptions.get_ents
+  MemoryStorage.TypeAssumptions.set_ents
+  MemoryStorage.TypeAssumptions.get_callStats
+  MemoryStorage.TypeAssumptions.set_callStats
+  MemoryStorage.TypeAssumptions.ptr_Append_unfold
+  MemoryStorage.TypeAssumptions.ptr_ApplySnapshot_unfold
+  MemoryStorage.TypeAssumptions.ptr_Compact_unfold
+  MemoryStorage.TypeAssumptions.ptr_CreateSnapshot_unfold
+  MemoryStorage.TypeAssumptions.ptr_Entries_unfold
+  MemoryStorage.TypeAssumptions.ptr_FirstIndex_unfold
+  MemoryStorage.TypeAssumptions.ptr_InitialState_unfold
+  MemoryStorage.TypeAssumptions.ptr_LastIndex_unfold
+  MemoryStorage.TypeAssumptions.ptr_Lock_unfold
+  MemoryStorage.TypeAssumptions.ptr_SetHardState_unfold
+  MemoryStorage.TypeAssumptions.ptr_Snapshot_unfold
+  MemoryStorage.TypeAssumptions.ptr_Term_unfold
+  MemoryStorage.TypeAssumptions.ptr_TryLock_unfold
+  MemoryStorage.TypeAssumptions.ptr_Unlock_unfold
+  MemoryStorage.TypeAssumptions.ptr_firstIndex_unfold
+  MemoryStorage.TypeAssumptions.ptr_lastIndex_unfold
 
 namespace entryID
 structure t [FfiSyntax] where
@@ -12825,34 +12825,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end entryID
 
-@[reducible] def entryID'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def entryID.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"term" go.uint64),
 (go.field_decl.FieldDecl go!"index" go.uint64)]
 
-@[irreducible] def entryID'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  entryID'fds_unsealed
+@[irreducible] def entryID.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  entryID.fieldsUnsealed
 
 instance equals_unfold_entryID [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold entryID'fds entryID'fds_unsealed :=
-  ⟨by unfold entryID'fds; rfl⟩
+    EqualsUnfold entryID.fields entryID.fieldsUnsealed :=
+  ⟨by unfold entryID.fields; rfl⟩
 
-@[reducible] def «entryIDⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType entryID'fds)
+@[reducible] def entryID.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType entryID.fields)
 
-class entryID_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  entryID_type_repr : go.TypeReprUnderlying «entryIDⁱᵐᵖˡ» entryID.t
-  entryID_underlying : go.UnderlyingDirectedEq entryID «entryIDⁱᵐᵖˡ»
-  entryID_get_term : ∀ (x : entryID.t), go.IsGoStepPureDetTagged under (StructFieldGet «entryIDⁱᵐᵖˡ» go!"term") #x (Val #(x.term'))
-  entryID_set_term : ∀ (x : entryID.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «entryIDⁱᵐᵖˡ» go!"term") (PairV #x #y) (Val #(({ x with term' := y } : entryID.t)))
-  entryID_get_index : ∀ (x : entryID.t), go.IsGoStepPureDetTagged under (StructFieldGet «entryIDⁱᵐᵖˡ» go!"index") #x (Val #(x.index'))
-  entryID_set_index : ∀ (x : entryID.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «entryIDⁱᵐᵖˡ» go!"index") (PairV #x #y) (Val #(({ x with index' := y } : entryID.t)))
+class entryID.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying entryID.underlying entryID.t
+  underlying : go.UnderlyingDirectedEq entryID entryID.underlying
+  get_term : ∀ (x : entryID.t), go.IsGoStepPureDetTagged under (StructFieldGet entryID.underlying go!"term") #x (Val #(x.term'))
+  set_term : ∀ (x : entryID.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet entryID.underlying go!"term") (PairV #x #y) (Val #(({ x with term' := y } : entryID.t)))
+  get_index : ∀ (x : entryID.t), go.IsGoStepPureDetTagged under (StructFieldGet entryID.underlying go!"index") #x (Val #(x.index'))
+  set_index : ∀ (x : entryID.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet entryID.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : entryID.t)))
 
-attribute [instance] entryID_Assumptions.entryID_type_repr
-  entryID_Assumptions.entryID_underlying
-  entryID_Assumptions.entryID_get_term
-  entryID_Assumptions.entryID_set_term
-  entryID_Assumptions.entryID_get_index
-  entryID_Assumptions.entryID_set_index
+attribute [instance] entryID.TypeAssumptions.type_repr
+  entryID.TypeAssumptions.underlying
+  entryID.TypeAssumptions.get_term
+  entryID.TypeAssumptions.set_term
+  entryID.TypeAssumptions.get_index
+  entryID.TypeAssumptions.set_index
 
 namespace logSlice
 structure t [FfiSyntax] where
@@ -12865,172 +12865,172 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end logSlice
 
-@[reducible] def logSlice'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def logSlice.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"term" go.uint64),
 (go.field_decl.FieldDecl go!"prev" entryID),
 (go.field_decl.FieldDecl go!"entries" (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry))]
 
-@[irreducible] def logSlice'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  logSlice'fds_unsealed
+@[irreducible] def logSlice.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  logSlice.fieldsUnsealed
 
 instance equals_unfold_logSlice [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold logSlice'fds logSlice'fds_unsealed :=
-  ⟨by unfold logSlice'fds; rfl⟩
+    EqualsUnfold logSlice.fields logSlice.fieldsUnsealed :=
+  ⟨by unfold logSlice.fields; rfl⟩
 
-@[reducible] def «logSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType logSlice'fds)
+@[reducible] def logSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType logSlice.fields)
 
-class logSlice_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  logSlice_type_repr : go.TypeReprUnderlying «logSliceⁱᵐᵖˡ» logSlice.t
-  logSlice_underlying : go.UnderlyingDirectedEq logSlice «logSliceⁱᵐᵖˡ»
-  logSlice_get_term : ∀ (x : logSlice.t), go.IsGoStepPureDetTagged under (StructFieldGet «logSliceⁱᵐᵖˡ» go!"term") #x (Val #(x.term'))
-  logSlice_set_term : ∀ (x : logSlice.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «logSliceⁱᵐᵖˡ» go!"term") (PairV #x #y) (Val #(({ x with term' := y } : logSlice.t)))
-  logSlice_get_prev : ∀ (x : logSlice.t), go.IsGoStepPureDetTagged under (StructFieldGet «logSliceⁱᵐᵖˡ» go!"prev") #x (Val #(x.prev'))
-  logSlice_set_prev : ∀ (x : logSlice.t) (y : entryID.t), go.IsGoStepPureDetTagged under (StructFieldSet «logSliceⁱᵐᵖˡ» go!"prev") (PairV #x #y) (Val #(({ x with prev' := y } : logSlice.t)))
-  logSlice_get_entries : ∀ (x : logSlice.t), go.IsGoStepPureDetTagged under (StructFieldGet «logSliceⁱᵐᵖˡ» go!"entries") #x (Val #(x.entries'))
-  logSlice_set_entries : ∀ (x : logSlice.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «logSliceⁱᵐᵖˡ» go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : logSlice.t)))
-  logSlice_lastEntryID_unfold : MethodUnfold logSlice go!"lastEntryID" «logSlice__lastEntryIDⁱᵐᵖˡ»
-  logSlice_lastIndex_unfold : MethodUnfold logSlice go!"lastIndex" «logSlice__lastIndexⁱᵐᵖˡ»
-  logSlice_valid_unfold : MethodUnfold logSlice go!"valid" «logSlice__validⁱᵐᵖˡ»
-  logSlice'ptr_lastEntryID_unfold : MethodUnfold (go.GoType.PointerType logSlice) go!"lastEntryID" (LamV "$r"
+class logSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying logSlice.underlying logSlice.t
+  underlying : go.UnderlyingDirectedEq logSlice logSlice.underlying
+  get_term : ∀ (x : logSlice.t), go.IsGoStepPureDetTagged under (StructFieldGet logSlice.underlying go!"term") #x (Val #(x.term'))
+  set_term : ∀ (x : logSlice.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet logSlice.underlying go!"term") (PairV #x #y) (Val #(({ x with term' := y } : logSlice.t)))
+  get_prev : ∀ (x : logSlice.t), go.IsGoStepPureDetTagged under (StructFieldGet logSlice.underlying go!"prev") #x (Val #(x.prev'))
+  set_prev : ∀ (x : logSlice.t) (y : entryID.t), go.IsGoStepPureDetTagged under (StructFieldSet logSlice.underlying go!"prev") (PairV #x #y) (Val #(({ x with prev' := y } : logSlice.t)))
+  get_entries : ∀ (x : logSlice.t), go.IsGoStepPureDetTagged under (StructFieldGet logSlice.underlying go!"entries") #x (Val #(x.entries'))
+  set_entries : ∀ (x : logSlice.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet logSlice.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : logSlice.t)))
+  lastEntryID_unfold : MethodUnfold logSlice go!"lastEntryID" logSlice.lastEntryID.impl
+  lastIndex_unfold : MethodUnfold logSlice go!"lastIndex" logSlice.lastIndex.impl
+  valid_unfold : MethodUnfold logSlice go!"valid" logSlice.valid.impl
+  ptr_lastEntryID_unfold : MethodUnfold (go.GoType.PointerType logSlice) go!"lastEntryID" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve logSlice go!"lastEntryID"))) (App (Val (GoInstruction (GoLoad logSlice))) (Var "$r"))))
-  logSlice'ptr_lastIndex_unfold : MethodUnfold (go.GoType.PointerType logSlice) go!"lastIndex" (LamV "$r"
+  ptr_lastIndex_unfold : MethodUnfold (go.GoType.PointerType logSlice) go!"lastIndex" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve logSlice go!"lastIndex"))) (App (Val (GoInstruction (GoLoad logSlice))) (Var "$r"))))
-  logSlice'ptr_valid_unfold : MethodUnfold (go.GoType.PointerType logSlice) go!"valid" (LamV "$r"
+  ptr_valid_unfold : MethodUnfold (go.GoType.PointerType logSlice) go!"valid" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve logSlice go!"valid"))) (App (Val (GoInstruction (GoLoad logSlice))) (Var "$r"))))
 
-attribute [instance] logSlice_Assumptions.logSlice_type_repr
-  logSlice_Assumptions.logSlice_underlying
-  logSlice_Assumptions.logSlice_get_term
-  logSlice_Assumptions.logSlice_set_term
-  logSlice_Assumptions.logSlice_get_prev
-  logSlice_Assumptions.logSlice_set_prev
-  logSlice_Assumptions.logSlice_get_entries
-  logSlice_Assumptions.logSlice_set_entries
-  logSlice_Assumptions.logSlice_lastEntryID_unfold
-  logSlice_Assumptions.logSlice_lastIndex_unfold
-  logSlice_Assumptions.logSlice_valid_unfold
-  logSlice_Assumptions.logSlice'ptr_lastEntryID_unfold
-  logSlice_Assumptions.logSlice'ptr_lastIndex_unfold
-  logSlice_Assumptions.logSlice'ptr_valid_unfold
+attribute [instance] logSlice.TypeAssumptions.type_repr
+  logSlice.TypeAssumptions.underlying
+  logSlice.TypeAssumptions.get_term
+  logSlice.TypeAssumptions.set_term
+  logSlice.TypeAssumptions.get_prev
+  logSlice.TypeAssumptions.set_prev
+  logSlice.TypeAssumptions.get_entries
+  logSlice.TypeAssumptions.set_entries
+  logSlice.TypeAssumptions.lastEntryID_unfold
+  logSlice.TypeAssumptions.lastIndex_unfold
+  logSlice.TypeAssumptions.valid_unfold
+  logSlice.TypeAssumptions.ptr_lastEntryID_unfold
+  logSlice.TypeAssumptions.ptr_lastIndex_unfold
+  logSlice.TypeAssumptions.ptr_valid_unfold
 
 namespace EntryFormatter
 abbrev t [FfiSyntax] : Type := func.t
 end EntryFormatter
 
-@[reducible] def «EntryFormatterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def EntryFormatter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.string]))
 
-class EntryFormatter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  EntryFormatter_underlying : go.UnderlyingDirectedEq EntryFormatter «EntryFormatterⁱᵐᵖˡ»
+class EntryFormatter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq EntryFormatter EntryFormatter.underlying
 
-attribute [instance] EntryFormatter_Assumptions.EntryFormatter_underlying
+attribute [instance] EntryFormatter.TypeAssumptions.underlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  raftLog_instance : raftLog_Assumptions
-  unstable_instance : unstable_Assumptions
-  Logger_instance : Logger_Assumptions
-  DefaultLogger_instance : DefaultLogger_Assumptions
-  SnapshotStatus_instance : SnapshotStatus_Assumptions
-  SoftState_instance : SoftState_Assumptions
-  Ready_instance : Ready_Assumptions
-  Node_instance : Node_Assumptions
-  Peer_instance : Peer_Assumptions
-  msgWithResult_instance : msgWithResult_Assumptions
-  node_instance : node_Assumptions
-  ReadOnlyOption_instance : ReadOnlyOption_Assumptions
-  lockedRand_instance : lockedRand_Assumptions
-  CampaignType_instance : CampaignType_Assumptions
-  StateType_instance : StateType_Assumptions
-  Config_instance : Config_Assumptions
-  raft_instance : raft_Assumptions
-  stepFunc_instance : stepFunc_Assumptions
-  RawNode_instance : RawNode_Assumptions
-  ProgressType_instance : ProgressType_Assumptions
-  ReadState_instance : ReadState_Assumptions
-  readIndexRequest_instance : readIndexRequest_Assumptions
-  readOnly_instance : readOnly_Assumptions
-  TraceLogger_instance : TraceLogger_Assumptions
-  TracingEvent_instance : TracingEvent_Assumptions
-  Status_instance : Status_Assumptions
-  BasicStatus_instance : BasicStatus_Assumptions
-  Storage_instance : Storage_Assumptions
-  inMemStorageCallStats_instance : inMemStorageCallStats_Assumptions
-  MemoryStorage_instance : MemoryStorage_Assumptions
-  entryID_instance : entryID_Assumptions
-  logSlice_instance : logSlice_Assumptions
-  EntryFormatter_instance : EntryFormatter_Assumptions
-  entryEncodingSize_instance : entryEncodingSize_Assumptions
-  entryPayloadSize_instance : entryPayloadSize_Assumptions
-  newLog_unfold : FuncUnfold newLog [] «newLogⁱᵐᵖˡ»
-  newLogWithSize_unfold : FuncUnfold newLogWithSize [] «newLogWithSizeⁱᵐᵖˡ»
-  SetLogger_unfold : FuncUnfold SetLogger [] «SetLoggerⁱᵐᵖˡ»
-  ResetDefaultLogger_unfold : FuncUnfold ResetDefaultLogger [] «ResetDefaultLoggerⁱᵐᵖˡ»
-  getLogger_unfold : FuncUnfold getLogger [] «getLoggerⁱᵐᵖˡ»
-  header_unfold : FuncUnfold header [] «headerⁱᵐᵖˡ»
-  isHardStateEqual_unfold : FuncUnfold isHardStateEqual [] «isHardStateEqualⁱᵐᵖˡ»
-  IsEmptyHardState_unfold : FuncUnfold IsEmptyHardState [] «IsEmptyHardStateⁱᵐᵖˡ»
-  IsEmptySnap_unfold : FuncUnfold IsEmptySnap [] «IsEmptySnapⁱᵐᵖˡ»
-  setupNode_unfold : FuncUnfold setupNode [] «setupNodeⁱᵐᵖˡ»
-  StartNode_unfold : FuncUnfold StartNode [] «StartNodeⁱᵐᵖˡ»
-  RestartNode_unfold : FuncUnfold RestartNode [] «RestartNodeⁱᵐᵖˡ»
-  newNode_unfold : FuncUnfold newNode [] «newNodeⁱᵐᵖˡ»
-  confChangeToMsg_unfold : FuncUnfold confChangeToMsg [] «confChangeToMsgⁱᵐᵖˡ»
-  newRaft_unfold : FuncUnfold newRaft [] «newRaftⁱᵐᵖˡ»
-  stepLeader_unfold : FuncUnfold stepLeader [] «stepLeaderⁱᵐᵖˡ»
-  stepCandidate_unfold : FuncUnfold stepCandidate [] «stepCandidateⁱᵐᵖˡ»
-  stepFollower_unfold : FuncUnfold stepFollower [] «stepFollowerⁱᵐᵖˡ»
-  logSliceFromMsgApp_unfold : FuncUnfold logSliceFromMsgApp [] «logSliceFromMsgAppⁱᵐᵖˡ»
-  releasePendingReadIndexMessages_unfold : FuncUnfold releasePendingReadIndexMessages [] «releasePendingReadIndexMessagesⁱᵐᵖˡ»
-  sendMsgReadIndexResponse_unfold : FuncUnfold sendMsgReadIndexResponse [] «sendMsgReadIndexResponseⁱᵐᵖˡ»
-  NewRawNode_unfold : FuncUnfold NewRawNode [] «NewRawNodeⁱᵐᵖˡ»
-  MustSync_unfold : FuncUnfold MustSync [] «MustSyncⁱᵐᵖˡ»
-  needStorageAppendMsg_unfold : FuncUnfold needStorageAppendMsg [] «needStorageAppendMsgⁱᵐᵖˡ»
-  needStorageAppendRespMsg_unfold : FuncUnfold needStorageAppendRespMsg [] «needStorageAppendRespMsgⁱᵐᵖˡ»
-  newStorageAppendMsg_unfold : FuncUnfold newStorageAppendMsg [] «newStorageAppendMsgⁱᵐᵖˡ»
-  newStorageAppendRespMsg_unfold : FuncUnfold newStorageAppendRespMsg [] «newStorageAppendRespMsgⁱᵐᵖˡ»
-  needStorageApplyMsg_unfold : FuncUnfold needStorageApplyMsg [] «needStorageApplyMsgⁱᵐᵖˡ»
-  needStorageApplyRespMsg_unfold : FuncUnfold needStorageApplyRespMsg [] «needStorageApplyRespMsgⁱᵐᵖˡ»
-  newStorageApplyMsg_unfold : FuncUnfold newStorageApplyMsg [] «newStorageApplyMsgⁱᵐᵖˡ»
-  newStorageApplyRespMsg_unfold : FuncUnfold newStorageApplyRespMsg [] «newStorageApplyRespMsgⁱᵐᵖˡ»
-  newReadOnly_unfold : FuncUnfold newReadOnly [] «newReadOnlyⁱᵐᵖˡ»
-  traceInitState_unfold : FuncUnfold traceInitState [] «traceInitStateⁱᵐᵖˡ»
-  traceReady_unfold : FuncUnfold traceReady [] «traceReadyⁱᵐᵖˡ»
-  traceCommit_unfold : FuncUnfold traceCommit [] «traceCommitⁱᵐᵖˡ»
-  traceReplicate_unfold : FuncUnfold traceReplicate [] «traceReplicateⁱᵐᵖˡ»
-  traceBecomeFollower_unfold : FuncUnfold traceBecomeFollower [] «traceBecomeFollowerⁱᵐᵖˡ»
-  traceBecomeCandidate_unfold : FuncUnfold traceBecomeCandidate [] «traceBecomeCandidateⁱᵐᵖˡ»
-  traceBecomeLeader_unfold : FuncUnfold traceBecomeLeader [] «traceBecomeLeaderⁱᵐᵖˡ»
-  traceChangeConfEvent_unfold : FuncUnfold traceChangeConfEvent [] «traceChangeConfEventⁱᵐᵖˡ»
-  traceConfChangeEvent_unfold : FuncUnfold traceConfChangeEvent [] «traceConfChangeEventⁱᵐᵖˡ»
-  traceSendMessage_unfold : FuncUnfold traceSendMessage [] «traceSendMessageⁱᵐᵖˡ»
-  traceReceiveMessage_unfold : FuncUnfold traceReceiveMessage [] «traceReceiveMessageⁱᵐᵖˡ»
-  getProgressCopy_unfold : FuncUnfold getProgressCopy [] «getProgressCopyⁱᵐᵖˡ»
-  getBasicStatus_unfold : FuncUnfold getBasicStatus [] «getBasicStatusⁱᵐᵖˡ»
-  getStatus_unfold : FuncUnfold getStatus [] «getStatusⁱᵐᵖˡ»
-  NewMemoryStorage_unfold : FuncUnfold NewMemoryStorage [] «NewMemoryStorageⁱᵐᵖˡ»
-  pbEntryID_unfold : FuncUnfold pbEntryID [] «pbEntryIDⁱᵐᵖˡ»
-  isMsgInArray_unfold : FuncUnfold isMsgInArray [] «isMsgInArrayⁱᵐᵖˡ»
-  IsLocalMsg_unfold : FuncUnfold IsLocalMsg [] «IsLocalMsgⁱᵐᵖˡ»
-  IsResponseMsg_unfold : FuncUnfold IsResponseMsg [] «IsResponseMsgⁱᵐᵖˡ»
-  IsLocalMsgTarget_unfold : FuncUnfold IsLocalMsgTarget [] «IsLocalMsgTargetⁱᵐᵖˡ»
-  voteRespMsgType_unfold : FuncUnfold voteRespMsgType [] «voteRespMsgTypeⁱᵐᵖˡ»
-  DescribeHardState_unfold : FuncUnfold DescribeHardState [] «DescribeHardStateⁱᵐᵖˡ»
-  DescribeSoftState_unfold : FuncUnfold DescribeSoftState [] «DescribeSoftStateⁱᵐᵖˡ»
-  DescribeConfState_unfold : FuncUnfold DescribeConfState [] «DescribeConfStateⁱᵐᵖˡ»
-  DescribeSnapshot_unfold : FuncUnfold DescribeSnapshot [] «DescribeSnapshotⁱᵐᵖˡ»
-  DescribeReady_unfold : FuncUnfold DescribeReady [] «DescribeReadyⁱᵐᵖˡ»
-  DescribeMessage_unfold : FuncUnfold DescribeMessage [] «DescribeMessageⁱᵐᵖˡ»
-  describeMessageWithIndent_unfold : FuncUnfold describeMessageWithIndent [] «describeMessageWithIndentⁱᵐᵖˡ»
-  describeTarget_unfold : FuncUnfold describeTarget [] «describeTargetⁱᵐᵖˡ»
-  DescribeEntry_unfold : FuncUnfold DescribeEntry [] «DescribeEntryⁱᵐᵖˡ»
-  DescribeEntries_unfold : FuncUnfold DescribeEntries [] «DescribeEntriesⁱᵐᵖˡ»
-  entsSize_unfold : FuncUnfold entsSize [] «entsSizeⁱᵐᵖˡ»
-  limitSize_unfold : FuncUnfold limitSize [] «limitSizeⁱᵐᵖˡ»
-  payloadSize_unfold : FuncUnfold payloadSize [] «payloadSizeⁱᵐᵖˡ»
-  payloadsSize_unfold : FuncUnfold payloadsSize [] «payloadsSizeⁱᵐᵖˡ»
-  assertConfStatesEquivalent_unfold : FuncUnfold assertConfStatesEquivalent [] «assertConfStatesEquivalentⁱᵐᵖˡ»
-  extend_unfold : FuncUnfold extend [] «extendⁱᵐᵖˡ»
+  raftLog_instance : raftLog.TypeAssumptions
+  unstable_instance : unstable.TypeAssumptions
+  Logger_instance : Logger.TypeAssumptions
+  DefaultLogger_instance : DefaultLogger.TypeAssumptions
+  SnapshotStatus_instance : SnapshotStatus.TypeAssumptions
+  SoftState_instance : SoftState.TypeAssumptions
+  Ready_instance : Ready.TypeAssumptions
+  Node_instance : Node.TypeAssumptions
+  Peer_instance : Peer.TypeAssumptions
+  msgWithResult_instance : msgWithResult.TypeAssumptions
+  node_instance : node.TypeAssumptions
+  ReadOnlyOption_instance : ReadOnlyOption.TypeAssumptions
+  lockedRand_instance : lockedRand.TypeAssumptions
+  CampaignType_instance : CampaignType.TypeAssumptions
+  StateType_instance : StateType.TypeAssumptions
+  Config_instance : Config.TypeAssumptions
+  raft_instance : raft.TypeAssumptions
+  stepFunc_instance : stepFunc.TypeAssumptions
+  RawNode_instance : RawNode.TypeAssumptions
+  ProgressType_instance : ProgressType.TypeAssumptions
+  ReadState_instance : ReadState.TypeAssumptions
+  readIndexRequest_instance : readIndexRequest.TypeAssumptions
+  readOnly_instance : readOnly.TypeAssumptions
+  TraceLogger_instance : TraceLogger.TypeAssumptions
+  TracingEvent_instance : TracingEvent.TypeAssumptions
+  Status_instance : Status.TypeAssumptions
+  BasicStatus_instance : BasicStatus.TypeAssumptions
+  Storage_instance : Storage.TypeAssumptions
+  inMemStorageCallStats_instance : inMemStorageCallStats.TypeAssumptions
+  MemoryStorage_instance : MemoryStorage.TypeAssumptions
+  entryID_instance : entryID.TypeAssumptions
+  logSlice_instance : logSlice.TypeAssumptions
+  EntryFormatter_instance : EntryFormatter.TypeAssumptions
+  entryEncodingSize_instance : entryEncodingSize.TypeAssumptions
+  entryPayloadSize_instance : entryPayloadSize.TypeAssumptions
+  newLog_unfold : FuncUnfold newLog [] newLog.impl
+  newLogWithSize_unfold : FuncUnfold newLogWithSize [] newLogWithSize.impl
+  SetLogger_unfold : FuncUnfold SetLogger [] SetLogger.impl
+  ResetDefaultLogger_unfold : FuncUnfold ResetDefaultLogger [] ResetDefaultLogger.impl
+  getLogger_unfold : FuncUnfold getLogger [] getLogger.impl
+  header_unfold : FuncUnfold header [] header.impl
+  isHardStateEqual_unfold : FuncUnfold isHardStateEqual [] isHardStateEqual.impl
+  IsEmptyHardState_unfold : FuncUnfold IsEmptyHardState [] IsEmptyHardState.impl
+  IsEmptySnap_unfold : FuncUnfold IsEmptySnap [] IsEmptySnap.impl
+  setupNode_unfold : FuncUnfold setupNode [] setupNode.impl
+  StartNode_unfold : FuncUnfold StartNode [] StartNode.impl
+  RestartNode_unfold : FuncUnfold RestartNode [] RestartNode.impl
+  newNode_unfold : FuncUnfold newNode [] newNode.impl
+  confChangeToMsg_unfold : FuncUnfold confChangeToMsg [] confChangeToMsg.impl
+  newRaft_unfold : FuncUnfold newRaft [] newRaft.impl
+  stepLeader_unfold : FuncUnfold stepLeader [] stepLeader.impl
+  stepCandidate_unfold : FuncUnfold stepCandidate [] stepCandidate.impl
+  stepFollower_unfold : FuncUnfold stepFollower [] stepFollower.impl
+  logSliceFromMsgApp_unfold : FuncUnfold logSliceFromMsgApp [] logSliceFromMsgApp.impl
+  releasePendingReadIndexMessages_unfold : FuncUnfold releasePendingReadIndexMessages [] releasePendingReadIndexMessages.impl
+  sendMsgReadIndexResponse_unfold : FuncUnfold sendMsgReadIndexResponse [] sendMsgReadIndexResponse.impl
+  NewRawNode_unfold : FuncUnfold NewRawNode [] NewRawNode.impl
+  MustSync_unfold : FuncUnfold MustSync [] MustSync.impl
+  needStorageAppendMsg_unfold : FuncUnfold needStorageAppendMsg [] needStorageAppendMsg.impl
+  needStorageAppendRespMsg_unfold : FuncUnfold needStorageAppendRespMsg [] needStorageAppendRespMsg.impl
+  newStorageAppendMsg_unfold : FuncUnfold newStorageAppendMsg [] newStorageAppendMsg.impl
+  newStorageAppendRespMsg_unfold : FuncUnfold newStorageAppendRespMsg [] newStorageAppendRespMsg.impl
+  needStorageApplyMsg_unfold : FuncUnfold needStorageApplyMsg [] needStorageApplyMsg.impl
+  needStorageApplyRespMsg_unfold : FuncUnfold needStorageApplyRespMsg [] needStorageApplyRespMsg.impl
+  newStorageApplyMsg_unfold : FuncUnfold newStorageApplyMsg [] newStorageApplyMsg.impl
+  newStorageApplyRespMsg_unfold : FuncUnfold newStorageApplyRespMsg [] newStorageApplyRespMsg.impl
+  newReadOnly_unfold : FuncUnfold newReadOnly [] newReadOnly.impl
+  traceInitState_unfold : FuncUnfold traceInitState [] traceInitState.impl
+  traceReady_unfold : FuncUnfold traceReady [] traceReady.impl
+  traceCommit_unfold : FuncUnfold traceCommit [] traceCommit.impl
+  traceReplicate_unfold : FuncUnfold traceReplicate [] traceReplicate.impl
+  traceBecomeFollower_unfold : FuncUnfold traceBecomeFollower [] traceBecomeFollower.impl
+  traceBecomeCandidate_unfold : FuncUnfold traceBecomeCandidate [] traceBecomeCandidate.impl
+  traceBecomeLeader_unfold : FuncUnfold traceBecomeLeader [] traceBecomeLeader.impl
+  traceChangeConfEvent_unfold : FuncUnfold traceChangeConfEvent [] traceChangeConfEvent.impl
+  traceConfChangeEvent_unfold : FuncUnfold traceConfChangeEvent [] traceConfChangeEvent.impl
+  traceSendMessage_unfold : FuncUnfold traceSendMessage [] traceSendMessage.impl
+  traceReceiveMessage_unfold : FuncUnfold traceReceiveMessage [] traceReceiveMessage.impl
+  getProgressCopy_unfold : FuncUnfold getProgressCopy [] getProgressCopy.impl
+  getBasicStatus_unfold : FuncUnfold getBasicStatus [] getBasicStatus.impl
+  getStatus_unfold : FuncUnfold getStatus [] getStatus.impl
+  NewMemoryStorage_unfold : FuncUnfold NewMemoryStorage [] NewMemoryStorage.impl
+  pbEntryID_unfold : FuncUnfold pbEntryID [] pbEntryID.impl
+  isMsgInArray_unfold : FuncUnfold isMsgInArray [] isMsgInArray.impl
+  IsLocalMsg_unfold : FuncUnfold IsLocalMsg [] IsLocalMsg.impl
+  IsResponseMsg_unfold : FuncUnfold IsResponseMsg [] IsResponseMsg.impl
+  IsLocalMsgTarget_unfold : FuncUnfold IsLocalMsgTarget [] IsLocalMsgTarget.impl
+  voteRespMsgType_unfold : FuncUnfold voteRespMsgType [] voteRespMsgType.impl
+  DescribeHardState_unfold : FuncUnfold DescribeHardState [] DescribeHardState.impl
+  DescribeSoftState_unfold : FuncUnfold DescribeSoftState [] DescribeSoftState.impl
+  DescribeConfState_unfold : FuncUnfold DescribeConfState [] DescribeConfState.impl
+  DescribeSnapshot_unfold : FuncUnfold DescribeSnapshot [] DescribeSnapshot.impl
+  DescribeReady_unfold : FuncUnfold DescribeReady [] DescribeReady.impl
+  DescribeMessage_unfold : FuncUnfold DescribeMessage [] DescribeMessage.impl
+  describeMessageWithIndent_unfold : FuncUnfold describeMessageWithIndent [] describeMessageWithIndent.impl
+  describeTarget_unfold : FuncUnfold describeTarget [] describeTarget.impl
+  DescribeEntry_unfold : FuncUnfold DescribeEntry [] DescribeEntry.impl
+  DescribeEntries_unfold : FuncUnfold DescribeEntries [] DescribeEntries.impl
+  entsSize_unfold : FuncUnfold entsSize [] entsSize.impl
+  limitSize_unfold : FuncUnfold limitSize [] limitSize.impl
+  payloadSize_unfold : FuncUnfold payloadSize [] payloadSize.impl
+  payloadsSize_unfold : FuncUnfold payloadsSize [] payloadsSize.impl
+  assertConfStatesEquivalent_unfold : FuncUnfold assertConfStatesEquivalent [] assertConfStatesEquivalent.impl
+  extend_unfold : FuncUnfold extend [] extend.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
   import_raftpb_Assumption : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Assumptions
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions

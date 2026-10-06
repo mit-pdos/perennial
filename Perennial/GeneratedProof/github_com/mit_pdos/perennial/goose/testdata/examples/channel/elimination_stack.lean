@@ -34,7 +34,7 @@ instance LockedStack_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LockedStack_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.«LockedStackⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack.underlying := by
   solve_into_val_typed_struct
 
 instance LockedStack_access_load_mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack.t) (dq : DFrac) :
@@ -91,7 +91,7 @@ instance EliminationStack_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EliminationStack_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.«EliminationStackⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack.underlying := by
   solve_into_val_typed_struct
 
 instance EliminationStack_access_load_base (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack.t) (dq : DFrac) :

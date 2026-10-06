@@ -33,7 +33,7 @@ instance decimal_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance decimal_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.big.decimal.t math.big.«decimalⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.big.decimal.t math.big.decimal.underlying := by
   solve_into_val_typed_struct
 
 instance decimal_access_load_mant (l : Loc) (v : math.big.decimal.t) (dq : DFrac) :
@@ -95,7 +95,7 @@ instance Float_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Float_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.big.Float.t math.big.«Floatⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.big.Float.t math.big.Float.underlying := by
   solve_into_val_typed_struct
 
 instance Float_access_load_prec (l : Loc) (v : math.big.Float.t) (dq : DFrac) :
@@ -231,7 +231,7 @@ instance ErrNaN_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ErrNaN_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.big.ErrNaN.t math.big.«ErrNaNⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.big.ErrNaN.t math.big.ErrNaN.underlying := by
   solve_into_val_typed_struct
 
 instance ErrNaN_access_load_msg (l : Loc) (v : math.big.ErrNaN.t) (dq : DFrac) :
@@ -272,7 +272,7 @@ instance Int'_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Int'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.big.Int'.t math.big.«Int'ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.big.Int'.t math.big.Int'.underlying := by
   solve_into_val_typed_struct
 
 instance Int'_access_load_neg (l : Loc) (v : math.big.Int'.t) (dq : DFrac) :
@@ -328,7 +328,7 @@ instance byteReader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance byteReader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.big.byteReader.t math.big.«byteReaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.big.byteReader.t math.big.byteReader.underlying := by
   solve_into_val_typed_struct
 
 instance byteReader_access_load_ScanState (l : Loc) (v : math.big.byteReader.t) (dq : DFrac) :
@@ -368,7 +368,7 @@ instance stack_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stack_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.big.stack.t math.big.«stackⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.big.stack.t math.big.stack.underlying := by
   solve_into_val_typed_struct
 
 instance stack_access_load_w (l : Loc) (v : math.big.stack.t) (dq : DFrac) :
@@ -410,7 +410,7 @@ instance divisor_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance divisor_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.big.divisor.t math.big.«divisorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.big.divisor.t math.big.divisor.underlying := by
   solve_into_val_typed_struct
 
 instance divisor_access_load_bbb (l : Loc) (v : math.big.divisor.t) (dq : DFrac) :
@@ -483,7 +483,7 @@ instance Rat_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Rat_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) math.big.Rat.t math.big.«Ratⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) math.big.Rat.t math.big.Rat.underlying := by
   solve_into_val_typed_struct
 
 instance Rat_access_load_a (l : Loc) (v : math.big.Rat.t) (dq : DFrac) :

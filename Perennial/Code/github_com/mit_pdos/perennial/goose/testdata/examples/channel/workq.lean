@@ -33,7 +33,7 @@ noncomputable def wordCount [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq.wordCount"
 
 /-- go: w.go:19:18 -/
-noncomputable def «Worker__runⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Worker.run.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "neighbor"
   (Lam "sh"
@@ -119,7 +119,7 @@ noncomputable def «Worker__runⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (Val #())))))))))))
 
 /-- go: w.go:62:18 -/
-noncomputable def «Worker__processⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Worker.process.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "doc"
   (Lam "sh"
@@ -145,7 +145,7 @@ noncomputable def «Worker__processⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64)))) (App (Val (GoInstruction (StructFieldRef shared go!"total"))) (Var "sh")))) (Var "$a0")))))))))))))
 
 /-- go: w.go:69:6 -/
-noncomputable def «wordCountⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def wordCount.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "docs"
   (App (Val exceptionDo)
   (Let "docs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "docs"))
@@ -259,38 +259,38 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Worker
 
-@[reducible] def Worker'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Worker.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"queue" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"steal" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))]
 
-@[irreducible] def Worker'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Worker'fds_unsealed
+@[irreducible] def Worker.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Worker.fieldsUnsealed
 
 instance equals_unfold_Worker [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Worker'fds Worker'fds_unsealed :=
-  ⟨by unfold Worker'fds; rfl⟩
+    EqualsUnfold Worker.fields Worker.fieldsUnsealed :=
+  ⟨by unfold Worker.fields; rfl⟩
 
-@[reducible] def «Workerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Worker'fds)
+@[reducible] def Worker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Worker.fields)
 
-class Worker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Worker_type_repr : go.TypeReprUnderlying «Workerⁱᵐᵖˡ» Worker.t
-  Worker_underlying : go.UnderlyingDirectedEq Worker «Workerⁱᵐᵖˡ»
-  Worker_get_queue : ∀ (x : Worker.t), go.IsGoStepPureDetTagged under (StructFieldGet «Workerⁱᵐᵖˡ» go!"queue") #x (Val #(x.queue'))
-  Worker_set_queue : ∀ (x : Worker.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «Workerⁱᵐᵖˡ» go!"queue") (PairV #x #y) (Val #(({ x with queue' := y } : Worker.t)))
-  Worker_get_steal : ∀ (x : Worker.t), go.IsGoStepPureDetTagged under (StructFieldGet «Workerⁱᵐᵖˡ» go!"steal") #x (Val #(x.steal'))
-  Worker_set_steal : ∀ (x : Worker.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «Workerⁱᵐᵖˡ» go!"steal") (PairV #x #y) (Val #(({ x with steal' := y } : Worker.t)))
-  Worker'ptr_process_unfold : MethodUnfold (go.GoType.PointerType Worker) go!"process" «Worker__processⁱᵐᵖˡ»
-  Worker'ptr_run_unfold : MethodUnfold (go.GoType.PointerType Worker) go!"run" «Worker__runⁱᵐᵖˡ»
+class Worker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Worker.underlying Worker.t
+  underlying : go.UnderlyingDirectedEq Worker Worker.underlying
+  get_queue : ∀ (x : Worker.t), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"queue") #x (Val #(x.queue'))
+  set_queue : ∀ (x : Worker.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"queue") (PairV #x #y) (Val #(({ x with queue' := y } : Worker.t)))
+  get_steal : ∀ (x : Worker.t), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"steal") #x (Val #(x.steal'))
+  set_steal : ∀ (x : Worker.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"steal") (PairV #x #y) (Val #(({ x with steal' := y } : Worker.t)))
+  ptr_process_unfold : MethodUnfold (go.GoType.PointerType Worker) go!"process" Worker.process.impl
+  ptr_run_unfold : MethodUnfold (go.GoType.PointerType Worker) go!"run" Worker.run.impl
 
-attribute [instance] Worker_Assumptions.Worker_type_repr
-  Worker_Assumptions.Worker_underlying
-  Worker_Assumptions.Worker_get_queue
-  Worker_Assumptions.Worker_set_queue
-  Worker_Assumptions.Worker_get_steal
-  Worker_Assumptions.Worker_set_steal
-  Worker_Assumptions.Worker'ptr_process_unfold
-  Worker_Assumptions.Worker'ptr_run_unfold
+attribute [instance] Worker.TypeAssumptions.type_repr
+  Worker.TypeAssumptions.underlying
+  Worker.TypeAssumptions.get_queue
+  Worker.TypeAssumptions.set_queue
+  Worker.TypeAssumptions.get_steal
+  Worker.TypeAssumptions.set_steal
+  Worker.TypeAssumptions.ptr_process_unfold
+  Worker.TypeAssumptions.ptr_run_unfold
 
 namespace shared
 structure t [FfiSyntax] where
@@ -303,44 +303,44 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end shared
 
-@[reducible] def shared'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def shared.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"remaining" (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64)),
 (go.field_decl.FieldDecl go!"total" (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64)),
 (go.field_decl.FieldDecl go!"done" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]
 
-@[irreducible] def shared'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  shared'fds_unsealed
+@[irreducible] def shared.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  shared.fieldsUnsealed
 
 instance equals_unfold_shared [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold shared'fds shared'fds_unsealed :=
-  ⟨by unfold shared'fds; rfl⟩
+    EqualsUnfold shared.fields shared.fieldsUnsealed :=
+  ⟨by unfold shared.fields; rfl⟩
 
-@[reducible] def «sharedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType shared'fds)
+@[reducible] def shared.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType shared.fields)
 
-class shared_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  shared_type_repr : go.TypeReprUnderlying «sharedⁱᵐᵖˡ» shared.t
-  shared_underlying : go.UnderlyingDirectedEq shared «sharedⁱᵐᵖˡ»
-  shared_get_remaining : ∀ (x : shared.t), go.IsGoStepPureDetTagged under (StructFieldGet «sharedⁱᵐᵖˡ» go!"remaining") #x (Val #(x.remaining'))
-  shared_set_remaining : ∀ (x : shared.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «sharedⁱᵐᵖˡ» go!"remaining") (PairV #x #y) (Val #(({ x with remaining' := y } : shared.t)))
-  shared_get_total : ∀ (x : shared.t), go.IsGoStepPureDetTagged under (StructFieldGet «sharedⁱᵐᵖˡ» go!"total") #x (Val #(x.total'))
-  shared_set_total : ∀ (x : shared.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «sharedⁱᵐᵖˡ» go!"total") (PairV #x #y) (Val #(({ x with total' := y } : shared.t)))
-  shared_get_done : ∀ (x : shared.t), go.IsGoStepPureDetTagged under (StructFieldGet «sharedⁱᵐᵖˡ» go!"done") #x (Val #(x.done'))
-  shared_set_done : ∀ (x : shared.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «sharedⁱᵐᵖˡ» go!"done") (PairV #x #y) (Val #(({ x with done' := y } : shared.t)))
+class shared.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying shared.underlying shared.t
+  underlying : go.UnderlyingDirectedEq shared shared.underlying
+  get_remaining : ∀ (x : shared.t), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"remaining") #x (Val #(x.remaining'))
+  set_remaining : ∀ (x : shared.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"remaining") (PairV #x #y) (Val #(({ x with remaining' := y } : shared.t)))
+  get_total : ∀ (x : shared.t), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"total") #x (Val #(x.total'))
+  set_total : ∀ (x : shared.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"total") (PairV #x #y) (Val #(({ x with total' := y } : shared.t)))
+  get_done : ∀ (x : shared.t), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"done") #x (Val #(x.done'))
+  set_done : ∀ (x : shared.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : shared.t)))
 
-attribute [instance] shared_Assumptions.shared_type_repr
-  shared_Assumptions.shared_underlying
-  shared_Assumptions.shared_get_remaining
-  shared_Assumptions.shared_set_remaining
-  shared_Assumptions.shared_get_total
-  shared_Assumptions.shared_set_total
-  shared_Assumptions.shared_get_done
-  shared_Assumptions.shared_set_done
+attribute [instance] shared.TypeAssumptions.type_repr
+  shared.TypeAssumptions.underlying
+  shared.TypeAssumptions.get_remaining
+  shared.TypeAssumptions.set_remaining
+  shared.TypeAssumptions.get_total
+  shared.TypeAssumptions.set_total
+  shared.TypeAssumptions.get_done
+  shared.TypeAssumptions.set_done
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Worker_instance : Worker_Assumptions
-  shared_instance : shared_Assumptions
-  wordCount_unfold : FuncUnfold wordCount [] «wordCountⁱᵐᵖˡ»
+  Worker_instance : Worker.TypeAssumptions
+  shared_instance : shared.TypeAssumptions
+  wordCount_unfold : FuncUnfold wordCount [] wordCount.impl
   import_strings_Assumption : _root_.Perennial.strings.Assumptions
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
 

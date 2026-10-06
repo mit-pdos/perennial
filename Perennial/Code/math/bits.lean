@@ -224,7 +224,7 @@ noncomputable def Rem64 [FfiSyntax] [GoGlobalContext] : GoString :=
 /-- LeadingZeros returns the number of leading zero bits in x; the result is [UintSize] for x == 0.
 
     go: bits.go:25:6 -/
-noncomputable def «LeadingZerosⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -235,7 +235,7 @@ noncomputable def «LeadingZerosⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- LeadingZeros8 returns the number of leading zero bits in x; the result is 8 for x == 0.
 
     go: bits.go:28:6 -/
-noncomputable def «LeadingZeros8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros8.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -246,7 +246,7 @@ noncomputable def «LeadingZeros8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
 /-- LeadingZeros16 returns the number of leading zero bits in x; the result is 16 for x == 0.
 
     go: bits.go:31:6 -/
-noncomputable def «LeadingZeros16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros16.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -257,7 +257,7 @@ noncomputable def «LeadingZeros16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- LeadingZeros32 returns the number of leading zero bits in x; the result is 32 for x == 0.
 
     go: bits.go:34:6 -/
-noncomputable def «LeadingZeros32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -268,7 +268,7 @@ noncomputable def «LeadingZeros32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- LeadingZeros64 returns the number of leading zero bits in x; the result is 64 for x == 0.
 
     go: bits.go:37:6 -/
-noncomputable def «LeadingZeros64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -279,7 +279,7 @@ noncomputable def «LeadingZeros64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- TrailingZeros returns the number of trailing zero bits in x; the result is [UintSize] for x == 0.
 
     go: bits.go:59:6 -/
-noncomputable def «TrailingZerosⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -297,7 +297,7 @@ noncomputable def «TrailingZerosⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
 /-- TrailingZeros8 returns the number of trailing zero bits in x; the result is 8 for x == 0.
 
     go: bits.go:67:6 -/
-noncomputable def «TrailingZeros8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros8.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -307,7 +307,7 @@ noncomputable def «TrailingZeros8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- TrailingZeros16 returns the number of trailing zero bits in x; the result is 16 for x == 0.
 
     go: bits.go:72:6 -/
-noncomputable def «TrailingZeros16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros16.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -323,7 +323,7 @@ noncomputable def «TrailingZeros16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- TrailingZeros32 returns the number of trailing zero bits in x; the result is 32 for x == 0.
 
     go: bits.go:81:6 -/
-noncomputable def «TrailingZeros32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -339,7 +339,7 @@ noncomputable def «TrailingZeros32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- TrailingZeros64 returns the number of trailing zero bits in x; the result is 64 for x == 0.
 
     go: bits.go:90:6 -/
-noncomputable def «TrailingZeros64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -355,7 +355,7 @@ noncomputable def «TrailingZeros64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- OnesCount returns the number of one bits ("population count") in x.
 
     go: bits.go:117:6 -/
-noncomputable def «OnesCountⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -373,7 +373,7 @@ noncomputable def «OnesCountⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- OnesCount8 returns the number of one bits ("population count") in x.
 
     go: bits.go:125:6 -/
-noncomputable def «OnesCount8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount8.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -383,7 +383,7 @@ noncomputable def «OnesCount8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- OnesCount16 returns the number of one bits ("population count") in x.
 
     go: bits.go:130:6 -/
-noncomputable def «OnesCount16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount16.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -393,7 +393,7 @@ noncomputable def «OnesCount16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- OnesCount32 returns the number of one bits ("population count") in x.
 
     go: bits.go:135:6 -/
-noncomputable def «OnesCount32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -403,7 +403,7 @@ noncomputable def «OnesCount32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
 /-- OnesCount64 returns the number of one bits ("population count") in x.
 
     go: bits.go:140:6 -/
-noncomputable def «OnesCount64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -438,7 +438,7 @@ noncomputable def «OnesCount64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     This function's execution time does not depend on the inputs.
 
     go: bits.go:176:6 -/
-noncomputable def «RotateLeftⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -463,7 +463,7 @@ noncomputable def «RotateLeftⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     This function's execution time does not depend on the inputs.
 
     go: bits.go:187:6 -/
-noncomputable def «RotateLeft8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft8.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -484,7 +484,7 @@ noncomputable def «RotateLeft8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
     This function's execution time does not depend on the inputs.
 
     go: bits.go:197:6 -/
-noncomputable def «RotateLeft16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft16.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -505,7 +505,7 @@ noncomputable def «RotateLeft16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     This function's execution time does not depend on the inputs.
 
     go: bits.go:207:6 -/
-noncomputable def «RotateLeft32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -526,7 +526,7 @@ noncomputable def «RotateLeft32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     This function's execution time does not depend on the inputs.
 
     go: bits.go:217:6 -/
-noncomputable def «RotateLeft64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -544,7 +544,7 @@ noncomputable def «RotateLeft64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
 /-- Reverse returns the value of x with its bits in reversed order.
 
     go: bits.go:226:6 -/
-noncomputable def «Reverseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -562,7 +562,7 @@ noncomputable def «Reverseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Reverse8 returns the value of x with its bits in reversed order.
 
     go: bits.go:234:6 -/
-noncomputable def «Reverse8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse8.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -572,7 +572,7 @@ noncomputable def «Reverse8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Reverse16 returns the value of x with its bits in reversed order.
 
     go: bits.go:239:6 -/
-noncomputable def «Reverse16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse16.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -582,7 +582,7 @@ noncomputable def «Reverse16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- Reverse32 returns the value of x with its bits in reversed order.
 
     go: bits.go:244:6 -/
-noncomputable def «Reverse32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -606,7 +606,7 @@ noncomputable def «Reverse32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- Reverse64 returns the value of x with its bits in reversed order.
 
     go: bits.go:253:6 -/
-noncomputable def «Reverse64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -632,7 +632,7 @@ noncomputable def «Reverse64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
     This function's execution time does not depend on the inputs.
 
     go: bits.go:266:6 -/
-noncomputable def «ReverseBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReverseBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -652,7 +652,7 @@ noncomputable def «ReverseBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     This function's execution time does not depend on the inputs.
 
     go: bits.go:276:6 -/
-noncomputable def «ReverseBytes16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReverseBytes16.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -664,7 +664,7 @@ noncomputable def «ReverseBytes16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     This function's execution time does not depend on the inputs.
 
     go: bits.go:283:6 -/
-noncomputable def «ReverseBytes32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReverseBytes32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -681,7 +681,7 @@ noncomputable def «ReverseBytes32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     This function's execution time does not depend on the inputs.
 
     go: bits.go:292:6 -/
-noncomputable def «ReverseBytes64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReverseBytes64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -700,7 +700,7 @@ noncomputable def «ReverseBytes64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
 /-- Len returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:302:6 -/
-noncomputable def «Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -718,7 +718,7 @@ noncomputable def «Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len8 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:310:6 -/
-noncomputable def «Len8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len8.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -728,7 +728,7 @@ noncomputable def «Len8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len16 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:315:6 -/
-noncomputable def «Len16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len16.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -749,7 +749,7 @@ noncomputable def «Len16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len32 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:324:6 -/
-noncomputable def «Len32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -779,7 +779,7 @@ noncomputable def «Len32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len64 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:337:6 -/
-noncomputable def «Len64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -822,7 +822,7 @@ noncomputable def «Len64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:360:6 -/
-noncomputable def «Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
@@ -880,7 +880,7 @@ noncomputable def «Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:374:6 -/
-noncomputable def «Add32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Add32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
@@ -913,7 +913,7 @@ noncomputable def «Add32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:386:6 -/
-noncomputable def «Add64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Add64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
@@ -941,7 +941,7 @@ noncomputable def «Add64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:402:6 -/
-noncomputable def «Subⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Sub.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
@@ -999,7 +999,7 @@ noncomputable def «Subⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:416:6 -/
-noncomputable def «Sub32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Sub32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
@@ -1027,7 +1027,7 @@ noncomputable def «Sub32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:431:6 -/
-noncomputable def «Sub64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Sub64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
@@ -1055,7 +1055,7 @@ noncomputable def «Sub64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:445:6 -/
-noncomputable def «Mulⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Mul.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -1109,7 +1109,7 @@ noncomputable def «Mulⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:459:6 -/
-noncomputable def «Mul32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Mul32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -1140,7 +1140,7 @@ noncomputable def «Mul32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:470:6 -/
-noncomputable def «Mul64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Mul64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -1209,7 +1209,7 @@ noncomputable def «Mul64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     Div panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:492:6 -/
-noncomputable def «Divⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Div.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1266,7 +1266,7 @@ noncomputable def «Divⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     Div32 panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:505:6 -/
-noncomputable def «Div32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Div32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1305,7 +1305,7 @@ noncomputable def «Div32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     Div64 panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:518:6 -/
-noncomputable def «Div64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Div64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1438,7 +1438,7 @@ noncomputable def «Div64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     quotient overflow.
 
     go: bits.go:573:6 -/
-noncomputable def «Remⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Rem.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1466,7 +1466,7 @@ noncomputable def «Remⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     on a quotient overflow.
 
     go: bits.go:583:6 -/
-noncomputable def «Rem32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Rem32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1482,7 +1482,7 @@ noncomputable def «Rem32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     on a quotient overflow.
 
     go: bits.go:590:6 -/
-noncomputable def «Rem64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Rem64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1635,55 +1635,55 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc divideError go.error)) (Val #()))))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LeadingZeros_unfold : FuncUnfold LeadingZeros [] «LeadingZerosⁱᵐᵖˡ»
-  LeadingZeros8_unfold : FuncUnfold LeadingZeros8 [] «LeadingZeros8ⁱᵐᵖˡ»
-  LeadingZeros16_unfold : FuncUnfold LeadingZeros16 [] «LeadingZeros16ⁱᵐᵖˡ»
-  LeadingZeros32_unfold : FuncUnfold LeadingZeros32 [] «LeadingZeros32ⁱᵐᵖˡ»
-  LeadingZeros64_unfold : FuncUnfold LeadingZeros64 [] «LeadingZeros64ⁱᵐᵖˡ»
-  TrailingZeros_unfold : FuncUnfold TrailingZeros [] «TrailingZerosⁱᵐᵖˡ»
-  TrailingZeros8_unfold : FuncUnfold TrailingZeros8 [] «TrailingZeros8ⁱᵐᵖˡ»
-  TrailingZeros16_unfold : FuncUnfold TrailingZeros16 [] «TrailingZeros16ⁱᵐᵖˡ»
-  TrailingZeros32_unfold : FuncUnfold TrailingZeros32 [] «TrailingZeros32ⁱᵐᵖˡ»
-  TrailingZeros64_unfold : FuncUnfold TrailingZeros64 [] «TrailingZeros64ⁱᵐᵖˡ»
-  OnesCount_unfold : FuncUnfold OnesCount [] «OnesCountⁱᵐᵖˡ»
-  OnesCount8_unfold : FuncUnfold OnesCount8 [] «OnesCount8ⁱᵐᵖˡ»
-  OnesCount16_unfold : FuncUnfold OnesCount16 [] «OnesCount16ⁱᵐᵖˡ»
-  OnesCount32_unfold : FuncUnfold OnesCount32 [] «OnesCount32ⁱᵐᵖˡ»
-  OnesCount64_unfold : FuncUnfold OnesCount64 [] «OnesCount64ⁱᵐᵖˡ»
-  RotateLeft_unfold : FuncUnfold RotateLeft [] «RotateLeftⁱᵐᵖˡ»
-  RotateLeft8_unfold : FuncUnfold RotateLeft8 [] «RotateLeft8ⁱᵐᵖˡ»
-  RotateLeft16_unfold : FuncUnfold RotateLeft16 [] «RotateLeft16ⁱᵐᵖˡ»
-  RotateLeft32_unfold : FuncUnfold RotateLeft32 [] «RotateLeft32ⁱᵐᵖˡ»
-  RotateLeft64_unfold : FuncUnfold RotateLeft64 [] «RotateLeft64ⁱᵐᵖˡ»
-  Reverse_unfold : FuncUnfold Reverse [] «Reverseⁱᵐᵖˡ»
-  Reverse8_unfold : FuncUnfold Reverse8 [] «Reverse8ⁱᵐᵖˡ»
-  Reverse16_unfold : FuncUnfold Reverse16 [] «Reverse16ⁱᵐᵖˡ»
-  Reverse32_unfold : FuncUnfold Reverse32 [] «Reverse32ⁱᵐᵖˡ»
-  Reverse64_unfold : FuncUnfold Reverse64 [] «Reverse64ⁱᵐᵖˡ»
-  ReverseBytes_unfold : FuncUnfold ReverseBytes [] «ReverseBytesⁱᵐᵖˡ»
-  ReverseBytes16_unfold : FuncUnfold ReverseBytes16 [] «ReverseBytes16ⁱᵐᵖˡ»
-  ReverseBytes32_unfold : FuncUnfold ReverseBytes32 [] «ReverseBytes32ⁱᵐᵖˡ»
-  ReverseBytes64_unfold : FuncUnfold ReverseBytes64 [] «ReverseBytes64ⁱᵐᵖˡ»
-  Len_unfold : FuncUnfold Len [] «Lenⁱᵐᵖˡ»
-  Len8_unfold : FuncUnfold Len8 [] «Len8ⁱᵐᵖˡ»
-  Len16_unfold : FuncUnfold Len16 [] «Len16ⁱᵐᵖˡ»
-  Len32_unfold : FuncUnfold Len32 [] «Len32ⁱᵐᵖˡ»
-  Len64_unfold : FuncUnfold Len64 [] «Len64ⁱᵐᵖˡ»
-  Add_unfold : FuncUnfold Add [] «Addⁱᵐᵖˡ»
-  Add32_unfold : FuncUnfold Add32 [] «Add32ⁱᵐᵖˡ»
-  Add64_unfold : FuncUnfold Add64 [] «Add64ⁱᵐᵖˡ»
-  Sub_unfold : FuncUnfold Sub [] «Subⁱᵐᵖˡ»
-  Sub32_unfold : FuncUnfold Sub32 [] «Sub32ⁱᵐᵖˡ»
-  Sub64_unfold : FuncUnfold Sub64 [] «Sub64ⁱᵐᵖˡ»
-  Mul_unfold : FuncUnfold Mul [] «Mulⁱᵐᵖˡ»
-  Mul32_unfold : FuncUnfold Mul32 [] «Mul32ⁱᵐᵖˡ»
-  Mul64_unfold : FuncUnfold Mul64 [] «Mul64ⁱᵐᵖˡ»
-  Div_unfold : FuncUnfold Div [] «Divⁱᵐᵖˡ»
-  Div32_unfold : FuncUnfold Div32 [] «Div32ⁱᵐᵖˡ»
-  Div64_unfold : FuncUnfold Div64 [] «Div64ⁱᵐᵖˡ»
-  Rem_unfold : FuncUnfold Rem [] «Remⁱᵐᵖˡ»
-  Rem32_unfold : FuncUnfold Rem32 [] «Rem32ⁱᵐᵖˡ»
-  Rem64_unfold : FuncUnfold Rem64 [] «Rem64ⁱᵐᵖˡ»
+  LeadingZeros_unfold : FuncUnfold LeadingZeros [] LeadingZeros.impl
+  LeadingZeros8_unfold : FuncUnfold LeadingZeros8 [] LeadingZeros8.impl
+  LeadingZeros16_unfold : FuncUnfold LeadingZeros16 [] LeadingZeros16.impl
+  LeadingZeros32_unfold : FuncUnfold LeadingZeros32 [] LeadingZeros32.impl
+  LeadingZeros64_unfold : FuncUnfold LeadingZeros64 [] LeadingZeros64.impl
+  TrailingZeros_unfold : FuncUnfold TrailingZeros [] TrailingZeros.impl
+  TrailingZeros8_unfold : FuncUnfold TrailingZeros8 [] TrailingZeros8.impl
+  TrailingZeros16_unfold : FuncUnfold TrailingZeros16 [] TrailingZeros16.impl
+  TrailingZeros32_unfold : FuncUnfold TrailingZeros32 [] TrailingZeros32.impl
+  TrailingZeros64_unfold : FuncUnfold TrailingZeros64 [] TrailingZeros64.impl
+  OnesCount_unfold : FuncUnfold OnesCount [] OnesCount.impl
+  OnesCount8_unfold : FuncUnfold OnesCount8 [] OnesCount8.impl
+  OnesCount16_unfold : FuncUnfold OnesCount16 [] OnesCount16.impl
+  OnesCount32_unfold : FuncUnfold OnesCount32 [] OnesCount32.impl
+  OnesCount64_unfold : FuncUnfold OnesCount64 [] OnesCount64.impl
+  RotateLeft_unfold : FuncUnfold RotateLeft [] RotateLeft.impl
+  RotateLeft8_unfold : FuncUnfold RotateLeft8 [] RotateLeft8.impl
+  RotateLeft16_unfold : FuncUnfold RotateLeft16 [] RotateLeft16.impl
+  RotateLeft32_unfold : FuncUnfold RotateLeft32 [] RotateLeft32.impl
+  RotateLeft64_unfold : FuncUnfold RotateLeft64 [] RotateLeft64.impl
+  Reverse_unfold : FuncUnfold Reverse [] Reverse.impl
+  Reverse8_unfold : FuncUnfold Reverse8 [] Reverse8.impl
+  Reverse16_unfold : FuncUnfold Reverse16 [] Reverse16.impl
+  Reverse32_unfold : FuncUnfold Reverse32 [] Reverse32.impl
+  Reverse64_unfold : FuncUnfold Reverse64 [] Reverse64.impl
+  ReverseBytes_unfold : FuncUnfold ReverseBytes [] ReverseBytes.impl
+  ReverseBytes16_unfold : FuncUnfold ReverseBytes16 [] ReverseBytes16.impl
+  ReverseBytes32_unfold : FuncUnfold ReverseBytes32 [] ReverseBytes32.impl
+  ReverseBytes64_unfold : FuncUnfold ReverseBytes64 [] ReverseBytes64.impl
+  Len_unfold : FuncUnfold Len [] Len.impl
+  Len8_unfold : FuncUnfold Len8 [] Len8.impl
+  Len16_unfold : FuncUnfold Len16 [] Len16.impl
+  Len32_unfold : FuncUnfold Len32 [] Len32.impl
+  Len64_unfold : FuncUnfold Len64 [] Len64.impl
+  Add_unfold : FuncUnfold Add [] Add.impl
+  Add32_unfold : FuncUnfold Add32 [] Add32.impl
+  Add64_unfold : FuncUnfold Add64 [] Add64.impl
+  Sub_unfold : FuncUnfold Sub [] Sub.impl
+  Sub32_unfold : FuncUnfold Sub32 [] Sub32.impl
+  Sub64_unfold : FuncUnfold Sub64 [] Sub64.impl
+  Mul_unfold : FuncUnfold Mul [] Mul.impl
+  Mul32_unfold : FuncUnfold Mul32 [] Mul32.impl
+  Mul64_unfold : FuncUnfold Mul64 [] Mul64.impl
+  Div_unfold : FuncUnfold Div [] Div.impl
+  Div32_unfold : FuncUnfold Div32 [] Div32.impl
+  Div64_unfold : FuncUnfold Div64 [] Div64.impl
+  Rem_unfold : FuncUnfold Rem [] Rem.impl
+  Rem32_unfold : FuncUnfold Rem32 [] Rem32.impl
+  Rem64_unfold : FuncUnfold Rem64 [] Rem64.impl
   import_unsafe_Assumption : _root_.Perennial.«unsafe».Assumptions
 
 attribute [instance] Assumptions.LeadingZeros_unfold

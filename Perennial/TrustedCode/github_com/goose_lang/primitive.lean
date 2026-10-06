@@ -19,47 +19,47 @@ variable [FfiSyntax] [GoGlobalContext]
 
 /-- `Assume c` goes into an endless loop if `c` does not hold. So proofs can
 assume that it holds. -/
-def «Assumeⁱᵐᵖˡ» : val :=
+def Assume.impl : val :=
   λ: "cond", if: Var "cond" then #()
              else (rec: "loop" <> := Var "loop" #()) #()
 
 /-- `Assert c` raises UB (program gets stuck via `Panic`) if `c` does not
 hold. So proofs have to show it always holds. -/
-def «Assertⁱᵐᵖˡ» : val :=
+def Assert.impl : val :=
   λ: "cond", if: Var "cond" then #()
              else Panic "assert failed"
 
 /-- `Exit n` is supposed to exit the process. We cannot directly model this in
 GooseLang, so we just loop. -/
-def «Exitⁱᵐᵖˡ» : val :=
+def Exit.impl : val :=
   λ: <>, (rec: "loop" <> := Var "loop" #()) #()
 
 def Millisecond : val := #(W64 1000000)
 def Second : val := #(W64 1000000000)
 
-def «Sleepⁱᵐᵖˡ» : val := λ: "duration", #()
+def Sleep.impl : val := λ: "duration", #()
 
-def «TimeNowⁱᵐᵖˡ» : val := λ: <>, ArbitraryInt
+def TimeNow.impl : val := λ: <>, ArbitraryInt
 
-def «AfterFuncⁱᵐᵖˡ» : val := λ: "duration" "f", Fork "f" ;; Alloc "f"
+def AfterFunc.impl : val := λ: "duration" "f", Fork "f" ;; Alloc "f"
 
-def «RandomUint64ⁱᵐᵖˡ» : val := λ: <>, ArbitraryInt
+def RandomUint64.impl : val := λ: <>, ArbitraryInt
 
-def «NewProphⁱᵐᵖˡ» : val := λ: <>, NewProph
+def NewProph.impl : val := λ: <>, NewProph
 
-def «ResolveProphⁱᵐᵖˡ» : val := λ: "p" "val", ResolveProph (Var "p") (Var "val")
+def ResolveProph.impl : val := λ: "p" "val", ResolveProph (Var "p") (Var "val")
 
-def «Linearizeⁱᵐᵖˡ» : val := λ: <>, #()
+def Linearize.impl : val := λ: <>, #()
 
-@[reducible] def «Mutexⁱᵐᵖˡ» : go.GoType := go.bool
+@[reducible] def Mutex.underlying : go.GoType := go.bool
 
-def «Mutex__Lockⁱᵐᵖˡ» : val :=
+def Mutex.Lock.impl : val :=
   λ: "m" <>, lock.lock "m"
 
-def «Mutex__Unlockⁱᵐᵖˡ» : val :=
+def Mutex.Unlock.impl : val :=
   λ: "m" <>, lock.unlock "m"
 
-@[reducible] def «ProphIdⁱᵐᵖˡ» : go.GoType := go.prophId
+@[reducible] def ProphId.underlying : go.GoType := go.prophId
 
 end code
 

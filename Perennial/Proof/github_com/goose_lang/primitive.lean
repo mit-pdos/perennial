@@ -70,7 +70,7 @@ theorem wp_Assume_false :
 
 /-- FIXME (Rocq): get rid of this, or document why a lemma for `ⁱᵐᵖˡ` is needed. -/
 theorem «wp_RandomUint64__impl» :
-    {{ (True : IProp GF) }} (App (Val «RandomUint64ⁱᵐᵖˡ») (Val #()))
+    {{ (True : IProp GF) }} (App (Val RandomUint64.impl) (Val #()))
     {{ (x : w64), RET #x; True }} := by
   wp_start as _
   wp_apply wp_ArbitraryInt as %x _

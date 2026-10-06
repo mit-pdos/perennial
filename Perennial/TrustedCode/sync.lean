@@ -19,26 +19,26 @@ namespace sync
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-@[reducible] def «Mutexⁱᵐᵖˡ» : go.GoType := go.bool
+@[reducible] def Mutex.underlying : go.GoType := go.bool
 
-def «Mutex__TryLockⁱᵐᵖˡ» : val :=
+def Mutex.TryLock.impl : val :=
   λ: "m" <>, lock.trylock "m"
 
-def «Mutex__Lockⁱᵐᵖˡ» : val :=
+def Mutex.Lock.impl : val :=
   λ: "m" <>, lock.lock "m"
 
-def «Mutex__Unlockⁱᵐᵖˡ» : val :=
+def Mutex.Unlock.impl : val :=
   λ: "m" <>, lock.unlock "m"
 
-def «runtime_notifyListAddⁱᵐᵖˡ» : val :=
+def runtime_notifyListAdd.impl : val :=
   λ: "l", Convert go.int go.uint32 ArbitraryInt
-def «runtime_notifyListWaitⁱᵐᵖˡ» : val :=
+def runtime_notifyListWait.impl : val :=
   λ: "l" "t", #()
-def «runtime_notifyListNotifyAllⁱᵐᵖˡ» : val :=
+def runtime_notifyListNotifyAll.impl : val :=
   λ: "l", #()
-def «runtime_notifyListNotifyOneⁱᵐᵖˡ» : val :=
+def runtime_notifyListNotifyOne.impl : val :=
   λ: "l", #()
-def «runtime_notifyListCheckⁱᵐᵖˡ» : val :=
+def runtime_notifyListCheck.impl : val :=
   λ: "l", #()
 
 /-
@@ -57,7 +57,7 @@ func cansemacquire(addr *uint32) bool {
 }
 ```
 -/
-def «runtime_Semacquireⁱᵐᵖˡ» : val :=
+def runtime_Semacquire.impl : val :=
   λ: "addr", exceptionDo
     (for: (λ: <>, #true) ; (λ: <>, #()) := λ: <>,
        let: "v" := Load "addr" in
@@ -72,18 +72,18 @@ def «runtime_Semacquireⁱᵐᵖˡ» : val :=
           do: #())
     )
 
-def «runtime_Semreleaseⁱᵐᵖˡ» : val :=
+def runtime_Semrelease.impl : val :=
   λ: "addr" "_handoff" "_skipframes", AtomicAdd "addr" #(W32 1) ;; #()
 
 /-- differs from runtime_Semacquire only in the park "reason", used for
 internal concurrency testing -/
-def «runtime_SemacquireWaitGroupⁱᵐᵖˡ» : val :=
+def runtime_SemacquireWaitGroup.impl : val :=
   λ: "addr" "_synctestDurable", (FuncResolve "sync.runtime_Semacquire" []) #() "addr"
 
-def «runtime_SemacquireRWMutexRⁱᵐᵖˡ» : val :=
+def runtime_SemacquireRWMutexR.impl : val :=
   λ: "addr" "_lifo" "_skipframes", (FuncResolve "sync.runtime_Semacquire" []) #() "addr"
 
-def «runtime_SemacquireRWMutexⁱᵐᵖˡ» : val :=
+def runtime_SemacquireRWMutex.impl : val :=
   λ: "addr" "_lifo" "_skipframes", (FuncResolve "sync.runtime_Semacquire" []) #() "addr"
 
 /-- Lean addition. `copyChecker` is a `uintptr` (sync/cond.go:
@@ -91,7 +91,7 @@ def «runtime_SemacquireRWMutexⁱᵐᵖˡ» : val :=
 `uintptr(unsafe.Pointer(c))`. goose supports neither `uintptr` nor
 pointer-to-integer conversions, so it is modeled as an `unsafe.Pointer` (a
 `loc`): `0` is `null`, and `uintptr(unsafe.Pointer(c))` is `c` itself. -/
-@[reducible] def «copyCheckerⁱᵐᵖˡ» : go.GoType := «unsafe».Pointer
+@[reducible] def copyChecker.underlying : go.GoType := «unsafe».Pointer
 
 /-- Lean addition. Model of (sync/cond.go)
 ```
@@ -106,7 +106,7 @@ func (c *copyChecker) check() {
 The two reads of `*c` are plain loads in Go (racing with the CAS; the sync
 package is exempt from the race detector); they are modeled as (atomic)
 `Load`s. -/
-def «copyChecker__checkⁱᵐᵖˡ» : val :=
+def copyChecker.check.impl : val :=
   λ: "c" <>,
     if: Load "c" =⟨«unsafe».Pointer⟩ "c" then #()
     else if: Snd (CmpXchg "c" #null "c") then #()

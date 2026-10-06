@@ -30,7 +30,7 @@ def main (args : List String) : IO Unit := do
     let some idx := env.getModuleIdxFor? n | continue
     let m := env.header.moduleNames[idx.toNat]!
     unless (`Perennial).isPrefixOf m do continue
-    if n.isInternalDetail then continue
+    if n.hasMacroScopes || isPrivateName n then continue
     let k := kindOf env ci
     let r ← (Prod.fst <$> ((resultSort ci.type).run' {} |>.toIO ctx {env})) <|> pure "?"
     out := out.push s!"{m}\t{n}\t{k}\t{r}"

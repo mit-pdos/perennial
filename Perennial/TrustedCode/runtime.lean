@@ -12,7 +12,7 @@ namespace runtime
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-def «Goschedⁱᵐᵖˡ» : val :=
+def Gosched.impl : val :=
   λ: <>,
     #()
 

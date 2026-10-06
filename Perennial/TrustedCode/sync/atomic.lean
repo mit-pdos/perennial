@@ -12,61 +12,61 @@ namespace sync.atomic
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-def «LoadUint64ⁱᵐᵖˡ» : val :=
+def LoadUint64.impl : val :=
   λ: "addr", Load "addr"
-def «StoreUint64ⁱᵐᵖˡ» : val :=
+def StoreUint64.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
-def «SwapUint64ⁱᵐᵖˡ» : val :=
+def SwapUint64.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val"
-def «AddUint64ⁱᵐᵖˡ» : val :=
+def AddUint64.impl : val :=
   λ: "addr" "val", AtomicAdd "addr" "val"
-def «CompareAndSwapUint64ⁱᵐᵖˡ» : val :=
+def CompareAndSwapUint64.impl : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchg "addr" "old" "new")
 
-def «LoadInt64ⁱᵐᵖˡ» : val :=
+def LoadInt64.impl : val :=
   λ: "addr", Load "addr"
-def «StoreInt64ⁱᵐᵖˡ» : val :=
+def StoreInt64.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
-def «SwapInt64ⁱᵐᵖˡ» : val :=
+def SwapInt64.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val"
-def «AddInt64ⁱᵐᵖˡ» : val :=
+def AddInt64.impl : val :=
   λ: "addr" "val", AtomicAdd "addr" "val"
-def «CompareAndSwapInt64ⁱᵐᵖˡ» : val :=
+def CompareAndSwapInt64.impl : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchg "addr" "old" "new")
 
-def «LoadUint32ⁱᵐᵖˡ» : val :=
+def LoadUint32.impl : val :=
   λ: "addr", Load "addr"
-def «StoreUint32ⁱᵐᵖˡ» : val :=
+def StoreUint32.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
-def «SwapUint32ⁱᵐᵖˡ» : val :=
+def SwapUint32.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val"
-def «AddUint32ⁱᵐᵖˡ» : val :=
+def AddUint32.impl : val :=
   λ: "addr" "val", AtomicAdd "addr" "val"
-def «CompareAndSwapUint32ⁱᵐᵖˡ» : val :=
+def CompareAndSwapUint32.impl : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchg "addr" "old" "new")
 
-def «LoadInt32ⁱᵐᵖˡ» : val :=
+def LoadInt32.impl : val :=
   λ: "addr", Load "addr"
-def «StoreInt32ⁱᵐᵖˡ» : val :=
+def StoreInt32.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
-def «SwapInt32ⁱᵐᵖˡ» : val :=
+def SwapInt32.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val"
-def «AddInt32ⁱᵐᵖˡ» : val :=
+def AddInt32.impl : val :=
   λ: "addr" "val", AtomicAdd "addr" "val"
-def «CompareAndSwapInt32ⁱᵐᵖˡ» : val :=
+def CompareAndSwapInt32.impl : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchg "addr" "old" "new")
 
-def «LoadPointerⁱᵐᵖˡ» : val :=
+def LoadPointer.impl : val :=
   λ: "addr", Load "addr"
-def «StorePointerⁱᵐᵖˡ» : val :=
+def StorePointer.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
-def «SwapPointerⁱᵐᵖˡ» : val :=
+def SwapPointer.impl : val :=
   λ: "addr" "val", AtomicSwap "addr" "val"
-def «CompareAndSwapPointerⁱᵐᵖˡ» : val :=
+def CompareAndSwapPointer.impl : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchg "addr" "old" "new")
 

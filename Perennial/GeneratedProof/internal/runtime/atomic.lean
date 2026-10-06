@@ -30,7 +30,7 @@ instance noCopy_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noCopy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.noCopy.t internal.runtime.atomic.«noCopyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.noCopy.t internal.runtime.atomic.noCopy.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -55,7 +55,7 @@ instance Int32_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Int32_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Int32.t internal.runtime.atomic.«Int32ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Int32.t internal.runtime.atomic.Int32.underlying := by
   solve_into_val_typed_struct
 
 instance Int32_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Int32.t) (dq : DFrac) :
@@ -110,7 +110,7 @@ instance align64_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance align64_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.align64.t internal.runtime.atomic.«align64ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.align64.t internal.runtime.atomic.align64.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -136,7 +136,7 @@ instance Int64_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Int64_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Int64.t internal.runtime.atomic.«Int64ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Int64.t internal.runtime.atomic.Int64.underlying := by
   solve_into_val_typed_struct
 
 instance Int64_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Int64.t) (dq : DFrac) :
@@ -209,7 +209,7 @@ instance Uint8_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uint8_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint8.t internal.runtime.atomic.«Uint8ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint8.t internal.runtime.atomic.Uint8.underlying := by
   solve_into_val_typed_struct
 
 instance Uint8_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Uint8.t) (dq : DFrac) :
@@ -265,7 +265,7 @@ instance Bool'_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Bool'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Bool'.t internal.runtime.atomic.«Bool'ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Bool'.t internal.runtime.atomic.Bool'.underlying := by
   solve_into_val_typed_struct
 
 instance Bool'_access_load_u (l : Loc) (v : internal.runtime.atomic.Bool'.t) (dq : DFrac) :
@@ -306,7 +306,7 @@ instance Uint32_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uint32_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint32.t internal.runtime.atomic.«Uint32ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint32.t internal.runtime.atomic.Uint32.underlying := by
   solve_into_val_typed_struct
 
 instance Uint32_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Uint32.t) (dq : DFrac) :
@@ -364,7 +364,7 @@ instance Uint64_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uint64_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint64.t internal.runtime.atomic.«Uint64ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint64.t internal.runtime.atomic.Uint64.underlying := by
   solve_into_val_typed_struct
 
 instance Uint64_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Uint64.t) (dq : DFrac) :
@@ -437,7 +437,7 @@ instance Uintptr_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uintptr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uintptr.t internal.runtime.atomic.«Uintptrⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uintptr.t internal.runtime.atomic.Uintptr.underlying := by
   solve_into_val_typed_struct
 
 instance Uintptr_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Uintptr.t) (dq : DFrac) :
@@ -493,7 +493,7 @@ instance Float64_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Float64_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Float64.t internal.runtime.atomic.«Float64ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Float64.t internal.runtime.atomic.Float64.underlying := by
   solve_into_val_typed_struct
 
 instance Float64_access_load_u (l : Loc) (v : internal.runtime.atomic.Float64.t) (dq : DFrac) :
@@ -534,7 +534,7 @@ instance UnsafePointer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnsafePointer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.UnsafePointer.t internal.runtime.atomic.«UnsafePointerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.UnsafePointer.t internal.runtime.atomic.UnsafePointer.underlying := by
   solve_into_val_typed_struct
 
 instance UnsafePointer_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.UnsafePointer.t) (dq : DFrac) :
@@ -590,7 +590,7 @@ instance Pointer_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Pointer_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (internal.runtime.atomic.Pointer.t T') (internal.runtime.atomic.«Pointerⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (internal.runtime.atomic.Pointer.t T') (internal.runtime.atomic.Pointer.underlying T) := by
   solve_into_val_typed_struct
 
 instance Pointer_access_load_u {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (internal.runtime.atomic.Pointer.t T')) (dq : DFrac) :

@@ -37,7 +37,7 @@ instance Metadata_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Metadata_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Metadata.t go_etcd_io.etcd.api.v3.etcdserverpb.«Metadataⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.Metadata.t go_etcd_io.etcd.api.v3.etcdserverpb.Metadata.underlying := by
   solve_into_val_typed_struct
 
 instance Metadata_access_load_NodeID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Metadata.t) (dq : DFrac) :
@@ -146,7 +146,7 @@ instance RequestHeader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance RequestHeader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.t go_etcd_io.etcd.api.v3.etcdserverpb.«RequestHeaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.t go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.underlying := by
   solve_into_val_typed_struct
 
 instance RequestHeader_access_load_ID (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.t) (dq : DFrac) :
@@ -300,7 +300,7 @@ instance InternalRaftRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalRaftRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«InternalRaftRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.underlying := by
   solve_into_val_typed_struct
 
 instance InternalRaftRequest_access_load_Header (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.t) (dq : DFrac) :
@@ -886,7 +886,7 @@ instance EmptyResponse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EmptyResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.EmptyResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.«EmptyResponseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.EmptyResponse.t go_etcd_io.etcd.api.v3.etcdserverpb.EmptyResponse.underlying := by
   solve_into_val_typed_struct
 
 instance EmptyResponse_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.EmptyResponse.t) (dq : DFrac) :
@@ -963,7 +963,7 @@ instance InternalAuthenticateRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalAuthenticateRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«InternalAuthenticateRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest.underlying := by
   solve_into_val_typed_struct
 
 instance InternalAuthenticateRequest_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest.t) (dq : DFrac) :
@@ -1083,7 +1083,7 @@ instance InternalRaftStringer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance InternalRaftStringer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftStringer.t go_etcd_io.etcd.api.v3.etcdserverpb.«InternalRaftStringerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftStringer.t go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftStringer.underlying := by
   solve_into_val_typed_struct
 
 instance InternalRaftStringer_access_load_Request (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftStringer.t) (dq : DFrac) :
@@ -1123,7 +1123,7 @@ instance txnRequestStringer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance txnRequestStringer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.txnRequestStringer.t go_etcd_io.etcd.api.v3.etcdserverpb.«txnRequestStringerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.txnRequestStringer.t go_etcd_io.etcd.api.v3.etcdserverpb.txnRequestStringer.underlying := by
   solve_into_val_typed_struct
 
 instance txnRequestStringer_access_load_Request (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.txnRequestStringer.t) (dq : DFrac) :
@@ -1163,7 +1163,7 @@ instance requestOpStringer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance requestOpStringer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.requestOpStringer.t go_etcd_io.etcd.api.v3.etcdserverpb.«requestOpStringerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.requestOpStringer.t go_etcd_io.etcd.api.v3.etcdserverpb.requestOpStringer.underlying := by
   solve_into_val_typed_struct
 
 instance requestOpStringer_access_load_Op (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.requestOpStringer.t) (dq : DFrac) :
@@ -1208,7 +1208,7 @@ instance loggablePutRequest_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance loggablePutRequest_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.loggablePutRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.«loggablePutRequestⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.loggablePutRequest.t go_etcd_io.etcd.api.v3.etcdserverpb.loggablePutRequest.underlying := by
   solve_into_val_typed_struct
 
 instance loggablePutRequest_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.loggablePutRequest.t) (dq : DFrac) :
@@ -1334,7 +1334,7 @@ instance ResponseHeader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ResponseHeader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader.t go_etcd_io.etcd.api.v3.etcdserverpb.«ResponseHeaderⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader.t go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader.underlying := by
   solve_into_val_typed_struct
 
 instance ResponseHeader_access_load_ClusterId (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader.t) (dq : DFrac) :

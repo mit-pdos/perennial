@@ -74,7 +74,7 @@ noncomputable def _VoteResult_index [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/quorum._VoteResult_index"
 
 /-- go: joint.go:21:22 -/
-noncomputable def «JointConfig__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JointConfig.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -93,7 +93,7 @@ noncomputable def «JointConfig__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
     in the joint configuration.
 
     go: joint.go:30:22 -/
-noncomputable def «JointConfig__IDsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JointConfig.IDs.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -134,7 +134,7 @@ noncomputable def «JointConfig__IDsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     given lookuper.
 
     go: joint.go:43:22 -/
-noncomputable def «JointConfig__Describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JointConfig.Describe.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "l"
   (App (Val exceptionDo)
@@ -149,7 +149,7 @@ noncomputable def «JointConfig__Describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     majorities.
 
     go: joint.go:50:22 -/
-noncomputable def «JointConfig__CommittedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JointConfig.CommittedIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "l"
   (App (Val exceptionDo)
@@ -181,7 +181,7 @@ noncomputable def «JointConfig__CommittedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlob
     requires both majority quorums to vote in favor.
 
     go: joint.go:62:22 -/
-noncomputable def «JointConfig__VoteResultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JointConfig.VoteResult.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "votes"
   (App (Val exceptionDo)
@@ -215,7 +215,7 @@ noncomputable def «JointConfig__VoteResultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCo
   (App (Val (GoInstruction (GoStore VoteResult))) (Pair (Var "r1") (Var "$r0"))))))))))))
 
 /-- go: majority.go:28:25 -/
-noncomputable def «MajorityConfig__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MajorityConfig.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -282,7 +282,7 @@ noncomputable def «MajorityConfig__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCon
     given lookuper.
 
     go: majority.go:55:25 -/
-noncomputable def «MajorityConfig__Describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MajorityConfig.Describe.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "l"
   (App (Val exceptionDo)
@@ -450,7 +450,7 @@ noncomputable def «MajorityConfig__Describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalC
 /-- Slice returns the MajorityConfig as a sorted slice.
 
     go: majority.go:110:25 -/
-noncomputable def «MajorityConfig__Sliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MajorityConfig.Slice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -482,7 +482,7 @@ noncomputable def «MajorityConfig__Sliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
     provided AckedIndexer (for the active config).
 
     go: majority.go:121:25 -/
-noncomputable def «MajorityConfig__CommittedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MajorityConfig.CommittedIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "l"
   (App (Val exceptionDo)
@@ -566,7 +566,7 @@ noncomputable def «MajorityConfig__CommittedIndexⁱᵐᵖˡ» [FfiSyntax] [GoG
     quorum of no has been reached).
 
     go: majority.go:170:25 -/
-noncomputable def «MajorityConfig__VoteResultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MajorityConfig.VoteResult.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "votes"
   (App (Val exceptionDo)
@@ -638,7 +638,7 @@ noncomputable def «MajorityConfig__VoteResultⁱᵐᵖˡ» [FfiSyntax] [GoGloba
   (Val #())))))))))
 
 /-- go: quorum.go:25:16 -/
-noncomputable def «Index__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Index.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "i"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -655,7 +655,7 @@ noncomputable def «Index__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (Val #()))))))))
 
 /-- go: quorum.go:40:24 -/
-noncomputable def «mapAckIndexer__AckedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def mapAckIndexer.AckedIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam "id"
   (App (Val exceptionDo)
@@ -678,7 +678,7 @@ noncomputable def «mapAckIndexer__AckedIndexⁱᵐᵖˡ» [FfiSyntax] [GoGlobal
   (App (Val (GoInstruction (GoStore Index'))) (Pair (Var "idx") (Var "$r0")))))))))))))))))
 
 /-- go: voteresult_string.go:20:21 -/
-noncomputable def «VoteResult__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def VoteResult.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "i"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -738,92 +738,92 @@ namespace MajorityConfig
 abbrev t [FfiSyntax] : Type := map.t
 end MajorityConfig
 
-@[reducible] def «MajorityConfigⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def MajorityConfig.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 (go.GoType.StructType []))
 
-class MajorityConfig_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  MajorityConfig_underlying : go.UnderlyingDirectedEq MajorityConfig «MajorityConfigⁱᵐᵖˡ»
-  MajorityConfig_CommittedIndex_unfold : MethodUnfold MajorityConfig go!"CommittedIndex" «MajorityConfig__CommittedIndexⁱᵐᵖˡ»
-  MajorityConfig_Describe_unfold : MethodUnfold MajorityConfig go!"Describe" «MajorityConfig__Describeⁱᵐᵖˡ»
-  MajorityConfig_Slice_unfold : MethodUnfold MajorityConfig go!"Slice" «MajorityConfig__Sliceⁱᵐᵖˡ»
-  MajorityConfig_String_unfold : MethodUnfold MajorityConfig go!"String" «MajorityConfig__Stringⁱᵐᵖˡ»
-  MajorityConfig_VoteResult_unfold : MethodUnfold MajorityConfig go!"VoteResult" «MajorityConfig__VoteResultⁱᵐᵖˡ»
-  MajorityConfig'ptr_CommittedIndex_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"CommittedIndex" (LamV "$r"
+class MajorityConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq MajorityConfig MajorityConfig.underlying
+  CommittedIndex_unfold : MethodUnfold MajorityConfig go!"CommittedIndex" MajorityConfig.CommittedIndex.impl
+  Describe_unfold : MethodUnfold MajorityConfig go!"Describe" MajorityConfig.Describe.impl
+  Slice_unfold : MethodUnfold MajorityConfig go!"Slice" MajorityConfig.Slice.impl
+  String_unfold : MethodUnfold MajorityConfig go!"String" MajorityConfig.String.impl
+  VoteResult_unfold : MethodUnfold MajorityConfig go!"VoteResult" MajorityConfig.VoteResult.impl
+  ptr_CommittedIndex_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"CommittedIndex" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve MajorityConfig go!"CommittedIndex"))) (App (Val (GoInstruction (GoLoad MajorityConfig))) (Var "$r"))))
-  MajorityConfig'ptr_Describe_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"Describe" (LamV "$r"
+  ptr_Describe_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"Describe" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve MajorityConfig go!"Describe"))) (App (Val (GoInstruction (GoLoad MajorityConfig))) (Var "$r"))))
-  MajorityConfig'ptr_Slice_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"Slice" (LamV "$r"
+  ptr_Slice_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"Slice" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve MajorityConfig go!"Slice"))) (App (Val (GoInstruction (GoLoad MajorityConfig))) (Var "$r"))))
-  MajorityConfig'ptr_String_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve MajorityConfig go!"String"))) (App (Val (GoInstruction (GoLoad MajorityConfig))) (Var "$r"))))
-  MajorityConfig'ptr_VoteResult_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"VoteResult" (LamV "$r"
+  ptr_VoteResult_unfold : MethodUnfold (go.GoType.PointerType MajorityConfig) go!"VoteResult" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve MajorityConfig go!"VoteResult"))) (App (Val (GoInstruction (GoLoad MajorityConfig))) (Var "$r"))))
 
-attribute [instance] MajorityConfig_Assumptions.MajorityConfig_underlying
-  MajorityConfig_Assumptions.MajorityConfig_CommittedIndex_unfold
-  MajorityConfig_Assumptions.MajorityConfig_Describe_unfold
-  MajorityConfig_Assumptions.MajorityConfig_Slice_unfold
-  MajorityConfig_Assumptions.MajorityConfig_String_unfold
-  MajorityConfig_Assumptions.MajorityConfig_VoteResult_unfold
-  MajorityConfig_Assumptions.MajorityConfig'ptr_CommittedIndex_unfold
-  MajorityConfig_Assumptions.MajorityConfig'ptr_Describe_unfold
-  MajorityConfig_Assumptions.MajorityConfig'ptr_Slice_unfold
-  MajorityConfig_Assumptions.MajorityConfig'ptr_String_unfold
-  MajorityConfig_Assumptions.MajorityConfig'ptr_VoteResult_unfold
+attribute [instance] MajorityConfig.TypeAssumptions.underlying
+  MajorityConfig.TypeAssumptions.CommittedIndex_unfold
+  MajorityConfig.TypeAssumptions.Describe_unfold
+  MajorityConfig.TypeAssumptions.Slice_unfold
+  MajorityConfig.TypeAssumptions.String_unfold
+  MajorityConfig.TypeAssumptions.VoteResult_unfold
+  MajorityConfig.TypeAssumptions.ptr_CommittedIndex_unfold
+  MajorityConfig.TypeAssumptions.ptr_Describe_unfold
+  MajorityConfig.TypeAssumptions.ptr_Slice_unfold
+  MajorityConfig.TypeAssumptions.ptr_String_unfold
+  MajorityConfig.TypeAssumptions.ptr_VoteResult_unfold
 
 namespace JointConfig
 abbrev t [FfiSyntax] : Type := (array.t MajorityConfig.t 2)
 end JointConfig
 
-@[reducible] def «JointConfigⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def JointConfig.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 2 MajorityConfig)
 
-class JointConfig_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  JointConfig_underlying : go.UnderlyingDirectedEq JointConfig «JointConfigⁱᵐᵖˡ»
-  JointConfig_CommittedIndex_unfold : MethodUnfold JointConfig go!"CommittedIndex" «JointConfig__CommittedIndexⁱᵐᵖˡ»
-  JointConfig_Describe_unfold : MethodUnfold JointConfig go!"Describe" «JointConfig__Describeⁱᵐᵖˡ»
-  JointConfig_IDs_unfold : MethodUnfold JointConfig go!"IDs" «JointConfig__IDsⁱᵐᵖˡ»
-  JointConfig_String_unfold : MethodUnfold JointConfig go!"String" «JointConfig__Stringⁱᵐᵖˡ»
-  JointConfig_VoteResult_unfold : MethodUnfold JointConfig go!"VoteResult" «JointConfig__VoteResultⁱᵐᵖˡ»
-  JointConfig'ptr_CommittedIndex_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"CommittedIndex" (LamV "$r"
+class JointConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq JointConfig JointConfig.underlying
+  CommittedIndex_unfold : MethodUnfold JointConfig go!"CommittedIndex" JointConfig.CommittedIndex.impl
+  Describe_unfold : MethodUnfold JointConfig go!"Describe" JointConfig.Describe.impl
+  IDs_unfold : MethodUnfold JointConfig go!"IDs" JointConfig.IDs.impl
+  String_unfold : MethodUnfold JointConfig go!"String" JointConfig.String.impl
+  VoteResult_unfold : MethodUnfold JointConfig go!"VoteResult" JointConfig.VoteResult.impl
+  ptr_CommittedIndex_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"CommittedIndex" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve JointConfig go!"CommittedIndex"))) (App (Val (GoInstruction (GoLoad JointConfig))) (Var "$r"))))
-  JointConfig'ptr_Describe_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"Describe" (LamV "$r"
+  ptr_Describe_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"Describe" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve JointConfig go!"Describe"))) (App (Val (GoInstruction (GoLoad JointConfig))) (Var "$r"))))
-  JointConfig'ptr_IDs_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"IDs" (LamV "$r"
+  ptr_IDs_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"IDs" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve JointConfig go!"IDs"))) (App (Val (GoInstruction (GoLoad JointConfig))) (Var "$r"))))
-  JointConfig'ptr_String_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"String" (LamV "$r"
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve JointConfig go!"String"))) (App (Val (GoInstruction (GoLoad JointConfig))) (Var "$r"))))
-  JointConfig'ptr_VoteResult_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"VoteResult" (LamV "$r"
+  ptr_VoteResult_unfold : MethodUnfold (go.GoType.PointerType JointConfig) go!"VoteResult" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve JointConfig go!"VoteResult"))) (App (Val (GoInstruction (GoLoad JointConfig))) (Var "$r"))))
 
-attribute [instance] JointConfig_Assumptions.JointConfig_underlying
-  JointConfig_Assumptions.JointConfig_CommittedIndex_unfold
-  JointConfig_Assumptions.JointConfig_Describe_unfold
-  JointConfig_Assumptions.JointConfig_IDs_unfold
-  JointConfig_Assumptions.JointConfig_String_unfold
-  JointConfig_Assumptions.JointConfig_VoteResult_unfold
-  JointConfig_Assumptions.JointConfig'ptr_CommittedIndex_unfold
-  JointConfig_Assumptions.JointConfig'ptr_Describe_unfold
-  JointConfig_Assumptions.JointConfig'ptr_IDs_unfold
-  JointConfig_Assumptions.JointConfig'ptr_String_unfold
-  JointConfig_Assumptions.JointConfig'ptr_VoteResult_unfold
+attribute [instance] JointConfig.TypeAssumptions.underlying
+  JointConfig.TypeAssumptions.CommittedIndex_unfold
+  JointConfig.TypeAssumptions.Describe_unfold
+  JointConfig.TypeAssumptions.IDs_unfold
+  JointConfig.TypeAssumptions.String_unfold
+  JointConfig.TypeAssumptions.VoteResult_unfold
+  JointConfig.TypeAssumptions.ptr_CommittedIndex_unfold
+  JointConfig.TypeAssumptions.ptr_Describe_unfold
+  JointConfig.TypeAssumptions.ptr_IDs_unfold
+  JointConfig.TypeAssumptions.ptr_String_unfold
+  JointConfig.TypeAssumptions.ptr_VoteResult_unfold
 
 namespace Index'
 abbrev t [FfiSyntax] : Type := w64
 end Index'
 
-@[reducible] def «Index'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Index'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class Index_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Index_underlying : go.UnderlyingDirectedEq Index' «Index'ⁱᵐᵖˡ»
-  Index_String_unfold : MethodUnfold Index' go!"String" «Index__Stringⁱᵐᵖˡ»
-  Index'ptr_String_unfold : MethodUnfold (go.GoType.PointerType Index') go!"String" (LamV "$r"
+class Index.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Index' Index'.underlying
+  String_unfold : MethodUnfold Index' go!"String" Index.String.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType Index') go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Index' go!"String"))) (App (Val (GoInstruction (GoLoad Index'))) (Var "$r"))))
 
-attribute [instance] Index_Assumptions.Index_underlying
-  Index_Assumptions.Index_String_unfold
-  Index_Assumptions.Index'ptr_String_unfold
+attribute [instance] Index.TypeAssumptions.underlying
+  Index.TypeAssumptions.String_unfold
+  Index.TypeAssumptions.ptr_String_unfold
 
 namespace tup
 structure t [FfiSyntax] where
@@ -837,99 +837,99 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end tup
 
-@[reducible] def tup'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def tup.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"id" go.uint64),
 (go.field_decl.FieldDecl go!"idx" Index'),
 (go.field_decl.FieldDecl go!"ok" go.bool),
 (go.field_decl.FieldDecl go!"bar" go.int)]
 
-@[irreducible] def tup'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  tup'fds_unsealed
+@[irreducible] def tup.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  tup.fieldsUnsealed
 
 instance equals_unfold_tup [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold tup'fds tup'fds_unsealed :=
-  ⟨by unfold tup'fds; rfl⟩
+    EqualsUnfold tup.fields tup.fieldsUnsealed :=
+  ⟨by unfold tup.fields; rfl⟩
 
-@[reducible] def «tupⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType tup'fds)
+@[reducible] def tup.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType tup.fields)
 
-class tup_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  tup_type_repr : go.TypeReprUnderlying «tupⁱᵐᵖˡ» tup.t
-  tup_underlying : go.UnderlyingDirectedEq tup «tupⁱᵐᵖˡ»
-  tup_get_id : ∀ (x : tup.t), go.IsGoStepPureDetTagged under (StructFieldGet «tupⁱᵐᵖˡ» go!"id") #x (Val #(x.id'))
-  tup_set_id : ∀ (x : tup.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «tupⁱᵐᵖˡ» go!"id") (PairV #x #y) (Val #(({ x with id' := y } : tup.t)))
-  tup_get_idx : ∀ (x : tup.t), go.IsGoStepPureDetTagged under (StructFieldGet «tupⁱᵐᵖˡ» go!"idx") #x (Val #(x.idx'))
-  tup_set_idx : ∀ (x : tup.t) (y : Index'.t), go.IsGoStepPureDetTagged under (StructFieldSet «tupⁱᵐᵖˡ» go!"idx") (PairV #x #y) (Val #(({ x with idx' := y } : tup.t)))
-  tup_get_ok : ∀ (x : tup.t), go.IsGoStepPureDetTagged under (StructFieldGet «tupⁱᵐᵖˡ» go!"ok") #x (Val #(x.ok'))
-  tup_set_ok : ∀ (x : tup.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «tupⁱᵐᵖˡ» go!"ok") (PairV #x #y) (Val #(({ x with ok' := y } : tup.t)))
-  tup_get_bar : ∀ (x : tup.t), go.IsGoStepPureDetTagged under (StructFieldGet «tupⁱᵐᵖˡ» go!"bar") #x (Val #(x.bar'))
-  tup_set_bar : ∀ (x : tup.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «tupⁱᵐᵖˡ» go!"bar") (PairV #x #y) (Val #(({ x with bar' := y } : tup.t)))
+class tup.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying tup.underlying tup.t
+  underlying : go.UnderlyingDirectedEq tup tup.underlying
+  get_id : ∀ (x : tup.t), go.IsGoStepPureDetTagged under (StructFieldGet tup.underlying go!"id") #x (Val #(x.id'))
+  set_id : ∀ (x : tup.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet tup.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : tup.t)))
+  get_idx : ∀ (x : tup.t), go.IsGoStepPureDetTagged under (StructFieldGet tup.underlying go!"idx") #x (Val #(x.idx'))
+  set_idx : ∀ (x : tup.t) (y : Index'.t), go.IsGoStepPureDetTagged under (StructFieldSet tup.underlying go!"idx") (PairV #x #y) (Val #(({ x with idx' := y } : tup.t)))
+  get_ok : ∀ (x : tup.t), go.IsGoStepPureDetTagged under (StructFieldGet tup.underlying go!"ok") #x (Val #(x.ok'))
+  set_ok : ∀ (x : tup.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet tup.underlying go!"ok") (PairV #x #y) (Val #(({ x with ok' := y } : tup.t)))
+  get_bar : ∀ (x : tup.t), go.IsGoStepPureDetTagged under (StructFieldGet tup.underlying go!"bar") #x (Val #(x.bar'))
+  set_bar : ∀ (x : tup.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet tup.underlying go!"bar") (PairV #x #y) (Val #(({ x with bar' := y } : tup.t)))
 
-attribute [instance] tup_Assumptions.tup_type_repr
-  tup_Assumptions.tup_underlying
-  tup_Assumptions.tup_get_id
-  tup_Assumptions.tup_set_id
-  tup_Assumptions.tup_get_idx
-  tup_Assumptions.tup_set_idx
-  tup_Assumptions.tup_get_ok
-  tup_Assumptions.tup_set_ok
-  tup_Assumptions.tup_get_bar
-  tup_Assumptions.tup_set_bar
+attribute [instance] tup.TypeAssumptions.type_repr
+  tup.TypeAssumptions.underlying
+  tup.TypeAssumptions.get_id
+  tup.TypeAssumptions.set_id
+  tup.TypeAssumptions.get_idx
+  tup.TypeAssumptions.set_idx
+  tup.TypeAssumptions.get_ok
+  tup.TypeAssumptions.set_ok
+  tup.TypeAssumptions.get_bar
+  tup.TypeAssumptions.set_bar
 
 namespace AckedIndexer
 abbrev t [FfiSyntax] : Type := interface.t
 end AckedIndexer
 
-@[reducible] def «AckedIndexerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def AckedIndexer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AckedIndex" (go.signature.Signature [go.uint64] false [Index', go.bool]))])
 
-class AckedIndexer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AckedIndexer_underlying : go.UnderlyingDirectedEq AckedIndexer «AckedIndexerⁱᵐᵖˡ»
+class AckedIndexer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq AckedIndexer AckedIndexer.underlying
 
-attribute [instance] AckedIndexer_Assumptions.AckedIndexer_underlying
+attribute [instance] AckedIndexer.TypeAssumptions.underlying
 
 namespace mapAckIndexer
 abbrev t [FfiSyntax] : Type := map.t
 end mapAckIndexer
 
-@[reducible] def «mapAckIndexerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def mapAckIndexer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 Index')
 
-class mapAckIndexer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  mapAckIndexer_underlying : go.UnderlyingDirectedEq mapAckIndexer «mapAckIndexerⁱᵐᵖˡ»
-  mapAckIndexer_AckedIndex_unfold : MethodUnfold mapAckIndexer go!"AckedIndex" «mapAckIndexer__AckedIndexⁱᵐᵖˡ»
-  mapAckIndexer'ptr_AckedIndex_unfold : MethodUnfold (go.GoType.PointerType mapAckIndexer) go!"AckedIndex" (LamV "$r"
+class mapAckIndexer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq mapAckIndexer mapAckIndexer.underlying
+  AckedIndex_unfold : MethodUnfold mapAckIndexer go!"AckedIndex" mapAckIndexer.AckedIndex.impl
+  ptr_AckedIndex_unfold : MethodUnfold (go.GoType.PointerType mapAckIndexer) go!"AckedIndex" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve mapAckIndexer go!"AckedIndex"))) (App (Val (GoInstruction (GoLoad mapAckIndexer))) (Var "$r"))))
 
-attribute [instance] mapAckIndexer_Assumptions.mapAckIndexer_underlying
-  mapAckIndexer_Assumptions.mapAckIndexer_AckedIndex_unfold
-  mapAckIndexer_Assumptions.mapAckIndexer'ptr_AckedIndex_unfold
+attribute [instance] mapAckIndexer.TypeAssumptions.underlying
+  mapAckIndexer.TypeAssumptions.AckedIndex_unfold
+  mapAckIndexer.TypeAssumptions.ptr_AckedIndex_unfold
 
 namespace VoteResult
 abbrev t [FfiSyntax] : Type := w8
 end VoteResult
 
-@[reducible] def «VoteResultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def VoteResult.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint8
 
-class VoteResult_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  VoteResult_underlying : go.UnderlyingDirectedEq VoteResult «VoteResultⁱᵐᵖˡ»
-  VoteResult_String_unfold : MethodUnfold VoteResult go!"String" «VoteResult__Stringⁱᵐᵖˡ»
-  VoteResult'ptr_String_unfold : MethodUnfold (go.GoType.PointerType VoteResult) go!"String" (LamV "$r"
+class VoteResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq VoteResult VoteResult.underlying
+  String_unfold : MethodUnfold VoteResult go!"String" VoteResult.String.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType VoteResult) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve VoteResult go!"String"))) (App (Val (GoInstruction (GoLoad VoteResult))) (Var "$r"))))
 
-attribute [instance] VoteResult_Assumptions.VoteResult_underlying
-  VoteResult_Assumptions.VoteResult_String_unfold
-  VoteResult_Assumptions.VoteResult'ptr_String_unfold
+attribute [instance] VoteResult.TypeAssumptions.underlying
+  VoteResult.TypeAssumptions.String_unfold
+  VoteResult.TypeAssumptions.ptr_String_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  JointConfig_instance : JointConfig_Assumptions
-  MajorityConfig_instance : MajorityConfig_Assumptions
-  tup_instance : tup_Assumptions
-  Index_instance : Index_Assumptions
-  AckedIndexer_instance : AckedIndexer_Assumptions
-  mapAckIndexer_instance : mapAckIndexer_Assumptions
-  VoteResult_instance : VoteResult_Assumptions
+  JointConfig_instance : JointConfig.TypeAssumptions
+  MajorityConfig_instance : MajorityConfig.TypeAssumptions
+  tup_instance : tup.TypeAssumptions
+  Index_instance : Index.TypeAssumptions
+  AckedIndexer_instance : AckedIndexer.TypeAssumptions
+  mapAckIndexer_instance : mapAckIndexer.TypeAssumptions
+  VoteResult_instance : VoteResult.TypeAssumptions
   import_cmp_Assumption : _root_.Perennial.cmp.Assumptions
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
   import_math_Assumption : _root_.Perennial.math.Assumptions

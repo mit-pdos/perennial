@@ -22,16 +22,16 @@ section grove
 variable [GoGlobalContext]
 
 -- These are pointers in Go.
-def «Listenerⁱᵐᵖˡ» : go.GoType := «unsafe».Pointer
-def «Connectionⁱᵐᵖˡ» : go.GoType := «unsafe».Pointer
+def Listener.impl : go.GoType := «unsafe».Pointer
+def Connection.impl : go.GoType := «unsafe».Pointer
 def Address : go.GoType := go.uint64
 
 /-- Type: func(uint64) Listener -/
-def «Listenⁱᵐᵖˡ» : val :=
+def Listen.impl : val :=
   λ: "e", Alloc (ExternalOp GroveOp.ListenOp "e")
 
 /-- Type: func(uint64) (bool, Connection) -/
-def «Connectⁱᵐᵖˡ» : val :=
+def Connect.impl : val :=
   λ: "e",
     let: "c" := ExternalOp GroveOp.ConnectOp "e" in
     let: "err" := Fst "c" in
@@ -39,16 +39,16 @@ def «Connectⁱᵐᵖˡ» : val :=
     ("err", "socket")
 
 /-- Type: func(Listener) Connection -/
-def «Acceptⁱᵐᵖˡ» : val :=
+def Accept.impl : val :=
   λ: "e", Alloc (ExternalOp GroveOp.AcceptOp (Load "e"))
 
 /-- Type: func(Connection, []byte) -/
-def «Sendⁱᵐᵖˡ» : val :=
+def Send.impl : val :=
   λ: "e" "m", ExternalOp GroveOp.SendOp (Load "e", (IndexRef (go.SliceType go.byte) ("m", #(W64 0)),
                                           FuncResolve go.len [go.SliceType go.byte] "m"))
 
 /-- Type: func(Connection) (bool, []byte) -/
-def «Receiveⁱᵐᵖˡ» : val :=
+def Receive.impl : val :=
   λ: "e",
     let: "r" := ExternalOp GroveOp.RecvOp (Load "e") in
     let: "err" := Fst "r" in
@@ -61,7 +61,7 @@ def «Receiveⁱᵐᵖˡ» : val :=
 /-- FileRead pretends that the operation can never fail.
 The Go implementation will accordingly abort the program if an I/O error
 occurs. -/
-def «FileReadⁱᵐᵖˡ» : val :=
+def FileRead.impl : val :=
   λ: "f",
     let: "ret" := ExternalOp GroveOp.FileReadOp "f" in
     let: "err" := Fst "ret" in
@@ -74,7 +74,7 @@ def «FileReadⁱᵐᵖˡ» : val :=
 /-- FileWrite pretends that the operation can never fail.
 The Go implementation will accordingly abort the program if an I/O error
 occurs. -/
-def «FileWriteⁱᵐᵖˡ» : val :=
+def FileWrite.impl : val :=
   λ: "f" "c",
     let: "err" := ExternalOp GroveOp.FileWriteOp ("f", (IndexRef (go.SliceType go.byte) ("c", #(W64 0)),
                                                FuncResolve go.len [go.SliceType go.byte] "c")) in
@@ -84,7 +84,7 @@ def «FileWriteⁱᵐᵖˡ» : val :=
 /-- FileAppend pretends that the operation can never fail.
 The Go implementation will accordingly abort the program if an I/O error
 occurs. -/
-def «FileAppendⁱᵐᵖˡ» : val :=
+def FileAppend.impl : val :=
   λ: "f" "c",
     let: "err" := ExternalOp GroveOp.FileAppendOp ("f", (IndexRef (go.SliceType go.byte) ("c", #(W64 0)),
                                                FuncResolve go.len [go.SliceType go.byte] "c")) in
@@ -92,11 +92,11 @@ def «FileAppendⁱᵐᵖˡ» : val :=
     #()
 
 /-- Type: func() uint64 -/
-def «GetTSCⁱᵐᵖˡ» : val :=
+def GetTSC.impl : val :=
   λ: <>, ExternalOp GroveOp.GetTscOp #()
 
 /-- Type: func() (uint64, uint64) -/
-def «GetTimeRangeⁱᵐᵖˡ» : val :=
+def GetTimeRange.impl : val :=
   λ: <>, ExternalOp GroveOp.GetTimeRangeOp #()
 
 end grove

@@ -39,7 +39,7 @@ instance KeyValue_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance KeyValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.mvccpb.KeyValue.t go_etcd_io.etcd.api.v3.mvccpb.«KeyValueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.mvccpb.KeyValue.t go_etcd_io.etcd.api.v3.mvccpb.KeyValue.underlying := by
   solve_into_val_typed_struct
 
 instance KeyValue_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.KeyValue.t) (dq : DFrac) :
@@ -212,7 +212,7 @@ instance Event_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Event_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.mvccpb.Event.t go_etcd_io.etcd.api.v3.mvccpb.«Eventⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.mvccpb.Event.t go_etcd_io.etcd.api.v3.mvccpb.Event.underlying := by
   solve_into_val_typed_struct
 
 instance Event_access_load_Type (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.Event.t) (dq : DFrac) :

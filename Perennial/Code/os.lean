@@ -149,25 +149,25 @@ attribute [irreducible] fileStat
 
 axiom DirEntry [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «dirInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom dirInfo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom PathError [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom syscallErrorType [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Processⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Process.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «processHandleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom processHandle.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «ProcAttrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom ProcAttr.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «ProcessStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom ProcessState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «fileⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom file.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «unixDirentⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom unixDirent.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «rootⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom root.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 @[reducible] def sysfdType [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
@@ -176,7 +176,7 @@ axiom FileInfo [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom FileMode [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «fileStatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom fileStat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom readdirName [FfiSyntax] [GoGlobalContext] : val
 
@@ -281,102 +281,102 @@ axiom ModePerm [FfiSyntax] [GoGlobalContext] : val
 noncomputable def dirBufPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.dirBufPool"
 
-axiom dirBufPool'init [FfiSyntax] [GoGlobalContext] : val
+axiom dirBufPool.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrInvalid [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrInvalid"
 
-axiom ErrInvalid'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrInvalid.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrPermission [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrPermission"
 
-axiom ErrPermission'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrPermission.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrExist [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrExist"
 
-axiom ErrExist'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrExist.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrNotExist [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrNotExist"
 
-axiom ErrNotExist'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrNotExist.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrClosed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrClosed"
 
-axiom ErrClosed'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrClosed.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrNoDeadline [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrNoDeadline"
 
-axiom ErrNoDeadline'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrNoDeadline.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrDeadlineExceeded [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrDeadlineExceeded"
 
-axiom ErrDeadlineExceeded'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrDeadlineExceeded.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrProcessDone [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrProcessDone"
 
-axiom ErrProcessDone'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrProcessDone.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def errProcessReleased [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errProcessReleased"
 
-axiom errProcessReleased'init [FfiSyntax] [GoGlobalContext] : val
+axiom errProcessReleased.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrNoHandle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrNoHandle"
 
-axiom ErrNoHandle'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrNoHandle.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Interrupt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Interrupt"
 
-axiom Interrupt'init [FfiSyntax] [GoGlobalContext] : val
+axiom Interrupt.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Kill [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Kill"
 
-axiom Kill'init [FfiSyntax] [GoGlobalContext] : val
+axiom Kill.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Stdin [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Stdin"
 
-axiom Stdin'init [FfiSyntax] [GoGlobalContext] : val
+axiom Stdin.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Stdout [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Stdout"
 
-axiom Stdout'init [FfiSyntax] [GoGlobalContext] : val
+axiom Stdout.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Stderr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Stderr"
 
-axiom Stderr'init [FfiSyntax] [GoGlobalContext] : val
+axiom Stderr.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def errWriteAtInAppendMode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errWriteAtInAppendMode"
 
-axiom errWriteAtInAppendMode'init [FfiSyntax] [GoGlobalContext] : val
+axiom errWriteAtInAppendMode.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def errPathEscapes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errPathEscapes"
 
-axiom errPathEscapes'init [FfiSyntax] [GoGlobalContext] : val
+axiom errPathEscapes.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def lstat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.lstat"
 
-axiom lstat'init [FfiSyntax] [GoGlobalContext] : val
+axiom lstat.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def checkWrapErr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.checkWrapErr"
 
-axiom checkWrapErr'init [FfiSyntax] [GoGlobalContext] : val
+axiom checkWrapErr.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def getwdCache [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.getwdCache"
@@ -384,7 +384,7 @@ noncomputable def getwdCache [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def checkPidfdOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.checkPidfdOnce"
 
-axiom checkPidfdOnce'init [FfiSyntax] [GoGlobalContext] : val
+axiom checkPidfdOnce.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Args [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Args"
@@ -392,17 +392,17 @@ noncomputable def Args [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def errPatternHasSeparator [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errPatternHasSeparator"
 
-axiom errPatternHasSeparator'init [FfiSyntax] [GoGlobalContext] : val
+axiom errPatternHasSeparator.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def pollCopyFileRange [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.pollCopyFileRange"
 
-axiom pollCopyFileRange'init [FfiSyntax] [GoGlobalContext] : val
+axiom pollCopyFileRange.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def pollSplice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.pollSplice"
 
-axiom pollSplice'init [FfiSyntax] [GoGlobalContext] : val
+axiom pollSplice.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ReadDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ReadDir"
@@ -944,7 +944,7 @@ noncomputable def tryLimitedReader [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.os where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -978,73 +978,73 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val pollSplice'init) (Val #())))))
+  (App (Val pollSplice.init) (Val #())))))
   (App (Val doExecute)
-  (App (Val pollCopyFileRange'init) (Val #()))))))
+  (App (Val pollCopyFileRange.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val errPatternHasSeparator'init) (Val #()))))))
+  (App (Val errPatternHasSeparator.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val checkPidfdOnce'init) (Val #()))))))
+  (App (Val checkPidfdOnce.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val checkWrapErr'init) (Val #()))))))
+  (App (Val checkWrapErr.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val lstat'init) (Val #()))))))
+  (App (Val lstat.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val errPathEscapes'init) (Val #()))))))
+  (App (Val errPathEscapes.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val errWriteAtInAppendMode'init) (Val #()))))))
+  (App (Val errWriteAtInAppendMode.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val Stderr'init) (Val #()))))))
+  (App (Val Stderr.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val Stdout'init) (Val #()))))))
+  (App (Val Stdout.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val Stdin'init) (Val #()))))))
+  (App (Val Stdin.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val Kill'init) (Val #()))))))
+  (App (Val Kill.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val Interrupt'init) (Val #()))))))
+  (App (Val Interrupt.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrNoHandle'init) (Val #()))))))
+  (App (Val ErrNoHandle.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val errProcessReleased'init) (Val #()))))))
+  (App (Val errProcessReleased.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrProcessDone'init) (Val #()))))))
+  (App (Val ErrProcessDone.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrDeadlineExceeded'init) (Val #()))))))
+  (App (Val ErrDeadlineExceeded.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrNoDeadline'init) (Val #()))))))
+  (App (Val ErrNoDeadline.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrClosed'init) (Val #()))))))
+  (App (Val ErrClosed.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrNotExist'init) (Val #()))))))
+  (App (Val ErrNotExist.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrExist'init) (Val #()))))))
+  (App (Val ErrExist.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrPermission'init) (Val #()))))))
+  (App (Val ErrPermission.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrInvalid'init) (Val #()))))))
+  (App (Val ErrInvalid.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val dirBufPool'init) (Val #()))))))))
+  (App (Val dirBufPool.init) (Val #()))))))))
 
 namespace readdirMode
 abbrev t [FfiSyntax] : Type := w64
 end readdirMode
 
-@[reducible] def «readdirModeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def readdirMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class readdirMode_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  readdirMode_underlying : go.UnderlyingDirectedEq readdirMode «readdirModeⁱᵐᵖˡ»
+class readdirMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq readdirMode readdirMode.underlying
 
-attribute [instance] readdirMode_Assumptions.readdirMode_underlying
+attribute [instance] readdirMode.TypeAssumptions.underlying
 
 namespace dirInfo
 axiom t : Type
@@ -1052,26 +1052,26 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end dirInfo
 
-class dirInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  dirInfo_type_repr : go.TypeReprUnderlying «dirInfoⁱᵐᵖˡ» dirInfo.t
-  dirInfo_underlying : go.UnderlyingDirectedEq dirInfo «dirInfoⁱᵐᵖˡ»
-  «dirInfoⁱᵐᵖˡ_underlying» : go.IsUnderlying «dirInfoⁱᵐᵖˡ» «dirInfoⁱᵐᵖˡ»
+class dirInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying dirInfo.underlying dirInfo.t
+  underlying : go.UnderlyingDirectedEq dirInfo dirInfo.underlying
+  isUnderlying : go.IsUnderlying dirInfo.underlying dirInfo.underlying
 
-attribute [instance] dirInfo_Assumptions.dirInfo_type_repr
-  dirInfo_Assumptions.dirInfo_underlying
-  dirInfo_Assumptions.«dirInfoⁱᵐᵖˡ_underlying»
+attribute [instance] dirInfo.TypeAssumptions.type_repr
+  dirInfo.TypeAssumptions.underlying
+  dirInfo.TypeAssumptions.isUnderlying
 
 namespace timeout
 abbrev t [FfiSyntax] : Type := interface.t
 end timeout
 
-@[reducible] def «timeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def timeout.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Timeout" (go.signature.Signature [] false [go.bool]))])
 
-class timeout_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  timeout_underlying : go.UnderlyingDirectedEq timeout «timeoutⁱᵐᵖˡ»
+class timeout.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq timeout timeout.underlying
 
-attribute [instance] timeout_Assumptions.timeout_underlying
+attribute [instance] timeout.TypeAssumptions.underlying
 
 namespace SyscallError
 structure t [FfiSyntax] where
@@ -1083,46 +1083,46 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end SyscallError
 
-@[reducible] def SyscallError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SyscallError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Syscall" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] def SyscallError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  SyscallError'fds_unsealed
+@[irreducible] def SyscallError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  SyscallError.fieldsUnsealed
 
 instance equals_unfold_SyscallError [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold SyscallError'fds SyscallError'fds_unsealed :=
-  ⟨by unfold SyscallError'fds; rfl⟩
+    EqualsUnfold SyscallError.fields SyscallError.fieldsUnsealed :=
+  ⟨by unfold SyscallError.fields; rfl⟩
 
-@[reducible] def «SyscallErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType SyscallError'fds)
+@[reducible] def SyscallError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SyscallError.fields)
 
-class SyscallError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  SyscallError_type_repr : go.TypeReprUnderlying «SyscallErrorⁱᵐᵖˡ» SyscallError.t
-  SyscallError_underlying : go.UnderlyingDirectedEq SyscallError «SyscallErrorⁱᵐᵖˡ»
-  SyscallError_get_Syscall : ∀ (x : SyscallError.t), go.IsGoStepPureDetTagged under (StructFieldGet «SyscallErrorⁱᵐᵖˡ» go!"Syscall") #x (Val #(x.Syscall'))
-  SyscallError_set_Syscall : ∀ (x : SyscallError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «SyscallErrorⁱᵐᵖˡ» go!"Syscall") (PairV #x #y) (Val #(({ x with Syscall' := y } : SyscallError.t)))
-  SyscallError_get_Err : ∀ (x : SyscallError.t), go.IsGoStepPureDetTagged under (StructFieldGet «SyscallErrorⁱᵐᵖˡ» go!"Err") #x (Val #(x.Err'))
-  SyscallError_set_Err : ∀ (x : SyscallError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet «SyscallErrorⁱᵐᵖˡ» go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : SyscallError.t)))
+class SyscallError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying SyscallError.underlying SyscallError.t
+  underlying : go.UnderlyingDirectedEq SyscallError SyscallError.underlying
+  get_Syscall : ∀ (x : SyscallError.t), go.IsGoStepPureDetTagged under (StructFieldGet SyscallError.underlying go!"Syscall") #x (Val #(x.Syscall'))
+  set_Syscall : ∀ (x : SyscallError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SyscallError.underlying go!"Syscall") (PairV #x #y) (Val #(({ x with Syscall' := y } : SyscallError.t)))
+  get_Err : ∀ (x : SyscallError.t), go.IsGoStepPureDetTagged under (StructFieldGet SyscallError.underlying go!"Err") #x (Val #(x.Err'))
+  set_Err : ∀ (x : SyscallError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet SyscallError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : SyscallError.t)))
 
-attribute [instance] SyscallError_Assumptions.SyscallError_type_repr
-  SyscallError_Assumptions.SyscallError_underlying
-  SyscallError_Assumptions.SyscallError_get_Syscall
-  SyscallError_Assumptions.SyscallError_set_Syscall
-  SyscallError_Assumptions.SyscallError_get_Err
-  SyscallError_Assumptions.SyscallError_set_Err
+attribute [instance] SyscallError.TypeAssumptions.type_repr
+  SyscallError.TypeAssumptions.underlying
+  SyscallError.TypeAssumptions.get_Syscall
+  SyscallError.TypeAssumptions.set_Syscall
+  SyscallError.TypeAssumptions.get_Err
+  SyscallError.TypeAssumptions.set_Err
 
 namespace processStatus
 abbrev t [FfiSyntax] : Type := w32
 end processStatus
 
-@[reducible] def «processStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def processStatus.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
-class processStatus_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  processStatus_underlying : go.UnderlyingDirectedEq processStatus «processStatusⁱᵐᵖˡ»
+class processStatus.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq processStatus processStatus.underlying
 
-attribute [instance] processStatus_Assumptions.processStatus_underlying
+attribute [instance] processStatus.TypeAssumptions.underlying
 
 namespace Process
 axiom t : Type
@@ -1130,14 +1130,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Process
 
-class Process_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Process_type_repr : go.TypeReprUnderlying «Processⁱᵐᵖˡ» Process.t
-  Process_underlying : go.UnderlyingDirectedEq Process «Processⁱᵐᵖˡ»
-  «Processⁱᵐᵖˡ_underlying» : go.IsUnderlying «Processⁱᵐᵖˡ» «Processⁱᵐᵖˡ»
+class Process.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Process.underlying Process.t
+  underlying : go.UnderlyingDirectedEq Process Process.underlying
+  isUnderlying : go.IsUnderlying Process.underlying Process.underlying
 
-attribute [instance] Process_Assumptions.Process_type_repr
-  Process_Assumptions.Process_underlying
-  Process_Assumptions.«Processⁱᵐᵖˡ_underlying»
+attribute [instance] Process.TypeAssumptions.type_repr
+  Process.TypeAssumptions.underlying
+  Process.TypeAssumptions.isUnderlying
 
 namespace processHandle
 axiom t : Type
@@ -1145,14 +1145,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end processHandle
 
-class processHandle_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  processHandle_type_repr : go.TypeReprUnderlying «processHandleⁱᵐᵖˡ» processHandle.t
-  processHandle_underlying : go.UnderlyingDirectedEq processHandle «processHandleⁱᵐᵖˡ»
-  «processHandleⁱᵐᵖˡ_underlying» : go.IsUnderlying «processHandleⁱᵐᵖˡ» «processHandleⁱᵐᵖˡ»
+class processHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying processHandle.underlying processHandle.t
+  underlying : go.UnderlyingDirectedEq processHandle processHandle.underlying
+  isUnderlying : go.IsUnderlying processHandle.underlying processHandle.underlying
 
-attribute [instance] processHandle_Assumptions.processHandle_type_repr
-  processHandle_Assumptions.processHandle_underlying
-  processHandle_Assumptions.«processHandleⁱᵐᵖˡ_underlying»
+attribute [instance] processHandle.TypeAssumptions.type_repr
+  processHandle.TypeAssumptions.underlying
+  processHandle.TypeAssumptions.isUnderlying
 
 namespace ProcAttr
 axiom t : Type
@@ -1160,26 +1160,26 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end ProcAttr
 
-class ProcAttr_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ProcAttr_type_repr : go.TypeReprUnderlying «ProcAttrⁱᵐᵖˡ» ProcAttr.t
-  ProcAttr_underlying : go.UnderlyingDirectedEq ProcAttr «ProcAttrⁱᵐᵖˡ»
-  «ProcAttrⁱᵐᵖˡ_underlying» : go.IsUnderlying «ProcAttrⁱᵐᵖˡ» «ProcAttrⁱᵐᵖˡ»
+class ProcAttr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ProcAttr.underlying ProcAttr.t
+  underlying : go.UnderlyingDirectedEq ProcAttr ProcAttr.underlying
+  isUnderlying : go.IsUnderlying ProcAttr.underlying ProcAttr.underlying
 
-attribute [instance] ProcAttr_Assumptions.ProcAttr_type_repr
-  ProcAttr_Assumptions.ProcAttr_underlying
-  ProcAttr_Assumptions.«ProcAttrⁱᵐᵖˡ_underlying»
+attribute [instance] ProcAttr.TypeAssumptions.type_repr
+  ProcAttr.TypeAssumptions.underlying
+  ProcAttr.TypeAssumptions.isUnderlying
 
 namespace Signal
 abbrev t [FfiSyntax] : Type := interface.t
 end Signal
 
-@[reducible] def «Signalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Signal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Signal" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-class Signal_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Signal_underlying : go.UnderlyingDirectedEq Signal «Signalⁱᵐᵖˡ»
+class Signal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Signal Signal.underlying
 
-attribute [instance] Signal_Assumptions.Signal_underlying
+attribute [instance] Signal.TypeAssumptions.underlying
 
 namespace ProcessState
 axiom t : Type
@@ -1187,14 +1187,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end ProcessState
 
-class ProcessState_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ProcessState_type_repr : go.TypeReprUnderlying «ProcessStateⁱᵐᵖˡ» ProcessState.t
-  ProcessState_underlying : go.UnderlyingDirectedEq ProcessState «ProcessStateⁱᵐᵖˡ»
-  «ProcessStateⁱᵐᵖˡ_underlying» : go.IsUnderlying «ProcessStateⁱᵐᵖˡ» «ProcessStateⁱᵐᵖˡ»
+class ProcessState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying ProcessState.underlying ProcessState.t
+  underlying : go.UnderlyingDirectedEq ProcessState ProcessState.underlying
+  isUnderlying : go.IsUnderlying ProcessState.underlying ProcessState.underlying
 
-attribute [instance] ProcessState_Assumptions.ProcessState_type_repr
-  ProcessState_Assumptions.ProcessState_underlying
-  ProcessState_Assumptions.«ProcessStateⁱᵐᵖˡ_underlying»
+attribute [instance] ProcessState.TypeAssumptions.type_repr
+  ProcessState.TypeAssumptions.underlying
+  ProcessState.TypeAssumptions.isUnderlying
 
 namespace LinkError
 structure t [FfiSyntax] where
@@ -1208,44 +1208,44 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end LinkError
 
-@[reducible] def LinkError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LinkError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Op" go.string),
 (go.field_decl.FieldDecl go!"Old" go.string),
 (go.field_decl.FieldDecl go!"New" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] def LinkError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  LinkError'fds_unsealed
+@[irreducible] def LinkError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  LinkError.fieldsUnsealed
 
 instance equals_unfold_LinkError [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold LinkError'fds LinkError'fds_unsealed :=
-  ⟨by unfold LinkError'fds; rfl⟩
+    EqualsUnfold LinkError.fields LinkError.fieldsUnsealed :=
+  ⟨by unfold LinkError.fields; rfl⟩
 
-@[reducible] def «LinkErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType LinkError'fds)
+@[reducible] def LinkError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType LinkError.fields)
 
-class LinkError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LinkError_type_repr : go.TypeReprUnderlying «LinkErrorⁱᵐᵖˡ» LinkError.t
-  LinkError_underlying : go.UnderlyingDirectedEq LinkError «LinkErrorⁱᵐᵖˡ»
-  LinkError_get_Op : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet «LinkErrorⁱᵐᵖˡ» go!"Op") #x (Val #(x.Op'))
-  LinkError_set_Op : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : LinkError.t)))
-  LinkError_get_Old : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet «LinkErrorⁱᵐᵖˡ» go!"Old") #x (Val #(x.Old'))
-  LinkError_set_Old : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"Old") (PairV #x #y) (Val #(({ x with Old' := y } : LinkError.t)))
-  LinkError_get_New : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet «LinkErrorⁱᵐᵖˡ» go!"New") #x (Val #(x.New'))
-  LinkError_set_New : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"New") (PairV #x #y) (Val #(({ x with New' := y } : LinkError.t)))
-  LinkError_get_Err : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet «LinkErrorⁱᵐᵖˡ» go!"Err") #x (Val #(x.Err'))
-  LinkError_set_Err : ∀ (x : LinkError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : LinkError.t)))
+class LinkError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying LinkError.underlying LinkError.t
+  underlying : go.UnderlyingDirectedEq LinkError LinkError.underlying
+  get_Op : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"Op") #x (Val #(x.Op'))
+  set_Op : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : LinkError.t)))
+  get_Old : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"Old") #x (Val #(x.Old'))
+  set_Old : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"Old") (PairV #x #y) (Val #(({ x with Old' := y } : LinkError.t)))
+  get_New : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"New") #x (Val #(x.New'))
+  set_New : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : LinkError.t)))
+  get_Err : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"Err") #x (Val #(x.Err'))
+  set_Err : ∀ (x : LinkError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : LinkError.t)))
 
-attribute [instance] LinkError_Assumptions.LinkError_type_repr
-  LinkError_Assumptions.LinkError_underlying
-  LinkError_Assumptions.LinkError_get_Op
-  LinkError_Assumptions.LinkError_set_Op
-  LinkError_Assumptions.LinkError_get_Old
-  LinkError_Assumptions.LinkError_set_Old
-  LinkError_Assumptions.LinkError_get_New
-  LinkError_Assumptions.LinkError_set_New
-  LinkError_Assumptions.LinkError_get_Err
-  LinkError_Assumptions.LinkError_set_Err
+attribute [instance] LinkError.TypeAssumptions.type_repr
+  LinkError.TypeAssumptions.underlying
+  LinkError.TypeAssumptions.get_Op
+  LinkError.TypeAssumptions.set_Op
+  LinkError.TypeAssumptions.get_Old
+  LinkError.TypeAssumptions.set_Old
+  LinkError.TypeAssumptions.get_New
+  LinkError.TypeAssumptions.set_New
+  LinkError.TypeAssumptions.get_Err
+  LinkError.TypeAssumptions.set_Err
 
 namespace noReadFrom
 structure t [FfiSyntax] where
@@ -1255,25 +1255,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noReadFrom
 
-@[reducible] def noReadFrom'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noReadFrom.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noReadFrom'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  noReadFrom'fds_unsealed
+@[irreducible] def noReadFrom.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  noReadFrom.fieldsUnsealed
 
 instance equals_unfold_noReadFrom [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold noReadFrom'fds noReadFrom'fds_unsealed :=
-  ⟨by unfold noReadFrom'fds; rfl⟩
+    EqualsUnfold noReadFrom.fields noReadFrom.fieldsUnsealed :=
+  ⟨by unfold noReadFrom.fields; rfl⟩
 
-@[reducible] def «noReadFromⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType noReadFrom'fds)
+@[reducible] def noReadFrom.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType noReadFrom.fields)
 
-class noReadFrom_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  noReadFrom_type_repr : go.TypeReprUnderlying «noReadFromⁱᵐᵖˡ» noReadFrom.t
-  noReadFrom_underlying : go.UnderlyingDirectedEq noReadFrom «noReadFromⁱᵐᵖˡ»
+class noReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying noReadFrom.underlying noReadFrom.t
+  underlying : go.UnderlyingDirectedEq noReadFrom noReadFrom.underlying
 
-attribute [instance] noReadFrom_Assumptions.noReadFrom_type_repr
-  noReadFrom_Assumptions.noReadFrom_underlying
+attribute [instance] noReadFrom.TypeAssumptions.type_repr
+  noReadFrom.TypeAssumptions.underlying
 
 namespace fileWithoutReadFrom
 structure t [FfiSyntax] where
@@ -1285,34 +1285,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end fileWithoutReadFrom
 
-@[reducible] def fileWithoutReadFrom'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def fileWithoutReadFrom.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"noReadFrom" noReadFrom),
 (go.field_decl.EmbeddedField go!"File" (go.GoType.PointerType File))]
 
-@[irreducible] def fileWithoutReadFrom'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  fileWithoutReadFrom'fds_unsealed
+@[irreducible] def fileWithoutReadFrom.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  fileWithoutReadFrom.fieldsUnsealed
 
 instance equals_unfold_fileWithoutReadFrom [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold fileWithoutReadFrom'fds fileWithoutReadFrom'fds_unsealed :=
-  ⟨by unfold fileWithoutReadFrom'fds; rfl⟩
+    EqualsUnfold fileWithoutReadFrom.fields fileWithoutReadFrom.fieldsUnsealed :=
+  ⟨by unfold fileWithoutReadFrom.fields; rfl⟩
 
-@[reducible] def «fileWithoutReadFromⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType fileWithoutReadFrom'fds)
+@[reducible] def fileWithoutReadFrom.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType fileWithoutReadFrom.fields)
 
-class fileWithoutReadFrom_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  fileWithoutReadFrom_type_repr : go.TypeReprUnderlying «fileWithoutReadFromⁱᵐᵖˡ» fileWithoutReadFrom.t
-  fileWithoutReadFrom_underlying : go.UnderlyingDirectedEq fileWithoutReadFrom «fileWithoutReadFromⁱᵐᵖˡ»
-  fileWithoutReadFrom_get_noReadFrom : ∀ (x : fileWithoutReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldGet «fileWithoutReadFromⁱᵐᵖˡ» go!"noReadFrom") #x (Val #(x.noReadFrom'))
-  fileWithoutReadFrom_set_noReadFrom : ∀ (x : fileWithoutReadFrom.t) (y : noReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutReadFromⁱᵐᵖˡ» go!"noReadFrom") (PairV #x #y) (Val #(({ x with noReadFrom' := y } : fileWithoutReadFrom.t)))
-  fileWithoutReadFrom_get_File : ∀ (x : fileWithoutReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldGet «fileWithoutReadFromⁱᵐᵖˡ» go!"File") #x (Val #(x.File'))
-  fileWithoutReadFrom_set_File : ∀ (x : fileWithoutReadFrom.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutReadFromⁱᵐᵖˡ» go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutReadFrom.t)))
+class fileWithoutReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying fileWithoutReadFrom.underlying fileWithoutReadFrom.t
+  underlying : go.UnderlyingDirectedEq fileWithoutReadFrom fileWithoutReadFrom.underlying
+  get_noReadFrom : ∀ (x : fileWithoutReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutReadFrom.underlying go!"noReadFrom") #x (Val #(x.noReadFrom'))
+  set_noReadFrom : ∀ (x : fileWithoutReadFrom.t) (y : noReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutReadFrom.underlying go!"noReadFrom") (PairV #x #y) (Val #(({ x with noReadFrom' := y } : fileWithoutReadFrom.t)))
+  get_File : ∀ (x : fileWithoutReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutReadFrom.underlying go!"File") #x (Val #(x.File'))
+  set_File : ∀ (x : fileWithoutReadFrom.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutReadFrom.underlying go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutReadFrom.t)))
 
-attribute [instance] fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_type_repr
-  fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_underlying
-  fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_get_noReadFrom
-  fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_set_noReadFrom
-  fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_get_File
-  fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_set_File
+attribute [instance] fileWithoutReadFrom.TypeAssumptions.type_repr
+  fileWithoutReadFrom.TypeAssumptions.underlying
+  fileWithoutReadFrom.TypeAssumptions.get_noReadFrom
+  fileWithoutReadFrom.TypeAssumptions.set_noReadFrom
+  fileWithoutReadFrom.TypeAssumptions.get_File
+  fileWithoutReadFrom.TypeAssumptions.set_File
 
 namespace noWriteTo
 structure t [FfiSyntax] where
@@ -1322,25 +1322,25 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noWriteTo
 
-@[reducible] def noWriteTo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noWriteTo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noWriteTo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  noWriteTo'fds_unsealed
+@[irreducible] def noWriteTo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  noWriteTo.fieldsUnsealed
 
 instance equals_unfold_noWriteTo [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold noWriteTo'fds noWriteTo'fds_unsealed :=
-  ⟨by unfold noWriteTo'fds; rfl⟩
+    EqualsUnfold noWriteTo.fields noWriteTo.fieldsUnsealed :=
+  ⟨by unfold noWriteTo.fields; rfl⟩
 
-@[reducible] def «noWriteToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType noWriteTo'fds)
+@[reducible] def noWriteTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType noWriteTo.fields)
 
-class noWriteTo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  noWriteTo_type_repr : go.TypeReprUnderlying «noWriteToⁱᵐᵖˡ» noWriteTo.t
-  noWriteTo_underlying : go.UnderlyingDirectedEq noWriteTo «noWriteToⁱᵐᵖˡ»
+class noWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying noWriteTo.underlying noWriteTo.t
+  underlying : go.UnderlyingDirectedEq noWriteTo noWriteTo.underlying
 
-attribute [instance] noWriteTo_Assumptions.noWriteTo_type_repr
-  noWriteTo_Assumptions.noWriteTo_underlying
+attribute [instance] noWriteTo.TypeAssumptions.type_repr
+  noWriteTo.TypeAssumptions.underlying
 
 namespace fileWithoutWriteTo
 structure t [FfiSyntax] where
@@ -1352,46 +1352,46 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end fileWithoutWriteTo
 
-@[reducible] def fileWithoutWriteTo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def fileWithoutWriteTo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"noWriteTo" noWriteTo),
 (go.field_decl.EmbeddedField go!"File" (go.GoType.PointerType File))]
 
-@[irreducible] def fileWithoutWriteTo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  fileWithoutWriteTo'fds_unsealed
+@[irreducible] def fileWithoutWriteTo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  fileWithoutWriteTo.fieldsUnsealed
 
 instance equals_unfold_fileWithoutWriteTo [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold fileWithoutWriteTo'fds fileWithoutWriteTo'fds_unsealed :=
-  ⟨by unfold fileWithoutWriteTo'fds; rfl⟩
+    EqualsUnfold fileWithoutWriteTo.fields fileWithoutWriteTo.fieldsUnsealed :=
+  ⟨by unfold fileWithoutWriteTo.fields; rfl⟩
 
-@[reducible] def «fileWithoutWriteToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType fileWithoutWriteTo'fds)
+@[reducible] def fileWithoutWriteTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType fileWithoutWriteTo.fields)
 
-class fileWithoutWriteTo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  fileWithoutWriteTo_type_repr : go.TypeReprUnderlying «fileWithoutWriteToⁱᵐᵖˡ» fileWithoutWriteTo.t
-  fileWithoutWriteTo_underlying : go.UnderlyingDirectedEq fileWithoutWriteTo «fileWithoutWriteToⁱᵐᵖˡ»
-  fileWithoutWriteTo_get_noWriteTo : ∀ (x : fileWithoutWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldGet «fileWithoutWriteToⁱᵐᵖˡ» go!"noWriteTo") #x (Val #(x.noWriteTo'))
-  fileWithoutWriteTo_set_noWriteTo : ∀ (x : fileWithoutWriteTo.t) (y : noWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutWriteToⁱᵐᵖˡ» go!"noWriteTo") (PairV #x #y) (Val #(({ x with noWriteTo' := y } : fileWithoutWriteTo.t)))
-  fileWithoutWriteTo_get_File : ∀ (x : fileWithoutWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldGet «fileWithoutWriteToⁱᵐᵖˡ» go!"File") #x (Val #(x.File'))
-  fileWithoutWriteTo_set_File : ∀ (x : fileWithoutWriteTo.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutWriteToⁱᵐᵖˡ» go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutWriteTo.t)))
+class fileWithoutWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying fileWithoutWriteTo.underlying fileWithoutWriteTo.t
+  underlying : go.UnderlyingDirectedEq fileWithoutWriteTo fileWithoutWriteTo.underlying
+  get_noWriteTo : ∀ (x : fileWithoutWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutWriteTo.underlying go!"noWriteTo") #x (Val #(x.noWriteTo'))
+  set_noWriteTo : ∀ (x : fileWithoutWriteTo.t) (y : noWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutWriteTo.underlying go!"noWriteTo") (PairV #x #y) (Val #(({ x with noWriteTo' := y } : fileWithoutWriteTo.t)))
+  get_File : ∀ (x : fileWithoutWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutWriteTo.underlying go!"File") #x (Val #(x.File'))
+  set_File : ∀ (x : fileWithoutWriteTo.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutWriteTo.underlying go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutWriteTo.t)))
 
-attribute [instance] fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_type_repr
-  fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_underlying
-  fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_get_noWriteTo
-  fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_set_noWriteTo
-  fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_get_File
-  fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_set_File
+attribute [instance] fileWithoutWriteTo.TypeAssumptions.type_repr
+  fileWithoutWriteTo.TypeAssumptions.underlying
+  fileWithoutWriteTo.TypeAssumptions.get_noWriteTo
+  fileWithoutWriteTo.TypeAssumptions.set_noWriteTo
+  fileWithoutWriteTo.TypeAssumptions.get_File
+  fileWithoutWriteTo.TypeAssumptions.set_File
 
 namespace dirFS
 abbrev t [FfiSyntax] : Type := GoString
 end dirFS
 
-@[reducible] def «dirFSⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def dirFS.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class dirFS_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  dirFS_underlying : go.UnderlyingDirectedEq dirFS «dirFSⁱᵐᵖˡ»
+class dirFS.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq dirFS dirFS.underlying
 
-attribute [instance] dirFS_Assumptions.dirFS_underlying
+attribute [instance] dirFS.TypeAssumptions.underlying
 
 namespace file
 axiom t : Type
@@ -1399,26 +1399,26 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end file
 
-class file_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  file_type_repr : go.TypeReprUnderlying «fileⁱᵐᵖˡ» file.t
-  file_underlying : go.UnderlyingDirectedEq file «fileⁱᵐᵖˡ»
-  «fileⁱᵐᵖˡ_underlying» : go.IsUnderlying «fileⁱᵐᵖˡ» «fileⁱᵐᵖˡ»
+class file.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying file.underlying file.t
+  underlying : go.UnderlyingDirectedEq file file.underlying
+  isUnderlying : go.IsUnderlying file.underlying file.underlying
 
-attribute [instance] file_Assumptions.file_type_repr
-  file_Assumptions.file_underlying
-  file_Assumptions.«fileⁱᵐᵖˡ_underlying»
+attribute [instance] file.TypeAssumptions.type_repr
+  file.TypeAssumptions.underlying
+  file.TypeAssumptions.isUnderlying
 
 namespace newFileKind
 abbrev t [FfiSyntax] : Type := w64
 end newFileKind
 
-@[reducible] def «newFileKindⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def newFileKind.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class newFileKind_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  newFileKind_underlying : go.UnderlyingDirectedEq newFileKind «newFileKindⁱᵐᵖˡ»
+class newFileKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq newFileKind newFileKind.underlying
 
-attribute [instance] newFileKind_Assumptions.newFileKind_underlying
+attribute [instance] newFileKind.TypeAssumptions.underlying
 
 namespace unixDirent
 axiom t : Type
@@ -1426,14 +1426,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end unixDirent
 
-class unixDirent_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  unixDirent_type_repr : go.TypeReprUnderlying «unixDirentⁱᵐᵖˡ» unixDirent.t
-  unixDirent_underlying : go.UnderlyingDirectedEq unixDirent «unixDirentⁱᵐᵖˡ»
-  «unixDirentⁱᵐᵖˡ_underlying» : go.IsUnderlying «unixDirentⁱᵐᵖˡ» «unixDirentⁱᵐᵖˡ»
+class unixDirent.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying unixDirent.underlying unixDirent.t
+  underlying : go.UnderlyingDirectedEq unixDirent unixDirent.underlying
+  isUnderlying : go.IsUnderlying unixDirent.underlying unixDirent.underlying
 
-attribute [instance] unixDirent_Assumptions.unixDirent_type_repr
-  unixDirent_Assumptions.unixDirent_underlying
-  unixDirent_Assumptions.«unixDirentⁱᵐᵖˡ_underlying»
+attribute [instance] unixDirent.TypeAssumptions.type_repr
+  unixDirent.TypeAssumptions.underlying
+  unixDirent.TypeAssumptions.isUnderlying
 
 namespace rawConn
 structure t [FfiSyntax] where
@@ -1444,29 +1444,29 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end rawConn
 
-@[reducible] def rawConn'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def rawConn.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"file" (go.GoType.PointerType File))]
 
-@[irreducible] def rawConn'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  rawConn'fds_unsealed
+@[irreducible] def rawConn.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  rawConn.fieldsUnsealed
 
 instance equals_unfold_rawConn [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold rawConn'fds rawConn'fds_unsealed :=
-  ⟨by unfold rawConn'fds; rfl⟩
+    EqualsUnfold rawConn.fields rawConn.fieldsUnsealed :=
+  ⟨by unfold rawConn.fields; rfl⟩
 
-@[reducible] def «rawConnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType rawConn'fds)
+@[reducible] def rawConn.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType rawConn.fields)
 
-class rawConn_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  rawConn_type_repr : go.TypeReprUnderlying «rawConnⁱᵐᵖˡ» rawConn.t
-  rawConn_underlying : go.UnderlyingDirectedEq rawConn «rawConnⁱᵐᵖˡ»
-  rawConn_get_file : ∀ (x : rawConn.t), go.IsGoStepPureDetTagged under (StructFieldGet «rawConnⁱᵐᵖˡ» go!"file") #x (Val #(x.file'))
-  rawConn_set_file : ∀ (x : rawConn.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «rawConnⁱᵐᵖˡ» go!"file") (PairV #x #y) (Val #(({ x with file' := y } : rawConn.t)))
+class rawConn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying rawConn.underlying rawConn.t
+  underlying : go.UnderlyingDirectedEq rawConn rawConn.underlying
+  get_file : ∀ (x : rawConn.t), go.IsGoStepPureDetTagged under (StructFieldGet rawConn.underlying go!"file") #x (Val #(x.file'))
+  set_file : ∀ (x : rawConn.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet rawConn.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : rawConn.t)))
 
-attribute [instance] rawConn_Assumptions.rawConn_type_repr
-  rawConn_Assumptions.rawConn_underlying
-  rawConn_Assumptions.rawConn_get_file
-  rawConn_Assumptions.rawConn_set_file
+attribute [instance] rawConn.TypeAssumptions.type_repr
+  rawConn.TypeAssumptions.underlying
+  rawConn.TypeAssumptions.get_file
+  rawConn.TypeAssumptions.set_file
 
 namespace Root
 structure t [FfiSyntax] where
@@ -1477,41 +1477,41 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end Root
 
-@[reducible] def Root'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Root.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"root" (go.GoType.PointerType root))]
 
-@[irreducible] def Root'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Root'fds_unsealed
+@[irreducible] def Root.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Root.fieldsUnsealed
 
 instance equals_unfold_Root [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Root'fds Root'fds_unsealed :=
-  ⟨by unfold Root'fds; rfl⟩
+    EqualsUnfold Root.fields Root.fieldsUnsealed :=
+  ⟨by unfold Root.fields; rfl⟩
 
-@[reducible] def «Rootⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Root'fds)
+@[reducible] def Root.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Root.fields)
 
-class Root_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Root_type_repr : go.TypeReprUnderlying «Rootⁱᵐᵖˡ» Root.t
-  Root_underlying : go.UnderlyingDirectedEq Root «Rootⁱᵐᵖˡ»
-  Root_get_root : ∀ (x : Root.t), go.IsGoStepPureDetTagged under (StructFieldGet «Rootⁱᵐᵖˡ» go!"root") #x (Val #(x.root'))
-  Root_set_root : ∀ (x : Root.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Rootⁱᵐᵖˡ» go!"root") (PairV #x #y) (Val #(({ x with root' := y } : Root.t)))
+class Root.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Root.underlying Root.t
+  underlying : go.UnderlyingDirectedEq Root Root.underlying
+  get_root : ∀ (x : Root.t), go.IsGoStepPureDetTagged under (StructFieldGet Root.underlying go!"root") #x (Val #(x.root'))
+  set_root : ∀ (x : Root.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Root.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : Root.t)))
 
-attribute [instance] Root_Assumptions.Root_type_repr
-  Root_Assumptions.Root_underlying
-  Root_Assumptions.Root_get_root
-  Root_Assumptions.Root_set_root
+attribute [instance] Root.TypeAssumptions.type_repr
+  Root.TypeAssumptions.underlying
+  Root.TypeAssumptions.get_root
+  Root.TypeAssumptions.set_root
 
 namespace rootFS
 abbrev t [FfiSyntax] : Type := Root.t
 end rootFS
 
-@[reducible] def «rootFSⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def rootFS.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   Root
 
-class rootFS_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  rootFS_underlying : go.UnderlyingDirectedEq rootFS «rootFSⁱᵐᵖˡ»
+class rootFS.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq rootFS rootFS.underlying
 
-attribute [instance] rootFS_Assumptions.rootFS_underlying
+attribute [instance] rootFS.TypeAssumptions.underlying
 
 namespace root
 axiom t : Type
@@ -1519,26 +1519,26 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end root
 
-class root_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  root_type_repr : go.TypeReprUnderlying «rootⁱᵐᵖˡ» root.t
-  root_underlying : go.UnderlyingDirectedEq root «rootⁱᵐᵖˡ»
-  «rootⁱᵐᵖˡ_underlying» : go.IsUnderlying «rootⁱᵐᵖˡ» «rootⁱᵐᵖˡ»
+class root.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying root.underlying root.t
+  underlying : go.UnderlyingDirectedEq root root.underlying
+  isUnderlying : go.IsUnderlying root.underlying root.underlying
 
-attribute [instance] root_Assumptions.root_type_repr
-  root_Assumptions.root_underlying
-  root_Assumptions.«rootⁱᵐᵖˡ_underlying»
+attribute [instance] root.TypeAssumptions.type_repr
+  root.TypeAssumptions.underlying
+  root.TypeAssumptions.isUnderlying
 
 namespace errSymlink
 abbrev t [FfiSyntax] : Type := GoString
 end errSymlink
 
-@[reducible] def «errSymlinkⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def errSymlink.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class errSymlink_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  errSymlink_underlying : go.UnderlyingDirectedEq errSymlink «errSymlinkⁱᵐᵖˡ»
+class errSymlink.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq errSymlink errSymlink.underlying
 
-attribute [instance] errSymlink_Assumptions.errSymlink_underlying
+attribute [instance] errSymlink.TypeAssumptions.underlying
 
 namespace File
 structure t [FfiSyntax] where
@@ -1549,29 +1549,29 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef⟩
 end File
 
-@[reducible] def File'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def File.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"file" (go.GoType.PointerType file))]
 
-@[irreducible] def File'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  File'fds_unsealed
+@[irreducible] def File.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  File.fieldsUnsealed
 
 instance equals_unfold_File [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold File'fds File'fds_unsealed :=
-  ⟨by unfold File'fds; rfl⟩
+    EqualsUnfold File.fields File.fieldsUnsealed :=
+  ⟨by unfold File.fields; rfl⟩
 
-@[reducible] def «Fileⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType File'fds)
+@[reducible] def File.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType File.fields)
 
-class File_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  File_type_repr : go.TypeReprUnderlying «Fileⁱᵐᵖˡ» File.t
-  File_underlying : go.UnderlyingDirectedEq File «Fileⁱᵐᵖˡ»
-  File_get_file : ∀ (x : File.t), go.IsGoStepPureDetTagged under (StructFieldGet «Fileⁱᵐᵖˡ» go!"file") #x (Val #(x.file'))
-  File_set_file : ∀ (x : File.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Fileⁱᵐᵖˡ» go!"file") (PairV #x #y) (Val #(({ x with file' := y } : File.t)))
+class File.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying File.underlying File.t
+  underlying : go.UnderlyingDirectedEq File File.underlying
+  get_file : ∀ (x : File.t), go.IsGoStepPureDetTagged under (StructFieldGet File.underlying go!"file") #x (Val #(x.file'))
+  set_file : ∀ (x : File.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet File.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : File.t)))
 
-attribute [instance] File_Assumptions.File_type_repr
-  File_Assumptions.File_underlying
-  File_Assumptions.File_get_file
-  File_Assumptions.File_set_file
+attribute [instance] File.TypeAssumptions.type_repr
+  File.TypeAssumptions.underlying
+  File.TypeAssumptions.get_file
+  File.TypeAssumptions.set_file
 
 namespace fileStat
 axiom t : Type
@@ -1579,42 +1579,42 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end fileStat
 
-class fileStat_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  fileStat_type_repr : go.TypeReprUnderlying «fileStatⁱᵐᵖˡ» fileStat.t
-  fileStat_underlying : go.UnderlyingDirectedEq fileStat «fileStatⁱᵐᵖˡ»
-  «fileStatⁱᵐᵖˡ_underlying» : go.IsUnderlying «fileStatⁱᵐᵖˡ» «fileStatⁱᵐᵖˡ»
+class fileStat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying fileStat.underlying fileStat.t
+  underlying : go.UnderlyingDirectedEq fileStat fileStat.underlying
+  isUnderlying : go.IsUnderlying fileStat.underlying fileStat.underlying
 
-attribute [instance] fileStat_Assumptions.fileStat_type_repr
-  fileStat_Assumptions.fileStat_underlying
-  fileStat_Assumptions.«fileStatⁱᵐᵖˡ_underlying»
+attribute [instance] fileStat.TypeAssumptions.type_repr
+  fileStat.TypeAssumptions.underlying
+  fileStat.TypeAssumptions.isUnderlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  readdirMode_instance : readdirMode_Assumptions
-  dirInfo_instance : dirInfo_Assumptions
-  timeout_instance : timeout_Assumptions
-  SyscallError_instance : SyscallError_Assumptions
-  processStatus_instance : processStatus_Assumptions
-  Process_instance : Process_Assumptions
-  processHandle_instance : processHandle_Assumptions
-  ProcAttr_instance : ProcAttr_Assumptions
-  Signal_instance : Signal_Assumptions
-  ProcessState_instance : ProcessState_Assumptions
-  LinkError_instance : LinkError_Assumptions
-  noReadFrom_instance : noReadFrom_Assumptions
-  fileWithoutReadFrom_instance : fileWithoutReadFrom_Assumptions
-  noWriteTo_instance : noWriteTo_Assumptions
-  fileWithoutWriteTo_instance : fileWithoutWriteTo_Assumptions
-  dirFS_instance : dirFS_Assumptions
-  file_instance : file_Assumptions
-  newFileKind_instance : newFileKind_Assumptions
-  unixDirent_instance : unixDirent_Assumptions
-  rawConn_instance : rawConn_Assumptions
-  Root_instance : Root_Assumptions
-  rootFS_instance : rootFS_Assumptions
-  root_instance : root_Assumptions
-  errSymlink_instance : errSymlink_Assumptions
-  File_instance : File_Assumptions
-  fileStat_instance : fileStat_Assumptions
+  readdirMode_instance : readdirMode.TypeAssumptions
+  dirInfo_instance : dirInfo.TypeAssumptions
+  timeout_instance : timeout.TypeAssumptions
+  SyscallError_instance : SyscallError.TypeAssumptions
+  processStatus_instance : processStatus.TypeAssumptions
+  Process_instance : Process.TypeAssumptions
+  processHandle_instance : processHandle.TypeAssumptions
+  ProcAttr_instance : ProcAttr.TypeAssumptions
+  Signal_instance : Signal.TypeAssumptions
+  ProcessState_instance : ProcessState.TypeAssumptions
+  LinkError_instance : LinkError.TypeAssumptions
+  noReadFrom_instance : noReadFrom.TypeAssumptions
+  fileWithoutReadFrom_instance : fileWithoutReadFrom.TypeAssumptions
+  noWriteTo_instance : noWriteTo.TypeAssumptions
+  fileWithoutWriteTo_instance : fileWithoutWriteTo.TypeAssumptions
+  dirFS_instance : dirFS.TypeAssumptions
+  file_instance : file.TypeAssumptions
+  newFileKind_instance : newFileKind.TypeAssumptions
+  unixDirent_instance : unixDirent.TypeAssumptions
+  rawConn_instance : rawConn.TypeAssumptions
+  Root_instance : Root.TypeAssumptions
+  rootFS_instance : rootFS.TypeAssumptions
+  root_instance : root.TypeAssumptions
+  errSymlink_instance : errSymlink.TypeAssumptions
+  File_instance : File.TypeAssumptions
+  fileStat_instance : fileStat.TypeAssumptions
 
 attribute [instance] Assumptions.readdirMode_instance
   Assumptions.dirInfo_instance

@@ -45,12 +45,12 @@ axiom Event_DELETE [FfiSyntax] [GoGlobalContext] : val
 noncomputable def Event_EventType_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_name"
 
-axiom Event_EventType_name'init [FfiSyntax] [GoGlobalContext] : val
+axiom Event_EventType_name.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Event_EventType_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_value"
 
-axiom Event_EventType_value'init [FfiSyntax] [GoGlobalContext] : val
+axiom Event_EventType_value.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def xxx_messageInfo_KeyValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_KeyValue"
@@ -61,22 +61,22 @@ noncomputable def xxx_messageInfo_Event [FfiSyntax] [GoGlobalContext] : GoString
 noncomputable def fileDescriptor_2216fe83c9c12408 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.fileDescriptor_2216fe83c9c12408"
 
-axiom fileDescriptor_2216fe83c9c12408'init [FfiSyntax] [GoGlobalContext] : val
+axiom fileDescriptor_2216fe83c9c12408.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrInvalidLengthKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrInvalidLengthKv"
 
-axiom ErrInvalidLengthKv'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrInvalidLengthKv.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrIntOverflowKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrIntOverflowKv"
 
-axiom ErrIntOverflowKv'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrIntOverflowKv.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ErrUnexpectedEndOfGroupKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrUnexpectedEndOfGroupKv"
 
-axiom ErrUnexpectedEndOfGroupKv'init [FfiSyntax] [GoGlobalContext] : val
+axiom ErrUnexpectedEndOfGroupKv.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def encodeVarintKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.encodeVarintKv"
@@ -93,7 +93,7 @@ noncomputable def skipKv [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.mvccpb where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -108,35 +108,35 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val ErrUnexpectedEndOfGroupKv'init) (Val #())))))
+  (App (Val ErrUnexpectedEndOfGroupKv.init) (Val #())))))
   (App (Val doExecute)
-  (App (Val ErrIntOverflowKv'init) (Val #()))))))
+  (App (Val ErrIntOverflowKv.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val ErrInvalidLengthKv'init) (Val #()))))))
+  (App (Val ErrInvalidLengthKv.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val fileDescriptor_2216fe83c9c12408'init) (Val #()))))))
+  (App (Val fileDescriptor_2216fe83c9c12408.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val Event_EventType_value'init) (Val #()))))))
+  (App (Val Event_EventType_value.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val Event_EventType_name'init) (Val #()))))))
+  (App (Val Event_EventType_name.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))
+  (App (Val «_».init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _'init) (Val #()))))))))
+  (App (Val «_».init) (Val #()))))))))
 
 namespace Event_EventType
 abbrev t [FfiSyntax] : Type := w32
 end Event_EventType
 
-@[reducible] def «Event_EventTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Event_EventType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class Event_EventType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Event_EventType_underlying : go.UnderlyingDirectedEq Event_EventType «Event_EventTypeⁱᵐᵖˡ»
+class Event_EventType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Event_EventType Event_EventType.underlying
 
-attribute [instance] Event_EventType_Assumptions.Event_EventType_underlying
+attribute [instance] Event_EventType.TypeAssumptions.underlying
 
 namespace KeyValue
 structure t [FfiSyntax] where
@@ -155,7 +155,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end KeyValue
 
-@[reducible] def KeyValue'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def KeyValue.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"CreateRevision" go.int64),
 (go.field_decl.FieldDecl go!"ModRevision" go.int64),
@@ -166,58 +166,58 @@ end KeyValue
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def KeyValue'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  KeyValue'fds_unsealed
+@[irreducible] def KeyValue.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  KeyValue.fieldsUnsealed
 
 instance equals_unfold_KeyValue [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold KeyValue'fds KeyValue'fds_unsealed :=
-  ⟨by unfold KeyValue'fds; rfl⟩
+    EqualsUnfold KeyValue.fields KeyValue.fieldsUnsealed :=
+  ⟨by unfold KeyValue.fields; rfl⟩
 
-@[reducible] def «KeyValueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType KeyValue'fds)
+@[reducible] def KeyValue.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType KeyValue.fields)
 
-class KeyValue_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  KeyValue_type_repr : go.TypeReprUnderlying «KeyValueⁱᵐᵖˡ» KeyValue.t
-  KeyValue_underlying : go.UnderlyingDirectedEq KeyValue «KeyValueⁱᵐᵖˡ»
-  KeyValue_get_Key : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"Key") #x (Val #(x.Key'))
-  KeyValue_set_Key : ∀ (x : KeyValue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : KeyValue.t)))
-  KeyValue_get_CreateRevision : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"CreateRevision") #x (Val #(x.CreateRevision'))
-  KeyValue_set_CreateRevision : ∀ (x : KeyValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"CreateRevision") (PairV #x #y) (Val #(({ x with CreateRevision' := y } : KeyValue.t)))
-  KeyValue_get_ModRevision : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"ModRevision") #x (Val #(x.ModRevision'))
-  KeyValue_set_ModRevision : ∀ (x : KeyValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"ModRevision") (PairV #x #y) (Val #(({ x with ModRevision' := y } : KeyValue.t)))
-  KeyValue_get_Version : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"Version") #x (Val #(x.Version'))
-  KeyValue_set_Version : ∀ (x : KeyValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"Version") (PairV #x #y) (Val #(({ x with Version' := y } : KeyValue.t)))
-  KeyValue_get_Value : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
-  KeyValue_set_Value : ∀ (x : KeyValue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : KeyValue.t)))
-  KeyValue_get_Lease : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"Lease") #x (Val #(x.Lease'))
-  KeyValue_set_Lease : ∀ (x : KeyValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"Lease") (PairV #x #y) (Val #(({ x with Lease' := y } : KeyValue.t)))
-  KeyValue_get_XXX_NoUnkeyedLiteral : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
-  KeyValue_set_XXX_NoUnkeyedLiteral : ∀ (x : KeyValue.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : KeyValue.t)))
-  KeyValue_get_XXX_unrecognized : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  KeyValue_set_XXX_unrecognized : ∀ (x : KeyValue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : KeyValue.t)))
-  KeyValue_get_XXX_sizecache : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
-  KeyValue_set_XXX_sizecache : ∀ (x : KeyValue.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «KeyValueⁱᵐᵖˡ» go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : KeyValue.t)))
+class KeyValue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying KeyValue.underlying KeyValue.t
+  underlying : go.UnderlyingDirectedEq KeyValue KeyValue.underlying
+  get_Key : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"Key") #x (Val #(x.Key'))
+  set_Key : ∀ (x : KeyValue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : KeyValue.t)))
+  get_CreateRevision : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"CreateRevision") #x (Val #(x.CreateRevision'))
+  set_CreateRevision : ∀ (x : KeyValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"CreateRevision") (PairV #x #y) (Val #(({ x with CreateRevision' := y } : KeyValue.t)))
+  get_ModRevision : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"ModRevision") #x (Val #(x.ModRevision'))
+  set_ModRevision : ∀ (x : KeyValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"ModRevision") (PairV #x #y) (Val #(({ x with ModRevision' := y } : KeyValue.t)))
+  get_Version : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"Version") #x (Val #(x.Version'))
+  set_Version : ∀ (x : KeyValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Version") (PairV #x #y) (Val #(({ x with Version' := y } : KeyValue.t)))
+  get_Value : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"Value") #x (Val #(x.Value'))
+  set_Value : ∀ (x : KeyValue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : KeyValue.t)))
+  get_Lease : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"Lease") #x (Val #(x.Lease'))
+  set_Lease : ∀ (x : KeyValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Lease") (PairV #x #y) (Val #(({ x with Lease' := y } : KeyValue.t)))
+  get_XXX_NoUnkeyedLiteral : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
+  set_XXX_NoUnkeyedLiteral : ∀ (x : KeyValue.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : KeyValue.t)))
+  get_XXX_unrecognized : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
+  set_XXX_unrecognized : ∀ (x : KeyValue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : KeyValue.t)))
+  get_XXX_sizecache : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
+  set_XXX_sizecache : ∀ (x : KeyValue.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : KeyValue.t)))
 
-attribute [instance] KeyValue_Assumptions.KeyValue_type_repr
-  KeyValue_Assumptions.KeyValue_underlying
-  KeyValue_Assumptions.KeyValue_get_Key
-  KeyValue_Assumptions.KeyValue_set_Key
-  KeyValue_Assumptions.KeyValue_get_CreateRevision
-  KeyValue_Assumptions.KeyValue_set_CreateRevision
-  KeyValue_Assumptions.KeyValue_get_ModRevision
-  KeyValue_Assumptions.KeyValue_set_ModRevision
-  KeyValue_Assumptions.KeyValue_get_Version
-  KeyValue_Assumptions.KeyValue_set_Version
-  KeyValue_Assumptions.KeyValue_get_Value
-  KeyValue_Assumptions.KeyValue_set_Value
-  KeyValue_Assumptions.KeyValue_get_Lease
-  KeyValue_Assumptions.KeyValue_set_Lease
-  KeyValue_Assumptions.KeyValue_get_XXX_NoUnkeyedLiteral
-  KeyValue_Assumptions.KeyValue_set_XXX_NoUnkeyedLiteral
-  KeyValue_Assumptions.KeyValue_get_XXX_unrecognized
-  KeyValue_Assumptions.KeyValue_set_XXX_unrecognized
-  KeyValue_Assumptions.KeyValue_get_XXX_sizecache
-  KeyValue_Assumptions.KeyValue_set_XXX_sizecache
+attribute [instance] KeyValue.TypeAssumptions.type_repr
+  KeyValue.TypeAssumptions.underlying
+  KeyValue.TypeAssumptions.get_Key
+  KeyValue.TypeAssumptions.set_Key
+  KeyValue.TypeAssumptions.get_CreateRevision
+  KeyValue.TypeAssumptions.set_CreateRevision
+  KeyValue.TypeAssumptions.get_ModRevision
+  KeyValue.TypeAssumptions.set_ModRevision
+  KeyValue.TypeAssumptions.get_Version
+  KeyValue.TypeAssumptions.set_Version
+  KeyValue.TypeAssumptions.get_Value
+  KeyValue.TypeAssumptions.set_Value
+  KeyValue.TypeAssumptions.get_Lease
+  KeyValue.TypeAssumptions.set_Lease
+  KeyValue.TypeAssumptions.get_XXX_NoUnkeyedLiteral
+  KeyValue.TypeAssumptions.set_XXX_NoUnkeyedLiteral
+  KeyValue.TypeAssumptions.get_XXX_unrecognized
+  KeyValue.TypeAssumptions.set_XXX_unrecognized
+  KeyValue.TypeAssumptions.get_XXX_sizecache
+  KeyValue.TypeAssumptions.set_XXX_sizecache
 
 namespace Event
 structure t [FfiSyntax] where
@@ -233,7 +233,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Event
 
-@[reducible] def Event'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Event.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Type" Event_EventType),
 (go.field_decl.FieldDecl go!"Kv" (go.GoType.PointerType KeyValue)),
 (go.field_decl.FieldDecl go!"PrevKv" (go.GoType.PointerType KeyValue)),
@@ -241,51 +241,51 @@ end Event
 (go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def Event'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Event'fds_unsealed
+@[irreducible] def Event.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Event.fieldsUnsealed
 
 instance equals_unfold_Event [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Event'fds Event'fds_unsealed :=
-  ⟨by unfold Event'fds; rfl⟩
+    EqualsUnfold Event.fields Event.fieldsUnsealed :=
+  ⟨by unfold Event.fields; rfl⟩
 
-@[reducible] def «Eventⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Event'fds)
+@[reducible] def Event.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Event.fields)
 
-class Event_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Event_type_repr : go.TypeReprUnderlying «Eventⁱᵐᵖˡ» Event.t
-  Event_underlying : go.UnderlyingDirectedEq Event «Eventⁱᵐᵖˡ»
-  Event_get_Type : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"Type") #x (Val #(x.Type'))
-  Event_set_Type : ∀ (x : Event.t) (y : Event_EventType.t), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : Event.t)))
-  Event_get_Kv : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"Kv") #x (Val #(x.Kv'))
-  Event_set_Kv : ∀ (x : Event.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"Kv") (PairV #x #y) (Val #(({ x with Kv' := y } : Event.t)))
-  Event_get_PrevKv : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"PrevKv") #x (Val #(x.PrevKv'))
-  Event_set_PrevKv : ∀ (x : Event.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"PrevKv") (PairV #x #y) (Val #(({ x with PrevKv' := y } : Event.t)))
-  Event_get_XXX_NoUnkeyedLiteral : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
-  Event_set_XXX_NoUnkeyedLiteral : ∀ (x : Event.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : Event.t)))
-  Event_get_XXX_unrecognized : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  Event_set_XXX_unrecognized : ∀ (x : Event.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : Event.t)))
-  Event_get_XXX_sizecache : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
-  Event_set_XXX_sizecache : ∀ (x : Event.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : Event.t)))
+class Event.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Event.underlying Event.t
+  underlying : go.UnderlyingDirectedEq Event Event.underlying
+  get_Type : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"Type") #x (Val #(x.Type'))
+  set_Type : ∀ (x : Event.t) (y : Event_EventType.t), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : Event.t)))
+  get_Kv : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"Kv") #x (Val #(x.Kv'))
+  set_Kv : ∀ (x : Event.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"Kv") (PairV #x #y) (Val #(({ x with Kv' := y } : Event.t)))
+  get_PrevKv : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"PrevKv") #x (Val #(x.PrevKv'))
+  set_PrevKv : ∀ (x : Event.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"PrevKv") (PairV #x #y) (Val #(({ x with PrevKv' := y } : Event.t)))
+  get_XXX_NoUnkeyedLiteral : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
+  set_XXX_NoUnkeyedLiteral : ∀ (x : Event.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : Event.t)))
+  get_XXX_unrecognized : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
+  set_XXX_unrecognized : ∀ (x : Event.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : Event.t)))
+  get_XXX_sizecache : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
+  set_XXX_sizecache : ∀ (x : Event.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : Event.t)))
 
-attribute [instance] Event_Assumptions.Event_type_repr
-  Event_Assumptions.Event_underlying
-  Event_Assumptions.Event_get_Type
-  Event_Assumptions.Event_set_Type
-  Event_Assumptions.Event_get_Kv
-  Event_Assumptions.Event_set_Kv
-  Event_Assumptions.Event_get_PrevKv
-  Event_Assumptions.Event_set_PrevKv
-  Event_Assumptions.Event_get_XXX_NoUnkeyedLiteral
-  Event_Assumptions.Event_set_XXX_NoUnkeyedLiteral
-  Event_Assumptions.Event_get_XXX_unrecognized
-  Event_Assumptions.Event_set_XXX_unrecognized
-  Event_Assumptions.Event_get_XXX_sizecache
-  Event_Assumptions.Event_set_XXX_sizecache
+attribute [instance] Event.TypeAssumptions.type_repr
+  Event.TypeAssumptions.underlying
+  Event.TypeAssumptions.get_Type
+  Event.TypeAssumptions.set_Type
+  Event.TypeAssumptions.get_Kv
+  Event.TypeAssumptions.set_Kv
+  Event.TypeAssumptions.get_PrevKv
+  Event.TypeAssumptions.set_PrevKv
+  Event.TypeAssumptions.get_XXX_NoUnkeyedLiteral
+  Event.TypeAssumptions.set_XXX_NoUnkeyedLiteral
+  Event.TypeAssumptions.get_XXX_unrecognized
+  Event.TypeAssumptions.set_XXX_unrecognized
+  Event.TypeAssumptions.get_XXX_sizecache
+  Event.TypeAssumptions.set_XXX_sizecache
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Event_EventType_instance : Event_EventType_Assumptions
-  KeyValue_instance : KeyValue_Assumptions
-  Event_instance : Event_Assumptions
+  Event_EventType_instance : Event_EventType.TypeAssumptions
+  KeyValue_instance : KeyValue.TypeAssumptions
+  Event_instance : Event.TypeAssumptions
 
 attribute [instance] Assumptions.Event_EventType_instance
   Assumptions.KeyValue_instance

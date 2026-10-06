@@ -13,12 +13,12 @@ section code
 variable [FfiSyntax]
 
 -- FIXME: Returns some stuff
-def «Printⁱᵐᵖˡ» : val :=
+def Print.impl : val :=
   λ: "format" "a",
     Panic "unimplemented"
 
 -- FIXME: Returns some stuff
-def «Printfⁱᵐᵖˡ» : val :=
+def Printf.impl : val :=
   λ: "a",
     Panic "unimplemented"
 

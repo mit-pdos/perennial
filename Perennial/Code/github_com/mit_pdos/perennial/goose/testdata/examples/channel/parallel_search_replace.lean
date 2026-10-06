@@ -25,7 +25,7 @@ noncomputable def SearchReplace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace.SearchReplace"
 
 /-- go: parallel_search_replace.go:13:6 -/
-noncomputable def «workerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def worker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "wg"
   (Lam "x"
@@ -86,7 +86,7 @@ noncomputable def «workerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "s") (Var "$r0"))))))))))))))))))))))
 
 /-- go: parallel_search_replace.go:24:6 -/
-noncomputable def «SearchReplaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SearchReplace.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "x"
   (Lam "y"
@@ -196,8 +196,8 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.sync.initialize') (Val #())))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  worker_unfold : FuncUnfold worker [] «workerⁱᵐᵖˡ»
-  SearchReplace_unfold : FuncUnfold SearchReplace [] «SearchReplaceⁱᵐᵖˡ»
+  worker_unfold : FuncUnfold worker [] worker.impl
+  SearchReplace_unfold : FuncUnfold SearchReplace [] SearchReplace.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
 
 attribute [instance] Assumptions.worker_unfold

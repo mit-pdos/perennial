@@ -40,7 +40,7 @@ instance codecV1Bridge_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance codecV1Bridge_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.codecV1Bridge.t google_golang_org.grpc.«codecV1Bridgeⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.codecV1Bridge.t google_golang_org.grpc.codecV1Bridge.underlying := by
   solve_into_val_typed_struct
 
 instance codecV1Bridge_access_load_codecV0Bridge (l : Loc) (v : google_golang_org.grpc.codecV1Bridge.t) (dq : DFrac) :
@@ -96,7 +96,7 @@ instance pickerWrapper_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pickerWrapper_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.pickerWrapper.t google_golang_org.grpc.«pickerWrapperⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.pickerWrapper.t google_golang_org.grpc.pickerWrapper.underlying := by
   solve_into_val_typed_struct
 
 instance pickerWrapper_access_load_pickerGen (l : Loc) (v : google_golang_org.grpc.pickerWrapper.t) (dq : DFrac) :
@@ -136,7 +136,7 @@ instance StaticMethodCallOption_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance StaticMethodCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StaticMethodCallOption.t google_golang_org.grpc.«StaticMethodCallOptionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StaticMethodCallOption.t google_golang_org.grpc.StaticMethodCallOption.underlying := by
   solve_into_val_typed_struct
 
 instance StaticMethodCallOption_access_load_EmptyCallOption (l : Loc) (v : google_golang_org.grpc.StaticMethodCallOption.t) (dq : DFrac) :
@@ -176,7 +176,7 @@ instance CustomCodecCallOption_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CustomCodecCallOption_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.CustomCodecCallOption.t google_golang_org.grpc.«CustomCodecCallOptionⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.CustomCodecCallOption.t google_golang_org.grpc.CustomCodecCallOption.underlying := by
   solve_into_val_typed_struct
 
 instance CustomCodecCallOption_access_load_Codec (l : Loc) (v : google_golang_org.grpc.CustomCodecCallOption.t) (dq : DFrac) :
@@ -217,7 +217,7 @@ instance rpcInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance rpcInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.rpcInfo.t google_golang_org.grpc.«rpcInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.rpcInfo.t google_golang_org.grpc.rpcInfo.underlying := by
   solve_into_val_typed_struct
 
 instance rpcInfo_access_load_failfast (l : Loc) (v : google_golang_org.grpc.rpcInfo.t) (dq : DFrac) :
@@ -274,7 +274,7 @@ instance MethodDesc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MethodDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MethodDesc.t google_golang_org.grpc.«MethodDescⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MethodDesc.t google_golang_org.grpc.MethodDesc.underlying := by
   solve_into_val_typed_struct
 
 instance MethodDesc_access_load_MethodName (l : Loc) (v : google_golang_org.grpc.MethodDesc.t) (dq : DFrac) :
@@ -333,7 +333,7 @@ instance StreamDesc_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance StreamDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamDesc.t google_golang_org.grpc.«StreamDescⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamDesc.t google_golang_org.grpc.StreamDesc.underlying := by
   solve_into_val_typed_struct
 
 instance StreamDesc_access_load_StreamName (l : Loc) (v : google_golang_org.grpc.StreamDesc.t) (dq : DFrac) :
@@ -421,7 +421,7 @@ instance GenericClientStream_typed_pointsto {Req' : Type} [TypedPointsto (GF := 
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance GenericClientStream_into_val_typed (Req : go.GoType) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.GoType) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericClientStream.t Req' Res') (google_golang_org.grpc.«GenericClientStreamⁱᵐᵖˡ» Req Res) := by
+    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericClientStream.t Req' Res') (google_golang_org.grpc.GenericClientStream.underlying Req Res) := by
   solve_into_val_typed_struct
 
 instance GenericClientStream_access_load_ClientStream {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] (l : Loc) (v : (google_golang_org.grpc.GenericClientStream.t Req' Res')) (dq : DFrac) :
@@ -461,7 +461,7 @@ instance GenericServerStream_typed_pointsto {Req' : Type} [TypedPointsto (GF := 
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance GenericServerStream_into_val_typed (Req : go.GoType) {Req' : Type} [ZeroVal Req'] [TypedPointsto (GF := GF) Req'] [IntoValTyped (GF := GF) Req' Req] (Res : go.GoType) {Res' : Type} [ZeroVal Res'] [TypedPointsto (GF := GF) Res'] [IntoValTyped (GF := GF) Res' Res] :
-    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericServerStream.t Req' Res') (google_golang_org.grpc.«GenericServerStreamⁱᵐᵖˡ» Req Res) := by
+    IntoValTypedUnderlying (GF := GF) (google_golang_org.grpc.GenericServerStream.t Req' Res') (google_golang_org.grpc.GenericServerStream.underlying Req Res) := by
   solve_into_val_typed_struct
 
 instance GenericServerStream_access_load_ServerStream {Req' : Type} [TypedPointsto (GF := GF) Req'] {Res' : Type} [TypedPointsto (GF := GF) Res'] (l : Loc) (v : (google_golang_org.grpc.GenericServerStream.t Req' Res')) (dq : DFrac) :
@@ -502,7 +502,7 @@ instance traceInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance traceInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.traceInfo.t google_golang_org.grpc.«traceInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.traceInfo.t google_golang_org.grpc.traceInfo.underlying := by
   solve_into_val_typed_struct
 
 instance traceInfo_access_load_tr (l : Loc) (v : google_golang_org.grpc.traceInfo.t) (dq : DFrac) :

@@ -116,9 +116,9 @@ def WaitGroup [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] WaitGroup
 
-axiom «Mapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Map.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «poolChainEltⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom poolChainElt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom dequeueBits [FfiSyntax] [GoGlobalContext] : val
 
@@ -223,7 +223,7 @@ noncomputable def syscall_hasWaitingReaders [FfiSyntax] [GoGlobalContext] : GoSt
 /-- NewCond returns a new Cond with Locker l.
 
     go: cond.go:48:6 -/
-noncomputable def «NewCondⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewCond.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Locker))) (Var "l"))
@@ -248,7 +248,7 @@ noncomputable def «NewCondⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
     	c.L.Unlock()
 
     go: cond.go:67:16 -/
-noncomputable def «Cond__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -285,7 +285,7 @@ noncomputable def «Cond__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
     are attempting to lock c.L, they may be awoken before a "waiting" goroutine.
 
     go: cond.go:82:16 -/
-noncomputable def «Cond__Signalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Signal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -306,7 +306,7 @@ noncomputable def «Cond__Signalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     during the call.
 
     go: cond.go:91:16 -/
-noncomputable def «Cond__Broadcastⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Broadcast.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -343,7 +343,7 @@ noncomputable def «Cond__Broadcastⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     without calling f.
 
     go: once.go:52:16 -/
-noncomputable def «Once__Doⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Once.Do.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "o"
   (Lam "f"
   (App (Val exceptionDo)
@@ -360,7 +360,7 @@ noncomputable def «Once__Doⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: once.go:73:16 -/
-noncomputable def «Once__doSlowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Once.doSlow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "o"
   (Lam "f"
   (App (Val wrapDefer)
@@ -401,7 +401,7 @@ noncomputable def «Once__doSlowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : va
     documentation on the [RWMutex] type.
 
     go: rwmutex.go:67:20 -/
-noncomputable def «RWMutex__RLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RWMutex.RLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -446,7 +446,7 @@ noncomputable def «RWMutex__RLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     in a particular use of mutexes.
 
     go: rwmutex.go:87:20 -/
-noncomputable def «RWMutex__TryRLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RWMutex.TryRLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -506,7 +506,7 @@ noncomputable def «RWMutex__TryRLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext]
     on entry to RUnlock.
 
     go: rwmutex.go:114:20 -/
-noncomputable def «RWMutex__RUnlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RWMutex.RUnlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -548,7 +548,7 @@ noncomputable def «RWMutex__RUnlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
   (Val #())))))))))
 
 /-- go: rwmutex.go:129:20 -/
-noncomputable def «RWMutex__rUnlockSlowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RWMutex.rUnlockSlow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam "r"
   (App (Val exceptionDo)
@@ -582,7 +582,7 @@ noncomputable def «RWMutex__rUnlockSlowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
     Lock blocks until the lock is available.
 
     go: rwmutex.go:144:20 -/
-noncomputable def «RWMutex__Lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RWMutex.Lock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -640,7 +640,7 @@ noncomputable def «RWMutex__Lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
     in a particular use of mutexes.
 
     go: rwmutex.go:169:20 -/
-noncomputable def «RWMutex__TryLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RWMutex.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -709,7 +709,7 @@ noncomputable def «RWMutex__TryLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     arrange for another goroutine to [RWMutex.RUnlock] ([RWMutex.Unlock]) it.
 
     go: rwmutex.go:201:20 -/
-noncomputable def «RWMutex__Unlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RWMutex.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -776,7 +776,7 @@ noncomputable def «RWMutex__Unlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     the [Locker.Lock] and [Locker.Unlock] methods by calling rw.RLock and rw.RUnlock.
 
     go: rwmutex.go:240:20 -/
-noncomputable def «RWMutex__RLockerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RWMutex.RLocker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -801,7 +801,7 @@ noncomputable def «RWMutex__RLockerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] 
     See the WaitGroup example.
 
     go: waitgroup.go:77:22 -/
-noncomputable def «WaitGroup__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam "delta"
   (App (Val wrapDefer)
@@ -958,7 +958,7 @@ noncomputable def «WaitGroup__Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : 
     [the Go memory model]: https://go.dev/ref/mem
 
     go: waitgroup.go:155:22 -/
-noncomputable def «WaitGroup__Doneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WaitGroup.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -973,7 +973,7 @@ noncomputable def «WaitGroup__Doneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
 /-- Wait blocks until the [WaitGroup] task counter is zero.
 
     go: waitgroup.go:160:22 -/
-noncomputable def «WaitGroup__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1123,7 +1123,7 @@ noncomputable def «WaitGroup__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     [the Go memory model]: https://go.dev/ref/mem
 
     go: waitgroup.go:236:22 -/
-noncomputable def «WaitGroup__Goⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WaitGroup.Go.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam "f"
   (App (Val exceptionDo)
@@ -1176,7 +1176,7 @@ noncomputable def «WaitGroup__Goⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
 instance info' : PkgInfo pkg_id.sync where
   pkgImportedPkgs := [pkg_id.sync.atomic, pkg_id.internal.race, pkg_id.internal.synctest]
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -1199,37 +1199,37 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noCopy
 
-@[reducible] def noCopy'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noCopy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noCopy'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  noCopy'fds_unsealed
+@[irreducible] def noCopy.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  noCopy.fieldsUnsealed
 
 instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold noCopy'fds noCopy'fds_unsealed :=
-  ⟨by unfold noCopy'fds; rfl⟩
+    EqualsUnfold noCopy.fields noCopy.fieldsUnsealed :=
+  ⟨by unfold noCopy.fields; rfl⟩
 
-@[reducible] def «noCopyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType noCopy'fds)
+@[reducible] def noCopy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType noCopy.fields)
 
-class noCopy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  noCopy_type_repr : go.TypeReprUnderlying «noCopyⁱᵐᵖˡ» noCopy.t
-  noCopy_underlying : go.UnderlyingDirectedEq noCopy «noCopyⁱᵐᵖˡ»
+class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying noCopy.underlying noCopy.t
+  underlying : go.UnderlyingDirectedEq noCopy noCopy.underlying
 
-attribute [instance] noCopy_Assumptions.noCopy_type_repr
-  noCopy_Assumptions.noCopy_underlying
+attribute [instance] noCopy.TypeAssumptions.type_repr
+  noCopy.TypeAssumptions.underlying
 
 namespace Locker
 abbrev t [FfiSyntax] : Type := interface.t
 end Locker
 
-@[reducible] def «Lockerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Locker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Lock" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Unlock" (go.signature.Signature [] false []))])
 
-class Locker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Locker_underlying : go.UnderlyingDirectedEq Locker «Lockerⁱᵐᵖˡ»
+class Locker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Locker Locker.underlying
 
-attribute [instance] Locker_Assumptions.Locker_underlying
+attribute [instance] Locker.TypeAssumptions.underlying
 
 namespace notifyList
 structure t [FfiSyntax] where
@@ -1244,56 +1244,56 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end notifyList
 
-@[reducible] def notifyList'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def notifyList.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wait" go.uint32),
 (go.field_decl.FieldDecl go!"notify" go.uint32),
 (go.field_decl.FieldDecl go!"lock" go.uintptr),
 (go.field_decl.FieldDecl go!"head" «unsafe».Pointer),
 (go.field_decl.FieldDecl go!"tail" «unsafe».Pointer)]
 
-@[irreducible] def notifyList'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  notifyList'fds_unsealed
+@[irreducible] def notifyList.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  notifyList.fieldsUnsealed
 
 instance equals_unfold_notifyList [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold notifyList'fds notifyList'fds_unsealed :=
-  ⟨by unfold notifyList'fds; rfl⟩
+    EqualsUnfold notifyList.fields notifyList.fieldsUnsealed :=
+  ⟨by unfold notifyList.fields; rfl⟩
 
-@[reducible] def «notifyListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType notifyList'fds)
+@[reducible] def notifyList.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType notifyList.fields)
 
-class notifyList_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  notifyList_type_repr : go.TypeReprUnderlying «notifyListⁱᵐᵖˡ» notifyList.t
-  notifyList_underlying : go.UnderlyingDirectedEq notifyList «notifyListⁱᵐᵖˡ»
-  notifyList_get_wait : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"wait") #x (Val #(x.wait'))
-  notifyList_set_wait : ∀ (x : notifyList.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"wait") (PairV #x #y) (Val #(({ x with wait' := y } : notifyList.t)))
-  notifyList_get_notify : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"notify") #x (Val #(x.notify'))
-  notifyList_set_notify : ∀ (x : notifyList.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : notifyList.t)))
-  notifyList_get_lock : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"lock") #x (Val #(x.lock'))
-  notifyList_set_lock : ∀ (x : notifyList.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : notifyList.t)))
-  notifyList_get_head : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"head") #x (Val #(x.head'))
-  notifyList_set_head : ∀ (x : notifyList.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"head") (PairV #x #y) (Val #(({ x with head' := y } : notifyList.t)))
-  notifyList_get_tail : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet «notifyListⁱᵐᵖˡ» go!"tail") #x (Val #(x.tail'))
-  notifyList_set_tail : ∀ (x : notifyList.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «notifyListⁱᵐᵖˡ» go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : notifyList.t)))
+class notifyList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying notifyList.underlying notifyList.t
+  underlying : go.UnderlyingDirectedEq notifyList notifyList.underlying
+  get_wait : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"wait") #x (Val #(x.wait'))
+  set_wait : ∀ (x : notifyList.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"wait") (PairV #x #y) (Val #(({ x with wait' := y } : notifyList.t)))
+  get_notify : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"notify") #x (Val #(x.notify'))
+  set_notify : ∀ (x : notifyList.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : notifyList.t)))
+  get_lock : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"lock") #x (Val #(x.lock'))
+  set_lock : ∀ (x : notifyList.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : notifyList.t)))
+  get_head : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"head") #x (Val #(x.head'))
+  set_head : ∀ (x : notifyList.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : notifyList.t)))
+  get_tail : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"tail") #x (Val #(x.tail'))
+  set_tail : ∀ (x : notifyList.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : notifyList.t)))
 
-attribute [instance] notifyList_Assumptions.notifyList_type_repr
-  notifyList_Assumptions.notifyList_underlying
-  notifyList_Assumptions.notifyList_get_wait
-  notifyList_Assumptions.notifyList_set_wait
-  notifyList_Assumptions.notifyList_get_notify
-  notifyList_Assumptions.notifyList_set_notify
-  notifyList_Assumptions.notifyList_get_lock
-  notifyList_Assumptions.notifyList_set_lock
-  notifyList_Assumptions.notifyList_get_head
-  notifyList_Assumptions.notifyList_set_head
-  notifyList_Assumptions.notifyList_get_tail
-  notifyList_Assumptions.notifyList_set_tail
+attribute [instance] notifyList.TypeAssumptions.type_repr
+  notifyList.TypeAssumptions.underlying
+  notifyList.TypeAssumptions.get_wait
+  notifyList.TypeAssumptions.set_wait
+  notifyList.TypeAssumptions.get_notify
+  notifyList.TypeAssumptions.set_notify
+  notifyList.TypeAssumptions.get_lock
+  notifyList.TypeAssumptions.set_lock
+  notifyList.TypeAssumptions.get_head
+  notifyList.TypeAssumptions.set_head
+  notifyList.TypeAssumptions.get_tail
+  notifyList.TypeAssumptions.set_tail
 
-class copyChecker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  copyChecker_underlying : go.UnderlyingDirectedEq copyChecker «copyCheckerⁱᵐᵖˡ»
-  copyChecker'ptr_check_unfold : MethodUnfold (go.GoType.PointerType copyChecker) go!"check" «copyChecker__checkⁱᵐᵖˡ»
+class copyChecker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq copyChecker copyChecker.underlying
+  ptr_check_unfold : MethodUnfold (go.GoType.PointerType copyChecker) go!"check" copyChecker.check.impl
 
-attribute [instance] copyChecker_Assumptions.copyChecker_underlying
-  copyChecker_Assumptions.copyChecker'ptr_check_unfold
+attribute [instance] copyChecker.TypeAssumptions.underlying
+  copyChecker.TypeAssumptions.ptr_check_unfold
 
 namespace Cond
 structure t [FfiSyntax] where
@@ -1307,50 +1307,50 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Cond
 
-@[reducible] def Cond'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Cond.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"L" Locker),
 (go.field_decl.FieldDecl go!"notify" notifyList),
 (go.field_decl.FieldDecl go!"checker" copyChecker)]
 
-@[irreducible] def Cond'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Cond'fds_unsealed
+@[irreducible] def Cond.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Cond.fieldsUnsealed
 
 instance equals_unfold_Cond [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Cond'fds Cond'fds_unsealed :=
-  ⟨by unfold Cond'fds; rfl⟩
+    EqualsUnfold Cond.fields Cond.fieldsUnsealed :=
+  ⟨by unfold Cond.fields; rfl⟩
 
-@[reducible] def «Condⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Cond'fds)
+@[reducible] def Cond.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Cond.fields)
 
-class Cond_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Cond_type_repr : go.TypeReprUnderlying «Condⁱᵐᵖˡ» Cond.t
-  Cond_underlying : go.UnderlyingDirectedEq Cond «Condⁱᵐᵖˡ»
-  Cond_get_noCopy : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet «Condⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
-  Cond_set_noCopy : ∀ (x : Cond.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Condⁱᵐᵖˡ» go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Cond.t)))
-  Cond_get_L : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet «Condⁱᵐᵖˡ» go!"L") #x (Val #(x.L'))
-  Cond_set_L : ∀ (x : Cond.t) (y : Locker.t), go.IsGoStepPureDetTagged under (StructFieldSet «Condⁱᵐᵖˡ» go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond.t)))
-  Cond_get_notify : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet «Condⁱᵐᵖˡ» go!"notify") #x (Val #(x.notify'))
-  Cond_set_notify : ∀ (x : Cond.t) (y : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldSet «Condⁱᵐᵖˡ» go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : Cond.t)))
-  Cond_get_checker : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet «Condⁱᵐᵖˡ» go!"checker") #x (Val #(x.checker'))
-  Cond_set_checker : ∀ (x : Cond.t) (y : copyChecker.t), go.IsGoStepPureDetTagged under (StructFieldSet «Condⁱᵐᵖˡ» go!"checker") (PairV #x #y) (Val #(({ x with checker' := y } : Cond.t)))
-  Cond'ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Broadcast" «Cond__Broadcastⁱᵐᵖˡ»
-  Cond'ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Signal" «Cond__Signalⁱᵐᵖˡ»
-  Cond'ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Wait" «Cond__Waitⁱᵐᵖˡ»
+class Cond.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Cond.underlying Cond.t
+  underlying : go.UnderlyingDirectedEq Cond Cond.underlying
+  get_noCopy : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set_noCopy : ∀ (x : Cond.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Cond.t)))
+  get_L : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
+  set_L : ∀ (x : Cond.t) (y : Locker.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond.t)))
+  get_notify : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"notify") #x (Val #(x.notify'))
+  set_notify : ∀ (x : Cond.t) (y : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : Cond.t)))
+  get_checker : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"checker") #x (Val #(x.checker'))
+  set_checker : ∀ (x : Cond.t) (y : copyChecker.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"checker") (PairV #x #y) (Val #(({ x with checker' := y } : Cond.t)))
+  ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Broadcast" Cond.Broadcast.impl
+  ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Signal" Cond.Signal.impl
+  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Wait" Cond.Wait.impl
 
-attribute [instance] Cond_Assumptions.Cond_type_repr
-  Cond_Assumptions.Cond_underlying
-  Cond_Assumptions.Cond_get_noCopy
-  Cond_Assumptions.Cond_set_noCopy
-  Cond_Assumptions.Cond_get_L
-  Cond_Assumptions.Cond_set_L
-  Cond_Assumptions.Cond_get_notify
-  Cond_Assumptions.Cond_set_notify
-  Cond_Assumptions.Cond_get_checker
-  Cond_Assumptions.Cond_set_checker
-  Cond_Assumptions.Cond'ptr_Broadcast_unfold
-  Cond_Assumptions.Cond'ptr_Signal_unfold
-  Cond_Assumptions.Cond'ptr_Wait_unfold
+attribute [instance] Cond.TypeAssumptions.type_repr
+  Cond.TypeAssumptions.underlying
+  Cond.TypeAssumptions.get_noCopy
+  Cond.TypeAssumptions.set_noCopy
+  Cond.TypeAssumptions.get_L
+  Cond.TypeAssumptions.set_L
+  Cond.TypeAssumptions.get_notify
+  Cond.TypeAssumptions.set_notify
+  Cond.TypeAssumptions.get_checker
+  Cond.TypeAssumptions.set_checker
+  Cond.TypeAssumptions.ptr_Broadcast_unfold
+  Cond.TypeAssumptions.ptr_Signal_unfold
+  Cond.TypeAssumptions.ptr_Wait_unfold
 
 namespace Map
 axiom t : Type
@@ -1358,27 +1358,27 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Map
 
-class Map_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Map_type_repr : go.TypeReprUnderlying «Mapⁱᵐᵖˡ» Map.t
-  Map_underlying : go.UnderlyingDirectedEq Map «Mapⁱᵐᵖˡ»
-  «Mapⁱᵐᵖˡ_underlying» : go.IsUnderlying «Mapⁱᵐᵖˡ» «Mapⁱᵐᵖˡ»
+class Map.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Map.underlying Map.t
+  underlying : go.UnderlyingDirectedEq Map Map.underlying
+  isUnderlying : go.IsUnderlying Map.underlying Map.underlying
 
-attribute [instance] Map_Assumptions.Map_type_repr
-  Map_Assumptions.Map_underlying
-  Map_Assumptions.«Mapⁱᵐᵖˡ_underlying»
+attribute [instance] Map.TypeAssumptions.type_repr
+  Map.TypeAssumptions.underlying
+  Map.TypeAssumptions.isUnderlying
 
-class Mutex_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Mutex_type_repr : go.TypeReprUnderlying «Mutexⁱᵐᵖˡ» Mutex.t
-  Mutex_underlying : go.UnderlyingDirectedEq Mutex «Mutexⁱᵐᵖˡ»
-  Mutex'ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Lock" «Mutex__Lockⁱᵐᵖˡ»
-  Mutex'ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"TryLock" «Mutex__TryLockⁱᵐᵖˡ»
-  Mutex'ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Unlock" «Mutex__Unlockⁱᵐᵖˡ»
+class Mutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Mutex.underlying Mutex.t
+  underlying : go.UnderlyingDirectedEq Mutex Mutex.underlying
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Lock" Mutex.Lock.impl
+  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"TryLock" Mutex.TryLock.impl
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Unlock" Mutex.Unlock.impl
 
-attribute [instance] Mutex_Assumptions.Mutex_type_repr
-  Mutex_Assumptions.Mutex_underlying
-  Mutex_Assumptions.Mutex'ptr_Lock_unfold
-  Mutex_Assumptions.Mutex'ptr_TryLock_unfold
-  Mutex_Assumptions.Mutex'ptr_Unlock_unfold
+attribute [instance] Mutex.TypeAssumptions.type_repr
+  Mutex.TypeAssumptions.underlying
+  Mutex.TypeAssumptions.ptr_Lock_unfold
+  Mutex.TypeAssumptions.ptr_TryLock_unfold
+  Mutex.TypeAssumptions.ptr_Unlock_unfold
 
 namespace Once
 structure t [FfiSyntax] where
@@ -1391,43 +1391,43 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Once
 
-@[reducible] def Once'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Once.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" noCopy),
 (go.field_decl.FieldDecl go!"done" _root_.Perennial.sync.atomic.Bool'),
 (go.field_decl.FieldDecl go!"m" Mutex)]
 
-@[irreducible] def Once'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Once'fds_unsealed
+@[irreducible] def Once.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Once.fieldsUnsealed
 
 instance equals_unfold_Once [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Once'fds Once'fds_unsealed :=
-  ⟨by unfold Once'fds; rfl⟩
+    EqualsUnfold Once.fields Once.fieldsUnsealed :=
+  ⟨by unfold Once.fields; rfl⟩
 
-@[reducible] def «Onceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Once'fds)
+@[reducible] def Once.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Once.fields)
 
-class Once_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Once_type_repr : go.TypeReprUnderlying «Onceⁱᵐᵖˡ» Once.t
-  Once_underlying : go.UnderlyingDirectedEq Once «Onceⁱᵐᵖˡ»
-  Once_get__0 : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet «Onceⁱᵐᵖˡ» go!"_0") #x (Val #(x._0'))
-  Once_set__0 : ∀ (x : Once.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Onceⁱᵐᵖˡ» go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Once.t)))
-  Once_get_done : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet «Onceⁱᵐᵖˡ» go!"done") #x (Val #(x.done'))
-  Once_set_done : ∀ (x : Once.t) (y : _root_.Perennial.sync.atomic.Bool'.t), go.IsGoStepPureDetTagged under (StructFieldSet «Onceⁱᵐᵖˡ» go!"done") (PairV #x #y) (Val #(({ x with done' := y } : Once.t)))
-  Once_get_m : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet «Onceⁱᵐᵖˡ» go!"m") #x (Val #(x.m'))
-  Once_set_m : ∀ (x : Once.t) (y : Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «Onceⁱᵐᵖˡ» go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Once.t)))
-  Once'ptr_Do_unfold : MethodUnfold (go.GoType.PointerType Once) go!"Do" «Once__Doⁱᵐᵖˡ»
-  Once'ptr_doSlow_unfold : MethodUnfold (go.GoType.PointerType Once) go!"doSlow" «Once__doSlowⁱᵐᵖˡ»
+class Once.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Once.underlying Once.t
+  underlying : go.UnderlyingDirectedEq Once Once.underlying
+  get__0 : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : Once.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Once.t)))
+  get_done : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"done") #x (Val #(x.done'))
+  set_done : ∀ (x : Once.t) (y : _root_.Perennial.sync.atomic.Bool'.t), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : Once.t)))
+  get_m : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"m") #x (Val #(x.m'))
+  set_m : ∀ (x : Once.t) (y : Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Once.t)))
+  ptr_Do_unfold : MethodUnfold (go.GoType.PointerType Once) go!"Do" Once.Do.impl
+  ptr_doSlow_unfold : MethodUnfold (go.GoType.PointerType Once) go!"doSlow" Once.doSlow.impl
 
-attribute [instance] Once_Assumptions.Once_type_repr
-  Once_Assumptions.Once_underlying
-  Once_Assumptions.Once_get__0
-  Once_Assumptions.Once_set__0
-  Once_Assumptions.Once_get_done
-  Once_Assumptions.Once_set_done
-  Once_Assumptions.Once_get_m
-  Once_Assumptions.Once_set_m
-  Once_Assumptions.Once'ptr_Do_unfold
-  Once_Assumptions.Once'ptr_doSlow_unfold
+attribute [instance] Once.TypeAssumptions.type_repr
+  Once.TypeAssumptions.underlying
+  Once.TypeAssumptions.get__0
+  Once.TypeAssumptions.set__0
+  Once.TypeAssumptions.get_done
+  Once.TypeAssumptions.set_done
+  Once.TypeAssumptions.get_m
+  Once.TypeAssumptions.set_m
+  Once.TypeAssumptions.ptr_Do_unfold
+  Once.TypeAssumptions.ptr_doSlow_unfold
 
 namespace Pool
 structure t [FfiSyntax] where
@@ -1443,7 +1443,7 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Pool
 
-@[reducible] def Pool'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Pool.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"local" «unsafe».Pointer),
 (go.field_decl.FieldDecl go!"localSize" go.uintptr),
@@ -1451,46 +1451,46 @@ end Pool
 (go.field_decl.FieldDecl go!"victimSize" go.uintptr),
 (go.field_decl.FieldDecl go!"New" (go.GoType.FunctionType (go.signature.Signature [] false [go.any])))]
 
-@[irreducible] def Pool'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Pool'fds_unsealed
+@[irreducible] def Pool.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Pool.fieldsUnsealed
 
 instance equals_unfold_Pool [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Pool'fds Pool'fds_unsealed :=
-  ⟨by unfold Pool'fds; rfl⟩
+    EqualsUnfold Pool.fields Pool.fieldsUnsealed :=
+  ⟨by unfold Pool.fields; rfl⟩
 
-@[reducible] def «Poolⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Pool'fds)
+@[reducible] def Pool.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Pool.fields)
 
-class Pool_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Pool_type_repr : go.TypeReprUnderlying «Poolⁱᵐᵖˡ» Pool.t
-  Pool_underlying : go.UnderlyingDirectedEq Pool «Poolⁱᵐᵖˡ»
-  Pool_get_noCopy : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
-  Pool_set_noCopy : ∀ (x : Pool.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Pool.t)))
-  Pool_get_local : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"local") #x (Val #(x.local'))
-  Pool_set_local : ∀ (x : Pool.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"local") (PairV #x #y) (Val #(({ x with local' := y } : Pool.t)))
-  Pool_get_localSize : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"localSize") #x (Val #(x.localSize'))
-  Pool_set_localSize : ∀ (x : Pool.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"localSize") (PairV #x #y) (Val #(({ x with localSize' := y } : Pool.t)))
-  Pool_get_victim : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"victim") #x (Val #(x.victim'))
-  Pool_set_victim : ∀ (x : Pool.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"victim") (PairV #x #y) (Val #(({ x with victim' := y } : Pool.t)))
-  Pool_get_victimSize : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"victimSize") #x (Val #(x.victimSize'))
-  Pool_set_victimSize : ∀ (x : Pool.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"victimSize") (PairV #x #y) (Val #(({ x with victimSize' := y } : Pool.t)))
-  Pool_get_New : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet «Poolⁱᵐᵖˡ» go!"New") #x (Val #(x.New'))
-  Pool_set_New : ∀ (x : Pool.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet «Poolⁱᵐᵖˡ» go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool.t)))
+class Pool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Pool.underlying Pool.t
+  underlying : go.UnderlyingDirectedEq Pool Pool.underlying
+  get_noCopy : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set_noCopy : ∀ (x : Pool.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Pool.t)))
+  get_local : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"local") #x (Val #(x.local'))
+  set_local : ∀ (x : Pool.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"local") (PairV #x #y) (Val #(({ x with local' := y } : Pool.t)))
+  get_localSize : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"localSize") #x (Val #(x.localSize'))
+  set_localSize : ∀ (x : Pool.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"localSize") (PairV #x #y) (Val #(({ x with localSize' := y } : Pool.t)))
+  get_victim : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"victim") #x (Val #(x.victim'))
+  set_victim : ∀ (x : Pool.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"victim") (PairV #x #y) (Val #(({ x with victim' := y } : Pool.t)))
+  get_victimSize : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"victimSize") #x (Val #(x.victimSize'))
+  set_victimSize : ∀ (x : Pool.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"victimSize") (PairV #x #y) (Val #(({ x with victimSize' := y } : Pool.t)))
+  get_New : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"New") #x (Val #(x.New'))
+  set_New : ∀ (x : Pool.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool.t)))
 
-attribute [instance] Pool_Assumptions.Pool_type_repr
-  Pool_Assumptions.Pool_underlying
-  Pool_Assumptions.Pool_get_noCopy
-  Pool_Assumptions.Pool_set_noCopy
-  Pool_Assumptions.Pool_get_local
-  Pool_Assumptions.Pool_set_local
-  Pool_Assumptions.Pool_get_localSize
-  Pool_Assumptions.Pool_set_localSize
-  Pool_Assumptions.Pool_get_victim
-  Pool_Assumptions.Pool_set_victim
-  Pool_Assumptions.Pool_get_victimSize
-  Pool_Assumptions.Pool_set_victimSize
-  Pool_Assumptions.Pool_get_New
-  Pool_Assumptions.Pool_set_New
+attribute [instance] Pool.TypeAssumptions.type_repr
+  Pool.TypeAssumptions.underlying
+  Pool.TypeAssumptions.get_noCopy
+  Pool.TypeAssumptions.set_noCopy
+  Pool.TypeAssumptions.get_local
+  Pool.TypeAssumptions.set_local
+  Pool.TypeAssumptions.get_localSize
+  Pool.TypeAssumptions.set_localSize
+  Pool.TypeAssumptions.get_victim
+  Pool.TypeAssumptions.set_victim
+  Pool.TypeAssumptions.get_victimSize
+  Pool.TypeAssumptions.set_victimSize
+  Pool.TypeAssumptions.get_New
+  Pool.TypeAssumptions.set_New
 
 namespace poolChainElt
 axiom t : Type
@@ -1498,14 +1498,14 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end poolChainElt
 
-class poolChainElt_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolChainElt_type_repr : go.TypeReprUnderlying «poolChainEltⁱᵐᵖˡ» poolChainElt.t
-  poolChainElt_underlying : go.UnderlyingDirectedEq poolChainElt «poolChainEltⁱᵐᵖˡ»
-  «poolChainEltⁱᵐᵖˡ_underlying» : go.IsUnderlying «poolChainEltⁱᵐᵖˡ» «poolChainEltⁱᵐᵖˡ»
+class poolChainElt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying poolChainElt.underlying poolChainElt.t
+  underlying : go.UnderlyingDirectedEq poolChainElt poolChainElt.underlying
+  isUnderlying : go.IsUnderlying poolChainElt.underlying poolChainElt.underlying
 
-attribute [instance] poolChainElt_Assumptions.poolChainElt_type_repr
-  poolChainElt_Assumptions.poolChainElt_underlying
-  poolChainElt_Assumptions.«poolChainEltⁱᵐᵖˡ_underlying»
+attribute [instance] poolChainElt.TypeAssumptions.type_repr
+  poolChainElt.TypeAssumptions.underlying
+  poolChainElt.TypeAssumptions.isUnderlying
 
 namespace poolChain
 structure t [FfiSyntax] where
@@ -1517,34 +1517,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end poolChain
 
-@[reducible] def poolChain'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def poolChain.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"head" (go.GoType.PointerType poolChainElt)),
 (go.field_decl.FieldDecl go!"tail" (_root_.Perennial.sync.atomic.Pointer poolChainElt))]
 
-@[irreducible] def poolChain'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  poolChain'fds_unsealed
+@[irreducible] def poolChain.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  poolChain.fieldsUnsealed
 
 instance equals_unfold_poolChain [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold poolChain'fds poolChain'fds_unsealed :=
-  ⟨by unfold poolChain'fds; rfl⟩
+    EqualsUnfold poolChain.fields poolChain.fieldsUnsealed :=
+  ⟨by unfold poolChain.fields; rfl⟩
 
-@[reducible] def «poolChainⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType poolChain'fds)
+@[reducible] def poolChain.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType poolChain.fields)
 
-class poolChain_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolChain_type_repr : go.TypeReprUnderlying «poolChainⁱᵐᵖˡ» poolChain.t
-  poolChain_underlying : go.UnderlyingDirectedEq poolChain «poolChainⁱᵐᵖˡ»
-  poolChain_get_head : ∀ (x : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolChainⁱᵐᵖˡ» go!"head") #x (Val #(x.head'))
-  poolChain_set_head : ∀ (x : poolChain.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «poolChainⁱᵐᵖˡ» go!"head") (PairV #x #y) (Val #(({ x with head' := y } : poolChain.t)))
-  poolChain_get_tail : ∀ (x : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolChainⁱᵐᵖˡ» go!"tail") #x (Val #(x.tail'))
-  poolChain_set_tail : ∀ (x : poolChain.t) (y : (_root_.Perennial.sync.atomic.Pointer.t poolChainElt.t)), go.IsGoStepPureDetTagged under (StructFieldSet «poolChainⁱᵐᵖˡ» go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : poolChain.t)))
+class poolChain.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying poolChain.underlying poolChain.t
+  underlying : go.UnderlyingDirectedEq poolChain poolChain.underlying
+  get_head : ∀ (x : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldGet poolChain.underlying go!"head") #x (Val #(x.head'))
+  set_head : ∀ (x : poolChain.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet poolChain.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : poolChain.t)))
+  get_tail : ∀ (x : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldGet poolChain.underlying go!"tail") #x (Val #(x.tail'))
+  set_tail : ∀ (x : poolChain.t) (y : (_root_.Perennial.sync.atomic.Pointer.t poolChainElt.t)), go.IsGoStepPureDetTagged under (StructFieldSet poolChain.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : poolChain.t)))
 
-attribute [instance] poolChain_Assumptions.poolChain_type_repr
-  poolChain_Assumptions.poolChain_underlying
-  poolChain_Assumptions.poolChain_get_head
-  poolChain_Assumptions.poolChain_set_head
-  poolChain_Assumptions.poolChain_get_tail
-  poolChain_Assumptions.poolChain_set_tail
+attribute [instance] poolChain.TypeAssumptions.type_repr
+  poolChain.TypeAssumptions.underlying
+  poolChain.TypeAssumptions.get_head
+  poolChain.TypeAssumptions.set_head
+  poolChain.TypeAssumptions.get_tail
+  poolChain.TypeAssumptions.set_tail
 
 namespace poolLocalInternal
 structure t [FfiSyntax] where
@@ -1556,34 +1556,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end poolLocalInternal
 
-@[reducible] def poolLocalInternal'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def poolLocalInternal.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"private" go.any),
 (go.field_decl.FieldDecl go!"shared" poolChain)]
 
-@[irreducible] def poolLocalInternal'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  poolLocalInternal'fds_unsealed
+@[irreducible] def poolLocalInternal.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  poolLocalInternal.fieldsUnsealed
 
 instance equals_unfold_poolLocalInternal [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold poolLocalInternal'fds poolLocalInternal'fds_unsealed :=
-  ⟨by unfold poolLocalInternal'fds; rfl⟩
+    EqualsUnfold poolLocalInternal.fields poolLocalInternal.fieldsUnsealed :=
+  ⟨by unfold poolLocalInternal.fields; rfl⟩
 
-@[reducible] def «poolLocalInternalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType poolLocalInternal'fds)
+@[reducible] def poolLocalInternal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType poolLocalInternal.fields)
 
-class poolLocalInternal_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolLocalInternal_type_repr : go.TypeReprUnderlying «poolLocalInternalⁱᵐᵖˡ» poolLocalInternal.t
-  poolLocalInternal_underlying : go.UnderlyingDirectedEq poolLocalInternal «poolLocalInternalⁱᵐᵖˡ»
-  poolLocalInternal_get_private : ∀ (x : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolLocalInternalⁱᵐᵖˡ» go!"private") #x (Val #(x.private'))
-  poolLocalInternal_set_private : ∀ (x : poolLocalInternal.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolLocalInternalⁱᵐᵖˡ» go!"private") (PairV #x #y) (Val #(({ x with private' := y } : poolLocalInternal.t)))
-  poolLocalInternal_get_shared : ∀ (x : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolLocalInternalⁱᵐᵖˡ» go!"shared") #x (Val #(x.shared'))
-  poolLocalInternal_set_shared : ∀ (x : poolLocalInternal.t) (y : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolLocalInternalⁱᵐᵖˡ» go!"shared") (PairV #x #y) (Val #(({ x with shared' := y } : poolLocalInternal.t)))
+class poolLocalInternal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying poolLocalInternal.underlying poolLocalInternal.t
+  underlying : go.UnderlyingDirectedEq poolLocalInternal poolLocalInternal.underlying
+  get_private : ∀ (x : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"private") #x (Val #(x.private'))
+  set_private : ∀ (x : poolLocalInternal.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"private") (PairV #x #y) (Val #(({ x with private' := y } : poolLocalInternal.t)))
+  get_shared : ∀ (x : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"shared") #x (Val #(x.shared'))
+  set_shared : ∀ (x : poolLocalInternal.t) (y : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"shared") (PairV #x #y) (Val #(({ x with shared' := y } : poolLocalInternal.t)))
 
-attribute [instance] poolLocalInternal_Assumptions.poolLocalInternal_type_repr
-  poolLocalInternal_Assumptions.poolLocalInternal_underlying
-  poolLocalInternal_Assumptions.poolLocalInternal_get_private
-  poolLocalInternal_Assumptions.poolLocalInternal_set_private
-  poolLocalInternal_Assumptions.poolLocalInternal_get_shared
-  poolLocalInternal_Assumptions.poolLocalInternal_set_shared
+attribute [instance] poolLocalInternal.TypeAssumptions.type_repr
+  poolLocalInternal.TypeAssumptions.underlying
+  poolLocalInternal.TypeAssumptions.get_private
+  poolLocalInternal.TypeAssumptions.set_private
+  poolLocalInternal.TypeAssumptions.get_shared
+  poolLocalInternal.TypeAssumptions.set_shared
 
 namespace poolLocal
 structure t [FfiSyntax] where
@@ -1595,34 +1595,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end poolLocal
 
-@[reducible] def poolLocal'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def poolLocal.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"poolLocalInternal" poolLocalInternal),
 (go.field_decl.FieldDecl go!"pad" (go.GoType.ArrayType 96 go.byte))]
 
-@[irreducible] def poolLocal'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  poolLocal'fds_unsealed
+@[irreducible] def poolLocal.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  poolLocal.fieldsUnsealed
 
 instance equals_unfold_poolLocal [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold poolLocal'fds poolLocal'fds_unsealed :=
-  ⟨by unfold poolLocal'fds; rfl⟩
+    EqualsUnfold poolLocal.fields poolLocal.fieldsUnsealed :=
+  ⟨by unfold poolLocal.fields; rfl⟩
 
-@[reducible] def «poolLocalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType poolLocal'fds)
+@[reducible] def poolLocal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType poolLocal.fields)
 
-class poolLocal_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolLocal_type_repr : go.TypeReprUnderlying «poolLocalⁱᵐᵖˡ» poolLocal.t
-  poolLocal_underlying : go.UnderlyingDirectedEq poolLocal «poolLocalⁱᵐᵖˡ»
-  poolLocal_get_poolLocalInternal : ∀ (x : poolLocal.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolLocalⁱᵐᵖˡ» go!"poolLocalInternal") #x (Val #(x.poolLocalInternal'))
-  poolLocal_set_poolLocalInternal : ∀ (x : poolLocal.t) (y : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolLocalⁱᵐᵖˡ» go!"poolLocalInternal") (PairV #x #y) (Val #(({ x with poolLocalInternal' := y } : poolLocal.t)))
-  poolLocal_get_pad : ∀ (x : poolLocal.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolLocalⁱᵐᵖˡ» go!"pad") #x (Val #(x.pad'))
-  poolLocal_set_pad : ∀ (x : poolLocal.t) (y : (array.t w8 96)), go.IsGoStepPureDetTagged under (StructFieldSet «poolLocalⁱᵐᵖˡ» go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : poolLocal.t)))
+class poolLocal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying poolLocal.underlying poolLocal.t
+  underlying : go.UnderlyingDirectedEq poolLocal poolLocal.underlying
+  get_poolLocalInternal : ∀ (x : poolLocal.t), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"poolLocalInternal") #x (Val #(x.poolLocalInternal'))
+  set_poolLocalInternal : ∀ (x : poolLocal.t) (y : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"poolLocalInternal") (PairV #x #y) (Val #(({ x with poolLocalInternal' := y } : poolLocal.t)))
+  get_pad : ∀ (x : poolLocal.t), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"pad") #x (Val #(x.pad'))
+  set_pad : ∀ (x : poolLocal.t) (y : (array.t w8 96)), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : poolLocal.t)))
 
-attribute [instance] poolLocal_Assumptions.poolLocal_type_repr
-  poolLocal_Assumptions.poolLocal_underlying
-  poolLocal_Assumptions.poolLocal_get_poolLocalInternal
-  poolLocal_Assumptions.poolLocal_set_poolLocalInternal
-  poolLocal_Assumptions.poolLocal_get_pad
-  poolLocal_Assumptions.poolLocal_set_pad
+attribute [instance] poolLocal.TypeAssumptions.type_repr
+  poolLocal.TypeAssumptions.underlying
+  poolLocal.TypeAssumptions.get_poolLocalInternal
+  poolLocal.TypeAssumptions.set_poolLocalInternal
+  poolLocal.TypeAssumptions.get_pad
+  poolLocal.TypeAssumptions.set_pad
 
 namespace poolDequeue
 structure t [FfiSyntax] where
@@ -1634,34 +1634,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end poolDequeue
 
-@[reducible] def poolDequeue'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def poolDequeue.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"headTail" _root_.Perennial.sync.atomic.Uint64),
 (go.field_decl.FieldDecl go!"vals" (go.GoType.SliceType eface))]
 
-@[irreducible] def poolDequeue'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  poolDequeue'fds_unsealed
+@[irreducible] def poolDequeue.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  poolDequeue.fieldsUnsealed
 
 instance equals_unfold_poolDequeue [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold poolDequeue'fds poolDequeue'fds_unsealed :=
-  ⟨by unfold poolDequeue'fds; rfl⟩
+    EqualsUnfold poolDequeue.fields poolDequeue.fieldsUnsealed :=
+  ⟨by unfold poolDequeue.fields; rfl⟩
 
-@[reducible] def «poolDequeueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType poolDequeue'fds)
+@[reducible] def poolDequeue.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType poolDequeue.fields)
 
-class poolDequeue_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  poolDequeue_type_repr : go.TypeReprUnderlying «poolDequeueⁱᵐᵖˡ» poolDequeue.t
-  poolDequeue_underlying : go.UnderlyingDirectedEq poolDequeue «poolDequeueⁱᵐᵖˡ»
-  poolDequeue_get_headTail : ∀ (x : poolDequeue.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolDequeueⁱᵐᵖˡ» go!"headTail") #x (Val #(x.headTail'))
-  poolDequeue_set_headTail : ∀ (x : poolDequeue.t) (y : _root_.Perennial.sync.atomic.Uint64.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolDequeueⁱᵐᵖˡ» go!"headTail") (PairV #x #y) (Val #(({ x with headTail' := y } : poolDequeue.t)))
-  poolDequeue_get_vals : ∀ (x : poolDequeue.t), go.IsGoStepPureDetTagged under (StructFieldGet «poolDequeueⁱᵐᵖˡ» go!"vals") #x (Val #(x.vals'))
-  poolDequeue_set_vals : ∀ (x : poolDequeue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «poolDequeueⁱᵐᵖˡ» go!"vals") (PairV #x #y) (Val #(({ x with vals' := y } : poolDequeue.t)))
+class poolDequeue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying poolDequeue.underlying poolDequeue.t
+  underlying : go.UnderlyingDirectedEq poolDequeue poolDequeue.underlying
+  get_headTail : ∀ (x : poolDequeue.t), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"headTail") #x (Val #(x.headTail'))
+  set_headTail : ∀ (x : poolDequeue.t) (y : _root_.Perennial.sync.atomic.Uint64.t), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"headTail") (PairV #x #y) (Val #(({ x with headTail' := y } : poolDequeue.t)))
+  get_vals : ∀ (x : poolDequeue.t), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"vals") #x (Val #(x.vals'))
+  set_vals : ∀ (x : poolDequeue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"vals") (PairV #x #y) (Val #(({ x with vals' := y } : poolDequeue.t)))
 
-attribute [instance] poolDequeue_Assumptions.poolDequeue_type_repr
-  poolDequeue_Assumptions.poolDequeue_underlying
-  poolDequeue_Assumptions.poolDequeue_get_headTail
-  poolDequeue_Assumptions.poolDequeue_set_headTail
-  poolDequeue_Assumptions.poolDequeue_get_vals
-  poolDequeue_Assumptions.poolDequeue_set_vals
+attribute [instance] poolDequeue.TypeAssumptions.type_repr
+  poolDequeue.TypeAssumptions.underlying
+  poolDequeue.TypeAssumptions.get_headTail
+  poolDequeue.TypeAssumptions.set_headTail
+  poolDequeue.TypeAssumptions.get_vals
+  poolDequeue.TypeAssumptions.set_vals
 
 namespace eface
 structure t [FfiSyntax] where
@@ -1673,46 +1673,46 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end eface
 
-@[reducible] def eface'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def eface.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"typ" «unsafe».Pointer),
 (go.field_decl.FieldDecl go!"val" «unsafe».Pointer)]
 
-@[irreducible] def eface'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  eface'fds_unsealed
+@[irreducible] def eface.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  eface.fieldsUnsealed
 
 instance equals_unfold_eface [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold eface'fds eface'fds_unsealed :=
-  ⟨by unfold eface'fds; rfl⟩
+    EqualsUnfold eface.fields eface.fieldsUnsealed :=
+  ⟨by unfold eface.fields; rfl⟩
 
-@[reducible] def «efaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType eface'fds)
+@[reducible] def eface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType eface.fields)
 
-class eface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  eface_type_repr : go.TypeReprUnderlying «efaceⁱᵐᵖˡ» eface.t
-  eface_underlying : go.UnderlyingDirectedEq eface «efaceⁱᵐᵖˡ»
-  eface_get_typ : ∀ (x : eface.t), go.IsGoStepPureDetTagged under (StructFieldGet «efaceⁱᵐᵖˡ» go!"typ") #x (Val #(x.typ'))
-  eface_set_typ : ∀ (x : eface.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «efaceⁱᵐᵖˡ» go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : eface.t)))
-  eface_get_val : ∀ (x : eface.t), go.IsGoStepPureDetTagged under (StructFieldGet «efaceⁱᵐᵖˡ» go!"val") #x (Val #(x.val'))
-  eface_set_val : ∀ (x : eface.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «efaceⁱᵐᵖˡ» go!"val") (PairV #x #y) (Val #(({ x with val' := y } : eface.t)))
+class eface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying eface.underlying eface.t
+  underlying : go.UnderlyingDirectedEq eface eface.underlying
+  get_typ : ∀ (x : eface.t), go.IsGoStepPureDetTagged under (StructFieldGet eface.underlying go!"typ") #x (Val #(x.typ'))
+  set_typ : ∀ (x : eface.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet eface.underlying go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : eface.t)))
+  get_val : ∀ (x : eface.t), go.IsGoStepPureDetTagged under (StructFieldGet eface.underlying go!"val") #x (Val #(x.val'))
+  set_val : ∀ (x : eface.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet eface.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : eface.t)))
 
-attribute [instance] eface_Assumptions.eface_type_repr
-  eface_Assumptions.eface_underlying
-  eface_Assumptions.eface_get_typ
-  eface_Assumptions.eface_set_typ
-  eface_Assumptions.eface_get_val
-  eface_Assumptions.eface_set_val
+attribute [instance] eface.TypeAssumptions.type_repr
+  eface.TypeAssumptions.underlying
+  eface.TypeAssumptions.get_typ
+  eface.TypeAssumptions.set_typ
+  eface.TypeAssumptions.get_val
+  eface.TypeAssumptions.set_val
 
 namespace dequeueNil
 abbrev t [FfiSyntax] : Type := Loc
 end dequeueNil
 
-@[reducible] def «dequeueNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def dequeueNil.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.PointerType (go.GoType.StructType []))
 
-class dequeueNil_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  dequeueNil_underlying : go.UnderlyingDirectedEq dequeueNil «dequeueNilⁱᵐᵖˡ»
+class dequeueNil.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq dequeueNil dequeueNil.underlying
 
-attribute [instance] dequeueNil_Assumptions.dequeueNil_underlying
+attribute [instance] dequeueNil.TypeAssumptions.underlying
 
 namespace RWMutex
 structure t [FfiSyntax] where
@@ -1727,77 +1727,77 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end RWMutex
 
-@[reducible] def RWMutex'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RWMutex.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"w" Mutex),
 (go.field_decl.FieldDecl go!"writerSem" go.uint32),
 (go.field_decl.FieldDecl go!"readerSem" go.uint32),
 (go.field_decl.FieldDecl go!"readerCount" _root_.Perennial.sync.atomic.Int32),
 (go.field_decl.FieldDecl go!"readerWait" _root_.Perennial.sync.atomic.Int32)]
 
-@[irreducible] def RWMutex'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  RWMutex'fds_unsealed
+@[irreducible] def RWMutex.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  RWMutex.fieldsUnsealed
 
 instance equals_unfold_RWMutex [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold RWMutex'fds RWMutex'fds_unsealed :=
-  ⟨by unfold RWMutex'fds; rfl⟩
+    EqualsUnfold RWMutex.fields RWMutex.fieldsUnsealed :=
+  ⟨by unfold RWMutex.fields; rfl⟩
 
-@[reducible] def «RWMutexⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType RWMutex'fds)
+@[reducible] def RWMutex.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType RWMutex.fields)
 
-class RWMutex_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  RWMutex_type_repr : go.TypeReprUnderlying «RWMutexⁱᵐᵖˡ» RWMutex.t
-  RWMutex_underlying : go.UnderlyingDirectedEq RWMutex «RWMutexⁱᵐᵖˡ»
-  RWMutex_get_w : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet «RWMutexⁱᵐᵖˡ» go!"w") #x (Val #(x.w'))
-  RWMutex_set_w : ∀ (x : RWMutex.t) (y : Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «RWMutexⁱᵐᵖˡ» go!"w") (PairV #x #y) (Val #(({ x with w' := y } : RWMutex.t)))
-  RWMutex_get_writerSem : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet «RWMutexⁱᵐᵖˡ» go!"writerSem") #x (Val #(x.writerSem'))
-  RWMutex_set_writerSem : ∀ (x : RWMutex.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «RWMutexⁱᵐᵖˡ» go!"writerSem") (PairV #x #y) (Val #(({ x with writerSem' := y } : RWMutex.t)))
-  RWMutex_get_readerSem : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet «RWMutexⁱᵐᵖˡ» go!"readerSem") #x (Val #(x.readerSem'))
-  RWMutex_set_readerSem : ∀ (x : RWMutex.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «RWMutexⁱᵐᵖˡ» go!"readerSem") (PairV #x #y) (Val #(({ x with readerSem' := y } : RWMutex.t)))
-  RWMutex_get_readerCount : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet «RWMutexⁱᵐᵖˡ» go!"readerCount") #x (Val #(x.readerCount'))
-  RWMutex_set_readerCount : ∀ (x : RWMutex.t) (y : _root_.Perennial.sync.atomic.Int32.t), go.IsGoStepPureDetTagged under (StructFieldSet «RWMutexⁱᵐᵖˡ» go!"readerCount") (PairV #x #y) (Val #(({ x with readerCount' := y } : RWMutex.t)))
-  RWMutex_get_readerWait : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet «RWMutexⁱᵐᵖˡ» go!"readerWait") #x (Val #(x.readerWait'))
-  RWMutex_set_readerWait : ∀ (x : RWMutex.t) (y : _root_.Perennial.sync.atomic.Int32.t), go.IsGoStepPureDetTagged under (StructFieldSet «RWMutexⁱᵐᵖˡ» go!"readerWait") (PairV #x #y) (Val #(({ x with readerWait' := y } : RWMutex.t)))
-  RWMutex'ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"Lock" «RWMutex__Lockⁱᵐᵖˡ»
-  RWMutex'ptr_RLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RLock" «RWMutex__RLockⁱᵐᵖˡ»
-  RWMutex'ptr_RLocker_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RLocker" «RWMutex__RLockerⁱᵐᵖˡ»
-  RWMutex'ptr_RUnlock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RUnlock" «RWMutex__RUnlockⁱᵐᵖˡ»
-  RWMutex'ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"TryLock" «RWMutex__TryLockⁱᵐᵖˡ»
-  RWMutex'ptr_TryRLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"TryRLock" «RWMutex__TryRLockⁱᵐᵖˡ»
-  RWMutex'ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"Unlock" «RWMutex__Unlockⁱᵐᵖˡ»
-  RWMutex'ptr_rUnlockSlow_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"rUnlockSlow" «RWMutex__rUnlockSlowⁱᵐᵖˡ»
+class RWMutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying RWMutex.underlying RWMutex.t
+  underlying : go.UnderlyingDirectedEq RWMutex RWMutex.underlying
+  get_w : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"w") #x (Val #(x.w'))
+  set_w : ∀ (x : RWMutex.t) (y : Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : RWMutex.t)))
+  get_writerSem : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"writerSem") #x (Val #(x.writerSem'))
+  set_writerSem : ∀ (x : RWMutex.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"writerSem") (PairV #x #y) (Val #(({ x with writerSem' := y } : RWMutex.t)))
+  get_readerSem : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerSem") #x (Val #(x.readerSem'))
+  set_readerSem : ∀ (x : RWMutex.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerSem") (PairV #x #y) (Val #(({ x with readerSem' := y } : RWMutex.t)))
+  get_readerCount : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerCount") #x (Val #(x.readerCount'))
+  set_readerCount : ∀ (x : RWMutex.t) (y : _root_.Perennial.sync.atomic.Int32.t), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerCount") (PairV #x #y) (Val #(({ x with readerCount' := y } : RWMutex.t)))
+  get_readerWait : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerWait") #x (Val #(x.readerWait'))
+  set_readerWait : ∀ (x : RWMutex.t) (y : _root_.Perennial.sync.atomic.Int32.t), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerWait") (PairV #x #y) (Val #(({ x with readerWait' := y } : RWMutex.t)))
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"Lock" RWMutex.Lock.impl
+  ptr_RLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RLock" RWMutex.RLock.impl
+  ptr_RLocker_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RLocker" RWMutex.RLocker.impl
+  ptr_RUnlock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RUnlock" RWMutex.RUnlock.impl
+  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"TryLock" RWMutex.TryLock.impl
+  ptr_TryRLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"TryRLock" RWMutex.TryRLock.impl
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"Unlock" RWMutex.Unlock.impl
+  ptr_rUnlockSlow_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"rUnlockSlow" RWMutex.rUnlockSlow.impl
 
-attribute [instance] RWMutex_Assumptions.RWMutex_type_repr
-  RWMutex_Assumptions.RWMutex_underlying
-  RWMutex_Assumptions.RWMutex_get_w
-  RWMutex_Assumptions.RWMutex_set_w
-  RWMutex_Assumptions.RWMutex_get_writerSem
-  RWMutex_Assumptions.RWMutex_set_writerSem
-  RWMutex_Assumptions.RWMutex_get_readerSem
-  RWMutex_Assumptions.RWMutex_set_readerSem
-  RWMutex_Assumptions.RWMutex_get_readerCount
-  RWMutex_Assumptions.RWMutex_set_readerCount
-  RWMutex_Assumptions.RWMutex_get_readerWait
-  RWMutex_Assumptions.RWMutex_set_readerWait
-  RWMutex_Assumptions.RWMutex'ptr_Lock_unfold
-  RWMutex_Assumptions.RWMutex'ptr_RLock_unfold
-  RWMutex_Assumptions.RWMutex'ptr_RLocker_unfold
-  RWMutex_Assumptions.RWMutex'ptr_RUnlock_unfold
-  RWMutex_Assumptions.RWMutex'ptr_TryLock_unfold
-  RWMutex_Assumptions.RWMutex'ptr_TryRLock_unfold
-  RWMutex_Assumptions.RWMutex'ptr_Unlock_unfold
-  RWMutex_Assumptions.RWMutex'ptr_rUnlockSlow_unfold
+attribute [instance] RWMutex.TypeAssumptions.type_repr
+  RWMutex.TypeAssumptions.underlying
+  RWMutex.TypeAssumptions.get_w
+  RWMutex.TypeAssumptions.set_w
+  RWMutex.TypeAssumptions.get_writerSem
+  RWMutex.TypeAssumptions.set_writerSem
+  RWMutex.TypeAssumptions.get_readerSem
+  RWMutex.TypeAssumptions.set_readerSem
+  RWMutex.TypeAssumptions.get_readerCount
+  RWMutex.TypeAssumptions.set_readerCount
+  RWMutex.TypeAssumptions.get_readerWait
+  RWMutex.TypeAssumptions.set_readerWait
+  RWMutex.TypeAssumptions.ptr_Lock_unfold
+  RWMutex.TypeAssumptions.ptr_RLock_unfold
+  RWMutex.TypeAssumptions.ptr_RLocker_unfold
+  RWMutex.TypeAssumptions.ptr_RUnlock_unfold
+  RWMutex.TypeAssumptions.ptr_TryLock_unfold
+  RWMutex.TypeAssumptions.ptr_TryRLock_unfold
+  RWMutex.TypeAssumptions.ptr_Unlock_unfold
+  RWMutex.TypeAssumptions.ptr_rUnlockSlow_unfold
 
 namespace rlocker
 abbrev t [FfiSyntax] : Type := RWMutex.t
 end rlocker
 
-@[reducible] def «rlockerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def rlocker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   RWMutex
 
-class rlocker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  rlocker_underlying : go.UnderlyingDirectedEq rlocker «rlockerⁱᵐᵖˡ»
+class rlocker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq rlocker rlocker.underlying
 
-attribute [instance] rlocker_Assumptions.rlocker_underlying
+attribute [instance] rlocker.TypeAssumptions.underlying
 
 namespace WaitGroup
 structure t [FfiSyntax] where
@@ -1810,79 +1810,79 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end WaitGroup
 
-@[reducible] def WaitGroup'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def WaitGroup.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"state" _root_.Perennial.sync.atomic.Uint64),
 (go.field_decl.FieldDecl go!"sema" go.uint32)]
 
-@[irreducible] def WaitGroup'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  WaitGroup'fds_unsealed
+@[irreducible] def WaitGroup.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  WaitGroup.fieldsUnsealed
 
 instance equals_unfold_WaitGroup [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold WaitGroup'fds WaitGroup'fds_unsealed :=
-  ⟨by unfold WaitGroup'fds; rfl⟩
+    EqualsUnfold WaitGroup.fields WaitGroup.fieldsUnsealed :=
+  ⟨by unfold WaitGroup.fields; rfl⟩
 
-@[reducible] def «WaitGroupⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType WaitGroup'fds)
+@[reducible] def WaitGroup.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType WaitGroup.fields)
 
-class WaitGroup_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  WaitGroup_type_repr : go.TypeReprUnderlying «WaitGroupⁱᵐᵖˡ» WaitGroup.t
-  WaitGroup_underlying : go.UnderlyingDirectedEq WaitGroup «WaitGroupⁱᵐᵖˡ»
-  WaitGroup_get_noCopy : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet «WaitGroupⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
-  WaitGroup_set_noCopy : ∀ (x : WaitGroup.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «WaitGroupⁱᵐᵖˡ» go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : WaitGroup.t)))
-  WaitGroup_get_state : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet «WaitGroupⁱᵐᵖˡ» go!"state") #x (Val #(x.state'))
-  WaitGroup_set_state : ∀ (x : WaitGroup.t) (y : _root_.Perennial.sync.atomic.Uint64.t), go.IsGoStepPureDetTagged under (StructFieldSet «WaitGroupⁱᵐᵖˡ» go!"state") (PairV #x #y) (Val #(({ x with state' := y } : WaitGroup.t)))
-  WaitGroup_get_sema : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet «WaitGroupⁱᵐᵖˡ» go!"sema") #x (Val #(x.sema'))
-  WaitGroup_set_sema : ∀ (x : WaitGroup.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «WaitGroupⁱᵐᵖˡ» go!"sema") (PairV #x #y) (Val #(({ x with sema' := y } : WaitGroup.t)))
-  WaitGroup'ptr_Add_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Add" «WaitGroup__Addⁱᵐᵖˡ»
-  WaitGroup'ptr_Done_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Done" «WaitGroup__Doneⁱᵐᵖˡ»
-  WaitGroup'ptr_Go_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Go" «WaitGroup__Goⁱᵐᵖˡ»
-  WaitGroup'ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Wait" «WaitGroup__Waitⁱᵐᵖˡ»
+class WaitGroup.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying WaitGroup.underlying WaitGroup.t
+  underlying : go.UnderlyingDirectedEq WaitGroup WaitGroup.underlying
+  get_noCopy : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set_noCopy : ∀ (x : WaitGroup.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : WaitGroup.t)))
+  get_state : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"state") #x (Val #(x.state'))
+  set_state : ∀ (x : WaitGroup.t) (y : _root_.Perennial.sync.atomic.Uint64.t), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : WaitGroup.t)))
+  get_sema : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"sema") #x (Val #(x.sema'))
+  set_sema : ∀ (x : WaitGroup.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"sema") (PairV #x #y) (Val #(({ x with sema' := y } : WaitGroup.t)))
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Add" WaitGroup.Add.impl
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Done" WaitGroup.Done.impl
+  ptr_Go_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Go" WaitGroup.Go.impl
+  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Wait" WaitGroup.Wait.impl
 
-attribute [instance] WaitGroup_Assumptions.WaitGroup_type_repr
-  WaitGroup_Assumptions.WaitGroup_underlying
-  WaitGroup_Assumptions.WaitGroup_get_noCopy
-  WaitGroup_Assumptions.WaitGroup_set_noCopy
-  WaitGroup_Assumptions.WaitGroup_get_state
-  WaitGroup_Assumptions.WaitGroup_set_state
-  WaitGroup_Assumptions.WaitGroup_get_sema
-  WaitGroup_Assumptions.WaitGroup_set_sema
-  WaitGroup_Assumptions.WaitGroup'ptr_Add_unfold
-  WaitGroup_Assumptions.WaitGroup'ptr_Done_unfold
-  WaitGroup_Assumptions.WaitGroup'ptr_Go_unfold
-  WaitGroup_Assumptions.WaitGroup'ptr_Wait_unfold
+attribute [instance] WaitGroup.TypeAssumptions.type_repr
+  WaitGroup.TypeAssumptions.underlying
+  WaitGroup.TypeAssumptions.get_noCopy
+  WaitGroup.TypeAssumptions.set_noCopy
+  WaitGroup.TypeAssumptions.get_state
+  WaitGroup.TypeAssumptions.set_state
+  WaitGroup.TypeAssumptions.get_sema
+  WaitGroup.TypeAssumptions.set_sema
+  WaitGroup.TypeAssumptions.ptr_Add_unfold
+  WaitGroup.TypeAssumptions.ptr_Done_unfold
+  WaitGroup.TypeAssumptions.ptr_Go_unfold
+  WaitGroup.TypeAssumptions.ptr_Wait_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Cond_instance : Cond_Assumptions
-  copyChecker_instance : copyChecker_Assumptions
-  noCopy_instance : noCopy_Assumptions
-  Map_instance : Map_Assumptions
-  Mutex_instance : Mutex_Assumptions
-  Locker_instance : Locker_Assumptions
-  Once_instance : Once_Assumptions
-  Pool_instance : Pool_Assumptions
-  poolLocalInternal_instance : poolLocalInternal_Assumptions
-  poolLocal_instance : poolLocal_Assumptions
-  poolDequeue_instance : poolDequeue_Assumptions
-  eface_instance : eface_Assumptions
-  dequeueNil_instance : dequeueNil_Assumptions
-  poolChain_instance : poolChain_Assumptions
-  poolChainElt_instance : poolChainElt_Assumptions
-  notifyList_instance : notifyList_Assumptions
-  RWMutex_instance : RWMutex_Assumptions
-  rlocker_instance : rlocker_Assumptions
-  WaitGroup_instance : WaitGroup_Assumptions
-  NewCond_unfold : FuncUnfold NewCond [] «NewCondⁱᵐᵖˡ»
-  runtime_Semacquire_unfold : FuncUnfold runtime_Semacquire [] «runtime_Semacquireⁱᵐᵖˡ»
-  runtime_SemacquireWaitGroup_unfold : FuncUnfold runtime_SemacquireWaitGroup [] «runtime_SemacquireWaitGroupⁱᵐᵖˡ»
-  runtime_SemacquireRWMutexR_unfold : FuncUnfold runtime_SemacquireRWMutexR [] «runtime_SemacquireRWMutexRⁱᵐᵖˡ»
-  runtime_SemacquireRWMutex_unfold : FuncUnfold runtime_SemacquireRWMutex [] «runtime_SemacquireRWMutexⁱᵐᵖˡ»
-  runtime_Semrelease_unfold : FuncUnfold runtime_Semrelease [] «runtime_Semreleaseⁱᵐᵖˡ»
-  runtime_notifyListAdd_unfold : FuncUnfold runtime_notifyListAdd [] «runtime_notifyListAddⁱᵐᵖˡ»
-  runtime_notifyListWait_unfold : FuncUnfold runtime_notifyListWait [] «runtime_notifyListWaitⁱᵐᵖˡ»
-  runtime_notifyListNotifyAll_unfold : FuncUnfold runtime_notifyListNotifyAll [] «runtime_notifyListNotifyAllⁱᵐᵖˡ»
-  runtime_notifyListNotifyOne_unfold : FuncUnfold runtime_notifyListNotifyOne [] «runtime_notifyListNotifyOneⁱᵐᵖˡ»
-  runtime_notifyListCheck_unfold : FuncUnfold runtime_notifyListCheck [] «runtime_notifyListCheckⁱᵐᵖˡ»
+  Cond_instance : Cond.TypeAssumptions
+  copyChecker_instance : copyChecker.TypeAssumptions
+  noCopy_instance : noCopy.TypeAssumptions
+  Map_instance : Map.TypeAssumptions
+  Mutex_instance : Mutex.TypeAssumptions
+  Locker_instance : Locker.TypeAssumptions
+  Once_instance : Once.TypeAssumptions
+  Pool_instance : Pool.TypeAssumptions
+  poolLocalInternal_instance : poolLocalInternal.TypeAssumptions
+  poolLocal_instance : poolLocal.TypeAssumptions
+  poolDequeue_instance : poolDequeue.TypeAssumptions
+  eface_instance : eface.TypeAssumptions
+  dequeueNil_instance : dequeueNil.TypeAssumptions
+  poolChain_instance : poolChain.TypeAssumptions
+  poolChainElt_instance : poolChainElt.TypeAssumptions
+  notifyList_instance : notifyList.TypeAssumptions
+  RWMutex_instance : RWMutex.TypeAssumptions
+  rlocker_instance : rlocker.TypeAssumptions
+  WaitGroup_instance : WaitGroup.TypeAssumptions
+  NewCond_unfold : FuncUnfold NewCond [] NewCond.impl
+  runtime_Semacquire_unfold : FuncUnfold runtime_Semacquire [] runtime_Semacquire.impl
+  runtime_SemacquireWaitGroup_unfold : FuncUnfold runtime_SemacquireWaitGroup [] runtime_SemacquireWaitGroup.impl
+  runtime_SemacquireRWMutexR_unfold : FuncUnfold runtime_SemacquireRWMutexR [] runtime_SemacquireRWMutexR.impl
+  runtime_SemacquireRWMutex_unfold : FuncUnfold runtime_SemacquireRWMutex [] runtime_SemacquireRWMutex.impl
+  runtime_Semrelease_unfold : FuncUnfold runtime_Semrelease [] runtime_Semrelease.impl
+  runtime_notifyListAdd_unfold : FuncUnfold runtime_notifyListAdd [] runtime_notifyListAdd.impl
+  runtime_notifyListWait_unfold : FuncUnfold runtime_notifyListWait [] runtime_notifyListWait.impl
+  runtime_notifyListNotifyAll_unfold : FuncUnfold runtime_notifyListNotifyAll [] runtime_notifyListNotifyAll.impl
+  runtime_notifyListNotifyOne_unfold : FuncUnfold runtime_notifyListNotifyOne [] runtime_notifyListNotifyOne.impl
+  runtime_notifyListCheck_unfold : FuncUnfold runtime_notifyListCheck [] runtime_notifyListCheck.impl
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
   import_race_Assumption : _root_.Perennial.internal.race.Assumptions
   import_synctest_Assumption : _root_.Perennial.internal.synctest.Assumptions

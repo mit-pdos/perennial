@@ -36,7 +36,7 @@ noncomputable def writeAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.writeAll"
 
 /-- go: append_log.go:22:17 -/
-noncomputable def «Log__mkHdrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.mkHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -59,7 +59,7 @@ noncomputable def «Log__mkHdrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.tchajed.marshal.Enc))) (Pair (Var "enc") (Var "$r0")))))))))))
 
 /-- go: append_log.go:29:17 -/
-noncomputable def «Log__writeHdrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.writeHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -73,7 +73,7 @@ noncomputable def «Log__writeHdrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Write []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: append_log.go:33:6 -/
-noncomputable def «Initⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Init.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "diskSz"
   (App (Val exceptionDo)
   (Let "diskSz" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "diskSz"))
@@ -101,7 +101,7 @@ noncomputable def «Initⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))
 
 /-- go: append_log.go:42:6 -/
-noncomputable def «Openⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Open.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "hdr" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
@@ -133,7 +133,7 @@ noncomputable def «Openⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "hdr") (Var "$r0")))))))))
 
 /-- go: append_log.go:50:17 -/
-noncomputable def «Log__getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.get.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "i"
   (App (Val exceptionDo)
@@ -155,7 +155,7 @@ noncomputable def «Log__getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sz") (Var "$r0"))))))))))))
 
 /-- go: append_log.go:58:17 -/
-noncomputable def «Log__Getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Get.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "i"
   (App (Val exceptionDo)
@@ -185,7 +185,7 @@ noncomputable def «Log__Getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))) (Val #())))))))))
 
 /-- go: append_log.go:65:6 -/
-noncomputable def «writeAllⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def writeAll.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "bks"
   (Lam "off"
   (App (Val exceptionDo)
@@ -212,7 +212,7 @@ noncomputable def «writeAllⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "bk") (Var "$value")))))))))))))))))
 
 /-- go: append_log.go:71:17 -/
-noncomputable def «Log__appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.append.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "bks"
   (App (Val exceptionDo)
@@ -246,7 +246,7 @@ noncomputable def «Log__appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sz") (Var "$r0"))))))))))))
 
 /-- go: append_log.go:82:17 -/
-noncomputable def «Log__Appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Append.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "bks"
   (App (Val exceptionDo)
@@ -268,7 +268,7 @@ noncomputable def «Log__Appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))) (Val #())))))))))
 
 /-- go: append_log.go:89:17 -/
-noncomputable def «Log__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.reset.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -284,7 +284,7 @@ noncomputable def «Log__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Var "$r0")))))))))))
 
 /-- go: append_log.go:94:17 -/
-noncomputable def «Log__Resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Reset.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -328,61 +328,61 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Log
 
-@[reducible] def Log'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"m" (go.GoType.PointerType _root_.Perennial.sync.Mutex)),
 (go.field_decl.FieldDecl go!"sz" go.uint64),
 (go.field_decl.FieldDecl go!"diskSz" go.uint64)]
 
-@[irreducible] def Log'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Log'fds_unsealed
+@[irreducible] def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Log.fieldsUnsealed
 
 instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Log'fds Log'fds_unsealed :=
-  ⟨by unfold Log'fds; rfl⟩
+    EqualsUnfold Log.fields Log.fieldsUnsealed :=
+  ⟨by unfold Log.fields; rfl⟩
 
-@[reducible] def «Logⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Log'fds)
+@[reducible] def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Log.fields)
 
-class Log_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Log_type_repr : go.TypeReprUnderlying «Logⁱᵐᵖˡ» Log.t
-  Log_underlying : go.UnderlyingDirectedEq Log «Logⁱᵐᵖˡ»
-  Log_get_m : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"m") #x (Val #(x.m'))
-  Log_set_m : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Log.t)))
-  Log_get_sz : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"sz") #x (Val #(x.sz'))
-  Log_set_sz : ∀ (x : Log.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"sz") (PairV #x #y) (Val #(({ x with sz' := y } : Log.t)))
-  Log_get_diskSz : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"diskSz") #x (Val #(x.diskSz'))
-  Log_set_diskSz : ∀ (x : Log.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"diskSz") (PairV #x #y) (Val #(({ x with diskSz' := y } : Log.t)))
-  Log'ptr_Append_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Append" «Log__Appendⁱᵐᵖˡ»
-  Log'ptr_Get_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Get" «Log__Getⁱᵐᵖˡ»
-  Log'ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Reset" «Log__Resetⁱᵐᵖˡ»
-  Log'ptr_append_unfold : MethodUnfold (go.GoType.PointerType Log) go!"append" «Log__appendⁱᵐᵖˡ»
-  Log'ptr_get_unfold : MethodUnfold (go.GoType.PointerType Log) go!"get" «Log__getⁱᵐᵖˡ»
-  Log'ptr_mkHdr_unfold : MethodUnfold (go.GoType.PointerType Log) go!"mkHdr" «Log__mkHdrⁱᵐᵖˡ»
-  Log'ptr_reset_unfold : MethodUnfold (go.GoType.PointerType Log) go!"reset" «Log__resetⁱᵐᵖˡ»
-  Log'ptr_writeHdr_unfold : MethodUnfold (go.GoType.PointerType Log) go!"writeHdr" «Log__writeHdrⁱᵐᵖˡ»
+class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Log.underlying Log.t
+  underlying : go.UnderlyingDirectedEq Log Log.underlying
+  get_m : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"m") #x (Val #(x.m'))
+  set_m : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Log.t)))
+  get_sz : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"sz") #x (Val #(x.sz'))
+  set_sz : ∀ (x : Log.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"sz") (PairV #x #y) (Val #(({ x with sz' := y } : Log.t)))
+  get_diskSz : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"diskSz") #x (Val #(x.diskSz'))
+  set_diskSz : ∀ (x : Log.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"diskSz") (PairV #x #y) (Val #(({ x with diskSz' := y } : Log.t)))
+  ptr_Append_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Append" Log.Append.impl
+  ptr_Get_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Get" Log.Get.impl
+  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Reset" Log.Reset.impl
+  ptr_append_unfold : MethodUnfold (go.GoType.PointerType Log) go!"append" Log.append.impl
+  ptr_get_unfold : MethodUnfold (go.GoType.PointerType Log) go!"get" Log.get.impl
+  ptr_mkHdr_unfold : MethodUnfold (go.GoType.PointerType Log) go!"mkHdr" Log.mkHdr.impl
+  ptr_reset_unfold : MethodUnfold (go.GoType.PointerType Log) go!"reset" Log.reset.impl
+  ptr_writeHdr_unfold : MethodUnfold (go.GoType.PointerType Log) go!"writeHdr" Log.writeHdr.impl
 
-attribute [instance] Log_Assumptions.Log_type_repr
-  Log_Assumptions.Log_underlying
-  Log_Assumptions.Log_get_m
-  Log_Assumptions.Log_set_m
-  Log_Assumptions.Log_get_sz
-  Log_Assumptions.Log_set_sz
-  Log_Assumptions.Log_get_diskSz
-  Log_Assumptions.Log_set_diskSz
-  Log_Assumptions.Log'ptr_Append_unfold
-  Log_Assumptions.Log'ptr_Get_unfold
-  Log_Assumptions.Log'ptr_Reset_unfold
-  Log_Assumptions.Log'ptr_append_unfold
-  Log_Assumptions.Log'ptr_get_unfold
-  Log_Assumptions.Log'ptr_mkHdr_unfold
-  Log_Assumptions.Log'ptr_reset_unfold
-  Log_Assumptions.Log'ptr_writeHdr_unfold
+attribute [instance] Log.TypeAssumptions.type_repr
+  Log.TypeAssumptions.underlying
+  Log.TypeAssumptions.get_m
+  Log.TypeAssumptions.set_m
+  Log.TypeAssumptions.get_sz
+  Log.TypeAssumptions.set_sz
+  Log.TypeAssumptions.get_diskSz
+  Log.TypeAssumptions.set_diskSz
+  Log.TypeAssumptions.ptr_Append_unfold
+  Log.TypeAssumptions.ptr_Get_unfold
+  Log.TypeAssumptions.ptr_Reset_unfold
+  Log.TypeAssumptions.ptr_append_unfold
+  Log.TypeAssumptions.ptr_get_unfold
+  Log.TypeAssumptions.ptr_mkHdr_unfold
+  Log.TypeAssumptions.ptr_reset_unfold
+  Log.TypeAssumptions.ptr_writeHdr_unfold
 
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Log_instance : Log_Assumptions
-  Init_unfold : FuncUnfold Init [] «Initⁱᵐᵖˡ»
-  Open_unfold : FuncUnfold Open [] «Openⁱᵐᵖˡ»
-  writeAll_unfold : FuncUnfold writeAll [] «writeAllⁱᵐᵖˡ»
+  Log_instance : Log.TypeAssumptions
+  Init_unfold : FuncUnfold Init [] Init.impl
+  Open_unfold : FuncUnfold Open [] Open.impl
+  writeAll_unfold : FuncUnfold writeAll [] writeAll.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_marshal_Assumption : _root_.Perennial.github_com.tchajed.marshal.Assumptions
   import_disk_Assumption : _root_.Perennial.github_com.goose_lang.primitive.disk.Assumptions

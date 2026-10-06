@@ -32,7 +32,7 @@ instance labeledContent_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance labeledContent_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.labeledContent.t github_com.stretchr.testify.assert.«labeledContentⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.labeledContent.t github_com.stretchr.testify.assert.labeledContent.underlying := by
   solve_into_val_typed_struct
 
 instance labeledContent_access_load_label (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (dq : DFrac) :
@@ -88,7 +88,7 @@ instance CollectT_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CollectT_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.CollectT.t github_com.stretchr.testify.assert.«CollectTⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.CollectT.t github_com.stretchr.testify.assert.CollectT.underlying := by
   solve_into_val_typed_struct
 
 instance CollectT_access_load_errors (l : Loc) (v : github_com.stretchr.testify.assert.CollectT.t) (dq : DFrac) :
@@ -128,7 +128,7 @@ instance Assertions_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Assertions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.Assertions.t github_com.stretchr.testify.assert.«Assertionsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.Assertions.t github_com.stretchr.testify.assert.Assertions.underlying := by
   solve_into_val_typed_struct
 
 instance Assertions_access_load_t (l : Loc) (v : github_com.stretchr.testify.assert.Assertions.t) (dq : DFrac) :

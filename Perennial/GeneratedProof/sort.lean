@@ -32,7 +32,7 @@ instance lessSwap_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lessSwap_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.lessSwap.t sort.«lessSwapⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sort.lessSwap.t sort.lessSwap.underlying := by
   solve_into_val_typed_struct
 
 instance lessSwap_access_load_Less (l : Loc) (v : sort.lessSwap.t) (dq : DFrac) :
@@ -88,7 +88,7 @@ instance reverse_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance reverse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.reverse.t sort.«reverseⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sort.reverse.t sort.reverse.underlying := by
   solve_into_val_typed_struct
 
 instance reverse_access_load_Interface (l : Loc) (v : sort.reverse.t) (dq : DFrac) :

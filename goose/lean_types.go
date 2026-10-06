@@ -24,7 +24,7 @@ type leanClassField struct {
 
 func leanClass(name string, params string, fields []leanClassField) string {
 	w := new(strings.Builder)
-	fmt.Fprintf(w, "class %s%s : Prop", glang.LeanQuoteComponent(name), params)
+	fmt.Fprintf(w, "class %s%s : Prop", name, params)
 	if len(fields) == 0 {
 		return w.String()
 	}
@@ -33,7 +33,7 @@ func leanClass(name string, params string, fields []leanClassField) string {
 	for _, f := range fields {
 		fname := glang.LeanQuoteComponent(f.name)
 		fmt.Fprintf(w, "\n  %s : %s", fname, f.ty)
-		names = append(names, glang.LeanQuoteComponent(name)+"."+fname)
+		names = append(names, name+"."+fname)
 	}
 	fmt.Fprintf(w, "\n\nattribute [instance] %s", strings.Join(names, "\n  "))
 	return w.String()
@@ -155,8 +155,8 @@ func (ctx *Ctx) leanFdsDecl(spec *ast.TypeSpec, ty glang.StructType) string {
 	if len(params) > 0 {
 		binders = " " + leanTypeParamBinders(params, "go.GoType")
 	}
-	fds := glang.LeanQuote(name + "'fds")
-	fdsU := glang.LeanQuote(name + "'fds_unsealed")
+	fds := glang.LeanEncodedName(name + "'fds")
+	fdsU := glang.LeanEncodedName(name + "'fds_unsealed")
 	w := new(strings.Builder)
 	fmt.Fprintf(w, "@[reducible] def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
 		ty.LeanFields())
@@ -185,7 +185,7 @@ func (ctx *Ctx) leanStructImplBody(spec *ast.TypeSpec) glang.Expr {
 func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 	typeName := spec.Name.Name
 	gallinaTypeName := glang.LeanIdent(typeName)
-	gallinaImplTypeName := glang.LeanIdent(glang.ToIdent(typeName) + "ⁱᵐᵖˡ")
+	gallinaImplTypeName := glang.LeanIdent(glang.TypeImpl(glang.ToIdent(typeName)))
 
 	t := ctx.typeOf(spec.Name).(*types.Named)
 	tunder := ctx.typeOf(spec.Type)
@@ -219,13 +219,13 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 				binders += fmt.Sprintf(" [ZeroVal %s] [TypeRepr %s %s]", pi_, pi, pi_)
 			}
 		}
-		add(typeName+"_type_repr", leanForall(binders, fmt.Sprintf("go.TypeReprUnderlying %s %s", implTy, rocqTy)))
+		add("type_repr", leanForall(binders, fmt.Sprintf("go.TypeReprUnderlying %s %s", implTy, rocqTy)))
 	}
 
 	// underlying instance
-	add(typeName+"_underlying", leanForall(goBinders, fmt.Sprintf("go.UnderlyingDirectedEq %s %s", ty, implTy)))
+	add("underlying", leanForall(goBinders, fmt.Sprintf("go.UnderlyingDirectedEq %s %s", ty, implTy)))
 	if ctx.filter.GetAction(typeName) == declfilter.Axiomatize {
-		add(glang.ToIdent(typeName)+"ⁱᵐᵖˡ"+"_underlying",
+		add("isUnderlying",
 			leanForall(goBinders, fmt.Sprintf("go.IsUnderlying %s %s", implTy, implTy)))
 	}
 
@@ -243,10 +243,10 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 				if xBinder != "" {
 					xBinder += " "
 				}
-				add(typeName+"_get_"+fieldName, fmt.Sprintf(
+				add("get_"+fieldName, fmt.Sprintf(
 					"∀ %s(x : %s), go.IsGoStepPureDetTagged under (StructFieldGet %s %s) #x (Val #(x.%s))",
 					xBinder, rocqTy, implTy, glang.LeanStringLit(fieldName), projName))
-				add(typeName+"_set_"+fieldName, fmt.Sprintf(
+				add("set_"+fieldName, fmt.Sprintf(
 					"∀ %s(x : %s) (y : %s), go.IsGoStepPureDetTagged under (StructFieldSet %s %s) (PairV #x #y) (Val #(({ x with %s := y } : %s)))",
 					xBinder, rocqTy, fieldTy, implTy, glang.LeanStringLit(fieldName), projName, rocqTy))
 			}
@@ -285,7 +285,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 							glang.IdentExpr("$r"))),
 				}.LeanVal()
 			}
-			add(typeName+"_"+methodName+"_unfold",
+			add(methodName+"_unfold",
 				leanForall(goBinders, fmt.Sprintf("MethodUnfold %s %s %s", ty, glang.LeanStringLit(methodName), lparenS(impl))))
 		}
 
@@ -339,12 +339,12 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 						ctx.glangType(field, fieldType), glang.StringLiteral{Value: methodName}, fieldExpr),
 				}.LeanVal()
 			}
-			add(typeName+"'ptr_"+methodName+"_unfold",
+			add("ptr_"+methodName+"_unfold",
 				leanForall(goBinders, fmt.Sprintf("MethodUnfold %s %s %s", ptrTy, glang.LeanStringLit(methodName), lparenS(impl))))
 		}
 	}
 
-	return leanClass(typeName+"_Assumptions", " [FfiSyntax] "+leanClassParams, fields)
+	return leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [FfiSyntax] "+leanClassParams, fields)
 }
 
 func lparenS(s string) string {
@@ -421,7 +421,7 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 	var fields []leanClassField
 	for _, t := range typeSpecs {
 		fields = append(fields, leanClassField{name: t.Name.Name + "_instance",
-			ty: glang.LeanQuoteComponent(t.Name.Name + "_Assumptions")})
+			ty: glang.LeanEncodedName(t.Name.Name + "_Assumptions")})
 	}
 	for _, f := range ctx.functions {
 		if ctx.filter.GetAction(f.Name.Name) == declfilter.Axiomatize {

@@ -99,7 +99,7 @@ noncomputable def WriteSliceLenPrefix [FfiSyntax] [GoGlobalContext] : GoString :
   go!"github.com/tchajed/marshal.WriteSliceLenPrefix"
 
 /-- go: stateless.go:8:6 -/
-noncomputable def «compute_new_capⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def compute_new_cap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "old_cap"
   (Lam "min_cap"
   (App (Val exceptionDo)
@@ -124,7 +124,7 @@ noncomputable def «compute_new_capⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] :
     Runtime-check against overflow.
 
     go: stateless.go:19:6 -/
-noncomputable def «reserveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def reserve.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "additional"
   (App (Val exceptionDo)
@@ -165,7 +165,7 @@ noncomputable def «reserveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "min_cap") (Var "$r0"))))))))))))
 
 /-- go: stateless.go:40:6 -/
-noncomputable def «ReadIntⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadInt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -180,7 +180,7 @@ noncomputable def «ReadIntⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
 
 /-- go: stateless.go:45:6 -/
-noncomputable def «ReadInt32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadInt32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -197,7 +197,7 @@ noncomputable def «ReadInt32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- ReadBytes reads `l` bytes from b and returns (bs, rest)
 
     go: stateless.go:62:6 -/
-noncomputable def «ReadBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "l"
   (App (Val exceptionDo)
@@ -216,7 +216,7 @@ noncomputable def «ReadBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
 /-- Like ReadBytes, but avoids keeping the source slice [b] alive.
 
     go: stateless.go:68:6 -/
-noncomputable def «ReadBytesCopyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadBytesCopy.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "l"
   (App (Val exceptionDo)
@@ -238,7 +238,7 @@ noncomputable def «ReadBytesCopyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0"))))))))))))
 
 /-- go: stateless.go:74:6 -/
-noncomputable def «ReadBoolⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadBool.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -252,7 +252,7 @@ noncomputable def «ReadBoolⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: stateless.go:79:6 -/
-noncomputable def «ReadLenPrefixedBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadLenPrefixedBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -291,7 +291,7 @@ noncomputable def «ReadLenPrefixedBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalConte
 /-- WriteInt appends i in little-endian format to b, returning the new slice.
 
     go: stateless.go:88:6 -/
-noncomputable def «WriteIntⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteInt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "i"
   (App (Val exceptionDo)
@@ -328,7 +328,7 @@ noncomputable def «WriteIntⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
 /-- WriteInt32 appends 32-bit integer i in little-endian format to b, returning the new slice.
 
     go: stateless.go:98:6 -/
-noncomputable def «WriteInt32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteInt32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "i"
   (App (Val exceptionDo)
@@ -365,7 +365,7 @@ noncomputable def «WriteInt32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
 /-- Append data to b, returning the new slice.
 
     go: stateless.go:107:6 -/
-noncomputable def «WriteBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "data"
   (App (Val exceptionDo)
@@ -377,7 +377,7 @@ noncomputable def «WriteBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val 
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: stateless.go:119:6 -/
-noncomputable def «WriteBoolⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteBool.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "x"
   (App (Val exceptionDo)
@@ -396,7 +396,7 @@ noncomputable def «WriteBoolⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: stateless.go:127:6 -/
-noncomputable def «WriteLenPrefixedBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteLenPrefixedBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "bs"
   (App (Val exceptionDo)
@@ -416,7 +416,7 @@ noncomputable def «WriteLenPrefixedBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalCont
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))
 
 /-- go: stateless_slice.go:3:6 -/
-noncomputable def «ReadSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def ReadSlice.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam "count"
   (Lam "readOne"
@@ -473,7 +473,7 @@ noncomputable def «ReadSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))))
 
 /-- go: stateless_slice.go:14:6 -/
-noncomputable def «ReadSliceLenPrefixⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def ReadSliceLenPrefix.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam "readOne"
   (App (Val exceptionDo)
@@ -503,7 +503,7 @@ noncomputable def «ReadSliceLenPrefixⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "count") (Var "$r0")))))))))))))))))
 
 /-- go: stateless_slice.go:19:6 -/
-noncomputable def «WriteSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def WriteSlice.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam "xs"
   (Lam "writeOne"
@@ -537,7 +537,7 @@ noncomputable def «WriteSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : g
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))))
 
 /-- go: stateless_slice.go:27:6 -/
-noncomputable def «WriteSliceLenPrefixⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def WriteSliceLenPrefix.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam "xs"
   (Lam "writeOne"
@@ -567,7 +567,7 @@ noncomputable def «WriteSliceLenPrefixⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContex
 instance info' : PkgInfo pkg_id.github_com.tchajed.marshal where
   pkgImportedPkgs := [pkg_id.encoding.binary, pkg_id.github_com.goose_lang.std]
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -589,34 +589,34 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Enc
 
-@[reducible] def Enc'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Enc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def Enc'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Enc'fds_unsealed
+@[irreducible] def Enc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Enc.fieldsUnsealed
 
 instance equals_unfold_Enc [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Enc'fds Enc'fds_unsealed :=
-  ⟨by unfold Enc'fds; rfl⟩
+    EqualsUnfold Enc.fields Enc.fieldsUnsealed :=
+  ⟨by unfold Enc.fields; rfl⟩
 
-@[reducible] def «Encⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Enc'fds)
+@[reducible] def Enc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Enc.fields)
 
-class Enc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Enc_type_repr : go.TypeReprUnderlying «Encⁱᵐᵖˡ» Enc.t
-  Enc_underlying : go.UnderlyingDirectedEq Enc «Encⁱᵐᵖˡ»
-  Enc_get_b : ∀ (x : Enc.t), go.IsGoStepPureDetTagged under (StructFieldGet «Encⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
-  Enc_set_b : ∀ (x : Enc.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Encⁱᵐᵖˡ» go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Enc.t)))
-  Enc_get_off : ∀ (x : Enc.t), go.IsGoStepPureDetTagged under (StructFieldGet «Encⁱᵐᵖˡ» go!"off") #x (Val #(x.off'))
-  Enc_set_off : ∀ (x : Enc.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Encⁱᵐᵖˡ» go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Enc.t)))
+class Enc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Enc.underlying Enc.t
+  underlying : go.UnderlyingDirectedEq Enc Enc.underlying
+  get_b : ∀ (x : Enc.t), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : Enc.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Enc.t)))
+  get_off : ∀ (x : Enc.t), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"off") #x (Val #(x.off'))
+  set_off : ∀ (x : Enc.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Enc.t)))
 
-attribute [instance] Enc_Assumptions.Enc_type_repr
-  Enc_Assumptions.Enc_underlying
-  Enc_Assumptions.Enc_get_b
-  Enc_Assumptions.Enc_set_b
-  Enc_Assumptions.Enc_get_off
-  Enc_Assumptions.Enc_set_off
+attribute [instance] Enc.TypeAssumptions.type_repr
+  Enc.TypeAssumptions.underlying
+  Enc.TypeAssumptions.get_b
+  Enc.TypeAssumptions.set_b
+  Enc.TypeAssumptions.get_off
+  Enc.TypeAssumptions.set_off
 
 namespace Dec
 structure t [FfiSyntax] where
@@ -628,55 +628,55 @@ instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk zeroValDef zeroValDef⟩
 end Dec
 
-@[reducible] def Dec'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Dec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def Dec'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Dec'fds_unsealed
+@[irreducible] def Dec.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Dec.fieldsUnsealed
 
 instance equals_unfold_Dec [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Dec'fds Dec'fds_unsealed :=
-  ⟨by unfold Dec'fds; rfl⟩
+    EqualsUnfold Dec.fields Dec.fieldsUnsealed :=
+  ⟨by unfold Dec.fields; rfl⟩
 
-@[reducible] def «Decⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Dec'fds)
+@[reducible] def Dec.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Dec.fields)
 
-class Dec_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Dec_type_repr : go.TypeReprUnderlying «Decⁱᵐᵖˡ» Dec.t
-  Dec_underlying : go.UnderlyingDirectedEq Dec «Decⁱᵐᵖˡ»
-  Dec_get_b : ∀ (x : Dec.t), go.IsGoStepPureDetTagged under (StructFieldGet «Decⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
-  Dec_set_b : ∀ (x : Dec.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Decⁱᵐᵖˡ» go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Dec.t)))
-  Dec_get_off : ∀ (x : Dec.t), go.IsGoStepPureDetTagged under (StructFieldGet «Decⁱᵐᵖˡ» go!"off") #x (Val #(x.off'))
-  Dec_set_off : ∀ (x : Dec.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Decⁱᵐᵖˡ» go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Dec.t)))
+class Dec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Dec.underlying Dec.t
+  underlying : go.UnderlyingDirectedEq Dec Dec.underlying
+  get_b : ∀ (x : Dec.t), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : Dec.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Dec.t)))
+  get_off : ∀ (x : Dec.t), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"off") #x (Val #(x.off'))
+  set_off : ∀ (x : Dec.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Dec.t)))
 
-attribute [instance] Dec_Assumptions.Dec_type_repr
-  Dec_Assumptions.Dec_underlying
-  Dec_Assumptions.Dec_get_b
-  Dec_Assumptions.Dec_set_b
-  Dec_Assumptions.Dec_get_off
-  Dec_Assumptions.Dec_set_off
+attribute [instance] Dec.TypeAssumptions.type_repr
+  Dec.TypeAssumptions.underlying
+  Dec.TypeAssumptions.get_b
+  Dec.TypeAssumptions.set_b
+  Dec.TypeAssumptions.get_off
+  Dec.TypeAssumptions.set_off
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Enc_instance : Enc_Assumptions
-  Dec_instance : Dec_Assumptions
-  compute_new_cap_unfold : FuncUnfold compute_new_cap [] «compute_new_capⁱᵐᵖˡ»
-  reserve_unfold : FuncUnfold reserve [] «reserveⁱᵐᵖˡ»
-  ReadInt_unfold : FuncUnfold ReadInt [] «ReadIntⁱᵐᵖˡ»
-  ReadInt32_unfold : FuncUnfold ReadInt32 [] «ReadInt32ⁱᵐᵖˡ»
-  ReadBytes_unfold : FuncUnfold ReadBytes [] «ReadBytesⁱᵐᵖˡ»
-  ReadBytesCopy_unfold : FuncUnfold ReadBytesCopy [] «ReadBytesCopyⁱᵐᵖˡ»
-  ReadBool_unfold : FuncUnfold ReadBool [] «ReadBoolⁱᵐᵖˡ»
-  ReadLenPrefixedBytes_unfold : FuncUnfold ReadLenPrefixedBytes [] «ReadLenPrefixedBytesⁱᵐᵖˡ»
-  WriteInt_unfold : FuncUnfold WriteInt [] «WriteIntⁱᵐᵖˡ»
-  WriteInt32_unfold : FuncUnfold WriteInt32 [] «WriteInt32ⁱᵐᵖˡ»
-  WriteBytes_unfold : FuncUnfold WriteBytes [] «WriteBytesⁱᵐᵖˡ»
-  WriteBool_unfold : FuncUnfold WriteBool [] «WriteBoolⁱᵐᵖˡ»
-  WriteLenPrefixedBytes_unfold : FuncUnfold WriteLenPrefixedBytes [] «WriteLenPrefixedBytesⁱᵐᵖˡ»
-  ReadSlice_unfold : ∀ (T : go.GoType), FuncUnfold ReadSlice [T] («ReadSliceⁱᵐᵖˡ» T)
-  ReadSliceLenPrefix_unfold : ∀ (T : go.GoType), FuncUnfold ReadSliceLenPrefix [T] («ReadSliceLenPrefixⁱᵐᵖˡ» T)
-  WriteSlice_unfold : ∀ (T : go.GoType), FuncUnfold WriteSlice [T] («WriteSliceⁱᵐᵖˡ» T)
-  WriteSliceLenPrefix_unfold : ∀ (T : go.GoType), FuncUnfold WriteSliceLenPrefix [T] («WriteSliceLenPrefixⁱᵐᵖˡ» T)
+  Enc_instance : Enc.TypeAssumptions
+  Dec_instance : Dec.TypeAssumptions
+  compute_new_cap_unfold : FuncUnfold compute_new_cap [] compute_new_cap.impl
+  reserve_unfold : FuncUnfold reserve [] reserve.impl
+  ReadInt_unfold : FuncUnfold ReadInt [] ReadInt.impl
+  ReadInt32_unfold : FuncUnfold ReadInt32 [] ReadInt32.impl
+  ReadBytes_unfold : FuncUnfold ReadBytes [] ReadBytes.impl
+  ReadBytesCopy_unfold : FuncUnfold ReadBytesCopy [] ReadBytesCopy.impl
+  ReadBool_unfold : FuncUnfold ReadBool [] ReadBool.impl
+  ReadLenPrefixedBytes_unfold : FuncUnfold ReadLenPrefixedBytes [] ReadLenPrefixedBytes.impl
+  WriteInt_unfold : FuncUnfold WriteInt [] WriteInt.impl
+  WriteInt32_unfold : FuncUnfold WriteInt32 [] WriteInt32.impl
+  WriteBytes_unfold : FuncUnfold WriteBytes [] WriteBytes.impl
+  WriteBool_unfold : FuncUnfold WriteBool [] WriteBool.impl
+  WriteLenPrefixedBytes_unfold : FuncUnfold WriteLenPrefixedBytes [] WriteLenPrefixedBytes.impl
+  ReadSlice_unfold : ∀ (T : go.GoType), FuncUnfold ReadSlice [T] (ReadSlice.impl T)
+  ReadSliceLenPrefix_unfold : ∀ (T : go.GoType), FuncUnfold ReadSliceLenPrefix [T] (ReadSliceLenPrefix.impl T)
+  WriteSlice_unfold : ∀ (T : go.GoType), FuncUnfold WriteSlice [T] (WriteSlice.impl T)
+  WriteSliceLenPrefix_unfold : ∀ (T : go.GoType), FuncUnfold WriteSliceLenPrefix [T] (WriteSliceLenPrefix.impl T)
   import_binary_Assumption : _root_.Perennial.encoding.binary.Assumptions
   import_std_Assumption : _root_.Perennial.github_com.goose_lang.std.Assumptions
 

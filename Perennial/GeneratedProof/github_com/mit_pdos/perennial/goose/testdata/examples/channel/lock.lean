@@ -32,7 +32,7 @@ instance Lock_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Lock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.«Lockⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.underlying := by
   solve_into_val_typed_struct
 
 instance Lock_access_load_ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t) (dq : DFrac) :

@@ -1006,7 +1006,7 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : Loc) (term : w64)
     dsimp only [interface.mk]
     wp_method_call
     wp_call
-    unfold v3.«readOnly__AckedIndexⁱᵐᵖˡ»
+    unfold v3.readOnly.AckedIndex.impl
     wp_auto
     wp_apply wp_map_lookup2 $$ Hacks as Hacks
     rw [show zero_val w64 = W64 0 from rfl]

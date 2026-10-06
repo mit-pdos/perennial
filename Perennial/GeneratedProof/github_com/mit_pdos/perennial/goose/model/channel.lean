@@ -36,7 +36,7 @@ instance Channel_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Channel_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.model.channel.Channel.t T') (github_com.mit_pdos.perennial.goose.model.channel.«Channelⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.model.channel.Channel.t T') (github_com.mit_pdos.perennial.goose.model.channel.Channel.underlying T) := by
   solve_into_val_typed_struct
 
 instance Channel_access_load_cap {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel.t T')) (dq : DFrac) :

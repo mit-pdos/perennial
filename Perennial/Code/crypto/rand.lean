@@ -22,7 +22,7 @@ axiom base32alphabet [FfiSyntax] [GoGlobalContext] : val
 noncomputable def Reader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Reader"
 
-axiom Reader'init [FfiSyntax] [GoGlobalContext] : val
+axiom Reader.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def fatal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.fatal"
@@ -42,14 +42,14 @@ noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
 instance info' : PkgInfo pkg_id.crypto.rand where
   pkgImportedPkgs := []
 
-axiom _'init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.rand)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
-  (App (Val Reader'init) (Val #())))))))
+  (App (Val Reader.init) (Val #())))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 

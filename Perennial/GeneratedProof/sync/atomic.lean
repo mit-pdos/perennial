@@ -31,7 +31,7 @@ instance noCopy_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noCopy_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.noCopy.t sync.atomic.«noCopyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.noCopy.t sync.atomic.noCopy.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -56,7 +56,7 @@ instance Bool'_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Bool'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Bool'.t sync.atomic.«Bool'ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.Bool'.t sync.atomic.Bool'.underlying := by
   solve_into_val_typed_struct
 
 instance Bool'_access_load__0 (l : Loc) (v : sync.atomic.Bool'.t) (dq : DFrac) :
@@ -114,7 +114,7 @@ instance Pointer_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Pointer_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (sync.atomic.Pointer.t T') (sync.atomic.«Pointerⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (sync.atomic.Pointer.t T') (sync.atomic.Pointer.underlying T) := by
   solve_into_val_typed_struct
 
 instance Pointer_access_load__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer.t T')) (dq : DFrac) :
@@ -187,7 +187,7 @@ instance Int32_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Int32_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Int32.t sync.atomic.«Int32ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.Int32.t sync.atomic.Int32.underlying := by
   solve_into_val_typed_struct
 
 instance Int32_access_load__0 (l : Loc) (v : sync.atomic.Int32.t) (dq : DFrac) :
@@ -242,7 +242,7 @@ instance align64_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance align64_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.align64.t sync.atomic.«align64ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.align64.t sync.atomic.align64.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -268,7 +268,7 @@ instance Int64_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Int64_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Int64.t sync.atomic.«Int64ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.Int64.t sync.atomic.Int64.underlying := by
   solve_into_val_typed_struct
 
 instance Int64_access_load__0 (l : Loc) (v : sync.atomic.Int64.t) (dq : DFrac) :
@@ -341,7 +341,7 @@ instance Uint32_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uint32_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Uint32.t sync.atomic.«Uint32ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.Uint32.t sync.atomic.Uint32.underlying := by
   solve_into_val_typed_struct
 
 instance Uint32_access_load__0 (l : Loc) (v : sync.atomic.Uint32.t) (dq : DFrac) :
@@ -399,7 +399,7 @@ instance Uint64_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uint64_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Uint64.t sync.atomic.«Uint64ⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.Uint64.t sync.atomic.Uint64.underlying := by
   solve_into_val_typed_struct
 
 instance Uint64_access_load__0 (l : Loc) (v : sync.atomic.Uint64.t) (dq : DFrac) :
@@ -472,7 +472,7 @@ instance Uintptr_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uintptr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Uintptr.t sync.atomic.«Uintptrⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.Uintptr.t sync.atomic.Uintptr.underlying := by
   solve_into_val_typed_struct
 
 instance Uintptr_access_load__0 (l : Loc) (v : sync.atomic.Uintptr.t) (dq : DFrac) :
@@ -528,7 +528,7 @@ instance Value_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Value.t sync.atomic.«Valueⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.Value.t sync.atomic.Value.underlying := by
   solve_into_val_typed_struct
 
 instance Value_access_load_v (l : Loc) (v : sync.atomic.Value.t) (dq : DFrac) :
@@ -569,7 +569,7 @@ instance efaceWords_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance efaceWords_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.efaceWords.t sync.atomic.«efaceWordsⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) sync.atomic.efaceWords.t sync.atomic.efaceWords.underlying := by
   solve_into_val_typed_struct
 
 instance efaceWords_access_load_typ (l : Loc) (v : sync.atomic.efaceWords.t) (dq : DFrac) :

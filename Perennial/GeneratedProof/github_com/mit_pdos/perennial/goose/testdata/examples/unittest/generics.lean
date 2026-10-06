@@ -32,7 +32,7 @@ instance Box_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Box_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.«Boxⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.underlying T) := by
   solve_into_val_typed_struct
 
 instance Box_access_load_Value {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.t T')) (dq : DFrac) :
@@ -75,7 +75,7 @@ instance Container_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Container_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.«Containerⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container.underlying T) := by
   solve_into_val_typed_struct
 
 instance Container_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container.t T')) (dq : DFrac) :
@@ -163,7 +163,7 @@ instance UseContainer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UseContainer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.«UseContainerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer.t github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer.underlying := by
   solve_into_val_typed_struct
 
 instance UseContainer_access_load_X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer.t) (dq : DFrac) :
@@ -204,7 +204,7 @@ instance OnlyIndirect_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance OnlyIndirect_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.«OnlyIndirectⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect.underlying T) := by
   solve_into_val_typed_struct
 
 instance OnlyIndirect_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect.t T')) (dq : DFrac) :
@@ -261,7 +261,7 @@ instance MultiParam_typed_pointsto {A' : Type} [TypedPointsto (GF := GF) A'] {B'
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MultiParam_into_val_typed (A : go.GoType) {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [IntoValTyped (GF := GF) A' A] (B : go.GoType) {B' : Type} [ZeroVal B'] [TypedPointsto (GF := GF) B'] [IntoValTyped (GF := GF) B' B] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam.t A' B') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.«MultiParamⁱᵐᵖˡ» A B) := by
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam.t A' B') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam.underlying A B) := by
   solve_into_val_typed_struct
 
 instance MultiParam_access_load_Y {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam.t A' B')) (dq : DFrac) :
@@ -318,7 +318,7 @@ instance TypeParamCollision_typed_pointsto {T' : Type} [TypedPointsto (GF := GF)
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TypeParamCollision_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] (C : go.GoType) {C' : Type} [ZeroVal C'] [TypedPointsto (GF := GF) C'] [IntoValTyped (GF := GF) C' C] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision.t T' C') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.«TypeParamCollisionⁱᵐᵖˡ» T C) := by
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision.t T' C') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision.underlying T C) := by
   solve_into_val_typed_struct
 
 instance TypeParamCollision_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision.t T' C')) (dq : DFrac) :
@@ -374,7 +374,7 @@ instance useNonStructGeneric_typed_pointsto {T' : Type} [TypedPointsto (GF := GF
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance useNonStructGeneric_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.«useNonStructGenericⁱᵐᵖˡ» T) := by
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric.t T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric.underlying T) := by
   solve_into_val_typed_struct
 
 instance useNonStructGeneric_access_load_x {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric.t T')) (dq : DFrac) :

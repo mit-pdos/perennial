@@ -35,7 +35,7 @@ instance elfDyn_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance elfDyn_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.elfDyn.t runtime.«elfDynⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.elfDyn.t runtime.elfDyn.underlying := by
   solve_into_val_typed_struct
 
 instance elfDyn_access_load_d_tag (l : Loc) (v : runtime.elfDyn.t) (dq : DFrac) :
@@ -92,7 +92,7 @@ instance elfVerdaux_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance elfVerdaux_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.elfVerdaux.t runtime.«elfVerdauxⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.elfVerdaux.t runtime.elfVerdaux.underlying := by
   solve_into_val_typed_struct
 
 instance elfVerdaux_access_load_vda_name (l : Loc) (v : runtime.elfVerdaux.t) (dq : DFrac) :
@@ -151,7 +151,7 @@ instance vdsoSymbolKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance vdsoSymbolKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.vdsoSymbolKey.t runtime.«vdsoSymbolKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.vdsoSymbolKey.t runtime.vdsoSymbolKey.underlying := by
   solve_into_val_typed_struct
 
 instance vdsoSymbolKey_access_load_name (l : Loc) (v : runtime.vdsoSymbolKey.t) (dq : DFrac) :
@@ -240,7 +240,7 @@ instance vdsoVersionKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance vdsoVersionKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.vdsoVersionKey.t runtime.«vdsoVersionKeyⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.vdsoVersionKey.t runtime.vdsoVersionKey.underlying := by
   solve_into_val_typed_struct
 
 instance vdsoVersionKey_access_load_version (l : Loc) (v : runtime.vdsoVersionKey.t) (dq : DFrac) :
@@ -306,7 +306,7 @@ instance vdsoInfo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance vdsoInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.vdsoInfo.t runtime.«vdsoInfoⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) runtime.vdsoInfo.t runtime.vdsoInfo.underlying := by
   solve_into_val_typed_struct
 
 instance vdsoInfo_access_load_valid (l : Loc) (v : runtime.vdsoInfo.t) (dq : DFrac) :

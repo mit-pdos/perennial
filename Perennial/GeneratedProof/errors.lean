@@ -31,7 +31,7 @@ instance errorString_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance errorString_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) errors.errorString.t errors.«errorStringⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) errors.errorString.t errors.errorString.underlying := by
   solve_into_val_typed_struct
 
 instance errorString_access_load_s (l : Loc) (v : errors.errorString.t) (dq : DFrac) :
@@ -71,7 +71,7 @@ instance joinError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance joinError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) errors.joinError.t errors.«joinErrorⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) errors.joinError.t errors.joinError.underlying := by
   solve_into_val_typed_struct
 
 instance joinError_access_load_errs (l : Loc) (v : errors.joinError.t) (dq : DFrac) :

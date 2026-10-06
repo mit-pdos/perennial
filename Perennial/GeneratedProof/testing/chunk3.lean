@@ -44,7 +44,7 @@ instance F_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance F_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.F.t testing.«Fⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.F.t testing.F.underlying := by
   solve_into_val_typed_struct
 
 instance F_access_load_common (l : Loc) (v : testing.F.t) (dq : DFrac) :
@@ -182,7 +182,7 @@ instance T_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance T_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.T.t testing.«Tⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) testing.T.t testing.T.underlying := by
   solve_into_val_typed_struct
 
 instance T_access_load_common (l : Loc) (v : testing.T.t) (dq : DFrac) :

@@ -34,7 +34,7 @@ instance Buffer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Buffer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) bytes.Buffer.t bytes.«Bufferⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) bytes.Buffer.t bytes.Buffer.underlying := by
   solve_into_val_typed_struct
 
 instance Buffer_access_load_buf (l : Loc) (v : bytes.Buffer.t) (dq : DFrac) :
@@ -108,7 +108,7 @@ instance Reader_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Reader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) bytes.Reader.t bytes.«Readerⁱᵐᵖˡ» := by
+    IntoValTypedUnderlying (GF := GF) bytes.Reader.t bytes.Reader.underlying := by
   solve_into_val_typed_struct
 
 instance Reader_access_load_s (l : Loc) (v : bytes.Reader.t) (dq : DFrac) :
