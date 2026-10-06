@@ -18,7 +18,7 @@ reasoning, `program_proof/`) is out of scope.
   instance of iris-lean's `Language`, and proofs use iris-lean's `wp`, which
   already has later credits and `numLatersPerStep`. Perennial's
   `state * GlobalState` pair becomes a single iris-lean `State`.
-* **Bounded-step layer and time receipts.** The trusted semantics `base_step`
+* **Bounded-step layer and time receipts.** The trusted semantics `BaseStep`
   (and its iris-lean language `gooseRealEctxiLang`, `GooseLang/Lang.lean`)
   is unchanged, but the language instance used by the program logic is a
   separate step-bounded layer (`GooseLang/BoundedLang.lean`): its state adds a
@@ -27,11 +27,11 @@ reasoning, `program_proof/`) is out of scope.
   (Mével, Jourdan, Pottier, ESOP 2019; `GooseLang/Receipts.lean`): `⧗ n`/`⧖ n`,
   with `⧗ N ⊢ False` for the bound `N = receiptBound GF`.
   The bound is an *unspecified parameter*, not a constant: it is a field of the
-  receipt ghost state `receiptGS GF` (part of `gooseGlobalGS`, hence of
-  `heapGS`), so downstream files, whose sections already assume `heapGS`, need
+  receipt ghost state `ReceiptGS GF` (part of `GooseGlobalGS`, hence of
+  `HeapGS`), so downstream files, whose sections already assume `HeapGS`, need
   no new argument, and the language instance and its `PureExec`/`Atomic`
   instances do not depend on it. A proof that needs `N` to be small takes a
-  premise (`idutil.wp_Generator__Next` takes `receiptBound GF ≤ 2 ^ 48`). The
+  premise (`idutil.Generator.wp_Next` takes `receiptBound GF ≤ 2 ^ 48`). The
   adequacy theorems (`goose_adequacy N`, `goose_invariance N`, and the
   grove/disk ones) hold for every `N`: they allocate the receipt ghost state
   with `receiptBound GF = N` (a hypothesis of the WP premise `Hwp`, from which
@@ -85,7 +85,7 @@ Run `etc/lean-port-status.py --rocq <master checkout>` for per-area file, line a
 
 * Keep Rocq identifiers (`wp_load`, `isMutex`, `ownSlice`) so a Rocq name can
   be found with grep. Rename only when a name is not legal Lean; quote with «» when
-  possible (e.g. `«Mutexⁱᵐᵖˡ»`, `«unsafe»`).
+  possible (e.g. `Mutex.impl`, `«unsafe»`).
 * Sealing: `def foo_def`, `@[irreducible] def foo := foo_def`,
   `theorem foo_unseal : foo = foo_def`. `Global Opaque` is `attribute [irreducible]`.
 * GooseLang code notation (`Perennial/GooseLang/Notation.lean`): `λ: "x", e`,
@@ -97,14 +97,14 @@ Run `etc/lean-port-status.py --rocq <master checkout>` for per-area file, line a
 * Rocq `Admitted` becomes `sorry`, with a comment `-- Rocq: Admitted` when the
   Rocq source was also admitted. A proof that is merely not ported yet is
   `sorry` with `-- TODO(port)`. Never add `axiom`s except where Rocq has one.
-* Notation: `#x` is `into_val x`; `m !! k`, `<[k := v]> m`, `{[k := v]}` work on
+* Notation: `#x` is `intoVal x`; `m !! k`, `<[k := v]> m`, `{[k := v]}` work on
   both `gmap` and `List` (on lists they are `l[i]?` and `l.set i v`); stdpp's
   set-valued `dom m` is `domSet m`; `go!"abc"` is a `GoString` literal; `l +ₗ i` is location
   offset.
-* Equality on GooseLang syntax and `go.type` is decided classically
+* Equality on GooseLang syntax and `go.GoType` is decided classically
   (`noncomputable instance`), as Rocq admits these instances.
 * As in Rocq, `FfiSyntax` requires `Pos.Countable` of `ffi_opcode`/`ffi_val`, and
-  `loc`, `slice.t`, `val`, `expr`, `func.t`, `interface.t`, `go.type`, ... are
+  `Loc`, `GoSlice`, `val`, `Expr`, `GoFunc`, `GoInterface`, `go.GoType`, ... are
   `Pos.Countable` (`Perennial/GooseLang/Countable.lean`, via an injection into
   `GenTree`), so ghost state can store values containing code.
 * Check a file with `lake build Perennial.Path.To.Module` (from the repo root).

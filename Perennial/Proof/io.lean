@@ -37,11 +37,11 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
+  repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
   wp_apply wp_GlobalAlloc (V := sync.Pool) blackHolePool sync.Pool.ty as _
-  repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
-  wp_apply wp_GlobalAlloc (V := interface.t) Discard Writer.ty as _
-  repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
+  repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
+  wp_apply wp_GlobalAlloc (V := GoInterface) Discard Writer.ty as _
+  repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
   wp_apply sync.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
   wp_apply errors.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
   repeat (wp_apply errors.wp_New as %_ _)

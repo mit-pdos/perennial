@@ -106,7 +106,7 @@ instance Field_access_load_Value (l : Loc) (v : go_etcd_io.etcd.pkg.v3.traceutil
  by
   solve_pointsto_access_struct
 
-instance Field_access_store_Value (l : Loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.Field) (Value' : interface.t) :
+instance Field_access_store_Value (l : Loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.Field) (Value' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.traceutil.Field go!"Value" l) v.Value' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.traceutil.Field go!"Value" l) Value' (DFrac.own 1))
@@ -201,7 +201,7 @@ instance step_access_load_fields (l : Loc) (v : go_etcd_io.etcd.pkg.v3.traceutil
  by
   solve_pointsto_access_struct
 
-instance step_access_store_fields (l : Loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.step) (fields' : slice.t) :
+instance step_access_store_fields (l : Loc) (v : go_etcd_io.etcd.pkg.v3.traceutil.step) (fields' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.traceutil.step go!"fields" l) v.fields' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.traceutil.step go!"fields" l) fields' (DFrac.own 1))

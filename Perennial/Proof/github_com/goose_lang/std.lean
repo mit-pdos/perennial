@@ -115,7 +115,7 @@ theorem wp_SignedSumAssumeNoOverflow (x y : w64) :
     · wp_apply github_com.goose_lang.primitive.wp_Assume as %h
       cases h
 
-theorem wp_BytesEqual (s1 s2 : slice.t) (xs1 xs2 : List w8) (dq1 dq2 : DFrac) :
+theorem wp_BytesEqual (s1 s2 : GoSlice) (xs1 xs2 : List w8) (dq1 dq2 : DFrac) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗
         s1 ↦*{dq1} xs1 ∗ s2 ↦*{dq2} xs2 }}
       (App (App (Val (@! BytesEqual)) (Val #s1)) (Val #s2))
@@ -187,10 +187,10 @@ theorem wp_BytesEqual (s1 s2 : slice.t) (xs1 xs2 : List w8) (dq1 dq2 : DFrac) :
       apply BitVec.eq_of_toInt_eq; omega))]
     wp_end
 
-theorem wp_BytesClone (b : slice.t) (xs : List w8) (dq : DFrac) :
+theorem wp_BytesClone (b : GoSlice) (xs : List w8) (dq : DFrac) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ b ↦*{dq} xs }}
       (App (Val (@! BytesClone)) (Val #b))
-    {{ (b' : slice.t), RET #b'; b' ↦* xs ∗ ownSliceCap w8 b' (DFrac.own 1) }} := by
+    {{ (b' : GoSlice), RET #b'; b' ↦* xs ∗ ownSliceCap w8 b' (DFrac.own 1) }} := by
   wp_start as Hb
   wp_auto
   by_cases Hif : b = slice.nil
@@ -277,7 +277,7 @@ theorem JoinHandle.wp_finish (l : Loc) (P : IProp GF) :
     inext; iexists true; iframe done_b; unfold jhP; simp only [↓reduceIte]; iframe HPin
   wp_end
 
-theorem wp_Spawn (P : IProp GF) (f : func.t) :
+theorem wp_Spawn (P : IProp GF) (f : GoFunc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗
         (∀ Φ : val → IProp GF, ▷ (P -∗ Φ #()) -∗ WP (App (Val #f) (Val #())) {{ Φ }}) }}
       (App (Val (@! Spawn)) (Val #f))

@@ -205,18 +205,18 @@ variable (R : E → E → Prop)
 /-- The comparison function implements `R`. The sort implementation only ever
 checks `cmp x y < 0`; it does not distinguish between 0 and positive
 comparisons. -/
-def cmpImplements (cmp_code : func.t) : IProp GF :=
+def cmpImplements (cmp_code : GoFunc) : IProp GF :=
   iprop(∀ (x y : E),
     {{ True }}
       (App (App (Val #cmp_code) (Val #x)) (Val #y))
     {{ (r : w64), RET #r; ⌜sint.Z r < 0 ↔ R x y⌝ }})
 
-instance cmpImplements_persistent (cmp_code : func.t) :
+instance cmpImplements_persistent (cmp_code : GoFunc) :
     Persistent (cmpImplements (GF := GF) R cmp_code) := by
   unfold cmpImplements; infer_instance
 
-theorem wp_order2CmpFunc [StrictWeakOrder R] (data : slice.t) (a b : w64) (swaps_l : Loc)
-    (cmp_code : func.t) (dq : DFrac) (xs : List E) (swaps : w64) (xa xb : E)
+theorem wp_order2CmpFunc [StrictWeakOrder R] (data : GoSlice) (a b : w64) (swaps_l : Loc)
+    (cmp_code : GoFunc) (dq : DFrac) (xs : List E) (swaps : w64) (xa xb : E)
     (Ha_bound : 0 ≤ sint.Z a) (Hb_bound : 0 ≤ sint.Z b) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦*{dq} xs ∗

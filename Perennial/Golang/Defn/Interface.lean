@@ -38,7 +38,7 @@ noncomputable def typeSetContains (t t' : go.GoType) : Bool :=
 class InterfaceSemantics : Prop where
   is_comparable_interface (elems : List go.InterfaceElem) :
     ⟦CheckComparable (go.InterfaceType elems), #()⟧ ⤳[under] #()
-  go_eq_interface (elems : List go.InterfaceElem) (i1 i2 : interface.t) :
+  go_eq_interface (elems : List go.InterfaceElem) (i1 i2 : GoInterface) :
     ⟦GoOp GoEquals (go.InterfaceType elems), (#i1, #i2)⟧ ⤳[under]
       (match i1, i2 with
        | interface.nil, interface.nil => #true
@@ -56,7 +56,7 @@ class InterfaceSemantics : Prop where
             if isUntypedNil funder then #interface.nil
             else #(interface.mkOk from_ v)))
 
-  type_assert_step {t t_under : go.GoType} [t ↓u t_under] (i : interface.t) :
+  type_assert_step {t t_under : go.GoType} [t ↓u t_under] (i : GoInterface) :
     ⟦TypeAssert t, #i⟧ ⤳
     (match i with
      | interface.nil => Panic "type assert failed"
@@ -66,7 +66,7 @@ class InterfaceSemantics : Prop where
          else
            if ii.ty = t then ii.v else Panic "type assert failed")
 
-  type_assert2_interface_step {t t_under : go.GoType} [t ↓u t_under] (i : interface.t) {v : val}
+  type_assert2_interface_step {t t_under : go.GoType} [t ↓u t_under] (i : GoInterface) {v : val}
     [⟦GoZeroVal t, #()⟧ ⤳ Val v] :
     ⟦TypeAssert2 t, #i⟧ ⤳
     glv(((match i with
@@ -84,7 +84,7 @@ class InterfaceSemantics : Prop where
      ))
 
   method_interface_ok (m : GoString) {t : go.GoType} {elems : List go.InterfaceElem}
-    [t ≤u go.InterfaceType elems] (i : interface.t) :
+    [t ≤u go.InterfaceType elems] (i : GoInterface) :
     ⟦MethodResolve t m, #i⟧ ⤳
     (match i with
      | interface.nil => Panic "nil interface"

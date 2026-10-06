@@ -265,7 +265,7 @@ instance rngSource_access_load_vec (l : Loc) (v : math.rand.rngSource) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_store_vec (l : Loc) (v : math.rand.rngSource) (vec' : (array.t w64 607)) :
+instance rngSource_access_store_vec (l : Loc) (v : math.rand.rngSource) (vec' : (GoArray w64 607)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"vec" l) v.vec' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.rngSource go!"vec" l) vec' (DFrac.own 1))

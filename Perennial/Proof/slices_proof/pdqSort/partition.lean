@@ -371,7 +371,7 @@ variable (R : E → E → Prop) [StrictWeakOrder R]
 
 /-- The loop invariant of `partitionCmpFunc` (Rocq `HI0`/`HI1`/`HI2`; `br1`/`br2`
 record that the first/second inner loop has exited). -/
-def partInv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : Loc)
+def partInv (data : GoSlice) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : Loc)
     (br1 br2 : Bool) : IProp GF :=
   iprop(∃ (xs1 : List E) (i_val j_val : w64),
     "Hxs" ∷ data ↦* xs1 ∗
@@ -392,8 +392,8 @@ def partInv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : L
 
 /-- The first inner loop of `partitionCmpFunc`
 (`for i <= j && cmp(data[i], data[a]) < 0 { i++ }`), which the Go code contains twice. -/
-theorem wp_part_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
-    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : Loc) (cmp_code : func.t)
+theorem wp_part_loop1 (data : GoSlice) (a b : w64) (xp : E) (xs : List E)
+    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : Loc) (cmp_code : GoFunc)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
     ⊢ isPkgInit (PROP := IProp GF) pkg_id.slices -∗ cmpImplements R cmp_code -∗
@@ -460,8 +460,8 @@ theorem wp_part_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
 
 /-- The second inner loop of `partitionCmpFunc`
 (`for i <= j && !(cmp(data[j], data[a]) < 0) { j-- }`), which the Go code contains twice. -/
-theorem wp_part_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
-    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : Loc) (cmp_code : func.t)
+theorem wp_part_loop2 (data : GoSlice) (a b : w64) (xp : E) (xs : List E)
+    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : Loc) (cmp_code : GoFunc)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
     ⊢ isPkgInit (PROP := IProp GF) pkg_id.slices -∗ cmpImplements R cmp_code -∗
@@ -605,7 +605,7 @@ theorem part_swap_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val : 
   · exact outsideSame_trans _ _ _ _ _ Houtside1
       (outsideSame_swap _ _ _ _ _ _ _ (by word) (by word))
 
-theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
+theorem wp_partitionCmpFunc (data : GoSlice) (a b pivot : w64) (cmp_code : GoFunc)
     (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
@@ -679,7 +679,7 @@ theorem wp_partitionCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.
       simp only [Bool.false_eq_true]
       iframe
 
-theorem wp_medianCmpFunc (data : slice.t) (a b c : w64) (swaps_l : Loc) (cmp_code : func.t)
+theorem wp_medianCmpFunc (data : GoSlice) (a b c : w64) (swaps_l : Loc) (cmp_code : GoFunc)
     (dq : DFrac) (xs : List E) (swaps : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦*{dq} xs ∗
@@ -733,7 +733,7 @@ theorem wp_medianCmpFunc (data : slice.t) (a b c : w64) (swaps_l : Loc) (cmp_cod
       iapply HΦ; iframe; ipureintro
       rcases Hab3 with ⟨h1, h2, _⟩ | ⟨h1, h2, _⟩ <;> subst a3 b3 <;> simp
 
-theorem wp_medianAdjacentCmpFunc (data : slice.t) (a : w64) (swaps_l : Loc) (cmp_code : func.t)
+theorem wp_medianAdjacentCmpFunc (data : GoSlice) (a : w64) (swaps_l : Loc) (cmp_code : GoFunc)
     (dq : DFrac) (xs : List E) (swaps : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦*{dq} xs ∗
@@ -764,7 +764,7 @@ theorem part_choosePivot_idx (a b d : w64) (n : Nat)
     sint.Z (a + d * 3) = sint.Z a + 3 * sint.Z d := by
   refine ⟨?_, ?_, ?_⟩ <;> word_p
 
-theorem wp_choosePivotCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
+theorem wp_choosePivotCmpFunc (data : GoSlice) (a b : w64) (cmp_code : GoFunc) (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "#Hcmp" ∷ cmpImplements R cmp_code ∗
@@ -854,7 +854,7 @@ theorem wp_nextPowerOfTwo (length : w64) (h : 0 < sint.Z length) :
   rw [hshift]
   omega
 
-theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
+theorem wp_breakPatternsCmpFunc (data : GoSlice) (a b : w64) (cmp_code : GoFunc) (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧
@@ -947,7 +947,7 @@ theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
     exact ⟨List.Perm.refl _, outsideSame_refl _ _ _⟩
 
 /-- The loop invariant of `partitionEqualCmpFunc`. -/
-def peqInv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : Loc)
+def peqInv (data : GoSlice) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : Loc)
     (br1 br2 : Bool) : IProp GF :=
   iprop(∃ (xs1 : List E) (i_val j_val : w64),
     "Hxs" ∷ data ↦* xs1 ∗
@@ -967,8 +967,8 @@ def peqInv (data : slice.t) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : Lo
 
 omit package_sem in
 /-- The first inner loop of `partitionEqualCmpFunc` (`for i <= j && !less(data[a], data[i]) { i++ }`). -/
-theorem wp_peq_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
-    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : Loc) (cmp_code : func.t)
+theorem wp_peq_loop1 (data : GoSlice) (a b : w64) (xp : E) (xs : List E)
+    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : Loc) (cmp_code : GoFunc)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
     ⊢ isPkgInit (PROP := IProp GF) pkg_id.slices -∗ cmpImplements R cmp_code -∗
@@ -1042,8 +1042,8 @@ theorem wp_peq_loop1 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
 
 omit package_sem [StrictWeakOrder R] in
 /-- The second inner loop of `partitionEqualCmpFunc` (`for i <= j && less(data[a], data[j]) { j-- }`). -/
-theorem wp_peq_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
-    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : Loc) (cmp_code : func.t)
+theorem wp_peq_loop2 (data : GoSlice) (a b : w64) (xp : E) (xs : List E)
+    (i_ptr j_ptr data_ptr a_ptr cmp_ptr : Loc) (cmp_code : GoFunc)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len) :
     ⊢ isPkgInit (PROP := IProp GF) pkg_id.slices -∗ cmpImplements R cmp_code -∗
@@ -1110,7 +1110,7 @@ theorem wp_peq_loop2 (data : slice.t) (a b : w64) (xp : E) (xs : List E)
       fun _ => Or.inl (by omega)⟩
 
 
-theorem wp_partitionEqualCmpFunc (data : slice.t) (a b pivot : w64) (cmp_code : func.t)
+theorem wp_partitionEqualCmpFunc (data : GoSlice) (a b pivot : w64) (cmp_code : GoFunc)
     (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗

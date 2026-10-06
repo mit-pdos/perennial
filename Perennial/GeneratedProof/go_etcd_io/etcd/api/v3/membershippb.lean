@@ -46,7 +46,7 @@ instance RaftAttributes_access_load_PeerUrls (l : Loc) (v : go_etcd_io.etcd.api.
  by
   solve_pointsto_access_struct
 
-instance RaftAttributes_access_store_PeerUrls (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.RaftAttributes) (PeerUrls' : slice.t) :
+instance RaftAttributes_access_store_PeerUrls (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.RaftAttributes) (PeerUrls' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.RaftAttributes go!"PeerUrls" l) v.PeerUrls' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.RaftAttributes go!"PeerUrls" l) PeerUrls' (DFrac.own 1))
@@ -94,7 +94,7 @@ instance RaftAttributes_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.e
  by
   solve_pointsto_access_struct
 
-instance RaftAttributes_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.RaftAttributes) (XXX_unrecognized' : slice.t) :
+instance RaftAttributes_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.RaftAttributes) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.RaftAttributes go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.RaftAttributes go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -170,7 +170,7 @@ instance Attributes_access_load_ClientUrls (l : Loc) (v : go_etcd_io.etcd.api.v3
  by
   solve_pointsto_access_struct
 
-instance Attributes_access_store_ClientUrls (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.Attributes) (ClientUrls' : slice.t) :
+instance Attributes_access_store_ClientUrls (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.Attributes) (ClientUrls' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.Attributes go!"ClientUrls" l) v.ClientUrls' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.Attributes go!"ClientUrls" l) ClientUrls' (DFrac.own 1))
@@ -202,7 +202,7 @@ instance Attributes_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.
  by
   solve_pointsto_access_struct
 
-instance Attributes_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.Attributes) (XXX_unrecognized' : slice.t) :
+instance Attributes_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.Attributes) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.Attributes go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.Attributes go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -327,7 +327,7 @@ instance Member_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.
  by
   solve_pointsto_access_struct
 
-instance Member_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.Member) (XXX_unrecognized' : slice.t) :
+instance Member_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.Member) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.Member go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.Member go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -418,7 +418,7 @@ instance ClusterVersionSetRequest_access_load_XXX_unrecognized (l : Loc) (v : go
  by
   solve_pointsto_access_struct
 
-instance ClusterVersionSetRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.ClusterVersionSetRequest) (XXX_unrecognized' : slice.t) :
+instance ClusterVersionSetRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.ClusterVersionSetRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.ClusterVersionSetRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.ClusterVersionSetRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -526,7 +526,7 @@ instance ClusterMemberAttrSetRequest_access_load_XXX_unrecognized (l : Loc) (v :
  by
   solve_pointsto_access_struct
 
-instance ClusterMemberAttrSetRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.ClusterMemberAttrSetRequest) (XXX_unrecognized' : slice.t) :
+instance ClusterMemberAttrSetRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.ClusterMemberAttrSetRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.ClusterMemberAttrSetRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.ClusterMemberAttrSetRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -634,7 +634,7 @@ instance DowngradeInfoSetRequest_access_load_XXX_unrecognized (l : Loc) (v : go_
  by
   solve_pointsto_access_struct
 
-instance DowngradeInfoSetRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.DowngradeInfoSetRequest) (XXX_unrecognized' : slice.t) :
+instance DowngradeInfoSetRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.membershippb.DowngradeInfoSetRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.DowngradeInfoSetRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.membershippb.DowngradeInfoSetRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))

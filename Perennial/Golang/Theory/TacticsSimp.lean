@@ -12,7 +12,7 @@ reductions are done by `simpl`/`vm_compute`/`bool_decide` hints.
 * `gooseReduceGoTypeEq`: equalities of `go.GoType`s (decided classically, so not
   by reduction) are decided: `True` when definitionally equal (unfolding named
   types), `False` when the fingerprints `go.typeFingerprint` differ.
-* `zeroVal_interface_nil`: `zero_val interface.t = interface.nil`.
+* `zeroVal_interface_nil`: `zero_val GoInterface = interface.nil`.
 * `decide_*_any`, `intoVal_eq_iff`: `decide` with arbitrary (classical)
   `Decidable` instances, `#a = #b ↔ a = b`.
 * `gooseReplicateArrayLiteral`, list lemmas: the zero array of a slice literal
@@ -166,7 +166,7 @@ def arrayLiteralSize? (kvs : Lean.Expr) : MetaM (Option Int) := do
   return some n
 
 /-- The zero array of a slice (or array) composite literal, `List.replicate
-(go.arrayLiteralSize kvs).toNat x` (from `(zero_val (array.t V n)).arr`), is
+(go.arrayLiteralSize kvs).toNat x` (from `(zero_val (GoArray V n)).arr`), is
 evaluated to a literal list when the size can be computed, so that the list of a
 slice literal `[]T{a, b}` comes out as `[a, b]`. The size itself (also in the
 `slice.mk` of `wp_slice_literal`'s postcondition) is left alone, so that the WP
@@ -195,7 +195,7 @@ attribute [goose_wp_simp_extra] Option.getD_some Option.getD_none
 attribute [goose_wp_simp_extra] Int.reduceToNat List.set_cons_zero List.set_cons_succ List.set_nil
 
 @[goose_wp_simp_extra] theorem zeroVal_interface_nil [FfiSyntax] [GoLocalContext] :
-    (zero_val interface.t) = interface.nil := rfl
+    (zero_val GoInterface) = interface.nil := rfl
 
 
 end Perennial

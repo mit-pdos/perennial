@@ -295,7 +295,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 structure DiscoveryError [FfiSyntax] where
   mk ::
   Op' : GoString
-  Err' : error.t
+  Err' : GoError
 
 instance DiscoveryError.zero_val [FfiSyntax] : ZeroVal DiscoveryError :=
   ⟨DiscoveryError.mk zeroValDef zeroValDef⟩
@@ -320,7 +320,7 @@ class DiscoveryError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   get_Op : ∀ (x : DiscoveryError), go.IsGoStepPureDetTagged under (StructFieldGet DiscoveryError.underlying go!"Op") #x (Val #(x.Op'))
   set_Op : ∀ (x : DiscoveryError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet DiscoveryError.underlying go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : DiscoveryError)))
   get_Err : ∀ (x : DiscoveryError), go.IsGoStepPureDetTagged under (StructFieldGet DiscoveryError.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : DiscoveryError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet DiscoveryError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : DiscoveryError)))
+  set_Err : ∀ (x : DiscoveryError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet DiscoveryError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : DiscoveryError)))
   Error_unfold : MethodUnfold DiscoveryError.ty go!"Error" DiscoveryError.Error.impl
   ptr_Error_unfold : MethodUnfold (go.GoType.PointerType DiscoveryError.ty) go!"Error" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve DiscoveryError.ty go!"Error"))) (App (Val (GoInstruction (GoLoad DiscoveryError.ty))) (Var "$r"))))

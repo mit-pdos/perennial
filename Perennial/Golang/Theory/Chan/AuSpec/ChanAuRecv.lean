@@ -28,7 +28,7 @@ set_option goose.wp.extras true
 
 omit [Pos.Countable V] [IntoValTyped (GF := GF) V t] in
 /-- Dropping the first element of a slice (`s[1:]`), with its capacity. -/
-theorem ownSlice_pop (sl : slice.t) (x : V) (rest : List V) :
+theorem ownSlice_pop (sl : GoSlice) (x : V) (rest : List V) :
     ⊢ (sl ↦* (x :: rest) : IProp GF) -∗ ownSliceCap V sl (DFrac.own 1) -∗
       slice.slice sl V (W64 1) sl.len ↦* rest ∗
       ownSliceCap V (slice.slice sl V (W64 1) sl.len) (DFrac.own 1) := by
@@ -79,7 +79,7 @@ theorem wp_TryReceive_blocking (ch : Loc) (γ : ChanNames) :
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
       subst Heq
-      imod ownChan_halves_update _ _ (chanstate.t.Buffered rest) _ _ ?_ $$ Hoc offer
+      imod ownChan_halves_update _ _ (ChanState.Buffered rest) _ _ ?_ $$ Hoc offer
         with ⟨Hgv1, Hgv2⟩
       · simp only [ChanCapValid, List.length_cons] at Hcv ⊢
         constructor <;> word
@@ -179,7 +179,7 @@ theorem wp_TryReceive_blocking (ch : Loc) (γ : ChanNames) :
       iNamed Hau
       ihave %Hseq := ownChan_agree _ _ _ _ $$ Hocinner offer
       subst Hseq
-      imod ownChan_halves_update _ _ chanstate.t.Idle _ _ HcvIdle $$ Hocinner offer with ⟨Hgv1, Hgv2⟩
+      imod ownChan_halves_update _ _ ChanState.Idle _ _ HcvIdle $$ Hocinner offer with ⟨Hgv1, Hgv2⟩
       dsimp only
       imod Hcontinner $$ Hgv1 with Hcont
       icases saved_pred_agree_keep _ _ _ _ _ (v', true) $$ [$Hpred2 $Hpred]
@@ -232,7 +232,7 @@ theorem wp_TryReceive_blocking (ch : Loc) (γ : ChanNames) :
     iNamed HP
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hoc offer
     subst Hseq
-    imod ownChan_halves_update _ _ (chanstate.t.SndPending v') _ _ HcvIdle $$ offer Hoc
+    imod ownChan_halves_update _ _ (ChanState.SndPending v') _ _ HcvIdle $$ offer Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont1
@@ -243,7 +243,7 @@ theorem wp_TryReceive_blocking (ch : Loc) (γ : ChanNames) :
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
     subst Hseq
-    imod ownChan_halves_update _ _ chanstate.t.RcvCommit _ _ HcvIdle $$ Hgv1 Hoc
+    imod ownChan_halves_update _ _ ChanState.RcvCommit _ _ HcvIdle $$ Hgv1 Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with HΦ
@@ -328,7 +328,7 @@ theorem wp_TryReceive_blocking (ch : Loc) (γ : ChanNames) :
         iNamed HΦ
         ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
         subst Heq
-        imod ownChan_halves_update _ _ (chanstate.t.Closed rest) _ _ ?_ $$ Hoc offer
+        imod ownChan_halves_update _ _ (ChanState.Closed rest) _ _ ?_ $$ Hoc offer
           with ⟨Hgv1, Hgv2⟩
         · simp only [ChanCapValid, List.length_cons] at Hcv ⊢
           cases rest <;> simp only [List.length_cons, List.length_nil] at Hcv ⊢ <;> word
@@ -395,7 +395,7 @@ theorem wp_TryReceive_nonblocking (ch : Loc) (γ : ChanNames) :
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
       subst Heq
-      imod ownChan_halves_update _ _ (chanstate.t.Buffered rest) _ _ ?_ $$ Hoc offer
+      imod ownChan_halves_update _ _ (ChanState.Buffered rest) _ _ ?_ $$ Hoc offer
         with ⟨Hgv1, Hgv2⟩
       · simp only [ChanCapValid, List.length_cons] at Hcv ⊢
         constructor <;> word
@@ -447,7 +447,7 @@ theorem wp_TryReceive_nonblocking (ch : Loc) (γ : ChanNames) :
     iNamed HP
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hoc offer
     subst Hseq
-    imod ownChan_halves_update _ _ (chanstate.t.SndPending v') _ _ HcvIdle $$ offer Hoc
+    imod ownChan_halves_update _ _ (ChanState.SndPending v') _ _ HcvIdle $$ offer Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont1
@@ -457,7 +457,7 @@ theorem wp_TryReceive_nonblocking (ch : Loc) (γ : ChanNames) :
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
     subst Hseq
-    imod ownChan_halves_update _ _ chanstate.t.RcvCommit _ _ HcvIdle $$ Hgv1 Hoc
+    imod ownChan_halves_update _ _ ChanState.RcvCommit _ _ HcvIdle $$ Hgv1 Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with HΦ
@@ -540,7 +540,7 @@ theorem wp_TryReceive_nonblocking (ch : Loc) (γ : ChanNames) :
         iNamed HΦ
         ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
         subst Heq
-        imod ownChan_halves_update _ _ (chanstate.t.Closed rest) _ _ ?_ $$ Hoc offer
+        imod ownChan_halves_update _ _ (ChanState.Closed rest) _ _ ?_ $$ Hoc offer
           with ⟨Hgv1, Hgv2⟩
         · simp only [ChanCapValid, List.length_cons] at Hcv ⊢
           cases rest <;> simp only [List.length_cons, List.length_nil] at Hcv ⊢ <;> word
@@ -606,7 +606,7 @@ theorem wp_TryReceive_nonblocking_alt (ch : Loc) (γ : ChanNames) :
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
       subst Heq
-      imod ownChan_halves_update _ _ (chanstate.t.Buffered rest) _ _ ?_ $$ Hoc offer
+      imod ownChan_halves_update _ _ (ChanState.Buffered rest) _ _ ?_ $$ Hoc offer
         with ⟨Hgv1, Hgv2⟩
       · simp only [ChanCapValid, List.length_cons] at Hcv ⊢
         constructor <;> word
@@ -679,7 +679,7 @@ theorem wp_TryReceive_nonblocking_alt (ch : Loc) (γ : ChanNames) :
     iNamed HP
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hoc offer
     subst Hseq
-    imod ownChan_halves_update _ _ (chanstate.t.SndPending v') _ _ HcvIdle $$ offer Hoc
+    imod ownChan_halves_update _ _ (ChanState.SndPending v') _ _ HcvIdle $$ offer Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont1
@@ -688,7 +688,7 @@ theorem wp_TryReceive_nonblocking_alt (ch : Loc) (γ : ChanNames) :
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
     subst Hseq
-    imod ownChan_halves_update _ _ chanstate.t.RcvCommit _ _ HcvIdle $$ Hgv1 Hoc
+    imod ownChan_halves_update _ _ ChanState.RcvCommit _ _ HcvIdle $$ Hgv1 Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with HΦ
@@ -808,7 +808,7 @@ theorem wp_TryReceive_nonblocking_alt (ch : Loc) (γ : ChanNames) :
         iNamed HΦ
         ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
         subst Heq
-        imod ownChan_halves_update _ _ (chanstate.t.Closed rest) _ _ ?_ $$ Hoc offer
+        imod ownChan_halves_update _ _ (ChanState.Closed rest) _ _ ?_ $$ Hoc offer
           with ⟨Hgv1, Hgv2⟩
         · simp only [ChanCapValid, List.length_cons] at Hcv ⊢
           cases rest <;> simp only [List.length_cons, List.length_nil] at Hcv ⊢ <;> word

@@ -189,7 +189,7 @@ instance Inflights_access_load_buffer (l : Loc) (v : go_etcd_io.raft.v3.tracker.
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_store_buffer (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (buffer' : slice.t) :
+instance Inflights_access_store_buffer (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (buffer' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"buffer" l) v.buffer' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"buffer" l) buffer' (DFrac.own 1))
@@ -440,7 +440,7 @@ instance Config_access_load_Learners (l : Loc) (v : go_etcd_io.raft.v3.tracker.C
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_Learners (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (Learners' : map.t) :
+instance Config_access_store_Learners (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (Learners' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Learners" l) v.Learners' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Learners" l) Learners' (DFrac.own 1))
@@ -456,7 +456,7 @@ instance Config_access_load_LearnersNext (l : Loc) (v : go_etcd_io.raft.v3.track
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_LearnersNext (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (LearnersNext' : map.t) :
+instance Config_access_store_LearnersNext (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (LearnersNext' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"LearnersNext" l) v.LearnersNext' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"LearnersNext" l) LearnersNext' (DFrac.own 1))
@@ -532,7 +532,7 @@ instance ProgressTracker_access_load_Votes (l : Loc) (v : go_etcd_io.raft.v3.tra
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_store_Votes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (Votes' : map.t) :
+instance ProgressTracker_access_store_Votes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (Votes' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Votes" l) v.Votes' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Votes" l) Votes' (DFrac.own 1))

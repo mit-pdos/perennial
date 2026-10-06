@@ -111,17 +111,17 @@ variable [package_sem : sort.Assumptions]
 
 /-- The comparison function must implement a pure function over in-bounds
 indices, with an arbitrary invariant `I` that it requires and preserves. -/
-def cmpImplements (cmp_code : func.t) (cmp : Int → Int) (n : Int) (I : IProp GF) : IProp GF :=
+def cmpImplements (cmp_code : GoFunc) (cmp : Int → Int) (n : Int) (I : IProp GF) : IProp GF :=
   iprop(∀ (i : w64),
     {{ I ∗ ⌜0 ≤ sint.Z i ∧ sint.Z i < n⌝ }}
       (App (Val #cmp_code) (Val #i))
     {{ (r : w64), RET #r; I ∗ ⌜sint.Z r = cmp (sint.Z i)⌝ }})
 
-instance cmpImplements_persistent (cmp_code : func.t) (cmp : Int → Int) (n : Int)
+instance cmpImplements_persistent (cmp_code : GoFunc) (cmp : Int → Int) (n : Int)
     (I : IProp GF) : Persistent (cmpImplements cmp_code cmp n I) := by
   unfold cmpImplements; infer_instance
 
-theorem cmpImplements_adapt (cmp_code : func.t) (cmp : Int → Int) (n : Int) (I : IProp GF) :
+theorem cmpImplements_adapt (cmp_code : GoFunc) (cmp : Int → Int) (n : Int) (I : IProp GF) :
     cmpImplements cmp_code cmp n I ⊢ cmpImplements cmp_code (adaptCmp cmp n) n I := by
   unfold cmpImplements
   iintro #H %i
@@ -136,7 +136,7 @@ theorem cmpImplements_adapt (cmp_code : func.t) (cmp : Int → Int) (n : Int) (I
   rw [adaptCmp_bounded _ _ _ Hb]
   exact Hr
 
-theorem wp_Find (n : w64) (cmp_code : func.t) (cmp : Int → Int) (I : IProp GF) :
+theorem wp_Find (n : w64) (cmp_code : GoFunc) (cmp : Int → Int) (I : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sort ∗
         ⌜0 ≤ sint.Z n⌝ ∗
         cmpImplements cmp_code cmp (sint.Z n) I ∗

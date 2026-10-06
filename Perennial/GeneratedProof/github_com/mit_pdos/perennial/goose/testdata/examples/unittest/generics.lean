@@ -102,7 +102,7 @@ instance Container_access_load_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : 
  by
   solve_pointsto_access_struct
 
-instance Container_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (Y' : map.t) :
+instance Container_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (Y' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) v.Y' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) Y' (DFrac.own 1))
@@ -215,7 +215,7 @@ instance OnlyIndirect_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l
  by
   solve_pointsto_access_struct
 
-instance OnlyIndirect_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (X' : slice.t) :
+instance OnlyIndirect_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (X' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) X' (DFrac.own 1))

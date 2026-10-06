@@ -347,7 +347,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
-abbrev Encoder [FfiSyntax] : Type := interface.t
+abbrev Encoder [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Encoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Encode" (go.signature.Signature [Iterator.ty] false [go.string])), (go.InterfaceElem.MethodElem go!"ID" (go.signature.Signature [] false [EncoderID.ty]))])
@@ -419,7 +419,7 @@ attribute [instance] defaultAttrEncoder.TypeAssumptions.type_repr
   defaultAttrEncoder.TypeAssumptions.get_pool
   defaultAttrEncoder.TypeAssumptions.set_pool
 
-abbrev Filter [FfiSyntax] : Type := func.t
+abbrev Filter [FfiSyntax] : Type := GoFunc
 
 @[reducible] def Filter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [KeyValue.ty] false [go.bool]))
@@ -491,7 +491,7 @@ structure Value [FfiSyntax] where
   vtype' : Type'
   numeric' : w64
   stringly' : GoString
-  slice' : interface.t
+  slice' : GoInterface
 
 instance Value.zero_val [FfiSyntax] : ZeroVal Value :=
   ⟨Value.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -522,7 +522,7 @@ class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   get_stringly : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"stringly") #x (Val #(x.stringly'))
   set_stringly : ∀ (x : Value) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"stringly") (PairV #x #y) (Val #(({ x with stringly' := y } : Value)))
   get_slice : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"slice") #x (Val #(x.slice'))
-  set_slice : ∀ (x : Value) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"slice") (PairV #x #y) (Val #(({ x with slice' := y } : Value)))
+  set_slice : ∀ (x : Value) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"slice") (PairV #x #y) (Val #(({ x with slice' := y } : Value)))
 
 attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.underlying
@@ -661,7 +661,7 @@ attribute [instance] MergeIterator.TypeAssumptions.type_repr
 structure Set' [FfiSyntax] where
   mk ::
   hash' : w64
-  data' : interface.t
+  data' : GoInterface
 
 instance Set'.zero_val [FfiSyntax] : ZeroVal Set' :=
   ⟨Set'.mk zeroValDef zeroValDef⟩
@@ -686,7 +686,7 @@ class Set.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   get_hash : ∀ (x : Set'), go.IsGoStepPureDetTagged under (StructFieldGet Set'.underlying go!"hash") #x (Val #(x.hash'))
   set_hash : ∀ (x : Set') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Set'.underlying go!"hash") (PairV #x #y) (Val #(({ x with hash' := y } : Set')))
   get_data : ∀ (x : Set'), go.IsGoStepPureDetTagged under (StructFieldGet Set'.underlying go!"data") #x (Val #(x.data'))
-  set_data : ∀ (x : Set') (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Set'.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : Set')))
+  set_data : ∀ (x : Set') (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Set'.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : Set')))
 
 attribute [instance] Set.TypeAssumptions.type_repr
   Set.TypeAssumptions.underlying
@@ -726,7 +726,7 @@ attribute [instance] Distinct.TypeAssumptions.type_repr
   Distinct.TypeAssumptions.get_hash
   Distinct.TypeAssumptions.set_hash
 
-abbrev Sortable [FfiSyntax] : Type := slice.t
+abbrev Sortable [FfiSyntax] : Type := GoSlice
 
 @[reducible] def Sortable.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType KeyValue.ty)

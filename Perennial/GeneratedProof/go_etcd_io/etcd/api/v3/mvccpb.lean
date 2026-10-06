@@ -50,7 +50,7 @@ instance KeyValue_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.K
  by
   solve_pointsto_access_struct
 
-instance KeyValue_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.KeyValue) (Key' : slice.t) :
+instance KeyValue_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.KeyValue) (Key' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.mvccpb.KeyValue go!"Key" l) v.Key' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.mvccpb.KeyValue go!"Key" l) Key' (DFrac.own 1))
@@ -114,7 +114,7 @@ instance KeyValue_access_load_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb
  by
   solve_pointsto_access_struct
 
-instance KeyValue_access_store_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.KeyValue) (Value' : slice.t) :
+instance KeyValue_access_store_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.KeyValue) (Value' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.mvccpb.KeyValue go!"Value" l) v.Value' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.mvccpb.KeyValue go!"Value" l) Value' (DFrac.own 1))
@@ -162,7 +162,7 @@ instance KeyValue_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.ap
  by
   solve_pointsto_access_struct
 
-instance KeyValue_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.KeyValue) (XXX_unrecognized' : slice.t) :
+instance KeyValue_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.KeyValue) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.mvccpb.KeyValue go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.mvccpb.KeyValue go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -287,7 +287,7 @@ instance Event_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v
  by
   solve_pointsto_access_struct
 
-instance Event_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.Event) (XXX_unrecognized' : slice.t) :
+instance Event_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.mvccpb.Event) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.mvccpb.Event go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.mvccpb.Event go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))

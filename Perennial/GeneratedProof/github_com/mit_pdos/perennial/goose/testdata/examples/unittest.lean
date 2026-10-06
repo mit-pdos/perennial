@@ -73,7 +73,7 @@ instance withInterface_access_load_a (l : Loc) (v : github_com.mit_pdos.perennia
  by
   solve_pointsto_access_struct
 
-instance withInterface_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface) (a' : interface.t) :
+instance withInterface_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface) (a' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withInterface go!"a" l) a' (DFrac.own 1))
@@ -968,7 +968,7 @@ instance sliceOfThings_access_load_things (l : Loc) (v : github_com.mit_pdos.per
  by
   solve_pointsto_access_struct
 
-instance sliceOfThings_access_store_things (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings) (things' : slice.t) :
+instance sliceOfThings_access_store_things (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings) (things' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings go!"things" l) v.things' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.sliceOfThings go!"things" l) things' (DFrac.own 1))
@@ -1200,7 +1200,7 @@ instance B_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.test
  by
   solve_pointsto_access_struct
 
-instance B_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B) (a' : slice.t) :
+instance B_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B) (a' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.B go!"a" l) a' (DFrac.own 1))

@@ -51,7 +51,7 @@ axiom InternalRaftRequest.wp_Marshal [package_sem : etcdserverpb.Assumptions] (m
        m_ptr ↦ m ∗ ownInternalRaftRequest m msg }}
       (App (Val (m_ptr @!! go.GoType.PointerType etcdserverpb.InternalRaftRequest.ty @!! go!"Marshal"))
         (Val #()))
-    {{ (dAtA_sl : slice.t) (err : error.t), RET #(dAtA_sl, err);
+    {{ (dAtA_sl : GoSlice) (err : GoError), RET #(dAtA_sl, err);
         m_ptr ↦ m ∗
         ownInternalRaftRequest m msg ∗
         if decide (err = interface.nil) then

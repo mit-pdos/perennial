@@ -381,7 +381,7 @@ instance peerHashKVResp_access_load_err (l : Loc) (v : go_etcd_io.etcd.server.v3
  by
   solve_pointsto_access_struct
 
-instance peerHashKVResp_access_store_err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.peerHashKVResp) (err' : error.t) :
+instance peerHashKVResp_access_store_err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.peerHashKVResp) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.peerHashKVResp go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.peerHashKVResp go!"err" l) err' (DFrac.own 1))
@@ -443,7 +443,7 @@ instance toApply_access_load_entries (l : Loc) (v : go_etcd_io.etcd.server.v3.et
  by
   solve_pointsto_access_struct
 
-instance toApply_access_store_entries (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.toApply) (entries' : slice.t) :
+instance toApply_access_store_entries (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.toApply) (entries' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.toApply go!"entries" l) v.entries' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.toApply go!"entries" l) entries' (DFrac.own 1))
@@ -475,7 +475,7 @@ instance toApply_access_load_notifyc (l : Loc) (v : go_etcd_io.etcd.server.v3.et
  by
   solve_pointsto_access_struct
 
-instance toApply_access_store_notifyc (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.toApply) (notifyc' : chan.t) :
+instance toApply_access_store_notifyc (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.toApply) (notifyc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.toApply go!"notifyc" l) v.notifyc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.toApply go!"notifyc" l) notifyc' (DFrac.own 1))
@@ -491,7 +491,7 @@ instance toApply_access_load_raftAdvancedC (l : Loc) (v : go_etcd_io.etcd.server
  by
   solve_pointsto_access_struct
 
-instance toApply_access_store_raftAdvancedC (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.toApply) (raftAdvancedC' : chan.t) :
+instance toApply_access_store_raftAdvancedC (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.toApply) (raftAdvancedC' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.toApply go!"raftAdvancedC" l) v.raftAdvancedC' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.toApply go!"raftAdvancedC" l) raftAdvancedC' (DFrac.own 1))
@@ -813,7 +813,7 @@ instance raftReadyHandler_access_load_getLead (l : Loc) (v : go_etcd_io.etcd.ser
  by
   solve_pointsto_access_struct
 
-instance raftReadyHandler_access_store_getLead (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler) (getLead' : func.t) :
+instance raftReadyHandler_access_store_getLead (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler) (getLead' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler go!"getLead" l) v.getLead' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler go!"getLead" l) getLead' (DFrac.own 1))
@@ -829,7 +829,7 @@ instance raftReadyHandler_access_load_updateLead (l : Loc) (v : go_etcd_io.etcd.
  by
   solve_pointsto_access_struct
 
-instance raftReadyHandler_access_store_updateLead (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler) (updateLead' : func.t) :
+instance raftReadyHandler_access_store_updateLead (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler) (updateLead' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler go!"updateLead" l) v.updateLead' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler go!"updateLead" l) updateLead' (DFrac.own 1))
@@ -845,7 +845,7 @@ instance raftReadyHandler_access_load_updateLeadership (l : Loc) (v : go_etcd_io
  by
   solve_pointsto_access_struct
 
-instance raftReadyHandler_access_store_updateLeadership (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler) (updateLeadership' : func.t) :
+instance raftReadyHandler_access_store_updateLeadership (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler) (updateLeadership' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler go!"updateLeadership" l) v.updateLeadership' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler go!"updateLeadership" l) updateLeadership' (DFrac.own 1))
@@ -861,7 +861,7 @@ instance raftReadyHandler_access_load_updateCommittedIndex (l : Loc) (v : go_etc
  by
   solve_pointsto_access_struct
 
-instance raftReadyHandler_access_store_updateCommittedIndex (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler) (updateCommittedIndex' : func.t) :
+instance raftReadyHandler_access_store_updateCommittedIndex (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler) (updateCommittedIndex' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler go!"updateCommittedIndex" l) v.updateCommittedIndex' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.raftReadyHandler go!"updateCommittedIndex" l) updateCommittedIndex' (DFrac.own 1))
@@ -939,7 +939,7 @@ instance AccessController_access_load_CORS (l : Loc) (v : go_etcd_io.etcd.server
  by
   solve_pointsto_access_struct
 
-instance AccessController_access_store_CORS (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.AccessController) (CORS' : map.t) :
+instance AccessController_access_store_CORS (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.AccessController) (CORS' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.AccessController go!"CORS" l) v.CORS' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.AccessController go!"CORS" l) CORS' (DFrac.own 1))
@@ -971,7 +971,7 @@ instance AccessController_access_load_HostWhitelist (l : Loc) (v : go_etcd_io.et
  by
   solve_pointsto_access_struct
 
-instance AccessController_access_store_HostWhitelist (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.AccessController) (HostWhitelist' : map.t) :
+instance AccessController_access_store_HostWhitelist (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.AccessController) (HostWhitelist' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.AccessController go!"HostWhitelist" l) v.HostWhitelist' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.AccessController go!"HostWhitelist" l) HostWhitelist' (DFrac.own 1))
@@ -1012,7 +1012,7 @@ instance notifier_access_load_c (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdser
  by
   solve_pointsto_access_struct
 
-instance notifier_access_store_c (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.notifier) (c' : chan.t) :
+instance notifier_access_store_c (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.notifier) (c' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.notifier go!"c" l) v.c' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.notifier go!"c" l) c' (DFrac.own 1))
@@ -1028,7 +1028,7 @@ instance notifier_access_load_err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcds
  by
   solve_pointsto_access_struct
 
-instance notifier_access_store_err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.notifier) (err' : error.t) :
+instance notifier_access_store_err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.notifier) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.notifier go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.notifier go!"err" l) err' (DFrac.own 1))

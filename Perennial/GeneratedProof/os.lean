@@ -78,7 +78,7 @@ instance SyscallError_access_load_Err (l : Loc) (v : os.SyscallError) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance SyscallError_access_store_Err (l : Loc) (v : os.SyscallError) (Err' : error.t) :
+instance SyscallError_access_store_Err (l : Loc) (v : os.SyscallError) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.SyscallError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef os.SyscallError go!"Err" l) Err' (DFrac.own 1))
@@ -245,7 +245,7 @@ instance LinkError_access_load_Err (l : Loc) (v : os.LinkError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_Err (l : Loc) (v : os.LinkError) (Err' : error.t) :
+instance LinkError_access_store_Err (l : Loc) (v : os.LinkError) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef os.LinkError go!"Err" l) Err' (DFrac.own 1))

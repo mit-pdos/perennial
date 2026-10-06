@@ -45,7 +45,7 @@ instance Buffer_access_load_buf (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_buf (l : Loc) (v : bytes.Buffer) (buf' : slice.t) :
+instance Buffer_access_store_buf (l : Loc) (v : bytes.Buffer) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Buffer go!"buf" l) buf' (DFrac.own 1))
@@ -119,7 +119,7 @@ instance Reader_access_load_s (l : Loc) (v : bytes.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_s (l : Loc) (v : bytes.Reader) (s' : slice.t) :
+instance Reader_access_store_s (l : Loc) (v : bytes.Reader) (s' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Reader go!"s" l) s' (DFrac.own 1))

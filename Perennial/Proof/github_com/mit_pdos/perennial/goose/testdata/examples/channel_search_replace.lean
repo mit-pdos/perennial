@@ -90,7 +90,7 @@ variable [sem : go.Semantics] [package_sem : parallel_search_replace.Assumptions
 local notation "pkg" =>
   pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 
-def chanP (wg : Loc) (x y : w64) (s : slice.t) : IProp GF :=
+def chanP (wg : Loc) (x y : w64) (s : GoSlice) : IProp GF :=
   iprop(∃ xs : List w64,
     "Hxs" ∷ s ↦* xs ∗
     "Hwg_done" ∷ sync.join.ownDone wg (s ↦* (searchReplace x y xs)))
@@ -98,7 +98,7 @@ def chanP (wg : Loc) (x y : w64) (s : slice.t) : IProp GF :=
 def waitgroupN : Namespace := nroot.@"waitgroup"
 
 /-- (Rocq: TODO: put this in slice.v) -/
-theorem ownSlice_slice_empty (index : w64) (s : slice.t) (xs : List w64)
+theorem ownSlice_slice_empty (index : w64) (s : GoSlice) (xs : List w64)
     (h : 0 ≤ sint.Z index ∧ sint.Z index ≤ sint.Z s.cap) :
     (s ↦* xs : IProp GF) ⊢ □ (slice.slice s w64 index index ↦* ([] : List w64)) := by
   rw [ownSlice_unseal]; unfold ownSliceDef
@@ -138,7 +138,7 @@ theorem wp_worker (γs : ChanNames) (ch : Loc) (wg : Loc) (x y : w64) :
   wp_apply wp_bag_receive γs ch (chanP wg x y) $$ Hchan as %s Hrcv
   ipersist y
   ipersist x
-  ihave HH : (∃ s : slice.t, "s" ∷ s_ptr ↦ s ∗ "Hrcv" ∷ chanP wg x y s : IProp GF) $$ [s Hrcv]
+  ihave HH : (∃ s : GoSlice, "s" ∷ s_ptr ↦ s ∗ "Hrcv" ∷ chanP wg x y s : IProp GF) $$ [s Hrcv]
   · iexists s; iframe
   wp_for HH
   iNamed Hrcv
@@ -212,7 +212,7 @@ theorem wp_worker (γs : ChanNames) (ch : Loc) (wg : Loc) (x y : w64) :
     iframe
 
 
-theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
+theorem wp_SearchReplace (s : GoSlice) (xs : List w64) (x y : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦* xs ∗
         ⌜(xs.length : Int) ≤ 2 ^ 63 - 1000⌝ ∗
         ⌜(xs.length : Int) ≤ (2 ^ 31 - 1) * 1000⌝ }}
@@ -236,7 +236,7 @@ theorem wp_SearchReplace (s : slice.t) (xs : List w64) (x y : w64) :
     iapply HΦ
     simp only [searchReplace, List.map_nil]
     iexact Hs
-  wp_apply chan.wp_make2 (V := slice.t) (W64 4) $$ [] as %ch %γch_names ⟨#His_chan, %Hcap4, Hoc⟩
+  wp_apply chan.wp_make2 (V := GoSlice) (W64 4) $$ [] as %ch %γch_names ⟨#His_chan, %Hcap4, Hoc⟩
   · ipureintro; decide
   imod sync.init_WaitGroup (sync.join.wgjN.@"wg") wg_ptr $$ wg with ⟨%γwg, H⟩
   imod sync.join.init wg_ptr γwg $$ H with Hwg

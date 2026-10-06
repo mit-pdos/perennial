@@ -51,7 +51,7 @@ instance Frames_access_load_callers (l : Loc) (v : runtime.Frames) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance Frames_access_store_callers (l : Loc) (v : runtime.Frames) (callers' : slice.t) :
+instance Frames_access_store_callers (l : Loc) (v : runtime.Frames) (callers' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frames go!"callers" l) v.callers' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frames go!"callers" l) callers' (DFrac.own 1))
@@ -83,7 +83,7 @@ instance Frames_access_load_frames (l : Loc) (v : runtime.Frames) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Frames_access_store_frames (l : Loc) (v : runtime.Frames) (frames' : slice.t) :
+instance Frames_access_store_frames (l : Loc) (v : runtime.Frames) (frames' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frames go!"frames" l) v.frames' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frames go!"frames" l) frames' (DFrac.own 1))
@@ -99,7 +99,7 @@ instance Frames_access_load_frameStore (l : Loc) (v : runtime.Frames) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance Frames_access_store_frameStore (l : Loc) (v : runtime.Frames) (frameStore' : (array.t runtime.Frame 2)) :
+instance Frames_access_store_frameStore (l : Loc) (v : runtime.Frames) (frameStore' : (GoArray runtime.Frame 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) v.frameStore' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) frameStore' (DFrac.own 1))
@@ -161,7 +161,7 @@ instance timers_access_load_heap (l : Loc) (v : runtime.timers) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance timers_access_store_heap (l : Loc) (v : runtime.timers) (heap' : slice.t) :
+instance timers_access_store_heap (l : Loc) (v : runtime.timers) (heap' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timers go!"heap" l) v.heap' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.timers go!"heap" l) heap' (DFrac.own 1))
@@ -315,7 +315,7 @@ instance wakeableSleep_access_load_wakeup (l : Loc) (v : runtime.wakeableSleep) 
  by
   solve_pointsto_access_struct
 
-instance wakeableSleep_access_store_wakeup (l : Loc) (v : runtime.wakeableSleep) (wakeup' : chan.t) :
+instance wakeableSleep_access_store_wakeup (l : Loc) (v : runtime.wakeableSleep) (wakeup' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.wakeableSleep go!"wakeup" l) v.wakeup' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.wakeableSleep go!"wakeup" l) wakeup' (DFrac.own 1))
@@ -389,7 +389,7 @@ instance traceBuf_access_load_arr (l : Loc) (v : runtime.traceBuf) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance traceBuf_access_store_arr (l : Loc) (v : runtime.traceBuf) (arr' : (array.t w8 65504)) :
+instance traceBuf_access_store_arr (l : Loc) (v : runtime.traceBuf) (arr' : (GoArray w8 65504)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceBuf go!"arr" l) v.arr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceBuf go!"arr" l) arr' (DFrac.own 1))

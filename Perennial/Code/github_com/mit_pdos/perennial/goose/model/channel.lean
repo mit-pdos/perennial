@@ -1251,7 +1251,7 @@ structure Channel [FfiSyntax] (T : Type) where
   cap' : w64
   mu' : Loc
   state' : offerState
-  buffer' : slice.t
+  buffer' : GoSlice
   v' : T
 
 instance Channel.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (Channel T) :=
@@ -1284,7 +1284,7 @@ class Channel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   get_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"state") #x (Val #(x.state'))
   set_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : offerState), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"state") (PairV #x #y) (Val #(({ x with state' := y } : (Channel T'))))
   get_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"buffer") #x (Val #(x.buffer'))
-  set_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (Channel T'))))
+  set_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (Channel T'))))
   get_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"v") #x (Val #(x.v'))
   set_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Channel T'))))
   ptr_Cap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel.ty T)) go!"Cap" (Channel.Cap.impl T)

@@ -193,7 +193,7 @@ variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [
 /-- A function literal value is the Go function value `#(func.mk f x e)` (used
 by `wp_store` to store function literals). -/
 theorem recv_eq_func_mk (f x : Binder) (e : Expr) : (RecV f x e : val) = #(func.mk f x e) := by
-  rw [go.intoVal_unfold func.t]
+  rw [go.intoVal_unfold GoFunc]
 
 end func_lit
 
@@ -345,7 +345,7 @@ def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 
 /-- If the WP expression stores a function literal, `GoStore t (#l, RecV f x e)`,
 rewrite the stored value to the Go function value `#(func.mk f x e)`
-(`recv_eq_func_mk`), so that `wp_store` can use the typed points-to at `func.t`.
+(`recv_eq_func_mk`), so that `wp_store` can use the typed points-to at `GoFunc`.
 Returns the new (inner) expression and a function turning a proof of the new goal
 into a proof of the old one. -/
 def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Lean.Expr) :

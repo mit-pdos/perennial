@@ -96,7 +96,7 @@ instance Metadata_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.ap
  by
   solve_pointsto_access_struct
 
-instance Metadata_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Metadata) (XXX_unrecognized' : slice.t) :
+instance Metadata_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Metadata) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Metadata go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Metadata go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -221,7 +221,7 @@ instance RequestHeader_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.et
  by
   solve_pointsto_access_struct
 
-instance RequestHeader_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader) (XXX_unrecognized' : slice.t) :
+instance RequestHeader_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -839,7 +839,7 @@ instance InternalRaftRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance InternalRaftRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest) (XXX_unrecognized' : slice.t) :
+instance InternalRaftRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -913,7 +913,7 @@ instance EmptyResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.et
  by
   solve_pointsto_access_struct
 
-instance EmptyResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.EmptyResponse) (XXX_unrecognized' : slice.t) :
+instance EmptyResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.EmptyResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.EmptyResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.EmptyResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1038,7 +1038,7 @@ instance InternalAuthenticateRequest_access_load_XXX_unrecognized (l : Loc) (v :
  by
   solve_pointsto_access_struct
 
-instance InternalAuthenticateRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest) (XXX_unrecognized' : slice.t) :
+instance InternalAuthenticateRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1219,7 +1219,7 @@ instance loggablePutRequest_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v
  by
   solve_pointsto_access_struct
 
-instance loggablePutRequest_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.loggablePutRequest) (Key' : slice.t) :
+instance loggablePutRequest_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.loggablePutRequest) (Key' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.loggablePutRequest go!"Key" l) v.Key' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.loggablePutRequest go!"Key" l) Key' (DFrac.own 1))
@@ -1425,7 +1425,7 @@ instance ResponseHeader_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.e
  by
   solve_pointsto_access_struct
 
-instance ResponseHeader_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader) (XXX_unrecognized' : slice.t) :
+instance ResponseHeader_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.ResponseHeader go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))

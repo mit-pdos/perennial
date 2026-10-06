@@ -140,7 +140,7 @@ attribute [instance] StartTimeKey.TypeAssumptions.type_repr
 structure Field [FfiSyntax] where
   mk ::
   Key' : GoString
-  Value' : interface.t
+  Value' : GoInterface
 
 instance Field.zero_val [FfiSyntax] : ZeroVal Field :=
   ⟨Field.mk zeroValDef zeroValDef⟩
@@ -165,7 +165,7 @@ class Field.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   get_Key : ∀ (x : Field), go.IsGoStepPureDetTagged under (StructFieldGet Field.underlying go!"Key") #x (Val #(x.Key'))
   set_Key : ∀ (x : Field) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Field.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : Field)))
   get_Value : ∀ (x : Field), go.IsGoStepPureDetTagged under (StructFieldGet Field.underlying go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (x : Field) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Field.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Field)))
+  set_Value : ∀ (x : Field) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Field.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Field)))
 
 attribute [instance] Field.TypeAssumptions.type_repr
   Field.TypeAssumptions.underlying
@@ -191,7 +191,7 @@ structure step [FfiSyntax] where
   mk ::
   time' : _root_.Perennial.time.Time
   msg' : GoString
-  fields' : slice.t
+  fields' : GoSlice
   isSubTraceStart' : Bool
   isSubTraceEnd' : Bool
 
@@ -223,7 +223,7 @@ class step.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_msg : ∀ (x : step), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"msg") #x (Val #(x.msg'))
   set_msg : ∀ (x : step) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : step)))
   get_fields : ∀ (x : step), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"fields") #x (Val #(x.fields'))
-  set_fields : ∀ (x : step) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"fields") (PairV #x #y) (Val #(({ x with fields' := y } : step)))
+  set_fields : ∀ (x : step) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"fields") (PairV #x #y) (Val #(({ x with fields' := y } : step)))
   get_isSubTraceStart : ∀ (x : step), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"isSubTraceStart") #x (Val #(x.isSubTraceStart'))
   set_isSubTraceStart : ∀ (x : step) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet step.underlying go!"isSubTraceStart") (PairV #x #y) (Val #(({ x with isSubTraceStart' := y } : step)))
   get_isSubTraceEnd : ∀ (x : step), go.IsGoStepPureDetTagged under (StructFieldGet step.underlying go!"isSubTraceEnd") #x (Val #(x.isSubTraceEnd'))

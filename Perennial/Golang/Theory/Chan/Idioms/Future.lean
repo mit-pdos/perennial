@@ -62,7 +62,7 @@ def Await (γ : FutureNames) (pending : List (V → IProp GF)) : IProp GF :=
 
 /-- The future invariant. -/
 def futureInv (γ : FutureNames) : IProp GF :=
-  iprop(∃ (s : chanstate.t V), "Hch" ∷ ownChan γ.chanName V s ∗
+  iprop(∃ (s : ChanState V), "Hch" ∷ ownChan γ.chanName V s ∗
     (match s with
      | .Buffered msgs => iprop([∗list] v ∈ msgs, Fulfilled γ v)
      | .SndPending v => Fulfilled γ v
@@ -96,7 +96,7 @@ theorem Permutation_cons_split {A : Type} (x : A) (l l' : List A) (h : l.Perm (x
   have h2 : (x :: l').Perm (x :: (pre ++ post)) := h.symm.trans List.perm_middle
   exact h2.cons_inv
 
-theorem start_future (ch : Loc) (γ : ChanNames) (s : chanstate.t V)
+theorem start_future (ch : Loc) (γ : ChanNames) (s : ChanState V)
     (Hs : s = .Idle ∨ s = .Buffered []) :
     ⊢ isChan ch γ V -∗ ownChan γ V s ={⊤}=∗
       ∃ γmf, isFuture V γmf ch ∗ Await (V := V) γmf [] := by

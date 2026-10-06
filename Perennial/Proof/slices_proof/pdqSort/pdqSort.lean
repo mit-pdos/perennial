@@ -202,14 +202,14 @@ variable (R : E → E → Prop) [StrictWeakOrder R]
 
 /-- Unfold `cmpImplements` into the Texan triple for `cmp_code` (so that it
 can be `wp_apply`ed without unfolding `cmpImplements` in the goal). -/
-theorem cmpImplements_elim (cmp_code : func.t) :
+theorem cmpImplements_elim (cmp_code : GoFunc) :
     cmpImplements (GF := GF) R cmp_code ⊢ iprop(∀ (x y : E),
       {{ True }}
         (App (App (Val #cmp_code) (Val #x)) (Val #y))
       {{ (r : w64), RET #r; ⌜sint.Z r < 0 ↔ R x y⌝ }}) := by
   unfold cmpImplements; exact .rfl
 
-theorem wp_reverseRangeCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
+theorem wp_reverseRangeCmpFunc (data : GoSlice) (a b : w64) (cmp_code : GoFunc) (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧
@@ -271,7 +271,7 @@ theorem wp_reverseRangeCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) 
     ipureintro
     exact ⟨HPerm1, Houtside1⟩
 
-theorem wp_pdqsortCmpFunc (data : slice.t) (a b limit : w64) (cmp_code : func.t) (xs : List E) :
+theorem wp_pdqsortCmpFunc (data : GoSlice) (a b limit : w64) (cmp_code : GoFunc) (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "%Hab_bound" ∷ ⌜0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z b ∧ sint.Z b ≤ xs.length ∧

@@ -150,7 +150,7 @@ theorem wp_MulAssumeNoOverflow (x y : w64) :
   ipureintro
   simpa using Hassume
 
-theorem wp_Shuffle (s : slice.t) (xs : List w64) :
+theorem wp_Shuffle (s : GoSlice) (xs : List w64) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core ∗ s ↦* xs }}
       (App (Val (@! Shuffle)) (Val #s))
     {{ (xs' : List w64), RET #(); ⌜xs ≡ₚ xs'⌝ ∗ s ↦* xs' }} := by
@@ -207,7 +207,7 @@ theorem wp_Shuffle (s : slice.t) (xs : List w64) :
 theorem wp_Permutation (n : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core ∗ ⌜0 ≤ sint.Z n⌝ }}
       (App (Val (@! Permutation)) (Val #n))
-    {{ (xs : List w64) (s : slice.t), RET #s;
+    {{ (xs : List w64) (s : GoSlice), RET #s;
         ⌜xs ≡ₚ (seqZ 0 (sint.Z n)).map (fun z => W64 z)⌝ ∗ s ↦* xs }} := by
   wp_start as %Hnz
   wp_auto

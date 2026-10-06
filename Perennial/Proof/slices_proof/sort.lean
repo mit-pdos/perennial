@@ -36,7 +36,7 @@ variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.GoType}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop)
 
-theorem wp_SortFunc {S : go.GoType} [S ↓u go.SliceType Et] (data : slice.t) (cmp_code : func.t)
+theorem wp_SortFunc {S : go.GoType} [S ↓u go.SliceType Et] (data : GoSlice) (cmp_code : GoFunc)
     (xs : List E) (SWO : StrictWeakOrder R) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗

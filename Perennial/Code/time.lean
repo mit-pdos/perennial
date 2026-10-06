@@ -989,7 +989,7 @@ attribute [instance] parseDurationError.TypeAssumptions.type_repr
 
 structure Timer [FfiSyntax] where
   mk ::
-  C' : chan.t
+  C' : GoChan
   initTimer' : Bool
 
 instance Timer.zero_val [FfiSyntax] : ZeroVal Timer :=
@@ -1013,7 +1013,7 @@ class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying Timer.underlying Timer
   underlying : go.UnderlyingDirectedEq Timer.ty Timer.underlying
   get_C : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"C") #x (Val #(x.C'))
-  set_C : ∀ (x : Timer) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
+  set_C : ∀ (x : Timer) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
   get_initTimer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"initTimer") #x (Val #(x.initTimer'))
   set_initTimer : ∀ (x : Timer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"initTimer") (PairV #x #y) (Val #(({ x with initTimer' := y } : Timer)))
 
@@ -1026,7 +1026,7 @@ attribute [instance] Timer.TypeAssumptions.type_repr
 
 structure Ticker [FfiSyntax] where
   mk ::
-  C' : chan.t
+  C' : GoChan
   initTicker' : Bool
 
 instance Ticker.zero_val [FfiSyntax] : ZeroVal Ticker :=
@@ -1050,7 +1050,7 @@ class Ticker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Ticker.underlying Ticker
   underlying : go.UnderlyingDirectedEq Ticker.ty Ticker.underlying
   get_C : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"C") #x (Val #(x.C'))
-  set_C : ∀ (x : Ticker) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Ticker)))
+  set_C : ∀ (x : Ticker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Ticker)))
   get_initTicker : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"initTicker") #x (Val #(x.initTicker'))
   set_initTicker : ∀ (x : Ticker) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"initTicker") (PairV #x #y) (Val #(({ x with initTicker' := y } : Ticker)))
 
@@ -1228,8 +1228,8 @@ attribute [instance] Duration.TypeAssumptions.underlying
 structure Location [FfiSyntax] where
   mk ::
   name' : GoString
-  zone' : slice.t
-  tx' : slice.t
+  zone' : GoSlice
+  tx' : GoSlice
   extend' : GoString
   cacheStart' : w64
   cacheEnd' : w64
@@ -1263,9 +1263,9 @@ class Location.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_name : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"name") #x (Val #(x.name'))
   set_name : ∀ (x : Location) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : Location)))
   get_zone : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"zone") #x (Val #(x.zone'))
-  set_zone : ∀ (x : Location) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"zone") (PairV #x #y) (Val #(({ x with zone' := y } : Location)))
+  set_zone : ∀ (x : Location) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"zone") (PairV #x #y) (Val #(({ x with zone' := y } : Location)))
   get_tx : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"tx") #x (Val #(x.tx'))
-  set_tx : ∀ (x : Location) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"tx") (PairV #x #y) (Val #(({ x with tx' := y } : Location)))
+  set_tx : ∀ (x : Location) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"tx") (PairV #x #y) (Val #(({ x with tx' := y } : Location)))
   get_extend : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"extend") #x (Val #(x.extend'))
   set_extend : ∀ (x : Location) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"extend") (PairV #x #y) (Val #(({ x with extend' := y } : Location)))
   get_cacheStart : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"cacheStart") #x (Val #(x.cacheStart'))
@@ -1461,7 +1461,7 @@ attribute [instance] fileSizeError.TypeAssumptions.underlying
 
 structure dataIO [FfiSyntax] where
   mk ::
-  p' : slice.t
+  p' : GoSlice
   error' : Bool
 
 instance dataIO.zero_val [FfiSyntax] : ZeroVal dataIO :=
@@ -1485,7 +1485,7 @@ class dataIO.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying dataIO.underlying dataIO
   underlying : go.UnderlyingDirectedEq dataIO.ty dataIO.underlying
   get_p : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"p") #x (Val #(x.p'))
-  set_p : ∀ (x : dataIO) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : dataIO)))
+  set_p : ∀ (x : dataIO) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : dataIO)))
   get_error : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"error") #x (Val #(x.error'))
   set_error : ∀ (x : dataIO) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"error") (PairV #x #y) (Val #(({ x with error' := y } : dataIO)))
 

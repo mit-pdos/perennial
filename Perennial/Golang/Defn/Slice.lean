@@ -7,7 +7,7 @@ import Perennial.Golang.Defn.Predeclared
 
 namespace Perennial
 
-def sliceIndexRef [FfiSyntax] [GoSemanticsFunctions] (elem_type : Type) (i : Int) (s : slice.t) :
+def sliceIndexRef [FfiSyntax] [GoSemanticsFunctions] (elem_type : Type) (i : Int) (s : GoSlice) :
     Loc :=
   arrayIndexRef elem_type i s.ptr
 
@@ -16,10 +16,10 @@ section goose_lang
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 set_option linter.iris.dupNamespace false in
-def slice (sl : slice.t) (V : Type) (low high : U64) : slice.t :=
+def slice (sl : GoSlice) (V : Type) (low high : U64) : GoSlice :=
   slice.mk (sliceIndexRef V (sint.Z low) sl) (high - low) (sl.cap - low)
 
-def fullSlice (sl : slice.t) (V : Type) (low high max : U64) : slice.t :=
+def fullSlice (sl : GoSlice) (V : Type) (low high max : U64) : GoSlice :=
   slice.mk (sliceIndexRef V (sint.Z low) sl) (high - low) (max - low)
 
 /-- only for internal use, not an external model -/
@@ -58,9 +58,9 @@ def arrayLiteralSize (kvs : List keyed_element) : Int :=
   Max.max (Max.max last m) 0
 
 class SliceSemantics [GoSemanticsFunctions] : Prop where
-  internal_len_step (s : slice.t) :
+  internal_len_step (s : GoSlice) :
     ⟦InternalSliceLen, #s⟧ ⤳ #(s.len)
-  internal_cap_step (s : slice.t) :
+  internal_cap_step (s : GoSlice) :
     ⟦InternalSliceCap, #s⟧ ⤳ #(s.cap)
   internal_make_slice_step (p : Loc) (l c : w64) :
     ⟦InternalMakeSlice, (#p, #l, #c)⟧ ⤳
@@ -68,13 +68,13 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
   internal_dynamic_array_alloc_step (et : go.GoType) (n : w64) :
     ⟦InternalDynamicArrayAlloc et, #n⟧ ⤳
     (GoAlloc (go.ArrayType (sint.Z n) et) (GoZeroVal (go.ArrayType (sint.Z n) et) #()))
-  slice_slice_step_pure (elem_type : go.GoType) (s : slice.t) (low high : w64) {V : Type}
+  slice_slice_step_pure (elem_type : go.GoType) (s : GoSlice) (low high : w64) {V : Type}
     [ZeroVal V] [TypeRepr elem_type V] :
     ⟦Slice (go.SliceType elem_type), (#s, #low, #high)⟧ ⤳[under]
     (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ sint.Z s.cap then
        #(slice.slice s V low high)
      else Panic "slice bounds out of range")
-  fullSlice_slice_step_pure (elem_type : go.GoType) (s : slice.t) (low high max : w64) {V : Type}
+  fullSlice_slice_step_pure (elem_type : go.GoType) (s : GoSlice) (low high max : w64) {V : Type}
     [ZeroVal V] [TypeRepr elem_type V] :
     ⟦FullSlice (go.SliceType elem_type), (#s, #low, #high, #max)⟧ ⤳[under]
     (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ sint.Z max ∧
@@ -83,10 +83,10 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
      else Panic "slice bounds out of range")
 
   -- special case for slice equality
-  is_go_op_go_equals_slice_nil_l (elem_type : go.GoType) (s : slice.t) :
+  is_go_op_go_equals_slice_nil_l (elem_type : go.GoType) (s : GoSlice) :
     ⟦GoOp GoEquals (go.SliceType elem_type), (#slice.nil, #s)⟧ ⤳[under]
       #(decide (s = slice.nil))
-  is_go_op_go_equals_slice_nil_r (elem_type : go.GoType) (s : slice.t) :
+  is_go_op_go_equals_slice_nil_r (elem_type : go.GoType) (s : GoSlice) :
     ⟦GoOp GoEquals (go.SliceType elem_type), (#s, #slice.nil)⟧ ⤳[under]
       #(decide (s = slice.nil))
 
@@ -129,14 +129,14 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
     FuncUnfold go.make2 [st]
     (λ: "sz", FuncResolve go.make3 [st] #() "sz" "sz" : val)
 
-  index_ref_slice (elem_type : go.GoType) (i : w64) (s : slice.t) {V : Type} [ZeroVal V]
+  index_ref_slice (elem_type : go.GoType) (i : w64) (s : GoSlice) {V : Type} [ZeroVal V]
     [TypeRepr elem_type V] :
     ⟦IndexRef (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
     (if 0 ≤ sint.Z i ∧ sint.Z i < sint.Z s.len then
        #(sliceIndexRef V (sint.Z i) s)
      else Panic "slice index out of bounds")
 
-  index_slice (elem_type : go.GoType) (i : w64) (s : slice.t) :
+  index_slice (elem_type : go.GoType) (i : w64) (s : GoSlice) :
     ⟦Index (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
     (GoLoad elem_type ((IndexRef (go.SliceType elem_type)) glv((#i, #s))))
 

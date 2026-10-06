@@ -161,7 +161,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-abbrev Ordered [FfiSyntax] : Type := interface.t
+abbrev Ordered [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Ordered.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTermUnderlying go.int), (go.type_term.TypeTermUnderlying go.int8), (go.type_term.TypeTermUnderlying go.int16), (go.type_term.TypeTermUnderlying go.int32), (go.type_term.TypeTermUnderlying go.int64), (go.type_term.TypeTermUnderlying go.uint), (go.type_term.TypeTermUnderlying go.uint8), (go.type_term.TypeTermUnderlying go.uint16), (go.type_term.TypeTermUnderlying go.uint32), (go.type_term.TypeTermUnderlying go.uint64), (go.type_term.TypeTermUnderlying go.uintptr), (go.type_term.TypeTermUnderlying go.float32), (go.type_term.TypeTermUnderlying go.float64), (go.type_term.TypeTermUnderlying go.string)])])

@@ -3895,8 +3895,8 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 structure leaseCache [FfiSyntax] where
   mk ::
   mu' : _root_.Perennial.sync.RWMutex
-  entries' : map.t
-  revokes' : map.t
+  entries' : GoMap
+  revokes' : GoMap
   header' : Loc
 
 instance leaseCache.zero_val [FfiSyntax] : ZeroVal leaseCache :=
@@ -3924,9 +3924,9 @@ class leaseCache.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   get_mu : ∀ (x : leaseCache), go.IsGoStepPureDetTagged under (StructFieldGet leaseCache.underlying go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (x : leaseCache) (y : _root_.Perennial.sync.RWMutex), go.IsGoStepPureDetTagged under (StructFieldSet leaseCache.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : leaseCache)))
   get_entries : ∀ (x : leaseCache), go.IsGoStepPureDetTagged under (StructFieldGet leaseCache.underlying go!"entries") #x (Val #(x.entries'))
-  set_entries : ∀ (x : leaseCache) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet leaseCache.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : leaseCache)))
+  set_entries : ∀ (x : leaseCache) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet leaseCache.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : leaseCache)))
   get_revokes : ∀ (x : leaseCache), go.IsGoStepPureDetTagged under (StructFieldGet leaseCache.underlying go!"revokes") #x (Val #(x.revokes'))
-  set_revokes : ∀ (x : leaseCache) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet leaseCache.underlying go!"revokes") (PairV #x #y) (Val #(({ x with revokes' := y } : leaseCache)))
+  set_revokes : ∀ (x : leaseCache) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet leaseCache.underlying go!"revokes") (PairV #x #y) (Val #(({ x with revokes' := y } : leaseCache)))
   get_header : ∀ (x : leaseCache), go.IsGoStepPureDetTagged under (StructFieldGet leaseCache.underlying go!"header") #x (Val #(x.header'))
   set_header : ∀ (x : leaseCache) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet leaseCache.underlying go!"header") (PairV #x #y) (Val #(({ x with header' := y } : leaseCache)))
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType leaseCache.ty) go!"Add" leaseCache.Add.impl
@@ -3979,7 +3979,7 @@ structure leaseKey [FfiSyntax] where
   mk ::
   response' : Loc
   rev' : w64
-  waitc' : chan.t
+  waitc' : GoChan
 
 instance leaseKey.zero_val [FfiSyntax] : ZeroVal leaseKey :=
   ⟨leaseKey.mk zeroValDef zeroValDef zeroValDef⟩
@@ -4007,7 +4007,7 @@ class leaseKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_rev : ∀ (x : leaseKey), go.IsGoStepPureDetTagged under (StructFieldGet leaseKey.underlying go!"rev") #x (Val #(x.rev'))
   set_rev : ∀ (x : leaseKey) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet leaseKey.underlying go!"rev") (PairV #x #y) (Val #(({ x with rev' := y } : leaseKey)))
   get_waitc : ∀ (x : leaseKey), go.IsGoStepPureDetTagged under (StructFieldGet leaseKey.underlying go!"waitc") #x (Val #(x.waitc'))
-  set_waitc : ∀ (x : leaseKey) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet leaseKey.underlying go!"waitc") (PairV #x #y) (Val #(({ x with waitc' := y } : leaseKey)))
+  set_waitc : ∀ (x : leaseKey) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet leaseKey.underlying go!"waitc") (PairV #x #y) (Val #(({ x with waitc' := y } : leaseKey)))
   ptr_get_unfold : MethodUnfold (go.GoType.PointerType leaseKey.ty) go!"get" leaseKey.get.impl
 
 attribute [instance] leaseKey.TypeAssumptions.type_repr
@@ -4029,9 +4029,9 @@ structure leasingKV [FfiSyntax] where
   ctx' : _root_.Perennial.context.Context
   cancel' : _root_.Perennial.context.CancelFunc
   wg' : _root_.Perennial.sync.WaitGroup
-  sessionOpts' : slice.t
+  sessionOpts' : GoSlice
   session' : Loc
-  sessionc' : chan.t
+  sessionc' : GoChan
 
 instance leasingKV.zero_val [FfiSyntax] : ZeroVal leasingKV :=
   ⟨leasingKV.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -4076,11 +4076,11 @@ class leasingKV.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_wg : ∀ (x : leasingKV), go.IsGoStepPureDetTagged under (StructFieldGet leasingKV.underlying go!"wg") #x (Val #(x.wg'))
   set_wg : ∀ (x : leasingKV) (y : _root_.Perennial.sync.WaitGroup), go.IsGoStepPureDetTagged under (StructFieldSet leasingKV.underlying go!"wg") (PairV #x #y) (Val #(({ x with wg' := y } : leasingKV)))
   get_sessionOpts : ∀ (x : leasingKV), go.IsGoStepPureDetTagged under (StructFieldGet leasingKV.underlying go!"sessionOpts") #x (Val #(x.sessionOpts'))
-  set_sessionOpts : ∀ (x : leasingKV) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet leasingKV.underlying go!"sessionOpts") (PairV #x #y) (Val #(({ x with sessionOpts' := y } : leasingKV)))
+  set_sessionOpts : ∀ (x : leasingKV) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet leasingKV.underlying go!"sessionOpts") (PairV #x #y) (Val #(({ x with sessionOpts' := y } : leasingKV)))
   get_session : ∀ (x : leasingKV), go.IsGoStepPureDetTagged under (StructFieldGet leasingKV.underlying go!"session") #x (Val #(x.session'))
   set_session : ∀ (x : leasingKV) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet leasingKV.underlying go!"session") (PairV #x #y) (Val #(({ x with session' := y } : leasingKV)))
   get_sessionc : ∀ (x : leasingKV), go.IsGoStepPureDetTagged under (StructFieldGet leasingKV.underlying go!"sessionc") #x (Val #(x.sessionc'))
-  set_sessionc : ∀ (x : leasingKV) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet leasingKV.underlying go!"sessionc") (PairV #x #y) (Val #(({ x with sessionc' := y } : leasingKV)))
+  set_sessionc : ∀ (x : leasingKV) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet leasingKV.underlying go!"sessionc") (PairV #x #y) (Val #(({ x with sessionc' := y } : leasingKV)))
   ptr_Close_unfold : MethodUnfold (go.GoType.PointerType leasingKV.ty) go!"Close" leasingKV.Close.impl
   ptr_Compact_unfold : MethodUnfold (go.GoType.PointerType leasingKV.ty) go!"Compact" leasingKV.Compact.impl
   ptr_Delete_unfold : MethodUnfold (go.GoType.PointerType leasingKV.ty) go!"Delete" leasingKV.Delete.impl
@@ -4158,9 +4158,9 @@ structure txnLeasing [FfiSyntax] where
   Txn' : _root_.Perennial.go_etcd_io.etcd.client.v3.Txn
   lkv' : Loc
   ctx' : _root_.Perennial.context.Context
-  cs' : slice.t
-  opst' : slice.t
-  opse' : slice.t
+  cs' : GoSlice
+  opst' : GoSlice
+  opse' : GoSlice
 
 instance txnLeasing.zero_val [FfiSyntax] : ZeroVal txnLeasing :=
   ⟨txnLeasing.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -4193,11 +4193,11 @@ class txnLeasing.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   get_ctx : ∀ (x : txnLeasing), go.IsGoStepPureDetTagged under (StructFieldGet txnLeasing.underlying go!"ctx") #x (Val #(x.ctx'))
   set_ctx : ∀ (x : txnLeasing) (y : _root_.Perennial.context.Context), go.IsGoStepPureDetTagged under (StructFieldSet txnLeasing.underlying go!"ctx") (PairV #x #y) (Val #(({ x with ctx' := y } : txnLeasing)))
   get_cs : ∀ (x : txnLeasing), go.IsGoStepPureDetTagged under (StructFieldGet txnLeasing.underlying go!"cs") #x (Val #(x.cs'))
-  set_cs : ∀ (x : txnLeasing) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet txnLeasing.underlying go!"cs") (PairV #x #y) (Val #(({ x with cs' := y } : txnLeasing)))
+  set_cs : ∀ (x : txnLeasing) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet txnLeasing.underlying go!"cs") (PairV #x #y) (Val #(({ x with cs' := y } : txnLeasing)))
   get_opst : ∀ (x : txnLeasing), go.IsGoStepPureDetTagged under (StructFieldGet txnLeasing.underlying go!"opst") #x (Val #(x.opst'))
-  set_opst : ∀ (x : txnLeasing) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet txnLeasing.underlying go!"opst") (PairV #x #y) (Val #(({ x with opst' := y } : txnLeasing)))
+  set_opst : ∀ (x : txnLeasing) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet txnLeasing.underlying go!"opst") (PairV #x #y) (Val #(({ x with opst' := y } : txnLeasing)))
   get_opse : ∀ (x : txnLeasing), go.IsGoStepPureDetTagged under (StructFieldGet txnLeasing.underlying go!"opse") #x (Val #(x.opse'))
-  set_opse : ∀ (x : txnLeasing) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet txnLeasing.underlying go!"opse") (PairV #x #y) (Val #(({ x with opse' := y } : txnLeasing)))
+  set_opse : ∀ (x : txnLeasing) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet txnLeasing.underlying go!"opse") (PairV #x #y) (Val #(({ x with opse' := y } : txnLeasing)))
   ptr_Commit_unfold : MethodUnfold (go.GoType.PointerType txnLeasing.ty) go!"Commit" txnLeasing.Commit.impl
   ptr_Else_unfold : MethodUnfold (go.GoType.PointerType txnLeasing.ty) go!"Else" txnLeasing.Else.impl
   ptr_If_unfold : MethodUnfold (go.GoType.PointerType txnLeasing.ty) go!"If" txnLeasing.If.impl

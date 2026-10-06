@@ -433,7 +433,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-abbrev Interface [FfiSyntax] : Type := interface.t
+abbrev Interface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Interface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Len" (go.signature.Signature [] false [go.int])), (go.InterfaceElem.MethodElem go!"Less" (go.signature.Signature [go.int, go.int] false [go.bool])), (go.InterfaceElem.MethodElem go!"Swap" (go.signature.Signature [go.int, go.int] false []))])
@@ -467,8 +467,8 @@ attribute [instance] xorshift.TypeAssumptions.underlying
 
 structure lessSwap [FfiSyntax] where
   mk ::
-  Less' : func.t
-  Swap' : func.t
+  Less' : GoFunc
+  Swap' : GoFunc
 
 instance lessSwap.zero_val [FfiSyntax] : ZeroVal lessSwap :=
   ⟨lessSwap.mk zeroValDef zeroValDef⟩
@@ -491,9 +491,9 @@ class lessSwap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying lessSwap.underlying lessSwap
   underlying : go.UnderlyingDirectedEq lessSwap.ty lessSwap.underlying
   get_Less : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Less") #x (Val #(x.Less'))
-  set_Less : ∀ (x : lessSwap) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap)))
+  set_Less : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap)))
   get_Swap : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Swap") #x (Val #(x.Swap'))
-  set_Swap : ∀ (x : lessSwap) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Swap") (PairV #x #y) (Val #(({ x with Swap' := y } : lessSwap)))
+  set_Swap : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Swap") (PairV #x #y) (Val #(({ x with Swap' := y } : lessSwap)))
 
 attribute [instance] lessSwap.TypeAssumptions.type_repr
   lessSwap.TypeAssumptions.underlying
@@ -533,7 +533,7 @@ attribute [instance] reverse.TypeAssumptions.type_repr
   reverse.TypeAssumptions.get_Interface
   reverse.TypeAssumptions.set_Interface
 
-abbrev IntSlice [FfiSyntax] : Type := slice.t
+abbrev IntSlice [FfiSyntax] : Type := GoSlice
 
 @[reducible] def IntSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.int)
@@ -543,7 +543,7 @@ class IntSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] IntSlice.TypeAssumptions.underlying
 
-abbrev Float64Slice [FfiSyntax] : Type := slice.t
+abbrev Float64Slice [FfiSyntax] : Type := GoSlice
 
 @[reducible] def Float64Slice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.float64)
@@ -553,7 +553,7 @@ class Float64Slice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] Float64Slice.TypeAssumptions.underlying
 
-abbrev StringSlice [FfiSyntax] : Type := slice.t
+abbrev StringSlice [FfiSyntax] : Type := GoSlice
 
 @[reducible] def StringSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.string)

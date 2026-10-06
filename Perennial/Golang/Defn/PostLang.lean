@@ -56,8 +56,8 @@ class inductive TCForall {A : Type} (P : A → Prop) : List A → Prop
 attribute [instance] TCForall.nil TCForall.cons
 
 namespace map
-abbrev t := Loc
-def nil : t := null
+abbrev _root_.Perennial.GoMap := Loc
+def nil : GoMap := null
 end map
 
 class FloatOps where
@@ -83,8 +83,8 @@ export FloatOps (float64Neg float64Add float64Sub float64Mul float64Div float64L
 class GoSemanticsFunctions [FfiSyntax] where
   underlying : go.GoType → go.GoType
   globalAddr : GoString → Loc
-  functions : GoString → List go.GoType → func.t
-  methods : go.GoType → GoString → val → func.t
+  functions : GoString → List go.GoType → GoFunc
+  methods : go.GoType → GoString → val → GoFunc
 
   methodSet : go.GoType → GMap GoString go.signature
 
@@ -186,20 +186,20 @@ export IsPrimitiveZeroVal (isPrimitiveZeroVal_pointer isPrimitiveZeroVal_functio
   isPrimitive_zero_valinterface isPrimitiveZeroVal_slice isPrimitiveZeroVal_map
   isPrimitiveZeroVal_channel)
 
--- `interface.t_ok`, `interface.t` and `func.t` contain GooseLang syntax, whose
+-- `GoInterfaceOk`, `GoInterface` and `GoFunc` contain GooseLang syntax, whose
 -- equality is decided classically (see `Lang.lean`).
-noncomputable instance interface_ok_eq_dec : DecidableEq interface.t_ok :=
+noncomputable instance interface_ok_eq_dec : DecidableEq GoInterfaceOk :=
   fun a b => Classical.propDecidable (a = b)
 
-noncomputable instance interface_eq_dec : DecidableEq interface.t :=
+noncomputable instance interface_eq_dec : DecidableEq GoInterface :=
   fun a b => Classical.propDecidable (a = b)
 
-instance array_eq_dec (V : Type) (n : Int) [DecidableEq V] : DecidableEq (array.t V n) :=
+instance array_eq_dec (V : Type) (n : Int) [DecidableEq V] : DecidableEq (GoArray V n) :=
   fun a b =>
     if h : a.arr = b.arr then isTrue (by cases a; cases b; cases h; rfl)
     else isFalse (by intro e; cases e; exact h rfl)
 
-noncomputable instance func_eq_dec : DecidableEq func.t :=
+noncomputable instance func_eq_dec : DecidableEq GoFunc :=
   fun a b => Classical.propDecidable (a = b)
 
 /-
@@ -320,9 +320,9 @@ export IsStrictlyComparable (is_strictly_comparable)
 
 class CoreComparisonSemantics [GoSemanticsFunctions] : Prop where
   /-- special case equality for functions -/
-  go_op_go_equals_func_nil_l (sig : go.signature) (f : func.t) :
+  go_op_go_equals_func_nil_l (sig : go.signature) (f : GoFunc) :
     ⟦GoOp GoEquals (go.FunctionType sig), (#f, #func.nil)⟧ ⤳[under] #(decide (f = func.nil))
-  go_op_go_equals_func_nil_r (sig : go.signature) (f : func.t) :
+  go_op_go_equals_func_nil_r (sig : go.signature) (f : GoFunc) :
     ⟦GoOp GoEquals (go.FunctionType sig), (#func.nil, #f)⟧ ⤳[under] #(decide (f = func.nil))
 
   check_comparable_pointer (t : go.GoType) :
@@ -381,14 +381,14 @@ export IntoValInj (intoVal_inj)
 
 class BasicIntoValInj : Prop where
   [intoVal_inj_loc : IntoValInj Loc]
-  [intoVal_inj_slice : IntoValInj slice.t]
+  [intoVal_inj_slice : IntoValInj GoSlice]
   [intoVal_inj_w64 : IntoValInj w64]
   [intoVal_inj_w32 : IntoValInj w32]
   [intoVal_inj_w16 : IntoValInj w16]
   [intoVal_inj_w8 : IntoValInj w8]
   [intoVal_inj_bool : IntoValInj Bool]
   [intoVal_inj_string : IntoValInj GoString]
-  [intoVal_inj_interface : IntoValInj interface.t]
+  [intoVal_inj_interface : IntoValInj GoInterface]
   [intoVal_inj_proph_id : IntoValInj proph_id]
 
 attribute [instance] BasicIntoValInj.intoVal_inj_loc BasicIntoValInj.intoVal_inj_slice
@@ -456,7 +456,7 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   go_prealloc_step : is_go_step_pure GoPrealloc #() = (fun (e : Expr) => ∃ (l : Loc), l ≠ null ∧ e = #l)
   angelic_exit_step : is_go_step_pure AngelicExit #() = (fun (e : Expr) => e = AngelicExit #())
 
-  intoVal_unfold_func : IntoValUnfold func.t (fun f => RecV f.f f.x f.e)
+  intoVal_unfold_func : IntoValUnfold GoFunc (fun f => RecV f.f f.x f.e)
   intoVal_unfold_bool : IntoValUnfold Bool (fun x => LitV (LitBool x))
 
   -- Eventually want to get rid of these.
@@ -472,14 +472,14 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     ⟦GoZeroVal t, #()⟧ ⤳ #(zero_val V)
 
   go_zero_val_pointer (t : go.GoType) : TypeReprUnderlying (go.PointerType t) Loc
-  go_zero_val_function (sig : go.signature) : TypeReprUnderlying (go.FunctionType sig) func.t
-  go_zero_val_slice (elem_type : go.GoType) : TypeReprUnderlying (go.SliceType elem_type) slice.t
+  go_zero_val_function (sig : go.signature) : TypeReprUnderlying (go.FunctionType sig) GoFunc
+  go_zero_val_slice (elem_type : go.GoType) : TypeReprUnderlying (go.SliceType elem_type) GoSlice
   go_zero_val_interface (elems : List go.InterfaceElem) :
-    TypeReprUnderlying (go.InterfaceType elems) interface.t
+    TypeReprUnderlying (go.InterfaceType elems) GoInterface
   go_zero_val_channel (dir : go.ChanDir) (elem_type : go.GoType) :
-    TypeReprUnderlying (go.ChannelType dir elem_type) chan.t
+    TypeReprUnderlying (go.ChannelType dir elem_type) GoChan
   go_zero_val_map (key_type elem_type : go.GoType) :
-    TypeReprUnderlying (go.MapType key_type elem_type) map.t
+    TypeReprUnderlying (go.MapType key_type elem_type) GoMap
 
   [core_comparison_sem : CoreComparisonSemantics]
 

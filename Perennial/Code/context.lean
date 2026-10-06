@@ -1525,7 +1525,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc closedchan (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))) (Val #()))))))))
 
-abbrev Context [FfiSyntax] : Type := interface.t
+abbrev Context [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Context.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Deadline" (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool])), (go.InterfaceElem.MethodElem go!"Done" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))])), (go.InterfaceElem.MethodElem go!"Err" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"Value" (go.signature.Signature [go.any] false [go.any]))])
@@ -1742,7 +1742,7 @@ attribute [instance] todoCtx.TypeAssumptions.type_repr
   todoCtx.TypeAssumptions.ptr_String_unfold
   todoCtx.TypeAssumptions.ptr_Value_unfold
 
-abbrev CancelFunc [FfiSyntax] : Type := func.t
+abbrev CancelFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def CancelFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [] false []))
@@ -1752,7 +1752,7 @@ class CancelFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] CancelFunc.TypeAssumptions.underlying
 
-abbrev CancelCauseFunc [FfiSyntax] : Type := func.t
+abbrev CancelCauseFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def CancelCauseFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.error] false []))
@@ -1762,7 +1762,7 @@ class CancelCauseFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] CancelCauseFunc.TypeAssumptions.underlying
 
-abbrev afterFuncer [FfiSyntax] : Type := interface.t
+abbrev afterFuncer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def afterFuncer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AfterFunc" (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [(go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))]))])
@@ -1777,9 +1777,9 @@ structure cancelCtx [FfiSyntax] where
   Context' : Context
   mu' : _root_.Perennial.sync.Mutex
   done' : _root_.Perennial.sync.atomic.Value
-  children' : map.t
+  children' : GoMap
   err' : _root_.Perennial.sync.atomic.Value
-  cause' : error.t
+  cause' : GoError
 
 instance cancelCtx.zero_val [FfiSyntax] : ZeroVal cancelCtx :=
   ⟨cancelCtx.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1812,11 +1812,11 @@ class cancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_done : ∀ (x : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"done") #x (Val #(x.done'))
   set_done : ∀ (x : cancelCtx) (y : _root_.Perennial.sync.atomic.Value), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : cancelCtx)))
   get_children : ∀ (x : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"children") #x (Val #(x.children'))
-  set_children : ∀ (x : cancelCtx) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"children") (PairV #x #y) (Val #(({ x with children' := y } : cancelCtx)))
+  set_children : ∀ (x : cancelCtx) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"children") (PairV #x #y) (Val #(({ x with children' := y } : cancelCtx)))
   get_err : ∀ (x : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"err") #x (Val #(x.err'))
   set_err : ∀ (x : cancelCtx) (y : _root_.Perennial.sync.atomic.Value), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : cancelCtx)))
   get_cause : ∀ (x : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"cause") #x (Val #(x.cause'))
-  set_cause : ∀ (x : cancelCtx) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"cause") (PairV #x #y) (Val #(({ x with cause' := y } : cancelCtx)))
+  set_cause : ∀ (x : cancelCtx) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"cause") (PairV #x #y) (Val #(({ x with cause' := y } : cancelCtx)))
   Deadline_unfold : MethodUnfold cancelCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet cancelCtx.ty go!"Context"))) (Var "$r"))))
   ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType cancelCtx.ty) go!"Deadline" (LamV "$r"
@@ -1855,7 +1855,7 @@ structure afterFuncCtx [FfiSyntax] where
   mk ::
   cancelCtx' : cancelCtx
   once' : _root_.Perennial.sync.Once
-  f' : func.t
+  f' : GoFunc
 
 instance afterFuncCtx.zero_val [FfiSyntax] : ZeroVal afterFuncCtx :=
   ⟨afterFuncCtx.mk zeroValDef zeroValDef zeroValDef⟩
@@ -1883,7 +1883,7 @@ class afterFuncCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   get_once : ∀ (x : afterFuncCtx), go.IsGoStepPureDetTagged under (StructFieldGet afterFuncCtx.underlying go!"once") #x (Val #(x.once'))
   set_once : ∀ (x : afterFuncCtx) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"once") (PairV #x #y) (Val #(({ x with once' := y } : afterFuncCtx)))
   get_f : ∀ (x : afterFuncCtx), go.IsGoStepPureDetTagged under (StructFieldGet afterFuncCtx.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : afterFuncCtx) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : afterFuncCtx)))
+  set_f : ∀ (x : afterFuncCtx) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : afterFuncCtx)))
   Deadline_unfold : MethodUnfold afterFuncCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve cancelCtx.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet afterFuncCtx.ty go!"cancelCtx"))) (Var "$r"))))
   ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx.ty) go!"Deadline" (LamV "$r"
@@ -1920,7 +1920,7 @@ attribute [instance] afterFuncCtx.TypeAssumptions.type_repr
 structure stopCtx [FfiSyntax] where
   mk ::
   Context' : Context
-  stop' : func.t
+  stop' : GoFunc
 
 instance stopCtx.zero_val [FfiSyntax] : ZeroVal stopCtx :=
   ⟨stopCtx.mk zeroValDef zeroValDef⟩
@@ -1945,7 +1945,7 @@ class stopCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   get_Context : ∀ (x : stopCtx), go.IsGoStepPureDetTagged under (StructFieldGet stopCtx.underlying go!"Context") #x (Val #(x.Context'))
   set_Context : ∀ (x : stopCtx) (y : Context), go.IsGoStepPureDetTagged under (StructFieldSet stopCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : stopCtx)))
   get_stop : ∀ (x : stopCtx), go.IsGoStepPureDetTagged under (StructFieldGet stopCtx.underlying go!"stop") #x (Val #(x.stop'))
-  set_stop : ∀ (x : stopCtx) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet stopCtx.underlying go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : stopCtx)))
+  set_stop : ∀ (x : stopCtx) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet stopCtx.underlying go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : stopCtx)))
   Deadline_unfold : MethodUnfold stopCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet stopCtx.ty go!"Context"))) (Var "$r"))))
   Done_unfold : MethodUnfold stopCtx.ty go!"Done" (LamV "$r"
@@ -1978,7 +1978,7 @@ attribute [instance] stopCtx.TypeAssumptions.type_repr
   stopCtx.TypeAssumptions.ptr_Err_unfold
   stopCtx.TypeAssumptions.ptr_Value_unfold
 
-abbrev canceler [FfiSyntax] : Type := interface.t
+abbrev canceler [FfiSyntax] : Type := GoInterface
 
 @[reducible] def canceler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Done" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))])), (go.InterfaceElem.MethodElem go!"cancel" (go.signature.Signature [go.bool, go.error, go.error] false []))])
@@ -1988,7 +1988,7 @@ class canceler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] canceler.TypeAssumptions.underlying
 
-abbrev stringer [FfiSyntax] : Type := interface.t
+abbrev stringer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def stringer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
@@ -2118,8 +2118,8 @@ attribute [instance] timerCtx.TypeAssumptions.type_repr
 structure valueCtx [FfiSyntax] where
   mk ::
   Context' : Context
-  key' : interface.t
-  val' : interface.t
+  key' : GoInterface
+  val' : GoInterface
 
 instance valueCtx.zero_val [FfiSyntax] : ZeroVal valueCtx :=
   ⟨valueCtx.mk zeroValDef zeroValDef zeroValDef⟩
@@ -2145,9 +2145,9 @@ class valueCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_Context : ∀ (x : valueCtx), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"Context") #x (Val #(x.Context'))
   set_Context : ∀ (x : valueCtx) (y : Context), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : valueCtx)))
   get_key : ∀ (x : valueCtx), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"key") #x (Val #(x.key'))
-  set_key : ∀ (x : valueCtx) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"key") (PairV #x #y) (Val #(({ x with key' := y } : valueCtx)))
+  set_key : ∀ (x : valueCtx) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"key") (PairV #x #y) (Val #(({ x with key' := y } : valueCtx)))
   get_val : ∀ (x : valueCtx), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"val") #x (Val #(x.val'))
-  set_val : ∀ (x : valueCtx) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : valueCtx)))
+  set_val : ∀ (x : valueCtx) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : valueCtx)))
   Deadline_unfold : MethodUnfold valueCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet valueCtx.ty go!"Context"))) (Var "$r"))))
   Done_unfold : MethodUnfold valueCtx.ty go!"Done" (LamV "$r"

@@ -64,7 +64,7 @@ instance LeaseLeasesResponse_access_load_Leases (l : Loc) (v : go_etcd_io.etcd.a
  by
   solve_pointsto_access_struct
 
-instance LeaseLeasesResponse_access_store_Leases (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse) (Leases' : slice.t) :
+instance LeaseLeasesResponse_access_store_Leases (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse) (Leases' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse go!"Leases" l) v.Leases' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse go!"Leases" l) Leases' (DFrac.own 1))
@@ -96,7 +96,7 @@ instance LeaseLeasesResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance LeaseLeasesResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse) (XXX_unrecognized' : slice.t) :
+instance LeaseLeasesResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -191,7 +191,7 @@ instance Member_access_load_PeerURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcds
  by
   solve_pointsto_access_struct
 
-instance Member_access_store_PeerURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Member) (PeerURLs' : slice.t) :
+instance Member_access_store_PeerURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Member) (PeerURLs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Member go!"PeerURLs" l) v.PeerURLs' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Member go!"PeerURLs" l) PeerURLs' (DFrac.own 1))
@@ -207,7 +207,7 @@ instance Member_access_load_ClientURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etc
  by
   solve_pointsto_access_struct
 
-instance Member_access_store_ClientURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Member) (ClientURLs' : slice.t) :
+instance Member_access_store_ClientURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Member) (ClientURLs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Member go!"ClientURLs" l) v.ClientURLs' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Member go!"ClientURLs" l) ClientURLs' (DFrac.own 1))
@@ -255,7 +255,7 @@ instance Member_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.
  by
   solve_pointsto_access_struct
 
-instance Member_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Member) (XXX_unrecognized' : slice.t) :
+instance Member_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Member) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Member go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Member go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -315,7 +315,7 @@ instance MemberAddRequest_access_load_PeerURLs (l : Loc) (v : go_etcd_io.etcd.ap
  by
   solve_pointsto_access_struct
 
-instance MemberAddRequest_access_store_PeerURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest) (PeerURLs' : slice.t) :
+instance MemberAddRequest_access_store_PeerURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest) (PeerURLs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest go!"PeerURLs" l) v.PeerURLs' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest go!"PeerURLs" l) PeerURLs' (DFrac.own 1))
@@ -363,7 +363,7 @@ instance MemberAddRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io
  by
   solve_pointsto_access_struct
 
-instance MemberAddRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest) (XXX_unrecognized' : slice.t) :
+instance MemberAddRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -456,7 +456,7 @@ instance MemberAddResponse_access_load_Members (l : Loc) (v : go_etcd_io.etcd.ap
  by
   solve_pointsto_access_struct
 
-instance MemberAddResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse) (Members' : slice.t) :
+instance MemberAddResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse) (Members' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse go!"Members" l) v.Members' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse go!"Members" l) Members' (DFrac.own 1))
@@ -488,7 +488,7 @@ instance MemberAddResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_i
  by
   solve_pointsto_access_struct
 
-instance MemberAddResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse) (XXX_unrecognized' : slice.t) :
+instance MemberAddResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberAddResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -579,7 +579,7 @@ instance MemberRemoveRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance MemberRemoveRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveRequest) (XXX_unrecognized' : slice.t) :
+instance MemberRemoveRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -655,7 +655,7 @@ instance MemberRemoveResponse_access_load_Members (l : Loc) (v : go_etcd_io.etcd
  by
   solve_pointsto_access_struct
 
-instance MemberRemoveResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse) (Members' : slice.t) :
+instance MemberRemoveResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse) (Members' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse go!"Members" l) v.Members' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse go!"Members" l) Members' (DFrac.own 1))
@@ -687,7 +687,7 @@ instance MemberRemoveResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etc
  by
   solve_pointsto_access_struct
 
-instance MemberRemoveResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse) (XXX_unrecognized' : slice.t) :
+instance MemberRemoveResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberRemoveResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -763,7 +763,7 @@ instance MemberUpdateRequest_access_load_PeerURLs (l : Loc) (v : go_etcd_io.etcd
  by
   solve_pointsto_access_struct
 
-instance MemberUpdateRequest_access_store_PeerURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest) (PeerURLs' : slice.t) :
+instance MemberUpdateRequest_access_store_PeerURLs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest) (PeerURLs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest go!"PeerURLs" l) v.PeerURLs' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest go!"PeerURLs" l) PeerURLs' (DFrac.own 1))
@@ -795,7 +795,7 @@ instance MemberUpdateRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance MemberUpdateRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest) (XXX_unrecognized' : slice.t) :
+instance MemberUpdateRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -871,7 +871,7 @@ instance MemberUpdateResponse_access_load_Members (l : Loc) (v : go_etcd_io.etcd
  by
   solve_pointsto_access_struct
 
-instance MemberUpdateResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse) (Members' : slice.t) :
+instance MemberUpdateResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse) (Members' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse go!"Members" l) v.Members' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse go!"Members" l) Members' (DFrac.own 1))
@@ -903,7 +903,7 @@ instance MemberUpdateResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etc
  by
   solve_pointsto_access_struct
 
-instance MemberUpdateResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse) (XXX_unrecognized' : slice.t) :
+instance MemberUpdateResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberUpdateResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -994,7 +994,7 @@ instance MemberListRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_i
  by
   solve_pointsto_access_struct
 
-instance MemberListRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberListRequest) (XXX_unrecognized' : slice.t) :
+instance MemberListRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberListRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberListRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberListRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1070,7 +1070,7 @@ instance MemberListResponse_access_load_Members (l : Loc) (v : go_etcd_io.etcd.a
  by
   solve_pointsto_access_struct
 
-instance MemberListResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse) (Members' : slice.t) :
+instance MemberListResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse) (Members' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse go!"Members" l) v.Members' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse go!"Members" l) Members' (DFrac.own 1))
@@ -1102,7 +1102,7 @@ instance MemberListResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_
  by
   solve_pointsto_access_struct
 
-instance MemberListResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse) (XXX_unrecognized' : slice.t) :
+instance MemberListResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberListResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1193,7 +1193,7 @@ instance MemberPromoteRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etc
  by
   solve_pointsto_access_struct
 
-instance MemberPromoteRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteRequest) (XXX_unrecognized' : slice.t) :
+instance MemberPromoteRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1269,7 +1269,7 @@ instance MemberPromoteResponse_access_load_Members (l : Loc) (v : go_etcd_io.etc
  by
   solve_pointsto_access_struct
 
-instance MemberPromoteResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse) (Members' : slice.t) :
+instance MemberPromoteResponse_access_store_Members (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse) (Members' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse go!"Members" l) v.Members' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse go!"Members" l) Members' (DFrac.own 1))
@@ -1301,7 +1301,7 @@ instance MemberPromoteResponse_access_load_XXX_unrecognized (l : Loc) (v : go_et
  by
   solve_pointsto_access_struct
 
-instance MemberPromoteResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse) (XXX_unrecognized' : slice.t) :
+instance MemberPromoteResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.MemberPromoteResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1375,7 +1375,7 @@ instance DefragmentRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_i
  by
   solve_pointsto_access_struct
 
-instance DefragmentRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DefragmentRequest) (XXX_unrecognized' : slice.t) :
+instance DefragmentRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DefragmentRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DefragmentRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DefragmentRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))

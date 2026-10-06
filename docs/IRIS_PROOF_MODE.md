@@ -96,7 +96,7 @@ A *pmTerm* is `t $$ spat₁ … spatₙ`, where `t` is an Iris hypothesis or a L
 term (a lemma with explicit arguments, a `(lem (x := v))`, ...). It is accepted
 by `iapply`, `ispecialize`, `icases`, `ihave`, `imod`, `iinv`, `wp_apply`.
 Examples: `iapply HΦ $$ Hs`, `ihave %Hlen := ownSlice_len _ _ _ $$ Hs`,
-`imod ghost_var_update_halves (n + 1) γ n n $$ Hv Hv' with ⟨Hv, Hv'⟩`.
+`imod ghostVar_update_halves (n + 1) γ n n $$ Hv Hv' with ⟨Hv, Hv'⟩`.
 
 ## 3. Tactics
 

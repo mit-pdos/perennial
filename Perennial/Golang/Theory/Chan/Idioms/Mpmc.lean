@@ -212,7 +212,7 @@ def mpmcConsumer (γ : MpmcNames) (received : MSet) : IProp GF :=
 
 omit [ZeroVal V] [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V t] in
 variable (V) in
-def inflightMset (s : chanstate.t V) : MSet :=
+def inflightMset (s : ChanState V) : MSet :=
   match s with
   | .Buffered buff => listToMset buff
   | .SndPending v | .SndCommit v => msetSingleton v
@@ -220,14 +220,14 @@ def inflightMset (s : chanstate.t V) : MSet :=
   | _ => UCMRA.unit
 
 /-- The `"Hclosed"` part of the MPMC invariant. -/
-def mpmcClosedPart (γ : MpmcNames) (s : chanstate.t V) : IProp GF :=
+def mpmcClosedPart (γ : MpmcNames) (s : ChanState V) : IProp GF :=
   match s with
   | .Closed [] => dghostVar γ.mpmcClosedName DFrac.discard true
   | _ => dghostVar γ.mpmcClosedName (DFrac.own 1) false
 
 /-- The state-dependent resources of the MPMC invariant. -/
 def mpmcInvMatch (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF)
-    (R : MSet → IProp GF) (sent recv : MSet) (s : chanstate.t V) : IProp GF :=
+    (R : MSet → IProp GF) (sent recv : MSet) (s : ChanState V) : IProp GF :=
   match s with
   | .Buffered buff => iprop([∗list] v ∈ buff, P v)
   | .SndPending v => P v
@@ -245,7 +245,7 @@ def mpmcInvMatch (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF)
 
 @[irreducible] def mpmcInv (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF)
     (R : MSet → IProp GF) : IProp GF :=
-  iprop(∃ (s : chanstate.t V) (sent recv : MSet),
+  iprop(∃ (s : ChanState V) (sent recv : MSet),
     ownChan γ.mpmcChanName V s ∗
     server γ.mpmcSentName n_prod (msetFrag sent) ∗
     server γ.mpmcRecvName n_cons (msetFrag recv) ∗
@@ -265,7 +265,7 @@ instance isMpmc_persistent (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat)
 omit [IntoValTyped (GF := GF) V t] in
 theorem mpmcInv_elim (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF)
     (R : MSet → IProp GF) :
-    mpmcInv γ n_prod n_cons P R ⊢ ∃ (s : chanstate.t V) (sent recv : MSet),
+    mpmcInv γ n_prod n_cons P R ⊢ ∃ (s : ChanState V) (sent recv : MSet),
       ownChan γ.mpmcChanName V s ∗
       server γ.mpmcSentName n_prod (msetFrag sent) ∗
       server γ.mpmcRecvName n_cons (msetFrag recv) ∗
@@ -276,7 +276,7 @@ theorem mpmcInv_elim (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF)
 
 omit [IntoValTyped (GF := GF) V t] in
 theorem mpmcInv_intro (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF)
-    (R : MSet → IProp GF) (s : chanstate.t V) (sent recv : MSet)
+    (R : MSet → IProp GF) (s : ChanState V) (sent recv : MSet)
     (h : sent = recv • inflightMset V s ∧ n_cons > 0 ∧ n_prod > 0) :
     ⊢ ownChan γ.mpmcChanName V s -∗
       server γ.mpmcSentName n_prod (msetFrag sent) -∗
@@ -297,7 +297,7 @@ theorem mpmcInv_intro (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF
 
 omit [IntoValTyped (GF := GF) V t] in
 theorem start_mpmc (ch : Loc) (P : V → IProp GF) (R : MSet → IProp GF) (γ : ChanNames)
-    (n_prod n_cons : Nat) (s : chanstate.t V)
+    (n_prod n_cons : Nat) (s : ChanState V)
     (Hs : match s with | .Buffered [] => True | .Idle => True | _ => False)
     (Hprod : n_prod > 0) (Hcons : n_cons > 0) :
     ⊢ isChan ch γ V -∗ ownChan γ V s ={⊤}=∗

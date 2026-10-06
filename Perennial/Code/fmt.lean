@@ -382,7 +382,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 structure wrapError [FfiSyntax] where
   mk ::
   msg' : GoString
-  err' : error.t
+  err' : GoError
 
 instance wrapError.zero_val [FfiSyntax] : ZeroVal wrapError :=
   ⟨wrapError.mk zeroValDef zeroValDef⟩
@@ -407,7 +407,7 @@ class wrapError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_msg : ∀ (x : wrapError), go.IsGoStepPureDetTagged under (StructFieldGet wrapError.underlying go!"msg") #x (Val #(x.msg'))
   set_msg : ∀ (x : wrapError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrapError.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : wrapError)))
   get_err : ∀ (x : wrapError), go.IsGoStepPureDetTagged under (StructFieldGet wrapError.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : wrapError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet wrapError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : wrapError)))
+  set_err : ∀ (x : wrapError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet wrapError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : wrapError)))
 
 attribute [instance] wrapError.TypeAssumptions.type_repr
   wrapError.TypeAssumptions.underlying
@@ -419,7 +419,7 @@ attribute [instance] wrapError.TypeAssumptions.type_repr
 structure wrapErrors [FfiSyntax] where
   mk ::
   msg' : GoString
-  errs' : slice.t
+  errs' : GoSlice
 
 instance wrapErrors.zero_val [FfiSyntax] : ZeroVal wrapErrors :=
   ⟨wrapErrors.mk zeroValDef zeroValDef⟩
@@ -444,7 +444,7 @@ class wrapErrors.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   get_msg : ∀ (x : wrapErrors), go.IsGoStepPureDetTagged under (StructFieldGet wrapErrors.underlying go!"msg") #x (Val #(x.msg'))
   set_msg : ∀ (x : wrapErrors) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrapErrors.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : wrapErrors)))
   get_errs : ∀ (x : wrapErrors), go.IsGoStepPureDetTagged under (StructFieldGet wrapErrors.underlying go!"errs") #x (Val #(x.errs'))
-  set_errs : ∀ (x : wrapErrors) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet wrapErrors.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : wrapErrors)))
+  set_errs : ∀ (x : wrapErrors) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet wrapErrors.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : wrapErrors)))
 
 attribute [instance] wrapErrors.TypeAssumptions.type_repr
   wrapErrors.TypeAssumptions.underlying
@@ -538,7 +538,7 @@ structure fmt [FfiSyntax] where
   fmtFlags' : fmtFlags
   wid' : w64
   prec' : w64
-  intbuf' : (array.t w8 68)
+  intbuf' : (GoArray w8 68)
 
 instance fmt.zero_val [FfiSyntax] : ZeroVal fmt :=
   ⟨fmt.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -572,7 +572,7 @@ class fmt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   get_prec : ∀ (x : fmt), go.IsGoStepPureDetTagged under (StructFieldGet fmt.underlying go!"prec") #x (Val #(x.prec'))
   set_prec : ∀ (x : fmt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet fmt.underlying go!"prec") (PairV #x #y) (Val #(({ x with prec' := y } : fmt)))
   get_intbuf : ∀ (x : fmt), go.IsGoStepPureDetTagged under (StructFieldGet fmt.underlying go!"intbuf") #x (Val #(x.intbuf'))
-  set_intbuf : ∀ (x : fmt) (y : (array.t w8 68)), go.IsGoStepPureDetTagged under (StructFieldSet fmt.underlying go!"intbuf") (PairV #x #y) (Val #(({ x with intbuf' := y } : fmt)))
+  set_intbuf : ∀ (x : fmt) (y : (GoArray w8 68)), go.IsGoStepPureDetTagged under (StructFieldSet fmt.underlying go!"intbuf") (PairV #x #y) (Val #(({ x with intbuf' := y } : fmt)))
 
 attribute [instance] fmt.TypeAssumptions.type_repr
   fmt.TypeAssumptions.underlying
@@ -587,7 +587,7 @@ attribute [instance] fmt.TypeAssumptions.type_repr
   fmt.TypeAssumptions.get_intbuf
   fmt.TypeAssumptions.set_intbuf
 
-abbrev State [FfiSyntax] : Type := interface.t
+abbrev State [FfiSyntax] : Type := GoInterface
 
 @[reducible] def State.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Flag" (go.signature.Signature [go.int] false [go.bool])), (go.InterfaceElem.MethodElem go!"Precision" (go.signature.Signature [] false [go.int, go.bool])), (go.InterfaceElem.MethodElem go!"Width" (go.signature.Signature [] false [go.int, go.bool])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
@@ -597,7 +597,7 @@ class State.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] State.TypeAssumptions.underlying
 
-abbrev Formatter [FfiSyntax] : Type := interface.t
+abbrev Formatter [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Formatter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Format" (go.signature.Signature [State.ty, go.rune] false []))])
@@ -607,7 +607,7 @@ class Formatter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] Formatter.TypeAssumptions.underlying
 
-abbrev Stringer [FfiSyntax] : Type := interface.t
+abbrev Stringer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Stringer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
@@ -617,7 +617,7 @@ class Stringer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] Stringer.TypeAssumptions.underlying
 
-abbrev GoStringer [FfiSyntax] : Type := interface.t
+abbrev GoStringer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def GoStringer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"GoString" (go.signature.Signature [] false [go.string]))])
@@ -627,7 +627,7 @@ class GoStringer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] GoStringer.TypeAssumptions.underlying
 
-abbrev buffer [FfiSyntax] : Type := slice.t
+abbrev buffer [FfiSyntax] : Type := GoSlice
 
 @[reducible] def buffer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
@@ -650,7 +650,7 @@ attribute [instance] pp.TypeAssumptions.type_repr
   pp.TypeAssumptions.underlying
   pp.TypeAssumptions.isUnderlying
 
-abbrev ScanState [FfiSyntax] : Type := interface.t
+abbrev ScanState [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ScanState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])), (go.InterfaceElem.MethodElem go!"ReadRune" (go.signature.Signature [] false [go.rune, go.int, go.error])), (go.InterfaceElem.MethodElem go!"SkipSpace" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Token" (go.signature.Signature [go.bool, (go.GoType.FunctionType (go.signature.Signature [go.rune] false [go.bool]))] false [(go.GoType.SliceType go.byte), go.error])), (go.InterfaceElem.MethodElem go!"UnreadRune" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"Width" (go.signature.Signature [] false [go.int, go.bool]))])
@@ -660,7 +660,7 @@ class ScanState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] ScanState.TypeAssumptions.underlying
 
-abbrev Scanner [FfiSyntax] : Type := interface.t
+abbrev Scanner [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Scanner.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Scan" (go.signature.Signature [ScanState.ty, go.rune] false [go.error]))])
@@ -682,7 +682,7 @@ attribute [instance] stringReader.TypeAssumptions.underlying
 
 structure scanError [FfiSyntax] where
   mk ::
-  err' : error.t
+  err' : GoError
 
 instance scanError.zero_val [FfiSyntax] : ZeroVal scanError :=
   ⟨scanError.mk zeroValDef⟩
@@ -704,7 +704,7 @@ class scanError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying scanError.underlying scanError
   underlying : go.UnderlyingDirectedEq scanError.ty scanError.underlying
   get_err : ∀ (x : scanError), go.IsGoStepPureDetTagged under (StructFieldGet scanError.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : scanError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet scanError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : scanError)))
+  set_err : ∀ (x : scanError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet scanError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : scanError)))
 
 attribute [instance] scanError.TypeAssumptions.type_repr
   scanError.TypeAssumptions.underlying

@@ -81,7 +81,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_GlobalAlloc (V := array.t w8 256) asciiSpace (go.ArrayType 256 go.uint8) with H
+  wp_apply wp_GlobalAlloc (V := GoArray w8 256) asciiSpace (go.ArrayType 256 go.uint8) with H
   iframe Hown
   is_pkg_init_finish
 
@@ -91,7 +91,7 @@ all ASCII. (`ownSliceCap w8` is also as in Rocq.) -/
 axiom wp_Fields [package_sem : strings.Assumptions] (s : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
       (App (Val (@! Fields)) (Val #s))
-    {{ (sl : slice.t), RET #sl;
+    {{ (sl : GoSlice), RET #sl;
         sl ↦* (splitFields s) ∗ ownSliceCap w8 sl (DFrac.own 1) }}
 
 /-! Unit tests for `wp_Fields`. -/
@@ -99,7 +99,7 @@ axiom wp_Fields [package_sem : strings.Assumptions] (s : GoString) :
 example :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
       (App (Val (@! Fields)) (Val #(go!"  hello\tthere\ngeneral\rkenobi ")))
-    {{ (sl : slice.t), RET #sl;
+    {{ (sl : GoSlice), RET #sl;
         sl ↦* [go!"hello", go!"there", go!"general", go!"kenobi"] ∗
         ownSliceCap w8 sl (DFrac.own 1) }} := by
   iintro %Φ #Hinit HΦ
@@ -113,7 +113,7 @@ example :
 example :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
       (App (Val (@! Fields)) (Val #(go!"hello world")))
-    {{ (sl : slice.t), RET #sl;
+    {{ (sl : GoSlice), RET #sl;
         sl ↦* [go!"hello", go!"world"] ∗
         ownSliceCap w8 sl (DFrac.own 1) }} := by
   iintro %Φ #Hinit HΦ

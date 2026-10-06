@@ -397,7 +397,7 @@ instance vdsoInfo_access_load_chain (l : Loc) (v : runtime.vdsoInfo) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_chain (l : Loc) (v : runtime.vdsoInfo) (chain' : slice.t) :
+instance vdsoInfo_access_store_chain (l : Loc) (v : runtime.vdsoInfo) (chain' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"chain" l) v.chain' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"chain" l) chain' (DFrac.own 1))
@@ -413,7 +413,7 @@ instance vdsoInfo_access_load_bucket (l : Loc) (v : runtime.vdsoInfo) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_bucket (l : Loc) (v : runtime.vdsoInfo) (bucket' : slice.t) :
+instance vdsoInfo_access_store_bucket (l : Loc) (v : runtime.vdsoInfo) (bucket' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"bucket" l) v.bucket' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"bucket" l) bucket' (DFrac.own 1))

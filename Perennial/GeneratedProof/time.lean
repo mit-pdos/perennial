@@ -209,7 +209,7 @@ instance Timer_access_load_C (l : Loc) (v : time.Timer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Timer_access_store_C (l : Loc) (v : time.Timer) (C' : chan.t) :
+instance Timer_access_store_C (l : Loc) (v : time.Timer) (C' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Timer go!"C" l) v.C' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Timer go!"C" l) C' (DFrac.own 1))
@@ -266,7 +266,7 @@ instance Ticker_access_load_C (l : Loc) (v : time.Ticker) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Ticker_access_store_C (l : Loc) (v : time.Ticker) (C' : chan.t) :
+instance Ticker_access_store_C (l : Loc) (v : time.Ticker) (C' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Ticker go!"C" l) v.C' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Ticker go!"C" l) C' (DFrac.own 1))
@@ -418,7 +418,7 @@ instance Location_access_load_zone (l : Loc) (v : time.Location) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Location_access_store_zone (l : Loc) (v : time.Location) (zone' : slice.t) :
+instance Location_access_store_zone (l : Loc) (v : time.Location) (zone' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"zone" l) v.zone' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"zone" l) zone' (DFrac.own 1))
@@ -434,7 +434,7 @@ instance Location_access_load_tx (l : Loc) (v : time.Location) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Location_access_store_tx (l : Loc) (v : time.Location) (tx' : slice.t) :
+instance Location_access_store_tx (l : Loc) (v : time.Location) (tx' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"tx" l) v.tx' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"tx" l) tx' (DFrac.own 1))
@@ -812,7 +812,7 @@ instance dataIO_access_load_p (l : Loc) (v : time.dataIO) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance dataIO_access_store_p (l : Loc) (v : time.dataIO) (p' : slice.t) :
+instance dataIO_access_store_p (l : Loc) (v : time.dataIO) (p' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.dataIO go!"p" l) v.p' (DFrac.own 1))
       (typedPointsto (structFieldRef time.dataIO go!"p" l) p' (DFrac.own 1))

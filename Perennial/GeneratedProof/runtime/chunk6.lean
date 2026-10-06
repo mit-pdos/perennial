@@ -62,7 +62,7 @@ instance findfuncbucket_access_load_subbuckets (l : Loc) (v : runtime.findfuncbu
  by
   solve_pointsto_access_struct
 
-instance findfuncbucket_access_store_subbuckets (l : Loc) (v : runtime.findfuncbucket) (subbuckets' : (array.t w8 16)) :
+instance findfuncbucket_access_store_subbuckets (l : Loc) (v : runtime.findfuncbucket) (subbuckets' : (GoArray w8 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.findfuncbucket go!"subbuckets" l) v.subbuckets' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.findfuncbucket go!"subbuckets" l) subbuckets' (DFrac.own 1))
@@ -246,7 +246,7 @@ instance stackmap_access_load_bytedata (l : Loc) (v : runtime.stackmap) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance stackmap_access_store_bytedata (l : Loc) (v : runtime.stackmap) (bytedata' : (array.t w8 1)) :
+instance stackmap_access_store_bytedata (l : Loc) (v : runtime.stackmap) (bytedata' : (GoArray w8 1)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stackmap go!"bytedata" l) v.bytedata' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stackmap go!"bytedata" l) bytedata' (DFrac.own 1))
@@ -493,7 +493,7 @@ instance traceAdvancerState_access_load_done (l : Loc) (v : runtime.traceAdvance
  by
   solve_pointsto_access_struct
 
-instance traceAdvancerState_access_store_done (l : Loc) (v : runtime.traceAdvancerState) (done' : chan.t) :
+instance traceAdvancerState_access_store_done (l : Loc) (v : runtime.traceAdvancerState) (done' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceAdvancerState go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceAdvancerState go!"done" l) done' (DFrac.own 1))
@@ -997,7 +997,7 @@ instance traceMapNode_access_load_children (l : Loc) (v : runtime.traceMapNode) 
  by
   solve_pointsto_access_struct
 
-instance traceMapNode_access_store_children (l : Loc) (v : runtime.traceMapNode) (children' : (array.t internal.runtime.atomic.UnsafePointer 4)) :
+instance traceMapNode_access_store_children (l : Loc) (v : runtime.traceMapNode) (children' : (GoArray internal.runtime.atomic.UnsafePointer 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceMapNode go!"children" l) v.children' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceMapNode go!"children" l) children' (DFrac.own 1))
@@ -1045,7 +1045,7 @@ instance traceMapNode_access_load_data (l : Loc) (v : runtime.traceMapNode) (dq 
  by
   solve_pointsto_access_struct
 
-instance traceMapNode_access_store_data (l : Loc) (v : runtime.traceMapNode) (data' : slice.t) :
+instance traceMapNode_access_store_data (l : Loc) (v : runtime.traceMapNode) (data' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceMapNode go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceMapNode go!"data" l) data' (DFrac.own 1))
@@ -1163,7 +1163,7 @@ instance mTraceState_access_load_buf (l : Loc) (v : runtime.mTraceState) (dq : D
  by
   solve_pointsto_access_struct
 
-instance mTraceState_access_store_buf (l : Loc) (v : runtime.mTraceState) (buf' : (array.t (array.t Loc 2) 2)) :
+instance mTraceState_access_store_buf (l : Loc) (v : runtime.mTraceState) (buf' : (GoArray (GoArray Loc 2) 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mTraceState go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mTraceState go!"buf" l) buf' (DFrac.own 1))
@@ -1733,7 +1733,7 @@ instance elfEhdr_access_load_e_ident (l : Loc) (v : runtime.elfEhdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfEhdr_access_store_e_ident (l : Loc) (v : runtime.elfEhdr) (e_ident' : (array.t w8 16)) :
+instance elfEhdr_access_store_e_ident (l : Loc) (v : runtime.elfEhdr) (e_ident' : (GoArray w8 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfEhdr go!"e_ident" l) v.e_ident' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfEhdr go!"e_ident" l) e_ident' (DFrac.own 1))

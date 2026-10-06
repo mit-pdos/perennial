@@ -62,7 +62,7 @@ instance setKeyAction_access_load_FieldName (l : Loc) (v : go_etcd_io.etcd.serve
  by
   solve_pointsto_access_struct
 
-instance setKeyAction_access_store_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (FieldName' : slice.t) :
+instance setKeyAction_access_store_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (FieldName' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldName" l) v.FieldName' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldName" l) FieldName' (DFrac.own 1))
@@ -78,7 +78,7 @@ instance setKeyAction_access_load_FieldValue (l : Loc) (v : go_etcd_io.etcd.serv
  by
   solve_pointsto_access_struct
 
-instance setKeyAction_access_store_FieldValue (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (FieldValue' : slice.t) :
+instance setKeyAction_access_store_FieldValue (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (FieldValue' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldValue" l) v.FieldValue' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldValue" l) FieldValue' (DFrac.own 1))
@@ -135,7 +135,7 @@ instance deleteKeyAction_access_load_FieldName (l : Loc) (v : go_etcd_io.etcd.se
  by
   solve_pointsto_access_struct
 
-instance deleteKeyAction_access_store_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction) (FieldName' : slice.t) :
+instance deleteKeyAction_access_store_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction) (FieldName' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"FieldName" l) v.FieldName' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"FieldName" l) FieldName' (DFrac.own 1))
@@ -269,7 +269,7 @@ instance bucket_access_load_name (l : Loc) (v : go_etcd_io.etcd.server.v3.storag
  by
   solve_pointsto_access_struct
 
-instance bucket_access_store_name (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket) (name' : slice.t) :
+instance bucket_access_store_name (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket) (name' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"name" l) v.name' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"name" l) name' (DFrac.own 1))

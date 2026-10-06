@@ -29,17 +29,17 @@ variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
 /-- Rocq `is_Node`. -/
-def is_Node (γ : RaftNames) (n : interface.t_ok) : IProp GF :=
+def is_Node (γ : RaftNames) (n : GoInterfaceOk) : IProp GF :=
   iprop(∃ n_ptr : Loc,
     "%Hn" ∷ ⌜n = interface.mk (go.GoType.PointerType v3.node.ty) #n_ptr⌝ ∗
     "#Hnode" ∷ is_node γ n_ptr)
 
-instance is_Node_pers (γ : RaftNames) (n : interface.t_ok) :
+instance is_Node_pers (γ : RaftNames) (n : GoInterfaceOk) :
     Persistent (is_Node (GF := GF) γ n) := by
   unfold is_Node; infer_instance
 
-theorem Node.wp_Propose (ctx : interface.t_ok) (ctx_desc : context.Context_desc.t (IProp GF))
-    (n : interface.t_ok) (γraft : RaftNames) (data_sl : slice.t) (data : List w8) :
+theorem Node.wp_Propose (ctx : GoInterfaceOk) (ctx_desc : context.ContextDesc (IProp GF))
+    (n : GoInterfaceOk) (γraft : RaftNames) (data_sl : GoSlice) (data : List w8) :
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "#Hctx" ∷ context.isContext ctx ctx_desc ∗
         "#Hnode" ∷ is_Node γraft n ∗
@@ -47,7 +47,7 @@ theorem Node.wp_Propose (ctx : interface.t_ok) (ctx_desc : context.Context_desc.
         "Hupd" ∷ (|={⊤,∅}=> ∃ log, ownRaftLog γraft log ∗
           (ownRaftLog γraft (log ++ [data]) ={∅,⊤}=∗ True)) }}
       (App (App (Val #(methods n.ty go!"Propose" n.v)) (Val #(interface.ok ctx))) (Val #data_sl))
-    {{ (err : interface.t), RET #err; True }} := by
+    {{ (err : GoInterface), RET #err; True }} := by
   wp_start_folded as Hpre
   iNamed Hpre
   iNamed Hnode

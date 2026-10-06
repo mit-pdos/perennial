@@ -25,7 +25,7 @@ on `master`) but describes how things work in this port.
 | Directory | Contents |
 |:--|:--|
 | `Perennial/Std` | stdpp-style helpers: `gmap`, words (`w64 = BitVec 64`), list lemmas, `word`/`len` tactics |
-| `Perennial/Algebra`, `Perennial/Ghost` | cameras and ghost-state libraries (`ghost_var`, `ghost_map`, `mono_list`, ...) |
+| `Perennial/Algebra`, `Perennial/Ghost` | cameras and ghost-state libraries (`ghostVar`, `ghost_map`, `mono_list`, ...) |
 | `Perennial/GooseLang` | the GooseLang language, its lifting lemmas (`wp_fork`, `wp_cmpxchg_suc`, ...) |
 | `Perennial/Golang/Defn` | the Go model: types, instructions, `@!` notation |
 | `Perennial/Golang/Theory` | the program logic for Go and the proof tactics (`Auto.lean`, `ProofMode.lean`, `Mem.lean`, `Slice.lean`, `Map.lean`, `Loop.lean`, `Pkg.lean`, ...) |
@@ -89,15 +89,15 @@ imports = ["!*"]
 
 * `pkg_id.<pkg> : GoString` and a `PkgInfo` instance (the imported packages);
 * for every function `F`, its name `def F : GoString := go!"pkg.F"` and its
-  body `def «Fⁱᵐᵖˡ» : val` (methods are `«T__mⁱᵐᵖˡ»`);
-* types (`def S : go.type`), and the struct value types `S.t` with fields `a'`, `b'`, ...;
+  body `def F.impl : val` (methods are `T.m.impl`);
+* types (`def S.ty : go.GoType`), and the struct value types `S` with fields `a'`, `b'`, ...;
 * `initialize'`, the package initialization function;
 * `class Assumptions`: the facts a proof may assume about the package, such as
-  `FuncUnfold F [] «Fⁱᵐᵖˡ»` (calling `F` runs its body) and the struct
+  `FuncUnfold F [] F.impl` (calling `F` runs its body) and the struct
   field-access semantics. Proofs take `[package_sem : <pkg>.Assumptions]`.
 
 `Perennial/GeneratedProof/<pkg>.lean` contains, for each struct, the typed
-points-to `TypedPointsto S.t` (one named conjunct per field), `IntoValTyped`,
+points-to `TypedPointsto S` (one named conjunct per field), `IntoValTyped`,
 and the `AccessStrict` instances that let `wp_load`/`wp_store` work on a single
 field of a struct points-to.
 
@@ -115,7 +115,7 @@ import Perennial.Proof.sync_proof.mutex
 ```lean
 section tutorial
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : unittest.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
@@ -126,7 +126,7 @@ FFI is fixed to the disk FFI (global instances from `Perennial.Proof.DiskPrelude
 and the section does not bind it. Other packages are generic in the FFI and also
 bind `[ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]`,
 as in `Perennial/Proof/sync_proof/mutex.lean`. Proofs that need ghost state add
-`[allG GF]` (section 10).
+`[AllG GF]` (section 10).
 
 ## 4. Writing a specification
 
@@ -143,8 +143,8 @@ before `RET` are optional (`{{ RET #(); True }}`).
   `(App (App (Val (@! F)) (Val #x)) (Val #y))`; `@! F` is the function value
   `#(functions F [])`.
 * A method call `r.m(x)` is `(App (Val (r @!! T @!! go!"m")) (Val #x))`, e.g.
-  `(App (Val (m @!! go.type.PointerType Mutex @!! go!"Lock")) (Val #()))`.
-* `#x` turns a Lean value (`w64`, `w8`, `Bool`, `loc`, `slice.t`, a struct `S.t`,
+  `(App (Val (m @!! go.GoType.PointerType Mutex.ty @!! go!"Lock")) (Val #()))`.
+* `#x` turns a Lean value (`w64`, `w8`, `Bool`, `Loc`, `GoSlice`, a struct `S`,
   `GoString`, `()`, ...) into a GooseLang `val`.
 * Multiple return values are a pair: `RET (PairV #a #b)`.
 * The precondition starts with `isPkgInit (PROP := IProp GF) pkg`; the
@@ -215,7 +215,7 @@ are rejected.)
 ```lean
 /-- `func returnTwo(p []byte) (uint64, uint64) { return 0, 0 }`.
 Multiple return values are a `PairV`. -/
-theorem wp_returnTwo' (p : slice.t) :
+theorem wp_returnTwo' (p : GoSlice) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! returnTwo)) (Val #p))
     {{ RET (PairV #(W64 0) #(W64 0)); True }} := by
@@ -224,7 +224,7 @@ theorem wp_returnTwo' (p : slice.t) :
   wp_end
 
 /-- `func returnTwoWrapper(data []byte) (uint64, uint64)` calls `returnTwo`. -/
-theorem wp_returnTwoWrapper' (data : slice.t) :
+theorem wp_returnTwoWrapper' (data : GoSlice) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! returnTwoWrapper)) (Val #data))
     {{ RET (PairV #(W64 0) #(W64 0)); True }} := by
@@ -237,8 +237,8 @@ theorem wp_returnTwoWrapper' (data : slice.t) :
 More `wp_apply` forms used in the examples below:
 
 ```
-wp_apply sync.wp_Mutex__Lock $$ [$Hm] as ⟨Hlocked, HR⟩       -- frame Hm, destruct the post
-wp_apply (wp_map_make1 (K := w64) (V := slice.t)) as %m Hm    -- %m: the return binder
+wp_apply sync.Mutex.wp_Lock $$ [$Hm] as ⟨Hlocked, HR⟩       -- frame Hm, destruct the post
+wp_apply (wp_map_make1 (K := w64) (V := GoSlice)) as %m Hm    -- %m: the return binder
 wp_apply wp_load_slice_index s (sint.Z i) vs _ x Hi.1 $$ [Hs] with Hs   -- explicit arguments
 ```
 
@@ -246,16 +246,16 @@ wp_apply wp_load_slice_index s (sint.Z i) vs _ x Hi.1 $$ [Hs] with Hs   -- expli
 
 Points-to notation: `l ↦ v` (full), `l ↦{dq} v`, `l ↦□ v` (persistent);
 slices `s ↦* vs`, `s ↦*{dq} vs`; maps `m ↦$ m'`. A struct field address is
-`l.[S.t, go!"f"]` (note `go!"f"`, not `"f"`). `wp_auto` loads and stores single
+`l.[S, go!"f"]` (note `go!"f"`, not `"f"`). `wp_auto` loads and stores single
 fields of a struct points-to `s ↦ v` directly, through the generated
 `AccessStrict` instances:
 
 ```lean
 /-- `func (s *S) writeB(two TwoInts) { s.b = two }` -/
-theorem wp_S__writeB' (s : loc) (v : S.t) (two : TwoInts.t) :
+theorem S.wp_writeB' (s : Loc) (v : S) (two : TwoInts) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦ v }}
-      (App (Val (s @!! go.type.PointerType S @!! go!"writeB")) (Val #two))
-    {{ RET #(); s ↦ ({ v with b' := two } : S.t) }} := by
+      (App (Val (s @!! go.GoType.PointerType S.ty @!! go!"writeB")) (Val #two))
+    {{ RET #(); s ↦ ({ v with b' := two } : S) }} := by
   wp_start as Hs
   wp_auto
   iapply HΦ $$ Hs
@@ -272,7 +272,7 @@ splits the struct points-to into one points-to per field. -/
 theorem wp_NewS' :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NewS)) (Val #()))
-    {{ (s : loc), RET #s; s.[S.t, go!"a"] ↦ W64 2 ∗ s.[S.t, go!"c"] ↦ true }} := by
+    {{ (s : Loc), RET #s; s.[S, go!"a"] ↦ W64 2 ∗ s.[S, go!"c"] ↦ true }} := by
   wp_start
   wp_alloc s as Hs
   iStructNamed Hs
@@ -288,12 +288,12 @@ written as strings: `"H"`, `"#H"` (intuitionistic), `"%H"` (Lean context).
 ```lean
 /-- A representation predicate with named conjuncts (`"name" ∷ P`). The names
 are iris-lean cases patterns: `"%Hbound"` goes to the Lean context. -/
-def own_bounded (l : loc) : IProp GF :=
+def own_bounded (l : Loc) : IProp GF :=
   iprop(∃ n : w64,
     "Hv" ∷ (l ↦ n : IProp GF) ∗
     "%Hbound" ∷ ⌜uint.Z n < 100⌝)
 
-theorem own_bounded_get (l : loc) :
+theorem own_bounded_get (l : Loc) :
     own_bounded (GF := GF) l ⊢ ∃ n : w64, l ↦ n ∗ ⌜uint.Z n < 200⌝ := by
   iintro H
   iNamed H            -- introduces `n`, `Hv`, and `Hbound : uint.Z n < 100`
@@ -334,7 +334,7 @@ var sum uint64
 for i := 0; i < len(xs); i++ { sum += xs[i] }
 return sum
 ``` -/
-theorem wp_intSliceLoop' (s : slice.t) (vs : List w64) :
+theorem wp_intSliceLoop' (s : GoSlice) (vs : List w64) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦* vs }}
       (App (Val (@! intSliceLoop)) (Val #s))
     {{ RET #(sum_w64 vs); s ↦* vs }} := by
@@ -401,7 +401,7 @@ theorem wp_useMap' :
     {{ RET #(); True }} := by
   wp_start
   wp_auto
-  wp_apply (wp_map_make1 (K := w64) (V := slice.t)) as %m Hm
+  wp_apply (wp_map_make1 (K := w64) (V := GoSlice)) as %m Hm
   wp_apply wp_mapInsert $$ Hm as Hm
   wp_apply wp_map_lookup2 $$ Hm as Hm
   -- `ok` is `false` (key 2 is absent), so `wp_auto` took the fall-through branch
@@ -417,15 +417,15 @@ facts aside and destructs the rest (`isMutex`) with `#Hm`:
 ```lean
 /-- `func DoSomeLocking(l *sync.Mutex) { l.Lock(); l.Unlock() }`, for any lock
 invariant `R`. -/
-theorem wp_DoSomeLocking' [sync.Assumptions] (l : loc) (R : IProp GF) :
+theorem wp_DoSomeLocking' [sync.Assumptions] (l : Loc) (R : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isPkgInit (PROP := IProp GF) pkg_id.sync ∗
         sync.isMutex l R }}
       (App (Val (@! DoSomeLocking)) (Val #l))
     {{ RET #(); True }} := by
   wp_start as #Hm
   wp_auto
-  wp_apply sync.wp_Mutex__Lock $$ [$Hm] as ⟨Hlocked, HR⟩
-  wp_apply sync.wp_Mutex__Unlock $$ [$Hm $Hlocked $HR]
+  wp_apply sync.Mutex.wp_Lock $$ [$Hm] as ⟨Hlocked, HR⟩
+  wp_apply sync.Mutex.wp_Unlock $$ [$Hm $Hlocked $HR]
   wp_end
 ```
 
@@ -463,28 +463,28 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
   wp_apply wp_fork $$ []
   · -- the spawned goroutine
     wp_auto
-    wp_apply sync.wp_Mutex__Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
+    wp_apply sync.Mutex.wp_Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
     wp_if_destruct
     · wp_func_call   -- `Skip()`: unfold the function and step through it
       wp_call
       wp_auto
-      wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+      wp_apply sync.Mutex.wp_Unlock $$ [$Hlock $Hlocked Hx]
       · iexists _; iexact Hx
       itrivial
-    · wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+    · wp_apply sync.Mutex.wp_Unlock $$ [$Hlock $Hlocked Hx]
       · iexists _; iexact Hx
       itrivial
   -- the main goroutine
-  wp_apply sync.wp_Mutex__Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
-  wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+  wp_apply sync.Mutex.wp_Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
+  wp_apply sync.Mutex.wp_Unlock $$ [$Hlock $Hlocked Hx]
   · iexists _; iexact Hx
   wp_end
 ````
 
 ## 10. Ghost state and invariants
 
-Ghost state needs `[allG GF]` (one universal camera; no per-algebra `inG`
-classes): `ghost_var`, `ghost_map`, `mono_list`, `saved_prop`, ... live in
+Ghost state needs `[AllG GF]` (one universal camera; no per-algebra `inG`
+classes): `ghostVar`, `ghost_map`, `mono_list`, `saved_prop`, ... live in
 `Perennial/Ghost`. Invariants are iris-lean's `inv N P`; `imod inv_alloc N E P $$ [..]`
 allocates, `iinv H with pat Hclose` opens one around an atomic step, and
 `imod Hclose $$ [..]` closes it.
@@ -494,12 +494,12 @@ allocates, `iinv H with pat Hclose` opens one around an atomic step, and
 other half is held by a client. (An `abbrev`, so that `iexists`/`icases` see
 through it; for a `def`, `unfold counter_inv` first.) -/
 abbrev counter_inv (γ : GName) : IProp GF :=
-  iprop(∃ n : Nat, ghost_var γ (1 : Qp).half n)
+  iprop(∃ n : Nat, ghostVar γ (1 : Qp).half n)
 
 theorem counter_alloc (N : Namespace) (E : CoPset) :
-    ⊢ |={E}=> ∃ γ, inv N (counter_inv γ) ∗ ghost_var γ (1 : Qp).half (0 : Nat) := by
-  imod ghost_var_alloc (0 : Nat) with ⟨%γ, Hv⟩
-  icases ghost_var_split γ (0 : Nat) (1 : Qp).half (1 : Qp).half $$ [Hv] with ⟨Hv1, Hv2⟩
+    ⊢ |={E}=> ∃ γ, inv N (counter_inv γ) ∗ ghostVar γ (1 : Qp).half (0 : Nat) := by
+  imod ghostVar_alloc (0 : Nat) with ⟨%γ, Hv⟩
+  icases ghostVar_split γ (0 : Nat) (1 : Qp).half (1 : Qp).half $$ [Hv] with ⟨Hv1, Hv2⟩
   · rw [Qp.half_add_half]; iexact Hv
   imod inv_alloc N E (counter_inv γ) $$ [Hv1] with #Hinv
   · inext; iexists 0; iexact Hv1
@@ -508,13 +508,13 @@ theorem counter_alloc (N : Namespace) (E : CoPset) :
   iframe # ∗
 
 theorem counter_incr (N : Namespace) (γ : GName) (n : Nat) :
-    inv N (counter_inv γ) ∗ ghost_var γ (1 : Qp).half n ⊢
-      |={⊤}=> ghost_var γ (1 : Qp).half (n + 1) := by
+    inv N (counter_inv γ) ∗ ghostVar γ (1 : Qp).half n ⊢
+      |={⊤}=> ghostVar γ (1 : Qp).half (n + 1) := by
   iintro ⟨#Hinv, Hv⟩
   iinv Hinv with ⟨%m, >Hv'⟩ Hclose
   icombine Hv Hv' gives % ⟨_, Heq⟩
   subst Heq
-  imod ghost_var_update_halves (n + 1) γ n n $$ Hv Hv' with ⟨Hv, Hv'⟩
+  imod ghostVar_update_halves (n + 1) γ n n $$ Hv Hv' with ⟨Hv, Hv'⟩
   imod Hclose $$ [Hv'] with _
   · inext; iexists _; iexact Hv'
   imodintro
@@ -611,7 +611,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
   restores the old behaviour) enables extra automation in `wp_pures`/`wp_auto`:
   stored function literals become `#(func.mk ..)`, blocking package constants are
   unfolded, `match`es and projections of constructors are reduced (e.g.
-  `(zero_val S.t).f'`), `decide`s with classical instances are evaluated, slice
+  `(zero_val S).f'`), `decide`s with classical instances are evaluated, slice
   composite literals are left for `wp_slice_literal`. Without it you need manual
   rewrites such as
   `rw [show ∀ b, (RecV BAnon BAnon b : val) = #(func.mk BAnon BAnon b) ...]`:
@@ -637,7 +637,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
   ```lean
   /-- WP tactics fail (rather than leaving a `sorry`) when their argument does
   not elaborate. -/
-  example (p : slice.t) :
+  example (p : GoSlice) :
       {{ isPkgInit (PROP := IProp GF) pkg }}
         (App (Val (@! returnTwoWrapper)) (Val #p))
       {{ RET (PairV #(W64 0) #(W64 0)); True }} := by

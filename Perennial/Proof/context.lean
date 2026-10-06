@@ -9,15 +9,15 @@ it is omitted here). Proved here: `wp_Cause`, `wp_parentCancelCtx`, and
 `time.Time.Before`, `time.AfterFunc`, `Timer.Stop` have no model).
 
 Lean deviations from Rocq (see the comments at each definition):
-* Lazily determined Done channel. Rocq's `Context_desc` fixes the Done channel
-  (`Done : chan.t`, `Done_gn : ChanNames`) and `isContext` has
+* Lazily determined Done channel. Rocq's `ContextDesc` fixes the Done channel
+  (`Done : GoChan`, `Done_gn : ChanNames`) and `isContext` has
   `"#HDone"`: `Done()` returns `s.Done` and `"#HDone_ch"`:
   `ownBroadcastChan s.Done s.Done_gn s.PDone Unknown`. This made `wp_WithCancel`,
   `wp_WithDeadlineCause`, `wp_WithDeadline`, `wp_WithTimeout` false as stated: their
   postconditions fix the new context's channel `done'` at return time, but
   `cancelCtx.Done` makes the channel lazily at the first `Done()` call, or `cancel`
   stores the shared, already closed `closedchan` if it runs first. Now:
-  - `Context_desc.t`: the fields `Done` and `Done_gn : ChanNames` are replaced by
+  - `ContextDesc`: the fields `Done` and `Done_gn : ChanNames` are replaced by
     `Done_gn : ContextNames`, two ghost names: `doneGn`, a one-shot cell holding the
     Done channel once it is determined, and `closedGn`, the "context is done" flag.
   - new `ContextClosed γ` (persistent: the context is done), replacing
@@ -35,7 +35,7 @@ Lean deviations from Rocq (see the comments at each definition):
     error (where Rocq passes `ownBroadcastChan ... cl` in and out);
   - new `isContext_weaken` (`isContext` is monotone in `PDone`);
   - `wp_WithCancel`, `wp_WithDeadlineCause`, `wp_WithDeadline`, `wp_WithTimeout`: the
-    existential `done' : chan.t` becomes `γ' : ContextNames` and `Done := done'` becomes
+    existential `done' : GoChan` becomes `γ' : ContextNames` and `Done := done'` becomes
     `Done_gn := γ'`.
 * `wp_WithCancel`: the cancel function's precondition is `□ PDone'` instead of `PDone'`
   (closing the broadcast channel needs `□ PDone`).
@@ -87,25 +87,23 @@ namespace context
 /-- Ghost names of a context (Lean deviation; see the file header). -/
 structure ContextNames where
   mk ::
-  /-- `dghostVar (Option chan.t)`: the context's Done channel, fixed (as `some ch`, then
+  /-- `dghostVar (Option GoChan)`: the context's Done channel, fixed (as `some ch`, then
   discarded) by whoever determines it, e.g. the first `Done()` or `cancel` of a `*cancelCtx`. -/
   doneGn : GName
   /-- `dghostVar Bool`: `true` (discarded) once the context is done. -/
   closedGn : GName
 
 /-! Context logical descriptor. -/
-namespace Context_desc
 /-- Lean deviation from Rocq: Rocq's fields `Done : chan.t` and `Done_gn : ChanNames` (the
 Done channel and its names, fixed when the context is created) are replaced by
 `Done_gn : ContextNames`, the ghost names through which the Done channel is determined
 later (see the file header). -/
-structure t [FfiSyntax] (PROP : Type) where
+structure ContextDesc [FfiSyntax] (PROP : Type) where
   mk ::
-  Values : GMap interface.t interface.t
+  Values : GMap GoInterface GoInterface
   Deadline : Option time.Time
   Done_gn : ContextNames
   PDone : PROP
-end Context_desc
 
 section init
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
@@ -119,7 +117,7 @@ variable [package_sem : context.Assumptions]
 abbrev isInit : IProp GF :=
   iprop("Hgoroutines" ∷
     inv nroot (∃ g, sync.atomic.ownInt32 (globalAddr context.goroutines) (DFrac.own 1) g) ∗
-  "#Hclosedchan" ∷ (∃ ch : chan.t, globalAddr context.closedchan ↦□ ch) ∗
+  "#Hclosedchan" ∷ (∃ ch : GoChan, globalAddr context.closedchan ↦□ ch) ∗
   "_" ∷ True)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.context :=
@@ -136,7 +134,7 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
-open Context_desc
+open ContextDesc
 
 theorem isInit_access :
     isPkgInit (PROP := IProp GF) pkg_id.context ⊢ isInit (GF := GF) := by
@@ -144,14 +142,14 @@ theorem isInit_access :
 
 /-- `&cancelCtxKey` converted to `any`: the key for which `Value` returns the
 innermost enclosing `*cancelCtx`. -/
-def cancelCtxKeyAny [GoSemanticsFunctions] : interface.t :=
+def cancelCtxKeyAny [GoSemanticsFunctions] : GoInterface :=
   interface.mkOk (go.GoType.PointerType go.int) #(globalAddr context.cancelCtxKey)
 
 /-- Lock invariant of `c.mu` for a `*cancelCtx` `c`: the fields that the Go
 code only accesses with `c.mu` held (`children` and `cause`; `done` and `err`
 are `atomic.Value`s, also read without the lock). -/
 def cancelCtxLockInv (c : Loc) : IProp GF :=
-  iprop(∃ (children : map.t) (cause : error.t),
+  iprop(∃ (children : GoMap) (cause : GoError),
     "children" ∷ structFieldRef context.cancelCtx go!"children" c ↦ children ∗
     "cause" ∷ structFieldRef context.cancelCtx go!"cause" c ↦ cause)
 
@@ -164,7 +162,7 @@ def isCancelCtx (c : Loc) : IProp GF :=
   "#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c) (cancelCtxLockInv c) ∗
   "#Hdone_Load" ∷
     □ (∀ Φ : val → IProp GF, True -∗
-      ▷ (∀ ch : Option chan.t,
+      ▷ (∀ ch : Option GoChan,
           Φ #(match ch with
               | none => interface.nil
               | some ch => interface.mkOk
@@ -177,7 +175,7 @@ instance isCancelCtx_pers (c : Loc) : Persistent (isCancelCtx (GF := GF) c) := b
 
 /-- The result of `Value(&cancelCtxKey)`: if it is a `*cancelCtx`, then it is a
 valid one. -/
-def isCancelCtxAny (v : interface.t) : IProp GF :=
+def isCancelCtxAny (v : GoInterface) : IProp GF :=
   match v with
   | interface.ok ii =>
     if ii.ty = go.GoType.PointerType context.cancelCtx.ty then
@@ -185,7 +183,7 @@ def isCancelCtxAny (v : interface.t) : IProp GF :=
     else iprop(True)
   | interface.nil => iprop(True)
 
-instance isCancelCtxAny_pers (v : interface.t) : Persistent (isCancelCtxAny (GF := GF) v) := by
+instance isCancelCtxAny_pers (v : GoInterface) : Persistent (isCancelCtxAny (GF := GF) v) := by
   unfold isCancelCtxAny
   split
   · split <;> infer_instance
@@ -209,21 +207,21 @@ The broadcast proposition `Q` is existential: a `*cancelCtx` whose channel is ma
 returns the shared, already closed `closedchan` (whose broadcast proposition is fixed at
 package initialization), with `□ s.PDone ∗ ContextClosed s.Done_gn` known when the done cell
 is set. -/
-def isContextDoneDef (s : Context_desc.t (IProp GF)) (ch : chan.t) (γch : ChanNames) :
+def isContextDoneDef (s : ContextDesc (IProp GF)) (ch : GoChan) (γch : ChanNames) :
     IProp GF :=
   iprop(dghostVar s.Done_gn.doneGn .discard (some ch) ∗
     ∃ Q : IProp GF, ownBroadcastChan ch γch Q .Unknown ∗
       □ (□ Q -∗ □ s.PDone ∗ ContextClosed s.Done_gn))
-@[irreducible] def isContextDone (s : Context_desc.t (IProp GF)) (ch : chan.t)
+@[irreducible] def isContextDone (s : ContextDesc (IProp GF)) (ch : GoChan)
     (γch : ChanNames) : IProp GF := isContextDoneDef s ch γch
 theorem isContextDone_unseal : @isContextDone = @isContextDoneDef := by
   funext; with_unfolding_all rfl
 
-instance isContextDone_pers (s : Context_desc.t (IProp GF)) (ch : chan.t) (γch : ChanNames) :
+instance isContextDone_pers (s : ContextDesc (IProp GF)) (ch : GoChan) (γch : ChanNames) :
     Persistent (isContextDone s ch γch) := by
   rw [isContextDone_unseal]; unfold isContextDoneDef; infer_instance
 
-def isContextDef (c : interface.t_ok) (s : Context_desc.t (IProp GF)) : IProp GF :=
+def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   iprop(
   "#HDeadline" ∷
     □ (∀ Φ : val → IProp GF, True -∗
@@ -232,14 +230,14 @@ def isContextDef (c : interface.t_ok) (s : Context_desc.t (IProp GF)) : IProp GF
       WP (App (Val #(methods c.ty go!"Deadline" c.v)) (Val #())) {{ Φ }}) ∗
   "#HDone" ∷
     □ (∀ Φ : val → IProp GF, True -∗
-      ▷ (∀ (ch : chan.t) (γch : ChanNames), isContextDone s ch γch -∗ Φ #ch) -∗
+      ▷ (∀ (ch : GoChan) (γch : ChanNames), isContextDone s ch γch -∗ Φ #ch) -∗
       WP (App (Val #(methods c.ty go!"Done" c.v)) (Val #())) {{ Φ }}) ∗
   "#HErr" ∷
-    (∀ cl : broadcast.t, □ (∀ Φ : val → IProp GF,
+    (∀ cl : Broadcast, □ (∀ Φ : val → IProp GF,
       (match cl with
        | .Done => ContextClosed s.Done_gn
        | _ => iprop(True)) -∗
-      ▷ (∀ err : interface.t,
+      ▷ (∀ err : GoInterface,
           (match cl with
            | .Done => iprop(⌜err ≠ interface.nil⌝)
            | _ => if err = interface.nil then iprop(True)
@@ -248,7 +246,7 @@ def isContextDef (c : interface.t_ok) (s : Context_desc.t (IProp GF)) : IProp GF
       WP (App (Val #(methods c.ty go!"Err" c.v)) (Val #())) {{ Φ }})) ∗
   "#HValue" ∷
     □ (∀ Φ : val → IProp GF, True -∗
-      ▷ (∀ v : interface.t, isCancelCtxAny v -∗ Φ #v) -∗
+      ▷ (∀ v : GoInterface, isCancelCtxAny v -∗ Φ #v) -∗
       WP (App (Val #(methods c.ty go!"Value" c.v)) (Val #cancelCtxKeyAny)) {{ Φ }}))
 
 /-- (Rocq: `isContext` is made `Transparent` again right after being sealed.)
@@ -261,25 +259,25 @@ Lean deviations from Rocq (see the file header):
   `ContextClosed s.Done_gn` (precondition, only for `cl = Done`) and
   `□ s.PDone ∗ ContextClosed s.Done_gn` (postcondition, for a non-nil error).
 * the last conjunct `"#HValue"` is new. It only specifies the key `&cancelCtxKey`; the
-  `Values` field of `Context_desc` stays unused, as in Rocq. -/
-abbrev isContext (c : interface.t_ok) (s : Context_desc.t (IProp GF)) : IProp GF :=
+  `Values` field of `ContextDesc` stays unused, as in Rocq. -/
+abbrev isContext (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   isContextDef c s
 
-instance isContext_pers (c : interface.t_ok) (s : Context_desc.t (IProp GF)) :
+instance isContext_pers (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) :
     Persistent (isContext c s) := by
   unfold isContext isContextDef; infer_instance
 
 /-! Client lemmas for the Done channel (they replace the `ownBroadcastChan` lemmas that
 Rocq clients apply to `s.Done`). -/
 
-theorem isContextDone_is_chan (s : Context_desc.t (IProp GF)) (ch : chan.t) (γch : ChanNames) :
+theorem isContextDone_is_chan (s : ContextDesc (IProp GF)) (ch : GoChan) (γch : ChanNames) :
     isContextDone s ch γch ⊢ isChan ch γch Unit := by
   rw [isContextDone_unseal]; unfold isContextDoneDef
   iintro ⟨-, %Q, #Hbc, -⟩
   iapply ownBroadcastChan_is_chan $$ Hbc
 
 /-- Successive `Done()` calls return the same channel. -/
-theorem isContextDone_agree (s : Context_desc.t (IProp GF)) (ch1 ch2 : chan.t)
+theorem isContextDone_agree (s : ContextDesc (IProp GF)) (ch1 ch2 : GoChan)
     (γ1 γ2 : ChanNames) :
     isContextDone s ch1 γ1 ∗ isContextDone s ch2 γ2 ⊢ ⌜ch1 = ch2⌝ := by
   rw [isContextDone_unseal]; unfold isContextDoneDef
@@ -289,7 +287,7 @@ theorem isContextDone_agree (s : Context_desc.t (IProp GF)) (ch1 ch2 : chan.t)
 
 /-- Receiving from the Done channel (e.g. as a `select` case) returns only once the context is
 done. -/
-theorem isContextDone_receive (s : Context_desc.t (IProp GF)) (ch : chan.t) (γch : ChanNames)
+theorem isContextDone_receive (s : ContextDesc (IProp GF)) (ch : GoChan) (γch : ChanNames)
     (Φ : Unit → Bool → IProp GF) :
     ⊢ isContextDone s ch γch -∗
       (□ s.PDone ∗ ContextClosed s.Done_gn -∗ Φ () false) -∗
@@ -303,7 +301,7 @@ theorem isContextDone_receive (s : Context_desc.t (IProp GF)) (ch : chan.t) (γc
 
 /-- Variant of `ownBroadcastChan_nonblocking_receive` (for `Unknown`) that hands out the
 broadcast proposition directly (no later credit needed). -/
-theorem broadcast_chan_nonblocking_receive_Q (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
+theorem broadcast_chan_nonblocking_receive_Q (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
     (Φ : Unit → Bool → IProp GF) (Φnotready : IProp GF) :
     ⊢ ownBroadcastChan ch γ Q .Unknown -∗
       ((□ Q -∗ Φ () false) ∧ Φnotready) -∗
@@ -352,7 +350,7 @@ theorem broadcast_chan_nonblocking_receive_Q (ch : chan.t) (γ : ChanNames) (Q :
     iapply HΦ $$ HQ
   all_goals (iexfalso; iexact Hs)
 
-theorem isContextDone_nonblocking_receive (s : Context_desc.t (IProp GF)) (ch : chan.t)
+theorem isContextDone_nonblocking_receive (s : ContextDesc (IProp GF)) (ch : GoChan)
     (γch : ChanNames) (Φ : Unit → Bool → IProp GF) (Φnotready : IProp GF) :
     ⊢ isContextDone s ch γch -∗
       ((□ s.PDone ∗ ContextClosed s.Done_gn -∗ Φ () false) ∧ Φnotready) -∗
@@ -369,7 +367,7 @@ theorem isContextDone_nonblocking_receive (s : Context_desc.t (IProp GF)) (ch : 
     iexact HΦ
 
 /-- The Done proposition can be weakened. -/
-theorem isContextDone_weaken (s : Context_desc.t (IProp GF)) (P' : IProp GF) (ch : chan.t)
+theorem isContextDone_weaken (s : ContextDesc (IProp GF)) (P' : IProp GF) (ch : GoChan)
     (γch : ChanNames) :
     ⊢ □ (s.PDone -∗ P') -∗ isContextDone s ch γch -∗
       isContextDone { s with PDone := P' } ch γch := by
@@ -387,7 +385,7 @@ theorem isContextDone_weaken (s : Context_desc.t (IProp GF)) (P' : IProp GF) (ch
   · imodintro; iapply HP $$ Hp
   · iexact Hc
 
-theorem isContext_weaken (c : interface.t_ok) (s : Context_desc.t (IProp GF)) (P' : IProp GF) :
+theorem isContext_weaken (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) (P' : IProp GF) :
     ⊢ □ (s.PDone -∗ P') -∗ isContext c s -∗ isContext c { s with PDone := P' } := by
   unfold isContext isContextDef
   iintro #HP ⟨#HDeadline, #HDone, #HErr, #HValue⟩
@@ -424,16 +422,16 @@ theorem isContext_weaken (c : interface.t_ok) (s : Context_desc.t (IProp GF)) (P
         · iexact Hc
   · iexact HValue
 
-theorem wp_Cause (ctx : interface.t_ok) (ctx_desc : Context_desc.t (IProp GF)) :
+theorem wp_Cause (ctx : GoInterfaceOk) (ctx_desc : ContextDesc (IProp GF)) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         "#Hctx" ∷ isContext ctx ctx_desc }}
       (App (Val (@! context.Cause)) (Val #(interface.ok ctx)))
-    {{ (err : interface.t), RET #err; True }} := by
+    {{ (err : GoInterface), RET #err; True }} := by
   wp_start as #Hctx
   unfold isContext isContextDef
   icases Hctx with ⟨#HDeadline, #HDone, #HErr, #HValue⟩
   wp_auto
-  ihave #HErr' := HErr $$ %broadcast.t.Unknown
+  ihave #HErr' := HErr $$ %Broadcast.Unknown
   wp_apply HErr' as %err -
   cases err with
   | nil =>
@@ -478,7 +476,7 @@ theorem wp_Cause (ctx : interface.t_ok) (ctx_desc : Context_desc.t (IProp GF)) :
 shared with every other user of the parent context (its fields are protected
 by `ctx.mu` or are atomics), so full ownership of its points-to cannot be
 returned. -/
-theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF)) :
+theorem wp_parentCancelCtx (parent : GoInterfaceOk) (parent_desc : ContextDesc (IProp GF)) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         "#Hctx" ∷ isContext parent parent_desc }}
       (App (Val (@! context.parentCancelCtx)) (Val #(interface.ok parent)))
@@ -532,7 +530,7 @@ theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc
       cases och with
       | none =>
         wp_auto
-        have h3 : decide (zero_val chan.t = done) = false := by
+        have h3 : decide (zero_val GoChan = done) = false := by
           simp only [decide_eq_false_iff_not]; exact fun h => h2 h.symm
         simp only [h3]
         wp_auto
@@ -558,8 +556,8 @@ theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc
       simp only [Bool.false_eq_true, ↓reduceIte]
       ipureintro; trivial
 
-theorem wp_propagateCancel (c : Loc) (parent : interface.t_ok)
-    (parent_desc : Context_desc.t (IProp GF)) (child : interface.t_ok) :
+theorem wp_propagateCancel (c : Loc) (parent : GoInterfaceOk)
+    (parent_desc : ContextDesc (IProp GF)) (child : GoInterfaceOk) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         "Hparent" ∷ isContext parent parent_desc ∗
         "Hc" ∷ c ↦ (zero_val context.cancelCtx) }}
@@ -581,11 +579,11 @@ theorem wp_propagateCancel (c : Loc) (parent : interface.t_ok)
 `γ'` instead; the cancel function's precondition is `□ PDone'` instead of `PDone'` (closing a
 broadcast channel needs the persistent `□ PDone`, and observers of the Done channel get
 `□ (ctx_desc.PDone ∨ PDone')`). -/
-theorem wp_WithCancel (PDone' : IProp GF) (ctx : interface.t_ok)
-    (ctx_desc : Context_desc.t (IProp GF)) :
+theorem wp_WithCancel (PDone' : IProp GF) (ctx : GoInterfaceOk)
+    (ctx_desc : ContextDesc (IProp GF)) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext ctx ctx_desc }}
       (App (Val (@! context.WithCancel)) (Val #(interface.ok ctx)))
-    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t),
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, □ PDone' -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
@@ -597,7 +595,7 @@ theorem wp_WithCancel (PDone' : IProp GF) (ctx : interface.t_ok)
   -- (*efaceWords)(unsafe.Pointer(v)); LoadPointer(&vp.typ)`, likewise `Store`/`Swap`/
   -- `CompareAndSwap`, which also use `runtime_procPin`). The model has no such layout law:
   -- `structFieldRef efaceWords.t "typ" l` is unrelated to `structFieldRef Value.t "v" l`,
-  -- and an `interface.t` value is not a pair of words, so no spec of `Value.Load`/`Store` is
+  -- and an `GoInterface` value is not a pair of words, so no spec of `Value.Load`/`Store` is
   -- provable from `l ↦ (v : Value.t)` (the loads hit unowned memory). With trusted models of
   -- `atomic.Value`'s methods (as for `sync.Mutex`), the remaining proof obligations are:
   -- * `withCancel`/`propagateCancel`: a `*cancelCtx` invariant (lock invariant of `c.mu` with
@@ -619,12 +617,12 @@ theorem wp_WithCancel (PDone' : IProp GF) (ctx : interface.t_ok)
 instead of `some d`: Rocq's `Deadline := Some d` is false when the parent's deadline `cur`
 is before `d`, as `WithDeadlineCause` then returns `WithCancel(parent)`, whose `Deadline()` is
 the parent's `cur`. -/
-theorem wp_WithDeadlineCause (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
-    (d : time.Time) (cause : error.t) :
+theorem wp_WithDeadlineCause (parent : GoInterfaceOk) (parent_desc : ContextDesc (IProp GF))
+    (d : time.Time) (cause : GoError) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent parent_desc }}
       (App (App (App (Val (@! context.WithDeadlineCause)) (Val #(interface.ok parent))) (Val #d))
         (Val #cause))
-    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d' : time.Time),
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc) (d' : time.Time),
         RET (PairV #(interface.ok ctx') #cancel);
         ⌜d' = d ∨ parent_desc.Deadline = some d'⌝ ∗
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
@@ -638,11 +636,11 @@ theorem wp_WithDeadlineCause (parent : interface.t_ok) (parent_desc : Context_de
   sorry -- Rocq: Admitted
 
 /-- Lean deviations from Rocq: as for `wp_WithDeadlineCause`. -/
-theorem wp_WithDeadline (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
+theorem wp_WithDeadline (parent : GoInterfaceOk) (parent_desc : ContextDesc (IProp GF))
     (d : time.Time) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent parent_desc }}
       (App (App (Val (@! context.WithDeadline)) (Val #(interface.ok parent))) (Val #d))
-    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d' : time.Time),
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc) (d' : time.Time),
         RET (PairV #(interface.ok ctx') #cancel);
         ⌜d' = d ∨ parent_desc.Deadline = some d'⌝ ∗
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
@@ -657,11 +655,11 @@ theorem wp_WithDeadline (parent : interface.t_ok) (parent_desc : Context_desc.t 
   ipureintro; exact hd
 
 /-- Lean deviation from Rocq: no fixed Done channel `done'` (see `wp_WithCancel`). -/
-theorem wp_WithTimeout (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
+theorem wp_WithTimeout (parent : GoInterfaceOk) (parent_desc : ContextDesc (IProp GF))
     (timeout : time.Duration) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent parent_desc }}
       (App (App (Val (@! context.WithTimeout)) (Val #(interface.ok parent))) (Val #(timeout)))
-    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d : time.Time),
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc) (d : time.Time),
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗

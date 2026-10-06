@@ -45,7 +45,7 @@ instance StackRecord_access_load_Stack0 (l : Loc) (v : runtime.StackRecord) (dq 
  by
   solve_pointsto_access_struct
 
-instance StackRecord_access_store_Stack0 (l : Loc) (v : runtime.StackRecord) (Stack0' : (array.t w64 32)) :
+instance StackRecord_access_store_Stack0 (l : Loc) (v : runtime.StackRecord) (Stack0' : (GoArray w64 32)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.StackRecord go!"Stack0" l) v.Stack0' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.StackRecord go!"Stack0" l) Stack0' (DFrac.own 1))
@@ -153,7 +153,7 @@ instance MemProfileRecord_access_load_Stack0 (l : Loc) (v : runtime.MemProfileRe
  by
   solve_pointsto_access_struct
 
-instance MemProfileRecord_access_store_Stack0 (l : Loc) (v : runtime.MemProfileRecord) (Stack0' : (array.t w64 32)) :
+instance MemProfileRecord_access_store_Stack0 (l : Loc) (v : runtime.MemProfileRecord) (Stack0' : (GoArray w64 32)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.MemProfileRecord go!"Stack0" l) v.Stack0' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.MemProfileRecord go!"Stack0" l) Stack0' (DFrac.own 1))
@@ -195,7 +195,7 @@ instance addrRanges_access_load_ranges (l : Loc) (v : runtime.addrRanges) (dq : 
  by
   solve_pointsto_access_struct
 
-instance addrRanges_access_store_ranges (l : Loc) (v : runtime.addrRanges) (ranges' : slice.t) :
+instance addrRanges_access_store_ranges (l : Loc) (v : runtime.addrRanges) (ranges' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.addrRanges go!"ranges" l) v.ranges' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.addrRanges go!"ranges" l) ranges' (DFrac.own 1))
@@ -400,7 +400,7 @@ instance wbBuf_access_load_buf (l : Loc) (v : runtime.wbBuf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance wbBuf_access_store_buf (l : Loc) (v : runtime.wbBuf) (buf' : (array.t w64 512)) :
+instance wbBuf_access_store_buf (l : Loc) (v : runtime.wbBuf) (buf' : (GoArray w64 512)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.wbBuf go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.wbBuf go!"buf" l) buf' (DFrac.own 1))
@@ -787,7 +787,7 @@ instance PanicNilError_access_load__0 (l : Loc) (v : runtime.PanicNilError) (dq 
  by
   solve_pointsto_access_struct
 
-instance PanicNilError_access_store__0 (l : Loc) (v : runtime.PanicNilError) (_0' : (array.t Loc 0)) :
+instance PanicNilError_access_store__0 (l : Loc) (v : runtime.PanicNilError) (_0' : (GoArray Loc 0)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.PanicNilError go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.PanicNilError go!"_0" l) _0' (DFrac.own 1))
@@ -868,7 +868,7 @@ instance pinner_access_load_refs (l : Loc) (v : runtime.pinner) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance pinner_access_store_refs (l : Loc) (v : runtime.pinner) (refs' : slice.t) :
+instance pinner_access_store_refs (l : Loc) (v : runtime.pinner) (refs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pinner go!"refs" l) v.refs' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pinner go!"refs" l) refs' (DFrac.own 1))
@@ -884,7 +884,7 @@ instance pinner_access_load_refStore (l : Loc) (v : runtime.pinner) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance pinner_access_store_refStore (l : Loc) (v : runtime.pinner) (refStore' : (array.t Loc 5)) :
+instance pinner_access_store_refStore (l : Loc) (v : runtime.pinner) (refStore' : (GoArray Loc 5)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pinner go!"refStore" l) v.refStore' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pinner go!"refStore" l) refStore' (DFrac.own 1))
@@ -1130,7 +1130,7 @@ instance xRegs_access_load_Z0 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z0 (l : Loc) (v : runtime.xRegs) (Z0' : (array.t w8 64)) :
+instance xRegs_access_store_Z0 (l : Loc) (v : runtime.xRegs) (Z0' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z0" l) v.Z0' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z0" l) Z0' (DFrac.own 1))
@@ -1146,7 +1146,7 @@ instance xRegs_access_load_Z1 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z1 (l : Loc) (v : runtime.xRegs) (Z1' : (array.t w8 64)) :
+instance xRegs_access_store_Z1 (l : Loc) (v : runtime.xRegs) (Z1' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z1" l) v.Z1' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z1" l) Z1' (DFrac.own 1))
@@ -1162,7 +1162,7 @@ instance xRegs_access_load_Z2 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z2 (l : Loc) (v : runtime.xRegs) (Z2' : (array.t w8 64)) :
+instance xRegs_access_store_Z2 (l : Loc) (v : runtime.xRegs) (Z2' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z2" l) v.Z2' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z2" l) Z2' (DFrac.own 1))
@@ -1178,7 +1178,7 @@ instance xRegs_access_load_Z3 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z3 (l : Loc) (v : runtime.xRegs) (Z3' : (array.t w8 64)) :
+instance xRegs_access_store_Z3 (l : Loc) (v : runtime.xRegs) (Z3' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z3" l) v.Z3' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z3" l) Z3' (DFrac.own 1))
@@ -1194,7 +1194,7 @@ instance xRegs_access_load_Z4 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z4 (l : Loc) (v : runtime.xRegs) (Z4' : (array.t w8 64)) :
+instance xRegs_access_store_Z4 (l : Loc) (v : runtime.xRegs) (Z4' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z4" l) v.Z4' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z4" l) Z4' (DFrac.own 1))
@@ -1210,7 +1210,7 @@ instance xRegs_access_load_Z5 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z5 (l : Loc) (v : runtime.xRegs) (Z5' : (array.t w8 64)) :
+instance xRegs_access_store_Z5 (l : Loc) (v : runtime.xRegs) (Z5' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z5" l) v.Z5' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z5" l) Z5' (DFrac.own 1))
@@ -1226,7 +1226,7 @@ instance xRegs_access_load_Z6 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z6 (l : Loc) (v : runtime.xRegs) (Z6' : (array.t w8 64)) :
+instance xRegs_access_store_Z6 (l : Loc) (v : runtime.xRegs) (Z6' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z6" l) v.Z6' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z6" l) Z6' (DFrac.own 1))
@@ -1242,7 +1242,7 @@ instance xRegs_access_load_Z7 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z7 (l : Loc) (v : runtime.xRegs) (Z7' : (array.t w8 64)) :
+instance xRegs_access_store_Z7 (l : Loc) (v : runtime.xRegs) (Z7' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z7" l) v.Z7' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z7" l) Z7' (DFrac.own 1))
@@ -1258,7 +1258,7 @@ instance xRegs_access_load_Z8 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z8 (l : Loc) (v : runtime.xRegs) (Z8' : (array.t w8 64)) :
+instance xRegs_access_store_Z8 (l : Loc) (v : runtime.xRegs) (Z8' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z8" l) v.Z8' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z8" l) Z8' (DFrac.own 1))
@@ -1274,7 +1274,7 @@ instance xRegs_access_load_Z9 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z9 (l : Loc) (v : runtime.xRegs) (Z9' : (array.t w8 64)) :
+instance xRegs_access_store_Z9 (l : Loc) (v : runtime.xRegs) (Z9' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z9" l) v.Z9' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z9" l) Z9' (DFrac.own 1))
@@ -1290,7 +1290,7 @@ instance xRegs_access_load_Z10 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z10 (l : Loc) (v : runtime.xRegs) (Z10' : (array.t w8 64)) :
+instance xRegs_access_store_Z10 (l : Loc) (v : runtime.xRegs) (Z10' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z10" l) v.Z10' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z10" l) Z10' (DFrac.own 1))
@@ -1306,7 +1306,7 @@ instance xRegs_access_load_Z11 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z11 (l : Loc) (v : runtime.xRegs) (Z11' : (array.t w8 64)) :
+instance xRegs_access_store_Z11 (l : Loc) (v : runtime.xRegs) (Z11' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z11" l) v.Z11' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z11" l) Z11' (DFrac.own 1))
@@ -1322,7 +1322,7 @@ instance xRegs_access_load_Z12 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z12 (l : Loc) (v : runtime.xRegs) (Z12' : (array.t w8 64)) :
+instance xRegs_access_store_Z12 (l : Loc) (v : runtime.xRegs) (Z12' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z12" l) v.Z12' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z12" l) Z12' (DFrac.own 1))
@@ -1338,7 +1338,7 @@ instance xRegs_access_load_Z13 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z13 (l : Loc) (v : runtime.xRegs) (Z13' : (array.t w8 64)) :
+instance xRegs_access_store_Z13 (l : Loc) (v : runtime.xRegs) (Z13' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z13" l) v.Z13' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z13" l) Z13' (DFrac.own 1))
@@ -1354,7 +1354,7 @@ instance xRegs_access_load_Z14 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z14 (l : Loc) (v : runtime.xRegs) (Z14' : (array.t w8 64)) :
+instance xRegs_access_store_Z14 (l : Loc) (v : runtime.xRegs) (Z14' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z14" l) v.Z14' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z14" l) Z14' (DFrac.own 1))
@@ -1370,7 +1370,7 @@ instance xRegs_access_load_Z15 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z15 (l : Loc) (v : runtime.xRegs) (Z15' : (array.t w8 64)) :
+instance xRegs_access_store_Z15 (l : Loc) (v : runtime.xRegs) (Z15' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z15" l) v.Z15' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z15" l) Z15' (DFrac.own 1))
@@ -1386,7 +1386,7 @@ instance xRegs_access_load_Z16 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z16 (l : Loc) (v : runtime.xRegs) (Z16' : (array.t w8 64)) :
+instance xRegs_access_store_Z16 (l : Loc) (v : runtime.xRegs) (Z16' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z16" l) v.Z16' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z16" l) Z16' (DFrac.own 1))
@@ -1402,7 +1402,7 @@ instance xRegs_access_load_Z17 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z17 (l : Loc) (v : runtime.xRegs) (Z17' : (array.t w8 64)) :
+instance xRegs_access_store_Z17 (l : Loc) (v : runtime.xRegs) (Z17' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z17" l) v.Z17' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z17" l) Z17' (DFrac.own 1))
@@ -1418,7 +1418,7 @@ instance xRegs_access_load_Z18 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z18 (l : Loc) (v : runtime.xRegs) (Z18' : (array.t w8 64)) :
+instance xRegs_access_store_Z18 (l : Loc) (v : runtime.xRegs) (Z18' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z18" l) v.Z18' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z18" l) Z18' (DFrac.own 1))
@@ -1434,7 +1434,7 @@ instance xRegs_access_load_Z19 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z19 (l : Loc) (v : runtime.xRegs) (Z19' : (array.t w8 64)) :
+instance xRegs_access_store_Z19 (l : Loc) (v : runtime.xRegs) (Z19' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z19" l) v.Z19' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z19" l) Z19' (DFrac.own 1))
@@ -1450,7 +1450,7 @@ instance xRegs_access_load_Z20 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z20 (l : Loc) (v : runtime.xRegs) (Z20' : (array.t w8 64)) :
+instance xRegs_access_store_Z20 (l : Loc) (v : runtime.xRegs) (Z20' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z20" l) v.Z20' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z20" l) Z20' (DFrac.own 1))
@@ -1466,7 +1466,7 @@ instance xRegs_access_load_Z21 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z21 (l : Loc) (v : runtime.xRegs) (Z21' : (array.t w8 64)) :
+instance xRegs_access_store_Z21 (l : Loc) (v : runtime.xRegs) (Z21' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z21" l) v.Z21' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z21" l) Z21' (DFrac.own 1))
@@ -1482,7 +1482,7 @@ instance xRegs_access_load_Z22 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z22 (l : Loc) (v : runtime.xRegs) (Z22' : (array.t w8 64)) :
+instance xRegs_access_store_Z22 (l : Loc) (v : runtime.xRegs) (Z22' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z22" l) v.Z22' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z22" l) Z22' (DFrac.own 1))
@@ -1498,7 +1498,7 @@ instance xRegs_access_load_Z23 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z23 (l : Loc) (v : runtime.xRegs) (Z23' : (array.t w8 64)) :
+instance xRegs_access_store_Z23 (l : Loc) (v : runtime.xRegs) (Z23' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z23" l) v.Z23' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z23" l) Z23' (DFrac.own 1))
@@ -1514,7 +1514,7 @@ instance xRegs_access_load_Z24 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z24 (l : Loc) (v : runtime.xRegs) (Z24' : (array.t w8 64)) :
+instance xRegs_access_store_Z24 (l : Loc) (v : runtime.xRegs) (Z24' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z24" l) v.Z24' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z24" l) Z24' (DFrac.own 1))
@@ -1530,7 +1530,7 @@ instance xRegs_access_load_Z25 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z25 (l : Loc) (v : runtime.xRegs) (Z25' : (array.t w8 64)) :
+instance xRegs_access_store_Z25 (l : Loc) (v : runtime.xRegs) (Z25' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z25" l) v.Z25' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z25" l) Z25' (DFrac.own 1))
@@ -1546,7 +1546,7 @@ instance xRegs_access_load_Z26 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z26 (l : Loc) (v : runtime.xRegs) (Z26' : (array.t w8 64)) :
+instance xRegs_access_store_Z26 (l : Loc) (v : runtime.xRegs) (Z26' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z26" l) v.Z26' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z26" l) Z26' (DFrac.own 1))
@@ -1562,7 +1562,7 @@ instance xRegs_access_load_Z27 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z27 (l : Loc) (v : runtime.xRegs) (Z27' : (array.t w8 64)) :
+instance xRegs_access_store_Z27 (l : Loc) (v : runtime.xRegs) (Z27' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z27" l) v.Z27' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z27" l) Z27' (DFrac.own 1))
@@ -1578,7 +1578,7 @@ instance xRegs_access_load_Z28 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z28 (l : Loc) (v : runtime.xRegs) (Z28' : (array.t w8 64)) :
+instance xRegs_access_store_Z28 (l : Loc) (v : runtime.xRegs) (Z28' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z28" l) v.Z28' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z28" l) Z28' (DFrac.own 1))
@@ -1594,7 +1594,7 @@ instance xRegs_access_load_Z29 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z29 (l : Loc) (v : runtime.xRegs) (Z29' : (array.t w8 64)) :
+instance xRegs_access_store_Z29 (l : Loc) (v : runtime.xRegs) (Z29' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z29" l) v.Z29' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z29" l) Z29' (DFrac.own 1))
@@ -1610,7 +1610,7 @@ instance xRegs_access_load_Z30 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z30 (l : Loc) (v : runtime.xRegs) (Z30' : (array.t w8 64)) :
+instance xRegs_access_store_Z30 (l : Loc) (v : runtime.xRegs) (Z30' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z30" l) v.Z30' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z30" l) Z30' (DFrac.own 1))
@@ -1626,7 +1626,7 @@ instance xRegs_access_load_Z31 (l : Loc) (v : runtime.xRegs) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance xRegs_access_store_Z31 (l : Loc) (v : runtime.xRegs) (Z31' : (array.t w8 64)) :
+instance xRegs_access_store_Z31 (l : Loc) (v : runtime.xRegs) (Z31' : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xRegs go!"Z31" l) v.Z31' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xRegs go!"Z31" l) Z31' (DFrac.own 1))
@@ -2033,7 +2033,7 @@ instance randomOrder_access_load_coprimes (l : Loc) (v : runtime.randomOrder) (d
  by
   solve_pointsto_access_struct
 
-instance randomOrder_access_store_coprimes (l : Loc) (v : runtime.randomOrder) (coprimes' : slice.t) :
+instance randomOrder_access_store_coprimes (l : Loc) (v : runtime.randomOrder) (coprimes' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.randomOrder go!"coprimes" l) v.coprimes' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.randomOrder go!"coprimes" l) coprimes' (DFrac.own 1))

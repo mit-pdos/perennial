@@ -435,7 +435,7 @@ instance TraceState_access_load_list (l : Loc) (v : go_opentelemetry_io.otel.tra
  by
   solve_pointsto_access_struct
 
-instance TraceState_access_store_list (l : Loc) (v : go_opentelemetry_io.otel.trace.TraceState) (list' : slice.t) :
+instance TraceState_access_store_list (l : Loc) (v : go_opentelemetry_io.otel.trace.TraceState) (list' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_opentelemetry_io.otel.trace.TraceState go!"list" l) v.list' (DFrac.own 1))
       (typedPointsto (structFieldRef go_opentelemetry_io.otel.trace.TraceState go!"list" l) list' (DFrac.own 1))

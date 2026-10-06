@@ -57,7 +57,7 @@ instance isCopyChecker_persistent (c : Loc) : Persistent (isCopyChecker (GF := G
   rw [isCopyChecker_unseal]; unfold isCopyCheckerDef; infer_instance
 
 /-- This means `c` is a condvar with underlying Locker `m`. -/
-def isCondDef (c : Loc) (m : interface.t_ok) : IProp GF :=
+def isCondDef (c : Loc) (m : GoInterfaceOk) : IProp GF :=
   iprop("#Hi" ∷ isPkgInit (PROP := IProp GF) pkg_id.sync ∗
     "#Hc" ∷ typedPointsto (structFieldRef Cond go!"L" c) (interface.ok m) DFrac.discard ∗
     -- FIXME (Rocq): not accurate to assume it never changes, there should be an
@@ -66,13 +66,13 @@ def isCondDef (c : Loc) (m : interface.t_ok) : IProp GF :=
       (zero_val notifyList) DFrac.discard ∗
     -- Lean: Rocq has `c.[Cond.t, "checker"] ↦□ zero_val copyChecker.t`, which `check` breaks.
     "#Hchecker" ∷ isCopyChecker (structFieldRef Cond go!"checker" c))
-@[irreducible] def isCond (c : Loc) (m : interface.t_ok) : IProp GF := isCondDef c m
+@[irreducible] def isCond (c : Loc) (m : GoInterfaceOk) : IProp GF := isCondDef c m
 theorem isCond_unseal : @isCond = @isCondDef := by funext; with_unfolding_all rfl
 
-instance isCond_persistent (c : Loc) (m : interface.t_ok) : Persistent (isCond (GF := GF) c m) := by
+instance isCond_persistent (c : Loc) (m : GoInterfaceOk) : Persistent (isCond (GF := GF) c m) := by
   rw [isCond_unseal]; unfold isCondDef named; infer_instance
 
-theorem wp_NewCond (m : interface.t_ok) :
+theorem wp_NewCond (m : GoInterfaceOk) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync }}
       (App (Val (@! NewCond)) (Val #(interface.ok m)))
     {{ (c : Loc), RET #c; isCond c m }} := by
@@ -178,7 +178,7 @@ theorem wp_runtime_notifyListWait (l : Loc) (l_v : notifyList) (t : w32) (dq : D
   wp_start as Hl
   wp_end
 
-theorem Cond.wp_Signal (c : Loc) (lk : interface.t_ok) :
+theorem Cond.wp_Signal (c : Loc) (lk : GoInterfaceOk) :
     {{ isCond (GF := GF) c lk }}
       (App (Val (c @!! go.GoType.PointerType Cond.ty @!! go!"Signal")) (Val #()))
     {{ RET #(); True }} := by
@@ -190,7 +190,7 @@ theorem Cond.wp_Signal (c : Loc) (lk : interface.t_ok) :
   wp_apply wp_runtime_notifyListNotifyOne $$ [$Hnotify] with _
   wp_end
 
-theorem Cond.wp_Broadcast (c : Loc) (lk : interface.t_ok) :
+theorem Cond.wp_Broadcast (c : Loc) (lk : GoInterfaceOk) :
     {{ isCond (GF := GF) c lk }}
       (App (Val (c @!! go.GoType.PointerType Cond.ty @!! go!"Broadcast")) (Val #()))
     {{ RET #(); True }} := by
@@ -202,7 +202,7 @@ theorem Cond.wp_Broadcast (c : Loc) (lk : interface.t_ok) :
   wp_apply wp_runtime_notifyListNotifyAll $$ [$Hnotify] with _
   wp_end
 
-theorem Cond.wp_Wait (c : Loc) (m : interface.t_ok) (R : IProp GF) :
+theorem Cond.wp_Wait (c : Loc) (m : GoInterfaceOk) (R : IProp GF) :
     {{ isCond c m ∗ isLocker m R ∗ R }}
       (App (Val (c @!! go.GoType.PointerType Cond.ty @!! go!"Wait")) (Val #()))
     {{ RET #(); R }} := by

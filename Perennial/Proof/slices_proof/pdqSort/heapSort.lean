@@ -402,7 +402,7 @@ variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.GoType}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop) [StrictWeakOrder R]
 
-theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t) (xs : List E) :
+theorem wp_siftDownCmpFunc (data : GoSlice) (lo hi a b : w64) (cmp_code : GoFunc) (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "#Hcmp" ∷ cmpImplements R cmp_code ∗
@@ -593,7 +593,7 @@ theorem wp_siftDownCmpFunc (data : slice.t) (lo hi a b : w64) (cmp_code : func.t
         have h3 : ¬ R xrt xc := fun h => hlt (by have := Hr2'.2 h; omega)
         exact notR_trans R x2 xc xrt h3 (Hmax c' xc x2 hc' hc'H Hxc h2))
 
-theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func.t)
+theorem wp_siftDownCmpFunc_Trivial (data : GoSlice) (a b : w64) (cmp_code : GoFunc)
     (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
@@ -610,7 +610,7 @@ theorem wp_siftDownCmpFunc_Trivial (data : slice.t) (a b : w64) (cmp_code : func
   iapply HΦ
   iframe
 
-theorem wp_heapSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (xs : List E) :
+theorem wp_heapSortCmpFunc (data : GoSlice) (a b : w64) (cmp_code : GoFunc) (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "#Hcmp" ∷ cmpImplements R cmp_code ∗

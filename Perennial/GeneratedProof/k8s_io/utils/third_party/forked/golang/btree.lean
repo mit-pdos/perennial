@@ -62,7 +62,7 @@ instance FreeList_access_load_freelist {T' : Type} [TypedPointsto (GF := GF) T']
  by
   solve_pointsto_access_struct
 
-instance FreeList_access_store_freelist {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (k8s_io.utils.third_party.forked.golang.btree.FreeList T')) (freelist' : slice.t) :
+instance FreeList_access_store_freelist {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (k8s_io.utils.third_party.forked.golang.btree.FreeList T')) (freelist' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (k8s_io.utils.third_party.forked.golang.btree.FreeList T') go!"freelist" l) v.freelist' (DFrac.own 1))
       (typedPointsto (structFieldRef (k8s_io.utils.third_party.forked.golang.btree.FreeList T') go!"freelist" l) freelist' (DFrac.own 1))

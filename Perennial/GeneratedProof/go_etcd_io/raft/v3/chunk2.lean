@@ -82,7 +82,7 @@ instance unstable_access_load_entries (l : Loc) (v : go_etcd_io.raft.v3.unstable
  by
   solve_pointsto_access_struct
 
-instance unstable_access_store_entries (l : Loc) (v : go_etcd_io.raft.v3.unstable) (entries' : slice.t) :
+instance unstable_access_store_entries (l : Loc) (v : go_etcd_io.raft.v3.unstable) (entries' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.unstable go!"entries" l) v.entries' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.unstable go!"entries" l) entries' (DFrac.own 1))
@@ -668,7 +668,7 @@ instance raft_access_load_readStates (l : Loc) (v : go_etcd_io.raft.v3.raft) (dq
  by
   solve_pointsto_access_struct
 
-instance raft_access_store_readStates (l : Loc) (v : go_etcd_io.raft.v3.raft) (readStates' : slice.t) :
+instance raft_access_store_readStates (l : Loc) (v : go_etcd_io.raft.v3.raft) (readStates' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"readStates" l) v.readStates' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"readStates" l) readStates' (DFrac.own 1))
@@ -780,7 +780,7 @@ instance raft_access_load_msgs (l : Loc) (v : go_etcd_io.raft.v3.raft) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance raft_access_store_msgs (l : Loc) (v : go_etcd_io.raft.v3.raft) (msgs' : slice.t) :
+instance raft_access_store_msgs (l : Loc) (v : go_etcd_io.raft.v3.raft) (msgs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"msgs" l) v.msgs' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"msgs" l) msgs' (DFrac.own 1))
@@ -796,7 +796,7 @@ instance raft_access_load_msgsAfterAppend (l : Loc) (v : go_etcd_io.raft.v3.raft
  by
   solve_pointsto_access_struct
 
-instance raft_access_store_msgsAfterAppend (l : Loc) (v : go_etcd_io.raft.v3.raft) (msgsAfterAppend' : slice.t) :
+instance raft_access_store_msgsAfterAppend (l : Loc) (v : go_etcd_io.raft.v3.raft) (msgsAfterAppend' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"msgsAfterAppend" l) v.msgsAfterAppend' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"msgsAfterAppend" l) msgsAfterAppend' (DFrac.own 1))
@@ -1052,7 +1052,7 @@ instance raft_access_load_tick (l : Loc) (v : go_etcd_io.raft.v3.raft) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance raft_access_store_tick (l : Loc) (v : go_etcd_io.raft.v3.raft) (tick' : func.t) :
+instance raft_access_store_tick (l : Loc) (v : go_etcd_io.raft.v3.raft) (tick' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"tick" l) v.tick' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"tick" l) tick' (DFrac.own 1))
@@ -1100,7 +1100,7 @@ instance raft_access_load_pendingReadIndexMessages (l : Loc) (v : go_etcd_io.raf
  by
   solve_pointsto_access_struct
 
-instance raft_access_store_pendingReadIndexMessages (l : Loc) (v : go_etcd_io.raft.v3.raft) (pendingReadIndexMessages' : slice.t) :
+instance raft_access_store_pendingReadIndexMessages (l : Loc) (v : go_etcd_io.raft.v3.raft) (pendingReadIndexMessages' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"pendingReadIndexMessages" l) v.pendingReadIndexMessages' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.raft go!"pendingReadIndexMessages" l) pendingReadIndexMessages' (DFrac.own 1))
@@ -1175,7 +1175,7 @@ instance readOnly_access_load_acks (l : Loc) (v : go_etcd_io.raft.v3.readOnly) (
  by
   solve_pointsto_access_struct
 
-instance readOnly_access_store_acks (l : Loc) (v : go_etcd_io.raft.v3.readOnly) (acks' : map.t) :
+instance readOnly_access_store_acks (l : Loc) (v : go_etcd_io.raft.v3.readOnly) (acks' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.readOnly go!"acks" l) v.acks' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.readOnly go!"acks" l) acks' (DFrac.own 1))
@@ -1191,7 +1191,7 @@ instance readOnly_access_load_unconfirmedReads (l : Loc) (v : go_etcd_io.raft.v3
  by
   solve_pointsto_access_struct
 
-instance readOnly_access_store_unconfirmedReads (l : Loc) (v : go_etcd_io.raft.v3.readOnly) (unconfirmedReads' : slice.t) :
+instance readOnly_access_store_unconfirmedReads (l : Loc) (v : go_etcd_io.raft.v3.readOnly) (unconfirmedReads' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.readOnly go!"unconfirmedReads" l) v.unconfirmedReads' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.readOnly go!"unconfirmedReads" l) unconfirmedReads' (DFrac.own 1))
@@ -1299,7 +1299,7 @@ instance MemoryStorage_access_load_ents (l : Loc) (v : go_etcd_io.raft.v3.Memory
  by
   solve_pointsto_access_struct
 
-instance MemoryStorage_access_store_ents (l : Loc) (v : go_etcd_io.raft.v3.MemoryStorage) (ents' : slice.t) :
+instance MemoryStorage_access_store_ents (l : Loc) (v : go_etcd_io.raft.v3.MemoryStorage) (ents' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.MemoryStorage go!"ents" l) v.ents' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.MemoryStorage go!"ents" l) ents' (DFrac.own 1))
@@ -1389,7 +1389,7 @@ instance logSlice_access_load_entries (l : Loc) (v : go_etcd_io.raft.v3.logSlice
  by
   solve_pointsto_access_struct
 
-instance logSlice_access_store_entries (l : Loc) (v : go_etcd_io.raft.v3.logSlice) (entries' : slice.t) :
+instance logSlice_access_store_entries (l : Loc) (v : go_etcd_io.raft.v3.logSlice) (entries' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.logSlice go!"entries" l) v.entries' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.logSlice go!"entries" l) entries' (DFrac.own 1))

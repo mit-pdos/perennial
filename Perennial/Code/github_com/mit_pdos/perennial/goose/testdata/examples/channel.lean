@@ -1863,7 +1863,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 structure Cond [FfiSyntax] where
   mk ::
   L' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock
-  waiters' : slice.t
+  waiters' : GoSlice
 
 instance Cond.zero_val [FfiSyntax] : ZeroVal Cond :=
   ⟨Cond.mk zeroValDef zeroValDef⟩
@@ -1888,7 +1888,7 @@ class Cond.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_L : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
   set_L : ∀ (x : Cond) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond)))
   get_waiters : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"waiters") #x (Val #(x.waiters'))
-  set_waiters : ∀ (x : Cond) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"waiters") (PairV #x #y) (Val #(({ x with waiters' := y } : Cond)))
+  set_waiters : ∀ (x : Cond) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"waiters") (PairV #x #y) (Val #(({ x with waiters' := y } : Cond)))
   ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Broadcast" Cond.Broadcast.impl
   ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Signal" Cond.Signal.impl
   ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Wait" Cond.Wait.impl
@@ -1946,8 +1946,8 @@ attribute [instance] Result.TypeAssumptions.type_repr
 
 structure request [FfiSyntax] where
   mk ::
-  f' : func.t
-  result' : chan.t
+  f' : GoFunc
+  result' : GoChan
 
 instance request.zero_val [FfiSyntax] : ZeroVal request :=
   ⟨request.mk zeroValDef zeroValDef⟩
@@ -1970,9 +1970,9 @@ class request.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying request.underlying request
   underlying : go.UnderlyingDirectedEq request.ty request.underlying
   get_f : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : request) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : request)))
+  set_f : ∀ (x : request) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : request)))
   get_result : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"result") #x (Val #(x.result'))
-  set_result : ∀ (x : request) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : request)))
+  set_result : ∀ (x : request) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : request)))
 
 attribute [instance] request.TypeAssumptions.type_repr
   request.TypeAssumptions.underlying
@@ -1983,8 +1983,8 @@ attribute [instance] request.TypeAssumptions.type_repr
 
 structure stream [FfiSyntax] where
   mk ::
-  req' : chan.t
-  res' : chan.t
+  req' : GoChan
+  res' : GoChan
 
 instance stream.zero_val [FfiSyntax] : ZeroVal stream :=
   ⟨stream.mk zeroValDef zeroValDef⟩
@@ -2007,9 +2007,9 @@ class stream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying stream.underlying stream
   underlying : go.UnderlyingDirectedEq stream.ty stream.underlying
   get_req : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"req") #x (Val #(x.req'))
-  set_req : ∀ (x : stream) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : stream)))
+  set_req : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : stream)))
   get_res : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"res") #x (Val #(x.res'))
-  set_res : ∀ (x : stream) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : stream)))
+  set_res : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : stream)))
 
 attribute [instance] stream.TypeAssumptions.type_repr
   stream.TypeAssumptions.underlying
@@ -2020,9 +2020,9 @@ attribute [instance] stream.TypeAssumptions.type_repr
 
 structure streamold [FfiSyntax] where
   mk ::
-  req' : chan.t
-  res' : chan.t
-  f' : func.t
+  req' : GoChan
+  res' : GoChan
+  f' : GoFunc
 
 instance streamold.zero_val [FfiSyntax] : ZeroVal streamold :=
   ⟨streamold.mk zeroValDef zeroValDef zeroValDef⟩
@@ -2046,11 +2046,11 @@ class streamold.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying streamold.underlying streamold
   underlying : go.UnderlyingDirectedEq streamold.ty streamold.underlying
   get_req : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"req") #x (Val #(x.req'))
-  set_req : ∀ (x : streamold) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : streamold)))
+  set_req : ∀ (x : streamold) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : streamold)))
   get_res : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"res") #x (Val #(x.res'))
-  set_res : ∀ (x : streamold) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : streamold)))
+  set_res : ∀ (x : streamold) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : streamold)))
   get_f : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : streamold) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : streamold)))
+  set_f : ∀ (x : streamold) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : streamold)))
 
 attribute [instance] streamold.TypeAssumptions.type_repr
   streamold.TypeAssumptions.underlying

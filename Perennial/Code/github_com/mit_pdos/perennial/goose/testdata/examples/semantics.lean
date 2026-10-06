@@ -5288,7 +5288,7 @@ attribute [instance] unit.TypeAssumptions.type_repr
 
 structure Editor [FfiSyntax] where
   mk ::
-  s' : slice.t
+  s' : GoSlice
   next_val' : w64
 
 instance Editor.zero_val [FfiSyntax] : ZeroVal Editor :=
@@ -5312,7 +5312,7 @@ class Editor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Editor.underlying Editor
   underlying : go.UnderlyingDirectedEq Editor.ty Editor.underlying
   get_s : ∀ (x : Editor), go.IsGoStepPureDetTagged under (StructFieldGet Editor.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : Editor) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Editor.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Editor)))
+  set_s : ∀ (x : Editor) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Editor.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Editor)))
   get_next_val : ∀ (x : Editor), go.IsGoStepPureDetTagged under (StructFieldGet Editor.underlying go!"next_val") #x (Val #(x.next_val'))
   set_next_val : ∀ (x : Editor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Editor.underlying go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : Editor)))
   ptr_AdvanceReturn_unfold : MethodUnfold (go.GoType.PointerType Editor.ty) go!"AdvanceReturn" Editor.AdvanceReturn.impl
@@ -5372,7 +5372,7 @@ class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Uint32.TypeAssumptions.underlying
 
-abbrev geometryInterface [FfiSyntax] : Type := interface.t
+abbrev geometryInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def geometryInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Square" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Volume" (go.signature.Signature [] false [go.uint64]))])
@@ -5454,7 +5454,7 @@ attribute [instance] NumStruct.TypeAssumptions.type_repr
   NumStruct.TypeAssumptions.get_Value
   NumStruct.TypeAssumptions.set_Value
 
-abbrev shapeInterface [FfiSyntax] : Type := interface.t
+abbrev shapeInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def shapeInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"describe" (go.signature.Signature [] false [go.string]))])
@@ -5464,7 +5464,7 @@ class shapeInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
 
 attribute [instance] shapeInterface.TypeAssumptions.underlying
 
-abbrev polygonInterface [FfiSyntax] : Type := interface.t
+abbrev polygonInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def polygonInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"sides" (go.signature.Signature [] false [go.uint64]))])
@@ -5557,7 +5557,7 @@ attribute [instance] polygonStruct.TypeAssumptions.type_repr
   polygonStruct.TypeAssumptions.ptr_describe_unfold
   polygonStruct.TypeAssumptions.ptr_sides_unfold
 
-abbrev dogInterface [FfiSyntax] : Type := interface.t
+abbrev dogInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def dogInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Speed" (go.signature.Signature [] false [go.uint64]))])
@@ -5567,7 +5567,7 @@ class dogInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] dogInterface.TypeAssumptions.underlying
 
-abbrev catInterface [FfiSyntax] : Type := interface.t
+abbrev catInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def catInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Weight" (go.signature.Signature [] false [go.uint64]))])
@@ -5617,7 +5617,7 @@ attribute [instance] Kitten.TypeAssumptions.underlying
   Kitten.TypeAssumptions.ptr_Name_unfold
   Kitten.TypeAssumptions.ptr_Weight_unfold
 
-abbrev printInterface [FfiSyntax] : Type := interface.t
+abbrev printInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def printInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Assign" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"GetTitle" (go.signature.Signature [] false [go.string]))])
@@ -5662,7 +5662,7 @@ attribute [instance] PaperStruct.TypeAssumptions.type_repr
   PaperStruct.TypeAssumptions.ptr_Assign_unfold
   PaperStruct.TypeAssumptions.ptr_GetTitle_unfold
 
-abbrev Flower [FfiSyntax] : Type := interface.t
+abbrev Flower [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Flower.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Petals" (go.signature.Signature [] false [go.uint64]))])
@@ -5672,7 +5672,7 @@ class Flower.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Flower.TypeAssumptions.underlying
 
-abbrev Flora [FfiSyntax] : Type := interface.t
+abbrev Flora [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Flora.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Flower.ty)])])
@@ -5877,7 +5877,7 @@ attribute [instance] BoolTest.TypeAssumptions.type_repr
 
 structure ArrayEditor [FfiSyntax] where
   mk ::
-  s' : slice.t
+  s' : GoSlice
   next_val' : w64
 
 instance ArrayEditor.zero_val [FfiSyntax] : ZeroVal ArrayEditor :=
@@ -5901,7 +5901,7 @@ class ArrayEditor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying ArrayEditor.underlying ArrayEditor
   underlying : go.UnderlyingDirectedEq ArrayEditor.ty ArrayEditor.underlying
   get_s : ∀ (x : ArrayEditor), go.IsGoStepPureDetTagged under (StructFieldGet ArrayEditor.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : ArrayEditor) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ArrayEditor.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : ArrayEditor)))
+  set_s : ∀ (x : ArrayEditor) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ArrayEditor.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : ArrayEditor)))
   get_next_val : ∀ (x : ArrayEditor), go.IsGoStepPureDetTagged under (StructFieldGet ArrayEditor.underlying go!"next_val") #x (Val #(x.next_val'))
   set_next_val : ∀ (x : ArrayEditor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ArrayEditor.underlying go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : ArrayEditor)))
   ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType ArrayEditor.ty) go!"Advance" ArrayEditor.Advance.impl
@@ -6112,7 +6112,7 @@ attribute [instance] StructWrap.TypeAssumptions.type_repr
 
 structure StructWithFunc [FfiSyntax] where
   mk ::
-  fn' : func.t
+  fn' : GoFunc
 
 instance StructWithFunc.zero_val [FfiSyntax] : ZeroVal StructWithFunc :=
   ⟨StructWithFunc.mk zeroValDef⟩
@@ -6134,7 +6134,7 @@ class StructWithFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   type_repr : go.TypeReprUnderlying StructWithFunc.underlying StructWithFunc
   underlying : go.UnderlyingDirectedEq StructWithFunc.ty StructWithFunc.underlying
   get_fn : ∀ (x : StructWithFunc), go.IsGoStepPureDetTagged under (StructFieldGet StructWithFunc.underlying go!"fn") #x (Val #(x.fn'))
-  set_fn : ∀ (x : StructWithFunc) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet StructWithFunc.underlying go!"fn") (PairV #x #y) (Val #(({ x with fn' := y } : StructWithFunc)))
+  set_fn : ∀ (x : StructWithFunc) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet StructWithFunc.underlying go!"fn") (PairV #x #y) (Val #(({ x with fn' := y } : StructWithFunc)))
 
 attribute [instance] StructWithFunc.TypeAssumptions.type_repr
   StructWithFunc.TypeAssumptions.underlying
@@ -6169,7 +6169,7 @@ attribute [instance] switchConcrete.TypeAssumptions.type_repr
   switchConcrete.TypeAssumptions.underlying
   switchConcrete.TypeAssumptions.ptr_marker_unfold
 
-abbrev switchInterface [FfiSyntax] : Type := interface.t
+abbrev switchInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def switchInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"marker" (go.signature.Signature [] false []))])
@@ -6230,7 +6230,7 @@ structure Log [FfiSyntax] where
   mk ::
   d' : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk
   l' : Loc
-  cache' : map.t
+  cache' : GoMap
   length' : Loc
 
 instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
@@ -6260,7 +6260,7 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   get_l : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"l") #x (Val #(x.l'))
   set_l : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"l") (PairV #x #y) (Val #(({ x with l' := y } : Log)))
   get_cache : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"cache") #x (Val #(x.cache'))
-  set_cache : ∀ (x : Log) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : Log)))
+  set_cache : ∀ (x : Log) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : Log)))
   get_length : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"length") #x (Val #(x.length'))
   set_length : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"length") (PairV #x #y) (Val #(({ x with length' := y } : Log)))
   Apply_unfold : MethodUnfold Log.ty go!"Apply" Log.Apply.impl

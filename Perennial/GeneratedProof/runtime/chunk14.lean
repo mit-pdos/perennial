@@ -86,7 +86,7 @@ instance mcentral_access_load_partial (l : Loc) (v : runtime.mcentral) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance mcentral_access_store_partial (l : Loc) (v : runtime.mcentral) (partial' : (array.t runtime.spanSet 2)) :
+instance mcentral_access_store_partial (l : Loc) (v : runtime.mcentral) (partial' : (GoArray runtime.spanSet 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mcentral go!"partial" l) v.partial' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mcentral go!"partial" l) partial' (DFrac.own 1))
@@ -102,7 +102,7 @@ instance mcentral_access_load_full (l : Loc) (v : runtime.mcentral) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance mcentral_access_store_full (l : Loc) (v : runtime.mcentral) (full' : (array.t runtime.spanSet 2)) :
+instance mcentral_access_store_full (l : Loc) (v : runtime.mcentral) (full' : (GoArray runtime.spanSet 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mcentral go!"full" l) v.full' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mcentral go!"full" l) full' (DFrac.own 1))
@@ -176,7 +176,7 @@ instance stackWorkBuf_access_load_obj (l : Loc) (v : runtime.stackWorkBuf) (dq :
  by
   solve_pointsto_access_struct
 
-instance stackWorkBuf_access_store_obj (l : Loc) (v : runtime.stackWorkBuf) (obj' : (array.t w64 252)) :
+instance stackWorkBuf_access_store_obj (l : Loc) (v : runtime.stackWorkBuf) (obj' : (GoArray w64 252)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stackWorkBuf go!"obj" l) v.obj' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stackWorkBuf go!"obj" l) obj' (DFrac.own 1))
@@ -250,7 +250,7 @@ instance stackObjectBuf_access_load_obj (l : Loc) (v : runtime.stackObjectBuf) (
  by
   solve_pointsto_access_struct
 
-instance stackObjectBuf_access_store_obj (l : Loc) (v : runtime.stackObjectBuf) (obj' : (array.t runtime.stackObject 63)) :
+instance stackObjectBuf_access_store_obj (l : Loc) (v : runtime.stackObjectBuf) (obj' : (GoArray runtime.stackObject 63)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stackObjectBuf go!"obj" l) v.obj' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stackObjectBuf go!"obj" l) obj' (DFrac.own 1))
@@ -307,7 +307,7 @@ instance spanSetBlock_access_load_spans (l : Loc) (v : runtime.spanSetBlock) (dq
  by
   solve_pointsto_access_struct
 
-instance spanSetBlock_access_store_spans (l : Loc) (v : runtime.spanSetBlock) (spans' : (array.t runtime.atomicMSpanPointer 512)) :
+instance spanSetBlock_access_store_spans (l : Loc) (v : runtime.spanSetBlock) (spans' : (GoArray runtime.atomicMSpanPointer 512)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.spanSetBlock go!"spans" l) v.spans' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.spanSetBlock go!"spans" l) spans' (DFrac.own 1))
@@ -508,7 +508,7 @@ instance mstats_access_load_pause_ns (l : Loc) (v : runtime.mstats) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance mstats_access_store_pause_ns (l : Loc) (v : runtime.mstats) (pause_ns' : (array.t w64 256)) :
+instance mstats_access_store_pause_ns (l : Loc) (v : runtime.mstats) (pause_ns' : (GoArray w64 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mstats go!"pause_ns" l) v.pause_ns' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mstats go!"pause_ns" l) pause_ns' (DFrac.own 1))
@@ -524,7 +524,7 @@ instance mstats_access_load_pause_end (l : Loc) (v : runtime.mstats) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance mstats_access_store_pause_end (l : Loc) (v : runtime.mstats) (pause_end' : (array.t w64 256)) :
+instance mstats_access_store_pause_end (l : Loc) (v : runtime.mstats) (pause_end' : (GoArray w64 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mstats go!"pause_end" l) v.pause_end' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mstats go!"pause_end" l) pause_end' (DFrac.own 1))
@@ -620,7 +620,7 @@ instance mstats_access_load_lastScanStats (l : Loc) (v : runtime.mstats) (dq : D
  by
   solve_pointsto_access_struct
 
-instance mstats_access_store_lastScanStats (l : Loc) (v : runtime.mstats) (lastScanStats' : (array.t runtime.sizeClassScanStats 68)) :
+instance mstats_access_store_lastScanStats (l : Loc) (v : runtime.mstats) (lastScanStats' : (GoArray runtime.sizeClassScanStats 68)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mstats go!"lastScanStats" l) v.lastScanStats' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mstats go!"lastScanStats" l) lastScanStats' (DFrac.own 1))

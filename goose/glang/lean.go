@@ -200,7 +200,7 @@ var leanVerbatims = map[string]string{
 	"None":           "none",
 	"Some":           "some",
 	"#slice.nil":     "#slice.nil",
-	"#interface.nil": "#interface.t.nil",
+	"#interface.nil": "#GoInterface.nil",
 }
 
 // leanRenames maps the Rocq names of framework definitions, which the shared
@@ -308,6 +308,12 @@ func (e TypeIdent) Lean(m LeanMode) string {
 // `name` (see TypeIdent).
 func LeanTypeDesc(name string) string {
 	return LeanIdent(name) + ".ty"
+}
+
+// LeanUniverseType is the Lean type of the values of a universe type (error,
+// any), modeled by the framework.
+func LeanUniverseType(name string) string {
+	return "Go" + strings.ToUpper(name[:1]) + name[1:]
 }
 
 // LeanEncodedName renders a generated name: the Lean form of a Rocq-style

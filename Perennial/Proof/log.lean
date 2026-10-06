@@ -34,7 +34,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   -- Unprovable: `std'init` and `bufferPool'init` are opaque (axioms in Perennial/Code/log.lean).
   sorry -- Rocq: Admitted
 
-theorem wp_Printf (msg : GoString) (arg : slice.t) :
+theorem wp_Printf (msg : GoString) (arg : GoSlice) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.log }}
       (App (App (Val (@! Printf)) (Val #msg)) (Val #arg))
     {{ RET #(); True }} := by

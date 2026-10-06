@@ -66,15 +66,15 @@ attribute [instance] FfiModel.ffi_state_inhabited FfiModel.ffi_global_state_inha
 export FfiModel (ffi_state ffi_global_state)
 
 namespace slice
-structure t where
+structure _root_.Perennial.GoSlice where
   ptr : Loc
   len : w64
   cap : w64
 deriving DecidableEq, Inhabited
 
-def nil : slice.t := ⟨null, 0, 0⟩
+def nil : GoSlice := ⟨null, 0, 0⟩
 /-- Rocq `slice.mk`. -/
-abbrev mk (ptr : Loc) (len cap : w64) : slice.t := ⟨ptr, len, cap⟩
+abbrev mk (ptr : Loc) (len cap : w64) : GoSlice := ⟨ptr, len, cap⟩
 end slice
 
 /-- Primitive (non-composite) values, injected into `val` by `LitV`. -/
@@ -89,7 +89,7 @@ inductive BaseLit where
   | LitPoison
   | LitLoc (l : Loc)
   | LitProphecy (p : proph_id)
-  | LitSlice (s : slice.t)
+  | LitSlice (s : GoSlice)
 deriving DecidableEq, Inhabited
 
 inductive PrimOp0 where
@@ -321,16 +321,16 @@ def Read : val :=
 end derived
 
 namespace func
-structure t [FfiSyntax] where
+structure _root_.Perennial.GoFunc [FfiSyntax] where
   f : Binder
   x : Binder
   e : Expr
 
-def nil [FfiSyntax] : func.t := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
+def nil [FfiSyntax] : GoFunc := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
 
-instance [FfiSyntax] : Inhabited func.t := ⟨nil⟩
+instance [FfiSyntax] : Inhabited GoFunc := ⟨nil⟩
 /-- Rocq `func.mk`. -/
-abbrev mk [FfiSyntax] (f x : Binder) (e : Expr) : func.t := ⟨f, x, e⟩
+abbrev mk [FfiSyntax] (f x : Binder) (e : Expr) : GoFunc := ⟨f, x, e⟩
 end func
 
 /-- `GoGlobalContext` contains the `intoVal` function. This allows for the Go
@@ -357,34 +357,34 @@ class GoLocalContext [FfiSyntax] where
 export GoLocalContext (is_go_step_pure)
 
 namespace chan
-abbrev t := Loc
-def nil : chan.t := null
+abbrev _root_.Perennial.GoChan := Loc
+def nil : GoChan := null
 end chan
 
 namespace interface
 
-structure t_ok [FfiSyntax] where
+structure _root_.Perennial.GoInterfaceOk [FfiSyntax] where
   ty : go.GoType
   v : val
 
-inductive t [FfiSyntax] where
-  | ok (i : t_ok)
+inductive _root_.Perennial.GoInterface [FfiSyntax] where
+  | ok (i : GoInterfaceOk)
   | nil
 
-export t (ok nil)
+export GoInterface (ok nil)
 
-abbrev mkOk [FfiSyntax] (ty : go.GoType) (v : val) : t := .ok ⟨ty, v⟩
+abbrev mkOk [FfiSyntax] (ty : go.GoType) (v : val) : GoInterface := .ok ⟨ty, v⟩
 /-- Rocq `interface.mk`. -/
-abbrev mk [FfiSyntax] (ty : go.GoType) (v : val) : t_ok := ⟨ty, v⟩
+abbrev mk [FfiSyntax] (ty : go.GoType) (v : val) : GoInterfaceOk := ⟨ty, v⟩
 
 end interface
 
 namespace array
-structure t (V : Type) (n : Int) where
+structure _root_.Perennial.GoArray (V : Type) (n : Int) where
   mk ::
   arr : List V
 /-- Rocq `array.mk n arr`. -/
-abbrev mk {V : Type} (n : Int) (arr : List V) : array.t V n := ⟨arr⟩
+abbrev mk {V : Type} (n : Int) (arr : List V) : GoArray V n := ⟨arr⟩
 end array
 
 /-! ## State -/
@@ -417,11 +417,11 @@ instance : ZeroVal w8 := ⟨0⟩
 instance : ZeroVal Unit := ⟨()⟩
 instance : ZeroVal Bool := ⟨false⟩
 instance : ZeroVal GoString := ⟨[]⟩
-instance : ZeroVal func.t := ⟨func.nil⟩
-instance {V} [ZeroVal V] (n : Int) : ZeroVal (array.t V n) :=
+instance : ZeroVal GoFunc := ⟨func.nil⟩
+instance {V} [ZeroVal V] (n : Int) : ZeroVal (GoArray V n) :=
   ⟨⟨List.replicate n.toNat (zero_val V)⟩⟩
-instance : ZeroVal slice.t := ⟨slice.nil⟩
-instance : ZeroVal interface.t := ⟨.nil⟩
+instance : ZeroVal GoSlice := ⟨slice.nil⟩
+instance : ZeroVal GoInterface := ⟨.nil⟩
 instance : ZeroVal proph_id := ⟨1⟩
 end zero_val_instances
 

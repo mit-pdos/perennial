@@ -66,7 +66,7 @@ instance RangeResponse_access_load_Kvs (l : Loc) (v : go_etcd_io.etcd.api.v3.etc
  by
   solve_pointsto_access_struct
 
-instance RangeResponse_access_store_Kvs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse) (Kvs' : slice.t) :
+instance RangeResponse_access_store_Kvs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse) (Kvs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse go!"Kvs" l) v.Kvs' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse go!"Kvs" l) Kvs' (DFrac.own 1))
@@ -130,7 +130,7 @@ instance RangeResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.et
  by
   solve_pointsto_access_struct
 
-instance RangeResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse) (XXX_unrecognized' : slice.t) :
+instance RangeResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -194,7 +194,7 @@ instance PutRequest_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdse
  by
   solve_pointsto_access_struct
 
-instance PutRequest_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest) (Key' : slice.t) :
+instance PutRequest_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest) (Key' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest go!"Key" l) v.Key' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest go!"Key" l) Key' (DFrac.own 1))
@@ -210,7 +210,7 @@ instance PutRequest_access_load_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.etcd
  by
   solve_pointsto_access_struct
 
-instance PutRequest_access_store_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest) (Value' : slice.t) :
+instance PutRequest_access_store_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest) (Value' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest go!"Value" l) v.Value' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest go!"Value" l) Value' (DFrac.own 1))
@@ -306,7 +306,7 @@ instance PutRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.
  by
   solve_pointsto_access_struct
 
-instance PutRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest) (XXX_unrecognized' : slice.t) :
+instance PutRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -414,7 +414,7 @@ instance PutResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd
  by
   solve_pointsto_access_struct
 
-instance PutResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse) (XXX_unrecognized' : slice.t) :
+instance PutResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -475,7 +475,7 @@ instance DeleteRangeRequest_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v
  by
   solve_pointsto_access_struct
 
-instance DeleteRangeRequest_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest) (Key' : slice.t) :
+instance DeleteRangeRequest_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest) (Key' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest go!"Key" l) v.Key' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest go!"Key" l) Key' (DFrac.own 1))
@@ -491,7 +491,7 @@ instance DeleteRangeRequest_access_load_RangeEnd (l : Loc) (v : go_etcd_io.etcd.
  by
   solve_pointsto_access_struct
 
-instance DeleteRangeRequest_access_store_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest) (RangeEnd' : slice.t) :
+instance DeleteRangeRequest_access_store_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest) (RangeEnd' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest go!"RangeEnd" l) v.RangeEnd' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest go!"RangeEnd" l) RangeEnd' (DFrac.own 1))
@@ -539,7 +539,7 @@ instance DeleteRangeRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_
  by
   solve_pointsto_access_struct
 
-instance DeleteRangeRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest) (XXX_unrecognized' : slice.t) :
+instance DeleteRangeRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -632,7 +632,7 @@ instance DeleteRangeResponse_access_load_PrevKvs (l : Loc) (v : go_etcd_io.etcd.
  by
   solve_pointsto_access_struct
 
-instance DeleteRangeResponse_access_store_PrevKvs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse) (PrevKvs' : slice.t) :
+instance DeleteRangeResponse_access_store_PrevKvs (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse) (PrevKvs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse go!"PrevKvs" l) v.PrevKvs' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse go!"PrevKvs" l) PrevKvs' (DFrac.own 1))
@@ -664,7 +664,7 @@ instance DeleteRangeResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance DeleteRangeResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse) (XXX_unrecognized' : slice.t) :
+instance DeleteRangeResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1160,7 +1160,7 @@ instance Compare_Value_access_load_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.e
  by
   solve_pointsto_access_struct
 
-instance Compare_Value_access_store_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Value) (Value' : slice.t) :
+instance Compare_Value_access_store_Value (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Value) (Value' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Value go!"Value" l) v.Value' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.Compare_Value go!"Value" l) Value' (DFrac.own 1))
@@ -1245,7 +1245,7 @@ instance TxnRequest_access_load_Compare (l : Loc) (v : go_etcd_io.etcd.api.v3.et
  by
   solve_pointsto_access_struct
 
-instance TxnRequest_access_store_Compare (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest) (Compare' : slice.t) :
+instance TxnRequest_access_store_Compare (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest) (Compare' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest go!"Compare" l) v.Compare' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest go!"Compare" l) Compare' (DFrac.own 1))
@@ -1261,7 +1261,7 @@ instance TxnRequest_access_load_Success (l : Loc) (v : go_etcd_io.etcd.api.v3.et
  by
   solve_pointsto_access_struct
 
-instance TxnRequest_access_store_Success (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest) (Success' : slice.t) :
+instance TxnRequest_access_store_Success (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest) (Success' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest go!"Success" l) v.Success' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest go!"Success" l) Success' (DFrac.own 1))
@@ -1277,7 +1277,7 @@ instance TxnRequest_access_load_Failure (l : Loc) (v : go_etcd_io.etcd.api.v3.et
  by
   solve_pointsto_access_struct
 
-instance TxnRequest_access_store_Failure (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest) (Failure' : slice.t) :
+instance TxnRequest_access_store_Failure (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest) (Failure' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest go!"Failure" l) v.Failure' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest go!"Failure" l) Failure' (DFrac.own 1))
@@ -1309,7 +1309,7 @@ instance TxnRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.
  by
   solve_pointsto_access_struct
 
-instance TxnRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest) (XXX_unrecognized' : slice.t) :
+instance TxnRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1402,7 +1402,7 @@ instance TxnResponse_access_load_Responses (l : Loc) (v : go_etcd_io.etcd.api.v3
  by
   solve_pointsto_access_struct
 
-instance TxnResponse_access_store_Responses (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse) (Responses' : slice.t) :
+instance TxnResponse_access_store_Responses (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse) (Responses' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse go!"Responses" l) v.Responses' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse go!"Responses" l) Responses' (DFrac.own 1))
@@ -1434,7 +1434,7 @@ instance TxnResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd
  by
   solve_pointsto_access_struct
 
-instance TxnResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse) (XXX_unrecognized' : slice.t) :
+instance TxnResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))

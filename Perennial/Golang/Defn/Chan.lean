@@ -87,7 +87,7 @@ open github_com.mit_pdos.perennial.goose.model
 class ChanSemantics [GoSemanticsFunctions] : Prop where
   [package_sem : channel.Assumptions]
 
-  convert_channel (dir1 dir2 : go.ChanDir) (elem : go.GoType) (c : chan.t) :
+  convert_channel (dir1 dir2 : go.ChanDir) (elem : go.GoType) (c : GoChan) :
     ⟦Convert (go.ChannelType dir1 elem) (go.ChannelType dir2 elem), #c⟧ ⤳[under] #c
 
   make2_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}

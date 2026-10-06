@@ -1306,7 +1306,7 @@ instance g_access_load_writebuf (l : Loc) (v : runtime.g) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance g_access_store_writebuf (l : Loc) (v : runtime.g) (writebuf' : slice.t) :
+instance g_access_store_writebuf (l : Loc) (v : runtime.g) (writebuf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.g go!"writebuf" l) v.writebuf' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.g go!"writebuf" l) writebuf' (DFrac.own 1))
@@ -1466,7 +1466,7 @@ instance g_access_load_cgoCtxt (l : Loc) (v : runtime.g) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance g_access_store_cgoCtxt (l : Loc) (v : runtime.g) (cgoCtxt' : slice.t) :
+instance g_access_store_cgoCtxt (l : Loc) (v : runtime.g) (cgoCtxt' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.g go!"cgoCtxt" l) v.cgoCtxt' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.g go!"cgoCtxt" l) cgoCtxt' (DFrac.own 1))

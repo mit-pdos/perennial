@@ -10,7 +10,7 @@ section defs
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 
 class ArraySemantics [GoSemanticsFunctions] : Prop where
-  array_set_step (V : Type) (n : Int) (vs : array.t V n) (i : w64) (v : V) :
+  array_set_step (V : Type) (n : Int) (vs : GoArray V n) (i : w64) (v : V) :
     ⟦ArraySet, (#vs, (#i, #v))⟧ ⤳
     #(array.mk n (vs.arr.set (sint.nat i) v))
 
@@ -22,7 +22,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
     ⟦CheckComparable (go.ArrayType n t), #()⟧ ⤳[under] #()
 
   type_repr_array (ty : go.GoType) (V : Type) (n : Int) [ZeroVal V] [TypeRepr ty V] :
-    go.TypeReprUnderlying (go.ArrayType n ty) (array.t V n)
+    go.TypeReprUnderlying (go.ArrayType n ty) (GoArray V n)
 
   -- TODO: implement alloc_array
   alloc_array (n : Int) (elem : go.GoType) (v : val) :
@@ -44,10 +44,10 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   /-- Deviates from Rocq, whose version is unusable (and whose `intoVal_typed_array`
   is `Admitted`): Rocq stores `Index (v, #(W64 n))` (out of range, so it panics)
   instead of `Index (v, #(W64 j))`; and it has no guard, so a value `#v` whose
-  length is not `n` (possible, `array.t V n` does not enforce it) or an `n` past
+  length is not `n` (possible, `GoArray V n` does not enforce it) or an `n` past
   the `w64` index range cannot satisfy `l ↦ v`. Here those cases are
   `AngelicExit`, as in `load_array`, and the value is a typed `#v`. -/
-  store_array (n : Int) (elem_type : go.GoType) (l : val) {V : Type} (v : array.t V n) :
+  store_array (n : Int) (elem_type : go.GoType) (l : val) {V : Type} (v : GoArray V n) :
     ⟦GoStore (go.ArrayType n elem_type), (l, #v)⟧ ⤳[internalUnder]
     (if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
       gl(AngelicExit #())
@@ -64,7 +64,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
     ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
       (if sint.Z i < n then #(arrayIndexRef V (sint.Z i) l) else Panic "index out of range")
 
-  index_array (n : Int) (elem_type : go.GoType) (i : w64) (V : Type) (a : array.t V n) :
+  index_array (n : Int) (elem_type : go.GoType) (i : w64) (V : Type) (a : GoArray V n) :
     ⟦Index (go.ArrayType n elem_type), (#a, #i)⟧ ⤳[under]
       (match a.arr[sint.nat i]? with
        | some v => #v
@@ -122,7 +122,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
     arrayIndexRef w8 i l = l +ₗ i
 
   intoVal_inj_array (V : Type) (n : Int) [inj_V : go.IntoValInj V] :
-    go.IntoValInj (array.t V n)
+    go.IntoValInj (GoArray V n)
 
 attribute [instance] ArraySemantics.array_set_step ArraySemantics.array_length_step
   ArraySemantics.equals_array ArraySemantics.type_repr_array ArraySemantics.alloc_array

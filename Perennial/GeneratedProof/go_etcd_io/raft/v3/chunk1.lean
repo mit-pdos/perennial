@@ -156,7 +156,7 @@ instance Ready_access_load_ReadStates (l : Loc) (v : go_etcd_io.raft.v3.Ready) (
  by
   solve_pointsto_access_struct
 
-instance Ready_access_store_ReadStates (l : Loc) (v : go_etcd_io.raft.v3.Ready) (ReadStates' : slice.t) :
+instance Ready_access_store_ReadStates (l : Loc) (v : go_etcd_io.raft.v3.Ready) (ReadStates' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Ready go!"ReadStates" l) v.ReadStates' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Ready go!"ReadStates" l) ReadStates' (DFrac.own 1))
@@ -172,7 +172,7 @@ instance Ready_access_load_Entries (l : Loc) (v : go_etcd_io.raft.v3.Ready) (dq 
  by
   solve_pointsto_access_struct
 
-instance Ready_access_store_Entries (l : Loc) (v : go_etcd_io.raft.v3.Ready) (Entries' : slice.t) :
+instance Ready_access_store_Entries (l : Loc) (v : go_etcd_io.raft.v3.Ready) (Entries' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Ready go!"Entries" l) v.Entries' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Ready go!"Entries" l) Entries' (DFrac.own 1))
@@ -204,7 +204,7 @@ instance Ready_access_load_CommittedEntries (l : Loc) (v : go_etcd_io.raft.v3.Re
  by
   solve_pointsto_access_struct
 
-instance Ready_access_store_CommittedEntries (l : Loc) (v : go_etcd_io.raft.v3.Ready) (CommittedEntries' : slice.t) :
+instance Ready_access_store_CommittedEntries (l : Loc) (v : go_etcd_io.raft.v3.Ready) (CommittedEntries' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Ready go!"CommittedEntries" l) v.CommittedEntries' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Ready go!"CommittedEntries" l) CommittedEntries' (DFrac.own 1))
@@ -220,7 +220,7 @@ instance Ready_access_load_Messages (l : Loc) (v : go_etcd_io.raft.v3.Ready) (dq
  by
   solve_pointsto_access_struct
 
-instance Ready_access_store_Messages (l : Loc) (v : go_etcd_io.raft.v3.Ready) (Messages' : slice.t) :
+instance Ready_access_store_Messages (l : Loc) (v : go_etcd_io.raft.v3.Ready) (Messages' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Ready go!"Messages" l) v.Messages' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Ready go!"Messages" l) Messages' (DFrac.own 1))
@@ -293,7 +293,7 @@ instance Peer_access_load_Context (l : Loc) (v : go_etcd_io.raft.v3.Peer) (dq : 
  by
   solve_pointsto_access_struct
 
-instance Peer_access_store_Context (l : Loc) (v : go_etcd_io.raft.v3.Peer) (Context' : slice.t) :
+instance Peer_access_store_Context (l : Loc) (v : go_etcd_io.raft.v3.Peer) (Context' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Peer go!"Context" l) v.Context' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Peer go!"Context" l) Context' (DFrac.own 1))
@@ -350,7 +350,7 @@ instance msgWithResult_access_load_result (l : Loc) (v : go_etcd_io.raft.v3.msgW
  by
   solve_pointsto_access_struct
 
-instance msgWithResult_access_store_result (l : Loc) (v : go_etcd_io.raft.v3.msgWithResult) (result' : chan.t) :
+instance msgWithResult_access_store_result (l : Loc) (v : go_etcd_io.raft.v3.msgWithResult) (result' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.msgWithResult go!"result" l) v.result' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.msgWithResult go!"result" l) result' (DFrac.own 1))
@@ -400,7 +400,7 @@ instance node_access_load_propc (l : Loc) (v : go_etcd_io.raft.v3.node) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance node_access_store_propc (l : Loc) (v : go_etcd_io.raft.v3.node) (propc' : chan.t) :
+instance node_access_store_propc (l : Loc) (v : go_etcd_io.raft.v3.node) (propc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"propc" l) v.propc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"propc" l) propc' (DFrac.own 1))
@@ -416,7 +416,7 @@ instance node_access_load_recvc (l : Loc) (v : go_etcd_io.raft.v3.node) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance node_access_store_recvc (l : Loc) (v : go_etcd_io.raft.v3.node) (recvc' : chan.t) :
+instance node_access_store_recvc (l : Loc) (v : go_etcd_io.raft.v3.node) (recvc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"recvc" l) v.recvc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"recvc" l) recvc' (DFrac.own 1))
@@ -432,7 +432,7 @@ instance node_access_load_confc (l : Loc) (v : go_etcd_io.raft.v3.node) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance node_access_store_confc (l : Loc) (v : go_etcd_io.raft.v3.node) (confc' : chan.t) :
+instance node_access_store_confc (l : Loc) (v : go_etcd_io.raft.v3.node) (confc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"confc" l) v.confc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"confc" l) confc' (DFrac.own 1))
@@ -448,7 +448,7 @@ instance node_access_load_confstatec (l : Loc) (v : go_etcd_io.raft.v3.node) (dq
  by
   solve_pointsto_access_struct
 
-instance node_access_store_confstatec (l : Loc) (v : go_etcd_io.raft.v3.node) (confstatec' : chan.t) :
+instance node_access_store_confstatec (l : Loc) (v : go_etcd_io.raft.v3.node) (confstatec' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"confstatec" l) v.confstatec' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"confstatec" l) confstatec' (DFrac.own 1))
@@ -464,7 +464,7 @@ instance node_access_load_readyc (l : Loc) (v : go_etcd_io.raft.v3.node) (dq : D
  by
   solve_pointsto_access_struct
 
-instance node_access_store_readyc (l : Loc) (v : go_etcd_io.raft.v3.node) (readyc' : chan.t) :
+instance node_access_store_readyc (l : Loc) (v : go_etcd_io.raft.v3.node) (readyc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"readyc" l) v.readyc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"readyc" l) readyc' (DFrac.own 1))
@@ -480,7 +480,7 @@ instance node_access_load_advancec (l : Loc) (v : go_etcd_io.raft.v3.node) (dq :
  by
   solve_pointsto_access_struct
 
-instance node_access_store_advancec (l : Loc) (v : go_etcd_io.raft.v3.node) (advancec' : chan.t) :
+instance node_access_store_advancec (l : Loc) (v : go_etcd_io.raft.v3.node) (advancec' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"advancec" l) v.advancec' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"advancec" l) advancec' (DFrac.own 1))
@@ -496,7 +496,7 @@ instance node_access_load_tickc (l : Loc) (v : go_etcd_io.raft.v3.node) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance node_access_store_tickc (l : Loc) (v : go_etcd_io.raft.v3.node) (tickc' : chan.t) :
+instance node_access_store_tickc (l : Loc) (v : go_etcd_io.raft.v3.node) (tickc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"tickc" l) v.tickc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"tickc" l) tickc' (DFrac.own 1))
@@ -512,7 +512,7 @@ instance node_access_load_done (l : Loc) (v : go_etcd_io.raft.v3.node) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance node_access_store_done (l : Loc) (v : go_etcd_io.raft.v3.node) (done' : chan.t) :
+instance node_access_store_done (l : Loc) (v : go_etcd_io.raft.v3.node) (done' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"done" l) done' (DFrac.own 1))
@@ -528,7 +528,7 @@ instance node_access_load_stop (l : Loc) (v : go_etcd_io.raft.v3.node) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance node_access_store_stop (l : Loc) (v : go_etcd_io.raft.v3.node) (stop' : chan.t) :
+instance node_access_store_stop (l : Loc) (v : go_etcd_io.raft.v3.node) (stop' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"stop" l) v.stop' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"stop" l) stop' (DFrac.own 1))
@@ -544,7 +544,7 @@ instance node_access_load_status (l : Loc) (v : go_etcd_io.raft.v3.node) (dq : D
  by
   solve_pointsto_access_struct
 
-instance node_access_store_status (l : Loc) (v : go_etcd_io.raft.v3.node) (status' : chan.t) :
+instance node_access_store_status (l : Loc) (v : go_etcd_io.raft.v3.node) (status' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"status" l) v.status' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.node go!"status" l) status' (DFrac.own 1))
@@ -708,7 +708,7 @@ instance RawNode_access_load_stepsOnAdvance (l : Loc) (v : go_etcd_io.raft.v3.Ra
  by
   solve_pointsto_access_struct
 
-instance RawNode_access_store_stepsOnAdvance (l : Loc) (v : go_etcd_io.raft.v3.RawNode) (stepsOnAdvance' : slice.t) :
+instance RawNode_access_store_stepsOnAdvance (l : Loc) (v : go_etcd_io.raft.v3.RawNode) (stepsOnAdvance' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.RawNode go!"stepsOnAdvance" l) v.stepsOnAdvance' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.RawNode go!"stepsOnAdvance" l) stepsOnAdvance' (DFrac.own 1))
@@ -765,7 +765,7 @@ instance ReadState_access_load_RequestCtx (l : Loc) (v : go_etcd_io.raft.v3.Read
  by
   solve_pointsto_access_struct
 
-instance ReadState_access_store_RequestCtx (l : Loc) (v : go_etcd_io.raft.v3.ReadState) (RequestCtx' : slice.t) :
+instance ReadState_access_store_RequestCtx (l : Loc) (v : go_etcd_io.raft.v3.ReadState) (RequestCtx' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.ReadState go!"RequestCtx" l) v.RequestCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.ReadState go!"RequestCtx" l) RequestCtx' (DFrac.own 1))

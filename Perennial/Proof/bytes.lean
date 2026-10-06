@@ -37,18 +37,18 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_GlobalAlloc (V := array.t w8 256) asciiSpace (go.ArrayType 256 go.uint8) as _
-  repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
+  wp_apply wp_GlobalAlloc (V := GoArray w8 256) asciiSpace (go.ArrayType 256 go.uint8) as _
+  repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
   wp_apply errors.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
   repeat (wp_apply errors.wp_New as %_ _)
   iframe Hown
   is_pkg_init_finish
 
-theorem wp_Clone (sl_b : slice.t) (dq : DFrac) (b : List w8) :
+theorem wp_Clone (sl_b : GoSlice) (dq : DFrac) (b : List w8) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.bytes ∗
        "Hsl_b" ∷ sl_b ↦*{dq} b }}
       (App (Val (@! Clone)) (Val #sl_b))
-    {{ (sl_b' : slice.t), RET #sl_b';
+    {{ (sl_b' : GoSlice), RET #sl_b';
        "Hsl_b" ∷ sl_b ↦*{dq} b ∗
        "Hsl_b'" ∷ sl_b' ↦* b ∗
        "Hsl_b'_cap" ∷ ownSliceCap w8 sl_b' (DFrac.own 1) }} := by
@@ -84,7 +84,7 @@ theorem wp_Clone (sl_b : slice.t) (dq : DFrac) (b : List w8) :
     iapply HΦ
     iframe Hs' Hs'_cap Hsl_b
 
-theorem wp_Equal (sl_b0 sl_b1 : slice.t) (d0 d1 : DFrac) (b0 b1 : List w8) :
+theorem wp_Equal (sl_b0 sl_b1 : GoSlice) (d0 d1 : DFrac) (b0 b1 : List w8) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.bytes ∗
        "Hb0" ∷ sl_b0 ↦*{d0} b0 ∗
        "Hb1" ∷ sl_b1 ↦*{d1} b1 }}

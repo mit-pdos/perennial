@@ -219,26 +219,26 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 		}
 		log.Fatalf("unknown basic type %s", t.Name())
 	case *types.Slice:
-		return "slice.t"
+		return "GoSlice"
 	case *types.Array:
-		return fmt.Sprintf("(array.t %s %d)", tr.toLeanType(t.Elem()), t.Len())
+		return fmt.Sprintf("(GoArray %s %d)", tr.toLeanType(t.Elem()), t.Len())
 	case *types.Pointer:
 		return "Loc"
 	case *types.Signature:
-		return "func.t"
+		return "GoFunc"
 	case *types.Interface:
-		return "interface.t"
+		return "GoInterface"
 	case *types.Map:
-		return "map.t"
+		return "GoMap"
 	case *types.Chan:
-		return "chan.t"
+		return "GoChan"
 	case *types.Named:
 		var base string
 		if pkg := t.Obj().Pkg(); pkg != nil {
 			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanQuote(glang.ToIdent(t.Obj().Name()))
 		} else {
 			// universe types (error) are modeled by the framework
-			base = glang.LeanQuote(glang.ToIdent(t.Obj().Name()) + ".t")
+			base = glang.LeanUniverseType(t.Obj().Name())
 		}
 		if t.TypeArgs().Len() > 0 {
 			var params []string

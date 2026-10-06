@@ -169,7 +169,7 @@ example (l : List Nat) (_h : (l ++ [1]).length = 3) (Φ : val → IProp GF) : Φ
 
 set_option goose.wp.extras true in
 /-- With `goose.wp.extras`, `wp_auto` stores function literals (`RecV`) as `#(func.mk ..)`. -/
-example (l : Loc) (f : func.t) (Φ : val → IProp GF) :
+example (l : Loc) (f : GoFunc) (Φ : val → IProp GF) :
     (l ↦ f) ∗ (l ↦ func.mk BAnon BAnon (Val #()) -∗ Φ #()) ⊢
       WP (App (Val (GoInstruction (GoStore (go.FunctionType (go.Signature [] false [])))))
         (Pair (Val #l) (Rec BAnon BAnon (Val #())))) {{ Φ }} := by
@@ -322,7 +322,7 @@ example (l : Loc) (v : w64) (Φ : val → IProp GF) :
 
 /-- `wp_apply` discharges closed pure side conditions of the spec (here the
 bounds check `0 ≤ 0` of `wp_load_slice_index`). -/
-example (sl : slice.t) (x : w64) (Φ : val → IProp GF) :
+example (sl : GoSlice) (x : w64) (Φ : val → IProp GF) :
     sl ↦* [x] ∗ (sl ↦* [x] -∗ Φ #x) ⊢
       WP (App (Val (GoInstruction (GoLoad go.uint64))) (Val #(sliceIndexRef w64 0 sl))) {{ Φ }} := by
   iintro ⟨Hs, H⟩

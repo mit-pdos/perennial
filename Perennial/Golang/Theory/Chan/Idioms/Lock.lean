@@ -35,7 +35,7 @@ variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {
 
 /-- The lock channel invariant. -/
 def lockChannelInv (γ : ChanNames) (R : IProp GF) : IProp GF :=
-  iprop(∃ (s : chanstate.t V) (locked : Bool),
+  iprop(∃ (s : ChanState V) (locked : Bool),
     "Hch" ∷ ownChan γ V s ∗
     "%Hcap" ∷ ⌜γ.chanCap = W64 1⌝ ∗
     (match s with

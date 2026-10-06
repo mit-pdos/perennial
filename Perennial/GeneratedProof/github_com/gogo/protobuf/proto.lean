@@ -222,7 +222,7 @@ instance discardFieldInfo_access_load_discard (l : Loc) (v : github_com.gogo.pro
  by
   solve_pointsto_access_struct
 
-instance discardFieldInfo_access_store_discard (l : Loc) (v : github_com.gogo.protobuf.proto.discardFieldInfo) (discard' : func.t) :
+instance discardFieldInfo_access_store_discard (l : Loc) (v : github_com.gogo.protobuf.proto.discardFieldInfo) (discard' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.discardFieldInfo go!"discard" l) v.discard' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.discardFieldInfo go!"discard" l) discard' (DFrac.own 1))
@@ -500,7 +500,7 @@ instance ExtensionDesc_access_load_ExtensionType (l : Loc) (v : github_com.gogo.
  by
   solve_pointsto_access_struct
 
-instance ExtensionDesc_access_store_ExtensionType (l : Loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc) (ExtensionType' : interface.t) :
+instance ExtensionDesc_access_store_ExtensionType (l : Loc) (v : github_com.gogo.protobuf.proto.ExtensionDesc) (ExtensionType' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.ExtensionDesc go!"ExtensionType" l) v.ExtensionType' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.ExtensionDesc go!"ExtensionType" l) ExtensionType' (DFrac.own 1))
@@ -622,7 +622,7 @@ instance Extension_access_load_value (l : Loc) (v : github_com.gogo.protobuf.pro
  by
   solve_pointsto_access_struct
 
-instance Extension_access_store_value (l : Loc) (v : github_com.gogo.protobuf.proto.Extension) (value' : interface.t) :
+instance Extension_access_store_value (l : Loc) (v : github_com.gogo.protobuf.proto.Extension) (value' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.Extension go!"value" l) v.value' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.Extension go!"value" l) value' (DFrac.own 1))
@@ -638,7 +638,7 @@ instance Extension_access_load_enc (l : Loc) (v : github_com.gogo.protobuf.proto
  by
   solve_pointsto_access_struct
 
-instance Extension_access_store_enc (l : Loc) (v : github_com.gogo.protobuf.proto.Extension) (enc' : slice.t) :
+instance Extension_access_store_enc (l : Loc) (v : github_com.gogo.protobuf.proto.Extension) (enc' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.Extension go!"enc" l) v.enc' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.Extension go!"enc" l) enc' (DFrac.own 1))
@@ -874,7 +874,7 @@ instance nonFatal_access_load_E (l : Loc) (v : github_com.gogo.protobuf.proto.no
  by
   solve_pointsto_access_struct
 
-instance nonFatal_access_store_E (l : Loc) (v : github_com.gogo.protobuf.proto.nonFatal) (E' : error.t) :
+instance nonFatal_access_store_E (l : Loc) (v : github_com.gogo.protobuf.proto.nonFatal) (E' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.nonFatal go!"E" l) v.E' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.nonFatal go!"E" l) E' (DFrac.own 1))
@@ -916,7 +916,7 @@ instance Buffer_access_load_buf (l : Loc) (v : github_com.gogo.protobuf.proto.Bu
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_buf (l : Loc) (v : github_com.gogo.protobuf.proto.Buffer) (buf' : slice.t) :
+instance Buffer_access_store_buf (l : Loc) (v : github_com.gogo.protobuf.proto.Buffer) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.Buffer go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.Buffer go!"buf" l) buf' (DFrac.own 1))
@@ -989,7 +989,7 @@ instance defaultMessage_access_load_scalars (l : Loc) (v : github_com.gogo.proto
  by
   solve_pointsto_access_struct
 
-instance defaultMessage_access_store_scalars (l : Loc) (v : github_com.gogo.protobuf.proto.defaultMessage) (scalars' : slice.t) :
+instance defaultMessage_access_store_scalars (l : Loc) (v : github_com.gogo.protobuf.proto.defaultMessage) (scalars' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.defaultMessage go!"scalars" l) v.scalars' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.defaultMessage go!"scalars" l) scalars' (DFrac.own 1))
@@ -1005,7 +1005,7 @@ instance defaultMessage_access_load_nested (l : Loc) (v : github_com.gogo.protob
  by
   solve_pointsto_access_struct
 
-instance defaultMessage_access_store_nested (l : Loc) (v : github_com.gogo.protobuf.proto.defaultMessage) (nested' : slice.t) :
+instance defaultMessage_access_store_nested (l : Loc) (v : github_com.gogo.protobuf.proto.defaultMessage) (nested' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.defaultMessage go!"nested" l) v.nested' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.defaultMessage go!"nested" l) nested' (DFrac.own 1))
@@ -1191,7 +1191,7 @@ instance _MessageSet_Item_access_load_Message (l : Loc) (v : github_com.gogo.pro
  by
   solve_pointsto_access_struct
 
-instance _MessageSet_Item_access_store_Message (l : Loc) (v : github_com.gogo.protobuf.proto._MessageSet_Item) (Message' : slice.t) :
+instance _MessageSet_Item_access_store_Message (l : Loc) (v : github_com.gogo.protobuf.proto._MessageSet_Item) (Message' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto._MessageSet_Item go!"Message" l) v.Message' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto._MessageSet_Item go!"Message" l) Message' (DFrac.own 1))
@@ -1232,7 +1232,7 @@ instance messageSet_access_load_Item (l : Loc) (v : github_com.gogo.protobuf.pro
  by
   solve_pointsto_access_struct
 
-instance messageSet_access_store_Item (l : Loc) (v : github_com.gogo.protobuf.proto.messageSet) (Item' : slice.t) :
+instance messageSet_access_store_Item (l : Loc) (v : github_com.gogo.protobuf.proto.messageSet) (Item' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.messageSet go!"Item" l) v.Item' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.messageSet go!"Item" l) Item' (DFrac.own 1))
@@ -1248,7 +1248,7 @@ instance messageSet_access_load_XXX_unrecognized (l : Loc) (v : github_com.gogo.
  by
   solve_pointsto_access_struct
 
-instance messageSet_access_store_XXX_unrecognized (l : Loc) (v : github_com.gogo.protobuf.proto.messageSet) (XXX_unrecognized' : slice.t) :
+instance messageSet_access_store_XXX_unrecognized (l : Loc) (v : github_com.gogo.protobuf.proto.messageSet) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.messageSet go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.messageSet go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1329,7 +1329,7 @@ instance tagMap_access_load_fastTags (l : Loc) (v : github_com.gogo.protobuf.pro
  by
   solve_pointsto_access_struct
 
-instance tagMap_access_store_fastTags (l : Loc) (v : github_com.gogo.protobuf.proto.tagMap) (fastTags' : slice.t) :
+instance tagMap_access_store_fastTags (l : Loc) (v : github_com.gogo.protobuf.proto.tagMap) (fastTags' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.tagMap go!"fastTags" l) v.fastTags' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.tagMap go!"fastTags" l) fastTags' (DFrac.own 1))
@@ -1345,7 +1345,7 @@ instance tagMap_access_load_slowTags (l : Loc) (v : github_com.gogo.protobuf.pro
  by
   solve_pointsto_access_struct
 
-instance tagMap_access_store_slowTags (l : Loc) (v : github_com.gogo.protobuf.proto.tagMap) (slowTags' : map.t) :
+instance tagMap_access_store_slowTags (l : Loc) (v : github_com.gogo.protobuf.proto.tagMap) (slowTags' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.tagMap go!"slowTags" l) v.slowTags' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.tagMap go!"slowTags" l) slowTags' (DFrac.own 1))
@@ -1390,7 +1390,7 @@ instance StructProperties_access_load_Prop (l : Loc) (v : github_com.gogo.protob
  by
   solve_pointsto_access_struct
 
-instance StructProperties_access_store_Prop (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties) (Prop' : slice.t) :
+instance StructProperties_access_store_Prop (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties) (Prop' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.StructProperties go!"Prop" l) v.Prop' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.StructProperties go!"Prop" l) Prop' (DFrac.own 1))
@@ -1438,7 +1438,7 @@ instance StructProperties_access_load_decoderOrigNames (l : Loc) (v : github_com
  by
   solve_pointsto_access_struct
 
-instance StructProperties_access_store_decoderOrigNames (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties) (decoderOrigNames' : map.t) :
+instance StructProperties_access_store_decoderOrigNames (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties) (decoderOrigNames' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.StructProperties go!"decoderOrigNames" l) v.decoderOrigNames' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.StructProperties go!"decoderOrigNames" l) decoderOrigNames' (DFrac.own 1))
@@ -1454,7 +1454,7 @@ instance StructProperties_access_load_order (l : Loc) (v : github_com.gogo.proto
  by
   solve_pointsto_access_struct
 
-instance StructProperties_access_store_order (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties) (order' : slice.t) :
+instance StructProperties_access_store_order (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties) (order' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.StructProperties go!"order" l) v.order' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.StructProperties go!"order" l) order' (DFrac.own 1))
@@ -1470,7 +1470,7 @@ instance StructProperties_access_load_OneofTypes (l : Loc) (v : github_com.gogo.
  by
   solve_pointsto_access_struct
 
-instance StructProperties_access_store_OneofTypes (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties) (OneofTypes' : map.t) :
+instance StructProperties_access_store_OneofTypes (l : Loc) (v : github_com.gogo.protobuf.proto.StructProperties) (OneofTypes' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.StructProperties go!"OneofTypes" l) v.OneofTypes' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.StructProperties go!"OneofTypes" l) OneofTypes' (DFrac.own 1))
@@ -1764,7 +1764,7 @@ instance mergeFieldInfo_access_load_merge (l : Loc) (v : github_com.gogo.protobu
  by
   solve_pointsto_access_struct
 
-instance mergeFieldInfo_access_store_merge (l : Loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo) (merge' : func.t) :
+instance mergeFieldInfo_access_store_merge (l : Loc) (v : github_com.gogo.protobuf.proto.mergeFieldInfo) (merge' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.mergeFieldInfo go!"merge" l) v.merge' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.mergeFieldInfo go!"merge" l) merge' (DFrac.own 1))
@@ -2746,7 +2746,7 @@ instance bytesValue_access_load_Value (l : Loc) (v : github_com.gogo.protobuf.pr
  by
   solve_pointsto_access_struct
 
-instance bytesValue_access_store_Value (l : Loc) (v : github_com.gogo.protobuf.proto.bytesValue) (Value' : slice.t) :
+instance bytesValue_access_store_Value (l : Loc) (v : github_com.gogo.protobuf.proto.bytesValue) (Value' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.bytesValue go!"Value" l) v.Value' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.gogo.protobuf.proto.bytesValue go!"Value" l) Value' (DFrac.own 1))

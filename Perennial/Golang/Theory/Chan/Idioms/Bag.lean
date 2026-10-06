@@ -26,7 +26,7 @@ variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {
 
 /-- The bag invariant. -/
 def chanBagInv (γ : ChanNames) (P : V → IProp GF) : IProp GF :=
-  iprop(∃ (s : chanstate.t V), "Hch" ∷ ownChan γ V s ∗
+  iprop(∃ (s : ChanState V), "Hch" ∷ ownChan γ V s ∗
     (match s with
      | .Idle => iprop(True)
      | .SndPending v => P v
@@ -46,7 +46,7 @@ instance isChanBag_pers (γ : ChanNames) (ch : Loc) (P : V → IProp GF) :
     Persistent (isChanBag γ ch P) := by
   rw [isChanBag_unseal]; unfold isChanBagDef; infer_instance
 
-theorem start_bag (P : V → IProp GF) (s : chanstate.t V) (ch : Loc) (γ : ChanNames)
+theorem start_bag (P : V → IProp GF) (s : ChanState V) (ch : Loc) (γ : ChanNames)
     (Hs : match s with | .Idle | .Buffered [] => True | _ => False) :
     ⊢ isChan ch γ V -∗ ownChan γ V s ={⊤}=∗ isChanBag γ ch P := by
   iintro #Hch Hoc

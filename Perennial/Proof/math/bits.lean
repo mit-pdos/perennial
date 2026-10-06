@@ -38,10 +38,10 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_GlobalAlloc (V := interface.t) divideError go.error with _
-  wp_apply wp_GlobalAlloc (V := interface.t) overflowError go.error with _
-  wp_apply wp_GlobalAlloc (V := array.t w8 64) deBruijn64tab (go.ArrayType 64 go.byte) with H1
-  wp_apply wp_GlobalAlloc (V := array.t w8 32) deBruijn32tab (go.ArrayType 32 go.byte) with H2
+  wp_apply wp_GlobalAlloc (V := GoInterface) divideError go.error with _
+  wp_apply wp_GlobalAlloc (V := GoInterface) overflowError go.error with _
+  wp_apply wp_GlobalAlloc (V := GoArray w8 64) deBruijn64tab (go.ArrayType 64 go.byte) with H1
+  wp_apply wp_GlobalAlloc (V := GoArray w8 32) deBruijn32tab (go.ArrayType 32 go.byte) with H2
   wp_apply «unsafe».wp_initialize' _ Hinit.2.1 $$ Hown with ⟨Hown, #Hunsafe⟩
   iframe Hown
   is_pkg_init_finish

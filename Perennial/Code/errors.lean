@@ -331,7 +331,7 @@ attribute [instance] errorString.TypeAssumptions.type_repr
 
 structure joinError [FfiSyntax] where
   mk ::
-  errs' : slice.t
+  errs' : GoSlice
 
 instance joinError.zero_val [FfiSyntax] : ZeroVal joinError :=
   ⟨joinError.mk zeroValDef⟩
@@ -353,7 +353,7 @@ class joinError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying joinError.underlying joinError
   underlying : go.UnderlyingDirectedEq joinError.ty joinError.underlying
   get_errs : ∀ (x : joinError), go.IsGoStepPureDetTagged under (StructFieldGet joinError.underlying go!"errs") #x (Val #(x.errs'))
-  set_errs : ∀ (x : joinError) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet joinError.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError)))
+  set_errs : ∀ (x : joinError) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet joinError.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError)))
 
 attribute [instance] joinError.TypeAssumptions.type_repr
   joinError.TypeAssumptions.underlying

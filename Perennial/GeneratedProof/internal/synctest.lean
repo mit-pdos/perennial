@@ -43,7 +43,7 @@ instance Bubble_access_load_b (l : Loc) (v : internal.synctest.Bubble) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance Bubble_access_store_b (l : Loc) (v : internal.synctest.Bubble) (b' : interface.t) :
+instance Bubble_access_store_b (l : Loc) (v : internal.synctest.Bubble) (b' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) b' (DFrac.own 1))

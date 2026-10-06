@@ -247,7 +247,7 @@ structure NumError [FfiSyntax] where
   mk ::
   Func' : GoString
   Num' : GoString
-  Err' : error.t
+  Err' : GoError
 
 instance NumError.zero_val [FfiSyntax] : ZeroVal NumError :=
   ⟨NumError.mk zeroValDef zeroValDef zeroValDef⟩
@@ -275,7 +275,7 @@ class NumError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_Num : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Num") #x (Val #(x.Num'))
   set_Num : ∀ (x : NumError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Num") (PairV #x #y) (Val #(({ x with Num' := y } : NumError)))
   get_Err : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : NumError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : NumError)))
+  set_Err : ∀ (x : NumError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : NumError)))
 
 attribute [instance] NumError.TypeAssumptions.type_repr
   NumError.TypeAssumptions.underlying

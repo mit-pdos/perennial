@@ -231,7 +231,7 @@ instance Value_access_load_slice (l : Loc) (v : go_opentelemetry_io.otel.«attri
  by
   solve_pointsto_access_struct
 
-instance Value_access_store_slice (l : Loc) (v : go_opentelemetry_io.otel.«attribute».Value) (slice' : interface.t) :
+instance Value_access_store_slice (l : Loc) (v : go_opentelemetry_io.otel.«attribute».Value) (slice' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_opentelemetry_io.otel.«attribute».Value go!"slice" l) v.slice' (DFrac.own 1))
       (typedPointsto (structFieldRef go_opentelemetry_io.otel.«attribute».Value go!"slice" l) slice' (DFrac.own 1))
@@ -493,7 +493,7 @@ instance Set'_access_load_data (l : Loc) (v : go_opentelemetry_io.otel.«attribu
  by
   solve_pointsto_access_struct
 
-instance Set'_access_store_data (l : Loc) (v : go_opentelemetry_io.otel.«attribute».Set') (data' : interface.t) :
+instance Set'_access_store_data (l : Loc) (v : go_opentelemetry_io.otel.«attribute».Set') (data' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_opentelemetry_io.otel.«attribute».Set' go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef go_opentelemetry_io.otel.«attribute».Set' go!"data" l) data' (DFrac.own 1))

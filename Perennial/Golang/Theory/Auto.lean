@@ -600,7 +600,7 @@ elab "wp_auto_angelic" : tactic => do
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Rewrite the function literal values `RecV f x e` in the WP expression to Go
 function values `#(func.mk f x e)` (`recv_eq_func_mk`), so that specs taking a
-`func.t` argument (e.g. `wp_mapInsert`, or a function with a callback
+`GoFunc` argument (e.g. `wp_mapInsert`, or a function with a callback
 parameter) apply. Fails if there is none. `wp_apply` tries this when the spec
 does not apply. -/
 elab "wp_func_lits" : tactic =>

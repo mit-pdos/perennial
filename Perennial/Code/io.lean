@@ -397,7 +397,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrClosedPipe go.error)) (Val #()))))))))
 
-abbrev Reader [FfiSyntax] : Type := interface.t
+abbrev Reader [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Reader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
@@ -407,7 +407,7 @@ class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Reader.TypeAssumptions.underlying
 
-abbrev Writer [FfiSyntax] : Type := interface.t
+abbrev Writer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Writer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
@@ -417,7 +417,7 @@ class Writer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Writer.TypeAssumptions.underlying
 
-abbrev Closer [FfiSyntax] : Type := interface.t
+abbrev Closer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Closer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [go.error]))])
@@ -427,7 +427,7 @@ class Closer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Closer.TypeAssumptions.underlying
 
-abbrev Seeker [FfiSyntax] : Type := interface.t
+abbrev Seeker [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Seeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Seek" (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))])
@@ -437,7 +437,7 @@ class Seeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Seeker.TypeAssumptions.underlying
 
-abbrev ReadWriter [FfiSyntax] : Type := interface.t
+abbrev ReadWriter [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)])])
@@ -447,7 +447,7 @@ class ReadWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] ReadWriter.TypeAssumptions.underlying
 
-abbrev ReadCloser [FfiSyntax] : Type := interface.t
+abbrev ReadCloser [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
@@ -457,7 +457,7 @@ class ReadCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] ReadCloser.TypeAssumptions.underlying
 
-abbrev WriteCloser [FfiSyntax] : Type := interface.t
+abbrev WriteCloser [FfiSyntax] : Type := GoInterface
 
 @[reducible] def WriteCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
@@ -467,7 +467,7 @@ class WriteCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] WriteCloser.TypeAssumptions.underlying
 
-abbrev ReadWriteCloser [FfiSyntax] : Type := interface.t
+abbrev ReadWriteCloser [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadWriteCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
@@ -477,7 +477,7 @@ class ReadWriteCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] ReadWriteCloser.TypeAssumptions.underlying
 
-abbrev ReadSeeker [FfiSyntax] : Type := interface.t
+abbrev ReadSeeker [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
@@ -487,7 +487,7 @@ class ReadSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] ReadSeeker.TypeAssumptions.underlying
 
-abbrev ReadSeekCloser [FfiSyntax] : Type := interface.t
+abbrev ReadSeekCloser [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadSeekCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
@@ -497,7 +497,7 @@ class ReadSeekCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
 
 attribute [instance] ReadSeekCloser.TypeAssumptions.underlying
 
-abbrev WriteSeeker [FfiSyntax] : Type := interface.t
+abbrev WriteSeeker [FfiSyntax] : Type := GoInterface
 
 @[reducible] def WriteSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
@@ -507,7 +507,7 @@ class WriteSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] WriteSeeker.TypeAssumptions.underlying
 
-abbrev ReadWriteSeeker [FfiSyntax] : Type := interface.t
+abbrev ReadWriteSeeker [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadWriteSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
@@ -517,7 +517,7 @@ class ReadWriteSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] ReadWriteSeeker.TypeAssumptions.underlying
 
-abbrev ReaderFrom [FfiSyntax] : Type := interface.t
+abbrev ReaderFrom [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReaderFrom.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadFrom" (go.signature.Signature [Reader.ty] false [go.int64, go.error]))])
@@ -527,7 +527,7 @@ class ReaderFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] ReaderFrom.TypeAssumptions.underlying
 
-abbrev WriterTo [FfiSyntax] : Type := interface.t
+abbrev WriterTo [FfiSyntax] : Type := GoInterface
 
 @[reducible] def WriterTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteTo" (go.signature.Signature [Writer.ty] false [go.int64, go.error]))])
@@ -537,7 +537,7 @@ class WriterTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] WriterTo.TypeAssumptions.underlying
 
-abbrev ReaderAt [FfiSyntax] : Type := interface.t
+abbrev ReaderAt [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReaderAt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadAt" (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))])
@@ -547,7 +547,7 @@ class ReaderAt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] ReaderAt.TypeAssumptions.underlying
 
-abbrev WriterAt [FfiSyntax] : Type := interface.t
+abbrev WriterAt [FfiSyntax] : Type := GoInterface
 
 @[reducible] def WriterAt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteAt" (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))])
@@ -557,7 +557,7 @@ class WriterAt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] WriterAt.TypeAssumptions.underlying
 
-abbrev ByteReader [FfiSyntax] : Type := interface.t
+abbrev ByteReader [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ByteReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadByte" (go.signature.Signature [] false [go.byte, go.error]))])
@@ -567,7 +567,7 @@ class ByteReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] ByteReader.TypeAssumptions.underlying
 
-abbrev ByteScanner [FfiSyntax] : Type := interface.t
+abbrev ByteScanner [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ByteScanner.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"UnreadByte" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ByteReader.ty)])])
@@ -577,7 +577,7 @@ class ByteScanner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] ByteScanner.TypeAssumptions.underlying
 
-abbrev ByteWriter [FfiSyntax] : Type := interface.t
+abbrev ByteWriter [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ByteWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteByte" (go.signature.Signature [go.byte] false [go.error]))])
@@ -587,7 +587,7 @@ class ByteWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] ByteWriter.TypeAssumptions.underlying
 
-abbrev RuneReader [FfiSyntax] : Type := interface.t
+abbrev RuneReader [FfiSyntax] : Type := GoInterface
 
 @[reducible] def RuneReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadRune" (go.signature.Signature [] false [go.rune, go.int, go.error]))])
@@ -597,7 +597,7 @@ class RuneReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] RuneReader.TypeAssumptions.underlying
 
-abbrev RuneScanner [FfiSyntax] : Type := interface.t
+abbrev RuneScanner [FfiSyntax] : Type := GoInterface
 
 @[reducible] def RuneScanner.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"UnreadRune" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm RuneReader.ty)])])
@@ -607,7 +607,7 @@ class RuneScanner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] RuneScanner.TypeAssumptions.underlying
 
-abbrev StringWriter [FfiSyntax] : Type := interface.t
+abbrev StringWriter [FfiSyntax] : Type := GoInterface
 
 @[reducible] def StringWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteString" (go.signature.Signature [go.string] false [go.int, go.error]))])
@@ -905,7 +905,7 @@ attribute [instance] eofReader.TypeAssumptions.type_repr
 
 structure multiReader [FfiSyntax] where
   mk ::
-  readers' : slice.t
+  readers' : GoSlice
 
 instance multiReader.zero_val [FfiSyntax] : ZeroVal multiReader :=
   ⟨multiReader.mk zeroValDef⟩
@@ -927,7 +927,7 @@ class multiReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying multiReader.underlying multiReader
   underlying : go.UnderlyingDirectedEq multiReader.ty multiReader.underlying
   get_readers : ∀ (x : multiReader), go.IsGoStepPureDetTagged under (StructFieldGet multiReader.underlying go!"readers") #x (Val #(x.readers'))
-  set_readers : ∀ (x : multiReader) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet multiReader.underlying go!"readers") (PairV #x #y) (Val #(({ x with readers' := y } : multiReader)))
+  set_readers : ∀ (x : multiReader) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet multiReader.underlying go!"readers") (PairV #x #y) (Val #(({ x with readers' := y } : multiReader)))
 
 attribute [instance] multiReader.TypeAssumptions.type_repr
   multiReader.TypeAssumptions.underlying
@@ -936,7 +936,7 @@ attribute [instance] multiReader.TypeAssumptions.type_repr
 
 structure multiWriter [FfiSyntax] where
   mk ::
-  writers' : slice.t
+  writers' : GoSlice
 
 instance multiWriter.zero_val [FfiSyntax] : ZeroVal multiWriter :=
   ⟨multiWriter.mk zeroValDef⟩
@@ -958,7 +958,7 @@ class multiWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying multiWriter.underlying multiWriter
   underlying : go.UnderlyingDirectedEq multiWriter.ty multiWriter.underlying
   get_writers : ∀ (x : multiWriter), go.IsGoStepPureDetTagged under (StructFieldGet multiWriter.underlying go!"writers") #x (Val #(x.writers'))
-  set_writers : ∀ (x : multiWriter) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet multiWriter.underlying go!"writers") (PairV #x #y) (Val #(({ x with writers' := y } : multiWriter)))
+  set_writers : ∀ (x : multiWriter) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet multiWriter.underlying go!"writers") (PairV #x #y) (Val #(({ x with writers' := y } : multiWriter)))
 
 attribute [instance] multiWriter.TypeAssumptions.type_repr
   multiWriter.TypeAssumptions.underlying
@@ -968,7 +968,7 @@ attribute [instance] multiWriter.TypeAssumptions.type_repr
 structure onceError [FfiSyntax] where
   mk ::
   Mutex' : _root_.Perennial.sync.Mutex
-  err' : error.t
+  err' : GoError
 
 instance onceError.zero_val [FfiSyntax] : ZeroVal onceError :=
   ⟨onceError.mk zeroValDef zeroValDef⟩
@@ -993,7 +993,7 @@ class onceError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_Mutex : ∀ (x : onceError), go.IsGoStepPureDetTagged under (StructFieldGet onceError.underlying go!"Mutex") #x (Val #(x.Mutex'))
   set_Mutex : ∀ (x : onceError) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet onceError.underlying go!"Mutex") (PairV #x #y) (Val #(({ x with Mutex' := y } : onceError)))
   get_err : ∀ (x : onceError), go.IsGoStepPureDetTagged under (StructFieldGet onceError.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : onceError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet onceError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : onceError)))
+  set_err : ∀ (x : onceError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet onceError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : onceError)))
 
 attribute [instance] onceError.TypeAssumptions.type_repr
   onceError.TypeAssumptions.underlying
@@ -1005,10 +1005,10 @@ attribute [instance] onceError.TypeAssumptions.type_repr
 structure pipe [FfiSyntax] where
   mk ::
   wrMu' : _root_.Perennial.sync.Mutex
-  wrCh' : chan.t
-  rdCh' : chan.t
+  wrCh' : GoChan
+  rdCh' : GoChan
   once' : _root_.Perennial.sync.Once
-  done' : chan.t
+  done' : GoChan
   rerr' : onceError
   werr' : onceError
 
@@ -1040,13 +1040,13 @@ class pipe.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_wrMu : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"wrMu") #x (Val #(x.wrMu'))
   set_wrMu : ∀ (x : pipe) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"wrMu") (PairV #x #y) (Val #(({ x with wrMu' := y } : pipe)))
   get_wrCh : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"wrCh") #x (Val #(x.wrCh'))
-  set_wrCh : ∀ (x : pipe) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"wrCh") (PairV #x #y) (Val #(({ x with wrCh' := y } : pipe)))
+  set_wrCh : ∀ (x : pipe) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"wrCh") (PairV #x #y) (Val #(({ x with wrCh' := y } : pipe)))
   get_rdCh : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"rdCh") #x (Val #(x.rdCh'))
-  set_rdCh : ∀ (x : pipe) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"rdCh") (PairV #x #y) (Val #(({ x with rdCh' := y } : pipe)))
+  set_rdCh : ∀ (x : pipe) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"rdCh") (PairV #x #y) (Val #(({ x with rdCh' := y } : pipe)))
   get_once : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"once") #x (Val #(x.once'))
   set_once : ∀ (x : pipe) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"once") (PairV #x #y) (Val #(({ x with once' := y } : pipe)))
   get_done : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"done") #x (Val #(x.done'))
-  set_done : ∀ (x : pipe) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : pipe)))
+  set_done : ∀ (x : pipe) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : pipe)))
   get_rerr : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"rerr") #x (Val #(x.rerr'))
   set_rerr : ∀ (x : pipe) (y : onceError), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"rerr") (PairV #x #y) (Val #(({ x with rerr' := y } : pipe)))
   get_werr : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"werr") #x (Val #(x.werr'))

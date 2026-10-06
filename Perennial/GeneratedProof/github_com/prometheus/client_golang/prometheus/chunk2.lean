@@ -45,7 +45,7 @@ instance MultiTRegistry_access_load_tGatherers (l : Loc) (v : github_com.prometh
  by
   solve_pointsto_access_struct
 
-instance MultiTRegistry_access_store_tGatherers (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MultiTRegistry) (tGatherers' : slice.t) :
+instance MultiTRegistry_access_store_tGatherers (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MultiTRegistry) (tGatherers' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MultiTRegistry go!"tGatherers" l) v.tGatherers' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MultiTRegistry go!"tGatherers" l) tGatherers' (DFrac.own 1))
@@ -315,7 +315,7 @@ instance MetricVec_access_load_curry (l : Loc) (v : github_com.prometheus.client
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_store_curry (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec) (curry' : slice.t) :
+instance MetricVec_access_store_curry (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec) (curry' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec go!"curry" l) v.curry' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec go!"curry" l) curry' (DFrac.own 1))
@@ -331,7 +331,7 @@ instance MetricVec_access_load_hashAdd (l : Loc) (v : github_com.prometheus.clie
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_store_hashAdd (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec) (hashAdd' : func.t) :
+instance MetricVec_access_store_hashAdd (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec) (hashAdd' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec go!"hashAdd" l) v.hashAdd' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec go!"hashAdd" l) hashAdd' (DFrac.own 1))
@@ -347,7 +347,7 @@ instance MetricVec_access_load_hashAddByte (l : Loc) (v : github_com.prometheus.
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_store_hashAddByte (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec) (hashAddByte' : func.t) :
+instance MetricVec_access_store_hashAddByte (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec) (hashAddByte' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec go!"hashAddByte" l) v.hashAddByte' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec go!"hashAddByte" l) hashAddByte' (DFrac.own 1))
@@ -463,7 +463,7 @@ instance metricMap_access_load_metrics (l : Loc) (v : github_com.prometheus.clie
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_store_metrics (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap) (metrics' : map.t) :
+instance metricMap_access_store_metrics (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap) (metrics' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap go!"metrics" l) v.metrics' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap go!"metrics" l) metrics' (DFrac.own 1))
@@ -495,7 +495,7 @@ instance metricMap_access_load_newMetric (l : Loc) (v : github_com.prometheus.cl
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_store_newMetric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap) (newMetric' : func.t) :
+instance metricMap_access_store_newMetric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap) (newMetric' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap go!"newMetric" l) v.newMetric' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap go!"newMetric" l) newMetric' (DFrac.own 1))

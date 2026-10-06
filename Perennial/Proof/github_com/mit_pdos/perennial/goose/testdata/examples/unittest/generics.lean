@@ -128,7 +128,7 @@ theorem wp_multiParamFunc {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A']
     [IntoValTyped (GF := GF) B' B] (x : A') (y : B') :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (Val #(functions multiParamFunc [A, B])) (Val #x)) (Val #y))
-    {{ (s : slice.t), RET #s; s ↦* [y] }} := by
+    {{ (s : GoSlice), RET #s; s ↦* [y] }} := by
   wp_start
   wp_auto
   wp_apply wp_slice_literal

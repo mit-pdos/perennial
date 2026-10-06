@@ -446,7 +446,7 @@ instance Pool_access_load_New (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_store_New (l : Loc) (v : sync.Pool) (New' : func.t) :
+instance Pool_access_store_New (l : Loc) (v : sync.Pool) (New' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"New" l) v.New' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"New" l) New' (DFrac.own 1))
@@ -563,7 +563,7 @@ instance poolLocalInternal_access_load_private (l : Loc) (v : sync.poolLocalInte
  by
   solve_pointsto_access_struct
 
-instance poolLocalInternal_access_store_private (l : Loc) (v : sync.poolLocalInternal) (private' : interface.t) :
+instance poolLocalInternal_access_store_private (l : Loc) (v : sync.poolLocalInternal) (private' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) v.private' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) private' (DFrac.own 1))
@@ -636,7 +636,7 @@ instance poolLocal_access_load_pad (l : Loc) (v : sync.poolLocal) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance poolLocal_access_store_pad (l : Loc) (v : sync.poolLocal) (pad' : (array.t w8 96)) :
+instance poolLocal_access_store_pad (l : Loc) (v : sync.poolLocal) (pad' : (GoArray w8 96)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocal go!"pad" l) v.pad' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocal go!"pad" l) pad' (DFrac.own 1))
@@ -693,7 +693,7 @@ instance poolDequeue_access_load_vals (l : Loc) (v : sync.poolDequeue) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance poolDequeue_access_store_vals (l : Loc) (v : sync.poolDequeue) (vals' : slice.t) :
+instance poolDequeue_access_store_vals (l : Loc) (v : sync.poolDequeue) (vals' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolDequeue go!"vals" l) v.vals' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolDequeue go!"vals" l) vals' (DFrac.own 1))

@@ -337,7 +337,7 @@ attribute [instance] Box.TypeAssumptions.type_repr
 structure Container [FfiSyntax] (T : Type) where
   mk ::
   X' : T
-  Y' : map.t
+  Y' : GoMap
   Z' : Loc
   W' : w64
 
@@ -366,7 +366,7 @@ class Container.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_X : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"X") #x (Val #(x.X'))
   set_X : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (Container T'))))
   get_Y : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"Y") #x (Val #(x.Y'))
-  set_Y : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (Container T'))))
+  set_Y : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (Container T'))))
   get_Z : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"Z") #x (Val #(x.Z'))
   set_Z : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"Z") (PairV #x #y) (Val #(({ x with Z' := y } : (Container T'))))
   get_W : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"W") #x (Val #(x.W'))
@@ -416,7 +416,7 @@ attribute [instance] UseContainer.TypeAssumptions.type_repr
 
 structure OnlyIndirect [FfiSyntax] (T : Type) where
   mk ::
-  X' : slice.t
+  X' : GoSlice
   Y' : Loc
 
 instance OnlyIndirect.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (OnlyIndirect T) :=
@@ -440,7 +440,7 @@ class OnlyIndirect.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (OnlyIndirect.underlying T) (OnlyIndirect T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (OnlyIndirect.ty T) (OnlyIndirect.underlying T)
   get_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"X") #x (Val #(x.X'))
-  set_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (OnlyIndirect T'))))
+  set_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (OnlyIndirect T'))))
   get_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"Y") #x (Val #(x.Y'))
   set_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (OnlyIndirect T'))))
 
@@ -525,7 +525,7 @@ attribute [instance] TypeParamCollision.TypeAssumptions.type_repr
   TypeParamCollision.TypeAssumptions.get_Y
   TypeParamCollision.TypeAssumptions.set_Y
 
-abbrev nonStructGeneric [FfiSyntax] (T : Type) : Type := slice.t
+abbrev nonStructGeneric [FfiSyntax] (T : Type) : Type := GoSlice
 
 @[reducible] def nonStructGeneric.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.SliceType T)

@@ -198,7 +198,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
       subst Heq
-      imod ownChan_halves_update _ _ (chanstate.t.Buffered (buffer ++ [v])) _ _ ?_ $$ Hoc offer
+      imod ownChan_halves_update _ _ (ChanState.Buffered (buffer ++ [v])) _ _ ?_ $$ Hoc offer
         with ⟨Hgv1, Hgv2⟩
       · simp only [ChanCapValid] at Hcv ⊢
         simp only [List.length_append, List.length_cons, List.length_nil]
@@ -289,7 +289,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
       iNamed Hau
       ihave %Hseq := ownChan_agree _ _ _ _ $$ Hocinner offer
       subst Hseq
-      imod ownChan_halves_update _ _ chanstate.t.Idle _ _ HcvIdle $$ Hocinner offer with ⟨Hgv1, Hgv2⟩
+      imod ownChan_halves_update _ _ ChanState.Idle _ _ HcvIdle $$ Hocinner offer with ⟨Hgv1, Hgv2⟩
       dsimp only
       imod Hcontinner $$ Hgv1 with Hcont
       imodintro
@@ -344,7 +344,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
     subst Hseq
     ihave %HcvIdle := ownChan_cap_valid _ _ _ $$ offer
     simp only [ChanCapValid] at HcvIdle
-    imod ownChan_halves_update _ _ chanstate.t.RcvPending _ _ HcvIdle $$ offer Hoc with ⟨Hgv1, Hgv2⟩
+    imod ownChan_halves_update _ _ ChanState.RcvPending _ _ HcvIdle $$ offer Hoc with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont1
     icases HΦ with ⟨HΦ, -⟩
@@ -354,7 +354,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
     subst Hseq
-    imod ownChan_halves_update _ _ (chanstate.t.SndCommit v) _ _ HcvIdle $$ Hgv1 Hoc
+    imod ownChan_halves_update _ _ (ChanState.SndCommit v) _ _ HcvIdle $$ Hgv1 Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont
@@ -434,7 +434,7 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
       subst Heq
-      imod ownChan_halves_update _ _ (chanstate.t.Buffered (buffer ++ [v])) _ _ ?_ $$ Hoc offer
+      imod ownChan_halves_update _ _ (ChanState.Buffered (buffer ++ [v])) _ _ ?_ $$ Hoc offer
         with ⟨Hgv1, Hgv2⟩
       · simp only [ChanCapValid] at Hcv ⊢
         simp only [List.length_append, List.length_cons, List.length_nil]
@@ -494,7 +494,7 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
     subst Hseq
     ihave %HcvIdle := ownChan_cap_valid _ _ _ $$ offer
     simp only [ChanCapValid] at HcvIdle
-    imod ownChan_halves_update _ _ chanstate.t.RcvPending _ _ HcvIdle $$ offer Hoc with ⟨Hgv1, Hgv2⟩
+    imod ownChan_halves_update _ _ ChanState.RcvPending _ _ HcvIdle $$ offer Hoc with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont1
     icases HΦ with ⟨HΦ, -⟩
@@ -503,7 +503,7 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
     subst Hseq
-    imod ownChan_halves_update _ _ (chanstate.t.SndCommit v) _ _ HcvIdle $$ Hgv1 Hoc
+    imod ownChan_halves_update _ _ (ChanState.SndCommit v) _ _ HcvIdle $$ Hgv1 Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont
@@ -583,7 +583,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
       subst Heq
       dsimp only
       rw [ite_eq_left (by word)]
-      imod ownChan_halves_update _ _ (chanstate.t.Buffered (buffer ++ [v])) _ _ ?_ $$ Hoc offer
+      imod ownChan_halves_update _ _ (ChanState.Buffered (buffer ++ [v])) _ _ ?_ $$ Hoc offer
         with ⟨Hgv1, Hgv2⟩
       · simp only [ChanCapValid] at Hcv ⊢
         simp only [List.length_append, List.length_cons, List.length_nil]
@@ -677,7 +677,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     subst Hseq
     ihave %HcvIdle := ownChan_cap_valid _ _ _ $$ offer
     simp only [ChanCapValid] at HcvIdle
-    imod ownChan_halves_update _ _ chanstate.t.RcvPending _ _ HcvIdle $$ offer Hoc with ⟨Hgv1, Hgv2⟩
+    imod ownChan_halves_update _ _ ChanState.RcvPending _ _ HcvIdle $$ offer Hoc with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont1
     imod HΦ with HΦ
@@ -685,7 +685,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
     subst Hseq
-    imod ownChan_halves_update _ _ (chanstate.t.SndCommit v) _ _ HcvIdle $$ Hgv1 Hoc
+    imod ownChan_halves_update _ _ (ChanState.SndCommit v) _ _ HcvIdle $$ Hgv1 Hoc
       with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont
@@ -856,7 +856,7 @@ theorem wp_tryClose (ch : Loc) (γ : ChanNames) :
     iNamed HΦ
     ihave %Heq := ownChan_agree _ _ _ _ $$ Hocinner offer
     subst Heq
-    imod ownChan_halves_update _ _ (chanstate.t.Closed buffer) _ _ ?_ $$ Hocinner offer
+    imod ownChan_halves_update _ _ (ChanState.Closed buffer) _ _ ?_ $$ Hocinner offer
       with ⟨Hgv1, Hgv2⟩
     · cases buffer <;> simp only [ChanCapValid] <;> word
     dsimp only
@@ -891,7 +891,7 @@ theorem wp_tryClose (ch : Loc) (γ : ChanNames) :
     iNamed HΦ
     ihave %Heq := ownChan_agree _ _ _ _ $$ Hocinner offer
     subst Heq
-    imod ownChan_halves_update _ _ (chanstate.t.Closed []) _ _ ?_ $$ Hocinner offer
+    imod ownChan_halves_update _ _ (ChanState.Closed []) _ _ ?_ $$ Hocinner offer
       with ⟨Hgv1, Hgv2⟩
     · simp only [ChanCapValid]; word
     dsimp only

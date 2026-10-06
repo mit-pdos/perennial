@@ -1,6 +1,6 @@
 /-
 Port of `new/golang/theory/array.v`: the typed points-to for arrays
-(`l ↦{dq} (a : array.t V n)` is the points-to of every element at
+(`l ↦{dq} (a : GoArray V n)` is the points-to of every element at
 `arrayIndexRef V i l`), and lemmas to access and split it.
 
 `intoVal_typed_array` is `Admitted` in Rocq. It is proved here, against the
@@ -79,7 +79,7 @@ theorem arrayElems_agree (l : Loc) (vs1 vs2 : List V) (dq1 dq2 : DFrac)
       ipureintro
       rw [Heq, Heq']
 
-noncomputable instance typedPointsto_array (n : Int) : TypedPointsto (GF := GF) (array.t V n) where
+noncomputable instance typedPointsto_array (n : Int) : TypedPointsto (GF := GF) (GoArray V n) where
   typedPointstoDef l v dq :=
     iprop(⌜(v.arr.length : Int) = n⌝ ∗ arrayElems l v.arr dq)
   typedPointstoDef_dfractional l v := by
@@ -112,7 +112,7 @@ theorem array_empty (ptr : Loc) (dq : DFrac) (h : ptr ≠ null) :
     · unfold arrayElems; iapply bigSepL_nil.2; iempintro
   · ipureintro; exact h
 
-theorem array_acc (p : Loc) (i : Int) (dq : DFrac) (n : Int) (a : array.t V n) (v : V)
+theorem array_acc (p : Loc) (i : Int) (dq : DFrac) (n : Int) (a : GoArray V n) (v : V)
     (hpos : 0 ≤ i) (hlookup : a.arr[i.toNat]? = some v) :
     typedPointsto (GF := GF) p a dq ⊢
       iprop(typedPointsto (arrayIndexRef V i p) v dq ∗
@@ -154,7 +154,7 @@ theorem arrayElems_app (l : Loc) (vs1 vs2 : List V) (dq : DFrac) :
   exact .rfl
 
 include preSem in
-theorem array_split (k : w64) (l : Loc) (dq : DFrac) (n : Int) (a : array.t V n)
+theorem array_split (k : w64) (l : Loc) (dq : DFrac) (n : Int) (a : GoArray V n)
     (hk : 0 ≤ sint.Z k ∧ sint.Z k ≤ n) :
     typedPointsto (GF := GF) l a dq ⊣⊢
       iprop(typedPointsto l (array.mk (sint.Z k) (a.arr.take (sint.nat k))) dq ∗
@@ -290,7 +290,7 @@ abbrev storeArrayStep (n : Int) (elem_type : go.GoType) (l v : val) (str_so_far 
      gl(GoStore elem_type (elem_addr, elem_val))))
 
 theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
-    {s : Stuckness} {E : CoPset} (l : Loc) (vs : List V) (w : array.t V n)
+    {s : Stuckness} {E : CoPset} (l : Loc) (vs : List V) (w : GoArray V n)
     (hlen : (vs.length : Int) = n) (hwlen : (w.arr.length : Int) = n)
     (hn : 0 ≤ n ∧ n < 2^63-1) (k : Nat) (hk : (k : Int) ≤ n) :
     ⊢ ∀ Φ, arrayElems (GF := GF) l vs (DFrac.own 1) -∗
@@ -335,7 +335,7 @@ theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : I
     iexact Hl
 
 instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int) :
-    IntoValTypedUnderlying (GF := GF) (array.t V n) (go.ArrayType n t) := by
+    IntoValTypedUnderlying (GF := GF) (GoArray V n) (go.ArrayType n t) := by
   constructor
   · intro s E t' _ v
     iintro %Φ _ HΦ

@@ -734,7 +734,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc _VoteResult_index (go.GoType.ArrayType 4 go.uint8))) (Val #()))))))))
 
-abbrev MajorityConfig [FfiSyntax] : Type := map.t
+abbrev MajorityConfig [FfiSyntax] : Type := GoMap
 
 @[reducible] def MajorityConfig.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 (go.GoType.StructType []))
@@ -769,7 +769,7 @@ attribute [instance] MajorityConfig.TypeAssumptions.underlying
   MajorityConfig.TypeAssumptions.ptr_String_unfold
   MajorityConfig.TypeAssumptions.ptr_VoteResult_unfold
 
-abbrev JointConfig [FfiSyntax] : Type := (array.t MajorityConfig 2)
+abbrev JointConfig [FfiSyntax] : Type := (GoArray MajorityConfig 2)
 
 @[reducible] def JointConfig.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 2 MajorityConfig.ty)
@@ -868,7 +868,7 @@ attribute [instance] tup.TypeAssumptions.type_repr
   tup.TypeAssumptions.get_bar
   tup.TypeAssumptions.set_bar
 
-abbrev AckedIndexer [FfiSyntax] : Type := interface.t
+abbrev AckedIndexer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def AckedIndexer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AckedIndex" (go.signature.Signature [go.uint64] false [Index'.ty, go.bool]))])
@@ -878,7 +878,7 @@ class AckedIndexer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] AckedIndexer.TypeAssumptions.underlying
 
-abbrev mapAckIndexer [FfiSyntax] : Type := map.t
+abbrev mapAckIndexer [FfiSyntax] : Type := GoMap
 
 @[reducible] def mapAckIndexer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 Index'.ty)

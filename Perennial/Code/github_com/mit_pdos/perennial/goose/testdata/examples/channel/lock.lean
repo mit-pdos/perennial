@@ -112,7 +112,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 structure Lock [FfiSyntax] where
   mk ::
-  ch' : chan.t
+  ch' : GoChan
 
 instance Lock.zero_val [FfiSyntax] : ZeroVal Lock :=
   ⟨Lock.mk zeroValDef⟩
@@ -134,7 +134,7 @@ class Lock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying Lock.underlying Lock
   underlying : go.UnderlyingDirectedEq Lock.ty Lock.underlying
   get_ch : ∀ (x : Lock), go.IsGoStepPureDetTagged under (StructFieldGet Lock.underlying go!"ch") #x (Val #(x.ch'))
-  set_ch : ∀ (x : Lock) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Lock.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock)))
+  set_ch : ∀ (x : Lock) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Lock.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock)))
   Lock_unfold : MethodUnfold Lock.ty go!"Lock" Lock.Lock.impl
   LockWithTimeout_unfold : MethodUnfold Lock.ty go!"LockWithTimeout" Lock.LockWithTimeout.impl
   TryLock_unfold : MethodUnfold Lock.ty go!"TryLock" Lock.TryLock.impl

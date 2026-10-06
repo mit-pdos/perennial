@@ -72,7 +72,7 @@ instance Editor_access_load_s (l : Loc) (v : github_com.mit_pdos.perennial.goose
  by
   solve_pointsto_access_struct
 
-instance Editor_access_store_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor) (s' : slice.t) :
+instance Editor_access_store_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor) (s' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor go!"s" l) s' (DFrac.own 1))
@@ -615,7 +615,7 @@ instance ArrayEditor_access_load_s (l : Loc) (v : github_com.mit_pdos.perennial.
  by
   solve_pointsto_access_struct
 
-instance ArrayEditor_access_store_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor) (s' : slice.t) :
+instance ArrayEditor_access_store_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor) (s' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor go!"s" l) s' (DFrac.own 1))
@@ -945,7 +945,7 @@ instance StructWithFunc_access_load_fn (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-instance StructWithFunc_access_store_fn (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc) (fn' : func.t) :
+instance StructWithFunc_access_store_fn (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc) (fn' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc go!"fn" l) v.fn' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc go!"fn" l) fn' (DFrac.own 1))
@@ -1103,7 +1103,7 @@ instance Log_access_load_cache (l : Loc) (v : github_com.mit_pdos.perennial.goos
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_cache (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (cache' : map.t) :
+instance Log_access_store_cache (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (cache' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"cache" l) v.cache' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"cache" l) cache' (DFrac.own 1))

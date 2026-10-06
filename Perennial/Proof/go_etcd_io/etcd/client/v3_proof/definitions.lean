@@ -57,7 +57,7 @@ axiom Clientv3Names : Type
 
 /-- Rocq `Axiom ownEtcdPointsto`. -/
 axiom ownEtcdPointsto {GF : BundledGFunctors} [AllG GF] (γ : Clientv3Names) (dq : DFrac)
-  (k : GoString) (kv : Option KeyValue.t) : IProp GF
+  (k : GoString) (kv : Option KeyValue) : IProp GF
 
 /-- Rocq `k etcd[ γ ]↦ dq kv`. -/
 notation:50 k:51 " etcd[" γ "]↦{" dq "} " kv:50 => ownEtcdPointsto γ dq k kv

@@ -190,7 +190,7 @@ instance ServiceDesc_access_load_HandlerType (l : Loc) (v : google_golang_org.gr
  by
   solve_pointsto_access_struct
 
-instance ServiceDesc_access_store_HandlerType (l : Loc) (v : google_golang_org.grpc.ServiceDesc) (HandlerType' : interface.t) :
+instance ServiceDesc_access_store_HandlerType (l : Loc) (v : google_golang_org.grpc.ServiceDesc) (HandlerType' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceDesc go!"HandlerType" l) v.HandlerType' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceDesc go!"HandlerType" l) HandlerType' (DFrac.own 1))
@@ -206,7 +206,7 @@ instance ServiceDesc_access_load_Methods (l : Loc) (v : google_golang_org.grpc.S
  by
   solve_pointsto_access_struct
 
-instance ServiceDesc_access_store_Methods (l : Loc) (v : google_golang_org.grpc.ServiceDesc) (Methods' : slice.t) :
+instance ServiceDesc_access_store_Methods (l : Loc) (v : google_golang_org.grpc.ServiceDesc) (Methods' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceDesc go!"Methods" l) v.Methods' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceDesc go!"Methods" l) Methods' (DFrac.own 1))
@@ -222,7 +222,7 @@ instance ServiceDesc_access_load_Streams (l : Loc) (v : google_golang_org.grpc.S
  by
   solve_pointsto_access_struct
 
-instance ServiceDesc_access_store_Streams (l : Loc) (v : google_golang_org.grpc.ServiceDesc) (Streams' : slice.t) :
+instance ServiceDesc_access_store_Streams (l : Loc) (v : google_golang_org.grpc.ServiceDesc) (Streams' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceDesc go!"Streams" l) v.Streams' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceDesc go!"Streams" l) Streams' (DFrac.own 1))
@@ -238,7 +238,7 @@ instance ServiceDesc_access_load_Metadata (l : Loc) (v : google_golang_org.grpc.
  by
   solve_pointsto_access_struct
 
-instance ServiceDesc_access_store_Metadata (l : Loc) (v : google_golang_org.grpc.ServiceDesc) (Metadata' : interface.t) :
+instance ServiceDesc_access_store_Metadata (l : Loc) (v : google_golang_org.grpc.ServiceDesc) (Metadata' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceDesc go!"Metadata" l) v.Metadata' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceDesc go!"Metadata" l) Metadata' (DFrac.own 1))
@@ -281,7 +281,7 @@ instance serviceInfo_access_load_serviceImpl (l : Loc) (v : google_golang_org.gr
  by
   solve_pointsto_access_struct
 
-instance serviceInfo_access_store_serviceImpl (l : Loc) (v : google_golang_org.grpc.serviceInfo) (serviceImpl' : interface.t) :
+instance serviceInfo_access_store_serviceImpl (l : Loc) (v : google_golang_org.grpc.serviceInfo) (serviceImpl' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.serviceInfo go!"serviceImpl" l) v.serviceImpl' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.serviceInfo go!"serviceImpl" l) serviceImpl' (DFrac.own 1))
@@ -297,7 +297,7 @@ instance serviceInfo_access_load_methods (l : Loc) (v : google_golang_org.grpc.s
  by
   solve_pointsto_access_struct
 
-instance serviceInfo_access_store_methods (l : Loc) (v : google_golang_org.grpc.serviceInfo) (methods' : map.t) :
+instance serviceInfo_access_store_methods (l : Loc) (v : google_golang_org.grpc.serviceInfo) (methods' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.serviceInfo go!"methods" l) v.methods' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.serviceInfo go!"methods" l) methods' (DFrac.own 1))
@@ -313,7 +313,7 @@ instance serviceInfo_access_load_streams (l : Loc) (v : google_golang_org.grpc.s
  by
   solve_pointsto_access_struct
 
-instance serviceInfo_access_store_streams (l : Loc) (v : google_golang_org.grpc.serviceInfo) (streams' : map.t) :
+instance serviceInfo_access_store_streams (l : Loc) (v : google_golang_org.grpc.serviceInfo) (streams' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.serviceInfo go!"streams" l) v.streams' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.serviceInfo go!"streams" l) streams' (DFrac.own 1))
@@ -329,7 +329,7 @@ instance serviceInfo_access_load_mdata (l : Loc) (v : google_golang_org.grpc.ser
  by
   solve_pointsto_access_struct
 
-instance serviceInfo_access_store_mdata (l : Loc) (v : google_golang_org.grpc.serviceInfo) (mdata' : interface.t) :
+instance serviceInfo_access_store_mdata (l : Loc) (v : google_golang_org.grpc.serviceInfo) (mdata' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.serviceInfo go!"mdata" l) v.mdata' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.serviceInfo go!"mdata" l) mdata' (DFrac.own 1))
@@ -430,7 +430,7 @@ instance funcServerOption_access_load_f (l : Loc) (v : google_golang_org.grpc.fu
  by
   solve_pointsto_access_struct
 
-instance funcServerOption_access_store_f (l : Loc) (v : google_golang_org.grpc.funcServerOption) (f' : func.t) :
+instance funcServerOption_access_store_f (l : Loc) (v : google_golang_org.grpc.funcServerOption) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.funcServerOption go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.funcServerOption go!"f" l) f' (DFrac.own 1))
@@ -470,7 +470,7 @@ instance joinServerOption_access_load_opts (l : Loc) (v : google_golang_org.grpc
  by
   solve_pointsto_access_struct
 
-instance joinServerOption_access_store_opts (l : Loc) (v : google_golang_org.grpc.joinServerOption) (opts' : slice.t) :
+instance joinServerOption_access_store_opts (l : Loc) (v : google_golang_org.grpc.joinServerOption) (opts' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.joinServerOption go!"opts" l) v.opts' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.joinServerOption go!"opts" l) opts' (DFrac.own 1))
@@ -625,7 +625,7 @@ instance ServiceInfo_access_load_Methods (l : Loc) (v : google_golang_org.grpc.S
  by
   solve_pointsto_access_struct
 
-instance ServiceInfo_access_store_Methods (l : Loc) (v : google_golang_org.grpc.ServiceInfo) (Methods' : slice.t) :
+instance ServiceInfo_access_store_Methods (l : Loc) (v : google_golang_org.grpc.ServiceInfo) (Methods' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceInfo go!"Methods" l) v.Methods' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceInfo go!"Methods" l) Methods' (DFrac.own 1))
@@ -641,7 +641,7 @@ instance ServiceInfo_access_load_Metadata (l : Loc) (v : google_golang_org.grpc.
  by
   solve_pointsto_access_struct
 
-instance ServiceInfo_access_store_Metadata (l : Loc) (v : google_golang_org.grpc.ServiceInfo) (Metadata' : interface.t) :
+instance ServiceInfo_access_store_Metadata (l : Loc) (v : google_golang_org.grpc.ServiceInfo) (Metadata' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceInfo go!"Metadata" l) v.Metadata' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.ServiceInfo go!"Metadata" l) Metadata' (DFrac.own 1))
@@ -782,7 +782,7 @@ instance atomicSemaphore_access_load_wait (l : Loc) (v : google_golang_org.grpc.
  by
   solve_pointsto_access_struct
 
-instance atomicSemaphore_access_store_wait (l : Loc) (v : google_golang_org.grpc.atomicSemaphore) (wait' : chan.t) :
+instance atomicSemaphore_access_store_wait (l : Loc) (v : google_golang_org.grpc.atomicSemaphore) (wait' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.atomicSemaphore go!"wait" l) v.wait' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.atomicSemaphore go!"wait" l) wait' (DFrac.own 1))
@@ -1091,7 +1091,7 @@ instance replayOp_access_load_op (l : Loc) (v : google_golang_org.grpc.replayOp)
  by
   solve_pointsto_access_struct
 
-instance replayOp_access_store_op (l : Loc) (v : google_golang_org.grpc.replayOp) (op' : func.t) :
+instance replayOp_access_store_op (l : Loc) (v : google_golang_org.grpc.replayOp) (op' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.replayOp go!"op" l) v.op' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.replayOp go!"op" l) op' (DFrac.own 1))
@@ -1107,7 +1107,7 @@ instance replayOp_access_load_cleanup (l : Loc) (v : google_golang_org.grpc.repl
  by
   solve_pointsto_access_struct
 
-instance replayOp_access_store_cleanup (l : Loc) (v : google_golang_org.grpc.replayOp) (cleanup' : func.t) :
+instance replayOp_access_store_cleanup (l : Loc) (v : google_golang_org.grpc.replayOp) (cleanup' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.replayOp go!"cleanup" l) v.cleanup' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.replayOp go!"cleanup" l) cleanup' (DFrac.own 1))
@@ -1259,7 +1259,7 @@ instance payload_access_load_msg (l : Loc) (v : google_golang_org.grpc.payload) 
  by
   solve_pointsto_access_struct
 
-instance payload_access_store_msg (l : Loc) (v : google_golang_org.grpc.payload) (msg' : interface.t) :
+instance payload_access_store_msg (l : Loc) (v : google_golang_org.grpc.payload) (msg' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.payload go!"msg" l) v.msg' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.payload go!"msg" l) msg' (DFrac.own 1))
@@ -1316,7 +1316,7 @@ instance fmtStringer_access_load_a (l : Loc) (v : google_golang_org.grpc.fmtStri
  by
   solve_pointsto_access_struct
 
-instance fmtStringer_access_store_a (l : Loc) (v : google_golang_org.grpc.fmtStringer) (a' : slice.t) :
+instance fmtStringer_access_store_a (l : Loc) (v : google_golang_org.grpc.fmtStringer) (a' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.fmtStringer go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.fmtStringer go!"a" l) a' (DFrac.own 1))

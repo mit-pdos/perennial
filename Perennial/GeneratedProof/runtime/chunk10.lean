@@ -328,7 +328,7 @@ instance mPadded_access_load__1 (l : Loc) (v : runtime.mPadded) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance mPadded_access_store__1 (l : Loc) (v : runtime.mPadded) (_1' : (array.t w8 216)) :
+instance mPadded_access_store__1 (l : Loc) (v : runtime.mPadded) (_1' : (GoArray w8 216)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mPadded go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mPadded go!"_1" l) _1' (DFrac.own 1))
@@ -943,7 +943,7 @@ instance pcvalueCache_access_load_entries (l : Loc) (v : runtime.pcvalueCache) (
  by
   solve_pointsto_access_struct
 
-instance pcvalueCache_access_store_entries (l : Loc) (v : runtime.pcvalueCache) (entries' : (array.t (array.t runtime.pcvalueCacheEnt 8) 2)) :
+instance pcvalueCache_access_store_entries (l : Loc) (v : runtime.pcvalueCache) (entries' : (GoArray (GoArray runtime.pcvalueCacheEnt 8) 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) v.entries' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) entries' (DFrac.own 1))
@@ -1295,7 +1295,7 @@ instance traceRegionAllocBlock_access_load_data (l : Loc) (v : runtime.traceRegi
  by
   solve_pointsto_access_struct
 
-instance traceRegionAllocBlock_access_store_data (l : Loc) (v : runtime.traceRegionAllocBlock) (data' : (array.t w8 65520)) :
+instance traceRegionAllocBlock_access_store_data (l : Loc) (v : runtime.traceRegionAllocBlock) (data' : (GoArray w8 65520)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) data' (DFrac.own 1))

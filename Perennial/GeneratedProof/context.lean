@@ -225,7 +225,7 @@ instance cancelCtx_access_load_children (l : Loc) (v : context.cancelCtx) (dq : 
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_children (l : Loc) (v : context.cancelCtx) (children' : map.t) :
+instance cancelCtx_access_store_children (l : Loc) (v : context.cancelCtx) (children' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"children" l) children' (DFrac.own 1))
@@ -257,7 +257,7 @@ instance cancelCtx_access_load_cause (l : Loc) (v : context.cancelCtx) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_cause (l : Loc) (v : context.cancelCtx) (cause' : error.t) :
+instance cancelCtx_access_store_cause (l : Loc) (v : context.cancelCtx) (cause' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) cause' (DFrac.own 1))
@@ -331,7 +331,7 @@ instance afterFuncCtx_access_load_f (l : Loc) (v : context.afterFuncCtx) (dq : D
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_store_f (l : Loc) (v : context.afterFuncCtx) (f' : func.t) :
+instance afterFuncCtx_access_store_f (l : Loc) (v : context.afterFuncCtx) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) f' (DFrac.own 1))
@@ -388,7 +388,7 @@ instance stopCtx_access_load_stop (l : Loc) (v : context.stopCtx) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stopCtx_access_store_stop (l : Loc) (v : context.stopCtx) (stop' : func.t) :
+instance stopCtx_access_store_stop (l : Loc) (v : context.stopCtx) (stop' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' (DFrac.own 1))
       (typedPointsto (structFieldRef context.stopCtx go!"stop" l) stop' (DFrac.own 1))
@@ -560,7 +560,7 @@ instance valueCtx_access_load_key (l : Loc) (v : context.valueCtx) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_store_key (l : Loc) (v : context.valueCtx) (key' : interface.t) :
+instance valueCtx_access_store_key (l : Loc) (v : context.valueCtx) (key' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' (DFrac.own 1))
       (typedPointsto (structFieldRef context.valueCtx go!"key" l) key' (DFrac.own 1))
@@ -576,7 +576,7 @@ instance valueCtx_access_load_val (l : Loc) (v : context.valueCtx) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_store_val (l : Loc) (v : context.valueCtx) (val' : interface.t) :
+instance valueCtx_access_store_val (l : Loc) (v : context.valueCtx) (val' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef context.valueCtx go!"val" l) val' (DFrac.own 1))

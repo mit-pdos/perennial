@@ -248,7 +248,7 @@ theorem wp_BroadcastExample :
 
 /-! ### Cancellation -/
 
-theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : Loc) (err_msg : GoString)
+theorem wp_HelloWorldCancellable (done_ch : GoChan) (err_ptr1 : Loc) (err_msg : GoString)
     (γdone : ChanNames) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ownBroadcastChan done_ch γdone iprop(err_ptr1 ↦□ err_msg) .Unknown }}
@@ -322,7 +322,7 @@ theorem wp_HelloWorldWithTimeout :
   rcases Hres with h | h <;> simp [h]
 
 theorem wp_CancellableHedgedRequest (query : GoString) (hedgeThreshold : time.Duration)
-    (errStr_ptr' : Loc) (done_ch : chan.t) (γdone : ChanNames) :
+    (errStr_ptr' : Loc) (done_ch : GoChan) (γdone : ChanNames) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ownBroadcastChan done_ch γdone iprop(True) .Unknown ∗
         errStr_ptr' ↦ go!"" }}

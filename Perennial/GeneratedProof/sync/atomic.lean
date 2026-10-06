@@ -125,7 +125,7 @@ instance Pointer_access_load__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : L
  by
   solve_pointsto_access_struct
 
-instance Pointer_access_store__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_0' : (array.t Loc 0)) :
+instance Pointer_access_store__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_0' : (GoArray Loc 0)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) _0' (DFrac.own 1))
@@ -539,7 +539,7 @@ instance Value_access_load_v (l : Loc) (v : sync.atomic.Value) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Value_access_store_v (l : Loc) (v : sync.atomic.Value) (v' : interface.t) :
+instance Value_access_store_v (l : Loc) (v : sync.atomic.Value) (v' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v' (DFrac.own 1))

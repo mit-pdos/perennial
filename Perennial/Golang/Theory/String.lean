@@ -25,7 +25,7 @@ theorem wp_string_to_bytes (str : GoString) {from_ to elem_type : go.GoType}
     [to ↓u go.SliceType elem_type] [elem_type ↓u go.byte] [from_ ↓u go.string] :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction (Convert from_ to))) (Val #str)) @ s; E
-    {{ (sl : slice.t), RET #sl; sl ↦* str ∗ ownSliceCap w8 sl (DFrac.own 1) }} := by
+    {{ (sl : GoSlice), RET #sl; sl ↦* str ∗ ownSliceCap w8 sl (DFrac.own 1) }} := by
   iintro %Φ _ HΦ
   wp_pure
   wp_apply wp_StringToByteSlice str with %sl Hsl
@@ -33,7 +33,7 @@ theorem wp_string_to_bytes (str : GoString) {from_ to elem_type : go.GoType}
 
 open github_com.mit_pdos.perennial.goose.model.strings in
 attribute [local instance] go.tagged_internal_inst in
-theorem wp_bytes_to_string (sl : slice.t) (str : GoString) (dq : DFrac)
+theorem wp_bytes_to_string (sl : GoSlice) (str : GoString) (dq : DFrac)
     {from_ elem_type to : go.GoType}
     [from_ ↓u go.SliceType elem_type] [elem_type ↓u go.byte] [to ↓u go.string] :
     {{ (sl ↦*{dq} str : IProp GF) }}

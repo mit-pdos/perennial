@@ -402,7 +402,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc closec (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))) (Val #()))))))))
 
-abbrev Wait [FfiSyntax] : Type := interface.t
+abbrev Wait [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Wait.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"IsRegistered" (go.signature.Signature [go.uint64] false [go.bool])), (go.InterfaceElem.MethodElem go!"Register" (go.signature.Signature [go.uint64] false [(go.GoType.ChannelType go.ChanDir.recvonly go.any)])), (go.InterfaceElem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64, go.any] false []))])
@@ -414,7 +414,7 @@ attribute [instance] Wait.TypeAssumptions.underlying
 
 structure list' [FfiSyntax] where
   mk ::
-  e' : slice.t
+  e' : GoSlice
 
 instance list'.zero_val [FfiSyntax] : ZeroVal list' :=
   ⟨list'.mk zeroValDef⟩
@@ -436,7 +436,7 @@ class list.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying list'.underlying list'
   underlying : go.UnderlyingDirectedEq list'.ty list'.underlying
   get_e : ∀ (x : list'), go.IsGoStepPureDetTagged under (StructFieldGet list'.underlying go!"e") #x (Val #(x.e'))
-  set_e : ∀ (x : list') (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet list'.underlying go!"e") (PairV #x #y) (Val #(({ x with e' := y } : list')))
+  set_e : ∀ (x : list') (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet list'.underlying go!"e") (PairV #x #y) (Val #(({ x with e' := y } : list')))
   ptr_IsRegistered_unfold : MethodUnfold (go.GoType.PointerType list'.ty) go!"IsRegistered" list.IsRegistered.impl
   ptr_Register_unfold : MethodUnfold (go.GoType.PointerType list'.ty) go!"Register" list.Register.impl
   ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType list'.ty) go!"Trigger" list.Trigger.impl
@@ -452,7 +452,7 @@ attribute [instance] list.TypeAssumptions.type_repr
 structure listElement [FfiSyntax] where
   mk ::
   l' : _root_.Perennial.sync.RWMutex
-  m' : map.t
+  m' : GoMap
 
 instance listElement.zero_val [FfiSyntax] : ZeroVal listElement :=
   ⟨listElement.mk zeroValDef zeroValDef⟩
@@ -477,7 +477,7 @@ class listElement.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   get_l : ∀ (x : listElement), go.IsGoStepPureDetTagged under (StructFieldGet listElement.underlying go!"l") #x (Val #(x.l'))
   set_l : ∀ (x : listElement) (y : _root_.Perennial.sync.RWMutex), go.IsGoStepPureDetTagged under (StructFieldSet listElement.underlying go!"l") (PairV #x #y) (Val #(({ x with l' := y } : listElement)))
   get_m : ∀ (x : listElement), go.IsGoStepPureDetTagged under (StructFieldGet listElement.underlying go!"m") #x (Val #(x.m'))
-  set_m : ∀ (x : listElement) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet listElement.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : listElement)))
+  set_m : ∀ (x : listElement) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet listElement.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : listElement)))
 
 attribute [instance] listElement.TypeAssumptions.type_repr
   listElement.TypeAssumptions.underlying
@@ -488,7 +488,7 @@ attribute [instance] listElement.TypeAssumptions.type_repr
 
 structure waitWithResponse [FfiSyntax] where
   mk ::
-  ch' : chan.t
+  ch' : GoChan
 
 instance waitWithResponse.zero_val [FfiSyntax] : ZeroVal waitWithResponse :=
   ⟨waitWithResponse.mk zeroValDef⟩
@@ -510,7 +510,7 @@ class waitWithResponse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   type_repr : go.TypeReprUnderlying waitWithResponse.underlying waitWithResponse
   underlying : go.UnderlyingDirectedEq waitWithResponse.ty waitWithResponse.underlying
   get_ch : ∀ (x : waitWithResponse), go.IsGoStepPureDetTagged under (StructFieldGet waitWithResponse.underlying go!"ch") #x (Val #(x.ch'))
-  set_ch : ∀ (x : waitWithResponse) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet waitWithResponse.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : waitWithResponse)))
+  set_ch : ∀ (x : waitWithResponse) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet waitWithResponse.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : waitWithResponse)))
   ptr_IsRegistered_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse.ty) go!"IsRegistered" waitWithResponse.IsRegistered.impl
   ptr_Register_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse.ty) go!"Register" waitWithResponse.Register.impl
   ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse.ty) go!"Trigger" waitWithResponse.Trigger.impl
@@ -523,7 +523,7 @@ attribute [instance] waitWithResponse.TypeAssumptions.type_repr
   waitWithResponse.TypeAssumptions.ptr_Register_unfold
   waitWithResponse.TypeAssumptions.ptr_Trigger_unfold
 
-abbrev WaitTime [FfiSyntax] : Type := interface.t
+abbrev WaitTime [FfiSyntax] : Type := GoInterface
 
 @[reducible] def WaitTime.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64] false [])), (go.InterfaceElem.MethodElem go!"Wait" (go.signature.Signature [go.uint64] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))])
@@ -537,7 +537,7 @@ structure timeList [FfiSyntax] where
   mk ::
   l' : _root_.Perennial.sync.Mutex
   lastTriggerDeadline' : w64
-  m' : map.t
+  m' : GoMap
 
 instance timeList.zero_val [FfiSyntax] : ZeroVal timeList :=
   ⟨timeList.mk zeroValDef zeroValDef zeroValDef⟩
@@ -565,7 +565,7 @@ class timeList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_lastTriggerDeadline : ∀ (x : timeList), go.IsGoStepPureDetTagged under (StructFieldGet timeList.underlying go!"lastTriggerDeadline") #x (Val #(x.lastTriggerDeadline'))
   set_lastTriggerDeadline : ∀ (x : timeList) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet timeList.underlying go!"lastTriggerDeadline") (PairV #x #y) (Val #(({ x with lastTriggerDeadline' := y } : timeList)))
   get_m : ∀ (x : timeList), go.IsGoStepPureDetTagged under (StructFieldGet timeList.underlying go!"m") #x (Val #(x.m'))
-  set_m : ∀ (x : timeList) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet timeList.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : timeList)))
+  set_m : ∀ (x : timeList) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet timeList.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : timeList)))
   ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType timeList.ty) go!"Trigger" timeList.Trigger.impl
   ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType timeList.ty) go!"Wait" timeList.Wait.impl
 

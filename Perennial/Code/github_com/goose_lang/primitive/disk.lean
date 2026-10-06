@@ -81,7 +81,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val «_».init) (Val #()))))))))
 
-abbrev Disk [FfiSyntax] : Type := interface.t
+abbrev Disk [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Disk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Barrier" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [go.uint64] false [Block.ty])), (go.InterfaceElem.MethodElem go!"ReadTo" (go.signature.Signature [go.uint64, Block.ty] false [])), (go.InterfaceElem.MethodElem go!"Size" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [go.uint64, Block.ty] false []))])

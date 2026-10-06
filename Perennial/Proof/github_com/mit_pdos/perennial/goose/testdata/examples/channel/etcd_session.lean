@@ -35,9 +35,9 @@ local notation "pkg" =>
 /-- The resources protected by `mu`: half of `sessionc` and the current
 broadcast channel. -/
 abbrev muInv : IProp GF :=
-  iprop(∃ (ch : chan.t) (γch : ChanNames),
+  iprop(∃ (ch : GoChan) (γch : ChanNames),
     "sessionc" ∷ typedPointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
-    "#Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Unknown ∗
+    "#Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) Broadcast.Unknown ∗
     "#Hsessionc_is" ∷ isChan ch γch Unit)
 
 abbrev isInv : IProp GF :=
@@ -72,7 +72,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := sync.Mutex) mu sync.Mutex.ty as Hmu
-  wp_apply wp_GlobalAlloc (V := chan.t) sessionc
+  wp_apply wp_GlobalAlloc (V := GoChan) sessionc
     (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) as Hsc
   wp_apply github_com.goose_lang.primitive.wp_initialize' _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩
   wp_apply time.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #H2⟩
@@ -92,7 +92,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
 theorem wp_newSession :
     {{ (True : IProp GF) }}
       (App (Val (@! newSession)) (Val #()))
-    {{ (err : error.t), RET #err; True }} := by
+    {{ (err : GoError), RET #err; True }} := by
   wp_start
   wp_apply github_com.goose_lang.primitive.wp_RandomUint64 as %x _
   wp_if_destruct
@@ -110,16 +110,16 @@ theorem wp_waitForSessionExpiration :
 /-- The postcondition of the nonblocking `select` in `monitorSession`. -/
 abbrev monitorSelectPost (v : val) : IProp GF :=
   iprop(⌜v = executeVal⌝ ∗
-    ∃ (ch : chan.t) (γch : ChanNames),
+    ∃ (ch : GoChan) (γch : ChanNames),
       "sessionc" ∷ typedPointsto (globalAddr sessionc) ch (DFrac.own 1) ∗
-      "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Pending ∗
+      "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) Broadcast.Pending ∗
       "#Hsessionc_is" ∷ isChan ch γch Unit)
 
 set_option maxHeartbeats 1600000 in
-theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
+theorem wp_monitorSession (ch : GoChan) (γch : ChanNames) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "sessionc" ∷ typedPointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
-        "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Pending ∗
+        "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) Broadcast.Pending ∗
         "#Hsessionc_is" ∷ isChan ch γch Unit }}
       (App (Val (@! monitorSession)) (Val #()))
     {{ RET #(); True }} := by
@@ -127,12 +127,12 @@ theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg $$ []
   · iPkgInit
   ihave #Hmu := isInv_access $$ Hpkg
-  ihave HH : (∃ (ch : chan.t) (γch : ChanNames) (cst : broadcast.t),
+  ihave HH : (∃ (ch : GoChan) (γch : ChanNames) (cst : Broadcast),
       "sessionc" ∷ typedPointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
       "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) cst ∗
       "#Hsessionc_is" ∷ isChan ch γch Unit ∗
-      "%Hcst" ∷ ⌜cst ≠ broadcast.t.Unknown⌝ : IProp GF) $$ [sessionc Hsessionc]
-  · iexists ch, γch, broadcast.t.Pending
+      "%Hcst" ∷ ⌜cst ≠ Broadcast.Unknown⌝ : IProp GF) $$ [sessionc Hsessionc]
+  · iexists ch, γch, Broadcast.Pending
     iframe
     iframe #
     ipureintro; simp
@@ -147,7 +147,7 @@ theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
   · iframe
   wp_bind (App (Val (GoInstruction SelectStmt)) _)
   iapply wp_wand (Φ := monitorSelectPost) $$ [sessionc Hsessionc] [-]
-  · iapply chan.wp_select_nonblocking_alt [iprop(⌜cst = broadcast.t.Pending⌝)]
+  · iapply chan.wp_select_nonblocking_alt [iprop(⌜cst = Broadcast.Pending⌝)]
       iprop(typedPointsto (globalAddr sessionc) ch (DFrac.own 1) ∗
         ownBroadcastChan ch γch iprop(True) cst) $$ [] [sessionc Hsessionc] []
     · iapply BigSepL2.bigSepL2_cons.2
@@ -219,7 +219,7 @@ theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
     · inext; iexists ch2, γ3; iframe; iframe #
     wp_for_post
     iframe
-    iexists ch2, γ2, broadcast.t.Done
+    iexists ch2, γ2, Broadcast.Done
     iframe
     iframe #
     ipureintro; simp
@@ -227,7 +227,7 @@ theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
     wp_auto
     wp_for_post
     iframe
-    iexists ch2, γ2, broadcast.t.Pending
+    iexists ch2, γ2, Broadcast.Pending
     iframe
     iframe #
     ipureintro; simp
@@ -239,9 +239,9 @@ theorem wp_waitSession {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [P
     (cancel : Loc) (γcancel : ChanNames) (Pcancel : A' → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isChanBag γcancel cancel Pcancel }}
       (App (Val #(functions waitSession [A])) (Val #cancel))
-    {{ (err : error.t), RET #err;
+    {{ (err : GoError), RET #err;
         match err with
-        | interface.t.nil => iprop(True)
+        | GoInterface.nil => iprop(True)
         | _ => iprop(∃ a, Pcancel a) }} := by
   wp_start as #Hcancel
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg $$ []

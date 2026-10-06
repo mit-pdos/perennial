@@ -21,12 +21,10 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 structure BroadcastInternalNames where
   doneGn : GName
 
-namespace broadcast
-inductive t where
+inductive Broadcast where
   | Pending
   | Done
   | Unknown
-end broadcast
 
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
@@ -36,7 +34,7 @@ variable [sem : go.Semantics]
 
 /-- The broadcast invariant. -/
 def broadcastInv (γ : ChanNames) (γch : BroadcastInternalNames) (Q : IProp GF) : IProp GF :=
-  iprop(∃ (st : chanstate.t Unit),
+  iprop(∃ (st : ChanState Unit),
     "Hch" ∷ ownChan γ Unit st ∗
     "Hs" ∷ (match st with
       | .Idle | .RcvPending => dghostVar γch.doneGn (.own (1 : Qp).half) false
@@ -44,15 +42,15 @@ def broadcastInv (γ : ChanNames) (γch : BroadcastInternalNames) (Q : IProp GF)
       | _ => iprop(False)))
 
 /-- (Note (Rocq): could make the namespace be user-chosen.) -/
-def isBroadcastChanInternal (ch : chan.t) (γ : ChanNames) (γch : BroadcastInternalNames)
+def isBroadcastChanInternal (ch : GoChan) (γ : ChanNames) (γch : BroadcastInternalNames)
     (Q : IProp GF) : IProp GF :=
   iprop("#His_ch" ∷ isChan ch γ Unit ∗ "#Hinv" ∷ inv nroot (broadcastInv γ γch Q))
 
-instance isBroadcastChanInternal_pers (ch : chan.t) γ γch (Q : IProp GF) :
+instance isBroadcastChanInternal_pers (ch : GoChan) γ γch (Q : IProp GF) :
     Persistent (isBroadcastChanInternal ch γ γch Q) := by
   unfold isBroadcastChanInternal; infer_instance
 
-def ownBroadcastChanDef (ch : chan.t) (γ : ChanNames) (Q : IProp GF) (st : broadcast.t) :
+def ownBroadcastChanDef (ch : GoChan) (γ : ChanNames) (Q : IProp GF) (st : Broadcast) :
     IProp GF :=
   iprop(∃ γch,
     "#Hinv" ∷ isBroadcastChanInternal ch γ γch Q ∗
@@ -61,20 +59,20 @@ def ownBroadcastChanDef (ch : chan.t) (γ : ChanNames) (Q : IProp GF) (st : broa
       | .Done => dghostVar γch.doneGn .discard true
       | .Unknown => iprop(True)))
 /-- (Rocq: `Opaque ownBroadcastChan`) -/
-@[irreducible] def ownBroadcastChan (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
-    (st : broadcast.t) : IProp GF := ownBroadcastChanDef ch γ Q st
+@[irreducible] def ownBroadcastChan (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
+    (st : Broadcast) : IProp GF := ownBroadcastChanDef ch γ Q st
 theorem ownBroadcastChan_unseal : @ownBroadcastChan = @ownBroadcastChanDef := by
   funext; with_unfolding_all rfl
 
-instance ownBroadcastChan_Unknown_pers (ch : chan.t) γ (Q : IProp GF) :
+instance ownBroadcastChan_Unknown_pers (ch : GoChan) γ (Q : IProp GF) :
     Persistent (ownBroadcastChan ch γ Q .Unknown) := by
   rw [ownBroadcastChan_unseal]; unfold ownBroadcastChanDef; infer_instance
 
-instance ownBroadcastChan_Done_pers (ch : chan.t) γ (Q : IProp GF) :
+instance ownBroadcastChan_Done_pers (ch : GoChan) γ (Q : IProp GF) :
     Persistent (ownBroadcastChan ch γ Q .Done) := by
   rw [ownBroadcastChan_unseal]; unfold ownBroadcastChanDef; infer_instance
 
-theorem broadcast_chan_done (ch : chan.t) (γ : ChanNames) (Q : IProp GF) :
+theorem broadcast_chan_done (ch : GoChan) (γ : ChanNames) (Q : IProp GF) :
     ⊢ £ 1 -∗ ownBroadcastChan ch γ Q .Done ={⊤}=∗ Q := by
   rw [ownBroadcastChan_unseal]; unfold ownBroadcastChanDef isBroadcastChanInternal
   iintro Hlc ⟨%γch, ⟨#His_ch, #Hinv⟩, #Hown⟩
@@ -101,8 +99,8 @@ theorem broadcast_chan_done (ch : chan.t) (γ : ChanNames) (Q : IProp GF) :
     iexact HQ
   all_goals (iexfalso; iexact Hs)
 
-theorem broadcast_chan_receive (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
-    (Φ : Unit → Bool → IProp GF) (cl : broadcast.t) :
+theorem broadcast_chan_receive (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
+    (Φ : Unit → Bool → IProp GF) (cl : Broadcast) :
     ⊢ ownBroadcastChan ch γ Q cl -∗
       (□ Q ∗ ownBroadcastChan ch γ Q .Done -∗ Φ () false) -∗
       recvAu γ Unit Φ := by
@@ -175,7 +173,7 @@ theorem broadcast_chan_receive (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
     · iexact Hs
   all_goals first | itrivial | (iexfalso; iexact Hs)
 
-theorem ownBroadcastChan_open (ch : chan.t) (γ : ChanNames) (Q : IProp GF) (st : broadcast.t) :
+theorem ownBroadcastChan_open (ch : GoChan) (γ : ChanNames) (Q : IProp GF) (st : Broadcast) :
     ownBroadcastChan ch γ Q st ⊢ ∃ γch, isBroadcastChanInternal ch γ γch Q ∗
       (match st with
         | .Pending => dghostVar γch.doneGn (.own (1 : Qp).half) false
@@ -183,7 +181,7 @@ theorem ownBroadcastChan_open (ch : chan.t) (γ : ChanNames) (Q : IProp GF) (st 
         | .Unknown => iprop(True)) := by
   rw [ownBroadcastChan_unseal]; exact .rfl
 
-theorem ownBroadcastChan_close (ch : chan.t) (γ : ChanNames) (Q : IProp GF) (st : broadcast.t)
+theorem ownBroadcastChan_close (ch : GoChan) (γ : ChanNames) (Q : IProp GF) (st : Broadcast)
     (γch : BroadcastInternalNames) :
     isBroadcastChanInternal ch γ γch Q ∗
       (match st with
@@ -193,16 +191,16 @@ theorem ownBroadcastChan_close (ch : chan.t) (γ : ChanNames) (Q : IProp GF) (st
   rw [ownBroadcastChan_unseal]; unfold ownBroadcastChanDef
   iintro H; iexists γch; iexact H
 
-theorem isBroadcastChanInternal_inv (ch : chan.t) γ γch (Q : IProp GF) :
+theorem isBroadcastChanInternal_inv (ch : GoChan) γ γch (Q : IProp GF) :
     isBroadcastChanInternal ch γ γch Q ⊢ inv nroot (broadcastInv γ γch Q) := by
   unfold isBroadcastChanInternal; iintro ⟨-, $⟩
 
-theorem isBroadcastChanInternal_is_chan (ch : chan.t) γ γch (Q : IProp GF) :
+theorem isBroadcastChanInternal_is_chan (ch : GoChan) γ γch (Q : IProp GF) :
     isBroadcastChanInternal ch γ γch Q ⊢ isChan ch γ Unit := by
   unfold isBroadcastChanInternal; iintro ⟨$, -⟩
 
-theorem ownBroadcastChan_nonblocking_receive (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
-    (Φ : Unit → Bool → IProp GF) (Φnotready : IProp GF) (cl : broadcast.t) :
+theorem ownBroadcastChan_nonblocking_receive (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
+    (Φ : Unit → Bool → IProp GF) (Φnotready : IProp GF) (cl : Broadcast) :
     ⊢ ownBroadcastChan ch γ Q cl -∗
       ((match cl with
         | .Unknown | .Done => iprop(ownBroadcastChan ch γ Q .Done -∗ Φ () false)
@@ -282,7 +280,7 @@ theorem ownBroadcastChan_nonblocking_receive (ch : chan.t) (γ : ChanNames) (Q :
       iframe #
   all_goals (iexfalso; iexact Hs)
 
-theorem broadcast_close_au (ch : chan.t) (γch : ChanNames) (Q : IProp GF) (Φ : IProp GF) :
+theorem broadcast_close_au (ch : GoChan) (γch : ChanNames) (Q : IProp GF) (Φ : IProp GF) :
     ⊢ ownBroadcastChan ch γch Q .Pending -∗ □ Q -∗
       ▷ (ownBroadcastChan ch γch Q .Done -∗ Φ) -∗ closeAu γch Unit Φ := by
   iintro Hown #HQ HΦ
@@ -320,15 +318,15 @@ theorem broadcast_close_au (ch : chan.t) (γch : ChanNames) (Q : IProp GF) (Φ :
     cases Hbad
   all_goals first | itrivial | (iexfalso; iexact Hs)
 
-theorem ownBroadcastChan_is_chan (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
-    (cl : broadcast.t) :
+theorem ownBroadcastChan_is_chan (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
+    (cl : Broadcast) :
     ⊢ ownBroadcastChan ch γ Q cl -∗ isChan ch γ Unit := by
   iintro Hown
   icases ownBroadcastChan_open _ _ _ _ $$ Hown with ⟨%γch, #Hint, -⟩
   iapply isBroadcastChanInternal_is_chan _ _ _ _ $$ Hint
 
-theorem ownBroadcastChan_Unknown (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
-    (cl : broadcast.t) :
+theorem ownBroadcastChan_Unknown (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
+    (cl : Broadcast) :
     ⊢ ownBroadcastChan ch γ Q cl -∗ ownBroadcastChan ch γ Q .Unknown := by
   iintro Hown
   icases ownBroadcastChan_open _ _ _ _ $$ Hown with ⟨%γch, #Hint, -⟩
@@ -336,7 +334,7 @@ theorem ownBroadcastChan_Unknown (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
   iframe #
 
 theorem wp_broadcast_chan_close {ty : go.GoType} {dir : go.ChanDir}
-    [ty ↓u go.ChannelType dir (go.StructType [])] (ch : chan.t) (γch : ChanNames) (Q : IProp GF) :
+    [ty ↓u go.ChannelType dir (go.StructType [])] (ch : GoChan) (γch : ChanNames) (Q : IProp GF) :
     {{ ownBroadcastChan ch γch Q .Pending ∗ □ Q }}
       (App (Val #(functions go.close [ty])) (Val #ch))
     {{ RET #(); ownBroadcastChan ch γch Q .Done }} := by
@@ -346,7 +344,7 @@ theorem wp_broadcast_chan_close {ty : go.GoType} {dir : go.ChanDir}
   iintro _
   iapply broadcast_close_au _ _ _ _ $$ Hown HQ HΦ
 
-theorem alloc_broadcast_chan {E : CoPset} (Q : IProp GF) (γ : ChanNames) (ch : chan.t) :
+theorem alloc_broadcast_chan {E : CoPset} (Q : IProp GF) (γ : ChanNames) (ch : GoChan) :
     ⊢ isChan ch γ Unit -∗ ownChan γ Unit .Idle ={E}=∗ ownBroadcastChan ch γ Q .Pending := by
   iintro #Hch Hoc
   imod dghostVar_alloc false with ⟨%tok_gn, Htok⟩

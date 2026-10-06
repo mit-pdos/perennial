@@ -4705,7 +4705,7 @@ noncomputable def fancyTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "y" (App (Val (GoInstruction (GoAlloc go.string))) (Var "$x"))
   (App (Val doReturn)
   (Val #(W64 2))))
-  (Let "$ok" (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Var "$y") (Val #interface.t.nil)))
+  (Let "$ok" (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Var "$y") (Val #GoInterface.nil)))
   (Let "$x" (Var "$y")
   (If (Var "$ok")
   (Let "y" (App (Val (GoInstruction (GoAlloc go.any))) (Var "$x"))
@@ -4924,7 +4924,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc mapLiteralWithConversion (go.GoType.MapType go.any go.any))) (Val #()))))))))
 
-abbrev Foo [FfiSyntax] : Type := (array.t w64 10)
+abbrev Foo [FfiSyntax] : Type := (GoArray w64 10)
 
 @[reducible] def Foo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 10 go.uint64)
@@ -4994,7 +4994,7 @@ attribute [instance] numWrapper.TypeAssumptions.underlying
 
 structure withInterface [FfiSyntax] where
   mk ::
-  a' : interface.t
+  a' : GoInterface
 
 instance withInterface.zero_val [FfiSyntax] : ZeroVal withInterface :=
   ⟨withInterface.mk zeroValDef⟩
@@ -5016,7 +5016,7 @@ class withInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   type_repr : go.TypeReprUnderlying withInterface.underlying withInterface
   underlying : go.UnderlyingDirectedEq withInterface.ty withInterface.underlying
   get_a : ∀ (x : withInterface), go.IsGoStepPureDetTagged under (StructFieldGet withInterface.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : withInterface) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet withInterface.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withInterface)))
+  set_a : ∀ (x : withInterface) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet withInterface.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withInterface)))
 
 attribute [instance] withInterface.TypeAssumptions.type_repr
   withInterface.TypeAssumptions.underlying
@@ -5251,7 +5251,7 @@ class Enum2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Enum2.TypeAssumptions.underlying
 
-abbrev Fooer [FfiSyntax] : Type := interface.t
+abbrev Fooer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Fooer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Foo" (go.signature.Signature [] false []))])
@@ -5325,7 +5325,7 @@ attribute [instance] FooerUser.TypeAssumptions.type_repr
   FooerUser.TypeAssumptions.get_f
   FooerUser.TypeAssumptions.set_f
 
-abbrev PointerInterface [FfiSyntax] : Type := interface.t
+abbrev PointerInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def PointerInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"B" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Foo" (go.signature.Signature [] false []))])
@@ -5472,7 +5472,7 @@ class IntWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] IntWrapper.TypeAssumptions.underlying
 
-abbrev MapWrapper [FfiSyntax] : Type := map.t
+abbrev MapWrapper [FfiSyntax] : Type := GoMap
 
 @[reducible] def MapWrapper.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 go.bool)
@@ -5783,7 +5783,7 @@ attribute [instance] Block.TypeAssumptions.type_repr
   Block.TypeAssumptions.get_Value
   Block.TypeAssumptions.set_Value
 
-abbrev SliceAlias [FfiSyntax] : Type := slice.t
+abbrev SliceAlias [FfiSyntax] : Type := GoSlice
 
 @[reducible] def SliceAlias.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.bool)
@@ -5826,7 +5826,7 @@ attribute [instance] thing.TypeAssumptions.type_repr
 
 structure sliceOfThings [FfiSyntax] where
   mk ::
-  things' : slice.t
+  things' : GoSlice
 
 instance sliceOfThings.zero_val [FfiSyntax] : ZeroVal sliceOfThings :=
   ⟨sliceOfThings.mk zeroValDef⟩
@@ -5848,7 +5848,7 @@ class sliceOfThings.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   type_repr : go.TypeReprUnderlying sliceOfThings.underlying sliceOfThings
   underlying : go.UnderlyingDirectedEq sliceOfThings.ty sliceOfThings.underlying
   get_things : ∀ (x : sliceOfThings), go.IsGoStepPureDetTagged under (StructFieldGet sliceOfThings.underlying go!"things") #x (Val #(x.things'))
-  set_things : ∀ (x : sliceOfThings) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet sliceOfThings.underlying go!"things") (PairV #x #y) (Val #(({ x with things' := y } : sliceOfThings)))
+  set_things : ∀ (x : sliceOfThings) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet sliceOfThings.underlying go!"things") (PairV #x #y) (Val #(({ x with things' := y } : sliceOfThings)))
   getThingRef_unfold : MethodUnfold sliceOfThings.ty go!"getThingRef" sliceOfThings.getThingRef.impl
   ptr_getThingRef_unfold : MethodUnfold (go.GoType.PointerType sliceOfThings.ty) go!"getThingRef" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve sliceOfThings.ty go!"getThingRef"))) (App (Val (GoInstruction (GoLoad sliceOfThings.ty))) (Var "$r"))))
@@ -6009,7 +6009,7 @@ attribute [instance] S.TypeAssumptions.type_repr
 
 structure B [FfiSyntax] where
   mk ::
-  a' : slice.t
+  a' : GoSlice
 
 instance B.zero_val [FfiSyntax] : ZeroVal B :=
   ⟨B.mk zeroValDef⟩
@@ -6031,7 +6031,7 @@ class B.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemant
   type_repr : go.TypeReprUnderlying B.underlying B
   underlying : go.UnderlyingDirectedEq B.ty B.underlying
   get_a : ∀ (x : B), go.IsGoStepPureDetTagged under (StructFieldGet B.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : B) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : B)))
+  set_a : ∀ (x : B) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : B)))
 
 attribute [instance] B.TypeAssumptions.type_repr
   B.TypeAssumptions.underlying

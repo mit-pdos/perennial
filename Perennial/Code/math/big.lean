@@ -536,7 +536,7 @@ attribute [instance] Word.TypeAssumptions.underlying
 
 structure decimal [FfiSyntax] where
   mk ::
-  mant' : slice.t
+  mant' : GoSlice
   exp' : w64
 
 instance decimal.zero_val [FfiSyntax] : ZeroVal decimal :=
@@ -560,7 +560,7 @@ class decimal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying decimal.underlying decimal
   underlying : go.UnderlyingDirectedEq decimal.ty decimal.underlying
   get_mant : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"mant") #x (Val #(x.mant'))
-  set_mant : ∀ (x : decimal) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : decimal)))
+  set_mant : ∀ (x : decimal) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : decimal)))
   get_exp : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"exp") #x (Val #(x.exp'))
   set_exp : ∀ (x : decimal) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : decimal)))
 
@@ -601,7 +601,7 @@ class form.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] form.TypeAssumptions.underlying
 
-abbrev nat [FfiSyntax] : Type := slice.t
+abbrev nat [FfiSyntax] : Type := GoSlice
 
 @[reducible] def nat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType Word.ty)
@@ -779,7 +779,7 @@ attribute [instance] byteReader.TypeAssumptions.type_repr
 
 structure stack [FfiSyntax] where
   mk ::
-  w' : slice.t
+  w' : GoSlice
 
 instance stack.zero_val [FfiSyntax] : ZeroVal stack :=
   ⟨stack.mk zeroValDef⟩
@@ -801,7 +801,7 @@ class stack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying stack.underlying stack
   underlying : go.UnderlyingDirectedEq stack.ty stack.underlying
   get_w : ∀ (x : stack), go.IsGoStepPureDetTagged under (StructFieldGet stack.underlying go!"w") #x (Val #(x.w'))
-  set_w : ∀ (x : stack) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet stack.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stack)))
+  set_w : ∀ (x : stack) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet stack.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stack)))
 
 attribute [instance] stack.TypeAssumptions.type_repr
   stack.TypeAssumptions.underlying

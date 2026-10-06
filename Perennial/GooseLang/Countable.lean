@@ -6,7 +6,7 @@
 As in Rocq, each syntax type is injected into generic trees (`GenTree`, stdpp
 `gen_tree`); injectivity is proved directly instead of through a decoder.
 These instances let ghost state (channels, `ghost_var`, ...) store values that
-contain code: `val`, `expr`, `func.t`, `interface.t`, `slice.t`, `loc`, ...
+contain code: `val`, `expr`, `GoFunc`, `GoInterface`, `GoSlice`, `loc`, ...
 -/
 import Perennial.GooseLang.Lang
 
@@ -144,8 +144,8 @@ instance Loc.countable : Pos.Countable Loc :=
   countableOfLeftInverse (fun l : Loc => (l.locCar, l.locOff)) (fun p => ⟨p.1, p.2⟩)
     (fun _ => rfl)
 
-instance slice.countable : Pos.Countable slice.t :=
-  countableOfLeftInverse (fun s : slice.t => (s.ptr, s.len, s.cap)) (fun p => ⟨p.1, p.2.1, p.2.2⟩)
+instance slice.countable : Pos.Countable GoSlice :=
+  countableOfLeftInverse (fun s : GoSlice => (s.ptr, s.len, s.cap)) (fun p => ⟨p.1, p.2.1, p.2.2⟩)
     (fun _ => rfl)
 
 instance Binder.countable : Pos.Countable Binder :=
@@ -556,18 +556,18 @@ end
 instance Expr.countable : Pos.Countable Expr := countableOfTree Expr.toTree Expr.toTree_inj
 instance val.countable : Pos.Countable val := countableOfTree val.toTree val.toTree_inj
 
-instance func.countable : Pos.Countable func.t :=
-  countableOfLeftInverse (fun f : func.t => (f.f, f.x, f.e)) (fun p => ⟨p.1, p.2.1, p.2.2⟩)
+instance func.countable : Pos.Countable GoFunc :=
+  countableOfLeftInverse (fun f : GoFunc => (f.f, f.x, f.e)) (fun p => ⟨p.1, p.2.1, p.2.2⟩)
     (fun _ => rfl)
 
-instance interface.countable : Pos.Countable interface.t :=
+instance interface.countable : Pos.Countable GoInterface :=
   countableOfLeftInverse
-    (fun i : interface.t => match i with | .ok ⟨t, v⟩ => some (t, v) | .nil => none)
+    (fun i : GoInterface => match i with | .ok ⟨t, v⟩ => some (t, v) | .nil => none)
     (fun | some (t, v) => .ok ⟨t, v⟩ | none => .nil)
     (by intro i; rcases i with ⟨t, v⟩ | _ <;> rfl)
 
-instance array.countable {V : Type} [Pos.Countable V] {n : Int} : Pos.Countable (array.t V n) :=
-  countableOfLeftInverse (fun a : array.t V n => a.arr) (fun l => ⟨l⟩) (fun _ => rfl)
+instance array.countable {V : Type} [Pos.Countable V] {n : Int} : Pos.Countable (GoArray V n) :=
+  countableOfLeftInverse (fun a : GoArray V n => a.arr) (fun l => ⟨l⟩) (fun _ => rfl)
 
 end goose_syntax
 

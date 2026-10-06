@@ -45,7 +45,7 @@ instance Worker_access_load_queue (l : Loc) (v : github_com.mit_pdos.perennial.g
  by
   solve_pointsto_access_struct
 
-instance Worker_access_store_queue (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker) (queue' : chan.t) :
+instance Worker_access_store_queue (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker) (queue' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker go!"queue" l) v.queue' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker go!"queue" l) queue' (DFrac.own 1))
@@ -61,7 +61,7 @@ instance Worker_access_load_steal (l : Loc) (v : github_com.mit_pdos.perennial.g
  by
   solve_pointsto_access_struct
 
-instance Worker_access_store_steal (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker) (steal' : chan.t) :
+instance Worker_access_store_steal (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker) (steal' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker go!"steal" l) v.steal' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker go!"steal" l) steal' (DFrac.own 1))
@@ -135,7 +135,7 @@ instance shared_access_load_done (l : Loc) (v : github_com.mit_pdos.perennial.go
  by
   solve_pointsto_access_struct
 
-instance shared_access_store_done (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared) (done' : chan.t) :
+instance shared_access_store_done (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared) (done' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared go!"done" l) done' (DFrac.own 1))

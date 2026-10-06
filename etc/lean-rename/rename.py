@@ -61,6 +61,9 @@ ap.add_argument("--no-generated-edits", action="store_true",
 ap.add_argument("--types", action="store_true",
                 help="phase B3: Go named types: the value type X.t becomes X, the descriptor X becomes X.ty "
                      "(edits all files that goose does not regenerate)")
+ap.add_argument("--map", default=None,
+                help="explicit renames (old<TAB>new full names); constants under a renamed name follow it, "
+                     "namespaces above it do not")
 ap.add_argument("--ilean", default=None, help="directory holding the .ilean files (default: .lake/build/lib/lean)")
 args = ap.parse_args()
 
@@ -490,6 +493,27 @@ if args.types:
     REGEN = ("Perennial.Code.", "Perennial.GeneratedProof.")
     is_generated = lambda m: m.startswith(REGEN)
 
+if args.map:
+    explicit = {}
+    for line in open(args.map, encoding="utf-8"):
+        if "\t" in line and not line.startswith("#"):
+            o, nw = line.rstrip("\n").split("\t")
+            explicit[o] = split_name(nw)
+    affected = {}
+    for n in inv:
+        c = split_name(n)
+        for i in range(len(c), 0, -1):
+            pre = ".".join(c[:i])
+            if pre in explicit:
+                affected[n] = explicit[pre] + c[i:]
+                break
+    missing = [o for o in explicit if o not in inv]
+    if missing:
+        sys.exit(f"--map: unknown constants {missing}")
+    collisions = {}
+    rename = {}
+    new_full = lambda name: split_name(name) if name else []
+
 # ---------------------------------------------------------------- edits
 edits = collections.defaultdict(list)    # module -> [(line, c0, c1, newtext, name)]
 skipped = []
@@ -517,6 +541,20 @@ def plan_edit(mod, r, n):
             out = N[len(Nh):]
         else:
             out = N[len(hidden):] if len(N) >= len(hidden) else None
+        if args.map and (N[: len(hidden)] != hidden or not out):
+            # referenced from inside the old namespace (e.g. `t` in `namespace slice`):
+            # unchanged short names (fields, constructors) stay; the definition of the
+            # renamed constant itself is written `_root_.<new>`; other references get
+            # the shortest name that resolves from there
+            if len(T) == 1 and unq(N[-1]) == Tu[-1]:
+                return
+            if defs.get(n) == (mod, r[:4]):
+                out = ["_root_"] + N
+            else:
+                k = 0
+                while k < min(len(N), len(hidden)) and N[k] == hidden[k]:
+                    k += 1
+                out = N[k:] or N[-1:]
         if not out:
             skipped.append((mod, r, n, t))
             return

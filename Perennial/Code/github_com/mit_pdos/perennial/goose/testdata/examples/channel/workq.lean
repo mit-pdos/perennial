@@ -251,8 +251,8 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 structure Worker [FfiSyntax] where
   mk ::
-  queue' : chan.t
-  steal' : chan.t
+  queue' : GoChan
+  steal' : GoChan
 
 instance Worker.zero_val [FfiSyntax] : ZeroVal Worker :=
   ⟨Worker.mk zeroValDef zeroValDef⟩
@@ -275,9 +275,9 @@ class Worker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Worker.underlying Worker
   underlying : go.UnderlyingDirectedEq Worker.ty Worker.underlying
   get_queue : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"queue") #x (Val #(x.queue'))
-  set_queue : ∀ (x : Worker) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"queue") (PairV #x #y) (Val #(({ x with queue' := y } : Worker)))
+  set_queue : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"queue") (PairV #x #y) (Val #(({ x with queue' := y } : Worker)))
   get_steal : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"steal") #x (Val #(x.steal'))
-  set_steal : ∀ (x : Worker) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"steal") (PairV #x #y) (Val #(({ x with steal' := y } : Worker)))
+  set_steal : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"steal") (PairV #x #y) (Val #(({ x with steal' := y } : Worker)))
   ptr_process_unfold : MethodUnfold (go.GoType.PointerType Worker.ty) go!"process" Worker.process.impl
   ptr_run_unfold : MethodUnfold (go.GoType.PointerType Worker.ty) go!"run" Worker.run.impl
 
@@ -294,7 +294,7 @@ structure shared [FfiSyntax] where
   mk ::
   remaining' : Loc
   total' : Loc
-  done' : chan.t
+  done' : GoChan
 
 instance shared.zero_val [FfiSyntax] : ZeroVal shared :=
   ⟨shared.mk zeroValDef zeroValDef zeroValDef⟩
@@ -322,7 +322,7 @@ class shared.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   get_total : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"total") #x (Val #(x.total'))
   set_total : ∀ (x : shared) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"total") (PairV #x #y) (Val #(({ x with total' := y } : shared)))
   get_done : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"done") #x (Val #(x.done'))
-  set_done : ∀ (x : shared) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : shared)))
+  set_done : ∀ (x : shared) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : shared)))
 
 attribute [instance] shared.TypeAssumptions.type_repr
   shared.TypeAssumptions.underlying

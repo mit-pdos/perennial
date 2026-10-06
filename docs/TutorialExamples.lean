@@ -41,7 +41,7 @@ theorem sum_w64_take_succ (xs : List w64) (n : Nat) (x : w64) (h : xs[n]? = some
 -- ANCHOR: context
 section tutorial
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : unittest.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
@@ -50,7 +50,7 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 -- ANCHOR: conditionalReturn
 /-- `func conditionalReturn(x bool) uint64 { if x { return 0 }; return 1 }` -/
 theorem wp_conditionalReturn' (x : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! conditionalReturn)) (Val #x))
     {{ (r : w64), RET #r; ⌜r = if x then W64 0 else W64 1⌝ }} := by
   wp_start
@@ -66,7 +66,7 @@ theorem wp_conditionalReturn' (x : Bool) :
 /-- The same proof with `wp_if_destruct`, which splits on the condition of the
 `if:` at the head of the program. -/
 theorem wp_conditionalReturn'' (x : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! conditionalReturn)) (Val #x))
     {{ (r : w64), RET #r; ⌜r = if x then W64 0 else W64 1⌝ }} := by
   wp_start
@@ -79,7 +79,7 @@ theorem wp_conditionalReturn'' (x : Bool) :
 -- ANCHOR: usePtr
 /-- `func usePtr() { p := new(uint64); *p = 1; x := *p; *p = x }` -/
 theorem wp_usePtr' :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! usePtr)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -91,7 +91,7 @@ theorem wp_usePtr' :
 /-- `func returnTwo(p []byte) (uint64, uint64) { return 0, 0 }`.
 Multiple return values are a `PairV`. -/
 theorem wp_returnTwo' (p : slice.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! returnTwo)) (Val #p))
     {{ RET (PairV #(W64 0) #(W64 0)); True }} := by
   wp_start
@@ -100,7 +100,7 @@ theorem wp_returnTwo' (p : slice.t) :
 
 /-- `func returnTwoWrapper(data []byte) (uint64, uint64)` calls `returnTwo`. -/
 theorem wp_returnTwoWrapper' (data : slice.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! returnTwoWrapper)) (Val #data))
     {{ RET (PairV #(W64 0) #(W64 0)); True }} := by
   wp_start
@@ -111,10 +111,10 @@ theorem wp_returnTwoWrapper' (data : slice.t) :
 
 -- ANCHOR: writeB
 /-- `func (s *S) writeB(two TwoInts) { s.b = two }` -/
-theorem wp_S__writeB' (s : loc) (v : S.t) (two : TwoInts.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ s ↦ v }}
-      (App (Val (s @!! go.type.PointerType S @!! go!"writeB")) (Val #two))
-    {{ RET #(); s ↦ ({ v with b' := two } : S.t) }} := by
+theorem S.wp_writeB' (s : Loc) (v : S) (two : TwoInts) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦ v }}
+      (App (Val (s @!! go.GoType.PointerType S.ty @!! go!"writeB")) (Val #two))
+    {{ RET #(); s ↦ ({ v with b' := two } : S) }} := by
   wp_start as Hs
   wp_auto
   iapply HΦ $$ Hs
@@ -125,9 +125,9 @@ theorem wp_S__writeB' (s : loc) (v : S.t) (two : TwoInts.t) :
 The anonymous allocation `&S{..}` is done with `wp_alloc`; `iStructNamed`
 splits the struct points-to into one points-to per field. -/
 theorem wp_NewS' :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NewS)) (Val #()))
-    {{ (s : loc), RET #s; s.[S.t, go!"a"] ↦ W64 2 ∗ s.[S.t, go!"c"] ↦ true }} := by
+    {{ (s : Loc), RET #s; s.[S, go!"a"] ↦ W64 2 ∗ s.[S, go!"c"] ↦ true }} := by
   wp_start
   wp_alloc s as Hs
   iStructNamed Hs
@@ -137,12 +137,12 @@ theorem wp_NewS' :
 -- ANCHOR: named
 /-- A representation predicate with named conjuncts (`"name" ∷ P`). The names
 are iris-lean cases patterns: `"%Hbound"` goes to the Lean context. -/
-def own_bounded (l : loc) : IProp GF :=
+def own_bounded (l : Loc) : IProp GF :=
   iprop(∃ n : w64,
     "Hv" ∷ (l ↦ n : IProp GF) ∗
     "%Hbound" ∷ ⌜uint.Z n < 100⌝)
 
-theorem own_bounded_get (l : loc) :
+theorem own_bounded_get (l : Loc) :
     own_bounded (GF := GF) l ⊢ ∃ n : w64, l ↦ n ∗ ⌜uint.Z n < 200⌝ := by
   iintro H
   iNamed H            -- introduces `n`, `Hv`, and `Hbound : uint.Z n < 100`
@@ -159,12 +159,12 @@ for i := 0; i < len(xs); i++ { sum += xs[i] }
 return sum
 ``` -/
 theorem wp_intSliceLoop' (s : slice.t) (vs : List w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ s ↦* vs }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦* vs }}
       (App (Val (@! intSliceLoop)) (Val #s))
     {{ RET #(sum_w64 vs); s ↦* vs }} := by
   wp_start as Hs
   wp_auto
-  ihave %Hlen := own_slice_len _ _ _ $$ Hs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hs
   -- the loop invariant
   ihave HI : (∃ i : w64,
       "i" ∷ i_ptr ↦ i ∗
@@ -196,15 +196,15 @@ theorem wp_intSliceLoop' (s : slice.t) (vs : List w64) :
 -- ANCHOR: mutex
 /-- `func DoSomeLocking(l *sync.Mutex) { l.Lock(); l.Unlock() }`, for any lock
 invariant `R`. -/
-theorem wp_DoSomeLocking' [sync.Assumptions] (l : loc) (R : IProp GF) :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_pkg_init (PROP := IProp GF) pkg_id.sync ∗
-        sync.is_Mutex l R }}
+theorem wp_DoSomeLocking' [sync.Assumptions] (l : Loc) (R : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isPkgInit (PROP := IProp GF) pkg_id.sync ∗
+        sync.isMutex l R }}
       (App (Val (@! DoSomeLocking)) (Val #l))
     {{ RET #(); True }} := by
   wp_start as #Hm
   wp_auto
-  wp_apply sync.wp_Mutex__Lock $$ [$Hm] as ⟨Hlocked, HR⟩
-  wp_apply sync.wp_Mutex__Unlock $$ [$Hm $Hlocked $HR]
+  wp_apply sync.Mutex.wp_Lock $$ [$Hm] as ⟨Hlocked, HR⟩
+  wp_apply sync.Mutex.wp_Unlock $$ [$Hm $Hlocked $HR]
   wp_end
 -- ANCHOR_END: mutex
 
@@ -220,7 +220,7 @@ func simpleSpawn() {
 }
 ``` -/
 theorem wp_simpleSpawn' [sync.Assumptions] :
-    {{ is_pkg_init (PROP := IProp GF) pkg ∗ is_pkg_init (PROP := IProp GF) pkg_id.sync }}
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isPkgInit (PROP := IProp GF) pkg_id.sync }}
       (App (Val (@! simpleSpawn)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
@@ -237,20 +237,20 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
   wp_apply wp_fork $$ []
   · -- the spawned goroutine
     wp_auto
-    wp_apply sync.wp_Mutex__Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
+    wp_apply sync.Mutex.wp_Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
     wp_if_destruct
     · wp_func_call   -- `Skip()`: unfold the function and step through it
       wp_call
       wp_auto
-      wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+      wp_apply sync.Mutex.wp_Unlock $$ [$Hlock $Hlocked Hx]
       · iexists _; iexact Hx
       itrivial
-    · wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+    · wp_apply sync.Mutex.wp_Unlock $$ [$Hlock $Hlocked Hx]
       · iexists _; iexact Hx
       itrivial
   -- the main goroutine
-  wp_apply sync.wp_Mutex__Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
-  wp_apply sync.wp_Mutex__Unlock $$ [$Hlock $Hlocked Hx]
+  wp_apply sync.Mutex.wp_Lock $$ [$Hlock] as ⟨Hlocked, ⟨%x, Hx⟩⟩
+  wp_apply sync.Mutex.wp_Unlock $$ [$Hlock $Hlocked Hx]
   · iexists _; iexact Hx
   wp_end
 -- ANCHOR_END: spawn
@@ -266,16 +266,16 @@ func useMap() {
 }
 ``` -/
 theorem wp_useMap' :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! useMap)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
   wp_auto
   wp_apply (wp_map_make1 (K := w64) (V := slice.t)) as %m Hm
-  wp_apply wp_map_insert $$ Hm as Hm
+  wp_apply wp_mapInsert $$ Hm as Hm
   wp_apply wp_map_lookup2 $$ Hm as Hm
   -- `ok` is `false` (key 2 is absent), so `wp_auto` took the fall-through branch
-  wp_apply wp_map_insert $$ Hm as Hm
+  wp_apply wp_mapInsert $$ Hm as Hm
   wp_end
 -- ANCHOR_END: useMap
 
@@ -283,7 +283,7 @@ theorem wp_useMap' :
 /-- `ifStmtInitialization` stores a function literal `f := func() uint64 {..}`
 in a local variable. -/
 theorem wp_ifStmtInitialization' (x : w64) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! ifStmtInitialization)) (Val #x))
     {{ (r : w64), RET #r; True }} := by
   wp_start
@@ -296,7 +296,7 @@ theorem wp_ifStmtInitialization' (x : w64) :
 /-- WP tactics fail (rather than leaving a `sorry`) when their argument does
 not elaborate. -/
 example (p : slice.t) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! returnTwoWrapper)) (Val #p))
     {{ RET (PairV #(W64 0) #(W64 0)); True }} := by
   wp_start
@@ -328,7 +328,7 @@ append(arr, 2) }; if arg2 { arr = append(arr, 3) } }`: the two cases of the
 first `if` are joined at "`arr` is some slice", so the rest of the function
 (the second `if`) is verified once instead of once per case. -/
 theorem wp_ifJoinDemo' (arg1 arg2 : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (Val (@! ifJoinDemo)) (Val #arg1)) (Val #arg2))
     {{ RET #(); True }} := by
   wp_start
@@ -339,7 +339,7 @@ theorem wp_ifJoinDemo' (arg1 arg2 : Bool) :
   iintro %sl ⟨Hz, Hzcap⟩
   wp_auto
   wp_join iprop(∃ (sl : slice.t) (xs : List w64),
-      arr_ptr ↦ sl ∗ sl ↦* xs ∗ own_slice_cap w64 sl (DFrac.own 1))
+      arr_ptr ↦ sl ∗ sl ↦* xs ∗ ownSliceCap w64 sl (DFrac.own 1))
     with [arr Hz Hzcap] as ⟨%sl1, %xs, arr, Hz, Hzcap⟩
   -- `arg1 = false` reached the join value and `iframe` proved `R`: closed
   -- automatically. `arg1 = true`: append, then close the case at the join value.
@@ -354,7 +354,7 @@ theorem wp_ifJoinDemo' (arg1 arg2 : Bool) :
 hand inside it (as one would for a case split on ghost state): the cases end
 with `wp_join_done`. -/
 theorem wp_ifJoinDemo'' (arg1 arg2 : Bool) :
-    {{ is_pkg_init (PROP := IProp GF) pkg }}
+    {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (Val (@! ifJoinDemo)) (Val #arg1)) (Val #arg2))
     {{ RET #(); True }} := by
   wp_start
@@ -365,7 +365,7 @@ theorem wp_ifJoinDemo'' (arg1 arg2 : Bool) :
   iintro %sl ⟨Hz, Hzcap⟩
   wp_auto
   wp_join iprop(∃ (sl : slice.t) (xs : List w64),
-      arr_ptr ↦ sl ∗ sl ↦* xs ∗ own_slice_cap w64 sl (DFrac.own 1))
+      arr_ptr ↦ sl ∗ sl ↦* xs ∗ ownSliceCap w64 sl (DFrac.own 1))
     at next with [arr Hz Hzcap] as ⟨%sl1, %xs, arr, Hz, Hzcap⟩
   · cases arg1
     · wp_auto; wp_join_done
@@ -384,19 +384,19 @@ end tutorial
 
 section ghost
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [allG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 
 -- ANCHOR: ghost
 /-- The invariant owns half of a ghost variable `γ` holding a counter; the
 other half is held by a client. (An `abbrev`, so that `iexists`/`icases` see
 through it; for a `def`, `unfold counter_inv` first.) -/
 abbrev counter_inv (γ : GName) : IProp GF :=
-  iprop(∃ n : Nat, ghost_var γ (1 : Qp).half n)
+  iprop(∃ n : Nat, ghostVar γ (1 : Qp).half n)
 
 theorem counter_alloc (N : Namespace) (E : CoPset) :
-    ⊢ |={E}=> ∃ γ, inv N (counter_inv γ) ∗ ghost_var γ (1 : Qp).half (0 : Nat) := by
-  imod ghost_var_alloc (0 : Nat) with ⟨%γ, Hv⟩
-  icases ghost_var_split γ (0 : Nat) (1 : Qp).half (1 : Qp).half $$ [Hv] with ⟨Hv1, Hv2⟩
+    ⊢ |={E}=> ∃ γ, inv N (counter_inv γ) ∗ ghostVar γ (1 : Qp).half (0 : Nat) := by
+  imod ghostVar_alloc (0 : Nat) with ⟨%γ, Hv⟩
+  icases ghostVar_split γ (0 : Nat) (1 : Qp).half (1 : Qp).half $$ [Hv] with ⟨Hv1, Hv2⟩
   · rw [Qp.half_add_half]; iexact Hv
   imod inv_alloc N E (counter_inv γ) $$ [Hv1] with #Hinv
   · inext; iexists 0; iexact Hv1
@@ -405,13 +405,13 @@ theorem counter_alloc (N : Namespace) (E : CoPset) :
   iframe # ∗
 
 theorem counter_incr (N : Namespace) (γ : GName) (n : Nat) :
-    inv N (counter_inv γ) ∗ ghost_var γ (1 : Qp).half n ⊢
-      |={⊤}=> ghost_var γ (1 : Qp).half (n + 1) := by
+    inv N (counter_inv γ) ∗ ghostVar γ (1 : Qp).half n ⊢
+      |={⊤}=> ghostVar γ (1 : Qp).half (n + 1) := by
   iintro ⟨#Hinv, Hv⟩
   iinv Hinv with ⟨%m, >Hv'⟩ Hclose
   icombine Hv Hv' gives % ⟨_, Heq⟩
   subst Heq
-  imod ghost_var_update_halves (n + 1) γ n n $$ Hv Hv' with ⟨Hv, Hv'⟩
+  imod ghostVar_update_halves (n + 1) γ n n $$ Hv Hv' with ⟨Hv, Hv'⟩
   imod Hclose $$ [Hv'] with _
   · inext; iexists _; iexact Hv'
   imodintro
@@ -556,7 +556,7 @@ end ipm_loeb
 
 section ipm_mod
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
 -- ANCHOR: ipm_mod
 example (P Q : IProp GF) (E : CoPset) :
@@ -593,9 +593,9 @@ end ipm_mod
 namespace sync
 
 section pkg_init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -606,13 +606,13 @@ example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 
 -- The initialization proof: run `package.init`, initialize the imported
--- packages in order, and conclude `is_pkg_init`.
-example (get_is_pkg_init : go_string → IProp GF)
-    (Hinit : get_is_pkg_init_prop pkg_id.sync get_is_pkg_init) :
-    {{ own_initializing get_is_pkg_init }}
+-- packages in order, and conclude `isPkgInit`.
+example (get_is_pkg_init : GoString → IProp GF)
+    (Hinit : GetIsPkgInitProp pkg_id.sync get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
-    {{ RET #(); own_initializing get_is_pkg_init ∗
-        is_pkg_init (PROP := IProp GF) pkg_id.sync }} := by
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.sync }} := by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown

@@ -683,7 +683,7 @@ attribute [instance] TracerConfig.TypeAssumptions.type_repr
   TracerConfig.TypeAssumptions.underlying
   TracerConfig.TypeAssumptions.isUnderlying
 
-abbrev TracerOption [FfiSyntax] : Type := interface.t
+abbrev TracerOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def TracerOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [TracerConfig.ty] false [TracerConfig.ty]))])
@@ -693,7 +693,7 @@ class TracerOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] TracerOption.TypeAssumptions.underlying
 
-abbrev tracerOptionFunc [FfiSyntax] : Type := func.t
+abbrev tracerOptionFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def tracerOptionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [TracerConfig.ty] false [TracerConfig.ty]))
@@ -716,7 +716,7 @@ attribute [instance] SpanConfig.TypeAssumptions.type_repr
   SpanConfig.TypeAssumptions.underlying
   SpanConfig.TypeAssumptions.isUnderlying
 
-abbrev SpanStartOption [FfiSyntax] : Type := interface.t
+abbrev SpanStartOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def SpanStartOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applySpanStart" (go.signature.Signature [SpanConfig.ty] false [SpanConfig.ty]))])
@@ -726,7 +726,7 @@ class SpanStartOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] SpanStartOption.TypeAssumptions.underlying
 
-abbrev spanOptionFunc [FfiSyntax] : Type := func.t
+abbrev spanOptionFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def spanOptionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [SpanConfig.ty] false [SpanConfig.ty]))
@@ -736,7 +736,7 @@ class spanOptionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
 
 attribute [instance] spanOptionFunc.TypeAssumptions.underlying
 
-abbrev SpanEndOption [FfiSyntax] : Type := interface.t
+abbrev SpanEndOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def SpanEndOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applySpanEnd" (go.signature.Signature [SpanConfig.ty] false [SpanConfig.ty]))])
@@ -759,7 +759,7 @@ attribute [instance] EventConfig.TypeAssumptions.type_repr
   EventConfig.TypeAssumptions.underlying
   EventConfig.TypeAssumptions.isUnderlying
 
-abbrev EventOption [FfiSyntax] : Type := interface.t
+abbrev EventOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def EventOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applyEvent" (go.signature.Signature [EventConfig.ty] false [EventConfig.ty]))])
@@ -769,7 +769,7 @@ class EventOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] EventOption.TypeAssumptions.underlying
 
-abbrev SpanOption [FfiSyntax] : Type := interface.t
+abbrev SpanOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def SpanOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanStartOption.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanEndOption.ty)])])
@@ -779,7 +779,7 @@ class SpanOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] SpanOption.TypeAssumptions.underlying
 
-abbrev SpanStartEventOption [FfiSyntax] : Type := interface.t
+abbrev SpanStartEventOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def SpanStartEventOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanStartOption.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption.ty)])])
@@ -789,7 +789,7 @@ class SpanStartEventOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoca
 
 attribute [instance] SpanStartEventOption.TypeAssumptions.underlying
 
-abbrev SpanEndEventOption [FfiSyntax] : Type := interface.t
+abbrev SpanEndEventOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def SpanEndEventOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanEndOption.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption.ty)])])
@@ -812,7 +812,7 @@ attribute [instance] attributeOption.TypeAssumptions.type_repr
   attributeOption.TypeAssumptions.underlying
   attributeOption.TypeAssumptions.isUnderlying
 
-abbrev SpanEventOption [FfiSyntax] : Type := interface.t
+abbrev SpanEventOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def SpanEventOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanOption.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption.ty)])])
@@ -883,7 +883,7 @@ attribute [instance] noopSpan.TypeAssumptions.type_repr
   noopSpan.TypeAssumptions.get_Span
   noopSpan.TypeAssumptions.set_Span
 
-abbrev TraceID [FfiSyntax] : Type := (array.t w8 16)
+abbrev TraceID [FfiSyntax] : Type := (GoArray w8 16)
 
 @[reducible] def TraceID.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 16 go.byte)
@@ -893,7 +893,7 @@ class TraceID.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] TraceID.TypeAssumptions.underlying
 
-abbrev SpanID [FfiSyntax] : Type := (array.t w8 8)
+abbrev SpanID [FfiSyntax] : Type := (GoArray w8 8)
 
 @[reducible] def SpanID.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 8 go.byte)
@@ -915,7 +915,7 @@ attribute [instance] TraceFlags.TypeAssumptions.underlying
 
 structure TraceState [FfiSyntax] where
   mk ::
-  list' : slice.t
+  list' : GoSlice
 
 instance TraceState.zero_val [FfiSyntax] : ZeroVal TraceState :=
   ⟨TraceState.mk zeroValDef⟩
@@ -937,7 +937,7 @@ class TraceState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying TraceState.underlying TraceState
   underlying : go.UnderlyingDirectedEq TraceState.ty TraceState.underlying
   get_list : ∀ (x : TraceState), go.IsGoStepPureDetTagged under (StructFieldGet TraceState.underlying go!"list") #x (Val #(x.list'))
-  set_list : ∀ (x : TraceState) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet TraceState.underlying go!"list") (PairV #x #y) (Val #(({ x with list' := y } : TraceState)))
+  set_list : ∀ (x : TraceState) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet TraceState.underlying go!"list") (PairV #x #y) (Val #(({ x with list' := y } : TraceState)))
 
 attribute [instance] TraceState.TypeAssumptions.type_repr
   TraceState.TypeAssumptions.underlying
@@ -1098,7 +1098,7 @@ attribute [instance] noopTracer.TypeAssumptions.type_repr
   noopTracer.TypeAssumptions.get_Tracer
   noopTracer.TypeAssumptions.set_Tracer
 
-abbrev TracerProvider [FfiSyntax] : Type := interface.t
+abbrev TracerProvider [FfiSyntax] : Type := GoInterface
 
 @[reducible] def TracerProvider.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Tracer" (go.signature.Signature [go.string, (go.GoType.SliceType TracerOption.ty)] true [Tracer.ty])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider.ty)])])

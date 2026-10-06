@@ -80,7 +80,7 @@ instance SamplingConfig_access_load_Hook (l : Loc) (v : go_uber_org.zap.Sampling
  by
   solve_pointsto_access_struct
 
-instance SamplingConfig_access_store_Hook (l : Loc) (v : go_uber_org.zap.SamplingConfig) (Hook' : func.t) :
+instance SamplingConfig_access_store_Hook (l : Loc) (v : go_uber_org.zap.SamplingConfig) (Hook' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.SamplingConfig go!"Hook" l) v.Hook' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.SamplingConfig go!"Hook" l) Hook' (DFrac.own 1))
@@ -281,7 +281,7 @@ instance Config_access_load_OutputPaths (l : Loc) (v : go_uber_org.zap.Config) (
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_OutputPaths (l : Loc) (v : go_uber_org.zap.Config) (OutputPaths' : slice.t) :
+instance Config_access_store_OutputPaths (l : Loc) (v : go_uber_org.zap.Config) (OutputPaths' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.Config go!"OutputPaths" l) v.OutputPaths' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.Config go!"OutputPaths" l) OutputPaths' (DFrac.own 1))
@@ -297,7 +297,7 @@ instance Config_access_load_ErrorOutputPaths (l : Loc) (v : go_uber_org.zap.Conf
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_ErrorOutputPaths (l : Loc) (v : go_uber_org.zap.Config) (ErrorOutputPaths' : slice.t) :
+instance Config_access_store_ErrorOutputPaths (l : Loc) (v : go_uber_org.zap.Config) (ErrorOutputPaths' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.Config go!"ErrorOutputPaths" l) v.ErrorOutputPaths' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.Config go!"ErrorOutputPaths" l) ErrorOutputPaths' (DFrac.own 1))
@@ -313,7 +313,7 @@ instance Config_access_load_InitialFields (l : Loc) (v : go_uber_org.zap.Config)
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_InitialFields (l : Loc) (v : go_uber_org.zap.Config) (InitialFields' : map.t) :
+instance Config_access_store_InitialFields (l : Loc) (v : go_uber_org.zap.Config) (InitialFields' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.Config go!"InitialFields" l) v.InitialFields' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.Config go!"InitialFields" l) InitialFields' (DFrac.own 1))
@@ -353,7 +353,7 @@ instance errArrayElem_access_load_error (l : Loc) (v : go_uber_org.zap.errArrayE
  by
   solve_pointsto_access_struct
 
-instance errArrayElem_access_store_error (l : Loc) (v : go_uber_org.zap.errArrayElem) (error' : error.t) :
+instance errArrayElem_access_store_error (l : Loc) (v : go_uber_org.zap.errArrayElem) (error' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.errArrayElem go!"error" l) v.error' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.errArrayElem go!"error" l) error' (DFrac.own 1))
@@ -393,7 +393,7 @@ instance loggerWriter_access_load_logFunc (l : Loc) (v : go_uber_org.zap.loggerW
  by
   solve_pointsto_access_struct
 
-instance loggerWriter_access_store_logFunc (l : Loc) (v : go_uber_org.zap.loggerWriter) (logFunc' : func.t) :
+instance loggerWriter_access_store_logFunc (l : Loc) (v : go_uber_org.zap.loggerWriter) (logFunc' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.loggerWriter go!"logFunc" l) v.logFunc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.loggerWriter go!"logFunc" l) logFunc' (DFrac.own 1))
@@ -783,7 +783,7 @@ instance invalidPair_access_load_key (l : Loc) (v : go_uber_org.zap.invalidPair)
  by
   solve_pointsto_access_struct
 
-instance invalidPair_access_store_key (l : Loc) (v : go_uber_org.zap.invalidPair) (key' : interface.t) :
+instance invalidPair_access_store_key (l : Loc) (v : go_uber_org.zap.invalidPair) (key' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.invalidPair go!"key" l) v.key' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.invalidPair go!"key" l) key' (DFrac.own 1))
@@ -799,7 +799,7 @@ instance invalidPair_access_load_value (l : Loc) (v : go_uber_org.zap.invalidPai
  by
   solve_pointsto_access_struct
 
-instance invalidPair_access_store_value (l : Loc) (v : go_uber_org.zap.invalidPair) (value' : interface.t) :
+instance invalidPair_access_store_value (l : Loc) (v : go_uber_org.zap.invalidPair) (value' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.invalidPair go!"value" l) v.value' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.invalidPair go!"value" l) value' (DFrac.own 1))

@@ -171,7 +171,7 @@ instance Opts_access_load_now (l : Loc) (v : github_com.prometheus.client_golang
  by
   solve_pointsto_access_struct
 
-instance Opts_access_store_now (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Opts) (now' : func.t) :
+instance Opts_access_store_now (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Opts) (now' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Opts go!"now" l) v.now' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Opts go!"now" l) now' (DFrac.own 1))
@@ -419,7 +419,7 @@ instance HistogramOpts_access_load_Buckets (l : Loc) (v : github_com.prometheus.
  by
   solve_pointsto_access_struct
 
-instance HistogramOpts_access_store_Buckets (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramOpts) (Buckets' : slice.t) :
+instance HistogramOpts_access_store_Buckets (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramOpts) (Buckets' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.HistogramOpts go!"Buckets" l) v.Buckets' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.HistogramOpts go!"Buckets" l) Buckets' (DFrac.own 1))
@@ -547,7 +547,7 @@ instance HistogramOpts_access_load_now (l : Loc) (v : github_com.prometheus.clie
  by
   solve_pointsto_access_struct
 
-instance HistogramOpts_access_store_now (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramOpts) (now' : func.t) :
+instance HistogramOpts_access_store_now (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramOpts) (now' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.HistogramOpts go!"now" l) v.now' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.HistogramOpts go!"now" l) now' (DFrac.own 1))
@@ -563,7 +563,7 @@ instance HistogramOpts_access_load_afterFunc (l : Loc) (v : github_com.prometheu
  by
   solve_pointsto_access_struct
 
-instance HistogramOpts_access_store_afterFunc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramOpts) (afterFunc' : func.t) :
+instance HistogramOpts_access_store_afterFunc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.HistogramOpts) (afterFunc' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.HistogramOpts go!"afterFunc" l) v.afterFunc' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.HistogramOpts go!"afterFunc" l) afterFunc' (DFrac.own 1))
@@ -734,7 +734,7 @@ instance withExemplarsMetric_access_load_exemplars (l : Loc) (v : github_com.pro
  by
   solve_pointsto_access_struct
 
-instance withExemplarsMetric_access_store_exemplars (l : Loc) (v : github_com.prometheus.client_golang.prometheus.withExemplarsMetric) (exemplars' : slice.t) :
+instance withExemplarsMetric_access_store_exemplars (l : Loc) (v : github_com.prometheus.client_golang.prometheus.withExemplarsMetric) (exemplars' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.withExemplarsMetric go!"exemplars" l) v.exemplars' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.withExemplarsMetric go!"exemplars" l) exemplars' (DFrac.own 1))
@@ -1034,7 +1034,7 @@ instance SummaryOpts_access_load_Objectives (l : Loc) (v : github_com.prometheus
  by
   solve_pointsto_access_struct
 
-instance SummaryOpts_access_store_Objectives (l : Loc) (v : github_com.prometheus.client_golang.prometheus.SummaryOpts) (Objectives' : map.t) :
+instance SummaryOpts_access_store_Objectives (l : Loc) (v : github_com.prometheus.client_golang.prometheus.SummaryOpts) (Objectives' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryOpts go!"Objectives" l) v.Objectives' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryOpts go!"Objectives" l) Objectives' (DFrac.own 1))
@@ -1098,7 +1098,7 @@ instance SummaryOpts_access_load_now (l : Loc) (v : github_com.prometheus.client
  by
   solve_pointsto_access_struct
 
-instance SummaryOpts_access_store_now (l : Loc) (v : github_com.prometheus.client_golang.prometheus.SummaryOpts) (now' : func.t) :
+instance SummaryOpts_access_store_now (l : Loc) (v : github_com.prometheus.client_golang.prometheus.SummaryOpts) (now' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryOpts go!"now" l) v.now' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryOpts go!"now" l) now' (DFrac.own 1))
@@ -1196,7 +1196,7 @@ instance metricWithLabelValues_access_load_values (l : Loc) (v : github_com.prom
  by
   solve_pointsto_access_struct
 
-instance metricWithLabelValues_access_store_values (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricWithLabelValues) (values' : slice.t) :
+instance metricWithLabelValues_access_store_values (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricWithLabelValues) (values' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricWithLabelValues go!"values" l) v.values' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricWithLabelValues go!"values" l) values' (DFrac.own 1))

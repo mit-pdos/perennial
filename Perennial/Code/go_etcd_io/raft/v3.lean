@@ -10798,7 +10798,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc isResponseMsg (go.GoType.ArrayType 23 go.bool))) (Val #()))))))))
 
-abbrev Storage [FfiSyntax] : Type := interface.t
+abbrev Storage [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Storage.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Entries" (go.signature.Signature [go.uint64, go.uint64, go.uint64] false [(go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry.ty), go.error])), (go.InterfaceElem.MethodElem go!"FirstIndex" (go.signature.Signature [] false [go.uint64, go.error])), (go.InterfaceElem.MethodElem go!"InitialState" (go.signature.Signature [] false [_root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState.ty, _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState.ty, go.error])), (go.InterfaceElem.MethodElem go!"LastIndex" (go.signature.Signature [] false [go.uint64, go.error])), (go.InterfaceElem.MethodElem go!"Snapshot" (go.signature.Signature [] false [_root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.ty, go.error])), (go.InterfaceElem.MethodElem go!"Term" (go.signature.Signature [go.uint64] false [go.uint64, go.error]))])
@@ -10808,7 +10808,7 @@ class Storage.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Storage.TypeAssumptions.underlying
 
-abbrev Logger [FfiSyntax] : Type := interface.t
+abbrev Logger [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Logger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Debug" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Debugf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Fatal" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Fatalf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Info" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Infof" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Panic" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Panicf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Warning" (go.signature.Signature [(go.GoType.SliceType (go.GoType.InterfaceType []))] true [])), (go.InterfaceElem.MethodElem go!"Warningf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true []))])
@@ -10821,7 +10821,7 @@ attribute [instance] Logger.TypeAssumptions.underlying
 structure unstable [FfiSyntax] where
   mk ::
   snapshot' : Loc
-  entries' : slice.t
+  entries' : GoSlice
   offset' : w64
   snapshotInProgress' : Bool
   offsetInProgress' : w64
@@ -10854,7 +10854,7 @@ class unstable.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_snapshot : ∀ (x : unstable), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"snapshot") #x (Val #(x.snapshot'))
   set_snapshot : ∀ (x : unstable) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : unstable)))
   get_entries : ∀ (x : unstable), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"entries") #x (Val #(x.entries'))
-  set_entries : ∀ (x : unstable) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : unstable)))
+  set_entries : ∀ (x : unstable) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : unstable)))
   get_offset : ∀ (x : unstable), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"offset") #x (Val #(x.offset'))
   set_offset : ∀ (x : unstable) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet unstable.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : unstable)))
   get_snapshotInProgress : ∀ (x : unstable), go.IsGoStepPureDetTagged under (StructFieldGet unstable.underlying go!"snapshotInProgress") #x (Val #(x.snapshotInProgress'))
@@ -11280,11 +11280,11 @@ structure Ready [FfiSyntax] where
   mk ::
   SoftState' : Loc
   HardState' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState
-  ReadStates' : slice.t
-  Entries' : slice.t
+  ReadStates' : GoSlice
+  Entries' : GoSlice
   Snapshot' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot
-  CommittedEntries' : slice.t
-  Messages' : slice.t
+  CommittedEntries' : GoSlice
+  Messages' : GoSlice
   MustSync' : Bool
 
 instance Ready.zero_val [FfiSyntax] : ZeroVal Ready :=
@@ -11318,15 +11318,15 @@ class Ready.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   get_HardState : ∀ (x : Ready), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"HardState") #x (Val #(x.HardState'))
   set_HardState : ∀ (x : Ready) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"HardState") (PairV #x #y) (Val #(({ x with HardState' := y } : Ready)))
   get_ReadStates : ∀ (x : Ready), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"ReadStates") #x (Val #(x.ReadStates'))
-  set_ReadStates : ∀ (x : Ready) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"ReadStates") (PairV #x #y) (Val #(({ x with ReadStates' := y } : Ready)))
+  set_ReadStates : ∀ (x : Ready) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"ReadStates") (PairV #x #y) (Val #(({ x with ReadStates' := y } : Ready)))
   get_Entries : ∀ (x : Ready), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"Entries") #x (Val #(x.Entries'))
-  set_Entries : ∀ (x : Ready) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"Entries") (PairV #x #y) (Val #(({ x with Entries' := y } : Ready)))
+  set_Entries : ∀ (x : Ready) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"Entries") (PairV #x #y) (Val #(({ x with Entries' := y } : Ready)))
   get_Snapshot : ∀ (x : Ready), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"Snapshot") #x (Val #(x.Snapshot'))
   set_Snapshot : ∀ (x : Ready) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"Snapshot") (PairV #x #y) (Val #(({ x with Snapshot' := y } : Ready)))
   get_CommittedEntries : ∀ (x : Ready), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"CommittedEntries") #x (Val #(x.CommittedEntries'))
-  set_CommittedEntries : ∀ (x : Ready) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"CommittedEntries") (PairV #x #y) (Val #(({ x with CommittedEntries' := y } : Ready)))
+  set_CommittedEntries : ∀ (x : Ready) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"CommittedEntries") (PairV #x #y) (Val #(({ x with CommittedEntries' := y } : Ready)))
   get_Messages : ∀ (x : Ready), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"Messages") #x (Val #(x.Messages'))
-  set_Messages : ∀ (x : Ready) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"Messages") (PairV #x #y) (Val #(({ x with Messages' := y } : Ready)))
+  set_Messages : ∀ (x : Ready) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"Messages") (PairV #x #y) (Val #(({ x with Messages' := y } : Ready)))
   get_MustSync : ∀ (x : Ready), go.IsGoStepPureDetTagged under (StructFieldGet Ready.underlying go!"MustSync") #x (Val #(x.MustSync'))
   set_MustSync : ∀ (x : Ready) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Ready.underlying go!"MustSync") (PairV #x #y) (Val #(({ x with MustSync' := y } : Ready)))
   equal_unfold : MethodUnfold Ready.ty go!"equal" (LamV "$r"
@@ -11397,7 +11397,7 @@ attribute [instance] Ready.TypeAssumptions.type_repr
   Ready.TypeAssumptions.ptr_XXX_Unmarshal_unfold
   Ready.TypeAssumptions.ptr_equal_unfold
 
-abbrev Node [FfiSyntax] : Type := interface.t
+abbrev Node [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Node.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Advance" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"ApplyConfChange" (go.signature.Signature [_root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeI.ty] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState.ty)])), (go.InterfaceElem.MethodElem go!"Campaign" (go.signature.Signature [_root_.Perennial.context.Context.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"ForgetLeader" (go.signature.Signature [_root_.Perennial.context.Context.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"Propose" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.SliceType go.byte)] false [go.error])), (go.InterfaceElem.MethodElem go!"ProposeConfChange" (go.signature.Signature [_root_.Perennial.context.Context.ty, _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfChangeI.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"ReadIndex" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.SliceType go.byte)] false [go.error])), (go.InterfaceElem.MethodElem go!"Ready" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly Ready.ty)])), (go.InterfaceElem.MethodElem go!"ReportSnapshot" (go.signature.Signature [go.uint64, SnapshotStatus.ty] false [])), (go.InterfaceElem.MethodElem go!"ReportUnreachable" (go.signature.Signature [go.uint64] false [])), (go.InterfaceElem.MethodElem go!"Status" (go.signature.Signature [] false [Status.ty])), (go.InterfaceElem.MethodElem go!"Step" (go.signature.Signature [_root_.Perennial.context.Context.ty, _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"Stop" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Tick" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"TransferLeadership" (go.signature.Signature [_root_.Perennial.context.Context.ty, go.uint64, go.uint64] false []))])
@@ -11410,7 +11410,7 @@ attribute [instance] Node.TypeAssumptions.underlying
 structure Peer [FfiSyntax] where
   mk ::
   ID' : w64
-  Context' : slice.t
+  Context' : GoSlice
 
 instance Peer.zero_val [FfiSyntax] : ZeroVal Peer :=
   ⟨Peer.mk zeroValDef zeroValDef⟩
@@ -11435,7 +11435,7 @@ class Peer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_ID : ∀ (x : Peer), go.IsGoStepPureDetTagged under (StructFieldGet Peer.underlying go!"ID") #x (Val #(x.ID'))
   set_ID : ∀ (x : Peer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Peer.underlying go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : Peer)))
   get_Context : ∀ (x : Peer), go.IsGoStepPureDetTagged under (StructFieldGet Peer.underlying go!"Context") #x (Val #(x.Context'))
-  set_Context : ∀ (x : Peer) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Peer.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : Peer)))
+  set_Context : ∀ (x : Peer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Peer.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : Peer)))
 
 attribute [instance] Peer.TypeAssumptions.type_repr
   Peer.TypeAssumptions.underlying
@@ -11447,7 +11447,7 @@ attribute [instance] Peer.TypeAssumptions.type_repr
 structure msgWithResult [FfiSyntax] where
   mk ::
   m' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message
-  result' : chan.t
+  result' : GoChan
 
 instance msgWithResult.zero_val [FfiSyntax] : ZeroVal msgWithResult :=
   ⟨msgWithResult.mk zeroValDef zeroValDef⟩
@@ -11472,7 +11472,7 @@ class msgWithResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   get_m : ∀ (x : msgWithResult), go.IsGoStepPureDetTagged under (StructFieldGet msgWithResult.underlying go!"m") #x (Val #(x.m'))
   set_m : ∀ (x : msgWithResult) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message), go.IsGoStepPureDetTagged under (StructFieldSet msgWithResult.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : msgWithResult)))
   get_result : ∀ (x : msgWithResult), go.IsGoStepPureDetTagged under (StructFieldGet msgWithResult.underlying go!"result") #x (Val #(x.result'))
-  set_result : ∀ (x : msgWithResult) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet msgWithResult.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : msgWithResult)))
+  set_result : ∀ (x : msgWithResult) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet msgWithResult.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : msgWithResult)))
 
 attribute [instance] msgWithResult.TypeAssumptions.type_repr
   msgWithResult.TypeAssumptions.underlying
@@ -11483,16 +11483,16 @@ attribute [instance] msgWithResult.TypeAssumptions.type_repr
 
 structure node [FfiSyntax] where
   mk ::
-  propc' : chan.t
-  recvc' : chan.t
-  confc' : chan.t
-  confstatec' : chan.t
-  readyc' : chan.t
-  advancec' : chan.t
-  tickc' : chan.t
-  done' : chan.t
-  stop' : chan.t
-  status' : chan.t
+  propc' : GoChan
+  recvc' : GoChan
+  confc' : GoChan
+  confstatec' : GoChan
+  readyc' : GoChan
+  advancec' : GoChan
+  tickc' : GoChan
+  done' : GoChan
+  stop' : GoChan
+  status' : GoChan
   rn' : Loc
 
 instance node.zero_val [FfiSyntax] : ZeroVal node :=
@@ -11525,25 +11525,25 @@ class node.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying node.underlying node
   underlying : go.UnderlyingDirectedEq node.ty node.underlying
   get_propc : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"propc") #x (Val #(x.propc'))
-  set_propc : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"propc") (PairV #x #y) (Val #(({ x with propc' := y } : node)))
+  set_propc : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"propc") (PairV #x #y) (Val #(({ x with propc' := y } : node)))
   get_recvc : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"recvc") #x (Val #(x.recvc'))
-  set_recvc : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"recvc") (PairV #x #y) (Val #(({ x with recvc' := y } : node)))
+  set_recvc : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"recvc") (PairV #x #y) (Val #(({ x with recvc' := y } : node)))
   get_confc : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"confc") #x (Val #(x.confc'))
-  set_confc : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"confc") (PairV #x #y) (Val #(({ x with confc' := y } : node)))
+  set_confc : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"confc") (PairV #x #y) (Val #(({ x with confc' := y } : node)))
   get_confstatec : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"confstatec") #x (Val #(x.confstatec'))
-  set_confstatec : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"confstatec") (PairV #x #y) (Val #(({ x with confstatec' := y } : node)))
+  set_confstatec : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"confstatec") (PairV #x #y) (Val #(({ x with confstatec' := y } : node)))
   get_readyc : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"readyc") #x (Val #(x.readyc'))
-  set_readyc : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"readyc") (PairV #x #y) (Val #(({ x with readyc' := y } : node)))
+  set_readyc : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"readyc") (PairV #x #y) (Val #(({ x with readyc' := y } : node)))
   get_advancec : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"advancec") #x (Val #(x.advancec'))
-  set_advancec : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"advancec") (PairV #x #y) (Val #(({ x with advancec' := y } : node)))
+  set_advancec : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"advancec") (PairV #x #y) (Val #(({ x with advancec' := y } : node)))
   get_tickc : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"tickc") #x (Val #(x.tickc'))
-  set_tickc : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"tickc") (PairV #x #y) (Val #(({ x with tickc' := y } : node)))
+  set_tickc : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"tickc") (PairV #x #y) (Val #(({ x with tickc' := y } : node)))
   get_done : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"done") #x (Val #(x.done'))
-  set_done : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : node)))
+  set_done : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : node)))
   get_stop : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"stop") #x (Val #(x.stop'))
-  set_stop : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : node)))
+  set_stop : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : node)))
   get_status : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"status") #x (Val #(x.status'))
-  set_status : ∀ (x : node) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"status") (PairV #x #y) (Val #(({ x with status' := y } : node)))
+  set_status : ∀ (x : node) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"status") (PairV #x #y) (Val #(({ x with status' := y } : node)))
   get_rn : ∀ (x : node), go.IsGoStepPureDetTagged under (StructFieldGet node.underlying go!"rn") #x (Val #(x.rn'))
   set_rn : ∀ (x : node) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet node.underlying go!"rn") (PairV #x #y) (Val #(({ x with rn' := y } : node)))
   ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType node.ty) go!"Advance" node.Advance.impl
@@ -11663,7 +11663,7 @@ class CampaignType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] CampaignType.TypeAssumptions.underlying
 
-abbrev TraceLogger [FfiSyntax] : Type := interface.t
+abbrev TraceLogger [FfiSyntax] : Type := GoInterface
 
 @[reducible] def TraceLogger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [])
@@ -11824,7 +11824,7 @@ class entryPayloadSize.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
 
 attribute [instance] entryPayloadSize.TypeAssumptions.underlying
 
-abbrev stepFunc [FfiSyntax] : Type := func.t
+abbrev stepFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def stepFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType raft.ty), _root_.Perennial.go_etcd_io.raft.v3.raftpb.Message.ty] false [go.error]))
@@ -11839,15 +11839,15 @@ structure raft [FfiSyntax] where
   id' : w64
   Term' : w64
   Vote' : w64
-  readStates' : slice.t
+  readStates' : GoSlice
   raftLog' : Loc
   maxMsgSize' : entryEncodingSize
   maxUncommittedSize' : entryPayloadSize
   trk' : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker
   state' : StateType
   isLearner' : Bool
-  msgs' : slice.t
-  msgsAfterAppend' : slice.t
+  msgs' : GoSlice
+  msgsAfterAppend' : GoSlice
   lead' : w64
   leadTransferee' : w64
   pendingConfIndex' : w64
@@ -11863,10 +11863,10 @@ structure raft [FfiSyntax] where
   randomizedElectionTimeout' : w64
   disableProposalForwarding' : Bool
   stepDownOnRemoval' : Bool
-  tick' : func.t
+  tick' : GoFunc
   step' : stepFunc
   logger' : Logger
-  pendingReadIndexMessages' : slice.t
+  pendingReadIndexMessages' : GoSlice
   traceLogger' : TraceLogger
 
 instance raft.zero_val [FfiSyntax] : ZeroVal raft :=
@@ -11926,7 +11926,7 @@ class raft.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_Vote : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"Vote") #x (Val #(x.Vote'))
   set_Vote : ∀ (x : raft) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"Vote") (PairV #x #y) (Val #(({ x with Vote' := y } : raft)))
   get_readStates : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"readStates") #x (Val #(x.readStates'))
-  set_readStates : ∀ (x : raft) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"readStates") (PairV #x #y) (Val #(({ x with readStates' := y } : raft)))
+  set_readStates : ∀ (x : raft) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"readStates") (PairV #x #y) (Val #(({ x with readStates' := y } : raft)))
   get_raftLog : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"raftLog") #x (Val #(x.raftLog'))
   set_raftLog : ∀ (x : raft) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"raftLog") (PairV #x #y) (Val #(({ x with raftLog' := y } : raft)))
   get_maxMsgSize : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"maxMsgSize") #x (Val #(x.maxMsgSize'))
@@ -11940,9 +11940,9 @@ class raft.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_isLearner : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"isLearner") #x (Val #(x.isLearner'))
   set_isLearner : ∀ (x : raft) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"isLearner") (PairV #x #y) (Val #(({ x with isLearner' := y } : raft)))
   get_msgs : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"msgs") #x (Val #(x.msgs'))
-  set_msgs : ∀ (x : raft) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"msgs") (PairV #x #y) (Val #(({ x with msgs' := y } : raft)))
+  set_msgs : ∀ (x : raft) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"msgs") (PairV #x #y) (Val #(({ x with msgs' := y } : raft)))
   get_msgsAfterAppend : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"msgsAfterAppend") #x (Val #(x.msgsAfterAppend'))
-  set_msgsAfterAppend : ∀ (x : raft) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"msgsAfterAppend") (PairV #x #y) (Val #(({ x with msgsAfterAppend' := y } : raft)))
+  set_msgsAfterAppend : ∀ (x : raft) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"msgsAfterAppend") (PairV #x #y) (Val #(({ x with msgsAfterAppend' := y } : raft)))
   get_lead : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"lead") #x (Val #(x.lead'))
   set_lead : ∀ (x : raft) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"lead") (PairV #x #y) (Val #(({ x with lead' := y } : raft)))
   get_leadTransferee : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"leadTransferee") #x (Val #(x.leadTransferee'))
@@ -11974,13 +11974,13 @@ class raft.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_stepDownOnRemoval : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"stepDownOnRemoval") #x (Val #(x.stepDownOnRemoval'))
   set_stepDownOnRemoval : ∀ (x : raft) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"stepDownOnRemoval") (PairV #x #y) (Val #(({ x with stepDownOnRemoval' := y } : raft)))
   get_tick : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"tick") #x (Val #(x.tick'))
-  set_tick : ∀ (x : raft) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"tick") (PairV #x #y) (Val #(({ x with tick' := y } : raft)))
+  set_tick : ∀ (x : raft) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"tick") (PairV #x #y) (Val #(({ x with tick' := y } : raft)))
   get_step : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"step") #x (Val #(x.step'))
   set_step : ∀ (x : raft) (y : stepFunc), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"step") (PairV #x #y) (Val #(({ x with step' := y } : raft)))
   get_logger : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"logger") #x (Val #(x.logger'))
   set_logger : ∀ (x : raft) (y : Logger), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"logger") (PairV #x #y) (Val #(({ x with logger' := y } : raft)))
   get_pendingReadIndexMessages : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"pendingReadIndexMessages") #x (Val #(x.pendingReadIndexMessages'))
-  set_pendingReadIndexMessages : ∀ (x : raft) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"pendingReadIndexMessages") (PairV #x #y) (Val #(({ x with pendingReadIndexMessages' := y } : raft)))
+  set_pendingReadIndexMessages : ∀ (x : raft) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"pendingReadIndexMessages") (PairV #x #y) (Val #(({ x with pendingReadIndexMessages' := y } : raft)))
   get_traceLogger : ∀ (x : raft), go.IsGoStepPureDetTagged under (StructFieldGet raft.underlying go!"traceLogger") #x (Val #(x.traceLogger'))
   set_traceLogger : ∀ (x : raft) (y : TraceLogger), go.IsGoStepPureDetTagged under (StructFieldSet raft.underlying go!"traceLogger") (PairV #x #y) (Val #(({ x with traceLogger' := y } : raft)))
   ptr_Step_unfold : MethodUnfold (go.GoType.PointerType raft.ty) go!"Step" raft.Step.impl
@@ -12143,7 +12143,7 @@ structure RawNode [FfiSyntax] where
   asyncStorageWrites' : Bool
   prevSoftSt' : Loc
   prevHardSt' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState
-  stepsOnAdvance' : slice.t
+  stepsOnAdvance' : GoSlice
 
 instance RawNode.zero_val [FfiSyntax] : ZeroVal RawNode :=
   ⟨RawNode.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -12177,7 +12177,7 @@ class RawNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   get_prevHardSt : ∀ (x : RawNode), go.IsGoStepPureDetTagged under (StructFieldGet RawNode.underlying go!"prevHardSt") #x (Val #(x.prevHardSt'))
   set_prevHardSt : ∀ (x : RawNode) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState), go.IsGoStepPureDetTagged under (StructFieldSet RawNode.underlying go!"prevHardSt") (PairV #x #y) (Val #(({ x with prevHardSt' := y } : RawNode)))
   get_stepsOnAdvance : ∀ (x : RawNode), go.IsGoStepPureDetTagged under (StructFieldGet RawNode.underlying go!"stepsOnAdvance") #x (Val #(x.stepsOnAdvance'))
-  set_stepsOnAdvance : ∀ (x : RawNode) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet RawNode.underlying go!"stepsOnAdvance") (PairV #x #y) (Val #(({ x with stepsOnAdvance' := y } : RawNode)))
+  set_stepsOnAdvance : ∀ (x : RawNode) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet RawNode.underlying go!"stepsOnAdvance") (PairV #x #y) (Val #(({ x with stepsOnAdvance' := y } : RawNode)))
   ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType RawNode.ty) go!"Advance" RawNode.Advance.impl
   ptr_ApplyConfChange_unfold : MethodUnfold (go.GoType.PointerType RawNode.ty) go!"ApplyConfChange" RawNode.ApplyConfChange.impl
   ptr_BasicStatus_unfold : MethodUnfold (go.GoType.PointerType RawNode.ty) go!"BasicStatus" RawNode.BasicStatus.impl
@@ -12249,7 +12249,7 @@ attribute [instance] ProgressType.TypeAssumptions.underlying
 structure ReadState [FfiSyntax] where
   mk ::
   Index' : w64
-  RequestCtx' : slice.t
+  RequestCtx' : GoSlice
 
 instance ReadState.zero_val [FfiSyntax] : ZeroVal ReadState :=
   ⟨ReadState.mk zeroValDef zeroValDef⟩
@@ -12274,7 +12274,7 @@ class ReadState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_Index : ∀ (x : ReadState), go.IsGoStepPureDetTagged under (StructFieldGet ReadState.underlying go!"Index") #x (Val #(x.Index'))
   set_Index : ∀ (x : ReadState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ReadState.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : ReadState)))
   get_RequestCtx : ∀ (x : ReadState), go.IsGoStepPureDetTagged under (StructFieldGet ReadState.underlying go!"RequestCtx") #x (Val #(x.RequestCtx'))
-  set_RequestCtx : ∀ (x : ReadState) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ReadState.underlying go!"RequestCtx") (PairV #x #y) (Val #(({ x with RequestCtx' := y } : ReadState)))
+  set_RequestCtx : ∀ (x : ReadState) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ReadState.underlying go!"RequestCtx") (PairV #x #y) (Val #(({ x with RequestCtx' := y } : ReadState)))
 
 attribute [instance] ReadState.TypeAssumptions.type_repr
   ReadState.TypeAssumptions.underlying
@@ -12323,8 +12323,8 @@ attribute [instance] readIndexRequest.TypeAssumptions.type_repr
 structure readOnly [FfiSyntax] where
   mk ::
   option' : ReadOnlyOption
-  acks' : map.t
-  unconfirmedReads' : slice.t
+  acks' : GoMap
+  unconfirmedReads' : GoSlice
   confirmedReads' : w64
 
 instance readOnly.zero_val [FfiSyntax] : ZeroVal readOnly :=
@@ -12352,9 +12352,9 @@ class readOnly.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_option : ∀ (x : readOnly), go.IsGoStepPureDetTagged under (StructFieldGet readOnly.underlying go!"option") #x (Val #(x.option'))
   «set_option» : ∀ (x : readOnly) (y : ReadOnlyOption), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"option") (PairV #x #y) (Val #(({ x with option' := y } : readOnly)))
   get_acks : ∀ (x : readOnly), go.IsGoStepPureDetTagged under (StructFieldGet readOnly.underlying go!"acks") #x (Val #(x.acks'))
-  set_acks : ∀ (x : readOnly) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"acks") (PairV #x #y) (Val #(({ x with acks' := y } : readOnly)))
+  set_acks : ∀ (x : readOnly) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"acks") (PairV #x #y) (Val #(({ x with acks' := y } : readOnly)))
   get_unconfirmedReads : ∀ (x : readOnly), go.IsGoStepPureDetTagged under (StructFieldGet readOnly.underlying go!"unconfirmedReads") #x (Val #(x.unconfirmedReads'))
-  set_unconfirmedReads : ∀ (x : readOnly) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"unconfirmedReads") (PairV #x #y) (Val #(({ x with unconfirmedReads' := y } : readOnly)))
+  set_unconfirmedReads : ∀ (x : readOnly) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"unconfirmedReads") (PairV #x #y) (Val #(({ x with unconfirmedReads' := y } : readOnly)))
   get_confirmedReads : ∀ (x : readOnly), go.IsGoStepPureDetTagged under (StructFieldGet readOnly.underlying go!"confirmedReads") #x (Val #(x.confirmedReads'))
   set_confirmedReads : ∀ (x : readOnly) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet readOnly.underlying go!"confirmedReads") (PairV #x #y) (Val #(({ x with confirmedReads' := y } : readOnly)))
   ptr_AckedIndex_unfold : MethodUnfold (go.GoType.PointerType readOnly.ty) go!"AckedIndex" readOnly.AckedIndex.impl
@@ -12509,7 +12509,7 @@ structure Status [FfiSyntax] where
   mk ::
   BasicStatus' : BasicStatus
   Config' : _root_.Perennial.go_etcd_io.raft.v3.tracker.Config
-  Progress' : map.t
+  Progress' : GoMap
 
 instance Status.zero_val [FfiSyntax] : ZeroVal Status :=
   ⟨Status.mk zeroValDef zeroValDef zeroValDef⟩
@@ -12537,7 +12537,7 @@ class Status.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   get_Config : ∀ (x : Status), go.IsGoStepPureDetTagged under (StructFieldGet Status.underlying go!"Config") #x (Val #(x.Config'))
   set_Config : ∀ (x : Status) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.Config), go.IsGoStepPureDetTagged under (StructFieldSet Status.underlying go!"Config") (PairV #x #y) (Val #(({ x with Config' := y } : Status)))
   get_Progress : ∀ (x : Status), go.IsGoStepPureDetTagged under (StructFieldGet Status.underlying go!"Progress") #x (Val #(x.Progress'))
-  set_Progress : ∀ (x : Status) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Status.underlying go!"Progress") (PairV #x #y) (Val #(({ x with Progress' := y } : Status)))
+  set_Progress : ∀ (x : Status) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Status.underlying go!"Progress") (PairV #x #y) (Val #(({ x with Progress' := y } : Status)))
   MarshalJSON_unfold : MethodUnfold Status.ty go!"MarshalJSON" Status.MarshalJSON.impl
   String_unfold : MethodUnfold Status.ty go!"String" Status.String.impl
   ptr_Descriptor_unfold : MethodUnfold (go.GoType.PointerType Status.ty) go!"Descriptor" (LamV "$r"
@@ -12666,7 +12666,7 @@ structure MemoryStorage [FfiSyntax] where
   Mutex' : _root_.Perennial.sync.Mutex
   hardState' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.HardState
   snapshot' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot
-  ents' : slice.t
+  ents' : GoSlice
   callStats' : inMemStorageCallStats
 
 instance MemoryStorage.zero_val [FfiSyntax] : ZeroVal MemoryStorage :=
@@ -12699,7 +12699,7 @@ class MemoryStorage.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   get_snapshot : ∀ (x : MemoryStorage), go.IsGoStepPureDetTagged under (StructFieldGet MemoryStorage.underlying go!"snapshot") #x (Val #(x.snapshot'))
   set_snapshot : ∀ (x : MemoryStorage) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : MemoryStorage)))
   get_ents : ∀ (x : MemoryStorage), go.IsGoStepPureDetTagged under (StructFieldGet MemoryStorage.underlying go!"ents") #x (Val #(x.ents'))
-  set_ents : ∀ (x : MemoryStorage) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"ents") (PairV #x #y) (Val #(({ x with ents' := y } : MemoryStorage)))
+  set_ents : ∀ (x : MemoryStorage) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"ents") (PairV #x #y) (Val #(({ x with ents' := y } : MemoryStorage)))
   get_callStats : ∀ (x : MemoryStorage), go.IsGoStepPureDetTagged under (StructFieldGet MemoryStorage.underlying go!"callStats") #x (Val #(x.callStats'))
   set_callStats : ∀ (x : MemoryStorage) (y : inMemStorageCallStats), go.IsGoStepPureDetTagged under (StructFieldSet MemoryStorage.underlying go!"callStats") (PairV #x #y) (Val #(({ x with callStats' := y } : MemoryStorage)))
   ptr_Append_unfold : MethodUnfold (go.GoType.PointerType MemoryStorage.ty) go!"Append" MemoryStorage.Append.impl
@@ -12792,7 +12792,7 @@ structure logSlice [FfiSyntax] where
   mk ::
   term' : w64
   prev' : entryID
-  entries' : slice.t
+  entries' : GoSlice
 
 instance logSlice.zero_val [FfiSyntax] : ZeroVal logSlice :=
   ⟨logSlice.mk zeroValDef zeroValDef zeroValDef⟩
@@ -12820,7 +12820,7 @@ class logSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_prev : ∀ (x : logSlice), go.IsGoStepPureDetTagged under (StructFieldGet logSlice.underlying go!"prev") #x (Val #(x.prev'))
   set_prev : ∀ (x : logSlice) (y : entryID), go.IsGoStepPureDetTagged under (StructFieldSet logSlice.underlying go!"prev") (PairV #x #y) (Val #(({ x with prev' := y } : logSlice)))
   get_entries : ∀ (x : logSlice), go.IsGoStepPureDetTagged under (StructFieldGet logSlice.underlying go!"entries") #x (Val #(x.entries'))
-  set_entries : ∀ (x : logSlice) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet logSlice.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : logSlice)))
+  set_entries : ∀ (x : logSlice) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet logSlice.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : logSlice)))
   lastEntryID_unfold : MethodUnfold logSlice.ty go!"lastEntryID" logSlice.lastEntryID.impl
   lastIndex_unfold : MethodUnfold logSlice.ty go!"lastIndex" logSlice.lastIndex.impl
   valid_unfold : MethodUnfold logSlice.ty go!"valid" logSlice.valid.impl
@@ -12846,7 +12846,7 @@ attribute [instance] logSlice.TypeAssumptions.type_repr
   logSlice.TypeAssumptions.ptr_lastIndex_unfold
   logSlice.TypeAssumptions.ptr_valid_unfold
 
-abbrev EntryFormatter [FfiSyntax] : Type := func.t
+abbrev EntryFormatter [FfiSyntax] : Type := GoFunc
 
 @[reducible] def EntryFormatter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.string]))

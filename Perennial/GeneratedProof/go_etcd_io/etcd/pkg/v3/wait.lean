@@ -44,7 +44,7 @@ instance list'_access_load_e (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.list') (
  by
   solve_pointsto_access_struct
 
-instance list'_access_store_e (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.list') (e' : slice.t) :
+instance list'_access_store_e (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.list') (e' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.wait.list' go!"e" l) v.e' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.wait.list' go!"e" l) e' (DFrac.own 1))
@@ -101,7 +101,7 @@ instance listElement_access_load_m (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.li
  by
   solve_pointsto_access_struct
 
-instance listElement_access_store_m (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.listElement) (m' : map.t) :
+instance listElement_access_store_m (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.listElement) (m' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.wait.listElement go!"m" l) v.m' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.wait.listElement go!"m" l) m' (DFrac.own 1))
@@ -141,7 +141,7 @@ instance waitWithResponse_access_load_ch (l : Loc) (v : go_etcd_io.etcd.pkg.v3.w
  by
   solve_pointsto_access_struct
 
-instance waitWithResponse_access_store_ch (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.waitWithResponse) (ch' : chan.t) :
+instance waitWithResponse_access_store_ch (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.waitWithResponse) (ch' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.wait.waitWithResponse go!"ch" l) v.ch' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.wait.waitWithResponse go!"ch" l) ch' (DFrac.own 1))
@@ -215,7 +215,7 @@ instance timeList_access_load_m (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.timeL
  by
   solve_pointsto_access_struct
 
-instance timeList_access_store_m (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.timeList) (m' : map.t) :
+instance timeList_access_store_m (l : Loc) (v : go_etcd_io.etcd.pkg.v3.wait.timeList) (m' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.wait.timeList go!"m" l) v.m' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.wait.timeList go!"m" l) m' (DFrac.own 1))

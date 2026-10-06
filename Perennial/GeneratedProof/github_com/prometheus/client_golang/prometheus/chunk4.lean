@@ -98,7 +98,7 @@ instance gauge_access_load_labelPairs (l : Loc) (v : github_com.prometheus.clien
  by
   solve_pointsto_access_struct
 
-instance gauge_access_store_labelPairs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.gauge) (labelPairs' : slice.t) :
+instance gauge_access_store_labelPairs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.gauge) (labelPairs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.gauge go!"labelPairs" l) v.labelPairs' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.gauge go!"labelPairs" l) labelPairs' (DFrac.own 1))
@@ -208,7 +208,7 @@ instance batchHistogram_access_load_buckets (l : Loc) (v : github_com.prometheus
  by
   solve_pointsto_access_struct
 
-instance batchHistogram_access_store_buckets (l : Loc) (v : github_com.prometheus.client_golang.prometheus.batchHistogram) (buckets' : slice.t) :
+instance batchHistogram_access_store_buckets (l : Loc) (v : github_com.prometheus.client_golang.prometheus.batchHistogram) (buckets' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.batchHistogram go!"buckets" l) v.buckets' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.batchHistogram go!"buckets" l) buckets' (DFrac.own 1))
@@ -224,7 +224,7 @@ instance batchHistogram_access_load_counts (l : Loc) (v : github_com.prometheus.
  by
   solve_pointsto_access_struct
 
-instance batchHistogram_access_store_counts (l : Loc) (v : github_com.prometheus.client_golang.prometheus.batchHistogram) (counts' : slice.t) :
+instance batchHistogram_access_store_counts (l : Loc) (v : github_com.prometheus.client_golang.prometheus.batchHistogram) (counts' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.batchHistogram go!"counts" l) v.counts' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.batchHistogram go!"counts" l) counts' (DFrac.own 1))
@@ -446,7 +446,7 @@ instance valueFunc_access_load_function (l : Loc) (v : github_com.prometheus.cli
  by
   solve_pointsto_access_struct
 
-instance valueFunc_access_store_function (l : Loc) (v : github_com.prometheus.client_golang.prometheus.valueFunc) (function' : func.t) :
+instance valueFunc_access_store_function (l : Loc) (v : github_com.prometheus.client_golang.prometheus.valueFunc) (function' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.valueFunc go!"function" l) v.function' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.valueFunc go!"function" l) function' (DFrac.own 1))
@@ -462,7 +462,7 @@ instance valueFunc_access_load_labelPairs (l : Loc) (v : github_com.prometheus.c
  by
   solve_pointsto_access_struct
 
-instance valueFunc_access_store_labelPairs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.valueFunc) (labelPairs' : slice.t) :
+instance valueFunc_access_store_labelPairs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.valueFunc) (labelPairs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.valueFunc go!"labelPairs" l) v.labelPairs' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.valueFunc go!"labelPairs" l) labelPairs' (DFrac.own 1))

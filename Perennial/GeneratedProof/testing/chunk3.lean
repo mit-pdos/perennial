@@ -119,7 +119,7 @@ instance F_access_load_corpus (l : Loc) (v : testing.F) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance F_access_store_corpus (l : Loc) (v : testing.F) (corpus' : slice.t) :
+instance F_access_store_corpus (l : Loc) (v : testing.F) (corpus' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.F go!"corpus" l) v.corpus' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.F go!"corpus" l) corpus' (DFrac.own 1))

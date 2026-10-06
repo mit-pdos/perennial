@@ -1246,7 +1246,7 @@ attribute [instance] Bool.TypeAssumptions.type_repr
 
 structure Pointer [FfiSyntax] (T : Type) where
   mk ::
-  _0' : (array.t Loc 0)
+  _0' : (GoArray Loc 0)
   _1' : noCopy
   v' : Loc
 
@@ -1272,7 +1272,7 @@ class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Pointer.underlying T) (Pointer T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer.ty T) (Pointer.underlying T)
   get__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : (array.t Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : (Pointer T'))))
+  set__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : (GoArray Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : (Pointer T'))))
   get__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_1") #x (Val #(x._1'))
   set__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : (Pointer T'))))
   get_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"v") #x (Val #(x.v'))
@@ -1576,7 +1576,7 @@ attribute [instance] Uintptr.TypeAssumptions.type_repr
 
 structure Value [FfiSyntax] where
   mk ::
-  v' : interface.t
+  v' : GoInterface
 
 instance Value.zero_val [FfiSyntax] : ZeroVal Value :=
   ⟨Value.mk zeroValDef⟩
@@ -1598,7 +1598,7 @@ class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying Value.underlying Value
   underlying : go.UnderlyingDirectedEq Value.ty Value.underlying
   get_v : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"v") #x (Val #(x.v'))
-  set_v : ∀ (x : Value) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Value)))
+  set_v : ∀ (x : Value) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Value)))
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"CompareAndSwap" Value.CompareAndSwap.impl
   ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"Load" Value.Load.impl
   ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"Store" Value.Store.impl

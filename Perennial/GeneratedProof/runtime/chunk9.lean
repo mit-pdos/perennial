@@ -57,7 +57,7 @@ instance scavengeIndex_access_load_chunks (l : Loc) (v : runtime.scavengeIndex) 
  by
   solve_pointsto_access_struct
 
-instance scavengeIndex_access_store_chunks (l : Loc) (v : runtime.scavengeIndex) (chunks' : slice.t) :
+instance scavengeIndex_access_store_chunks (l : Loc) (v : runtime.scavengeIndex) (chunks' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.scavengeIndex go!"chunks" l) v.chunks' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.scavengeIndex go!"chunks" l) chunks' (DFrac.own 1))
@@ -702,7 +702,7 @@ instance gcWork_access_load_stats (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance gcWork_access_store_stats (l : Loc) (v : runtime.gcWork) (stats' : (array.t runtime.sizeClassScanStats 68)) :
+instance gcWork_access_store_stats (l : Loc) (v : runtime.gcWork) (stats' : (GoArray runtime.sizeClassScanStats 68)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gcWork go!"stats" l) v.stats' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gcWork go!"stats" l) stats' (DFrac.own 1))
@@ -1294,7 +1294,7 @@ instance gcBitsArena_access_load_bits (l : Loc) (v : runtime.gcBitsArena) (dq : 
  by
   solve_pointsto_access_struct
 
-instance gcBitsArena_access_store_bits (l : Loc) (v : runtime.gcBitsArena) (bits' : (array.t runtime.gcBits 65520)) :
+instance gcBitsArena_access_store_bits (l : Loc) (v : runtime.gcBitsArena) (bits' : (GoArray runtime.gcBits 65520)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gcBitsArena go!"bits" l) v.bits' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gcBitsArena go!"bits" l) bits' (DFrac.own 1))
@@ -1550,7 +1550,7 @@ instance memRecord_access_load_future (l : Loc) (v : runtime.memRecord) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance memRecord_access_store_future (l : Loc) (v : runtime.memRecord) (future' : (array.t runtime.memRecordCycle 3)) :
+instance memRecord_access_store_future (l : Loc) (v : runtime.memRecord) (future' : (GoArray runtime.memRecordCycle 3)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.memRecord go!"future" l) v.future' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.memRecord go!"future" l) future' (DFrac.own 1))
@@ -2277,7 +2277,7 @@ instance profBuf_access_load_data (l : Loc) (v : runtime.profBuf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance profBuf_access_store_data (l : Loc) (v : runtime.profBuf) (data' : slice.t) :
+instance profBuf_access_store_data (l : Loc) (v : runtime.profBuf) (data' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.profBuf go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.profBuf go!"data" l) data' (DFrac.own 1))
@@ -2293,7 +2293,7 @@ instance profBuf_access_load_tags (l : Loc) (v : runtime.profBuf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance profBuf_access_store_tags (l : Loc) (v : runtime.profBuf) (tags' : slice.t) :
+instance profBuf_access_store_tags (l : Loc) (v : runtime.profBuf) (tags' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.profBuf go!"tags" l) v.tags' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.profBuf go!"tags" l) tags' (DFrac.own 1))
@@ -2325,7 +2325,7 @@ instance profBuf_access_load_overflowBuf (l : Loc) (v : runtime.profBuf) (dq : D
  by
   solve_pointsto_access_struct
 
-instance profBuf_access_store_overflowBuf (l : Loc) (v : runtime.profBuf) (overflowBuf' : slice.t) :
+instance profBuf_access_store_overflowBuf (l : Loc) (v : runtime.profBuf) (overflowBuf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.profBuf go!"overflowBuf" l) v.overflowBuf' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.profBuf go!"overflowBuf" l) overflowBuf' (DFrac.own 1))

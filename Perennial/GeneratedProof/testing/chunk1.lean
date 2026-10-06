@@ -138,7 +138,7 @@ instance InternalBenchmark_access_load_F (l : Loc) (v : testing.InternalBenchmar
  by
   solve_pointsto_access_struct
 
-instance InternalBenchmark_access_store_F (l : Loc) (v : testing.InternalBenchmark) (F' : func.t) :
+instance InternalBenchmark_access_store_F (l : Loc) (v : testing.InternalBenchmark) (F' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.InternalBenchmark go!"F" l) v.F' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.InternalBenchmark go!"F" l) F' (DFrac.own 1))
@@ -282,7 +282,7 @@ instance BenchmarkResult_access_load_Extra (l : Loc) (v : testing.BenchmarkResul
  by
   solve_pointsto_access_struct
 
-instance BenchmarkResult_access_store_Extra (l : Loc) (v : testing.BenchmarkResult) (Extra' : map.t) :
+instance BenchmarkResult_access_store_Extra (l : Loc) (v : testing.BenchmarkResult) (Extra' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.BenchmarkResult go!"Extra" l) v.Extra' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.BenchmarkResult go!"Extra" l) Extra' (DFrac.own 1))
@@ -637,7 +637,7 @@ instance Cover_access_load_Counters (l : Loc) (v : testing.Cover) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Cover_access_store_Counters (l : Loc) (v : testing.Cover) (Counters' : map.t) :
+instance Cover_access_store_Counters (l : Loc) (v : testing.Cover) (Counters' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.Cover go!"Counters" l) v.Counters' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.Cover go!"Counters" l) Counters' (DFrac.own 1))
@@ -653,7 +653,7 @@ instance Cover_access_load_Blocks (l : Loc) (v : testing.Cover) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Cover_access_store_Blocks (l : Loc) (v : testing.Cover) (Blocks' : map.t) :
+instance Cover_access_store_Blocks (l : Loc) (v : testing.Cover) (Blocks' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.Cover go!"Blocks" l) v.Blocks' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.Cover go!"Blocks" l) Blocks' (DFrac.own 1))
@@ -728,7 +728,7 @@ instance InternalExample_access_load_F (l : Loc) (v : testing.InternalExample) (
  by
   solve_pointsto_access_struct
 
-instance InternalExample_access_store_F (l : Loc) (v : testing.InternalExample) (F' : func.t) :
+instance InternalExample_access_store_F (l : Loc) (v : testing.InternalExample) (F' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.InternalExample go!"F" l) v.F' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.InternalExample go!"F" l) F' (DFrac.own 1))
@@ -817,7 +817,7 @@ instance InternalFuzzTarget_access_load_Fn (l : Loc) (v : testing.InternalFuzzTa
  by
   solve_pointsto_access_struct
 
-instance InternalFuzzTarget_access_store_Fn (l : Loc) (v : testing.InternalFuzzTarget) (Fn' : func.t) :
+instance InternalFuzzTarget_access_store_Fn (l : Loc) (v : testing.InternalFuzzTarget) (Fn' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.InternalFuzzTarget go!"Fn" l) v.Fn' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.InternalFuzzTarget go!"Fn" l) Fn' (DFrac.own 1))
@@ -931,7 +931,7 @@ instance fuzzResult_access_load_Error (l : Loc) (v : testing.fuzzResult) (dq : D
  by
   solve_pointsto_access_struct
 
-instance fuzzResult_access_store_Error (l : Loc) (v : testing.fuzzResult) (Error' : error.t) :
+instance fuzzResult_access_store_Error (l : Loc) (v : testing.fuzzResult) (Error' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.fuzzResult go!"Error" l) v.Error' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.fuzzResult go!"Error" l) Error' (DFrac.own 1))
@@ -1195,7 +1195,7 @@ instance outputWriter_access_load_partial (l : Loc) (v : testing.outputWriter) (
  by
   solve_pointsto_access_struct
 
-instance outputWriter_access_store_partial (l : Loc) (v : testing.outputWriter) (partial' : slice.t) :
+instance outputWriter_access_store_partial (l : Loc) (v : testing.outputWriter) (partial' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.outputWriter go!"partial" l) v.partial' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.outputWriter go!"partial" l) partial' (DFrac.own 1))
@@ -1252,7 +1252,7 @@ instance InternalTest_access_load_F (l : Loc) (v : testing.InternalTest) (dq : D
  by
   solve_pointsto_access_struct
 
-instance InternalTest_access_store_F (l : Loc) (v : testing.InternalTest) (F' : func.t) :
+instance InternalTest_access_store_F (l : Loc) (v : testing.InternalTest) (F' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.InternalTest go!"F" l) v.F' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.InternalTest go!"F" l) F' (DFrac.own 1))
@@ -1363,7 +1363,7 @@ instance testState_access_load_startParallel (l : Loc) (v : testing.testState) (
  by
   solve_pointsto_access_struct
 
-instance testState_access_store_startParallel (l : Loc) (v : testing.testState) (startParallel' : chan.t) :
+instance testState_access_store_startParallel (l : Loc) (v : testing.testState) (startParallel' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.testState go!"startParallel" l) v.startParallel' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.testState go!"startParallel" l) startParallel' (DFrac.own 1))

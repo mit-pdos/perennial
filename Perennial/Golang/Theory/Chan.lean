@@ -31,7 +31,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 
-instance pure_wp_chan_for_range (c : chan.t) (elem_type : go.GoType) (body : val) :
+instance pure_wp_chan_for_range (c : GoChan) (elem_type : go.GoType) (body : val) :
     PureWp (G := G) (L := L) True (App (App (Val (chan.forRange elem_type)) (Val #c)) (Val body))
       gl(for: (λ: <>, #true : val) ; (λ: <>, #() : val) := (λ: <>,
           let: ("v", "ok") := chan.receive elem_type #c in
@@ -68,7 +68,7 @@ theorem wp_make2 (cap : w64) :
     {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗
         ⌜γ.chanCap = cap⌝ ∗
-        ownChan γ V (if cap = W64 0 then chanstate.t.Idle else chanstate.t.Buffered ([] : List V)) }} := by
+        ownChan γ V (if cap = W64 0 then ChanState.Idle else ChanState.Buffered ([] : List V)) }} := by
   wp_start as %Hle
   wp_apply wp_NewChannel (V := V) cap $$ [] as %ch %γ H
   · ipureintro; exact Hle
@@ -81,7 +81,7 @@ theorem wp_make1 :
     {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗
         ⌜γ.chanCap = W64 0⌝ ∗
-        ownChan γ V chanstate.t.Idle }} := by
+        ownChan γ V ChanState.Idle }} := by
   wp_start
   wp_func_call
   wp_apply wp_NewChannel (V := V) (W64 0) $$ [] as %ch %γ H

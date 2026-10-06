@@ -1217,7 +1217,7 @@ class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
 
-abbrev Locker [FfiSyntax] : Type := interface.t
+abbrev Locker [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Locker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Lock" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Unlock" (go.signature.Signature [] false []))])
@@ -1424,7 +1424,7 @@ structure Pool [FfiSyntax] where
   localSize' : w64
   victim' : Loc
   victimSize' : w64
-  New' : func.t
+  New' : GoFunc
 
 instance Pool.zero_val [FfiSyntax] : ZeroVal Pool :=
   ⟨Pool.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1461,7 +1461,7 @@ class Pool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_victimSize : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"victimSize") #x (Val #(x.victimSize'))
   set_victimSize : ∀ (x : Pool) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"victimSize") (PairV #x #y) (Val #(({ x with victimSize' := y } : Pool)))
   get_New : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"New") #x (Val #(x.New'))
-  set_New : ∀ (x : Pool) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool)))
+  set_New : ∀ (x : Pool) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool)))
 
 attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.underlying
@@ -1530,7 +1530,7 @@ attribute [instance] poolChain.TypeAssumptions.type_repr
 
 structure poolLocalInternal [FfiSyntax] where
   mk ::
-  private' : interface.t
+  private' : GoInterface
   shared' : poolChain
 
 instance poolLocalInternal.zero_val [FfiSyntax] : ZeroVal poolLocalInternal :=
@@ -1554,7 +1554,7 @@ class poolLocalInternal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   type_repr : go.TypeReprUnderlying poolLocalInternal.underlying poolLocalInternal
   underlying : go.UnderlyingDirectedEq poolLocalInternal.ty poolLocalInternal.underlying
   get_private : ∀ (x : poolLocalInternal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"private") #x (Val #(x.private'))
-  set_private : ∀ (x : poolLocalInternal) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"private") (PairV #x #y) (Val #(({ x with private' := y } : poolLocalInternal)))
+  set_private : ∀ (x : poolLocalInternal) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"private") (PairV #x #y) (Val #(({ x with private' := y } : poolLocalInternal)))
   get_shared : ∀ (x : poolLocalInternal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"shared") #x (Val #(x.shared'))
   set_shared : ∀ (x : poolLocalInternal) (y : poolChain), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"shared") (PairV #x #y) (Val #(({ x with shared' := y } : poolLocalInternal)))
 
@@ -1568,7 +1568,7 @@ attribute [instance] poolLocalInternal.TypeAssumptions.type_repr
 structure poolLocal [FfiSyntax] where
   mk ::
   poolLocalInternal' : poolLocalInternal
-  pad' : (array.t w8 96)
+  pad' : (GoArray w8 96)
 
 instance poolLocal.zero_val [FfiSyntax] : ZeroVal poolLocal :=
   ⟨poolLocal.mk zeroValDef zeroValDef⟩
@@ -1593,7 +1593,7 @@ class poolLocal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_poolLocalInternal : ∀ (x : poolLocal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"poolLocalInternal") #x (Val #(x.poolLocalInternal'))
   set_poolLocalInternal : ∀ (x : poolLocal) (y : poolLocalInternal), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"poolLocalInternal") (PairV #x #y) (Val #(({ x with poolLocalInternal' := y } : poolLocal)))
   get_pad : ∀ (x : poolLocal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"pad") #x (Val #(x.pad'))
-  set_pad : ∀ (x : poolLocal) (y : (array.t w8 96)), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : poolLocal)))
+  set_pad : ∀ (x : poolLocal) (y : (GoArray w8 96)), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : poolLocal)))
 
 attribute [instance] poolLocal.TypeAssumptions.type_repr
   poolLocal.TypeAssumptions.underlying
@@ -1605,7 +1605,7 @@ attribute [instance] poolLocal.TypeAssumptions.type_repr
 structure poolDequeue [FfiSyntax] where
   mk ::
   headTail' : _root_.Perennial.sync.atomic.Uint64
-  vals' : slice.t
+  vals' : GoSlice
 
 instance poolDequeue.zero_val [FfiSyntax] : ZeroVal poolDequeue :=
   ⟨poolDequeue.mk zeroValDef zeroValDef⟩
@@ -1630,7 +1630,7 @@ class poolDequeue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   get_headTail : ∀ (x : poolDequeue), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"headTail") #x (Val #(x.headTail'))
   set_headTail : ∀ (x : poolDequeue) (y : _root_.Perennial.sync.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"headTail") (PairV #x #y) (Val #(({ x with headTail' := y } : poolDequeue)))
   get_vals : ∀ (x : poolDequeue), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"vals") #x (Val #(x.vals'))
-  set_vals : ∀ (x : poolDequeue) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"vals") (PairV #x #y) (Val #(({ x with vals' := y } : poolDequeue)))
+  set_vals : ∀ (x : poolDequeue) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"vals") (PairV #x #y) (Val #(({ x with vals' := y } : poolDequeue)))
 
 attribute [instance] poolDequeue.TypeAssumptions.type_repr
   poolDequeue.TypeAssumptions.underlying

@@ -83,7 +83,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val cryptocustomrand.init) (Val #())))))))
 
-abbrev PublicKey [FfiSyntax] : Type := slice.t
+abbrev PublicKey [FfiSyntax] : Type := GoSlice
 
 @[reducible] def PublicKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
@@ -93,7 +93,7 @@ class PublicKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] PublicKey.TypeAssumptions.underlying
 
-abbrev PrivateKey [FfiSyntax] : Type := slice.t
+abbrev PrivateKey [FfiSyntax] : Type := GoSlice
 
 @[reducible] def PrivateKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)

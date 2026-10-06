@@ -581,7 +581,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 structure Enc [FfiSyntax] where
   mk ::
-  b' : slice.t
+  b' : GoSlice
   off' : Loc
 
 instance Enc.zero_val [FfiSyntax] : ZeroVal Enc :=
@@ -605,7 +605,7 @@ class Enc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   type_repr : go.TypeReprUnderlying Enc.underlying Enc
   underlying : go.UnderlyingDirectedEq Enc.ty Enc.underlying
   get_b : ∀ (x : Enc), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : Enc) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Enc)))
+  set_b : ∀ (x : Enc) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Enc)))
   get_off : ∀ (x : Enc), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"off") #x (Val #(x.off'))
   set_off : ∀ (x : Enc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Enc)))
 
@@ -618,7 +618,7 @@ attribute [instance] Enc.TypeAssumptions.type_repr
 
 structure Dec [FfiSyntax] where
   mk ::
-  b' : slice.t
+  b' : GoSlice
   off' : Loc
 
 instance Dec.zero_val [FfiSyntax] : ZeroVal Dec :=
@@ -642,7 +642,7 @@ class Dec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   type_repr : go.TypeReprUnderlying Dec.underlying Dec
   underlying : go.UnderlyingDirectedEq Dec.ty Dec.underlying
   get_b : ∀ (x : Dec), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : Dec) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Dec)))
+  set_b : ∀ (x : Dec) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Dec)))
   get_off : ∀ (x : Dec), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"off") #x (Val #(x.off'))
   set_off : ∀ (x : Dec) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Dec)))
 

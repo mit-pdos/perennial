@@ -285,7 +285,7 @@ instance LeaseTimeToLiveResponse_access_load_Keys (l : Loc) (v : go_etcd_io.etcd
  by
   solve_pointsto_access_struct
 
-instance LeaseTimeToLiveResponse_access_store_Keys (l : Loc) (v : go_etcd_io.etcd.client.v3.LeaseTimeToLiveResponse) (Keys' : slice.t) :
+instance LeaseTimeToLiveResponse_access_store_Keys (l : Loc) (v : go_etcd_io.etcd.client.v3.LeaseTimeToLiveResponse) (Keys' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.LeaseTimeToLiveResponse go!"Keys" l) v.Keys' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.LeaseTimeToLiveResponse go!"Keys" l) Keys' (DFrac.own 1))
@@ -408,7 +408,7 @@ instance Op_access_load_key (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (dq : D
  by
   solve_pointsto_access_struct
 
-instance Op_access_store_key (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (key' : slice.t) :
+instance Op_access_store_key (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (key' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"key" l) v.key' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"key" l) key' (DFrac.own 1))
@@ -424,7 +424,7 @@ instance Op_access_load_end (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (dq : D
  by
   solve_pointsto_access_struct
 
-instance Op_access_store_end (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (end' : slice.t) :
+instance Op_access_store_end (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (end' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"end" l) v.end' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"end" l) end' (DFrac.own 1))
@@ -728,7 +728,7 @@ instance Op_access_load_val (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (dq : D
  by
   solve_pointsto_access_struct
 
-instance Op_access_store_val (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (val' : slice.t) :
+instance Op_access_store_val (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (val' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"val" l) val' (DFrac.own 1))
@@ -760,7 +760,7 @@ instance Op_access_load_cmps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (dq : 
  by
   solve_pointsto_access_struct
 
-instance Op_access_store_cmps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (cmps' : slice.t) :
+instance Op_access_store_cmps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (cmps' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"cmps" l) v.cmps' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"cmps" l) cmps' (DFrac.own 1))
@@ -776,7 +776,7 @@ instance Op_access_load_thenOps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (dq
  by
   solve_pointsto_access_struct
 
-instance Op_access_store_thenOps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (thenOps' : slice.t) :
+instance Op_access_store_thenOps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (thenOps' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"thenOps" l) v.thenOps' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"thenOps" l) thenOps' (DFrac.own 1))
@@ -792,7 +792,7 @@ instance Op_access_load_elseOps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (dq
  by
   solve_pointsto_access_struct
 
-instance Op_access_store_elseOps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (elseOps' : slice.t) :
+instance Op_access_store_elseOps (l : Loc) (v : go_etcd_io.etcd.client.v3.Op) (elseOps' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"elseOps" l) v.elseOps' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.Op go!"elseOps" l) elseOps' (DFrac.own 1))
@@ -1091,7 +1091,7 @@ instance watcherStream_access_load_outc (l : Loc) (v : go_etcd_io.etcd.client.v3
  by
   solve_pointsto_access_struct
 
-instance watcherStream_access_store_outc (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream) (outc' : chan.t) :
+instance watcherStream_access_store_outc (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream) (outc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.watcherStream go!"outc" l) v.outc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.watcherStream go!"outc" l) outc' (DFrac.own 1))
@@ -1107,7 +1107,7 @@ instance watcherStream_access_load_recvc (l : Loc) (v : go_etcd_io.etcd.client.v
  by
   solve_pointsto_access_struct
 
-instance watcherStream_access_store_recvc (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream) (recvc' : chan.t) :
+instance watcherStream_access_store_recvc (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream) (recvc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.watcherStream go!"recvc" l) v.recvc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.watcherStream go!"recvc" l) recvc' (DFrac.own 1))
@@ -1123,7 +1123,7 @@ instance watcherStream_access_load_donec (l : Loc) (v : go_etcd_io.etcd.client.v
  by
   solve_pointsto_access_struct
 
-instance watcherStream_access_store_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream) (donec' : chan.t) :
+instance watcherStream_access_store_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream) (donec' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.watcherStream go!"donec" l) v.donec' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.watcherStream go!"donec" l) donec' (DFrac.own 1))
@@ -1171,7 +1171,7 @@ instance watcherStream_access_load_buf (l : Loc) (v : go_etcd_io.etcd.client.v3.
  by
   solve_pointsto_access_struct
 
-instance watcherStream_access_store_buf (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream) (buf' : slice.t) :
+instance watcherStream_access_store_buf (l : Loc) (v : go_etcd_io.etcd.client.v3.watcherStream) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.watcherStream go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.watcherStream go!"buf" l) buf' (DFrac.own 1))

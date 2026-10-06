@@ -45,7 +45,7 @@ instance Enc_access_load_b (l : Loc) (v : github_com.tchajed.marshal.Enc) (dq : 
  by
   solve_pointsto_access_struct
 
-instance Enc_access_store_b (l : Loc) (v : github_com.tchajed.marshal.Enc) (b' : slice.t) :
+instance Enc_access_store_b (l : Loc) (v : github_com.tchajed.marshal.Enc) (b' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"b" l) b' (DFrac.own 1))
@@ -102,7 +102,7 @@ instance Dec_access_load_b (l : Loc) (v : github_com.tchajed.marshal.Dec) (dq : 
  by
   solve_pointsto_access_struct
 
-instance Dec_access_store_b (l : Loc) (v : github_com.tchajed.marshal.Dec) (b' : slice.t) :
+instance Dec_access_store_b (l : Loc) (v : github_com.tchajed.marshal.Dec) (b' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"b" l) b' (DFrac.own 1))

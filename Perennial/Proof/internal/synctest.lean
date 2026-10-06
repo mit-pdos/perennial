@@ -40,7 +40,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
 
 /-- `synctest.Run` is not supported by Perennial; it changes the semantics of go
 programs because it messes with runtime state (i.e. it creates a new bubble). -/
-theorem wp_Run (v : func.t) :
+theorem wp_Run (v : GoFunc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.synctest ∗ False }}
       (App (Val (@! Run)) (Val #v))
     {{ RET #(); True }} := by

@@ -59,7 +59,7 @@ instance Builder_access_load_buf (l : Loc) (v : strings.Builder) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Builder_access_store_buf (l : Loc) (v : strings.Builder) (buf' : slice.t) :
+instance Builder_access_store_buf (l : Loc) (v : strings.Builder) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Builder go!"buf" l) buf' (DFrac.own 1))
@@ -279,7 +279,7 @@ instance trieNode_access_load_table (l : Loc) (v : strings.trieNode) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_table (l : Loc) (v : strings.trieNode) (table' : slice.t) :
+instance trieNode_access_store_table (l : Loc) (v : strings.trieNode) (table' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"table" l) table' (DFrac.own 1))
@@ -353,7 +353,7 @@ instance genericReplacer_access_load_mapping (l : Loc) (v : strings.genericRepla
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_mapping (l : Loc) (v : strings.genericReplacer) (mapping' : (array.t w8 256)) :
+instance genericReplacer_access_store_mapping (l : Loc) (v : strings.genericReplacer) (mapping' : (GoArray w8 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) mapping' (DFrac.own 1))
@@ -470,7 +470,7 @@ instance byteStringReplacer_access_load_replacements (l : Loc) (v : strings.byte
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byteStringReplacer) (replacements' : (array.t slice.t 256)) :
+instance byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byteStringReplacer) (replacements' : (GoArray GoSlice 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) replacements' (DFrac.own 1))
@@ -486,7 +486,7 @@ instance byteStringReplacer_access_load_toReplace (l : Loc) (v : strings.byteStr
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_store_toReplace (l : Loc) (v : strings.byteStringReplacer) (toReplace' : slice.t) :
+instance byteStringReplacer_access_store_toReplace (l : Loc) (v : strings.byteStringReplacer) (toReplace' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) toReplace' (DFrac.own 1))
@@ -544,7 +544,7 @@ instance stringFinder_access_load_badCharSkip (l : Loc) (v : strings.stringFinde
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFinder) (badCharSkip' : (array.t w64 256)) :
+instance stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFinder) (badCharSkip' : (GoArray w64 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) badCharSkip' (DFrac.own 1))
@@ -560,7 +560,7 @@ instance stringFinder_access_load_goodSuffixSkip (l : Loc) (v : strings.stringFi
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (goodSuffixSkip' : slice.t) :
+instance stringFinder_access_store_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (goodSuffixSkip' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) goodSuffixSkip' (DFrac.own 1))

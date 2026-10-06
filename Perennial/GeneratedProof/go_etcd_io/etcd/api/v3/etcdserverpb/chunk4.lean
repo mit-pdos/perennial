@@ -96,7 +96,7 @@ instance LeaseGrantRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_i
  by
   solve_pointsto_access_struct
 
-instance LeaseGrantRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantRequest) (XXX_unrecognized' : slice.t) :
+instance LeaseGrantRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -238,7 +238,7 @@ instance LeaseGrantResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_
  by
   solve_pointsto_access_struct
 
-instance LeaseGrantResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantResponse) (XXX_unrecognized' : slice.t) :
+instance LeaseGrantResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseGrantResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -329,7 +329,7 @@ instance LeaseRevokeRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_
  by
   solve_pointsto_access_struct
 
-instance LeaseRevokeRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeRequest) (XXX_unrecognized' : slice.t) :
+instance LeaseRevokeRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -420,7 +420,7 @@ instance LeaseRevokeResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance LeaseRevokeResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeResponse) (XXX_unrecognized' : slice.t) :
+instance LeaseRevokeResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseRevokeResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -528,7 +528,7 @@ instance LeaseCheckpoint_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.
  by
   solve_pointsto_access_struct
 
-instance LeaseCheckpoint_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpoint) (XXX_unrecognized' : slice.t) :
+instance LeaseCheckpoint_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpoint) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpoint go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpoint go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -587,7 +587,7 @@ instance LeaseCheckpointRequest_access_load_Checkpoints (l : Loc) (v : go_etcd_i
  by
   solve_pointsto_access_struct
 
-instance LeaseCheckpointRequest_access_store_Checkpoints (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest) (Checkpoints' : slice.t) :
+instance LeaseCheckpointRequest_access_store_Checkpoints (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest) (Checkpoints' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest go!"Checkpoints" l) v.Checkpoints' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest go!"Checkpoints" l) Checkpoints' (DFrac.own 1))
@@ -619,7 +619,7 @@ instance LeaseCheckpointRequest_access_load_XXX_unrecognized (l : Loc) (v : go_e
  by
   solve_pointsto_access_struct
 
-instance LeaseCheckpointRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest) (XXX_unrecognized' : slice.t) :
+instance LeaseCheckpointRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -710,7 +710,7 @@ instance LeaseCheckpointResponse_access_load_XXX_unrecognized (l : Loc) (v : go_
  by
   solve_pointsto_access_struct
 
-instance LeaseCheckpointResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointResponse) (XXX_unrecognized' : slice.t) :
+instance LeaseCheckpointResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseCheckpointResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -801,7 +801,7 @@ instance LeaseKeepAliveRequest_access_load_XXX_unrecognized (l : Loc) (v : go_et
  by
   solve_pointsto_access_struct
 
-instance LeaseKeepAliveRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveRequest) (XXX_unrecognized' : slice.t) :
+instance LeaseKeepAliveRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -926,7 +926,7 @@ instance LeaseKeepAliveResponse_access_load_XXX_unrecognized (l : Loc) (v : go_e
  by
   solve_pointsto_access_struct
 
-instance LeaseKeepAliveResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveResponse) (XXX_unrecognized' : slice.t) :
+instance LeaseKeepAliveResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseKeepAliveResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1034,7 +1034,7 @@ instance LeaseTimeToLiveRequest_access_load_XXX_unrecognized (l : Loc) (v : go_e
  by
   solve_pointsto_access_struct
 
-instance LeaseTimeToLiveRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveRequest) (XXX_unrecognized' : slice.t) :
+instance LeaseTimeToLiveRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1161,7 +1161,7 @@ instance LeaseTimeToLiveResponse_access_load_Keys (l : Loc) (v : go_etcd_io.etcd
  by
   solve_pointsto_access_struct
 
-instance LeaseTimeToLiveResponse_access_store_Keys (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse) (Keys' : slice.t) :
+instance LeaseTimeToLiveResponse_access_store_Keys (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse) (Keys' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse go!"Keys" l) v.Keys' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse go!"Keys" l) Keys' (DFrac.own 1))
@@ -1193,7 +1193,7 @@ instance LeaseTimeToLiveResponse_access_load_XXX_unrecognized (l : Loc) (v : go_
  by
   solve_pointsto_access_struct
 
-instance LeaseTimeToLiveResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse) (XXX_unrecognized' : slice.t) :
+instance LeaseTimeToLiveResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseTimeToLiveResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1267,7 +1267,7 @@ instance LeaseLeasesRequest_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_
  by
   solve_pointsto_access_struct
 
-instance LeaseLeasesRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesRequest) (XXX_unrecognized' : slice.t) :
+instance LeaseLeasesRequest_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesRequest) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesRequest go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseLeasesRequest go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1358,7 +1358,7 @@ instance LeaseStatus_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd
  by
   solve_pointsto_access_struct
 
-instance LeaseStatus_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseStatus) (XXX_unrecognized' : slice.t) :
+instance LeaseStatus_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.LeaseStatus) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseStatus go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.LeaseStatus go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))

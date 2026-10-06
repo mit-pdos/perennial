@@ -71,7 +71,7 @@ instance ownLockedStack_timeless (γ : GName) (σ : List GoString) :
 
 def isLockedStack (s : Loc) (γ : GName) : IProp GF :=
   iprop("#Hmu" ∷ sync.isMutex (s.[LockedStack, go!"mu"])
-      iprop(∃ (stack_sl : slice.t) (stack : List GoString),
+      iprop(∃ (stack_sl : GoSlice) (stack : List GoString),
         "stack" ∷ s.[LockedStack, go!"stack"] ↦ stack_sl ∗
         "Hsl" ∷ stack_sl ↦* stack ∗
         "Hcap" ∷ ownSliceCap GoString stack_sl (DFrac.own 1) ∗
@@ -96,7 +96,7 @@ theorem wp_NewLockedStack :
   imod ghostVar_alloc ([] : List GoString) with ⟨%γ, Hγ⟩
   icases ghostVar_split γ ([] : List GoString) (1 : Qp).half (1 : Qp).half $$ [Hγ] with ⟨Hauth, Hfrag⟩
   · rw [Qp.half_add_half]; iexact Hγ
-  imod sync.init_Mutex iprop(∃ (stack_sl : slice.t) (stack : List GoString),
+  imod sync.init_Mutex iprop(∃ (stack_sl : GoSlice) (stack : List GoString),
         "stack" ∷ s.[LockedStack, go!"stack"] ↦ stack_sl ∗
         "Hsl" ∷ stack_sl ↦* stack ∗
         "Hcap" ∷ ownSliceCap GoString stack_sl (DFrac.own 1) ∗
@@ -223,7 +223,7 @@ def ownEliminationStack (γ : EliminationStackNames) (σ : List GoString) : IPro
 /-- (Rocq `ownExchangerInv`) Supports atomic updates for Pop and Push that are
 allowed to access `⊤ ∖ N`. -/
 abbrev ownExchangerInv (γ : EliminationStackNames) (N : Namespace)
-    (exstate : chanstate.t GoString) : IProp GF :=
+    (exstate : ChanState GoString) : IProp GF :=
   iprop(∃ (γs γr : GName),
     "Hsa" ∷ ghostVar γ.sGn (1 : Qp).half γs ∗ "Hra" ∷ ghostVar γ.rGn (1 : Qp).half γr ∗
     "Hexchanger" ∷ (match exstate with
@@ -242,7 +242,7 @@ abbrev ownExchangerInv (γ : EliminationStackNames) (N : Namespace)
       | _ => iprop(False)))
 
 abbrev elimInv (γ : EliminationStackNames) (N : Namespace) : IProp GF :=
-  iprop(∃ (stack : List GoString) (exstate : chanstate.t GoString),
+  iprop(∃ (stack : List GoString) (exstate : ChanState GoString),
     "Hls" ∷ ownLockedStack γ.lsGn stack ∗
     "Hauth" ∷ ghostVar γ.specGn (1 : Qp).half stack ∗
     "exchanger" ∷ ownChan γ.chGn GoString exstate ∗

@@ -96,7 +96,7 @@ instance AuthenticateResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etc
  by
   solve_pointsto_access_struct
 
-instance AuthenticateResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse) (XXX_unrecognized' : slice.t) :
+instance AuthenticateResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -187,7 +187,7 @@ instance AuthUserAddResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance AuthUserAddResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse) (XXX_unrecognized' : slice.t) :
+instance AuthUserAddResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -263,7 +263,7 @@ instance AuthUserGetResponse_access_load_Roles (l : Loc) (v : go_etcd_io.etcd.ap
  by
   solve_pointsto_access_struct
 
-instance AuthUserGetResponse_access_store_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse) (Roles' : slice.t) :
+instance AuthUserGetResponse_access_store_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse) (Roles' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse go!"Roles" l) v.Roles' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse go!"Roles" l) Roles' (DFrac.own 1))
@@ -295,7 +295,7 @@ instance AuthUserGetResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance AuthUserGetResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse) (XXX_unrecognized' : slice.t) :
+instance AuthUserGetResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -386,7 +386,7 @@ instance AuthUserDeleteResponse_access_load_XXX_unrecognized (l : Loc) (v : go_e
  by
   solve_pointsto_access_struct
 
-instance AuthUserDeleteResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse) (XXX_unrecognized' : slice.t) :
+instance AuthUserDeleteResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -477,7 +477,7 @@ instance AuthUserChangePasswordResponse_access_load_XXX_unrecognized (l : Loc) (
  by
   solve_pointsto_access_struct
 
-instance AuthUserChangePasswordResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse) (XXX_unrecognized' : slice.t) :
+instance AuthUserChangePasswordResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -568,7 +568,7 @@ instance AuthUserGrantRoleResponse_access_load_XXX_unrecognized (l : Loc) (v : g
  by
   solve_pointsto_access_struct
 
-instance AuthUserGrantRoleResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse) (XXX_unrecognized' : slice.t) :
+instance AuthUserGrantRoleResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -659,7 +659,7 @@ instance AuthUserRevokeRoleResponse_access_load_XXX_unrecognized (l : Loc) (v : 
  by
   solve_pointsto_access_struct
 
-instance AuthUserRevokeRoleResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse) (XXX_unrecognized' : slice.t) :
+instance AuthUserRevokeRoleResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -750,7 +750,7 @@ instance AuthRoleAddResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance AuthRoleAddResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse) (XXX_unrecognized' : slice.t) :
+instance AuthRoleAddResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -845,7 +845,7 @@ instance AuthRoleListResponse_access_load_Roles (l : Loc) (v : go_etcd_io.etcd.a
  by
   solve_pointsto_access_struct
 
-instance AuthRoleListResponse_access_store_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse) (Roles' : slice.t) :
+instance AuthRoleListResponse_access_store_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse) (Roles' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse go!"Roles" l) v.Roles' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse go!"Roles" l) Roles' (DFrac.own 1))
@@ -877,7 +877,7 @@ instance AuthRoleListResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etc
  by
   solve_pointsto_access_struct
 
-instance AuthRoleListResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse) (XXX_unrecognized' : slice.t) :
+instance AuthRoleListResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -953,7 +953,7 @@ instance AuthUserListResponse_access_load_Users (l : Loc) (v : go_etcd_io.etcd.a
  by
   solve_pointsto_access_struct
 
-instance AuthUserListResponse_access_store_Users (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse) (Users' : slice.t) :
+instance AuthUserListResponse_access_store_Users (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse) (Users' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse go!"Users" l) v.Users' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse go!"Users" l) Users' (DFrac.own 1))
@@ -985,7 +985,7 @@ instance AuthUserListResponse_access_load_XXX_unrecognized (l : Loc) (v : go_etc
  by
   solve_pointsto_access_struct
 
-instance AuthUserListResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse) (XXX_unrecognized' : slice.t) :
+instance AuthUserListResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1076,7 +1076,7 @@ instance AuthRoleDeleteResponse_access_load_XXX_unrecognized (l : Loc) (v : go_e
  by
   solve_pointsto_access_struct
 
-instance AuthRoleDeleteResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse) (XXX_unrecognized' : slice.t) :
+instance AuthRoleDeleteResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1167,7 +1167,7 @@ instance AuthRoleGrantPermissionResponse_access_load_XXX_unrecognized (l : Loc) 
  by
   solve_pointsto_access_struct
 
-instance AuthRoleGrantPermissionResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse) (XXX_unrecognized' : slice.t) :
+instance AuthRoleGrantPermissionResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -1258,7 +1258,7 @@ instance AuthRoleRevokePermissionResponse_access_load_XXX_unrecognized (l : Loc)
  by
   solve_pointsto_access_struct
 
-instance AuthRoleRevokePermissionResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse) (XXX_unrecognized' : slice.t) :
+instance AuthRoleRevokePermissionResponse_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))

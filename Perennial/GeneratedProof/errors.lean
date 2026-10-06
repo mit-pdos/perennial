@@ -82,7 +82,7 @@ instance joinError_access_load_errs (l : Loc) (v : errors.joinError) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance joinError_access_store_errs (l : Loc) (v : errors.joinError) (errs' : slice.t) :
+instance joinError_access_store_errs (l : Loc) (v : errors.joinError) (errs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' (DFrac.own 1))
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) errs' (DFrac.own 1))

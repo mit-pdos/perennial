@@ -416,7 +416,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc errOverflow go.error)) (Val #()))))))))
 
-abbrev ByteOrder [FfiSyntax] : Type := interface.t
+abbrev ByteOrder [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ByteOrder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"PutUint16" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [])), (go.InterfaceElem.MethodElem go!"PutUint32" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [])), (go.InterfaceElem.MethodElem go!"PutUint64" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Uint16" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16])), (go.InterfaceElem.MethodElem go!"Uint32" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32])), (go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64]))])
@@ -426,7 +426,7 @@ class ByteOrder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] ByteOrder.TypeAssumptions.underlying
 
-abbrev AppendByteOrder [FfiSyntax] : Type := interface.t
+abbrev AppendByteOrder [FfiSyntax] : Type := GoInterface
 
 @[reducible] def AppendByteOrder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AppendUint16" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"AppendUint32" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"AppendUint64" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
@@ -546,7 +546,7 @@ attribute [instance] bigEndian.TypeAssumptions.type_repr
 structure coder [FfiSyntax] where
   mk ::
   order' : ByteOrder
-  buf' : slice.t
+  buf' : GoSlice
   offset' : w64
 
 instance coder.zero_val [FfiSyntax] : ZeroVal coder :=
@@ -573,7 +573,7 @@ class coder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   get_order : ∀ (x : coder), go.IsGoStepPureDetTagged under (StructFieldGet coder.underlying go!"order") #x (Val #(x.order'))
   set_order : ∀ (x : coder) (y : ByteOrder), go.IsGoStepPureDetTagged under (StructFieldSet coder.underlying go!"order") (PairV #x #y) (Val #(({ x with order' := y } : coder)))
   get_buf : ∀ (x : coder), go.IsGoStepPureDetTagged under (StructFieldGet coder.underlying go!"buf") #x (Val #(x.buf'))
-  set_buf : ∀ (x : coder) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet coder.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : coder)))
+  set_buf : ∀ (x : coder) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet coder.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : coder)))
   get_offset : ∀ (x : coder), go.IsGoStepPureDetTagged under (StructFieldGet coder.underlying go!"offset") #x (Val #(x.offset'))
   set_offset : ∀ (x : coder) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet coder.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : coder)))
 

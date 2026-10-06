@@ -1388,7 +1388,7 @@ structure Inflights [FfiSyntax] where
   bytes' : w64
   size' : w64
   maxBytes' : w64
-  buffer' : slice.t
+  buffer' : GoSlice
 
 instance Inflights.zero_val [FfiSyntax] : ZeroVal Inflights :=
   ⟨Inflights.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1425,7 +1425,7 @@ class Inflights.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_maxBytes : ∀ (x : Inflights), go.IsGoStepPureDetTagged under (StructFieldGet Inflights.underlying go!"maxBytes") #x (Val #(x.maxBytes'))
   set_maxBytes : ∀ (x : Inflights) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"maxBytes") (PairV #x #y) (Val #(({ x with maxBytes' := y } : Inflights)))
   get_buffer : ∀ (x : Inflights), go.IsGoStepPureDetTagged under (StructFieldGet Inflights.underlying go!"buffer") #x (Val #(x.buffer'))
-  set_buffer : ∀ (x : Inflights) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : Inflights)))
+  set_buffer : ∀ (x : Inflights) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Inflights.underlying go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : Inflights)))
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Inflights.ty) go!"Add" Inflights.Add.impl
   ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType Inflights.ty) go!"Clone" Inflights.Clone.impl
   ptr_Count_unfold : MethodUnfold (go.GoType.PointerType Inflights.ty) go!"Count" Inflights.Count.impl
@@ -1572,7 +1572,7 @@ attribute [instance] Progress.TypeAssumptions.type_repr
   Progress.TypeAssumptions.ptr_SentEntries_unfold
   Progress.TypeAssumptions.ptr_String_unfold
 
-abbrev ProgressMap [FfiSyntax] : Type := map.t
+abbrev ProgressMap [FfiSyntax] : Type := GoMap
 
 @[reducible] def ProgressMap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 (go.GoType.PointerType Progress.ty))
@@ -1591,8 +1591,8 @@ structure Config [FfiSyntax] where
   mk ::
   Voters' : _root_.Perennial.go_etcd_io.raft.v3.quorum.JointConfig
   AutoLeave' : Bool
-  Learners' : map.t
-  LearnersNext' : map.t
+  Learners' : GoMap
+  LearnersNext' : GoMap
 
 instance Config.zero_val [FfiSyntax] : ZeroVal Config :=
   ⟨Config.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1621,9 +1621,9 @@ class Config.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   get_AutoLeave : ∀ (x : Config), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"AutoLeave") #x (Val #(x.AutoLeave'))
   set_AutoLeave : ∀ (x : Config) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"AutoLeave") (PairV #x #y) (Val #(({ x with AutoLeave' := y } : Config)))
   get_Learners : ∀ (x : Config), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"Learners") #x (Val #(x.Learners'))
-  set_Learners : ∀ (x : Config) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"Learners") (PairV #x #y) (Val #(({ x with Learners' := y } : Config)))
+  set_Learners : ∀ (x : Config) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"Learners") (PairV #x #y) (Val #(({ x with Learners' := y } : Config)))
   get_LearnersNext : ∀ (x : Config), go.IsGoStepPureDetTagged under (StructFieldGet Config.underlying go!"LearnersNext") #x (Val #(x.LearnersNext'))
-  set_LearnersNext : ∀ (x : Config) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"LearnersNext") (PairV #x #y) (Val #(({ x with LearnersNext' := y } : Config)))
+  set_LearnersNext : ∀ (x : Config) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Config.underlying go!"LearnersNext") (PairV #x #y) (Val #(({ x with LearnersNext' := y } : Config)))
   String_unfold : MethodUnfold Config.ty go!"String" Config.String.impl
   ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType Config.ty) go!"Clone" Config.Clone.impl
   ptr_String_unfold : MethodUnfold (go.GoType.PointerType Config.ty) go!"String" (LamV "$r"
@@ -1647,7 +1647,7 @@ structure ProgressTracker [FfiSyntax] where
   mk ::
   Config' : Config
   Progress' : ProgressMap
-  Votes' : map.t
+  Votes' : GoMap
   MaxInflight' : w64
   MaxInflightBytes' : w64
 
@@ -1679,7 +1679,7 @@ class ProgressTracker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
   get_Progress : ∀ (x : ProgressTracker), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"Progress") #x (Val #(x.Progress'))
   set_Progress : ∀ (x : ProgressTracker) (y : ProgressMap), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"Progress") (PairV #x #y) (Val #(({ x with Progress' := y } : ProgressTracker)))
   get_Votes : ∀ (x : ProgressTracker), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"Votes") #x (Val #(x.Votes'))
-  set_Votes : ∀ (x : ProgressTracker) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"Votes") (PairV #x #y) (Val #(({ x with Votes' := y } : ProgressTracker)))
+  set_Votes : ∀ (x : ProgressTracker) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"Votes") (PairV #x #y) (Val #(({ x with Votes' := y } : ProgressTracker)))
   get_MaxInflight : ∀ (x : ProgressTracker), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"MaxInflight") #x (Val #(x.MaxInflight'))
   set_MaxInflight : ∀ (x : ProgressTracker) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ProgressTracker.underlying go!"MaxInflight") (PairV #x #y) (Val #(({ x with MaxInflight' := y } : ProgressTracker)))
   get_MaxInflightBytes : ∀ (x : ProgressTracker), go.IsGoStepPureDetTagged under (StructFieldGet ProgressTracker.underlying go!"MaxInflightBytes") #x (Val #(x.MaxInflightBytes'))
@@ -1727,7 +1727,7 @@ attribute [instance] ProgressTracker.TypeAssumptions.type_repr
   ProgressTracker.TypeAssumptions.ptr_Visit_unfold
   ProgressTracker.TypeAssumptions.ptr_VoterNodes_unfold
 
-abbrev matchAckIndexer [FfiSyntax] : Type := map.t
+abbrev matchAckIndexer [FfiSyntax] : Type := GoMap
 
 @[reducible] def matchAckIndexer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 (go.GoType.PointerType Progress.ty))

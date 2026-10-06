@@ -411,7 +411,7 @@ instance Session_access_load_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.conc
  by
   solve_pointsto_access_struct
 
-instance Session_access_store_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (donec' : chan.t) :
+instance Session_access_store_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (donec' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"donec" l) v.donec' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"donec" l) donec' (DFrac.own 1))
@@ -525,7 +525,7 @@ instance stmError_access_load_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concu
  by
   solve_pointsto_access_struct
 
-instance stmError_access_store_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmError) (err' : error.t) :
+instance stmError_access_store_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmError) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError go!"err" l) err' (DFrac.own 1))
@@ -599,7 +599,7 @@ instance stmOptions_access_load_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v
  by
   solve_pointsto_access_struct
 
-instance stmOptions_access_store_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (prefetch' : slice.t) :
+instance stmOptions_access_store_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (prefetch' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"prefetch" l) v.prefetch' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"prefetch" l) prefetch' (DFrac.own 1))
@@ -656,7 +656,7 @@ instance stmResponse_access_load_err (l : Loc) (v : go_etcd_io.etcd.client.v3.co
  by
   solve_pointsto_access_struct
 
-instance stmResponse_access_store_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse) (err' : error.t) :
+instance stmResponse_access_store_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"err" l) err' (DFrac.own 1))
@@ -765,7 +765,7 @@ instance stm_access_load_getOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.concur
  by
   solve_pointsto_access_struct
 
-instance stm_access_store_getOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (getOpts' : slice.t) :
+instance stm_access_store_getOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (getOpts' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"getOpts" l) v.getOpts' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"getOpts" l) getOpts' (DFrac.own 1))
@@ -781,7 +781,7 @@ instance stm_access_load_conflicts (l : Loc) (v : go_etcd_io.etcd.client.v3.conc
  by
   solve_pointsto_access_struct
 
-instance stm_access_store_conflicts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (conflicts' : func.t) :
+instance stm_access_store_conflicts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (conflicts' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"conflicts" l) v.conflicts' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"conflicts" l) conflicts' (DFrac.own 1))
@@ -895,7 +895,7 @@ instance stmSerializable_access_load_prefetch (l : Loc) (v : go_etcd_io.etcd.cli
  by
   solve_pointsto_access_struct
 
-instance stmSerializable_access_store_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable) (prefetch' : map.t) :
+instance stmSerializable_access_store_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable) (prefetch' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"prefetch" l) v.prefetch' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"prefetch" l) prefetch' (DFrac.own 1))

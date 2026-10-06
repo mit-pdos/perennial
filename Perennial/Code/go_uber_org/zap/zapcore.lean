@@ -702,7 +702,7 @@ attribute [instance] BufferedWriteSyncer.TypeAssumptions.type_repr
   BufferedWriteSyncer.TypeAssumptions.underlying
   BufferedWriteSyncer.TypeAssumptions.isUnderlying
 
-abbrev Clock [FfiSyntax] : Type := interface.t
+abbrev Clock [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Clock.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"NewTicker" (go.signature.Signature [_root_.Perennial.time.Duration.ty] false [(go.GoType.PointerType _root_.Perennial.time.Ticker.ty)])), (go.InterfaceElem.MethodElem go!"Now" (go.signature.Signature [] false [_root_.Perennial.time.Time.ty]))])
@@ -769,7 +769,7 @@ attribute [instance] consoleEncoder.TypeAssumptions.type_repr
   consoleEncoder.TypeAssumptions.get_jsonEncoder
   consoleEncoder.TypeAssumptions.set_jsonEncoder
 
-abbrev Core [FfiSyntax] : Type := interface.t
+abbrev Core [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Core.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Check" (go.signature.Signature [Entry.ty, (go.GoType.PointerType CheckedEntry.ty)] false [(go.GoType.PointerType CheckedEntry.ty)])), (go.InterfaceElem.MethodElem go!"Sync" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"With" (go.signature.Signature [(go.GoType.SliceType Field.ty)] false [Core.ty])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [Entry.ty, (go.GoType.SliceType Field.ty)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm LevelEnabler.ty)])])
@@ -805,7 +805,7 @@ class nopCore.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 attribute [instance] nopCore.TypeAssumptions.type_repr
   nopCore.TypeAssumptions.underlying
 
-abbrev LevelEnabler [FfiSyntax] : Type := interface.t
+abbrev LevelEnabler [FfiSyntax] : Type := GoInterface
 
 @[reducible] def LevelEnabler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Enabled" (go.signature.Signature [Level.ty] false [go.bool]))])
@@ -828,7 +828,7 @@ attribute [instance] Encoder.TypeAssumptions.type_repr
   Encoder.TypeAssumptions.underlying
   Encoder.TypeAssumptions.isUnderlying
 
-abbrev WriteSyncer [FfiSyntax] : Type := interface.t
+abbrev WriteSyncer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def WriteSyncer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Sync" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.io.Writer.ty)])])
@@ -881,7 +881,7 @@ attribute [instance] ioCore.TypeAssumptions.type_repr
   ioCore.TypeAssumptions.get_out
   ioCore.TypeAssumptions.set_out
 
-abbrev LevelEncoder [FfiSyntax] : Type := func.t
+abbrev LevelEncoder [FfiSyntax] : Type := GoFunc
 
 @[reducible] def LevelEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [Level.ty, PrimitiveArrayEncoder.ty] false []))
@@ -891,7 +891,7 @@ class LevelEncoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] LevelEncoder.TypeAssumptions.underlying
 
-abbrev TimeEncoder [FfiSyntax] : Type := func.t
+abbrev TimeEncoder [FfiSyntax] : Type := GoFunc
 
 @[reducible] def TimeEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.time.Time.ty, PrimitiveArrayEncoder.ty] false []))
@@ -901,7 +901,7 @@ class TimeEncoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] TimeEncoder.TypeAssumptions.underlying
 
-abbrev DurationEncoder [FfiSyntax] : Type := func.t
+abbrev DurationEncoder [FfiSyntax] : Type := GoFunc
 
 @[reducible] def DurationEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.time.Duration.ty, PrimitiveArrayEncoder.ty] false []))
@@ -911,7 +911,7 @@ class DurationEncoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] DurationEncoder.TypeAssumptions.underlying
 
-abbrev CallerEncoder [FfiSyntax] : Type := func.t
+abbrev CallerEncoder [FfiSyntax] : Type := GoFunc
 
 @[reducible] def CallerEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [EntryCaller.ty, PrimitiveArrayEncoder.ty] false []))
@@ -921,7 +921,7 @@ class CallerEncoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] CallerEncoder.TypeAssumptions.underlying
 
-abbrev NameEncoder [FfiSyntax] : Type := func.t
+abbrev NameEncoder [FfiSyntax] : Type := GoFunc
 
 @[reducible] def NameEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.string, PrimitiveArrayEncoder.ty] false []))
@@ -947,7 +947,7 @@ structure EncoderConfig [FfiSyntax] where
   EncodeDuration' : DurationEncoder
   EncodeCaller' : CallerEncoder
   EncodeName' : NameEncoder
-  NewReflectedEncoder' : func.t
+  NewReflectedEncoder' : GoFunc
   ConsoleSeparator' : GoString
 
 instance EncoderConfig.zero_val [FfiSyntax] : ZeroVal EncoderConfig :=
@@ -1013,7 +1013,7 @@ class EncoderConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   get_EncodeName : ∀ (x : EncoderConfig), go.IsGoStepPureDetTagged under (StructFieldGet EncoderConfig.underlying go!"EncodeName") #x (Val #(x.EncodeName'))
   set_EncodeName : ∀ (x : EncoderConfig) (y : NameEncoder), go.IsGoStepPureDetTagged under (StructFieldSet EncoderConfig.underlying go!"EncodeName") (PairV #x #y) (Val #(({ x with EncodeName' := y } : EncoderConfig)))
   get_NewReflectedEncoder : ∀ (x : EncoderConfig), go.IsGoStepPureDetTagged under (StructFieldGet EncoderConfig.underlying go!"NewReflectedEncoder") #x (Val #(x.NewReflectedEncoder'))
-  set_NewReflectedEncoder : ∀ (x : EncoderConfig) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet EncoderConfig.underlying go!"NewReflectedEncoder") (PairV #x #y) (Val #(({ x with NewReflectedEncoder' := y } : EncoderConfig)))
+  set_NewReflectedEncoder : ∀ (x : EncoderConfig) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet EncoderConfig.underlying go!"NewReflectedEncoder") (PairV #x #y) (Val #(({ x with NewReflectedEncoder' := y } : EncoderConfig)))
   get_ConsoleSeparator : ∀ (x : EncoderConfig), go.IsGoStepPureDetTagged under (StructFieldGet EncoderConfig.underlying go!"ConsoleSeparator") #x (Val #(x.ConsoleSeparator'))
   set_ConsoleSeparator : ∀ (x : EncoderConfig) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet EncoderConfig.underlying go!"ConsoleSeparator") (PairV #x #y) (Val #(({ x with ConsoleSeparator' := y } : EncoderConfig)))
 
@@ -1052,7 +1052,7 @@ attribute [instance] EncoderConfig.TypeAssumptions.type_repr
   EncoderConfig.TypeAssumptions.get_ConsoleSeparator
   EncoderConfig.TypeAssumptions.set_ConsoleSeparator
 
-abbrev ObjectEncoder [FfiSyntax] : Type := interface.t
+abbrev ObjectEncoder [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ObjectEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AddArray" (go.signature.Signature [go.string, ArrayMarshaler.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"AddBinary" (go.signature.Signature [go.string, (go.GoType.SliceType go.byte)] false [])), (go.InterfaceElem.MethodElem go!"AddBool" (go.signature.Signature [go.string, go.bool] false [])), (go.InterfaceElem.MethodElem go!"AddByteString" (go.signature.Signature [go.string, (go.GoType.SliceType go.byte)] false [])), (go.InterfaceElem.MethodElem go!"AddComplex128" (go.signature.Signature [go.string, go.complex128] false [])), (go.InterfaceElem.MethodElem go!"AddComplex64" (go.signature.Signature [go.string, go.complex64] false [])), (go.InterfaceElem.MethodElem go!"AddDuration" (go.signature.Signature [go.string, _root_.Perennial.time.Duration.ty] false [])), (go.InterfaceElem.MethodElem go!"AddFloat32" (go.signature.Signature [go.string, go.float32] false [])), (go.InterfaceElem.MethodElem go!"AddFloat64" (go.signature.Signature [go.string, go.float64] false [])), (go.InterfaceElem.MethodElem go!"AddInt" (go.signature.Signature [go.string, go.int] false [])), (go.InterfaceElem.MethodElem go!"AddInt16" (go.signature.Signature [go.string, go.int16] false [])), (go.InterfaceElem.MethodElem go!"AddInt32" (go.signature.Signature [go.string, go.int32] false [])), (go.InterfaceElem.MethodElem go!"AddInt64" (go.signature.Signature [go.string, go.int64] false [])), (go.InterfaceElem.MethodElem go!"AddInt8" (go.signature.Signature [go.string, go.int8] false [])), (go.InterfaceElem.MethodElem go!"AddObject" (go.signature.Signature [go.string, ObjectMarshaler.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"AddReflected" (go.signature.Signature [go.string, (go.GoType.InterfaceType [])] false [go.error])), (go.InterfaceElem.MethodElem go!"AddString" (go.signature.Signature [go.string, go.string] false [])), (go.InterfaceElem.MethodElem go!"AddTime" (go.signature.Signature [go.string, _root_.Perennial.time.Time.ty] false [])), (go.InterfaceElem.MethodElem go!"AddUint" (go.signature.Signature [go.string, go.uint] false [])), (go.InterfaceElem.MethodElem go!"AddUint16" (go.signature.Signature [go.string, go.uint16] false [])), (go.InterfaceElem.MethodElem go!"AddUint32" (go.signature.Signature [go.string, go.uint32] false [])), (go.InterfaceElem.MethodElem go!"AddUint64" (go.signature.Signature [go.string, go.uint64] false [])), (go.InterfaceElem.MethodElem go!"AddUint8" (go.signature.Signature [go.string, go.uint8] false [])), (go.InterfaceElem.MethodElem go!"AddUintptr" (go.signature.Signature [go.string, go.uintptr] false [])), (go.InterfaceElem.MethodElem go!"OpenNamespace" (go.signature.Signature [go.string] false []))])
@@ -1062,7 +1062,7 @@ class ObjectEncoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] ObjectEncoder.TypeAssumptions.underlying
 
-abbrev ArrayEncoder [FfiSyntax] : Type := interface.t
+abbrev ArrayEncoder [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ArrayEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AppendArray" (go.signature.Signature [ArrayMarshaler.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"AppendDuration" (go.signature.Signature [_root_.Perennial.time.Duration.ty] false [])), (go.InterfaceElem.MethodElem go!"AppendObject" (go.signature.Signature [ObjectMarshaler.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"AppendReflected" (go.signature.Signature [(go.GoType.InterfaceType [])] false [go.error])), (go.InterfaceElem.MethodElem go!"AppendTime" (go.signature.Signature [_root_.Perennial.time.Time.ty] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm PrimitiveArrayEncoder.ty)])])
@@ -1072,7 +1072,7 @@ class ArrayEncoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] ArrayEncoder.TypeAssumptions.underlying
 
-abbrev PrimitiveArrayEncoder [FfiSyntax] : Type := interface.t
+abbrev PrimitiveArrayEncoder [FfiSyntax] : Type := GoInterface
 
 @[reducible] def PrimitiveArrayEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AppendBool" (go.signature.Signature [go.bool] false [])), (go.InterfaceElem.MethodElem go!"AppendByteString" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [])), (go.InterfaceElem.MethodElem go!"AppendComplex128" (go.signature.Signature [go.complex128] false [])), (go.InterfaceElem.MethodElem go!"AppendComplex64" (go.signature.Signature [go.complex64] false [])), (go.InterfaceElem.MethodElem go!"AppendFloat32" (go.signature.Signature [go.float32] false [])), (go.InterfaceElem.MethodElem go!"AppendFloat64" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.MethodElem go!"AppendInt" (go.signature.Signature [go.int] false [])), (go.InterfaceElem.MethodElem go!"AppendInt16" (go.signature.Signature [go.int16] false [])), (go.InterfaceElem.MethodElem go!"AppendInt32" (go.signature.Signature [go.int32] false [])), (go.InterfaceElem.MethodElem go!"AppendInt64" (go.signature.Signature [go.int64] false [])), (go.InterfaceElem.MethodElem go!"AppendInt8" (go.signature.Signature [go.int8] false [])), (go.InterfaceElem.MethodElem go!"AppendString" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"AppendUint" (go.signature.Signature [go.uint] false [])), (go.InterfaceElem.MethodElem go!"AppendUint16" (go.signature.Signature [go.uint16] false [])), (go.InterfaceElem.MethodElem go!"AppendUint32" (go.signature.Signature [go.uint32] false [])), (go.InterfaceElem.MethodElem go!"AppendUint64" (go.signature.Signature [go.uint64] false [])), (go.InterfaceElem.MethodElem go!"AppendUint8" (go.signature.Signature [go.uint8] false [])), (go.InterfaceElem.MethodElem go!"AppendUintptr" (go.signature.Signature [go.uintptr] false []))])
@@ -1208,7 +1208,7 @@ attribute [instance] Entry.TypeAssumptions.type_repr
   Entry.TypeAssumptions.get_Stack
   Entry.TypeAssumptions.set_Stack
 
-abbrev CheckWriteHook [FfiSyntax] : Type := interface.t
+abbrev CheckWriteHook [FfiSyntax] : Type := GoInterface
 
 @[reducible] def CheckWriteHook.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"OnWrite" (go.signature.Signature [(go.GoType.PointerType CheckedEntry.ty), (go.GoType.SliceType Field.ty)] false []))])
@@ -1234,7 +1234,7 @@ structure CheckedEntry [FfiSyntax] where
   ErrorOutput' : WriteSyncer
   dirty' : Bool
   after' : CheckWriteHook
-  cores' : slice.t
+  cores' : GoSlice
 
 instance CheckedEntry.zero_val [FfiSyntax] : ZeroVal CheckedEntry :=
   ⟨CheckedEntry.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1268,7 +1268,7 @@ class CheckedEntry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   get_after : ∀ (x : CheckedEntry), go.IsGoStepPureDetTagged under (StructFieldGet CheckedEntry.underlying go!"after") #x (Val #(x.after'))
   set_after : ∀ (x : CheckedEntry) (y : CheckWriteHook), go.IsGoStepPureDetTagged under (StructFieldSet CheckedEntry.underlying go!"after") (PairV #x #y) (Val #(({ x with after' := y } : CheckedEntry)))
   get_cores : ∀ (x : CheckedEntry), go.IsGoStepPureDetTagged under (StructFieldGet CheckedEntry.underlying go!"cores") #x (Val #(x.cores'))
-  set_cores : ∀ (x : CheckedEntry) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet CheckedEntry.underlying go!"cores") (PairV #x #y) (Val #(({ x with cores' := y } : CheckedEntry)))
+  set_cores : ∀ (x : CheckedEntry) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet CheckedEntry.underlying go!"cores") (PairV #x #y) (Val #(({ x with cores' := y } : CheckedEntry)))
 
 attribute [instance] CheckedEntry.TypeAssumptions.type_repr
   CheckedEntry.TypeAssumptions.underlying
@@ -1283,7 +1283,7 @@ attribute [instance] CheckedEntry.TypeAssumptions.type_repr
   CheckedEntry.TypeAssumptions.get_cores
   CheckedEntry.TypeAssumptions.set_cores
 
-abbrev errorGroup [FfiSyntax] : Type := interface.t
+abbrev errorGroup [FfiSyntax] : Type := GoInterface
 
 @[reducible] def errorGroup.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Errors" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])
@@ -1293,7 +1293,7 @@ class errorGroup.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] errorGroup.TypeAssumptions.underlying
 
-abbrev errArray [FfiSyntax] : Type := slice.t
+abbrev errArray [FfiSyntax] : Type := GoSlice
 
 @[reducible] def errArray.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.error)
@@ -1305,7 +1305,7 @@ attribute [instance] errArray.TypeAssumptions.underlying
 
 structure errArrayElem [FfiSyntax] where
   mk ::
-  err' : error.t
+  err' : GoError
 
 instance errArrayElem.zero_val [FfiSyntax] : ZeroVal errArrayElem :=
   ⟨errArrayElem.mk zeroValDef⟩
@@ -1327,7 +1327,7 @@ class errArrayElem.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying errArrayElem.underlying errArrayElem
   underlying : go.UnderlyingDirectedEq errArrayElem.ty errArrayElem.underlying
   get_err : ∀ (x : errArrayElem), go.IsGoStepPureDetTagged under (StructFieldGet errArrayElem.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : errArrayElem) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet errArrayElem.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : errArrayElem)))
+  set_err : ∀ (x : errArrayElem) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet errArrayElem.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : errArrayElem)))
 
 attribute [instance] errArrayElem.TypeAssumptions.type_repr
   errArrayElem.TypeAssumptions.underlying
@@ -1350,7 +1350,7 @@ structure Field [FfiSyntax] where
   Type' : FieldType
   Integer' : w64
   String' : GoString
-  Interface' : interface.t
+  Interface' : GoInterface
 
 instance Field.zero_val [FfiSyntax] : ZeroVal Field :=
   ⟨Field.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1384,7 +1384,7 @@ class Field.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   get_String : ∀ (x : Field), go.IsGoStepPureDetTagged under (StructFieldGet Field.underlying go!"String") #x (Val #(x.String'))
   set_String : ∀ (x : Field) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Field.underlying go!"String") (PairV #x #y) (Val #(({ x with String' := y } : Field)))
   get_Interface : ∀ (x : Field), go.IsGoStepPureDetTagged under (StructFieldGet Field.underlying go!"Interface") #x (Val #(x.Interface'))
-  set_Interface : ∀ (x : Field) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Field.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : Field)))
+  set_Interface : ∀ (x : Field) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Field.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : Field)))
 
 attribute [instance] Field.TypeAssumptions.type_repr
   Field.TypeAssumptions.underlying
@@ -1402,7 +1402,7 @@ attribute [instance] Field.TypeAssumptions.type_repr
 structure hooked [FfiSyntax] where
   mk ::
   Core' : Core
-  funcs' : slice.t
+  funcs' : GoSlice
 
 instance hooked.zero_val [FfiSyntax] : ZeroVal hooked :=
   ⟨hooked.mk zeroValDef zeroValDef⟩
@@ -1427,7 +1427,7 @@ class hooked.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   get_Core : ∀ (x : hooked), go.IsGoStepPureDetTagged under (StructFieldGet hooked.underlying go!"Core") #x (Val #(x.Core'))
   set_Core : ∀ (x : hooked) (y : Core), go.IsGoStepPureDetTagged under (StructFieldSet hooked.underlying go!"Core") (PairV #x #y) (Val #(({ x with Core' := y } : hooked)))
   get_funcs : ∀ (x : hooked), go.IsGoStepPureDetTagged under (StructFieldGet hooked.underlying go!"funcs") #x (Val #(x.funcs'))
-  set_funcs : ∀ (x : hooked) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet hooked.underlying go!"funcs") (PairV #x #y) (Val #(({ x with funcs' := y } : hooked)))
+  set_funcs : ∀ (x : hooked) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet hooked.underlying go!"funcs") (PairV #x #y) (Val #(({ x with funcs' := y } : hooked)))
 
 attribute [instance] hooked.TypeAssumptions.type_repr
   hooked.TypeAssumptions.underlying
@@ -1491,7 +1491,7 @@ structure lazyWithCore [FfiSyntax] where
   core' : Core
   originalCore' : Core
   Once' : _root_.Perennial.sync.Once
-  fields' : slice.t
+  fields' : GoSlice
 
 instance lazyWithCore.zero_val [FfiSyntax] : ZeroVal lazyWithCore :=
   ⟨lazyWithCore.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1522,7 +1522,7 @@ class lazyWithCore.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   get_Once : ∀ (x : lazyWithCore), go.IsGoStepPureDetTagged under (StructFieldGet lazyWithCore.underlying go!"Once") #x (Val #(x.Once'))
   set_Once : ∀ (x : lazyWithCore) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet lazyWithCore.underlying go!"Once") (PairV #x #y) (Val #(({ x with Once' := y } : lazyWithCore)))
   get_fields : ∀ (x : lazyWithCore), go.IsGoStepPureDetTagged under (StructFieldGet lazyWithCore.underlying go!"fields") #x (Val #(x.fields'))
-  set_fields : ∀ (x : lazyWithCore) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet lazyWithCore.underlying go!"fields") (PairV #x #y) (Val #(({ x with fields' := y } : lazyWithCore)))
+  set_fields : ∀ (x : lazyWithCore) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet lazyWithCore.underlying go!"fields") (PairV #x #y) (Val #(({ x with fields' := y } : lazyWithCore)))
 
 attribute [instance] lazyWithCore.TypeAssumptions.type_repr
   lazyWithCore.TypeAssumptions.underlying
@@ -1535,7 +1535,7 @@ attribute [instance] lazyWithCore.TypeAssumptions.type_repr
   lazyWithCore.TypeAssumptions.get_fields
   lazyWithCore.TypeAssumptions.set_fields
 
-abbrev leveledEnabler [FfiSyntax] : Type := interface.t
+abbrev leveledEnabler [FfiSyntax] : Type := GoInterface
 
 @[reducible] def leveledEnabler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Level" (go.signature.Signature [] false [Level.ty])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm LevelEnabler.ty)])])
@@ -1545,7 +1545,7 @@ class leveledEnabler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
 
 attribute [instance] leveledEnabler.TypeAssumptions.underlying
 
-abbrev ObjectMarshaler [FfiSyntax] : Type := interface.t
+abbrev ObjectMarshaler [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ObjectMarshaler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"MarshalLogObject" (go.signature.Signature [ObjectEncoder.ty] false [go.error]))])
@@ -1555,7 +1555,7 @@ class ObjectMarshaler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] ObjectMarshaler.TypeAssumptions.underlying
 
-abbrev ObjectMarshalerFunc [FfiSyntax] : Type := func.t
+abbrev ObjectMarshalerFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def ObjectMarshalerFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [ObjectEncoder.ty] false [go.error]))
@@ -1565,7 +1565,7 @@ class ObjectMarshalerFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
 
 attribute [instance] ObjectMarshalerFunc.TypeAssumptions.underlying
 
-abbrev ArrayMarshaler [FfiSyntax] : Type := interface.t
+abbrev ArrayMarshaler [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ArrayMarshaler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"MarshalLogArray" (go.signature.Signature [ArrayEncoder.ty] false [go.error]))])
@@ -1575,7 +1575,7 @@ class ArrayMarshaler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
 
 attribute [instance] ArrayMarshaler.TypeAssumptions.underlying
 
-abbrev ArrayMarshalerFunc [FfiSyntax] : Type := func.t
+abbrev ArrayMarshalerFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def ArrayMarshalerFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [ArrayEncoder.ty] false [go.error]))
@@ -1587,8 +1587,8 @@ attribute [instance] ArrayMarshalerFunc.TypeAssumptions.underlying
 
 structure MapObjectEncoder [FfiSyntax] where
   mk ::
-  Fields' : map.t
-  cur' : map.t
+  Fields' : GoMap
+  cur' : GoMap
 
 instance MapObjectEncoder.zero_val [FfiSyntax] : ZeroVal MapObjectEncoder :=
   ⟨MapObjectEncoder.mk zeroValDef zeroValDef⟩
@@ -1611,9 +1611,9 @@ class MapObjectEncoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   type_repr : go.TypeReprUnderlying MapObjectEncoder.underlying MapObjectEncoder
   underlying : go.UnderlyingDirectedEq MapObjectEncoder.ty MapObjectEncoder.underlying
   get_Fields : ∀ (x : MapObjectEncoder), go.IsGoStepPureDetTagged under (StructFieldGet MapObjectEncoder.underlying go!"Fields") #x (Val #(x.Fields'))
-  set_Fields : ∀ (x : MapObjectEncoder) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet MapObjectEncoder.underlying go!"Fields") (PairV #x #y) (Val #(({ x with Fields' := y } : MapObjectEncoder)))
+  set_Fields : ∀ (x : MapObjectEncoder) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet MapObjectEncoder.underlying go!"Fields") (PairV #x #y) (Val #(({ x with Fields' := y } : MapObjectEncoder)))
   get_cur : ∀ (x : MapObjectEncoder), go.IsGoStepPureDetTagged under (StructFieldGet MapObjectEncoder.underlying go!"cur") #x (Val #(x.cur'))
-  set_cur : ∀ (x : MapObjectEncoder) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet MapObjectEncoder.underlying go!"cur") (PairV #x #y) (Val #(({ x with cur' := y } : MapObjectEncoder)))
+  set_cur : ∀ (x : MapObjectEncoder) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet MapObjectEncoder.underlying go!"cur") (PairV #x #y) (Val #(({ x with cur' := y } : MapObjectEncoder)))
 
 attribute [instance] MapObjectEncoder.TypeAssumptions.type_repr
   MapObjectEncoder.TypeAssumptions.underlying
@@ -1624,7 +1624,7 @@ attribute [instance] MapObjectEncoder.TypeAssumptions.type_repr
 
 structure sliceArrayEncoder [FfiSyntax] where
   mk ::
-  elems' : slice.t
+  elems' : GoSlice
 
 instance sliceArrayEncoder.zero_val [FfiSyntax] : ZeroVal sliceArrayEncoder :=
   ⟨sliceArrayEncoder.mk zeroValDef⟩
@@ -1646,14 +1646,14 @@ class sliceArrayEncoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   type_repr : go.TypeReprUnderlying sliceArrayEncoder.underlying sliceArrayEncoder
   underlying : go.UnderlyingDirectedEq sliceArrayEncoder.ty sliceArrayEncoder.underlying
   get_elems : ∀ (x : sliceArrayEncoder), go.IsGoStepPureDetTagged under (StructFieldGet sliceArrayEncoder.underlying go!"elems") #x (Val #(x.elems'))
-  set_elems : ∀ (x : sliceArrayEncoder) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet sliceArrayEncoder.underlying go!"elems") (PairV #x #y) (Val #(({ x with elems' := y } : sliceArrayEncoder)))
+  set_elems : ∀ (x : sliceArrayEncoder) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet sliceArrayEncoder.underlying go!"elems") (PairV #x #y) (Val #(({ x with elems' := y } : sliceArrayEncoder)))
 
 attribute [instance] sliceArrayEncoder.TypeAssumptions.type_repr
   sliceArrayEncoder.TypeAssumptions.underlying
   sliceArrayEncoder.TypeAssumptions.get_elems
   sliceArrayEncoder.TypeAssumptions.set_elems
 
-abbrev ReflectedEncoder [FfiSyntax] : Type := interface.t
+abbrev ReflectedEncoder [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReflectedEncoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Encode" (go.signature.Signature [(go.GoType.InterfaceType [])] false [go.error]))])
@@ -1700,7 +1700,7 @@ attribute [instance] counter.TypeAssumptions.type_repr
   counter.TypeAssumptions.get_counter
   counter.TypeAssumptions.set_counter
 
-abbrev counters [FfiSyntax] : Type := (array.t (array.t counter 4096) 7)
+abbrev counters [FfiSyntax] : Type := (GoArray (GoArray counter 4096) 7)
 
 @[reducible] def counters.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 7 (go.GoType.ArrayType 4096 counter.ty))
@@ -1720,7 +1720,7 @@ class SamplingDecision.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
 
 attribute [instance] SamplingDecision.TypeAssumptions.underlying
 
-abbrev optionFunc [FfiSyntax] : Type := func.t
+abbrev optionFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def optionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType sampler.ty)] false []))
@@ -1730,7 +1730,7 @@ class optionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] optionFunc.TypeAssumptions.underlying
 
-abbrev SamplerOption [FfiSyntax] : Type := interface.t
+abbrev SamplerOption [FfiSyntax] : Type := GoInterface
 
 @[reducible] def SamplerOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [(go.GoType.PointerType sampler.ty)] false []))])
@@ -1747,7 +1747,7 @@ structure sampler [FfiSyntax] where
   tick' : _root_.Perennial.time.Duration
   first' : w64
   thereafter' : w64
-  hook' : func.t
+  hook' : GoFunc
 
 instance sampler.zero_val [FfiSyntax] : ZeroVal sampler :=
   ⟨sampler.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1784,7 +1784,7 @@ class sampler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   get_thereafter : ∀ (x : sampler), go.IsGoStepPureDetTagged under (StructFieldGet sampler.underlying go!"thereafter") #x (Val #(x.thereafter'))
   set_thereafter : ∀ (x : sampler) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sampler.underlying go!"thereafter") (PairV #x #y) (Val #(({ x with thereafter' := y } : sampler)))
   get_hook : ∀ (x : sampler), go.IsGoStepPureDetTagged under (StructFieldGet sampler.underlying go!"hook") #x (Val #(x.hook'))
-  set_hook : ∀ (x : sampler) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet sampler.underlying go!"hook") (PairV #x #y) (Val #(({ x with hook' := y } : sampler)))
+  set_hook : ∀ (x : sampler) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet sampler.underlying go!"hook") (PairV #x #y) (Val #(({ x with hook' := y } : sampler)))
 
 attribute [instance] sampler.TypeAssumptions.type_repr
   sampler.TypeAssumptions.underlying
@@ -1801,7 +1801,7 @@ attribute [instance] sampler.TypeAssumptions.type_repr
   sampler.TypeAssumptions.get_hook
   sampler.TypeAssumptions.set_hook
 
-abbrev multiCore [FfiSyntax] : Type := slice.t
+abbrev multiCore [FfiSyntax] : Type := GoSlice
 
 @[reducible] def multiCore.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType Core.ty)
@@ -1879,7 +1879,7 @@ attribute [instance] writerWrapper.TypeAssumptions.type_repr
   writerWrapper.TypeAssumptions.get_Writer
   writerWrapper.TypeAssumptions.set_Writer
 
-abbrev multiWriteSyncer [FfiSyntax] : Type := slice.t
+abbrev multiWriteSyncer [FfiSyntax] : Type := GoSlice
 
 @[reducible] def multiWriteSyncer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType WriteSyncer.ty)

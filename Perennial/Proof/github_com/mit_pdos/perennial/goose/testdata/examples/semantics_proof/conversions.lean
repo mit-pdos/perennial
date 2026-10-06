@@ -39,7 +39,7 @@ theorem wp_testByteSliceToString : TestFunOk (GF := GF) testByteSliceToString :=
   ihave p := p $$ Hp2
   simp only [show (sint.Z (W64 0)).toNat = 0 from rfl, show (sint.Z (W64 1)).toNat = 1 from rfl,
     show (sint.Z (W64 2)).toNat = 2 from rfl,
-    show (zero_val (array.t w8 (sint.Z (W64 3)))).arr = [W8 0, W8 0, W8 0] from rfl,
+    show (zero_val (GoArray w8 (sint.Z (W64 3)))).arr = [W8 0, W8 0, W8 0] from rfl,
     List.set_cons_zero, List.set_cons_succ]
   ihave Hsl := slice_array (GF := GF) p_ptr _ _ (by decide) $$ p
   rw [show W64 (sint.Z (W64 3)) = W64 3 from rfl]

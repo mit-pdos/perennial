@@ -213,7 +213,7 @@ instance txBuffer_access_load_buckets (l : Loc) (v : go_etcd_io.etcd.server.v3.s
  by
   solve_pointsto_access_struct
 
-instance txBuffer_access_store_buckets (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.txBuffer) (buckets' : map.t) :
+instance txBuffer_access_store_buckets (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.txBuffer) (buckets' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.txBuffer go!"buckets" l) v.buckets' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.txBuffer go!"buckets" l) buckets' (DFrac.own 1))
@@ -270,7 +270,7 @@ instance txWriteBuffer_access_load_bucket2seq (l : Loc) (v : go_etcd_io.etcd.ser
  by
   solve_pointsto_access_struct
 
-instance txWriteBuffer_access_store_bucket2seq (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.txWriteBuffer) (bucket2seq' : map.t) :
+instance txWriteBuffer_access_store_bucket2seq (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.txWriteBuffer) (bucket2seq' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.txWriteBuffer go!"bucket2seq" l) v.bucket2seq' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.txWriteBuffer go!"bucket2seq" l) bucket2seq' (DFrac.own 1))
@@ -581,7 +581,7 @@ instance kv_access_load_key (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.bac
  by
   solve_pointsto_access_struct
 
-instance kv_access_store_key (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.kv) (key' : slice.t) :
+instance kv_access_store_key (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.kv) (key' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.kv go!"key" l) v.key' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.kv go!"key" l) key' (DFrac.own 1))
@@ -597,7 +597,7 @@ instance kv_access_load_val (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.bac
  by
   solve_pointsto_access_struct
 
-instance kv_access_store_val (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.kv) (val' : slice.t) :
+instance kv_access_store_val (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.kv) (val' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.kv go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.kv go!"val" l) val' (DFrac.own 1))
@@ -638,7 +638,7 @@ instance bucketBuffer_access_load_buf (l : Loc) (v : go_etcd_io.etcd.server.v3.s
  by
   solve_pointsto_access_struct
 
-instance bucketBuffer_access_store_buf (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.bucketBuffer) (buf' : slice.t) :
+instance bucketBuffer_access_store_buf (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.backend.bucketBuffer) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.bucketBuffer go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.backend.bucketBuffer go!"buf" l) buf' (DFrac.own 1))

@@ -89,7 +89,7 @@ theorem init_Once (o : Loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
   imodintro
   iexact HQ
 
-theorem Once.wp_doSlow (o : Loc) (P Q : IProp GF) (f : func.t) :
+theorem Once.wp_doSlow (o : Loc) (P Q : IProp GF) (f : GoFunc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isOnce o P Q ∗
         iprop({{ P }} (App (Val #f) (Val #())) {{ RET #(); Q }}) }}
       (App (Val (o @!! go.GoType.PointerType Once.ty @!! go!"doSlow")) (Val #f))
@@ -160,7 +160,7 @@ theorem Once.wp_doSlow (o : Loc) (P Q : IProp GF) (f : func.t) :
       simp only [↓reduceIte]; iframe
     iapply HΦ $$ HQ2
 
-theorem Once.wp_Do (o : Loc) (P Q : IProp GF) (f : func.t) :
+theorem Once.wp_Do (o : Loc) (P Q : IProp GF) (f : GoFunc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isOnce o P Q ∗
         iprop({{ P }} (App (Val #f) (Val #())) {{ RET #(); Q }}) }}
       (App (Val (o @!! go.GoType.PointerType Once.ty @!! go!"Do")) (Val #f))

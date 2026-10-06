@@ -430,7 +430,7 @@ instance codecV0Bridge_access_load_codec (l : Loc) (v : google_golang_org.grpc.c
  by
   solve_pointsto_access_struct
 
-instance codecV0Bridge_access_store_codec (l : Loc) (v : google_golang_org.grpc.codecV0Bridge) (codec' : interface.t) :
+instance codecV0Bridge_access_store_codec (l : Loc) (v : google_golang_org.grpc.codecV0Bridge) (codec' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.codecV0Bridge go!"codec" l) v.codec' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.codecV0Bridge go!"codec" l) codec' (DFrac.own 1))
@@ -554,7 +554,7 @@ instance funcDialOption_access_load_f (l : Loc) (v : google_golang_org.grpc.func
  by
   solve_pointsto_access_struct
 
-instance funcDialOption_access_store_f (l : Loc) (v : google_golang_org.grpc.funcDialOption) (f' : func.t) :
+instance funcDialOption_access_store_f (l : Loc) (v : google_golang_org.grpc.funcDialOption) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.funcDialOption go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.funcDialOption go!"f" l) f' (DFrac.own 1))
@@ -594,7 +594,7 @@ instance joinDialOption_access_load_opts (l : Loc) (v : google_golang_org.grpc.j
  by
   solve_pointsto_access_struct
 
-instance joinDialOption_access_store_opts (l : Loc) (v : google_golang_org.grpc.joinDialOption) (opts' : slice.t) :
+instance joinDialOption_access_store_opts (l : Loc) (v : google_golang_org.grpc.joinDialOption) (opts' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.joinDialOption go!"opts" l) v.opts' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.joinDialOption go!"opts" l) opts' (DFrac.own 1))
@@ -675,7 +675,7 @@ instance UnaryServerInfo_access_load_Server (l : Loc) (v : google_golang_org.grp
  by
   solve_pointsto_access_struct
 
-instance UnaryServerInfo_access_store_Server (l : Loc) (v : google_golang_org.grpc.UnaryServerInfo) (Server' : interface.t) :
+instance UnaryServerInfo_access_store_Server (l : Loc) (v : google_golang_org.grpc.UnaryServerInfo) (Server' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo go!"Server" l) v.Server' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo go!"Server" l) Server' (DFrac.own 1))
@@ -843,7 +843,7 @@ instance dropError_access_load_error (l : Loc) (v : google_golang_org.grpc.dropE
  by
   solve_pointsto_access_struct
 
-instance dropError_access_store_error (l : Loc) (v : google_golang_org.grpc.dropError) (error' : error.t) :
+instance dropError_access_store_error (l : Loc) (v : google_golang_org.grpc.dropError) (error' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.dropError go!"error" l) v.error' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.dropError go!"error" l) error' (DFrac.own 1))
@@ -1140,7 +1140,7 @@ instance OnFinishCallOption_access_load_OnFinish (l : Loc) (v : google_golang_or
  by
   solve_pointsto_access_struct
 
-instance OnFinishCallOption_access_store_OnFinish (l : Loc) (v : google_golang_org.grpc.OnFinishCallOption) (OnFinish' : func.t) :
+instance OnFinishCallOption_access_store_OnFinish (l : Loc) (v : google_golang_org.grpc.OnFinishCallOption) (OnFinish' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.OnFinishCallOption go!"OnFinish" l) v.OnFinish' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.OnFinishCallOption go!"OnFinish" l) OnFinish' (DFrac.own 1))
@@ -1359,7 +1359,7 @@ instance acceptCompressorsCallOption_access_load_names (l : Loc) (v : google_gol
  by
   solve_pointsto_access_struct
 
-instance acceptCompressorsCallOption_access_store_names (l : Loc) (v : google_golang_org.grpc.acceptCompressorsCallOption) (names' : slice.t) :
+instance acceptCompressorsCallOption_access_store_names (l : Loc) (v : google_golang_org.grpc.acceptCompressorsCallOption) (names' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef google_golang_org.grpc.acceptCompressorsCallOption go!"names" l) v.names' (DFrac.own 1))
       (typedPointsto (structFieldRef google_golang_org.grpc.acceptCompressorsCallOption go!"names" l) names' (DFrac.own 1))

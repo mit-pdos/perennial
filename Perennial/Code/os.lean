@@ -1057,7 +1057,7 @@ attribute [instance] dirInfo.TypeAssumptions.type_repr
   dirInfo.TypeAssumptions.underlying
   dirInfo.TypeAssumptions.isUnderlying
 
-abbrev timeout [FfiSyntax] : Type := interface.t
+abbrev timeout [FfiSyntax] : Type := GoInterface
 
 @[reducible] def timeout.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Timeout" (go.signature.Signature [] false [go.bool]))])
@@ -1070,7 +1070,7 @@ attribute [instance] timeout.TypeAssumptions.underlying
 structure SyscallError [FfiSyntax] where
   mk ::
   Syscall' : GoString
-  Err' : error.t
+  Err' : GoError
 
 instance SyscallError.zero_val [FfiSyntax] : ZeroVal SyscallError :=
   ⟨SyscallError.mk zeroValDef zeroValDef⟩
@@ -1095,7 +1095,7 @@ class SyscallError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   get_Syscall : ∀ (x : SyscallError), go.IsGoStepPureDetTagged under (StructFieldGet SyscallError.underlying go!"Syscall") #x (Val #(x.Syscall'))
   set_Syscall : ∀ (x : SyscallError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SyscallError.underlying go!"Syscall") (PairV #x #y) (Val #(({ x with Syscall' := y } : SyscallError)))
   get_Err : ∀ (x : SyscallError), go.IsGoStepPureDetTagged under (StructFieldGet SyscallError.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : SyscallError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet SyscallError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : SyscallError)))
+  set_Err : ∀ (x : SyscallError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet SyscallError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : SyscallError)))
 
 attribute [instance] SyscallError.TypeAssumptions.type_repr
   SyscallError.TypeAssumptions.underlying
@@ -1153,7 +1153,7 @@ attribute [instance] ProcAttr.TypeAssumptions.type_repr
   ProcAttr.TypeAssumptions.underlying
   ProcAttr.TypeAssumptions.isUnderlying
 
-abbrev Signal [FfiSyntax] : Type := interface.t
+abbrev Signal [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Signal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Signal" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
@@ -1181,7 +1181,7 @@ structure LinkError [FfiSyntax] where
   Op' : GoString
   Old' : GoString
   New' : GoString
-  Err' : error.t
+  Err' : GoError
 
 instance LinkError.zero_val [FfiSyntax] : ZeroVal LinkError :=
   ⟨LinkError.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1212,7 +1212,7 @@ class LinkError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_New : ∀ (x : LinkError), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"New") #x (Val #(x.New'))
   set_New : ∀ (x : LinkError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : LinkError)))
   get_Err : ∀ (x : LinkError), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : LinkError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : LinkError)))
+  set_Err : ∀ (x : LinkError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : LinkError)))
 
 attribute [instance] LinkError.TypeAssumptions.type_repr
   LinkError.TypeAssumptions.underlying

@@ -193,7 +193,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 structure LockedStack [FfiSyntax] where
   mk ::
   mu' : _root_.Perennial.sync.Mutex
-  stack' : slice.t
+  stack' : GoSlice
 
 instance LockedStack.zero_val [FfiSyntax] : ZeroVal LockedStack :=
   ⟨LockedStack.mk zeroValDef zeroValDef⟩
@@ -218,7 +218,7 @@ class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   get_mu : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (x : LockedStack) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack)))
   get_stack : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
-  set_stack : ∀ (x : LockedStack) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack)))
+  set_stack : ∀ (x : LockedStack) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack)))
   ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Pop" LockedStack.Pop.impl
   ptr_Push_unfold : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Push" LockedStack.Push.impl
 
@@ -234,7 +234,7 @@ attribute [instance] LockedStack.TypeAssumptions.type_repr
 structure EliminationStack [FfiSyntax] where
   mk ::
   base' : Loc
-  exchanger' : chan.t
+  exchanger' : GoChan
 
 instance EliminationStack.zero_val [FfiSyntax] : ZeroVal EliminationStack :=
   ⟨EliminationStack.mk zeroValDef zeroValDef⟩
@@ -259,7 +259,7 @@ class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   get_base : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
   set_base : ∀ (x : EliminationStack) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack)))
   get_exchanger : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
-  set_exchanger : ∀ (x : EliminationStack) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack)))
+  set_exchanger : ∀ (x : EliminationStack) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack)))
   ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Pop" EliminationStack.Pop.impl
   ptr_Push_unfold : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Push" EliminationStack.Push.impl
 

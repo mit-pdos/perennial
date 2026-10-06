@@ -97,7 +97,7 @@ attribute [instance] Association.TypeAssumptions.underlying
 
 structure Bubble [FfiSyntax] where
   mk ::
-  b' : interface.t
+  b' : GoInterface
 
 instance Bubble.zero_val [FfiSyntax] : ZeroVal Bubble :=
   ⟨Bubble.mk zeroValDef⟩
@@ -119,7 +119,7 @@ class Bubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Bubble.underlying Bubble
   underlying : go.UnderlyingDirectedEq Bubble.ty Bubble.underlying
   get_b : ∀ (x : Bubble), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : Bubble) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble)))
+  set_b : ∀ (x : Bubble) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble)))
 
 attribute [instance] Bubble.TypeAssumptions.type_repr
   Bubble.TypeAssumptions.underlying

@@ -61,7 +61,7 @@ instance LockedStack_access_load_stack (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-instance LockedStack_access_store_stack (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (stack' : slice.t) :
+instance LockedStack_access_store_stack (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (stack' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"stack" l) v.stack' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"stack" l) stack' (DFrac.own 1))
@@ -118,7 +118,7 @@ instance EliminationStack_access_load_exchanger (l : Loc) (v : github_com.mit_pd
  by
   solve_pointsto_access_struct
 
-instance EliminationStack_access_store_exchanger (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (exchanger' : chan.t) :
+instance EliminationStack_access_store_exchanger (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (exchanger' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack go!"exchanger" l) v.exchanger' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack go!"exchanger" l) exchanger' (DFrac.own 1))

@@ -466,7 +466,7 @@ instance multiReader_access_load_readers (l : Loc) (v : io.multiReader) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance multiReader_access_store_readers (l : Loc) (v : io.multiReader) (readers' : slice.t) :
+instance multiReader_access_store_readers (l : Loc) (v : io.multiReader) (readers' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.multiReader go!"readers" l) v.readers' (DFrac.own 1))
       (typedPointsto (structFieldRef io.multiReader go!"readers" l) readers' (DFrac.own 1))
@@ -506,7 +506,7 @@ instance multiWriter_access_load_writers (l : Loc) (v : io.multiWriter) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance multiWriter_access_store_writers (l : Loc) (v : io.multiWriter) (writers' : slice.t) :
+instance multiWriter_access_store_writers (l : Loc) (v : io.multiWriter) (writers' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.multiWriter go!"writers" l) v.writers' (DFrac.own 1))
       (typedPointsto (structFieldRef io.multiWriter go!"writers" l) writers' (DFrac.own 1))
@@ -563,7 +563,7 @@ instance onceError_access_load_err (l : Loc) (v : io.onceError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance onceError_access_store_err (l : Loc) (v : io.onceError) (err' : error.t) :
+instance onceError_access_store_err (l : Loc) (v : io.onceError) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.onceError go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef io.onceError go!"err" l) err' (DFrac.own 1))
@@ -625,7 +625,7 @@ instance pipe_access_load_wrCh (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_wrCh (l : Loc) (v : io.pipe) (wrCh' : chan.t) :
+instance pipe_access_store_wrCh (l : Loc) (v : io.pipe) (wrCh' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"wrCh" l) v.wrCh' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"wrCh" l) wrCh' (DFrac.own 1))
@@ -641,7 +641,7 @@ instance pipe_access_load_rdCh (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_rdCh (l : Loc) (v : io.pipe) (rdCh' : chan.t) :
+instance pipe_access_store_rdCh (l : Loc) (v : io.pipe) (rdCh' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"rdCh" l) v.rdCh' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"rdCh" l) rdCh' (DFrac.own 1))
@@ -673,7 +673,7 @@ instance pipe_access_load_done (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_done (l : Loc) (v : io.pipe) (done' : chan.t) :
+instance pipe_access_store_done (l : Loc) (v : io.pipe) (done' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"done" l) done' (DFrac.own 1))

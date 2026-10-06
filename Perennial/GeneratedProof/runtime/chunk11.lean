@@ -104,7 +104,7 @@ instance cpuProfile_access_load_extra (l : Loc) (v : runtime.cpuProfile) (dq : D
  by
   solve_pointsto_access_struct
 
-instance cpuProfile_access_store_extra (l : Loc) (v : runtime.cpuProfile) (extra' : (array.t w64 1000)) :
+instance cpuProfile_access_store_extra (l : Loc) (v : runtime.cpuProfile) (extra' : (GoArray w64 1000)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.cpuProfile go!"extra" l) v.extra' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.cpuProfile go!"extra" l) extra' (DFrac.own 1))
@@ -530,7 +530,7 @@ instance mcache_access_load_alloc (l : Loc) (v : runtime.mcache) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance mcache_access_store_alloc (l : Loc) (v : runtime.mcache) (alloc' : (array.t Loc 136)) :
+instance mcache_access_store_alloc (l : Loc) (v : runtime.mcache) (alloc' : (GoArray Loc 136)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mcache go!"alloc" l) v.alloc' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mcache go!"alloc" l) alloc' (DFrac.own 1))
@@ -546,7 +546,7 @@ instance mcache_access_load_reusableNoscan (l : Loc) (v : runtime.mcache) (dq : 
  by
   solve_pointsto_access_struct
 
-instance mcache_access_store_reusableNoscan (l : Loc) (v : runtime.mcache) (reusableNoscan' : (array.t runtime.gclinkptr 136)) :
+instance mcache_access_store_reusableNoscan (l : Loc) (v : runtime.mcache) (reusableNoscan' : (GoArray runtime.gclinkptr 136)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mcache go!"reusableNoscan" l) v.reusableNoscan' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mcache go!"reusableNoscan" l) reusableNoscan' (DFrac.own 1))
@@ -562,7 +562,7 @@ instance mcache_access_load_stackcache (l : Loc) (v : runtime.mcache) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance mcache_access_store_stackcache (l : Loc) (v : runtime.mcache) (stackcache' : (array.t runtime.stackfreelist 4)) :
+instance mcache_access_store_stackcache (l : Loc) (v : runtime.mcache) (stackcache' : (GoArray runtime.stackfreelist 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mcache go!"stackcache" l) v.stackcache' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mcache go!"stackcache" l) stackcache' (DFrac.own 1))
@@ -743,7 +743,7 @@ instance cleanupBlock_access_load_cleanups (l : Loc) (v : runtime.cleanupBlock) 
  by
   solve_pointsto_access_struct
 
-instance cleanupBlock_access_store_cleanups (l : Loc) (v : runtime.cleanupBlock) (cleanups' : (array.t runtime.cleanupFn 20)) :
+instance cleanupBlock_access_store_cleanups (l : Loc) (v : runtime.cleanupBlock) (cleanups' : (GoArray runtime.cleanupFn 20)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanups" l) v.cleanups' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanups" l) cleanups' (DFrac.own 1))
@@ -830,7 +830,7 @@ instance cleanupQueue_access_load__2 (l : Loc) (v : runtime.cleanupQueue) (dq : 
  by
   solve_pointsto_access_struct
 
-instance cleanupQueue_access_store__2 (l : Loc) (v : runtime.cleanupQueue) (_2' : (array.t w8 48)) :
+instance cleanupQueue_access_store__2 (l : Loc) (v : runtime.cleanupQueue) (_2' : (GoArray w8 48)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.cleanupQueue go!"_2" l) v._2' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.cleanupQueue go!"_2" l) _2' (DFrac.own 1))
@@ -878,7 +878,7 @@ instance cleanupQueue_access_load__5 (l : Loc) (v : runtime.cleanupQueue) (dq : 
  by
   solve_pointsto_access_struct
 
-instance cleanupQueue_access_store__5 (l : Loc) (v : runtime.cleanupQueue) (_5' : (array.t w8 55)) :
+instance cleanupQueue_access_store__5 (l : Loc) (v : runtime.cleanupQueue) (_5' : (GoArray w8 55)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.cleanupQueue go!"_5" l) v._5' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.cleanupQueue go!"_5" l) _5' (DFrac.own 1))
@@ -910,7 +910,7 @@ instance cleanupQueue_access_load__7 (l : Loc) (v : runtime.cleanupQueue) (dq : 
  by
   solve_pointsto_access_struct
 
-instance cleanupQueue_access_store__7 (l : Loc) (v : runtime.cleanupQueue) (_7' : (array.t w8 56)) :
+instance cleanupQueue_access_store__7 (l : Loc) (v : runtime.cleanupQueue) (_7' : (GoArray w8 56)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.cleanupQueue go!"_7" l) v._7' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.cleanupQueue go!"_7" l) _7' (DFrac.own 1))
@@ -1294,7 +1294,7 @@ instance gcBgMarkWorkerNodePadded_access_load_pad (l : Loc) (v : runtime.gcBgMar
  by
   solve_pointsto_access_struct
 
-instance gcBgMarkWorkerNodePadded_access_store_pad (l : Loc) (v : runtime.gcBgMarkWorkerNodePadded) (pad' : (array.t w8 480)) :
+instance gcBgMarkWorkerNodePadded_access_store_pad (l : Loc) (v : runtime.gcBgMarkWorkerNodePadded) (pad' : (GoArray w8 480)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"pad" l) v.pad' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"pad" l) pad' (DFrac.own 1))
@@ -1507,7 +1507,7 @@ instance scavengerState_access_load_sleepStub (l : Loc) (v : runtime.scavengerSt
  by
   solve_pointsto_access_struct
 
-instance scavengerState_access_store_sleepStub (l : Loc) (v : runtime.scavengerState) (sleepStub' : func.t) :
+instance scavengerState_access_store_sleepStub (l : Loc) (v : runtime.scavengerState) (sleepStub' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.scavengerState go!"sleepStub" l) v.sleepStub' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.scavengerState go!"sleepStub" l) sleepStub' (DFrac.own 1))
@@ -1523,7 +1523,7 @@ instance scavengerState_access_load_scavenge (l : Loc) (v : runtime.scavengerSta
  by
   solve_pointsto_access_struct
 
-instance scavengerState_access_store_scavenge (l : Loc) (v : runtime.scavengerState) (scavenge' : func.t) :
+instance scavengerState_access_store_scavenge (l : Loc) (v : runtime.scavengerState) (scavenge' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.scavengerState go!"scavenge" l) v.scavenge' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.scavengerState go!"scavenge" l) scavenge' (DFrac.own 1))
@@ -1539,7 +1539,7 @@ instance scavengerState_access_load_shouldStop (l : Loc) (v : runtime.scavengerS
  by
   solve_pointsto_access_struct
 
-instance scavengerState_access_store_shouldStop (l : Loc) (v : runtime.scavengerState) (shouldStop' : func.t) :
+instance scavengerState_access_store_shouldStop (l : Loc) (v : runtime.scavengerState) (shouldStop' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.scavengerState go!"shouldStop" l) v.shouldStop' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.scavengerState go!"shouldStop" l) shouldStop' (DFrac.own 1))
@@ -1555,7 +1555,7 @@ instance scavengerState_access_load_gomaxprocs (l : Loc) (v : runtime.scavengerS
  by
   solve_pointsto_access_struct
 
-instance scavengerState_access_store_gomaxprocs (l : Loc) (v : runtime.scavengerState) (gomaxprocs' : func.t) :
+instance scavengerState_access_store_gomaxprocs (l : Loc) (v : runtime.scavengerState) (gomaxprocs' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.scavengerState go!"gomaxprocs" l) v.gomaxprocs' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.scavengerState go!"gomaxprocs" l) gomaxprocs' (DFrac.own 1))
@@ -1885,7 +1885,7 @@ instance workbuf_access_load_obj (l : Loc) (v : runtime.workbuf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance workbuf_access_store_obj (l : Loc) (v : runtime.workbuf) (obj' : (array.t w64 253)) :
+instance workbuf_access_store_obj (l : Loc) (v : runtime.workbuf) (obj' : (GoArray w64 253)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.workbuf go!"obj" l) v.obj' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.workbuf go!"obj" l) obj' (DFrac.own 1))
@@ -1942,7 +1942,7 @@ instance spanSetBlockHeader2_access_load_pad (l : Loc) (v : runtime.spanSetBlock
  by
   solve_pointsto_access_struct
 
-instance spanSetBlockHeader2_access_store_pad (l : Loc) (v : runtime.spanSetBlockHeader2) (pad' : (array.t w8 488)) :
+instance spanSetBlockHeader2_access_store_pad (l : Loc) (v : runtime.spanSetBlockHeader2) (pad' : (GoArray w8 488)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"pad" l) v.pad' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"pad" l) pad' (DFrac.own 1))
@@ -1984,7 +1984,7 @@ instance consistentHeapStats_access_load_stats (l : Loc) (v : runtime.consistent
  by
   solve_pointsto_access_struct
 
-instance consistentHeapStats_access_store_stats (l : Loc) (v : runtime.consistentHeapStats) (stats' : (array.t runtime.heapStatsDelta 3)) :
+instance consistentHeapStats_access_store_stats (l : Loc) (v : runtime.consistentHeapStats) (stats' : (GoArray runtime.heapStatsDelta 3)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.consistentHeapStats go!"stats" l) v.stats' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.consistentHeapStats go!"stats" l) stats' (DFrac.own 1))
@@ -2214,7 +2214,7 @@ instance timer_access_load_f (l : Loc) (v : runtime.timer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance timer_access_store_f (l : Loc) (v : runtime.timer) (f' : func.t) :
+instance timer_access_store_f (l : Loc) (v : runtime.timer) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timer go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.timer go!"f" l) f' (DFrac.own 1))
@@ -2230,7 +2230,7 @@ instance timer_access_load_arg (l : Loc) (v : runtime.timer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance timer_access_store_arg (l : Loc) (v : runtime.timer) (arg' : interface.t) :
+instance timer_access_store_arg (l : Loc) (v : runtime.timer) (arg' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timer go!"arg" l) v.arg' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.timer go!"arg" l) arg' (DFrac.own 1))

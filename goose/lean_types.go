@@ -368,25 +368,25 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 		}
 		return glang.LeanRename(s)
 	case *types.Slice:
-		return "slice.t"
+		return "GoSlice"
 	case *types.Array:
-		return fmt.Sprintf("(array.t %s %d)", ctx.toLeanTypeP(l, t.Elem(), primed), t.Len())
+		return fmt.Sprintf("(GoArray %s %d)", ctx.toLeanTypeP(l, t.Elem(), primed), t.Len())
 	case *types.Pointer:
 		return "Loc"
 	case *types.Signature:
-		return "func.t"
+		return "GoFunc"
 	case *types.Interface:
-		return "interface.t"
+		return "GoInterface"
 	case *types.Map:
-		return "map.t"
+		return "GoMap"
 	case *types.Chan:
-		return "chan.t"
+		return "GoChan"
 	case *types.Named:
 		var baseName string
 		pkg := t.Obj().Pkg()
 		if pkg == nil {
 			// universe types (error) are modeled by the framework
-			baseName = glang.LeanQuote(glang.ToIdent(t.Obj().Name()) + ".t")
+			baseName = glang.LeanUniverseType(t.Obj().Name())
 		} else if pkg.Path() != ctx.pkgPath {
 			baseName = glang.LeanQuote(ctx.pkgRef(pkg)) + "." + glang.LeanIdent(t.Obj().Name())
 		} else {

@@ -106,7 +106,7 @@ theorem room4 (l c : w64) (hroom : uint.Z (W64 4) ≤ uint.Z c - uint.Z l)
     sint.Z (l + W64 4) = sint.Z l + 4 ∧ sint.Z (l + W64 4) ≤ sint.Z c := by
   constructor <;> word
 
-theorem ownSlice_split_app (k : w64) (s : slice.t) (dq : DFrac) (head tail : List w8)
+theorem ownSlice_split_app (k : w64) (s : GoSlice) (dq : DFrac) (head tail : List w8)
     (hk : sint.nat k = head.length) (hk0 : 0 ≤ sint.Z k)
     (hlen : (head ++ tail).length = sint.nat s.len) (hs : 0 ≤ sint.Z s.len) :
     (s ↦*{dq} (head ++ tail) : IProp GF) ⊢
@@ -122,10 +122,10 @@ theorem ownSlice_split_app (k : w64) (s : slice.t) (dq : DFrac) (head tail : Lis
   iintro ⟨H1, H2, _⟩
   iframe
 
-theorem wp_ReadInt (tail : List w8) (s : slice.t) (dq : DFrac) (x : w64) :
+theorem wp_ReadInt (tail : List w8) (s : GoSlice) (dq : DFrac) (x : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦*{dq} (u64Le x ++ tail) }}
       (App (Val (@! ReadInt)) (Val #s))
-    {{ (s' : slice.t), RET (PairV #x #s'); s' ↦*{dq} tail }} := by
+    {{ (s' : GoSlice), RET (PairV #x #s'); s' ↦*{dq} tail }} := by
   wp_start as Hs
   ihave %Hlen := ownSlice_len _ _ _ $$ Hs
   ihave %Hwf := ownSlice_wf _ _ _ $$ Hs
@@ -145,10 +145,10 @@ theorem wp_ReadInt (tail : List w8) (s : slice.t) (dq : DFrac) (x : w64) :
     (by decide) (by simp [u64Le_length, Hlen]) Hwf.1 $$ Hs with ⟨_, Hs⟩
   iexact Hs
 
-theorem wp_ReadInt32 (tail : List w8) (s : slice.t) (dq : DFrac) (x : w32) :
+theorem wp_ReadInt32 (tail : List w8) (s : GoSlice) (dq : DFrac) (x : w32) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦*{dq} (u32Le x ++ tail) }}
       (App (Val (@! ReadInt32)) (Val #s))
-    {{ (s' : slice.t), RET (PairV #x #s'); s' ↦*{dq} tail }} := by
+    {{ (s' : GoSlice), RET (PairV #x #s'); s' ↦*{dq} tail }} := by
   wp_start as Hs
   ihave %Hlen := ownSlice_len _ _ _ $$ Hs
   ihave %Hwf := ownSlice_wf _ _ _ $$ Hs
@@ -168,11 +168,11 @@ theorem wp_ReadInt32 (tail : List w8) (s : slice.t) (dq : DFrac) (x : w32) :
     (by decide) (by simp [u32Le_length, Hlen]) Hwf.1 $$ Hs with ⟨_, Hs⟩
   iexact Hs
 
-theorem wp_ReadBytes (s : slice.t) (dq : DFrac) (len : w64) (head tail : List w8)
+theorem wp_ReadBytes (s : GoSlice) (dq : DFrac) (len : w64) (head tail : List w8)
     (Hlen : head.length = uint.nat len) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦*{dq} (head ++ tail) }}
       (App (App (Val (@! ReadBytes)) (Val #s)) (Val #len))
-    {{ (b s' : slice.t), RET (PairV #b #s'); b ↦*{dq} head ∗ s' ↦*{dq} tail }} := by
+    {{ (b s' : GoSlice), RET (PairV #b #s'); b ↦*{dq} head ∗ s' ↦*{dq} tail }} := by
   wp_start as Hs
   ihave %Hsz := ownSlice_len _ _ _ $$ Hs
   ihave %Hwf := ownSlice_wf _ _ _ $$ Hs
@@ -194,12 +194,12 @@ theorem wp_ReadBytes (s : slice.t) (dq : DFrac) (len : w64) (head tail : List w8
     (by simp only [List.length_append]; omega) Hwf.1 $$ Hs with ⟨H1, H2⟩
   iframe
 
-theorem wp_ReadLenPrefixedBytes (s : slice.t) (q : DFrac) (len : w64) (head tail : List w8)
+theorem wp_ReadLenPrefixedBytes (s : GoSlice) (q : DFrac) (len : w64) (head tail : List w8)
     (Hlen : head.length = uint.nat len) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗
         s ↦*{q} (u64Le len ++ head ++ tail) }}
       (App (Val (@! ReadLenPrefixedBytes)) (Val #s))
-    {{ (b s' : slice.t), RET (PairV #b #s'); b ↦*{q} head ∗ s' ↦*{q} tail }} := by
+    {{ (b s' : GoSlice), RET (PairV #b #s'); b ↦*{q} head ∗ s' ↦*{q} tail }} := by
   wp_start as Hs
   wp_auto
   rw [List.append_assoc]
@@ -208,11 +208,11 @@ theorem wp_ReadLenPrefixedBytes (s : slice.t) (q : DFrac) (len : w64) (head tail
   iapply HΦ
   iframe
 
-theorem wp_ReadBytesCopy (s : slice.t) (q : DFrac) (len : w64) (head tail : List w8)
+theorem wp_ReadBytesCopy (s : GoSlice) (q : DFrac) (len : w64) (head tail : List w8)
     (Hlen : head.length = uint.nat len) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦*{q} (head ++ tail) }}
       (App (App (Val (@! ReadBytesCopy)) (Val #s)) (Val #len))
-    {{ (b s' : slice.t), RET (PairV #b #s'); b ↦*{DFrac.own 1} head ∗ s' ↦*{q} tail }} := by
+    {{ (b s' : GoSlice), RET (PairV #b #s'); b ↦*{DFrac.own 1} head ∗ s' ↦*{q} tail }} := by
   wp_start as Hs
   ihave %Hsz := ownSlice_len _ _ _ $$ Hs
   ihave %Hwf := ownSlice_wf _ _ _ $$ Hs
@@ -241,10 +241,10 @@ theorem wp_ReadBytesCopy (s : slice.t) (q : DFrac) (len : w64) (head tail : List
     List.append_nil]
   iexact Hsl
 
-theorem wp_ReadBool (s : slice.t) (q : DFrac) (bit : w8) (tail : List w8) :
+theorem wp_ReadBool (s : GoSlice) (q : DFrac) (bit : w8) (tail : List w8) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦*{q} (bit :: tail) }}
       (App (Val (@! ReadBool)) (Val #s))
-    {{ (b : Bool) (s' : slice.t), RET (PairV #b #s');
+    {{ (b : Bool) (s' : GoSlice), RET (PairV #b #s');
         ⌜b = decide (uint.Z bit ≠ 0)⌝ ∗ s' ↦*{q} tail }} := by
   wp_start as Hs
   ihave %Hsz := ownSlice_len _ _ _ $$ Hs
@@ -283,12 +283,12 @@ theorem wp_compute_new_cap (old_cap min_cap : w64) :
   · iapply HΦ; ipureintro; exact ⟨by omega, .inl rfl⟩
   · iapply HΦ; ipureintro; exact ⟨by simp only [uint.Z] at *; omega, .inr rfl⟩
 
-theorem wp_reserve (s : slice.t) (extra : w64) (vs : List w8)
+theorem wp_reserve (s : GoSlice) (extra : w64) (vs : List w8)
     (Hbound : (vs.length : Int) + uint.Z extra ≤ 2 ^ 62) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! reserve)) (Val #s)) (Val #extra))
-    {{ (s' : slice.t), RET #s';
+    {{ (s' : GoSlice), RET #s';
         ⌜uint.Z extra ≤ uint.Z s'.cap - uint.Z s'.len⌝ ∗
         s' ↦* vs ∗ ownSliceCap w8 s' (DFrac.own 1) }} := by
   wp_start as ⟨Hs, Hcap⟩
@@ -323,12 +323,12 @@ theorem wp_reserve (s : slice.t) (extra : w64) (vs : List w8)
     ipureintro
     word
 
-theorem wp_WriteInt (s : slice.t) (x : w64) (vs : List w8)
+theorem wp_WriteInt (s : GoSlice) (x : w64) (vs : List w8)
     (Hbound : (vs.length : Int) + 8 ≤ 2 ^ 62) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteInt)) (Val #s)) (Val #x))
-    {{ (s' : slice.t), RET #s'; s' ↦* (vs ++ u64Le x) ∗ ownSliceCap w8 s' (DFrac.own 1) }} := by
+    {{ (s' : GoSlice), RET #s'; s' ↦* (vs ++ u64Le x) ∗ ownSliceCap w8 s' (DFrac.own 1) }} := by
   wp_start as ⟨Hs, Hcap⟩
   ihave #Hbin : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
@@ -369,12 +369,12 @@ theorem wp_WriteInt (s : slice.t) (x : w64) (vs : List w8)
   rw [List.append_nil]
   iexact Hput
 
-theorem wp_WriteInt32 (s : slice.t) (x : w32) (vs : List w8)
+theorem wp_WriteInt32 (s : GoSlice) (x : w32) (vs : List w8)
     (Hbound : (vs.length : Int) + 4 ≤ 2 ^ 62) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteInt32)) (Val #s)) (Val #x))
-    {{ (s' : slice.t), RET #s'; s' ↦* (vs ++ u32Le x) ∗ ownSliceCap w8 s' (DFrac.own 1) }} := by
+    {{ (s' : GoSlice), RET #s'; s' ↦* (vs ++ u32Le x) ∗ ownSliceCap w8 s' (DFrac.own 1) }} := by
   wp_start as ⟨Hs, Hcap⟩
   ihave #Hbin : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
@@ -415,11 +415,11 @@ theorem wp_WriteInt32 (s : slice.t) (x : w32) (vs : List w8)
   rw [List.append_nil]
   iexact Hput
 
-theorem wp_WriteBytes (s : slice.t) (vs : List w8) (data_sl : slice.t) (q : DFrac) (data : List w8) :
+theorem wp_WriteBytes (s : GoSlice) (vs : List w8) (data_sl : GoSlice) (q : DFrac) (data : List w8) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         data_sl ↦*{q} data ∗ ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteBytes)) (Val #s)) (Val #data_sl))
-    {{ (s' : slice.t), RET #s'; s' ↦* (vs ++ data) ∗ ownSliceCap w8 s' (DFrac.own 1) ∗
+    {{ (s' : GoSlice), RET #s'; s' ↦* (vs ++ data) ∗ ownSliceCap w8 s' (DFrac.own 1) ∗
         data_sl ↦*{q} data }} := by
   wp_start as ⟨Hs, Hdata, Hcap⟩
   wp_auto
@@ -428,12 +428,12 @@ theorem wp_WriteBytes (s : slice.t) (vs : List w8) (data_sl : slice.t) (q : DFra
   iapply HΦ
   iframe
 
-theorem wp_WriteLenPrefixedBytes (s : slice.t) (vs : List w8) (data_sl : slice.t) (q : DFrac)
+theorem wp_WriteLenPrefixedBytes (s : GoSlice) (vs : List w8) (data_sl : GoSlice) (q : DFrac)
     (data : List w8) (Hbound : (vs.length : Int) + 8 ≤ 2 ^ 62) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         data_sl ↦*{q} data ∗ ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteLenPrefixedBytes)) (Val #s)) (Val #data_sl))
-    {{ (s' : slice.t), RET #s';
+    {{ (s' : GoSlice), RET #s';
         s' ↦* (vs ++ u64Le (W64 data.length) ++ data) ∗ ownSliceCap w8 s' (DFrac.own 1) ∗
         data_sl ↦*{q} data }} := by
   wp_start as ⟨Hs, Hdata, Hscap⟩
@@ -449,7 +449,7 @@ theorem wp_WriteLenPrefixedBytes (s : slice.t) (vs : List w8) (data_sl : slice.t
   iframe
 
 theorem arr_set_1 (x : w8) (kvs : List keyed_element) (h : go.arrayLiteralSize kvs = 1) :
-    (zero_val (array.t w8 (go.arrayLiteralSize kvs))).arr.set (sint.nat (W64 0)) x = [x] := by
+    (zero_val (GoArray w8 (go.arrayLiteralSize kvs))).arr.set (sint.nat (W64 0)) x = [x] := by
   revert h
   generalize go.arrayLiteralSize kvs = n
   intro h; subst h; rfl
@@ -460,11 +460,11 @@ section no_slice_literal_step
 -- the literal to be folded.
 attribute [-instance] go.SliceSemantics.composite_literal_slice
 
-theorem wp_WriteBool (s : slice.t) (vs : List w8) (b : Bool) :
+theorem wp_WriteBool (s : GoSlice) (vs : List w8) (b : Bool) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteBool)) (Val #s)) (Val #b))
-    {{ (s' : slice.t), RET #s'; s' ↦* (vs ++ [if b then W8 1 else W8 0]) ∗
+    {{ (s' : GoSlice), RET #s'; s' ↦* (vs ++ [if b then W8 1 else W8 0]) ∗
         ownSliceCap w8 s' (DFrac.own 1) }} := by
   wp_start as ⟨Hs, Hcap⟩
   wp_auto

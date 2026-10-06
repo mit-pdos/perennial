@@ -238,7 +238,7 @@ instance Result_access_load_Err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdser
  by
   solve_pointsto_access_struct
 
-instance Result_access_store_Err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.Result) (Err' : error.t) :
+instance Result_access_store_Err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.Result) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.apply.Result go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.apply.Result go!"Err" l) Err' (DFrac.own 1))
@@ -254,7 +254,7 @@ instance Result_access_load_Physc (l : Loc) (v : go_etcd_io.etcd.server.v3.etcds
  by
   solve_pointsto_access_struct
 
-instance Result_access_store_Physc (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.Result) (Physc' : chan.t) :
+instance Result_access_store_Physc (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.apply.Result) (Physc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.apply.Result go!"Physc" l) v.Physc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.apply.Result go!"Physc" l) Physc' (DFrac.own 1))

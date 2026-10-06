@@ -92,9 +92,9 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
     ⟦InternalMapCheckKey key_type, k⟧ ⤳ (k =⟨key_type⟩ k)
 
   -- special cases for equality
-  is_go_op_go_equals_map_nil_l (kt vt : go.GoType) (s : map.t) :
+  is_go_op_go_equals_map_nil_l (kt vt : go.GoType) (s : GoMap) :
     ⟦GoOp GoEquals (go.MapType kt vt), (#map.nil, #s)⟧ ⤳[under] #(decide (s = map.nil))
-  is_go_op_go_equals_map_nil_r (kt vt : go.GoType) (s : map.t) :
+  is_go_op_go_equals_map_nil_r (kt vt : go.GoType) (s : GoMap) :
     ⟦GoOp GoEquals (go.MapType kt vt), (#s, #map.nil)⟧ ⤳[under] #(decide (s = map.nil))
 
   -- internal deterministic steps

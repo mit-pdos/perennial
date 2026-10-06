@@ -132,7 +132,7 @@ instance simpleTokenTTLKeeper_access_load_tokens (l : Loc) (v : go_etcd_io.etcd.
  by
   solve_pointsto_access_struct
 
-instance simpleTokenTTLKeeper_access_store_tokens (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper) (tokens' : map.t) :
+instance simpleTokenTTLKeeper_access_store_tokens (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper) (tokens' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper go!"tokens" l) v.tokens' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper go!"tokens" l) tokens' (DFrac.own 1))
@@ -148,7 +148,7 @@ instance simpleTokenTTLKeeper_access_load_donec (l : Loc) (v : go_etcd_io.etcd.s
  by
   solve_pointsto_access_struct
 
-instance simpleTokenTTLKeeper_access_store_donec (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper) (donec' : chan.t) :
+instance simpleTokenTTLKeeper_access_store_donec (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper) (donec' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper go!"donec" l) v.donec' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper go!"donec" l) donec' (DFrac.own 1))
@@ -164,7 +164,7 @@ instance simpleTokenTTLKeeper_access_load_stopc (l : Loc) (v : go_etcd_io.etcd.s
  by
   solve_pointsto_access_struct
 
-instance simpleTokenTTLKeeper_access_store_stopc (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper) (stopc' : chan.t) :
+instance simpleTokenTTLKeeper_access_store_stopc (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper) (stopc' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper go!"stopc" l) v.stopc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper go!"stopc" l) stopc' (DFrac.own 1))
@@ -180,7 +180,7 @@ instance simpleTokenTTLKeeper_access_load_deleteTokenFunc (l : Loc) (v : go_etcd
  by
   solve_pointsto_access_struct
 
-instance simpleTokenTTLKeeper_access_store_deleteTokenFunc (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper) (deleteTokenFunc' : func.t) :
+instance simpleTokenTTLKeeper_access_store_deleteTokenFunc (l : Loc) (v : go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper) (deleteTokenFunc' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper go!"deleteTokenFunc" l) v.deleteTokenFunc' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.auth.simpleTokenTTLKeeper go!"deleteTokenFunc" l) deleteTokenFunc' (DFrac.own 1))

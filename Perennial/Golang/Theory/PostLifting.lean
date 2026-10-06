@@ -42,7 +42,7 @@ instance wp_call_go_func (v2 : val) (f x : Binder) (e : Expr) :
     PureWp (G := G) (L := L) True (App (Val #(func.mk f x e)) (Val v2))
       (subst' x v2 (subst' f #(func.mk f x e) e)) := by
   have h : (#(func.mk f x e) : val) = RecV f x e := by
-    rw [go.intoVal_unfold func.t]
+    rw [go.intoVal_unfold GoFunc]
   rw [h]
   exact pure_exec_pure_wp (pure_beta f x e v2)
 
@@ -554,21 +554,21 @@ instance typedPointsto_bool : TypedPointsto (GF := GF) Bool :=
   heapTypedPointsto Bool go.intoVal_inj
 instance typedPointsto_string : TypedPointsto (GF := GF) GoString :=
   heapTypedPointsto GoString go.intoVal_inj
-instance typedPointsto_slice : TypedPointsto (GF := GF) slice.t :=
-  heapTypedPointsto slice.t go.intoVal_inj
-instance typedPointsto_interface : TypedPointsto (GF := GF) interface.t :=
-  heapTypedPointsto interface.t go.intoVal_inj
+instance typedPointsto_slice : TypedPointsto (GF := GF) GoSlice :=
+  heapTypedPointsto GoSlice go.intoVal_inj
+instance typedPointsto_interface : TypedPointsto (GF := GF) GoInterface :=
+  heapTypedPointsto GoInterface go.intoVal_inj
 instance typedPointsto_proph_id : TypedPointsto (GF := GF) proph_id :=
   heapTypedPointsto proph_id go.intoVal_inj
 
 include hG in
-theorem intoVal_inj_func : Function.Injective (intoVal (V := func.t)) := by
+theorem intoVal_inj_func : Function.Injective (intoVal (V := GoFunc)) := by
   intro f1 f2 h
-  rw [go.intoVal_unfold func.t] at h
+  rw [go.intoVal_unfold GoFunc] at h
   cases f1; cases f2; cases h; rfl
 
-instance typedPointsto_func : TypedPointsto (GF := GF) func.t :=
-  heapTypedPointsto func.t (intoVal_inj_func (hG := hG))
+instance typedPointsto_func : TypedPointsto (GF := GF) GoFunc :=
+  heapTypedPointsto GoFunc (intoVal_inj_func (hG := hG))
 
 end typed_pointsto_instances
 
@@ -637,23 +637,23 @@ instance intoVal_typed_loc (t : go.GoType) :
   solve_into_val_typed
 
 instance intoVal_typed_func (sig : go.signature) :
-    IntoValTypedUnderlying (GF := GF) func.t (go.FunctionType sig) := by
+    IntoValTypedUnderlying (GF := GF) GoFunc (go.FunctionType sig) := by
   solve_into_val_typed
 
 instance intoVal_typed_slice (t : go.GoType) :
-    IntoValTypedUnderlying (GF := GF) slice.t (go.SliceType t) := by
+    IntoValTypedUnderlying (GF := GF) GoSlice (go.SliceType t) := by
   solve_into_val_typed
 
 instance intoVal_typed_interface (elems : List go.InterfaceElem) :
-    IntoValTypedUnderlying (GF := GF) interface.t (go.InterfaceType elems) := by
+    IntoValTypedUnderlying (GF := GF) GoInterface (go.InterfaceType elems) := by
   solve_into_val_typed
 
 instance intoVal_typed_chan (t : go.GoType) (b : go.ChanDir) :
-    IntoValTypedUnderlying (GF := GF) chan.t (go.ChannelType b t) := by
+    IntoValTypedUnderlying (GF := GF) GoChan (go.ChannelType b t) := by
   solve_into_val_typed
 
 instance intoVal_typed_map (k v : go.GoType) :
-    IntoValTypedUnderlying (GF := GF) map.t (go.MapType k v) := by
+    IntoValTypedUnderlying (GF := GF) GoMap (go.MapType k v) := by
   solve_into_val_typed
 
 end into_val_typed_instances

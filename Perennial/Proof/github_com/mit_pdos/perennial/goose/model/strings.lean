@@ -42,17 +42,17 @@ theorem wp_string_len (str : GoString) {t : go.GoType} [t ↓u go.string] :
 theorem wp_StringToByteSlice (str : GoString) :
     {{ (True : IProp GF) }}
       (App (Val (@! StringToByteSlice)) (Val #str)) @ s; E
-    {{ (sl : slice.t), RET #sl; sl ↦* str ∗ ownSliceCap w8 sl (DFrac.own 1) }} := by
+    {{ (sl : GoSlice), RET #sl; sl ↦* str ∗ ownSliceCap w8 sl (DFrac.own 1) }} := by
   wp_start
   wp_auto
-  ihave H : (∃ (i : w64) (a : slice.t),
+  ihave H : (∃ (i : w64) (a : GoSlice),
       "i" ∷ i_ptr ↦ i ∗
       "a" ∷ a_ptr ↦ a ∗
       "Ha" ∷ a ↦* str.take (sint.nat i) ∗
       "Ha_cap" ∷ ownSliceCap w8 a (DFrac.own 1) ∗
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ str.length⌝ : IProp GF) $$ [a i]
   · iexists (W64 0)
-    iexists (zero_val slice.t)
+    iexists (zero_val GoSlice)
     have h0 : sint.nat (W64 0) = 0 := rfl
     rw [h0, List.take_zero]
     iframe a i
@@ -104,7 +104,7 @@ theorem wp_StringToByteSlice (str : GoString) :
     rw [hi, List.take_length]
     iframe Ha Ha_cap
 
-theorem wp_ByteSliceToString (sl : slice.t) (str : List w8) (dq : DFrac) :
+theorem wp_ByteSliceToString (sl : GoSlice) (str : List w8) (dq : DFrac) :
     {{ (sl ↦*{dq} str : IProp GF) }}
       (App (Val (@! ByteSliceToString)) (Val #sl)) @ s; E
     {{ RET #str; sl ↦*{dq} str }} := by

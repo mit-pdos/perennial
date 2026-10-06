@@ -272,7 +272,7 @@ attribute [instance] applierV3Corrupt.TypeAssumptions.type_repr
   applierV3Corrupt.TypeAssumptions.get_applierV3
   applierV3Corrupt.TypeAssumptions.set_applierV3
 
-abbrev SnapshotServer [FfiSyntax] : Type := interface.t
+abbrev SnapshotServer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def SnapshotServer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ForceSnapshot" (go.signature.Signature [] false []))])
@@ -298,8 +298,8 @@ attribute [instance] RaftStatusGetter.TypeAssumptions.type_repr
 structure Result [FfiSyntax] where
   mk ::
   Resp' : _root_.Perennial.github_com.gogo.protobuf.proto.Message
-  Err' : error.t
-  Physc' : chan.t
+  Err' : GoError
+  Physc' : GoChan
   Trace' : Loc
 
 instance Result.zero_val [FfiSyntax] : ZeroVal Result :=
@@ -327,9 +327,9 @@ class Result.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   get_Resp : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"Resp") #x (Val #(x.Resp'))
   set_Resp : ∀ (x : Result) (y : _root_.Perennial.github_com.gogo.protobuf.proto.Message), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"Resp") (PairV #x #y) (Val #(({ x with Resp' := y } : Result)))
   get_Err : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : Result) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : Result)))
+  set_Err : ∀ (x : Result) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : Result)))
   get_Physc : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"Physc") #x (Val #(x.Physc'))
-  set_Physc : ∀ (x : Result) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"Physc") (PairV #x #y) (Val #(({ x with Physc' := y } : Result)))
+  set_Physc : ∀ (x : Result) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"Physc") (PairV #x #y) (Val #(({ x with Physc' := y } : Result)))
   get_Trace : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"Trace") #x (Val #(x.Trace'))
   set_Trace : ∀ (x : Result) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"Trace") (PairV #x #y) (Val #(({ x with Trace' := y } : Result)))
 

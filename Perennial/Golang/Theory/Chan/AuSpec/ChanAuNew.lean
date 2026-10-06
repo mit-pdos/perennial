@@ -29,7 +29,7 @@ theorem wp_NewChannel (cap : w64) :
     {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗
         ⌜γ.chanCap = cap⌝ ∗
-        ownChan γ V (if cap = W64 0 then chanstate.t.Idle else chanstate.t.Buffered ([] : List V)) }} := by
+        ownChan γ V (if cap = W64 0 then ChanState.Idle else ChanState.Buffered ([] : List V)) }} := by
   wp_start as %Hle
   wp_auto
   simp only [channel.idle, channel.buffered]
@@ -42,7 +42,7 @@ theorem wp_NewChannel (cap : w64) :
     wp_auto
     ihave %Hnot_null := typedPointsto_not_null _ _ _ $$ Hch
     iStructNamed Hch
-    imod ghostVar_alloc (chanstate.t.Buffered ([] : List V)) with ⟨%state_gname, Hstate⟩
+    imod ghostVar_alloc (ChanState.Buffered ([] : List V)) with ⟨%state_gname, Hstate⟩
     icases ghostVar_halves _ _ $$ Hstate with ⟨Hstate_auth, Hstate_frag⟩
     imod ghostVar_alloc (none : Option (OfferLock V)) with ⟨%offer_lock_gname, Hoffer_lock⟩
     imod saved_prop_alloc iprop(True) (DFrac.own 1) DFrac.valid_own_one
@@ -96,7 +96,7 @@ theorem wp_NewChannel (cap : w64) :
     wp_auto
     ihave %Hnot_null := typedPointsto_not_null _ _ _ $$ Hch
     iStructNamed Hch
-    imod ghostVar_alloc (chanstate.t.Idle (V := V)) with ⟨%state_gname, Hstate⟩
+    imod ghostVar_alloc (ChanState.Idle (V := V)) with ⟨%state_gname, Hstate⟩
     icases ghostVar_halves _ _ $$ Hstate with ⟨Hstate_auth, Hstate_frag⟩
     imod ghostVar_alloc (none : Option (OfferLock V)) with ⟨%offer_lock_gname, Hoffer_lock⟩
     imod saved_prop_alloc iprop(True) (DFrac.own 1) DFrac.valid_own_one

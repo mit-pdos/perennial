@@ -95,7 +95,7 @@ instance Status_access_load_Progress (l : Loc) (v : go_etcd_io.raft.v3.Status) (
  by
   solve_pointsto_access_struct
 
-instance Status_access_store_Progress (l : Loc) (v : go_etcd_io.raft.v3.Status) (Progress' : map.t) :
+instance Status_access_store_Progress (l : Loc) (v : go_etcd_io.raft.v3.Status) (Progress' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Progress" l) v.Progress' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Progress" l) Progress' (DFrac.own 1))

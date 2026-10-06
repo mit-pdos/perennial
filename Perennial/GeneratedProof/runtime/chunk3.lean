@@ -89,7 +89,7 @@ instance fixalloc_access_load_first (l : Loc) (v : runtime.fixalloc) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance fixalloc_access_store_first (l : Loc) (v : runtime.fixalloc) (first' : func.t) :
+instance fixalloc_access_store_first (l : Loc) (v : runtime.fixalloc) (first' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fixalloc go!"first" l) v.first' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fixalloc go!"first" l) first' (DFrac.own 1))
@@ -1178,7 +1178,7 @@ instance heapArena_access_load_spans (l : Loc) (v : runtime.heapArena) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance heapArena_access_store_spans (l : Loc) (v : runtime.heapArena) (spans' : (array.t Loc 8192)) :
+instance heapArena_access_store_spans (l : Loc) (v : runtime.heapArena) (spans' : (GoArray Loc 8192)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heapArena go!"spans" l) v.spans' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heapArena go!"spans" l) spans' (DFrac.own 1))
@@ -1194,7 +1194,7 @@ instance heapArena_access_load_pageInUse (l : Loc) (v : runtime.heapArena) (dq :
  by
   solve_pointsto_access_struct
 
-instance heapArena_access_store_pageInUse (l : Loc) (v : runtime.heapArena) (pageInUse' : (array.t w8 1024)) :
+instance heapArena_access_store_pageInUse (l : Loc) (v : runtime.heapArena) (pageInUse' : (GoArray w8 1024)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heapArena go!"pageInUse" l) v.pageInUse' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heapArena go!"pageInUse" l) pageInUse' (DFrac.own 1))
@@ -1210,7 +1210,7 @@ instance heapArena_access_load_pageMarks (l : Loc) (v : runtime.heapArena) (dq :
  by
   solve_pointsto_access_struct
 
-instance heapArena_access_store_pageMarks (l : Loc) (v : runtime.heapArena) (pageMarks' : (array.t w8 1024)) :
+instance heapArena_access_store_pageMarks (l : Loc) (v : runtime.heapArena) (pageMarks' : (GoArray w8 1024)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heapArena go!"pageMarks" l) v.pageMarks' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heapArena go!"pageMarks" l) pageMarks' (DFrac.own 1))
@@ -1226,7 +1226,7 @@ instance heapArena_access_load_pageSpecials (l : Loc) (v : runtime.heapArena) (d
  by
   solve_pointsto_access_struct
 
-instance heapArena_access_store_pageSpecials (l : Loc) (v : runtime.heapArena) (pageSpecials' : (array.t w8 1024)) :
+instance heapArena_access_store_pageSpecials (l : Loc) (v : runtime.heapArena) (pageSpecials' : (GoArray w8 1024)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heapArena go!"pageSpecials" l) v.pageSpecials' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heapArena go!"pageSpecials" l) pageSpecials' (DFrac.own 1))
@@ -1242,7 +1242,7 @@ instance heapArena_access_load_pageUseSpanInlineMarkBits (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-instance heapArena_access_store_pageUseSpanInlineMarkBits (l : Loc) (v : runtime.heapArena) (pageUseSpanInlineMarkBits' : (array.t w8 1024)) :
+instance heapArena_access_store_pageUseSpanInlineMarkBits (l : Loc) (v : runtime.heapArena) (pageUseSpanInlineMarkBits' : (GoArray w8 1024)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heapArena go!"pageUseSpanInlineMarkBits" l) v.pageUseSpanInlineMarkBits' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heapArena go!"pageUseSpanInlineMarkBits" l) pageUseSpanInlineMarkBits' (DFrac.own 1))
@@ -1725,7 +1725,7 @@ instance immortalWeakHandle_access_load_children (l : Loc) (v : runtime.immortal
  by
   solve_pointsto_access_struct
 
-instance immortalWeakHandle_access_store_children (l : Loc) (v : runtime.immortalWeakHandle) (children' : (array.t internal.runtime.atomic.UnsafePointer 2)) :
+instance immortalWeakHandle_access_store_children (l : Loc) (v : runtime.immortalWeakHandle) (children' : (GoArray internal.runtime.atomic.UnsafePointer 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.immortalWeakHandle go!"children" l) v.children' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.immortalWeakHandle go!"children" l) children' (DFrac.own 1))
@@ -2254,7 +2254,7 @@ instance mLockProfile_access_load_stack (l : Loc) (v : runtime.mLockProfile) (dq
  by
   solve_pointsto_access_struct
 
-instance mLockProfile_access_store_stack (l : Loc) (v : runtime.mLockProfile) (stack' : slice.t) :
+instance mLockProfile_access_store_stack (l : Loc) (v : runtime.mLockProfile) (stack' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mLockProfile go!"stack" l) v.stack' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mLockProfile go!"stack" l) stack' (DFrac.own 1))

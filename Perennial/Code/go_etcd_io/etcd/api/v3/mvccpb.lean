@@ -138,14 +138,14 @@ attribute [instance] Event_EventType.TypeAssumptions.underlying
 
 structure KeyValue [FfiSyntax] where
   mk ::
-  Key' : slice.t
+  Key' : GoSlice
   CreateRevision' : w64
   ModRevision' : w64
   Version' : w64
-  Value' : slice.t
+  Value' : GoSlice
   Lease' : w64
   XXX_NoUnkeyedLiteral' : Unit
-  XXX_unrecognized' : slice.t
+  XXX_unrecognized' : GoSlice
   XXX_sizecache' : w32
 
 instance KeyValue.zero_val [FfiSyntax] : ZeroVal KeyValue :=
@@ -176,7 +176,7 @@ class KeyValue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying KeyValue.underlying KeyValue
   underlying : go.UnderlyingDirectedEq KeyValue.ty KeyValue.underlying
   get_Key : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"Key") #x (Val #(x.Key'))
-  set_Key : ∀ (x : KeyValue) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : KeyValue)))
+  set_Key : ∀ (x : KeyValue) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : KeyValue)))
   get_CreateRevision : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"CreateRevision") #x (Val #(x.CreateRevision'))
   set_CreateRevision : ∀ (x : KeyValue) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"CreateRevision") (PairV #x #y) (Val #(({ x with CreateRevision' := y } : KeyValue)))
   get_ModRevision : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"ModRevision") #x (Val #(x.ModRevision'))
@@ -184,13 +184,13 @@ class KeyValue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_Version : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"Version") #x (Val #(x.Version'))
   set_Version : ∀ (x : KeyValue) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Version") (PairV #x #y) (Val #(({ x with Version' := y } : KeyValue)))
   get_Value : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (x : KeyValue) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : KeyValue)))
+  set_Value : ∀ (x : KeyValue) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : KeyValue)))
   get_Lease : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"Lease") #x (Val #(x.Lease'))
   set_Lease : ∀ (x : KeyValue) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"Lease") (PairV #x #y) (Val #(({ x with Lease' := y } : KeyValue)))
   get_XXX_NoUnkeyedLiteral : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
   set_XXX_NoUnkeyedLiteral : ∀ (x : KeyValue) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : KeyValue)))
   get_XXX_unrecognized : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  set_XXX_unrecognized : ∀ (x : KeyValue) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : KeyValue)))
+  set_XXX_unrecognized : ∀ (x : KeyValue) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : KeyValue)))
   get_XXX_sizecache : ∀ (x : KeyValue), go.IsGoStepPureDetTagged under (StructFieldGet KeyValue.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
   set_XXX_sizecache : ∀ (x : KeyValue) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet KeyValue.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : KeyValue)))
 
@@ -221,7 +221,7 @@ structure Event [FfiSyntax] where
   Kv' : Loc
   PrevKv' : Loc
   XXX_NoUnkeyedLiteral' : Unit
-  XXX_unrecognized' : slice.t
+  XXX_unrecognized' : GoSlice
   XXX_sizecache' : w32
 
 instance Event.zero_val [FfiSyntax] : ZeroVal Event :=
@@ -257,7 +257,7 @@ class Event.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   get_XXX_NoUnkeyedLiteral : ∀ (x : Event), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
   set_XXX_NoUnkeyedLiteral : ∀ (x : Event) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : Event)))
   get_XXX_unrecognized : ∀ (x : Event), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
-  set_XXX_unrecognized : ∀ (x : Event) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : Event)))
+  set_XXX_unrecognized : ∀ (x : Event) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"XXX_unrecognized") (PairV #x #y) (Val #(({ x with XXX_unrecognized' := y } : Event)))
   get_XXX_sizecache : ∀ (x : Event), go.IsGoStepPureDetTagged under (StructFieldGet Event.underlying go!"XXX_sizecache") #x (Val #(x.XXX_sizecache'))
   set_XXX_sizecache : ∀ (x : Event) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Event.underlying go!"XXX_sizecache") (PairV #x #y) (Val #(({ x with XXX_sizecache' := y } : Event)))
 

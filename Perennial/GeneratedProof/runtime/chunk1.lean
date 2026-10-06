@@ -80,7 +80,7 @@ instance userArena_access_load_refs (l : Loc) (v : runtime.userArena) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance userArena_access_store_refs (l : Loc) (v : runtime.userArena) (refs' : slice.t) :
+instance userArena_access_store_refs (l : Loc) (v : runtime.userArena) (refs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.userArena go!"refs" l) v.refs' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.userArena go!"refs" l) refs' (DFrac.own 1))
@@ -514,7 +514,7 @@ instance debugLogBuf_access_load_b (l : Loc) (v : runtime.debugLogBuf) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance debugLogBuf_access_store_b (l : Loc) (v : runtime.debugLogBuf) (b' : (array.t w8 16384)) :
+instance debugLogBuf_access_store_b (l : Loc) (v : runtime.debugLogBuf) (b' : (GoArray w8 16384)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.debugLogBuf go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.debugLogBuf go!"b" l) b' (DFrac.own 1))
@@ -1095,7 +1095,7 @@ instance usigset_access_load___val (l : Loc) (v : runtime.usigset) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance usigset_access_store___val (l : Loc) (v : runtime.usigset) (__val' : (array.t w64 16)) :
+instance usigset_access_store___val (l : Loc) (v : runtime.usigset) (__val' : (GoArray w64 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.usigset go!"__val" l) v.__val' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.usigset go!"__val" l) __val' (DFrac.own 1))
@@ -1137,7 +1137,7 @@ instance fpxreg_access_load_significand (l : Loc) (v : runtime.fpxreg) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance fpxreg_access_store_significand (l : Loc) (v : runtime.fpxreg) (significand' : (array.t w16 4)) :
+instance fpxreg_access_store_significand (l : Loc) (v : runtime.fpxreg) (significand' : (GoArray w16 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpxreg go!"significand" l) v.significand' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpxreg go!"significand" l) significand' (DFrac.own 1))
@@ -1169,7 +1169,7 @@ instance fpxreg_access_load_padding (l : Loc) (v : runtime.fpxreg) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance fpxreg_access_store_padding (l : Loc) (v : runtime.fpxreg) (padding' : (array.t w16 3)) :
+instance fpxreg_access_store_padding (l : Loc) (v : runtime.fpxreg) (padding' : (GoArray w16 3)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpxreg go!"padding" l) v.padding' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpxreg go!"padding" l) padding' (DFrac.own 1))
@@ -1209,7 +1209,7 @@ instance xmmreg_access_load_element (l : Loc) (v : runtime.xmmreg) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance xmmreg_access_store_element (l : Loc) (v : runtime.xmmreg) (element' : (array.t w32 4)) :
+instance xmmreg_access_store_element (l : Loc) (v : runtime.xmmreg) (element' : (GoArray w32 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xmmreg go!"element" l) v.element' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xmmreg go!"element" l) element' (DFrac.own 1))
@@ -1251,7 +1251,7 @@ instance fpxreg1_access_load_significand (l : Loc) (v : runtime.fpxreg1) (dq : D
  by
   solve_pointsto_access_struct
 
-instance fpxreg1_access_store_significand (l : Loc) (v : runtime.fpxreg1) (significand' : (array.t w16 4)) :
+instance fpxreg1_access_store_significand (l : Loc) (v : runtime.fpxreg1) (significand' : (GoArray w16 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpxreg1 go!"significand" l) v.significand' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpxreg1 go!"significand" l) significand' (DFrac.own 1))
@@ -1283,7 +1283,7 @@ instance fpxreg1_access_load_padding (l : Loc) (v : runtime.fpxreg1) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance fpxreg1_access_store_padding (l : Loc) (v : runtime.fpxreg1) (padding' : (array.t w16 3)) :
+instance fpxreg1_access_store_padding (l : Loc) (v : runtime.fpxreg1) (padding' : (GoArray w16 3)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpxreg1 go!"padding" l) v.padding' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpxreg1 go!"padding" l) padding' (DFrac.own 1))
@@ -1323,7 +1323,7 @@ instance xmmreg1_access_load_element (l : Loc) (v : runtime.xmmreg1) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance xmmreg1_access_store_element (l : Loc) (v : runtime.xmmreg1) (element' : (array.t w32 4)) :
+instance xmmreg1_access_store_element (l : Loc) (v : runtime.xmmreg1) (element' : (GoArray w32 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.xmmreg1 go!"element" l) v.element' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.xmmreg1 go!"element" l) element' (DFrac.own 1))
@@ -1364,7 +1364,7 @@ instance fpreg1_access_load_significand (l : Loc) (v : runtime.fpreg1) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance fpreg1_access_store_significand (l : Loc) (v : runtime.fpreg1) (significand' : (array.t w16 4)) :
+instance fpreg1_access_store_significand (l : Loc) (v : runtime.fpreg1) (significand' : (GoArray w16 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpreg1 go!"significand" l) v.significand' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpreg1 go!"significand" l) significand' (DFrac.own 1))
@@ -1455,7 +1455,7 @@ instance stackt_access_load_pad_cgo_0 (l : Loc) (v : runtime.stackt) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance stackt_access_store_pad_cgo_0 (l : Loc) (v : runtime.stackt) (pad_cgo_0' : (array.t w8 4)) :
+instance stackt_access_store_pad_cgo_0 (l : Loc) (v : runtime.stackt) (pad_cgo_0' : (GoArray w8 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stackt go!"pad_cgo_0" l) v.pad_cgo_0' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stackt go!"pad_cgo_0" l) pad_cgo_0' (DFrac.own 1))
@@ -1513,7 +1513,7 @@ instance mcontext_access_load_gregs (l : Loc) (v : runtime.mcontext) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance mcontext_access_store_gregs (l : Loc) (v : runtime.mcontext) (gregs' : (array.t w64 23)) :
+instance mcontext_access_store_gregs (l : Loc) (v : runtime.mcontext) (gregs' : (GoArray w64 23)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mcontext go!"gregs" l) v.gregs' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mcontext go!"gregs" l) gregs' (DFrac.own 1))
@@ -1545,7 +1545,7 @@ instance mcontext_access_load___reserved1 (l : Loc) (v : runtime.mcontext) (dq :
  by
   solve_pointsto_access_struct
 
-instance mcontext_access_store___reserved1 (l : Loc) (v : runtime.mcontext) (__reserved1' : (array.t w64 8)) :
+instance mcontext_access_store___reserved1 (l : Loc) (v : runtime.mcontext) (__reserved1' : (GoArray w64 8)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mcontext go!"__reserved1" l) v.__reserved1' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mcontext go!"__reserved1" l) __reserved1' (DFrac.own 1))
@@ -2044,7 +2044,7 @@ instance sigcontext_access_load___reserved1 (l : Loc) (v : runtime.sigcontext) (
  by
   solve_pointsto_access_struct
 
-instance sigcontext_access_store___reserved1 (l : Loc) (v : runtime.sigcontext) (__reserved1' : (array.t w64 8)) :
+instance sigcontext_access_store___reserved1 (l : Loc) (v : runtime.sigcontext) (__reserved1' : (GoArray w64 8)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.sigcontext go!"__reserved1" l) v.__reserved1' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.sigcontext go!"__reserved1" l) __reserved1' (DFrac.own 1))
@@ -2101,7 +2101,7 @@ instance sockaddr_un_access_load_path (l : Loc) (v : runtime.sockaddr_un) (dq : 
  by
   solve_pointsto_access_struct
 
-instance sockaddr_un_access_store_path (l : Loc) (v : runtime.sockaddr_un) (path' : (array.t w8 108)) :
+instance sockaddr_un_access_store_path (l : Loc) (v : runtime.sockaddr_un) (path' : (GoArray w8 108)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.sockaddr_un go!"path" l) v.path' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.sockaddr_un go!"path" l) path' (DFrac.own 1))

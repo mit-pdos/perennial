@@ -77,7 +77,7 @@ instance UserAddOptions_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.e
  by
   solve_pointsto_access_struct
 
-instance UserAddOptions_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (XXX_unrecognized' : slice.t) :
+instance UserAddOptions_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -139,7 +139,7 @@ instance User_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User
  by
   solve_pointsto_access_struct
 
-instance User_access_store_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Name' : slice.t) :
+instance User_access_store_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Name' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Name" l) v.Name' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Name" l) Name' (DFrac.own 1))
@@ -155,7 +155,7 @@ instance User_access_load_Password (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.
  by
   solve_pointsto_access_struct
 
-instance User_access_store_Password (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Password' : slice.t) :
+instance User_access_store_Password (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Password' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Password" l) v.Password' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Password" l) Password' (DFrac.own 1))
@@ -171,7 +171,7 @@ instance User_access_load_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Use
  by
   solve_pointsto_access_struct
 
-instance User_access_store_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Roles' : slice.t) :
+instance User_access_store_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Roles' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Roles" l) v.Roles' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Roles" l) Roles' (DFrac.own 1))
@@ -219,7 +219,7 @@ instance User_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3
  by
   solve_pointsto_access_struct
 
-instance User_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (XXX_unrecognized' : slice.t) :
+instance User_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -296,7 +296,7 @@ instance Permission_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (Key' : slice.t) :
+instance Permission_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (Key' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"Key" l) v.Key' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"Key" l) Key' (DFrac.own 1))
@@ -312,7 +312,7 @@ instance Permission_access_load_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.a
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (RangeEnd' : slice.t) :
+instance Permission_access_store_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (RangeEnd' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"RangeEnd" l) v.RangeEnd' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"RangeEnd" l) RangeEnd' (DFrac.own 1))
@@ -344,7 +344,7 @@ instance Permission_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (XXX_unrecognized' : slice.t) :
+instance Permission_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
@@ -404,7 +404,7 @@ instance Role_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role
  by
   solve_pointsto_access_struct
 
-instance Role_access_store_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (Name' : slice.t) :
+instance Role_access_store_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (Name' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"Name" l) v.Name' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"Name" l) Name' (DFrac.own 1))
@@ -420,7 +420,7 @@ instance Role_access_load_KeyPermission (l : Loc) (v : go_etcd_io.etcd.api.v3.au
  by
   solve_pointsto_access_struct
 
-instance Role_access_store_KeyPermission (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (KeyPermission' : slice.t) :
+instance Role_access_store_KeyPermission (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (KeyPermission' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"KeyPermission" l) v.KeyPermission' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"KeyPermission" l) KeyPermission' (DFrac.own 1))
@@ -452,7 +452,7 @@ instance Role_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3
  by
   solve_pointsto_access_struct
 
-instance Role_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (XXX_unrecognized' : slice.t) :
+instance Role_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (XXX_unrecognized' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))

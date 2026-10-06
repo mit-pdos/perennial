@@ -208,7 +208,7 @@ def isEntriesReady (γ : LeasingKVNames) : IProp GF :=
 
 /-- Proposition guarded by `lkv.leases.mu`. -/
 def ownLeasingKVLocked (lkv : Loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
-  iprop(∃ (sessionc : chan.t) (session : Loc) (γsession : ChanNames),
+  iprop(∃ (sessionc : GoChan) (session : Loc) (γsession : ChanNames),
     "sessionc" ∷ lkv.[leasingKV, go!"sessionc"] ↦{DFrac.own q.half} sessionc ∗
     "#Hsessionc" ∷ ownBroadcastChan sessionc γsession (isEntriesReady γ) .Unknown ∗
     "session" ∷ lkv.[leasingKV, go!"session"] ↦{DFrac.own q.half} session ∗
@@ -218,7 +218,7 @@ def ownLeasingKVLocked (lkv : Loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
 
 /-- This is owned by the background thread running `monitorSession`. -/
 def ownLeasingKVMonitorSession (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
-  iprop(∃ (session : Loc) (sessionc : chan.t) («open» : Bool) (γsessionc : ChanNames),
+  iprop(∃ (session : Loc) (sessionc : GoChan) («open» : Bool) (γsessionc : ChanNames),
     "session" ∷ lkv.[leasingKV, go!"session"] ↦{DFrac.own (1 : Qp).half} session ∗
     "#Hsession" ∷ (if session = null then iprop(True)
                    else ∃ lease, isSession session γ.etcdGn lease) ∗
@@ -228,7 +228,7 @@ def ownLeasingKVMonitorSession (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
 
 /-- Almost persistent. -/
 def ownLeasingKVDef (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
-  iprop(∃ (cl : Loc) (ctx : interface.t_ok) (ctx_st : context.Context_desc.t (IProp GF)),
+  iprop(∃ (cl : Loc) (ctx : GoInterfaceOk) (ctx_st : context.ContextDesc (IProp GF)),
     "#cl" ∷ lkv.[leasingKV, go!"cl"] ↦□ cl ∗
     "#Hcl" ∷ isClient cl γ.etcdGn ∗
     "#ctx" ∷ lkv.[leasingKV, go!"ctx"] ↦□ (interface.ok ctx) ∗

@@ -27,7 +27,7 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 
 /-- The invariant body of `isSelectNbOnly`. -/
 abbrev selectNbOnlyInv (γ : ChanNames) : IProp GF :=
-  iprop(∃ s : chanstate.t Unit,
+  iprop(∃ s : ChanState Unit,
     "Hoc" ∷ ownChan γ Unit s ∗
     "%Hs" ∷ ⌜match s with | .Idle => True | _ => False⌝)
 

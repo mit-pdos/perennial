@@ -114,7 +114,7 @@ set_option maxHeartbeats 400000 in
 theorem wp_Google (q : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! Google)) (Val #q))
-    {{ (sl : slice.t), RET #sl;
+    {{ (sl : GoSlice), RET #sl;
         ∃ xs : List GoString, sl ↦* xs ∗ ⌜xs.Perm (googleExpected q)⌝ }} := by
   wp_start
   wp_auto
@@ -166,7 +166,7 @@ theorem wp_Google (q : GoString) :
       ipureintro; rfl
     itrivial
   wp_apply wp_slice_make3 (V := GoString) (W64 0) (W64 3) (by decide) as %sl ⟨Hsl, Hcap_sl, %Hcap⟩
-  ihave HI : (∃ (xs : List GoString) (donek remk : List Kind) (sl0 : slice.t),
+  ihave HI : (∃ (xs : List GoString) (donek remk : List Kind) (sl0 : GoSlice),
       "i" ∷ i_ptr ↦ W64 xs.length ∗
       "results" ∷ results_ptr ↦ sl0 ∗
       "Hsl" ∷ sl0 ↦* xs ∗

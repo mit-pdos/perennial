@@ -99,7 +99,7 @@ instance CollectT_access_load_errors (l : Loc) (v : github_com.stretchr.testify.
  by
   solve_pointsto_access_struct
 
-instance CollectT_access_store_errors (l : Loc) (v : github_com.stretchr.testify.assert.CollectT) (errors' : slice.t) :
+instance CollectT_access_store_errors (l : Loc) (v : github_com.stretchr.testify.assert.CollectT) (errors' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT go!"errors" l) v.errors' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT go!"errors" l) errors' (DFrac.own 1))

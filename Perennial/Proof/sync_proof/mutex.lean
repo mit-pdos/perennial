@@ -83,13 +83,13 @@ theorem Mutex.wp_Unlock (m : Loc) (R : IProp GF) :
   itrivial
 
 /-- `i` implements `Locker` with `Lock` producing `P` and `Unlock` consuming it. -/
-def isLocker (i : interface.t_ok) (P : IProp GF) : IProp GF :=
+def isLocker (i : GoInterfaceOk) (P : IProp GF) : IProp GF :=
   iprop("#H_Lock" ∷ iprop({{ True }} (App (Val #(methods i.ty go!"Lock" i.v)) (Val #()))
       {{ RET #(); P }}) ∗
     "#H_Unlock" ∷ iprop({{ P }} (App (Val #(methods i.ty go!"Unlock" i.v)) (Val #()))
       {{ RET #(); True }}))
 
-instance isLocker_persistent (v : interface.t_ok) (P : IProp GF) :
+instance isLocker_persistent (v : GoInterfaceOk) (P : IProp GF) :
     Persistent (isLocker v P) := by
   unfold isLocker named; infer_instance
 

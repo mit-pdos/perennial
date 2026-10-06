@@ -58,7 +58,7 @@ variable [package_sem : concurrency.Assumptions]
 local notation "pkg" => pkg_id.go_etcd_io.etcd.client.v3.concurrency
 
 def isSessionDef (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) : IProp GF :=
-  iprop(∃ (cl : Loc) (donec : chan.t) (γdonec : ChanNames),
+  iprop(∃ (cl : Loc) (donec : GoChan) (γdonec : ChanNames),
     "#client" ∷ s.[Session, go!"client"] ↦□ cl ∗
     "#id" ∷ s.[Session, go!"id"] ↦□ lease ∗
     "#Hclient" ∷ isClient cl γ ∗
@@ -81,7 +81,7 @@ theorem wp_NewSession (client : Loc) (γetcd : Clientv3Names) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "#His_client" ∷ isClient client γetcd }}
       (App (App (Val (@! NewSession)) (Val #client)) (Val #slice.nil))
-    {{ (s : Loc) (err : error.t), RET (PairV #s #err);
+    {{ (s : Loc) (err : GoError), RET (PairV #s #err);
         if err = interface.nil then ∃ lease, isSession s γetcd lease
         else iprop(True) }} := by
   wp_start as #His_client
@@ -173,7 +173,7 @@ theorem Session.wp_Lease (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) :
 theorem Session.wp_Done (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isSession s γ lease }}
       (App (Val (s @!! go.GoType.PointerType Session.ty @!! go!"Done")) (Val #()))
-    {{ (ch : chan.t) (γch : ChanNames), RET #ch;
+    {{ (ch : GoChan) (γch : ChanNames), RET #ch;
         ownBroadcastChan ch γch iprop(True) .Unknown }} := by
   wp_start as Hs
   rw [isSession_unseal]

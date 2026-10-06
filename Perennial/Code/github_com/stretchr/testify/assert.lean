@@ -836,7 +836,7 @@ class compareResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] compareResult.TypeAssumptions.underlying
 
-abbrev TestingT [FfiSyntax] : Type := interface.t
+abbrev TestingT [FfiSyntax] : Type := GoInterface
 
 @[reducible] def TestingT.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true []))])
@@ -846,7 +846,7 @@ class TestingT.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] TestingT.TypeAssumptions.underlying
 
-abbrev ComparisonAssertionFunc [FfiSyntax] : Type := func.t
+abbrev ComparisonAssertionFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def ComparisonAssertionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, (go.GoType.InterfaceType []), (go.GoType.InterfaceType []), (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
@@ -856,7 +856,7 @@ class ComparisonAssertionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoL
 
 attribute [instance] ComparisonAssertionFunc.TypeAssumptions.underlying
 
-abbrev ValueAssertionFunc [FfiSyntax] : Type := func.t
+abbrev ValueAssertionFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def ValueAssertionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, (go.GoType.InterfaceType []), (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
@@ -866,7 +866,7 @@ class ValueAssertionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
 
 attribute [instance] ValueAssertionFunc.TypeAssumptions.underlying
 
-abbrev BoolAssertionFunc [FfiSyntax] : Type := func.t
+abbrev BoolAssertionFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def BoolAssertionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, go.bool, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
@@ -876,7 +876,7 @@ class BoolAssertionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
 
 attribute [instance] BoolAssertionFunc.TypeAssumptions.underlying
 
-abbrev ErrorAssertionFunc [FfiSyntax] : Type := func.t
+abbrev ErrorAssertionFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def ErrorAssertionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, go.error, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
@@ -886,7 +886,7 @@ class ErrorAssertionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
 
 attribute [instance] ErrorAssertionFunc.TypeAssumptions.underlying
 
-abbrev Comparison [FfiSyntax] : Type := func.t
+abbrev Comparison [FfiSyntax] : Type := GoFunc
 
 @[reducible] def Comparison.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))
@@ -896,7 +896,7 @@ class Comparison.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] Comparison.TypeAssumptions.underlying
 
-abbrev failNower [FfiSyntax] : Type := interface.t
+abbrev failNower [FfiSyntax] : Type := GoInterface
 
 @[reducible] def failNower.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"FailNow" (go.signature.Signature [] false []))])
@@ -943,7 +943,7 @@ attribute [instance] labeledContent.TypeAssumptions.type_repr
   labeledContent.TypeAssumptions.get_content
   labeledContent.TypeAssumptions.set_content
 
-abbrev PanicTestFunc [FfiSyntax] : Type := func.t
+abbrev PanicTestFunc [FfiSyntax] : Type := GoFunc
 
 @[reducible] def PanicTestFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [] false []))
@@ -955,7 +955,7 @@ attribute [instance] PanicTestFunc.TypeAssumptions.underlying
 
 structure CollectT [FfiSyntax] where
   mk ::
-  errors' : slice.t
+  errors' : GoSlice
 
 instance CollectT.zero_val [FfiSyntax] : ZeroVal CollectT :=
   ⟨CollectT.mk zeroValDef⟩
@@ -977,7 +977,7 @@ class CollectT.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying CollectT.underlying CollectT
   underlying : go.UnderlyingDirectedEq CollectT.ty CollectT.underlying
   get_errors : ∀ (x : CollectT), go.IsGoStepPureDetTagged under (StructFieldGet CollectT.underlying go!"errors") #x (Val #(x.errors'))
-  set_errors : ∀ (x : CollectT) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet CollectT.underlying go!"errors") (PairV #x #y) (Val #(({ x with errors' := y } : CollectT)))
+  set_errors : ∀ (x : CollectT) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet CollectT.underlying go!"errors") (PairV #x #y) (Val #(({ x with errors' := y } : CollectT)))
 
 attribute [instance] CollectT.TypeAssumptions.type_repr
   CollectT.TypeAssumptions.underlying

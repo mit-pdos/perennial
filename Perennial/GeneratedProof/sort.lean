@@ -43,7 +43,7 @@ instance lessSwap_access_load_Less (l : Loc) (v : sort.lessSwap) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance lessSwap_access_store_Less (l : Loc) (v : sort.lessSwap) (Less' : func.t) :
+instance lessSwap_access_store_Less (l : Loc) (v : sort.lessSwap) (Less' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' (DFrac.own 1))
       (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) Less' (DFrac.own 1))
@@ -59,7 +59,7 @@ instance lessSwap_access_load_Swap (l : Loc) (v : sort.lessSwap) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance lessSwap_access_store_Swap (l : Loc) (v : sort.lessSwap) (Swap' : func.t) :
+instance lessSwap_access_store_Swap (l : Loc) (v : sort.lessSwap) (Swap' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' (DFrac.own 1))
       (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) Swap' (DFrac.own 1))

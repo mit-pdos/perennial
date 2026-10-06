@@ -391,7 +391,7 @@ attribute [instance] readOp.TypeAssumptions.underlying
 
 structure Buffer [FfiSyntax] where
   mk ::
-  buf' : slice.t
+  buf' : GoSlice
   off' : w64
   lastRead' : readOp
 
@@ -417,7 +417,7 @@ class Buffer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Buffer.underlying Buffer
   underlying : go.UnderlyingDirectedEq Buffer.ty Buffer.underlying
   get_buf : ∀ (x : Buffer), go.IsGoStepPureDetTagged under (StructFieldGet Buffer.underlying go!"buf") #x (Val #(x.buf'))
-  set_buf : ∀ (x : Buffer) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Buffer.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : Buffer)))
+  set_buf : ∀ (x : Buffer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Buffer.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : Buffer)))
   get_off : ∀ (x : Buffer), go.IsGoStepPureDetTagged under (StructFieldGet Buffer.underlying go!"off") #x (Val #(x.off'))
   set_off : ∀ (x : Buffer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Buffer.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Buffer)))
   get_lastRead : ∀ (x : Buffer), go.IsGoStepPureDetTagged under (StructFieldGet Buffer.underlying go!"lastRead") #x (Val #(x.lastRead'))
@@ -432,7 +432,7 @@ attribute [instance] Buffer.TypeAssumptions.type_repr
   Buffer.TypeAssumptions.get_lastRead
   Buffer.TypeAssumptions.set_lastRead
 
-abbrev asciiSet [FfiSyntax] : Type := (array.t w32 8)
+abbrev asciiSet [FfiSyntax] : Type := (GoArray w32 8)
 
 @[reducible] def asciiSet.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 8 go.uint32)
@@ -444,7 +444,7 @@ attribute [instance] asciiSet.TypeAssumptions.underlying
 
 structure Reader [FfiSyntax] where
   mk ::
-  s' : slice.t
+  s' : GoSlice
   i' : w64
   prevRune' : w64
 
@@ -470,7 +470,7 @@ class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Reader.underlying Reader
   underlying : go.UnderlyingDirectedEq Reader.ty Reader.underlying
   get_s : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : Reader) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Reader)))
+  set_s : ∀ (x : Reader) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Reader)))
   get_i : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"i") #x (Val #(x.i'))
   set_i : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"i") (PairV #x #y) (Val #(({ x with i' := y } : Reader)))
   get_prevRune : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"prevRune") #x (Val #(x.prevRune'))

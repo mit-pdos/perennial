@@ -111,7 +111,7 @@ instance coder_access_load_buf (l : Loc) (v : encoding.binary.coder) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : slice.t) :
+instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) buf' (DFrac.own 1))

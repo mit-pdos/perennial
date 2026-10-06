@@ -12,7 +12,7 @@ import Perennial.Golang.Defn.PostLang
 namespace Perennial
 
 namespace error
-abbrev t [FfiSyntax] : Type := interface.t
+abbrev _root_.Perennial.GoError [FfiSyntax] : Type := GoInterface
 end error
 
 section helpers
@@ -50,7 +50,7 @@ export Semantics (go_zero_val_Pointer go_eq_Pointer underlying_pointer convert_u
 end «unsafe»
 
 namespace any
-abbrev t [FfiSyntax] : Type := interface.t
+abbrev _root_.Perennial.GoAny [FfiSyntax] : Type := GoInterface
 end any
 
 namespace go
@@ -97,7 +97,7 @@ abbrev rune : go.GoType := int32
 def string : go.GoType := go.Named go!"string" []
 /-- `error` is reducible (like `any`; in Rocq it is a notation-like definition), so that
 typeclass search sees that it is an interface type (`go.error ↓u go.InterfaceType _`,
-`IntoValTyped interface.t go.error`, ...). -/
+`IntoValTyped GoInterface go.error`, ...). -/
 @[reducible] def error : go.GoType :=
   go.InterfaceType [go.MethodElem go!"Error" (go.Signature [] false [go.string])]
 

@@ -62,7 +62,7 @@ instance Cond_access_load_waiters (l : Loc) (v : github_com.mit_pdos.perennial.g
  by
   solve_pointsto_access_struct
 
-instance Cond_access_store_waiters (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond) (waiters' : slice.t) :
+instance Cond_access_store_waiters (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond) (waiters' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond go!"waiters" l) v.waiters' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond go!"waiters" l) waiters' (DFrac.own 1))
@@ -160,7 +160,7 @@ instance request_access_load_f (l : Loc) (v : github_com.mit_pdos.perennial.goos
  by
   solve_pointsto_access_struct
 
-instance request_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.request) (f' : func.t) :
+instance request_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.request) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.request go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.request go!"f" l) f' (DFrac.own 1))
@@ -176,7 +176,7 @@ instance request_access_load_result (l : Loc) (v : github_com.mit_pdos.perennial
  by
   solve_pointsto_access_struct
 
-instance request_access_store_result (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.request) (result' : chan.t) :
+instance request_access_store_result (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.request) (result' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.request go!"result" l) v.result' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.request go!"result" l) result' (DFrac.own 1))
@@ -217,7 +217,7 @@ instance stream_access_load_req (l : Loc) (v : github_com.mit_pdos.perennial.goo
  by
   solve_pointsto_access_struct
 
-instance stream_access_store_req (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream) (req' : chan.t) :
+instance stream_access_store_req (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream) (req' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream go!"req" l) v.req' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream go!"req" l) req' (DFrac.own 1))
@@ -233,7 +233,7 @@ instance stream_access_load_res (l : Loc) (v : github_com.mit_pdos.perennial.goo
  by
   solve_pointsto_access_struct
 
-instance stream_access_store_res (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream) (res' : chan.t) :
+instance stream_access_store_res (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream) (res' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream go!"res" l) v.res' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.stream go!"res" l) res' (DFrac.own 1))
@@ -275,7 +275,7 @@ instance streamold_access_load_req (l : Loc) (v : github_com.mit_pdos.perennial.
  by
   solve_pointsto_access_struct
 
-instance streamold_access_store_req (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold) (req' : chan.t) :
+instance streamold_access_store_req (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold) (req' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold go!"req" l) v.req' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold go!"req" l) req' (DFrac.own 1))
@@ -291,7 +291,7 @@ instance streamold_access_load_res (l : Loc) (v : github_com.mit_pdos.perennial.
  by
   solve_pointsto_access_struct
 
-instance streamold_access_store_res (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold) (res' : chan.t) :
+instance streamold_access_store_res (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold) (res' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold go!"res" l) v.res' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold go!"res" l) res' (DFrac.own 1))
@@ -307,7 +307,7 @@ instance streamold_access_load_f (l : Loc) (v : github_com.mit_pdos.perennial.go
  by
   solve_pointsto_access_struct
 
-instance streamold_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold) (f' : func.t) :
+instance streamold_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.streamold go!"f" l) f' (DFrac.own 1))

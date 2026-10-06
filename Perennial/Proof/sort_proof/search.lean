@@ -69,17 +69,17 @@ variable [package_sem : sort.Assumptions]
 /-- The predicate function must implement a pure boolean function over
 in-bounds indices, with an arbitrary invariant `I` that it requires and
 preserves. -/
-def predImplements (f_code : func.t) (f : Int → Bool) (n : Int) (I : IProp GF) : IProp GF :=
+def predImplements (f_code : GoFunc) (f : Int → Bool) (n : Int) (I : IProp GF) : IProp GF :=
   iprop(∀ (i : w64),
     {{ I ∗ ⌜0 ≤ sint.Z i ∧ sint.Z i < n⌝ }}
       (App (Val #f_code) (Val #i))
     {{ (r : Bool), RET #r; I ∗ ⌜r = f (sint.Z i)⌝ }})
 
-instance predImplements_persistent (f_code : func.t) (f : Int → Bool) (n : Int)
+instance predImplements_persistent (f_code : GoFunc) (f : Int → Bool) (n : Int)
     (I : IProp GF) : Persistent (predImplements f_code f n I) := by
   unfold predImplements; infer_instance
 
-theorem predImplements_adapt (f_code : func.t) (f : Int → Bool) (n : Int) (I : IProp GF) :
+theorem predImplements_adapt (f_code : GoFunc) (f : Int → Bool) (n : Int) (I : IProp GF) :
     predImplements f_code f n I ⊢ predImplements f_code (adaptPred f n) n I := by
   unfold predImplements
   iintro #H %i
@@ -94,7 +94,7 @@ theorem predImplements_adapt (f_code : func.t) (f : Int → Bool) (n : Int) (I :
   rw [adaptPred_bounded _ _ _ Hb]
   exact Hr
 
-theorem wp_Search (n : w64) (f_code : func.t) (f : Int → Bool) (I : IProp GF) :
+theorem wp_Search (n : w64) (f_code : GoFunc) (f : Int → Bool) (I : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sort ∗
         ⌜0 ≤ sint.Z n⌝ ∗
         predImplements f_code f (sint.Z n) I ∗
@@ -196,7 +196,7 @@ theorem searchF_false (x : w64) (xs : List w64) (i : Int) (x_i : w64)
     (h : xs[i.toNat]? = some x_i) : searchF x xs i = false ↔ sint.Z x_i < sint.Z x := by
   unfold searchF; rw [h]; simp
 
-theorem wp_SearchInts (a : slice.t) (x : w64) (q : DFrac) (xs : List w64) :
+theorem wp_SearchInts (a : GoSlice) (x : w64) (q : DFrac) (xs : List w64) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sort ∗ a ↦*{q} xs ∗
         ⌜ListSorted (fun (i j : w64) => sint.Z i ≤ sint.Z j) xs⌝ }}
       (App (App (Val (@! SearchInts)) (Val #a)) (Val #x))
@@ -210,7 +210,7 @@ theorem wp_SearchInts (a : slice.t) (x : w64) (q : DFrac) (xs : List w64) :
   ipersist a
   wp_pures
   rw [show ∀ x b, (RecV BAnon x b : val) = #(func.mk BAnon x b) from
-    fun x b => by rw [go.intoVal_unfold func.t]]
+    fun x b => by rw [go.intoVal_unfold GoFunc]]
   wp_apply wp_Search _ _ (searchF x xs) iprop(a ↦*{q} xs) $$ [Ha]
   · iframe Ha
     isplitl []

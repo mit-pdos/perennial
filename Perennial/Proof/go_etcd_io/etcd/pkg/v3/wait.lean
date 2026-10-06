@@ -5,7 +5,7 @@ Lean notes:
 * Rocq's nested Texan triples inside `ownWait` (iProps) are written out as
   `□ ∀ Φ, P -∗ ▷ (∀ x, Q -∗ Φ v) -∗ WP e {{ Φ }}`.
 * Rocq's `recvAu γch any.t Φ` is `recvAu γch interface.t Φ` (`any.t` is an
-  abbreviation of `interface.t`).
+  abbreviation of `GoInterface`).
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.go_etcd_io.etcd.pkg.v3.wait
@@ -27,7 +27,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace go_etcd_io.etcd.pkg.v3.wait
 
 /-- Rocq `interfaceCall i m`. -/
-abbrev interfaceCall [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] (i : interface.t_ok)
+abbrev interfaceCall [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] (i : GoInterfaceOk)
     (m : GoString) : val :=
   #(methods i.ty m i.v)
 
@@ -61,7 +61,7 @@ local notation "pkg" => pkg_id.go_etcd_io.etcd.pkg.v3.wait
 
 /-- This is non-duplicable so that ownership of the internal `I` can rule out
 overflow. This also permits non-concurrent implementations. -/
-def ownWaitDef (γ : WaitParams GF) (w : interface.t_ok) (R : w64 → interface.t → IProp GF) :
+def ownWaitDef (γ : WaitParams GF) (w : GoInterfaceOk) (R : w64 → GoInterface → IProp GF) :
     IProp GF :=
   iprop(
     "HI" ∷ γ.I ∗
@@ -69,12 +69,12 @@ def ownWaitDef (γ : WaitParams GF) (w : interface.t_ok) (R : w64 → interface.
       (∀ (id' : w64), □ (∀ Φ : val → IProp GF,
         (γ.I ∗ γ.ownUnregisteredId id') -∗
         ▷ (∀ (ch : Loc) (γch : ChanNames),
-            (γ.I ∗ isChan ch γch interface.t ∗
-              (∀ Φ' : interface.t → Bool → IProp GF,
-                (∀ v, R id' v -∗ Φ' v true) -∗ recvAu γch interface.t Φ')) -∗ Φ #ch) -∗
+            (γ.I ∗ isChan ch γch GoInterface ∗
+              (∀ Φ' : GoInterface → Bool → IProp GF,
+                (∀ v, R id' v -∗ Φ' v true) -∗ recvAu γch GoInterface Φ')) -∗ Φ #ch) -∗
         WP (App (Val (interfaceCall w go!"Register")) (Val #id')) {{ Φ }})) ∗
     "#Trigger" ∷
-      (∀ (id' : w64) (x : interface.t), □ (∀ Φ : val → IProp GF,
+      (∀ (id' : w64) (x : GoInterface), □ (∀ Φ : val → IProp GF,
         (γ.I ∗ R id' x) -∗
         ▷ (γ.I -∗ Φ #()) -∗
         WP (App (App (Val (interfaceCall w go!"Trigger")) (Val #id')) (Val #x)) {{ Φ }})) ∗
@@ -84,19 +84,19 @@ def ownWaitDef (γ : WaitParams GF) (w : interface.t_ok) (R : w64 → interface.
         ▷ (∀ reg : Bool, γ.I -∗ Φ #reg) -∗
         WP (App (Val (interfaceCall w go!"IsRegistered")) (Val #id')) {{ Φ }})))
 /-- (Rocq: `Opaque ownWait`) -/
-@[irreducible] def ownWait (γ : WaitParams GF) (w : interface.t_ok)
-    (R : w64 → interface.t → IProp GF) : IProp GF := ownWaitDef γ w R
+@[irreducible] def ownWait (γ : WaitParams GF) (w : GoInterfaceOk)
+    (R : w64 → GoInterface → IProp GF) : IProp GF := ownWaitDef γ w R
 theorem ownWait_unseal : @ownWait = @ownWaitDef := by funext; with_unfolding_all rfl
 
-theorem Wait.wp_Register (γ : WaitParams GF) (w : interface.t_ok) (id' : w64)
-    (R : w64 → interface.t → IProp GF) :
+theorem Wait.wp_Register (γ : WaitParams GF) (w : GoInterfaceOk) (id' : w64)
+    (R : w64 → GoInterface → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownWait γ w R ∗ γ.ownUnregisteredId id' }}
       (App (Val (interfaceCall w go!"Register")) (Val #id'))
     {{ (ch : Loc) (γch : ChanNames), RET #ch;
-        isChan ch γch interface.t ∗
+        isChan ch γch GoInterface ∗
         ownWait γ w R ∗
-        (∀ Φ' : interface.t → Bool → IProp GF,
-          (∀ v, R id' v -∗ Φ' v true) -∗ recvAu γch interface.t Φ') }} := by
+        (∀ Φ' : GoInterface → Bool → IProp GF,
+          (∀ v, R id' v -∗ Φ' v true) -∗ recvAu γch GoInterface Φ') }} := by
   iintro %Φ ⟨-, Hw, Hid⟩ HΦ
   rw [ownWait_unseal]
   iNamed Hw
@@ -108,8 +108,8 @@ theorem Wait.wp_Register (γ : WaitParams GF) (w : interface.t_ok) (id' : w64)
   unfold ownWaitDef
   iframe # ∗
 
-theorem Wait.wp_Trigger (γ : WaitParams GF) (w : interface.t_ok) (id' : w64) (x : interface.t)
-    (R : w64 → interface.t → IProp GF) :
+theorem Wait.wp_Trigger (γ : WaitParams GF) (w : GoInterfaceOk) (id' : w64) (x : GoInterface)
+    (R : w64 → GoInterface → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownWait γ w R ∗ R id' x }}
       (App (App (Val (interfaceCall w go!"Trigger")) (Val #id')) (Val #x))
     {{ RET #(); ownWait γ w R }} := by
@@ -124,8 +124,8 @@ theorem Wait.wp_Trigger (γ : WaitParams GF) (w : interface.t_ok) (id' : w64) (x
   unfold ownWaitDef
   iframe # ∗
 
-theorem Wait.wp_IsRegistered (γ : WaitParams GF) (w : interface.t_ok) (id' : w64)
-    (R : w64 → interface.t → IProp GF) :
+theorem Wait.wp_IsRegistered (γ : WaitParams GF) (w : GoInterfaceOk) (id' : w64)
+    (R : w64 → GoInterface → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownWait γ w R }}
       (App (Val (interfaceCall w go!"IsRegistered")) (Val #id'))
     {{ (reg : Bool), RET #reg; ownWait γ w R }} := by

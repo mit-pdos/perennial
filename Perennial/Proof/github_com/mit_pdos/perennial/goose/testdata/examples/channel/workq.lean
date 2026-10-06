@@ -244,7 +244,7 @@ def isWorker (γ : WorkqNames) (w : Loc) : IProp GF :=
     "#w" ∷ w ↦□ wv ∗
     "#Hqueue" ∷ isChanBag γqueue wv.queue' (ownTask (GF := GF) γ) ∗
     "#Hsteal" ∷ isChanBag γsteal wv.steal'
-      (fun (reply : chan.t) => iprop(∃ γreply : ChanNames,
+      (fun (reply : GoChan) => iprop(∃ γreply : ChanNames,
         isChanBag γreply reply (stealReplyPred (GF := GF) γ))))
 
 instance isWorker_persistent (γ : WorkqNames) (w : Loc) :
@@ -467,7 +467,7 @@ theorem Worker.wp_run (γ : WorkqNames) (w neighbor : Loc) (sh : shared) :
     isplit
     · -- help a worker steal from this one
       dsimp only [chan.nonblockingClausePre]
-      iexists chan.t, inferInstance, inferInstance, inferInstance, inferInstance, wv.steal', γsteal
+      iexists GoChan, inferInstance, inferInstance, inferInstance, inferInstance, wv.steal', γsteal
       isplitr
       · ipureintro; rfl
       ihave #Hsch := is_bag_is_chan _ _ _ $$ Hsteal
@@ -537,7 +537,7 @@ theorem Worker.wp_run (γ : WorkqNames) (w neighbor : Loc) (sh : shared) :
     isplit
     · -- request to steal was sent
       dsimp only [chan.blockingClausePre]
-      iexists chan.t, inferInstance, inferInstance, inferInstance, inferInstance, nv.steal', γsteal_n,
+      iexists GoChan, inferInstance, inferInstance, inferInstance, inferInstance, nv.steal', γsteal_n,
         reply
       isplitr
       · ipureintro; exact ⟨rfl, rfl⟩
@@ -600,7 +600,7 @@ theorem tasks_to_list (γ : WorkqNames) (start : Nat) (l : List GoString) :
     · iapply ih $$ H
 
 set_option maxHeartbeats 1000000 in
-theorem wp_wordCount (docs_sl : slice.t) (docs : List GoString) :
+theorem wp_wordCount (docs_sl : GoSlice) (docs : List GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ "Hdocs" ∷ docs_sl ↦* docs }}
       (App (Val (@! wordCount)) (Val #docs_sl))
     {{ RET #(W64 ((docs.map word_count).sum : Int)); True }} := by
@@ -649,7 +649,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List GoString) :
       rw [List.getElem?_append_right (by omega), List.getElem?_replicate_of_lt (by omega)]
     wp_apply chan.wp_make2 (V := GoString) docs_sl.len $$ [] as %queue %γqueue ⟨#Hq_is, %Hqcap, Hq_own⟩
     · ipureintro; exact Hdocs_len.2
-    wp_apply chan.wp_make1 (V := chan.t) as %steal %γsteal ⟨#Hs_is, %Hscap, Hs_own⟩
+    wp_apply chan.wp_make1 (V := GoChan) as %steal %γsteal ⟨#Hs_is, %Hscap, Hs_own⟩
     simp only [Hi.1, hP, and_self, ↓reduceIte]
     irename «$r0» => Hwr
     imod (typedPointsto_dfractional (GF := GF) «$r0_ptr»
@@ -657,7 +657,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List GoString) :
     simp only [Hif, ↓reduceIte]
     imod start_bag (ownTask (GF := GF) ⟨docs, γtask_gn⟩) _ queue γqueue (by trivial)
       $$ Hq_is Hq_own with #Hqueue
-    imod start_bag (fun (reply : chan.t) => iprop(∃ γreply : ChanNames,
+    imod start_bag (fun (reply : GoChan) => iprop(∃ γreply : ChanNames,
         isChanBag γreply reply (stealReplyPred (GF := GF) ⟨docs, γtask_gn⟩))) _ steal γsteal
       (by trivial) $$ Hs_is Hs_own with #Hsteal
     wp_apply wp_store_slice_index workers_sl (sint.Z i) _ «$r0_ptr» $$ [workers_sl] as workers_sl

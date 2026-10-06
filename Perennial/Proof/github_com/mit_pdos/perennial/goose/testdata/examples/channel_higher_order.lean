@@ -5,7 +5,7 @@ over a per-request future channel.
 
 Lean notes:
 * The channel ghost state needs `Pos.Countable request.t`; it is derived here
-  from the countability of `func.t` and `loc` (`Perennial/GooseLang/Countable.lean`).
+  from the countability of `GoFunc` and `loc` (`Perennial/GooseLang/Countable.lean`).
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
 import Perennial.Golang.Theory.Chan
@@ -45,7 +45,7 @@ def awaitRequest (r : request) (γfut : FutureNames) (Q : GoString → IProp GF)
 
 set_option goose.wp.extras true
 
-theorem wp_mkRequest (f : func.t) (Q : GoString → IProp GF) :
+theorem wp_mkRequest (f : GoFunc) (Q : GoString → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         WP (App (Val #f) (Val #())) {{ fun v => iprop(∃ s : GoString, ⌜v = #s⌝ ∗ Q s) }} }}
       (App (Val (@! mkRequest)) (Val #f))
@@ -122,7 +122,7 @@ set_option maxHeartbeats 400000 in
 theorem wp_HigherOrderExample :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! HigherOrderExample)) (Val #()))
-    {{ (s : slice.t), RET #s; s ↦* [go!"hello world", go!"HELLO", go!"world"] }} := by
+    {{ (s : GoSlice), RET #s; s ↦* [go!"hello world", go!"HELLO", go!"world"] }} := by
   wp_start
   wp_auto
   iapply wp_fupd

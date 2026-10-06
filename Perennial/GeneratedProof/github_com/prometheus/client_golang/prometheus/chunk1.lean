@@ -142,7 +142,7 @@ instance Desc_access_load_constLabelPairs (l : Loc) (v : github_com.prometheus.c
  by
   solve_pointsto_access_struct
 
-instance Desc_access_store_constLabelPairs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Desc) (constLabelPairs' : slice.t) :
+instance Desc_access_store_constLabelPairs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Desc) (constLabelPairs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Desc go!"constLabelPairs" l) v.constLabelPairs' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Desc go!"constLabelPairs" l) constLabelPairs' (DFrac.own 1))
@@ -206,7 +206,7 @@ instance Desc_access_load_err (l : Loc) (v : github_com.prometheus.client_golang
  by
   solve_pointsto_access_struct
 
-instance Desc_access_store_err (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Desc) (err' : error.t) :
+instance Desc_access_store_err (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Desc) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Desc go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Desc go!"err" l) err' (DFrac.own 1))
@@ -246,7 +246,7 @@ instance expvarCollector_access_load_exports (l : Loc) (v : github_com.prometheu
  by
   solve_pointsto_access_struct
 
-instance expvarCollector_access_store_exports (l : Loc) (v : github_com.prometheus.client_golang.prometheus.expvarCollector) (exports' : map.t) :
+instance expvarCollector_access_store_exports (l : Loc) (v : github_com.prometheus.client_golang.prometheus.expvarCollector) (exports' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.expvarCollector go!"exports" l) v.exports' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.expvarCollector go!"exports" l) exports' (DFrac.own 1))
@@ -595,7 +595,7 @@ instance histogramCounts_access_load_buckets (l : Loc) (v : github_com.prometheu
  by
   solve_pointsto_access_struct
 
-instance histogramCounts_access_store_buckets (l : Loc) (v : github_com.prometheus.client_golang.prometheus.histogramCounts) (buckets' : slice.t) :
+instance histogramCounts_access_store_buckets (l : Loc) (v : github_com.prometheus.client_golang.prometheus.histogramCounts) (buckets' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.histogramCounts go!"buckets" l) v.buckets' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.histogramCounts go!"buckets" l) buckets' (DFrac.own 1))
@@ -779,7 +779,7 @@ instance nativeExemplars_access_load_exemplars (l : Loc) (v : github_com.prometh
  by
   solve_pointsto_access_struct
 
-instance nativeExemplars_access_store_exemplars (l : Loc) (v : github_com.prometheus.client_golang.prometheus.nativeExemplars) (exemplars' : slice.t) :
+instance nativeExemplars_access_store_exemplars (l : Loc) (v : github_com.prometheus.client_golang.prometheus.nativeExemplars) (exemplars' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.nativeExemplars go!"exemplars" l) v.exemplars' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.nativeExemplars go!"exemplars" l) exemplars' (DFrac.own 1))
@@ -853,7 +853,7 @@ instance constNativeHistogram_access_load_labelPairs (l : Loc) (v : github_com.p
  by
   solve_pointsto_access_struct
 
-instance constNativeHistogram_access_store_labelPairs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.constNativeHistogram) (labelPairs' : slice.t) :
+instance constNativeHistogram_access_store_labelPairs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.constNativeHistogram) (labelPairs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constNativeHistogram go!"labelPairs" l) v.labelPairs' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constNativeHistogram go!"labelPairs" l) labelPairs' (DFrac.own 1))
@@ -894,7 +894,7 @@ instance compiledLabels_access_load_names (l : Loc) (v : github_com.prometheus.c
  by
   solve_pointsto_access_struct
 
-instance compiledLabels_access_store_names (l : Loc) (v : github_com.prometheus.client_golang.prometheus.compiledLabels) (names' : slice.t) :
+instance compiledLabels_access_store_names (l : Loc) (v : github_com.prometheus.client_golang.prometheus.compiledLabels) (names' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.compiledLabels go!"names" l) v.names' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.compiledLabels go!"names" l) names' (DFrac.own 1))
@@ -910,7 +910,7 @@ instance compiledLabels_access_load_labelConstraints (l : Loc) (v : github_com.p
  by
   solve_pointsto_access_struct
 
-instance compiledLabels_access_store_labelConstraints (l : Loc) (v : github_com.prometheus.client_golang.prometheus.compiledLabels) (labelConstraints' : map.t) :
+instance compiledLabels_access_store_labelConstraints (l : Loc) (v : github_com.prometheus.client_golang.prometheus.compiledLabels) (labelConstraints' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.compiledLabels go!"labelConstraints" l) v.labelConstraints' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.compiledLabels go!"labelConstraints" l) labelConstraints' (DFrac.own 1))
@@ -967,7 +967,7 @@ instance invalidMetric_access_load_err (l : Loc) (v : github_com.prometheus.clie
  by
   solve_pointsto_access_struct
 
-instance invalidMetric_access_store_err (l : Loc) (v : github_com.prometheus.client_golang.prometheus.invalidMetric) (err' : error.t) :
+instance invalidMetric_access_store_err (l : Loc) (v : github_com.prometheus.client_golang.prometheus.invalidMetric) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.invalidMetric go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.invalidMetric go!"err" l) err' (DFrac.own 1))
@@ -1019,7 +1019,7 @@ instance processCollector_access_load_collectFn (l : Loc) (v : github_com.promet
  by
   solve_pointsto_access_struct
 
-instance processCollector_access_store_collectFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.processCollector) (collectFn' : func.t) :
+instance processCollector_access_store_collectFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.processCollector) (collectFn' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.processCollector go!"collectFn" l) v.collectFn' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.processCollector go!"collectFn" l) collectFn' (DFrac.own 1))
@@ -1035,7 +1035,7 @@ instance processCollector_access_load_describeFn (l : Loc) (v : github_com.prome
  by
   solve_pointsto_access_struct
 
-instance processCollector_access_store_describeFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.processCollector) (describeFn' : func.t) :
+instance processCollector_access_store_describeFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.processCollector) (describeFn' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.processCollector go!"describeFn" l) v.describeFn' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.processCollector go!"describeFn" l) describeFn' (DFrac.own 1))
@@ -1051,7 +1051,7 @@ instance processCollector_access_load_pidFn (l : Loc) (v : github_com.prometheus
  by
   solve_pointsto_access_struct
 
-instance processCollector_access_store_pidFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.processCollector) (pidFn' : func.t) :
+instance processCollector_access_store_pidFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.processCollector) (pidFn' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.processCollector go!"pidFn" l) v.pidFn' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.processCollector go!"pidFn" l) pidFn' (DFrac.own 1))
@@ -1253,7 +1253,7 @@ instance ProcessCollectorOpts_access_load_PidFn (l : Loc) (v : github_com.promet
  by
   solve_pointsto_access_struct
 
-instance ProcessCollectorOpts_access_store_PidFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.ProcessCollectorOpts) (PidFn' : func.t) :
+instance ProcessCollectorOpts_access_store_PidFn (l : Loc) (v : github_com.prometheus.client_golang.prometheus.ProcessCollectorOpts) (PidFn' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.ProcessCollectorOpts go!"PidFn" l) v.PidFn' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.ProcessCollectorOpts go!"PidFn" l) PidFn' (DFrac.own 1))
@@ -1346,7 +1346,7 @@ instance Registry_access_load_collectorsByID (l : Loc) (v : github_com.prometheu
  by
   solve_pointsto_access_struct
 
-instance Registry_access_store_collectorsByID (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry) (collectorsByID' : map.t) :
+instance Registry_access_store_collectorsByID (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry) (collectorsByID' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Registry go!"collectorsByID" l) v.collectorsByID' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Registry go!"collectorsByID" l) collectorsByID' (DFrac.own 1))
@@ -1362,7 +1362,7 @@ instance Registry_access_load_descIDs (l : Loc) (v : github_com.prometheus.clien
  by
   solve_pointsto_access_struct
 
-instance Registry_access_store_descIDs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry) (descIDs' : map.t) :
+instance Registry_access_store_descIDs (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry) (descIDs' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Registry go!"descIDs" l) v.descIDs' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Registry go!"descIDs" l) descIDs' (DFrac.own 1))
@@ -1378,7 +1378,7 @@ instance Registry_access_load_dimHashesByName (l : Loc) (v : github_com.promethe
  by
   solve_pointsto_access_struct
 
-instance Registry_access_store_dimHashesByName (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry) (dimHashesByName' : map.t) :
+instance Registry_access_store_dimHashesByName (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry) (dimHashesByName' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Registry go!"dimHashesByName" l) v.dimHashesByName' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Registry go!"dimHashesByName" l) dimHashesByName' (DFrac.own 1))
@@ -1394,7 +1394,7 @@ instance Registry_access_load_uncheckedCollectors (l : Loc) (v : github_com.prom
  by
   solve_pointsto_access_struct
 
-instance Registry_access_store_uncheckedCollectors (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry) (uncheckedCollectors' : slice.t) :
+instance Registry_access_store_uncheckedCollectors (l : Loc) (v : github_com.prometheus.client_golang.prometheus.Registry) (uncheckedCollectors' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Registry go!"uncheckedCollectors" l) v.uncheckedCollectors' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.Registry go!"uncheckedCollectors" l) uncheckedCollectors' (DFrac.own 1))

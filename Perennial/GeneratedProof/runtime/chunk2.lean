@@ -101,7 +101,7 @@ instance hexdumper_access_load_mark (l : Loc) (v : runtime.hexdumper) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance hexdumper_access_store_mark (l : Loc) (v : runtime.hexdumper) (mark' : func.t) :
+instance hexdumper_access_store_mark (l : Loc) (v : runtime.hexdumper) (mark' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.hexdumper go!"mark" l) v.mark' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.hexdumper go!"mark" l) mark' (DFrac.own 1))
@@ -133,7 +133,7 @@ instance hexdumper_access_load_dataBuf (l : Loc) (v : runtime.hexdumper) (dq : D
  by
   solve_pointsto_access_struct
 
-instance hexdumper_access_store_dataBuf (l : Loc) (v : runtime.hexdumper) (dataBuf' : (array.t w8 16)) :
+instance hexdumper_access_store_dataBuf (l : Loc) (v : runtime.hexdumper) (dataBuf' : (GoArray w8 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.hexdumper go!"dataBuf" l) v.dataBuf' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.hexdumper go!"dataBuf" l) dataBuf' (DFrac.own 1))
@@ -181,7 +181,7 @@ instance hexdumper_access_load_toPos (l : Loc) (v : runtime.hexdumper) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance hexdumper_access_store_toPos (l : Loc) (v : runtime.hexdumper) (toPos' : (array.t w8 16)) :
+instance hexdumper_access_store_toPos (l : Loc) (v : runtime.hexdumper) (toPos' : (GoArray w8 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.hexdumper go!"toPos" l) v.toPos' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.hexdumper go!"toPos" l) toPos' (DFrac.own 1))
@@ -263,7 +263,7 @@ instance timeHistogram_access_load_counts (l : Loc) (v : runtime.timeHistogram) 
  by
   solve_pointsto_access_struct
 
-instance timeHistogram_access_store_counts (l : Loc) (v : runtime.timeHistogram) (counts' : (array.t internal.runtime.atomic.Uint64 160)) :
+instance timeHistogram_access_store_counts (l : Loc) (v : runtime.timeHistogram) (counts' : (GoArray internal.runtime.atomic.Uint64 160)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timeHistogram go!"counts" l) v.counts' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.timeHistogram go!"counts" l) counts' (DFrac.own 1))
@@ -1013,7 +1013,7 @@ instance checkmarksMap_access_load_b (l : Loc) (v : runtime.checkmarksMap) (dq :
  by
   solve_pointsto_access_struct
 
-instance checkmarksMap_access_store_b (l : Loc) (v : runtime.checkmarksMap) (b' : (array.t w8 1048576)) :
+instance checkmarksMap_access_store_b (l : Loc) (v : runtime.checkmarksMap) (b' : (GoArray w8 1048576)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.checkmarksMap go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.checkmarksMap go!"b" l) b' (DFrac.own 1))
@@ -1169,7 +1169,7 @@ instance cleanupFn_access_load_call (l : Loc) (v : runtime.cleanupFn) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance cleanupFn_access_store_call (l : Loc) (v : runtime.cleanupFn) (call' : func.t) :
+instance cleanupFn_access_store_call (l : Loc) (v : runtime.cleanupFn) (call' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.cleanupFn go!"call" l) v.call' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.cleanupFn go!"call" l) call' (DFrac.own 1))
@@ -1380,7 +1380,7 @@ instance heapStatsDelta_access_load_smallAllocCount (l : Loc) (v : runtime.heapS
  by
   solve_pointsto_access_struct
 
-instance heapStatsDelta_access_store_smallAllocCount (l : Loc) (v : runtime.heapStatsDelta) (smallAllocCount' : (array.t w64 68)) :
+instance heapStatsDelta_access_store_smallAllocCount (l : Loc) (v : runtime.heapStatsDelta) (smallAllocCount' : (GoArray w64 68)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heapStatsDelta go!"smallAllocCount" l) v.smallAllocCount' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heapStatsDelta go!"smallAllocCount" l) smallAllocCount' (DFrac.own 1))
@@ -1428,7 +1428,7 @@ instance heapStatsDelta_access_load_smallFreeCount (l : Loc) (v : runtime.heapSt
  by
   solve_pointsto_access_struct
 
-instance heapStatsDelta_access_store_smallFreeCount (l : Loc) (v : runtime.heapStatsDelta) (smallFreeCount' : (array.t w64 68)) :
+instance heapStatsDelta_access_store_smallFreeCount (l : Loc) (v : runtime.heapStatsDelta) (smallFreeCount' : (GoArray w64 68)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heapStatsDelta go!"smallFreeCount" l) v.smallFreeCount' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heapStatsDelta go!"smallFreeCount" l) smallFreeCount' (DFrac.own 1))
@@ -2213,7 +2213,7 @@ instance metricFloat64Histogram_access_load_counts (l : Loc) (v : runtime.metric
  by
   solve_pointsto_access_struct
 
-instance metricFloat64Histogram_access_store_counts (l : Loc) (v : runtime.metricFloat64Histogram) (counts' : slice.t) :
+instance metricFloat64Histogram_access_store_counts (l : Loc) (v : runtime.metricFloat64Histogram) (counts' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) counts' (DFrac.own 1))
@@ -2229,7 +2229,7 @@ instance metricFloat64Histogram_access_load_buckets (l : Loc) (v : runtime.metri
  by
   solve_pointsto_access_struct
 
-instance metricFloat64Histogram_access_store_buckets (l : Loc) (v : runtime.metricFloat64Histogram) (buckets' : slice.t) :
+instance metricFloat64Histogram_access_store_buckets (l : Loc) (v : runtime.metricFloat64Histogram) (buckets' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) buckets' (DFrac.own 1))

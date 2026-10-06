@@ -129,7 +129,7 @@ omit [ZeroVal E] [TypedPointsto (GF := GF) E] [IntoValTyped (GF := GF) E Et] [St
 /-- A call of the comparison function, with `cmpImplements` kept folded in the
 caller's context: unfolded, its `▷` makes every symbolic execution step search
 for laters to strip in all hypotheses. -/
-private theorem ins_wp_cmp (cmp_code : func.t) (x y : E) :
+private theorem ins_wp_cmp (cmp_code : GoFunc) (x y : E) :
     {{ cmpImplements (GF := GF) R cmp_code }}
       (App (App (Val #cmp_code) (Val #x)) (Val #y))
     {{ (r : w64), RET #r; ⌜sint.Z r < 0 ↔ R x y⌝ }} := by
@@ -141,7 +141,7 @@ private theorem ins_wp_cmp (cmp_code : func.t) (x y : E) :
 omit package_sem in
 /-- The inner loop of `insertionSortCmpFunc` (a separate theorem, so that it
 elaborates in parallel). -/
-private theorem ins_wp_insertion_inner (data : slice.t) (a b i_val : w64) (cmp : func.t)
+private theorem ins_wp_insertion_inner (data : GoSlice) (a b i_val : w64) (cmp : GoFunc)
     (xs : List E) (cmp_ptr a_ptr data_ptr j_ptr : Loc) (Φ : val → IProp GF)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
@@ -240,7 +240,7 @@ private theorem ins_wp_insertion_inner (data : slice.t) (a b i_val : w64) (cmp :
     refine ⟨Hperm2, ?_, Houtside2⟩
     exact insBr_done_a R _ _ _ _ HsortedBr (by word)
 
-theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs : List E) :
+theorem wp_insertionSortCmpFunc (data : GoSlice) (a b : w64) (cmp : GoFunc) (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "#Hcmp" ∷ cmpImplements R cmp ∗
@@ -308,7 +308,7 @@ theorem wp_insertionSortCmpFunc (data : slice.t) (a b : w64) (cmp : func.t) (xs 
 omit package_sem in
 /-- The loop of `partialInsertionSortCmpFunc` that shifts the smaller element
 `data[i-1]` to the left (a separate theorem, so that it elaborates in parallel). -/
-private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code : func.t)
+private theorem ins_wp_shift_left (data : GoSlice) (a b i_val : w64) (cmp_code : GoFunc)
     (xs : List E) (cmp_ptr a_ptr data_ptr i_ptr j_ptr : Loc)
     (Header : header R xs (sint.nat a) (sint.nat b))
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
@@ -441,7 +441,7 @@ private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code :
 omit package_sem [StrictWeakOrder R] in
 /-- The loop of `partialInsertionSortCmpFunc` that shifts the greater element
 `data[i]` to the right (a separate theorem, so that it elaborates in parallel). -/
-private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code : func.t)
+private theorem ins_wp_shift_right (data : GoSlice) (a b i_val : w64) (cmp_code : GoFunc)
     (xs : List E) (cmp_ptr b_ptr data_ptr j_ptr : Loc) (Φ : val → IProp GF)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
@@ -540,7 +540,7 @@ private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code 
     ipureintro
     exact ⟨Hperm4, Hsorted4, Houtside4⟩
 
-theorem wp_partialInsertionSortCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
+theorem wp_partialInsertionSortCmpFunc (data : GoSlice) (a b : w64) (cmp_code : GoFunc)
     (xs : List E) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗

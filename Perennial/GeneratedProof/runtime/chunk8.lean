@@ -68,7 +68,7 @@ instance coro_access_load_f (l : Loc) (v : runtime.coro) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance coro_access_store_f (l : Loc) (v : runtime.coro) (f' : func.t) :
+instance coro_access_store_f (l : Loc) (v : runtime.coro) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.coro go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.coro go!"f" l) f' (DFrac.own 1))
@@ -315,7 +315,7 @@ instance debugLogWriter_access_load_buf (l : Loc) (v : runtime.debugLogWriter) (
  by
   solve_pointsto_access_struct
 
-instance debugLogWriter_access_store_buf (l : Loc) (v : runtime.debugLogWriter) (buf' : (array.t w8 10)) :
+instance debugLogWriter_access_store_buf (l : Loc) (v : runtime.debugLogWriter) (buf' : (GoArray w8 10)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.debugLogWriter go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.debugLogWriter go!"buf" l) buf' (DFrac.own 1))
@@ -372,7 +372,7 @@ instance siginfo_access_load__1 (l : Loc) (v : runtime.siginfo) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance siginfo_access_store__1 (l : Loc) (v : runtime.siginfo) (_1' : (array.t w8 104)) :
+instance siginfo_access_store__1 (l : Loc) (v : runtime.siginfo) (_1' : (GoArray w8 104)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.siginfo go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.siginfo go!"_1" l) _1' (DFrac.own 1))
@@ -543,7 +543,7 @@ instance sigevent_access_load__1 (l : Loc) (v : runtime.sigevent) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance sigevent_access_store__1 (l : Loc) (v : runtime.sigevent) (_1' : (array.t w8 40)) :
+instance sigevent_access_store__1 (l : Loc) (v : runtime.sigevent) (_1' : (GoArray w8 40)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.sigevent go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.sigevent go!"_1" l) _1' (DFrac.own 1))
@@ -721,7 +721,7 @@ instance fpstate_access_load__st (l : Loc) (v : runtime.fpstate) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance fpstate_access_store__st (l : Loc) (v : runtime.fpstate) (_st' : (array.t runtime.fpxreg 8)) :
+instance fpstate_access_store__st (l : Loc) (v : runtime.fpstate) (_st' : (GoArray runtime.fpxreg 8)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpstate go!"_st" l) v._st' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpstate go!"_st" l) _st' (DFrac.own 1))
@@ -737,7 +737,7 @@ instance fpstate_access_load__xmm (l : Loc) (v : runtime.fpstate) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance fpstate_access_store__xmm (l : Loc) (v : runtime.fpstate) (_xmm' : (array.t runtime.xmmreg 16)) :
+instance fpstate_access_store__xmm (l : Loc) (v : runtime.fpstate) (_xmm' : (GoArray runtime.xmmreg 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpstate go!"_xmm" l) v._xmm' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpstate go!"_xmm" l) _xmm' (DFrac.own 1))
@@ -753,7 +753,7 @@ instance fpstate_access_load_padding (l : Loc) (v : runtime.fpstate) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance fpstate_access_store_padding (l : Loc) (v : runtime.fpstate) (padding' : (array.t w32 24)) :
+instance fpstate_access_store_padding (l : Loc) (v : runtime.fpstate) (padding' : (GoArray w32 24)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpstate go!"padding" l) v.padding' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpstate go!"padding" l) padding' (DFrac.own 1))
@@ -931,7 +931,7 @@ instance fpstate1_access_load__st (l : Loc) (v : runtime.fpstate1) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance fpstate1_access_store__st (l : Loc) (v : runtime.fpstate1) (_st' : (array.t runtime.fpxreg1 8)) :
+instance fpstate1_access_store__st (l : Loc) (v : runtime.fpstate1) (_st' : (GoArray runtime.fpxreg1 8)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpstate1 go!"_st" l) v._st' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpstate1 go!"_st" l) _st' (DFrac.own 1))
@@ -947,7 +947,7 @@ instance fpstate1_access_load__xmm (l : Loc) (v : runtime.fpstate1) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance fpstate1_access_store__xmm (l : Loc) (v : runtime.fpstate1) (_xmm' : (array.t runtime.xmmreg1 16)) :
+instance fpstate1_access_store__xmm (l : Loc) (v : runtime.fpstate1) (_xmm' : (GoArray runtime.xmmreg1 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpstate1 go!"_xmm" l) v._xmm' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpstate1 go!"_xmm" l) _xmm' (DFrac.own 1))
@@ -963,7 +963,7 @@ instance fpstate1_access_load_padding (l : Loc) (v : runtime.fpstate1) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance fpstate1_access_store_padding (l : Loc) (v : runtime.fpstate1) (padding' : (array.t w32 24)) :
+instance fpstate1_access_store_padding (l : Loc) (v : runtime.fpstate1) (padding' : (GoArray w32 24)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.fpstate1 go!"padding" l) v.padding' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.fpstate1 go!"padding" l) padding' (DFrac.own 1))
@@ -1430,7 +1430,7 @@ instance metricData_access_load_compute (l : Loc) (v : runtime.metricData) (dq :
  by
   solve_pointsto_access_struct
 
-instance metricData_access_store_compute (l : Loc) (v : runtime.metricData) (compute' : func.t) :
+instance metricData_access_store_compute (l : Loc) (v : runtime.metricData) (compute' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.metricData go!"compute" l) v.compute' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.metricData go!"compute" l) compute' (DFrac.own 1))
@@ -1868,7 +1868,7 @@ instance finBlock_access_load_fin (l : Loc) (v : runtime.finBlock) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance finBlock_access_store_fin (l : Loc) (v : runtime.finBlock) (fin' : (array.t runtime.finalizer 101)) :
+instance finBlock_access_store_fin (l : Loc) (v : runtime.finBlock) (fin' : (GoArray runtime.finalizer 101)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.finBlock go!"fin" l) v.fin' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.finBlock go!"fin" l) fin' (DFrac.own 1))
@@ -2059,7 +2059,7 @@ instance spanInlineMarkBits_access_load_scans (l : Loc) (v : runtime.spanInlineM
  by
   solve_pointsto_access_struct
 
-instance spanInlineMarkBits_access_store_scans (l : Loc) (v : runtime.spanInlineMarkBits) (scans' : (array.t w8 63)) :
+instance spanInlineMarkBits_access_store_scans (l : Loc) (v : runtime.spanInlineMarkBits) (scans' : (GoArray w8 63)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.spanInlineMarkBits go!"scans" l) v.scans' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.spanInlineMarkBits go!"scans" l) scans' (DFrac.own 1))
@@ -2091,7 +2091,7 @@ instance spanInlineMarkBits_access_load_marks (l : Loc) (v : runtime.spanInlineM
  by
   solve_pointsto_access_struct
 
-instance spanInlineMarkBits_access_store_marks (l : Loc) (v : runtime.spanInlineMarkBits) (marks' : (array.t w8 63)) :
+instance spanInlineMarkBits_access_store_marks (l : Loc) (v : runtime.spanInlineMarkBits) (marks' : (GoArray w8 63)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.spanInlineMarkBits go!"marks" l) v.marks' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.spanInlineMarkBits go!"marks" l) marks' (DFrac.own 1))

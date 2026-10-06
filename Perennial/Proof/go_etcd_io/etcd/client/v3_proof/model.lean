@@ -70,25 +70,24 @@ instance ecomp_Inhabited (E : Type → Type u) (R : Type) [Inhabited R] : Inhabi
 /-! ### Relations (Rocq `Perennial.Helpers.Transitions`) -/
 
 /-- `relation.t Σ A`: a transition from a state to a new state, returning an `A`. -/
-def relation.t (S : Type) (A : Type) : Type := S → S → A → Prop
+def Relation (S : Type) (A : Type) : Type := S → S → A → Prop
 
 /-- Establish monadicity of relation.t. Rocq `relation_mret`/`relation_mbind`. -/
-instance relation_Monad (S : Type) : Monad (relation.t S) where
+instance relation_Monad (S : Type) : Monad (Relation S) where
   pure a := fun σ σ' a' => a = a' ∧ σ' = σ
   bind ma kmb := fun σ σ' b => ∃ a σmiddle, ma σ σmiddle a ∧ kmb a σmiddle σ' b
 
 theorem relation_pure_def {S A : Type} (a : A) (σ σ' : S) (a' : A) :
-    (pure a : relation.t S A) σ σ' a' = (a = a' ∧ σ' = σ) := rfl
+    (pure a : Relation S A) σ σ' a' = (a = a' ∧ σ' = σ) := rfl
 
-theorem relation_bind_def {S A B : Type} (ma : relation.t S A) (kmb : A → relation.t S B)
+theorem relation_bind_def {S A B : Type} (ma : Relation S A) (kmb : A → Relation S B)
     (σ σ' : S) (b : B) :
     (ma >>= kmb) σ σ' b = ∃ a σmiddle, ma σ σmiddle a ∧ kmb a σmiddle σ' b := rfl
 
 /-! ### The etcd state -/
 
 -- https://etcd.io/docs/v3.6/learning/api/
-namespace KeyValue
-structure t where
+structure KeyValue where
   mk ::
   key : List w8
   create_revision : w64
@@ -96,14 +95,12 @@ structure t where
   version : w64
   value : List w8
   lease : w64
-end KeyValue
 
-namespace EtcdState
-structure t where
+structure EtcdState where
   mk ::
   revision : w64
   compact_revision : w64
-  key_values : GMap w64 (GMap (List w8) KeyValue.t)
+  key_values : GMap w64 (GMap (List w8) KeyValue)
   /- XXX: Though the docs don't explain or guarantee this, this tracks lease
      IDs that have been given out previously to avoid reusing LeaseIDs. If
      reuse were allowed, it's possible that a lease expires & its keys are
@@ -113,13 +110,12 @@ structure t where
   used_lease_ids : GSet w64
   /-- If an ID is used but not in here, then it has been expired. -/
   lease_expiration : GMap w64 w64
-end EtcdState
 
 /-- Effects for etcd specification. -/
 inductive EtcdE : Type → Type 1 where
   | SuchThat {A : Type} (pred : A → Prop) : EtcdE A
-  | GetState : EtcdE EtcdState.t
-  | SetState (σ' : EtcdState.t) : EtcdE Unit
+  | GetState : EtcdE EtcdState
+  | SetState (σ' : EtcdState) : EtcdE Unit
   | GetTime : EtcdE w64
   | Assume (b : Prop) : EtcdE Unit
   | Assert (b : Prop) : EtcdE Unit
@@ -147,7 +143,7 @@ def handleExceptionE {R : Type} {E : Type → Type u} :
     | .Ok e => Ecomp.Effect e (fun x => Ecomp.Pure (Sum.inr x))
 
 /-- Handle etcd effects with the `relation.t EtcdState.t` monad. -/
-def HandleEtcdE (t : w64) : Handler EtcdE (relation.t EtcdState.t) :=
+def HandleEtcdE (t : w64) : Handler EtcdE (Relation EtcdState) :=
   fun _A e =>
     match e with
     | .SuchThat pred => fun σ σ' a => pred a ∧ σ' = σ
@@ -180,7 +176,7 @@ def SingleSpontaneousTransition : Ecomp EtcdE Unit := do
   -- FIXME: delete attached keys
   «do» (EtcdE.SetState { σ with lease_expiration := GMap.delete lease_id σ.lease_expiration })
 
-theorem SingleSpontaneousTransition_monotonic (time time' : w64) (σ σ' : EtcdState.t) :
+theorem SingleSpontaneousTransition_monotonic (time time' : w64) (σ σ' : EtcdState) :
     uint.nat time < uint.nat time' →
     interp (HandleEtcdE time) SingleSpontaneousTransition σ σ' () →
     interp (HandleEtcdE time') SingleSpontaneousTransition σ σ' () := by
@@ -196,21 +192,17 @@ def SpontaneousTransition : Ecomp EtcdE Unit := do
   let num_steps ← «do» (EtcdE.SuchThat (fun (_ : Nat) => True))
   Nat.repeat (fun p => do SingleSpontaneousTransition; p) num_steps (pure ())
 
-namespace LeaseGrantRequest
-structure t where
+structure LeaseGrantRequest where
   mk ::
   TTL : w64
   ID : w64
-end LeaseGrantRequest
 
-namespace LeaseGrantResponse
-structure t where
+structure LeaseGrantResponse where
   mk ::
   TTL : w64
   ID : w64
-end LeaseGrantResponse
 
-def LeaseGrant (req : LeaseGrantRequest.t) : Ecomp EtcdE LeaseGrantResponse.t := do
+def LeaseGrant (req : LeaseGrantRequest) : Ecomp EtcdE LeaseGrantResponse := do
   -- FIXME (from Rocq): add this back
   -- SpontaneousTransition
   -- req.TTL is advisory, so it is ignored.
@@ -225,24 +217,20 @@ def LeaseGrant (req : LeaseGrantRequest.t) : Ecomp EtcdE LeaseGrantResponse.t :=
   let σ := { σ with used_lease_ids := {[lease_id]} ∪ σ.used_lease_ids }
   let σ := { σ with lease_expiration := <[lease_id := time + ttl]> σ.lease_expiration }
   «do» (EtcdE.SetState σ)
-  pure (LeaseGrantResponse.t.mk lease_id ttl)
+  pure (LeaseGrantResponse.mk lease_id ttl)
 
-namespace LeaseKeepAliveRequest
-structure t where
+structure LeaseKeepAliveRequest where
   mk ::
   ID : w64
-end LeaseKeepAliveRequest
 
-namespace LeaseKeepAliveResponse
-structure t where
+structure LeaseKeepAliveResponse where
   mk ::
   TTL : w64
   ID : w64
-end LeaseKeepAliveResponse
 
 /-- If the lease is expired, returns TTL=0. See the Rocq source for questions
 about the precise semantics of lease renewal. -/
-def LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : Ecomp EtcdE LeaseKeepAliveResponse.t := do
+def LeaseKeepAlive (req : LeaseKeepAliveRequest) : Ecomp EtcdE LeaseKeepAliveResponse := do
   SpontaneousTransition
   let σ ← «do» EtcdE.GetState
   /- This is conservative. lessor.go looks like it avoids renewing a lease if
@@ -251,7 +239,7 @@ def LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : Ecomp EtcdE LeaseKeepAliveR
      leader change, which sets expiry to "forever" before restarting it upon
      promotion. -/
   match σ.lease_expiration !! req.ID with
-  | none => pure (LeaseKeepAliveResponse.t.mk (W64 0) req.ID)
+  | none => pure (LeaseKeepAliveResponse.mk (W64 0) req.ID)
   | some expiration => do
       let ttl ← «do» (EtcdE.SuchThat (fun (_ : w64) => True))
       let time ← «do» EtcdE.GetTime
@@ -262,7 +250,7 @@ def LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : Ecomp EtcdE LeaseKeepAliveR
                               new_expiration_lower
       «do» (EtcdE.SetState { σ with lease_expiration :=
         <[req.ID := new_expiration]> σ.lease_expiration })
-      pure (LeaseKeepAliveResponse.t.mk ttl req.ID)
+      pure (LeaseKeepAliveResponse.mk ttl req.ID)
 
 namespace RangeRequest
 -- sort order
@@ -276,7 +264,7 @@ def VERSION : w32 := W32 1
 def MOD : w32 := W32 2
 def VALUE : w32 := W32 3
 
-structure t where
+structure _root_.Perennial.go_etcd_io.etcd.client.v3_proof.RangeRequest where
   mk ::
   key : List w8
   range_end : List w8
@@ -292,17 +280,15 @@ structure t where
   min_create_revision : w64
   max_create_revision : w64
 
-def default : t :=
-  t.mk [] [] (W64 0) (W64 0) (W32 0) (W32 0) false false false (W64 0) (W64 0) (W64 0) (W64 0)
+def default : RangeRequest :=
+  mk [] [] (W64 0) (W64 0) (W32 0) (W32 0) false false false (W64 0) (W64 0) (W64 0) (W64 0)
 end RangeRequest
 
-namespace RangeResponse
-structure t where
+structure RangeResponse where
   mk ::
-  kvs : List KeyValue.t
+  kvs : List KeyValue
   more : Bool
   count : w64
-end RangeResponse
 
 inductive Error where
   | Bad (msg : GoString)
@@ -322,9 +308,9 @@ def RelationPullback {A B : Type} (f : A → B) (R : B → B → Prop) : A → A
   fun a1 a2 => R (f a1) (f a2)
 
 open WithExceptionE (Throw Ok) in
-def Range (req : RangeRequest.t) : Ecomp EtcdE (Error ⊕ RangeResponse.t) :=
-show ExnT (Ecomp EtcdE) Error RangeResponse.t from
-interp handleExceptionE (show Ecomp (WithExceptionE Error EtcdE) RangeResponse.t from do
+def Range (req : RangeRequest) : Ecomp EtcdE (Error ⊕ RangeResponse) :=
+show ExnT (Ecomp EtcdE) Error RangeResponse from
+interp handleExceptionE (show Ecomp (WithExceptionE Error EtcdE) RangeResponse from do
   «do» (Ok (EtcdE.Assert (req.serializable = false)))
   let σ ← «do» (Ok EtcdE.GetState)
   let current_revision := σ.revision
@@ -333,7 +319,7 @@ interp handleExceptionE (show Ecomp (WithExceptionE Error EtcdE) RangeResponse.t
    else pure ())
   let rev := (if sint.Z req.revision < 0 then current_revision else req.revision)
   let kv_map := (σ.key_values !! rev).getD ∅
-  let kvs ← «do» (Ok (EtcdE.SuchThat (fun (kvs : List KeyValue.t) =>
+  let kvs ← «do» (Ok (EtcdE.SuchThat (fun (kvs : List KeyValue) =>
                   match req.range_end with
                   | [] => -- just the one key
                       (∀ kv, kv ∈ kvs ↔ kv_map !! req.key = some kv)
@@ -364,39 +350,39 @@ interp handleExceptionE (show Ecomp (WithExceptionE Error EtcdE) RangeResponse.t
        kvs.filter (fun kv => decide (sint.Z req.min_create_revision ≤ sint.Z kv.create_revision))
      else kvs)
   -- for sorting in ascending order; descending means flipping the order of the list.
-  let sort_relation ← (show Ecomp _ (KeyValue.t → KeyValue.t → Prop) from
+  let sort_relation ← (show Ecomp _ (KeyValue → KeyValue → Prop) from
     match uint.Z req.sort_target with
-    | 0 => pure (RelationPullback KeyValue.t.key go.GoStringLt) -- KEY
-    | 1 => pure (RelationPullback (sint.Z ∘ KeyValue.t.version) (· < ·)) -- VERSION
-    | 2 => pure (RelationPullback (sint.Z ∘ KeyValue.t.create_revision) (· < ·)) -- CREATE
-    | 3 => pure (RelationPullback (sint.Z ∘ KeyValue.t.mod_revision) (· < ·)) -- MOD
-    | 4 => pure (RelationPullback KeyValue.t.value go.GoStringLt) -- VALUE
+    | 0 => pure (RelationPullback KeyValue.key go.GoStringLt) -- KEY
+    | 1 => pure (RelationPullback (sint.Z ∘ KeyValue.version) (· < ·)) -- VERSION
+    | 2 => pure (RelationPullback (sint.Z ∘ KeyValue.create_revision) (· < ·)) -- CREATE
+    | 3 => pure (RelationPullback (sint.Z ∘ KeyValue.mod_revision) (· < ·)) -- MOD
+    | 4 => pure (RelationPullback KeyValue.value go.GoStringLt) -- VALUE
     | _ => do «do» (Ok (EtcdE.Assert False)); «do» (Throw (Error.Bad go!"unreachable")))
   let kvs_sorted ← «do» (Ok (EtcdE.SuchThat (fun kvs_sorted =>
                      List.Pairwise sort_relation kvs_sorted ∧ List.Perm kvs kvs_sorted)))
-  let kvs ← (show Ecomp _ (List KeyValue.t) from
+  let kvs ← (show Ecomp _ (List KeyValue) from
     match uint.Z req.sort_order with
     | 0 => pure kvs -- NONE; XXX: the etcd implementation seems to sort even in this case.
     | 1 => pure kvs_sorted -- ASCEND
     | 2 => pure kvs_sorted.reverse -- DESCEND
     | _ => do «do» (Ok (EtcdE.Assert False)); «do» (Throw (Error.Bad go!"unreachable")))
   if req.count_only then
-    pure (RangeResponse.t.mk [] false (W64 kvs.length))
+    pure (RangeResponse.mk [] false (W64 kvs.length))
   else do
-    let kvs_limited ← (show Ecomp _ (List KeyValue.t) from
+    let kvs_limited ← (show Ecomp _ (List KeyValue) from
       if sint.Z req.limit = 0 then
         pure kvs
       else if sint.Z req.limit > 0 then
         pure (kvs.take (sint.Z req.limit).toNat)
       else do
         «do» (Ok (EtcdE.Assert False)); «do» (Throw (Error.Bad go!"unreachable")))
-    pure (RangeResponse.t.mk kvs_limited (decide (kvs_limited.length < kvs.length))
+    pure (RangeResponse.mk kvs_limited (decide (kvs_limited.length < kvs.length))
       (W64 kvs.length))
   -- XXX: keys_only is not currently handled.
   )
 
 namespace PutRequest
-structure t where
+structure _root_.Perennial.go_etcd_io.etcd.client.v3_proof.PutRequest where
   mk ::
   key : List w8
   value : List w8
@@ -405,22 +391,20 @@ structure t where
   ignore_value : Bool
   ignore_lease : Bool
 
-def default : t := t.mk [] [] (W64 0) false false false
+def default : PutRequest := mk [] [] (W64 0) false false false
 end PutRequest
 
-namespace PutResponse
-structure t where
+structure PutResponse where
   mk ::
   -- TODO: add response header
   -- header : ResponseHeader.t;
-  prev_kv : Option KeyValue.t
-end PutResponse
+  prev_kv : Option KeyValue
 
 open WithExceptionE (Throw Ok) in
 /-- server/etcdserver/txn.go:58, then server/storage/mvcc/kvstore_txn.go:196 -/
-def Put (req : PutRequest.t) : Ecomp EtcdE (Error ⊕ PutResponse.t) :=
-show ExnT (Ecomp EtcdE) Error PutResponse.t from
-interp handleExceptionE (show Ecomp (WithExceptionE Error EtcdE) PutResponse.t from do
+def Put (req : PutRequest) : Ecomp EtcdE (Error ⊕ PutResponse) :=
+show ExnT (Ecomp EtcdE) Error PutResponse from
+interp handleExceptionE (show Ecomp (WithExceptionE Error EtcdE) PutResponse from do
   let σ ← «do» (Ok EtcdE.GetState)
   let kvs := (σ.key_values !! σ.revision).getD ∅
   -- NOTE: could use [Range] here.
@@ -428,44 +412,40 @@ interp handleExceptionE (show Ecomp (WithExceptionE Error EtcdE) PutResponse.t f
 
   -- compute value and lease, possibly throwing an error.
   let value ← (if req.ignore_value then
-                 (prev_kv.map (Ecomp.Pure ∘ KeyValue.t.value)).getD
+                 (prev_kv.map (Ecomp.Pure ∘ KeyValue.value)).getD
                    («do» (Throw (Error.Bad go!"Key not found")))
                else pure req.value)
   let lease ← (if req.ignore_lease then
-                 (prev_kv.map (Ecomp.Pure ∘ KeyValue.t.lease)).getD
+                 (prev_kv.map (Ecomp.Pure ∘ KeyValue.lease)).getD
                    («do» (Throw (Error.Bad go!"Key not found")))
                else pure req.lease)
 
   let ret_prev_kv := (if req.prev_kv then prev_kv else none)
-  let prev_ver := (prev_kv.map KeyValue.t.version).getD (W64 0)
+  let prev_ver := (prev_kv.map KeyValue.version).getD (W64 0)
   let ver := prev_ver + W64 1 -- should this handle overflow?
   let mod_revision := σ.revision + W64 1
-  let create_revision := (prev_kv.map KeyValue.t.create_revision).getD mod_revision
-  let new_kv := KeyValue.t.mk req.key create_revision mod_revision ver value lease
+  let create_revision := (prev_kv.map KeyValue.create_revision).getD mod_revision
+  let new_kv := KeyValue.mk req.key create_revision mod_revision ver value lease
   let σ := { σ with key_values := <[mod_revision := <[req.key := new_kv]> kvs]> σ.key_values }
   let σ := { σ with revision := mod_revision }
   /- updating [key_values] handles attaching/detaching leases, since the map
      itself defines the association from LeaseID to Key. -/
   «do» (Ok (EtcdE.SetState σ))
-  pure (PutResponse.t.mk ret_prev_kv))
+  pure (PutResponse.mk ret_prev_kv))
 
-namespace DeleteRangeRequest
-structure t where
+structure DeleteRangeRequest where
   mk ::
   key : List w8
   range_end : List w8
   prev_kv : Bool
-end DeleteRangeRequest
 
-namespace DeleteRangeResponse
-structure t where
+structure DeleteRangeResponse where
   mk ::
-  prev_kvs : List KeyValue.t
+  prev_kvs : List KeyValue
 deriving Inhabited
-end DeleteRangeResponse
 
 /-- Rocq: Admitted (an opaque definition). -/
-opaque DeleteRange (req : DeleteRangeRequest.t) : Ecomp EtcdE DeleteRangeResponse.t
+opaque DeleteRange (req : DeleteRangeRequest) : Ecomp EtcdE DeleteRangeResponse
 
 namespace Compare
 
@@ -477,7 +457,7 @@ inductive TargetUnion where
   | Value (value : List w8)
   | Lease (lease : w64)
 
-structure t where
+structure _root_.Perennial.go_etcd_io.etcd.client.v3_proof.Compare where
   mk ::
   result : w32 -- CompareResult
   target : w32 -- CompareTarget
@@ -486,47 +466,39 @@ structure t where
   range_end : List w8
 end Compare
 
-namespace RequestOp
-inductive t where
-  | Range (request_range : RangeRequest.t)
-  | Put (request_put : PutRequest.t)
-  | DeleteRange (request_delete_range : DeleteRangeRequest.t)
+inductive RequestOp where
+  | Range (request_range : RangeRequest)
+  | Put (request_put : PutRequest)
+  | DeleteRange (request_delete_range : DeleteRangeRequest)
   -- | Txn (request_txn : TxnRequest.t)
   -- This does not support Txn as a RequestOp.
-end RequestOp
 
-namespace ResponseOp
-inductive t where
-  | Range (response_range : RangeResponse.t)
-  | Put (response_put : PutResponse.t)
-  | DeleteRange (response_delete_range : DeleteRangeResponse.t)
+inductive ResponseOp where
+  | Range (response_range : RangeResponse)
+  | Put (response_put : PutResponse)
+  | DeleteRange (response_delete_range : DeleteRangeResponse)
   -- | Txn (response_txn : TxnResponse.t)
   -- This does not support Txn as a ResponseOp.
-end ResponseOp
 
-namespace TxnRequest
 -- FIXME: etcd documentation out of date.
-structure t where
+structure TxnRequest where
   mk ::
-  compare : List Compare.t
-  success : List RequestOp.t
-  failure : List RequestOp.t
-end TxnRequest
+  compare : List Compare
+  success : List RequestOp
+  failure : List RequestOp
 
-namespace TxnResponse
-structure t where
+structure TxnResponse where
   mk ::
   succeeded : Bool
-  responses : List ResponseOp.t
+  responses : List ResponseOp
 deriving Inhabited
-end TxnResponse
 
 /- Q (from Rocq): What is the meaning of this from rpc.proto:
   // It is not allowed to modify the same key several times within one txn.
   In particular, does Txn return an error if the ops try to modify the same key
   multiple times? Or does the Txn coalesce that into one modification? -/
 /-- Rocq: Admitted (an opaque definition). -/
-opaque Txn (req : TxnRequest.t) : Ecomp EtcdE TxnResponse.t
+opaque Txn (req : TxnRequest) : Ecomp EtcdE TxnResponse
 
 end go_etcd_io.etcd.client.v3_proof
 

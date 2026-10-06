@@ -77,7 +77,7 @@ theorem wp_VoidImplicitReturnInBranch (b : Bool) :
   · wp_auto
     wp_end
 
-theorem wp_typeAssertInt (x : interface.t) (v : w64) :
+theorem wp_typeAssertInt (x : GoInterface) (v : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ⌜x = interface.mkOk go.int #v⌝ }}
       (App (Val (@! typeAssertInt)) (Val #x))
     {{ RET #v; True }} := by
@@ -97,7 +97,7 @@ theorem wp_wrapUnwrapInt :
   iintro _
   wp_end
 
-theorem wp_checkedTypeAssert (x : interface.t) :
+theorem wp_checkedTypeAssert (x : GoInterface) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ⌜match x with
           | interface.ok i =>
@@ -123,7 +123,7 @@ theorem wp_checkedTypeAssert (x : interface.t) :
     · wp_auto_neg h
       wp_end
 
-theorem wp_basicTypeSwitch (x : interface.t) :
+theorem wp_basicTypeSwitch (x : GoInterface) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
@@ -153,7 +153,7 @@ theorem wp_basicTypeSwitch (x : interface.t) :
       · wp_auto_neg h'
         wp_end
 
-theorem wp_fancyTypeSwitch (x : interface.t) :
+theorem wp_fancyTypeSwitch (x : GoInterface) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
@@ -185,7 +185,7 @@ theorem wp_fancyTypeSwitch (x : interface.t) :
       · wp_auto_neg h'
         wp_end
 
-theorem wp_multiTypeSwitch (x : interface.t) :
+theorem wp_multiTypeSwitch (x : GoInterface) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
@@ -241,7 +241,7 @@ theorem wp_mapGetCall :
     {{ RET #(); True }} := by
   wp_start
   wp_auto
-  wp_apply (wp_map_make1 (K := w64) (V := func.t)) with %m Hm
+  wp_apply (wp_map_make1 (K := w64) (V := GoFunc)) with %m Hm
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm
   wp_end
@@ -278,8 +278,8 @@ theorem wp_testConversionLiteral :
     {{ RET #true; True }} := by
   wp_start
   wp_auto
-  wp_apply (wp_map_make1 (K := interface.t) (V := interface.t)) with %m Hm
-  have hnil : SafeMapKey (GF := GF) go.any (interface.nil : interface.t) :=
+  wp_apply (wp_map_make1 (K := GoInterface) (V := GoInterface)) with %m Hm
+  have hnil : SafeMapKey (GF := GF) go.any (interface.nil : GoInterface) :=
     ⟨fun s E Φ => by iintro H; wp_auto; iapply H⟩
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_mapInsert $$ Hm with Hm
@@ -346,7 +346,7 @@ theorem wp_useFloat :
   wp_auto
   wp_end
 
-theorem wp_intSliceLoop (s : slice.t) (xs : List w64) :
+theorem wp_intSliceLoop (s : GoSlice) (xs : List w64) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ s ↦* xs }}
       (App (Val (@! intSliceLoop)) (Val #s))
     {{ (z : w64), RET #z; s ↦* xs }} := by
@@ -468,7 +468,7 @@ theorem wp_ifJoinDemo_join (arg1 arg2 : Bool) :
   iintro %sl ⟨Hz, Hzcap⟩
   wp_auto
   wp_if_join (fun v => (iprop(⌜v = executeVal⌝ ∗
-      ∃ (sl : slice.t) (xs : List w64),
+      ∃ (sl : GoSlice) (xs : List w64),
         arr_ptr ↦ sl ∗ sl ↦* xs ∗ ownSliceCap w64 sl (DFrac.own 1)) : IProp GF))
     with [arr Hz Hzcap]
   · -- `arg1 = false`

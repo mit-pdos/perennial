@@ -95,7 +95,7 @@ instance Channel_access_load_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l
  by
   solve_pointsto_access_struct
 
-instance Channel_access_store_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (buffer' : slice.t) :
+instance Channel_access_store_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (buffer' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"buffer" l) v.buffer' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"buffer" l) buffer' (DFrac.own 1))

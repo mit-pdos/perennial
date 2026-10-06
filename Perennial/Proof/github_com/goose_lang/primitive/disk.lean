@@ -56,15 +56,15 @@ instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.github_com.goose_lang.primitive.disk :=
   build_get_is_pkg_init_wf
 
-def isBlock (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Block) : IProp GF := s ↦*{dq} b.toList
+def isBlock (s : GoSlice) (dq : DFrac) (b : _root_.Perennial.Block) : IProp GF := s ↦*{dq} b.toList
 
-def isBlockFull (s : slice.t) (b : _root_.Perennial.Block) : IProp GF := s ↦* b.toList
+def isBlockFull (s : GoSlice) (b : _root_.Perennial.Block) : IProp GF := s ↦* b.toList
 
-instance isBlock_timeless (s : slice.t) (q : DFrac) (b : _root_.Perennial.Block) :
+instance isBlock_timeless (s : GoSlice) (q : DFrac) (b : _root_.Perennial.Block) :
     Timeless (isBlock (GF := GF) s q b) := by
   unfold isBlock; rw [ownSlice_unseal]; unfold ownSliceDef; infer_instance
 
-instance isBlock_dfractional (s : slice.t) (b : _root_.Perennial.Block) :
+instance isBlock_dfractional (s : GoSlice) (b : _root_.Perennial.Block) :
     DFractional (fun dq => isBlock (GF := GF) s dq b) := by
   unfold isBlock; infer_instance
 
@@ -90,7 +90,7 @@ theorem arrayElems_w8 (l : Loc) (vs : List w8) (dq : DFrac) :
     ihave %Hnn := heapPointsto_non_null _ _ _ $$ H
     iframe H; ipureintro; exact Hnn
 
-theorem slice_to_block_array (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Block) :
+theorem slice_to_block_array (s : GoSlice) (dq : DFrac) (b : _root_.Perennial.Block) :
     s ↦*{dq} b.toList ⊢ pointstoBlock (GF := GF) s.ptr dq b := by
   rw [ownSlice_unseal]; unfold ownSliceDef
   iintro (%H | ⟨H, %_⟩)
@@ -104,7 +104,7 @@ theorem slice_to_block_array (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Bl
     unfold pointstoBlock BlockToVals
     iapply (arrayElems_w8 s.ptr b.toList dq).1 $$ Ha
 
-theorem block_array_to_slice (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Block)
+theorem block_array_to_slice (s : GoSlice) (dq : DFrac) (b : _root_.Perennial.Block)
     (hlen : b.toList.length = sint.nat s.len) (hcap : 0 ≤ sint.Z s.len ∧ sint.Z s.len ≤ sint.Z s.cap) :
     pointstoBlock (GF := GF) s.ptr dq b ⊢ s ↦*{dq} b.toList := by
   iintro Hb
@@ -138,7 +138,7 @@ theorem block_array_to_slice_mk (l : Loc) (dq : DFrac) (b : _root_.Perennial.Blo
   exact block_array_to_slice (slice.mk l (W64 blockBytes) (W64 blockBytes)) dq b
     (by rw [Vector.length_toList]; rfl) ⟨(by decide : (0 : Int) ≤ sint.Z (W64 4096)), Int.le_refl _⟩
 
-theorem slice_to_block (s : slice.t) (dq : DFrac) (bs : List w8) (Hsz : s.len = W64 4096) :
+theorem slice_to_block (s : GoSlice) (dq : DFrac) (bs : List w8) (Hsz : s.len = W64 4096) :
     s ↦*{dq} bs ⊢ pointstoBlock (GF := GF) s.ptr dq (listToBlock bs) := by
   iintro Hs
   ihave %Hlen := ownSlice_len _ _ _ $$ Hs
@@ -170,7 +170,7 @@ instance WriteOp_atomic (at' : Language.Atomicity) (v : val) :
         obtain ⟨_, _, _, _, _, _, _, rfl, _⟩ := diskFfiStep_WriteOp_inv H; rfl)
     (by intro Ki e' h; cases Ki <;> simp only [fillItem] at h <;> cases h <;> rfl)
 
-theorem wp_Write_atomic (a : w64) (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Block) :
+theorem wp_Write_atomic (a : w64) (s : GoSlice) (dq : DFrac) (b : _root_.Perennial.Block) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
         s ↦*{dq} b.toList }}
     <<{ ∀∀ b0, uint.Z a d↦ b0 }>>
@@ -200,7 +200,7 @@ theorem wp_Write_atomic (a : w64) (s : slice.t) (dq : DFrac) (b : _root_.Perenni
   iapply HQ
   iapply block_array_to_slice s dq b (by simp only [sint.nat] at *; omega) Hwf $$ Hl
 
-theorem wp_Write_triple (E' : CoPset) (Q : IProp GF) (a : w64) (s : slice.t) (dq : DFrac)
+theorem wp_Write_triple (E' : CoPset) (Q : IProp GF) (a : w64) (s : GoSlice) (dq : DFrac)
     (b : _root_.Perennial.Block) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
         s ↦*{dq} b.toList ∗
@@ -225,7 +225,7 @@ theorem wp_Write_triple (E' : CoPset) (Q : IProp GF) (a : w64) (s : slice.t) (dq
   iapply HΦ
   iframe
 
-theorem wp_Write (a : w64) (s : slice.t) (q : DFrac) (b : _root_.Perennial.Block) :
+theorem wp_Write (a : w64) (s : GoSlice) (q : DFrac) (b : _root_.Perennial.Block) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
         ∃ b0, uint.Z a d↦ b0 ∗ s ↦*{q} b.toList }}
       (App (App (Val (@! Write)) (Val #a)) (Val #s))
@@ -248,7 +248,7 @@ theorem wp_Write (a : w64) (s : slice.t) (q : DFrac) (b : _root_.Perennial.Block
   iframe Hda
   iapply block_array_to_slice s q b (by simp only [sint.nat] at *; omega) Hwf $$ Hl
 
-theorem wp_Write' (z : Int) (a : w64) (s : slice.t) (q : DFrac) (b : _root_.Perennial.Block) :
+theorem wp_Write' (z : Int) (a : w64) (s : GoSlice) (q : DFrac) (b : _root_.Perennial.Block) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
         ⌜uint.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ s ↦*{q} b.toList }}
       (App (App (Val (@! Write)) (Val #a)) (Val #s))
@@ -266,7 +266,7 @@ theorem wp_Read_atomic (a : w64) (q : DFrac) :
     <<{ ∀∀ b, uint.Z a d↦{q} b }>>
       (App (Val (@! Read)) (Val #a)) @@ ∅
     <<{ uint.Z a d↦{q} b }>>
-    {{ (s : slice.t), RET #s; isBlockFull s b }} := by
+    {{ (s : GoSlice), RET #s; isBlockFull s b }} := by
   wp_start
   wp_bind (ExternalOp _ _)
   iapply wp_atomic (E2 := ∅)
@@ -291,7 +291,7 @@ theorem wp_Read_triple (E' : CoPset) (Q : _root_.Perennial.Block → IProp GF) (
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
         |={⊤,E'}=> ∃ b, uint.Z a d↦{q} b ∗ (uint.Z a d↦{q} b -∗ |={E',⊤}=> Q b) }}
       (App (Val (@! Read)) (Val #a))
-    {{ (s : slice.t) (b : _root_.Perennial.Block), RET #s; Q b ∗ isBlockFull s b }} := by
+    {{ (s : GoSlice) (b : _root_.Perennial.Block), RET #s; Q b ∗ isBlockFull s b }} := by
   iintro %Φ ⟨#Hpkg, Hupd⟩ HΦ
   iapply wp_Read_atomic a q $$ []
   · iexact Hpkg
@@ -314,7 +314,7 @@ theorem wp_Read (a : w64) (q : DFrac) (b : _root_.Perennial.Block) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
         uint.Z a d↦{q} b }}
       (App (Val (@! Read)) (Val #a))
-    {{ (s : slice.t), RET #s; uint.Z a d↦{q} b ∗ isBlockFull s b }} := by
+    {{ (s : GoSlice), RET #s; uint.Z a d↦{q} b ∗ isBlockFull s b }} := by
   wp_start as Hda
   wp_bind (ExternalOp _ _)
   wp_apply_core wp_ReadOp a q b $$ [Hda]
@@ -334,7 +334,7 @@ theorem wp_Read_eq (a : w64) (a' : Int) (q : DFrac) (b : _root_.Perennial.Block)
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.primitive.disk ∗
         a' d↦{q} b ∗ ⌜uint.Z a = a'⌝ }}
       (App (Val (@! Read)) (Val #a))
-    {{ (s : slice.t), RET #s; a' d↦{q} b ∗ isBlockFull s b }} := by
+    {{ (s : GoSlice), RET #s; a' d↦{q} b ∗ isBlockFull s b }} := by
   iintro %Φ ⟨#Hpkg, Hb, %Heq⟩ HΦ
   subst Heq
   iapply wp_Read a q b $$ [Hb] HΦ

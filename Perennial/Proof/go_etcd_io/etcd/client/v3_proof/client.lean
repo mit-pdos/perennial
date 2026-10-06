@@ -40,7 +40,7 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 
 def isClientPub (cl : Loc) (_γ : Clientv3Names) : IProp GF :=
-  iprop(∃ (kv : interface.t),
+  iprop(∃ (kv : GoInterface),
     "KV" ∷ cl.[v3.Client, go!"KV"] ↦□ kv)
 
 end defs
@@ -88,7 +88,7 @@ axiom Client.wp_Ctx [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     (client : Loc) (γ : Clientv3Names) :
   {{ isClient (GF := GF) client γ }}
     (App (Val (client @!! go.GoType.PointerType v3.Client.ty @!! go!"Ctx")) (Val #()))
-  {{ (ctx : interface.t_ok) (s : context.Context_desc.t (IProp GF)), RET #(interface.ok ctx);
+  {{ (ctx : GoInterfaceOk) (s : context.ContextDesc (IProp GF)), RET #(interface.ok ctx);
       context.isContext ctx s }}
 
 axiom Client.wp_Grant [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
@@ -98,7 +98,7 @@ axiom Client.wp_Grant [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     (client : Loc) (γ : Clientv3Names) (ctx : context.Context) (ttl : w64) :
   {{ isClient (GF := GF) client γ }}
     (App (App (Val (client @!! go.GoType.PointerType v3.Client.ty @!! go!"Grant")) (Val #ctx)) (Val #ttl))
-  {{ (resp_ptr : Loc) (resp : v3.LeaseGrantResponse) (err : error.t),
+  {{ (resp_ptr : Loc) (resp : v3.LeaseGrantResponse) (err : GoError),
       RET (PairV #resp_ptr #err);
       resp_ptr ↦ resp ∗
       if err = interface.nil then isEtcdLease γ resp.ID' else iprop(True) }}
@@ -107,12 +107,12 @@ axiom Client.wp_KeepAlive [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
     [hG : HeapGS HasLC.hasLC GF] [AllG GF] [sem : go.Semantics]
     [package_sem : go_etcd_io.etcd.client.v3.Assumptions]
-    (client : Loc) (γ : Clientv3Names) (ctx : interface.t_ok) (id : w64) :
+    (client : Loc) (γ : Clientv3Names) (ctx : GoInterfaceOk) (id : w64) :
   -- The precondition requires that this is only called on a `Grant`ed lease.
   {{ isClient (GF := GF) client γ ∗ isEtcdLease γ id }}
     (App (App (Val (client @!! go.GoType.PointerType v3.Client.ty @!! go!"KeepAlive"))
       (Val #(interface.ok ctx))) (Val #id))
-  {{ (kch : chan.t) (err : error.t), RET (PairV #kch #err);
+  {{ (kch : GoChan) (err : GoError), RET (PairV #kch #err);
       if err = interface.nil then
         ∃ γkch,
         isChan kch γkch Loc ∗

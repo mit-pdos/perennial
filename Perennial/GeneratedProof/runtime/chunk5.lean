@@ -62,7 +62,7 @@ instance godebugInc_access_load_inc (l : Loc) (v : runtime.godebugInc) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance godebugInc_access_store_inc (l : Loc) (v : runtime.godebugInc) (inc' : (internal.runtime.atomic.Pointer func.t)) :
+instance godebugInc_access_store_inc (l : Loc) (v : runtime.godebugInc) (inc' : (internal.runtime.atomic.Pointer GoFunc)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.godebugInc go!"inc" l) v.inc' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.godebugInc go!"inc" l) inc' (DFrac.own 1))
@@ -454,7 +454,7 @@ instance traceSchedResourceState_access_load_statusTraced (l : Loc) (v : runtime
  by
   solve_pointsto_access_struct
 
-instance traceSchedResourceState_access_store_statusTraced (l : Loc) (v : runtime.traceSchedResourceState) (statusTraced' : (array.t internal.runtime.atomic.Uint32 3)) :
+instance traceSchedResourceState_access_store_statusTraced (l : Loc) (v : runtime.traceSchedResourceState) (statusTraced' : (GoArray internal.runtime.atomic.Uint32 3)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceSchedResourceState go!"statusTraced" l) v.statusTraced' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceSchedResourceState go!"statusTraced" l) statusTraced' (DFrac.own 1))
@@ -470,7 +470,7 @@ instance traceSchedResourceState_access_load_seq (l : Loc) (v : runtime.traceSch
  by
   solve_pointsto_access_struct
 
-instance traceSchedResourceState_access_store_seq (l : Loc) (v : runtime.traceSchedResourceState) (seq' : (array.t w64 2)) :
+instance traceSchedResourceState_access_store_seq (l : Loc) (v : runtime.traceSchedResourceState) (seq' : (GoArray w64 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceSchedResourceState go!"seq" l) v.seq' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceSchedResourceState go!"seq" l) seq' (DFrac.own 1))
@@ -821,7 +821,7 @@ instance _defer_access_load_fn (l : Loc) (v : runtime._defer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance _defer_access_store_fn (l : Loc) (v : runtime._defer) (fn' : func.t) :
+instance _defer_access_store_fn (l : Loc) (v : runtime._defer) (fn' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime._defer go!"fn" l) v.fn' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime._defer go!"fn" l) fn' (DFrac.own 1))
@@ -907,7 +907,7 @@ instance _panic_access_load_arg (l : Loc) (v : runtime._panic) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance _panic_access_store_arg (l : Loc) (v : runtime._panic) (arg' : interface.t) :
+instance _panic_access_store_arg (l : Loc) (v : runtime._panic) (arg' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime._panic go!"arg" l) v.arg' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime._panic go!"arg" l) arg' (DFrac.own 1))
@@ -1247,7 +1247,7 @@ instance ancestorInfo_access_load_pcs (l : Loc) (v : runtime.ancestorInfo) (dq :
  by
   solve_pointsto_access_struct
 
-instance ancestorInfo_access_store_pcs (l : Loc) (v : runtime.ancestorInfo) (pcs' : slice.t) :
+instance ancestorInfo_access_store_pcs (l : Loc) (v : runtime.ancestorInfo) (pcs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.ancestorInfo go!"pcs" l) v.pcs' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.ancestorInfo go!"pcs" l) pcs' (DFrac.own 1))

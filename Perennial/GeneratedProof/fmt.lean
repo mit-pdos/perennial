@@ -63,7 +63,7 @@ instance wrapError_access_load_err (l : Loc) (v : fmt.wrapError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance wrapError_access_store_err (l : Loc) (v : fmt.wrapError) (err' : error.t) :
+instance wrapError_access_store_err (l : Loc) (v : fmt.wrapError) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.wrapError go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.wrapError go!"err" l) err' (DFrac.own 1))
@@ -120,7 +120,7 @@ instance wrapErrors_access_load_errs (l : Loc) (v : fmt.wrapErrors) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance wrapErrors_access_store_errs (l : Loc) (v : fmt.wrapErrors) (errs' : slice.t) :
+instance wrapErrors_access_store_errs (l : Loc) (v : fmt.wrapErrors) (errs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.wrapErrors go!"errs" l) v.errs' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.wrapErrors go!"errs" l) errs' (DFrac.own 1))
@@ -404,7 +404,7 @@ instance fmt_access_load_intbuf (l : Loc) (v : fmt.fmt) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance fmt_access_store_intbuf (l : Loc) (v : fmt.fmt) (intbuf' : (array.t w8 68)) :
+instance fmt_access_store_intbuf (l : Loc) (v : fmt.fmt) (intbuf' : (GoArray w8 68)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.fmt go!"intbuf" l) v.intbuf' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.fmt go!"intbuf" l) intbuf' (DFrac.own 1))
@@ -463,7 +463,7 @@ instance scanError_access_load_err (l : Loc) (v : fmt.scanError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance scanError_access_store_err (l : Loc) (v : fmt.scanError) (err' : error.t) :
+instance scanError_access_store_err (l : Loc) (v : fmt.scanError) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.scanError go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.scanError go!"err" l) err' (DFrac.own 1))

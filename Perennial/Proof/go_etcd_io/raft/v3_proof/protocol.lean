@@ -33,22 +33,18 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 namespace go_etcd_io.raft.v3_proof
 
 /-- Rocq `Module node. Axiom t : Type. End node.` -/
-axiom node.t : Type
+axiom Node : Type
 
 /-- Rocq `Module message. Axiom t : Type. End message.` -/
-axiom message.t : Type
+axiom Message : Type
 
-namespace entry
 /-- Rocq `entry.t`. -/
-abbrev t : Type := List w8
-end entry
+abbrev Entry : Type := List w8
 
-namespace astate
 /-- Rocq `astate.t`. -/
-structure t where
+structure AState where
   mk ::
-  log : List entry.t
-end astate
+  log : List Entry
 
 /-! ### Global definitions, not specific to a particular (generation of a) node. -/
 
@@ -110,7 +106,7 @@ Lean deviations: Rocq has `"Hentries" ∷ pm.m'.Entries' ↦* [data_sl]` (a slic
 `data_sl ↦*□ data`). Here `Entries` is a one-element slice of an `Entry` whose
 `Data` is `data_sl`, and `data_sl ↦*□ data`. -/
 def ownProposeMessage (γraft : RaftNames) (pm : v3.msgWithResult) : IProp GF :=
-  iprop(∃ (data_sl : slice.t) (data : List w8) (γch : ChanNames) (e : v3.raftpb.Entry),
+  iprop(∃ (data_sl : GoSlice) (data : List w8) (γch : ChanNames) (e : v3.raftpb.Entry),
     "Hmsg" ∷ ⌜pm.m'.Type' = MsgProp⌝ ∗
     "%He" ∷ ⌜e.Data' = data_sl⌝ ∗
     "Hentries" ∷ pm.m'.Entries' ↦* [e] ∗
@@ -118,7 +114,7 @@ def ownProposeMessage (γraft : RaftNames) (pm : v3.msgWithResult) : IProp GF :=
     "Hupd" ∷ (|={⊤,∅}=> ∃ log, ownRaftLog γraft log ∗
       (ownRaftLog γraft (log ++ [data]) ={∅,⊤}=∗ True)) ∗
     -- FIXME: probably can only send once.
-    "Hresult" ∷ isChanBag (V := interface.t) γch pm.result'
+    "Hresult" ∷ isChanBag (V := GoInterface) γch pm.result'
       (fun _ => iprop(True)))
 
 /-- Rocq `isNodeInner` (`Local`).
@@ -135,7 +131,7 @@ def isNodeInner (γraft : RaftNames) (n : v3.node) : IProp GF :=
   iprop(∃ (γp γa γd : ChanNames),
     "#Hpropc" ∷ isChanBag (V := v3.msgWithResult) γp n.propc' (ownProposeMessage γraft) ∗
     "#Hadvancec" ∷ isChanBag (V := Unit) γa n.advancec' (fun _ => iprop(True)) ∗
-    "#Hdone" ∷ ownBroadcastChan n.done' γd iprop(True) broadcast.t.Unknown)
+    "#Hdone" ∷ ownBroadcastChan n.done' γd iprop(True) Broadcast.Unknown)
 
 /-- Rocq `is_node`. -/
 def is_node (γraft : RaftNames) (n : Loc) : IProp GF :=
@@ -154,7 +150,7 @@ instance is_node_pers (γraft : RaftNames) (n : Loc) :
 theorem node.wp_Ready (γraft : RaftNames) (n : Loc) :
     {{ isPkgInit (PROP := IProp GF) raft ∗ is_node γraft n }}
       (App (Val (n @!! go.GoType.PointerType v3.node.ty @!! go!"Ready")) (Val #()))
-    {{ (ready : chan.t), RET #ready; True }} := by
+    {{ (ready : GoChan), RET #ready; True }} := by
   wp_start as Hpre
   iNamed Hpre
   iStructNamed n_ptr
@@ -202,8 +198,8 @@ theorem node.wp_Advance (γraft : RaftNames) (n : Loc) :
 /-- (Rocq: admitted. Proved here by inlining `stepWait` and
 `stepWithWaitOption (wait := true)`, with the changed `isNodeInner` and
 `ownProposeMessage`.) -/
-theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
-    (ctx_desc : context.Context_desc.t (IProp GF)) (data_sl : slice.t) (data : List w8) :
+theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : GoInterfaceOk)
+    (ctx_desc : context.ContextDesc (IProp GF)) (data_sl : GoSlice) (data : List w8) :
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "#Hctx" ∷ context.isContext ctx ctx_desc ∗
         "#Hnode" ∷ is_node γraft n ∗
@@ -212,7 +208,7 @@ theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
           (ownRaftLog γraft (log ++ [data]) ={∅,⊤}=∗ True)) }}
       (App (App (Val (n @!! go.GoType.PointerType v3.node.ty @!! go!"Propose"))
         (Val #(interface.ok ctx))) (Val #data_sl))
-    {{ (err : interface.t), RET #err; if err = interface.nil then True else True }} := by
+    {{ (err : GoInterface), RET #err; if err = interface.nil then True else True }} := by
   wp_start as ⟨#Hctx, #Hnode, #data_sl, Hupd⟩
   wp_auto
   wp_bind (App (Val (GoInstruction (CompositeLiteral _))) (Val (LiteralValueV _)))
@@ -237,7 +233,7 @@ theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
   wp_auto_lc 4
   ihave #Hinit := isInitialized_access $$ Hpkg
   iNamed Hinit
-  wp_apply (chan.wp_make2 (V := interface.t) (W64 1)) as %res %γres ⟨#Hres_is, %Hcap, Hres_own⟩
+  wp_apply (chan.wp_make2 (V := GoInterface) (W64 1)) as %res %γres ⟨#Hres_is, %Hcap, Hres_own⟩
   · ipureintro; decide
   imod start_bag (fun _ => iprop(True)) (.Buffered []) res γres trivial $$ Hres_is Hres_own with #Hres
   iunfold context.isContext at Hctx
@@ -269,7 +265,7 @@ theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
     isplit
     · -- the result arrives
       simp only [chan.blockingClausePre]
-      iexists interface.t, inferInstance, inferInstance, inferInstance, inferInstance, res, γres
+      iexists GoInterface, inferInstance, inferInstance, inferInstance, inferInstance, res, γres
       isplit
       · ipureintro; rfl
       isplit
@@ -295,7 +291,7 @@ theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
       iapply context.isContextDone_receive _ _ _ _ $$ HDone_ch2
       iintro _
       wp_auto
-      ihave #HErr' := HErr $$ %broadcast.t.Unknown
+      ihave #HErr' := HErr $$ %Broadcast.Unknown
       wp_apply HErr' as %err _
       wp_end
       rw [ite_self]; itrivial
@@ -327,7 +323,7 @@ theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
     iapply context.isContextDone_receive _ _ _ _ $$ HDone_ch
     iintro _
     wp_auto
-    ihave #HErr' := HErr $$ %broadcast.t.Unknown
+    ihave #HErr' := HErr $$ %Broadcast.Unknown
     wp_apply HErr' as %err _
     wp_end
     rw [ite_self]; itrivial

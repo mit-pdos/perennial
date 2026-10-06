@@ -2256,7 +2256,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 structure FreeList [FfiSyntax] (T : Type) where
   mk ::
   mu' : _root_.Perennial.sync.Mutex
-  freelist' : slice.t
+  freelist' : GoSlice
 
 instance FreeList.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (FreeList T) :=
   ⟨FreeList.mk zeroValDef zeroValDef⟩
@@ -2281,7 +2281,7 @@ class FreeList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   get_mu : ∀ (T : go.GoType) (T' : Type) (x : (FreeList T')), go.IsGoStepPureDetTagged under (StructFieldGet (FreeList.underlying T) go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (T : go.GoType) (T' : Type) (x : (FreeList T')) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet (FreeList.underlying T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (FreeList T'))))
   get_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList T')), go.IsGoStepPureDetTagged under (StructFieldGet (FreeList.underlying T) go!"freelist") #x (Val #(x.freelist'))
-  set_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet (FreeList.underlying T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (FreeList T'))))
+  set_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList T')) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet (FreeList.underlying T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (FreeList T'))))
   ptr_freeNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (FreeList.ty T)) go!"freeNode" (FreeList.freeNode.impl T)
   ptr_newNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (FreeList.ty T)) go!"newNode" (FreeList.newNode.impl T)
 
@@ -2294,7 +2294,7 @@ attribute [instance] FreeList.TypeAssumptions.type_repr
   FreeList.TypeAssumptions.ptr_freeNode_unfold
   FreeList.TypeAssumptions.ptr_newNode_unfold
 
-abbrev ItemIterator [FfiSyntax] (T : Type) : Type := func.t
+abbrev ItemIterator [FfiSyntax] (T : Type) : Type := GoFunc
 
 @[reducible] def ItemIterator.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [T] false [go.bool]))
@@ -2304,7 +2304,7 @@ class ItemIterator.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] ItemIterator.TypeAssumptions.underlying
 
-abbrev items [FfiSyntax] (T : Type) : Type := slice.t
+abbrev items [FfiSyntax] (T : Type) : Type := GoSlice
 
 @[reducible] def items.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.SliceType T)
@@ -2540,7 +2540,7 @@ attribute [instance] BTree.TypeAssumptions.type_repr
   BTree.TypeAssumptions.ptr_maxItems_unfold
   BTree.TypeAssumptions.ptr_minItems_unfold
 
-abbrev LessFunc [FfiSyntax] (T : Type) : Type := func.t
+abbrev LessFunc [FfiSyntax] (T : Type) : Type := GoFunc
 
 @[reducible] def LessFunc.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [T, T] false [go.bool]))

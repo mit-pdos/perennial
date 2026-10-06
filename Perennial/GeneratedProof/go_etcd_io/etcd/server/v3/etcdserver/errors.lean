@@ -61,7 +61,7 @@ instance DiscoveryError_access_load_Err (l : Loc) (v : go_etcd_io.etcd.server.v3
  by
   solve_pointsto_access_struct
 
-instance DiscoveryError_access_store_Err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError) (Err' : error.t) :
+instance DiscoveryError_access_store_Err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError go!"Err" l) Err' (DFrac.own 1))

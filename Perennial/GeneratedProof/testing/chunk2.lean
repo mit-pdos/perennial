@@ -107,7 +107,7 @@ instance common_access_load_output (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_output (l : Loc) (v : testing.common) (output' : slice.t) :
+instance common_access_store_output (l : Loc) (v : testing.common) (output' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"output" l) v.output' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"output" l) output' (DFrac.own 1))
@@ -219,7 +219,7 @@ instance common_access_load_helperPCs (l : Loc) (v : testing.common) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance common_access_store_helperPCs (l : Loc) (v : testing.common) (helperPCs' : map.t) :
+instance common_access_store_helperPCs (l : Loc) (v : testing.common) (helperPCs' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"helperPCs" l) v.helperPCs' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"helperPCs" l) helperPCs' (DFrac.own 1))
@@ -235,7 +235,7 @@ instance common_access_load_helperNames (l : Loc) (v : testing.common) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance common_access_store_helperNames (l : Loc) (v : testing.common) (helperNames' : map.t) :
+instance common_access_store_helperNames (l : Loc) (v : testing.common) (helperNames' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"helperNames" l) v.helperNames' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"helperNames" l) helperNames' (DFrac.own 1))
@@ -251,7 +251,7 @@ instance common_access_load_cleanups (l : Loc) (v : testing.common) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance common_access_store_cleanups (l : Loc) (v : testing.common) (cleanups' : slice.t) :
+instance common_access_store_cleanups (l : Loc) (v : testing.common) (cleanups' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"cleanups" l) v.cleanups' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"cleanups" l) cleanups' (DFrac.own 1))
@@ -283,7 +283,7 @@ instance common_access_load_cleanupPc (l : Loc) (v : testing.common) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance common_access_store_cleanupPc (l : Loc) (v : testing.common) (cleanupPc' : slice.t) :
+instance common_access_store_cleanupPc (l : Loc) (v : testing.common) (cleanupPc' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"cleanupPc" l) v.cleanupPc' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"cleanupPc" l) cleanupPc' (DFrac.own 1))
@@ -475,7 +475,7 @@ instance common_access_load_creator (l : Loc) (v : testing.common) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_creator (l : Loc) (v : testing.common) (creator' : slice.t) :
+instance common_access_store_creator (l : Loc) (v : testing.common) (creator' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"creator" l) v.creator' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"creator" l) creator' (DFrac.own 1))
@@ -571,7 +571,7 @@ instance common_access_load_barrier (l : Loc) (v : testing.common) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_barrier (l : Loc) (v : testing.common) (barrier' : chan.t) :
+instance common_access_store_barrier (l : Loc) (v : testing.common) (barrier' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"barrier" l) v.barrier' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"barrier" l) barrier' (DFrac.own 1))
@@ -587,7 +587,7 @@ instance common_access_load_signal (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_signal (l : Loc) (v : testing.common) (signal' : chan.t) :
+instance common_access_store_signal (l : Loc) (v : testing.common) (signal' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"signal" l) v.signal' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"signal" l) signal' (DFrac.own 1))
@@ -603,7 +603,7 @@ instance common_access_load_sub (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_sub (l : Loc) (v : testing.common) (sub' : slice.t) :
+instance common_access_store_sub (l : Loc) (v : testing.common) (sub' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"sub" l) v.sub' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"sub" l) sub' (DFrac.own 1))
@@ -683,7 +683,7 @@ instance common_access_load_tempDirErr (l : Loc) (v : testing.common) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance common_access_store_tempDirErr (l : Loc) (v : testing.common) (tempDirErr' : error.t) :
+instance common_access_store_tempDirErr (l : Loc) (v : testing.common) (tempDirErr' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"tempDirErr" l) v.tempDirErr' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"tempDirErr" l) tempDirErr' (DFrac.own 1))
@@ -747,7 +747,7 @@ instance common_access_load_artifactDirErr (l : Loc) (v : testing.common) (dq : 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_artifactDirErr (l : Loc) (v : testing.common) (artifactDirErr' : error.t) :
+instance common_access_store_artifactDirErr (l : Loc) (v : testing.common) (artifactDirErr' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"artifactDirErr" l) v.artifactDirErr' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"artifactDirErr" l) artifactDirErr' (DFrac.own 1))
@@ -912,7 +912,7 @@ instance matcher_access_load_matchFunc (l : Loc) (v : testing.matcher) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance matcher_access_store_matchFunc (l : Loc) (v : testing.matcher) (matchFunc' : func.t) :
+instance matcher_access_store_matchFunc (l : Loc) (v : testing.matcher) (matchFunc' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.matcher go!"matchFunc" l) v.matchFunc' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.matcher go!"matchFunc" l) matchFunc' (DFrac.own 1))
@@ -944,7 +944,7 @@ instance matcher_access_load_subNames (l : Loc) (v : testing.matcher) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance matcher_access_store_subNames (l : Loc) (v : testing.matcher) (subNames' : map.t) :
+instance matcher_access_store_subNames (l : Loc) (v : testing.matcher) (subNames' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.matcher go!"subNames" l) v.subNames' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.matcher go!"subNames" l) subNames' (DFrac.own 1))
@@ -1008,7 +1008,7 @@ instance M_access_load_tests (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_tests (l : Loc) (v : testing.M) (tests' : slice.t) :
+instance M_access_store_tests (l : Loc) (v : testing.M) (tests' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"tests" l) v.tests' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"tests" l) tests' (DFrac.own 1))
@@ -1024,7 +1024,7 @@ instance M_access_load_benchmarks (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_benchmarks (l : Loc) (v : testing.M) (benchmarks' : slice.t) :
+instance M_access_store_benchmarks (l : Loc) (v : testing.M) (benchmarks' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"benchmarks" l) v.benchmarks' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"benchmarks" l) benchmarks' (DFrac.own 1))
@@ -1040,7 +1040,7 @@ instance M_access_load_fuzzTargets (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_fuzzTargets (l : Loc) (v : testing.M) (fuzzTargets' : slice.t) :
+instance M_access_store_fuzzTargets (l : Loc) (v : testing.M) (fuzzTargets' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"fuzzTargets" l) v.fuzzTargets' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"fuzzTargets" l) fuzzTargets' (DFrac.own 1))
@@ -1056,7 +1056,7 @@ instance M_access_load_examples (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_examples (l : Loc) (v : testing.M) (examples' : slice.t) :
+instance M_access_store_examples (l : Loc) (v : testing.M) (examples' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"examples" l) v.examples' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"examples" l) examples' (DFrac.own 1))

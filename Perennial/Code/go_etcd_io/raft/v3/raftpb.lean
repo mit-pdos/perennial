@@ -348,7 +348,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val «_».init) (Val #()))))))))
 
-abbrev ConfChangeI [FfiSyntax] : Type := interface.t
+abbrev ConfChangeI [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ConfChangeI.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AsV1" (go.signature.Signature [] false [ConfChange.ty, go.bool])), (go.InterfaceElem.MethodElem go!"AsV2" (go.signature.Signature [] false [ConfChangeV2.ty]))])
@@ -403,7 +403,7 @@ structure Entry [FfiSyntax] where
   Term' : w64
   Index' : w64
   Type' : EntryType
-  Data' : slice.t
+  Data' : GoSlice
 
 instance Entry.zero_val [FfiSyntax] : ZeroVal Entry :=
   ⟨Entry.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -434,7 +434,7 @@ class Entry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   get_Type : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Type") #x (Val #(x.Type'))
   set_Type : ∀ (x : Entry) (y : EntryType), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : Entry)))
   get_Data : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Data") #x (Val #(x.Data'))
-  set_Data : ∀ (x : Entry) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : Entry)))
+  set_Data : ∀ (x : Entry) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : Entry)))
 
 attribute [instance] Entry.TypeAssumptions.type_repr
   Entry.TypeAssumptions.underlying
@@ -449,10 +449,10 @@ attribute [instance] Entry.TypeAssumptions.type_repr
 
 structure ConfState [FfiSyntax] where
   mk ::
-  Voters' : slice.t
-  Learners' : slice.t
-  VotersOutgoing' : slice.t
-  LearnersNext' : slice.t
+  Voters' : GoSlice
+  Learners' : GoSlice
+  VotersOutgoing' : GoSlice
+  LearnersNext' : GoSlice
   AutoLeave' : Bool
 
 instance ConfState.zero_val [FfiSyntax] : ZeroVal ConfState :=
@@ -479,13 +479,13 @@ class ConfState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying ConfState.underlying ConfState
   underlying : go.UnderlyingDirectedEq ConfState.ty ConfState.underlying
   get_Voters : ∀ (x : ConfState), go.IsGoStepPureDetTagged under (StructFieldGet ConfState.underlying go!"Voters") #x (Val #(x.Voters'))
-  set_Voters : ∀ (x : ConfState) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"Voters") (PairV #x #y) (Val #(({ x with Voters' := y } : ConfState)))
+  set_Voters : ∀ (x : ConfState) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"Voters") (PairV #x #y) (Val #(({ x with Voters' := y } : ConfState)))
   get_Learners : ∀ (x : ConfState), go.IsGoStepPureDetTagged under (StructFieldGet ConfState.underlying go!"Learners") #x (Val #(x.Learners'))
-  set_Learners : ∀ (x : ConfState) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"Learners") (PairV #x #y) (Val #(({ x with Learners' := y } : ConfState)))
+  set_Learners : ∀ (x : ConfState) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"Learners") (PairV #x #y) (Val #(({ x with Learners' := y } : ConfState)))
   get_VotersOutgoing : ∀ (x : ConfState), go.IsGoStepPureDetTagged under (StructFieldGet ConfState.underlying go!"VotersOutgoing") #x (Val #(x.VotersOutgoing'))
-  set_VotersOutgoing : ∀ (x : ConfState) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"VotersOutgoing") (PairV #x #y) (Val #(({ x with VotersOutgoing' := y } : ConfState)))
+  set_VotersOutgoing : ∀ (x : ConfState) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"VotersOutgoing") (PairV #x #y) (Val #(({ x with VotersOutgoing' := y } : ConfState)))
   get_LearnersNext : ∀ (x : ConfState), go.IsGoStepPureDetTagged under (StructFieldGet ConfState.underlying go!"LearnersNext") #x (Val #(x.LearnersNext'))
-  set_LearnersNext : ∀ (x : ConfState) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"LearnersNext") (PairV #x #y) (Val #(({ x with LearnersNext' := y } : ConfState)))
+  set_LearnersNext : ∀ (x : ConfState) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"LearnersNext") (PairV #x #y) (Val #(({ x with LearnersNext' := y } : ConfState)))
   get_AutoLeave : ∀ (x : ConfState), go.IsGoStepPureDetTagged under (StructFieldGet ConfState.underlying go!"AutoLeave") #x (Val #(x.AutoLeave'))
   set_AutoLeave : ∀ (x : ConfState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ConfState.underlying go!"AutoLeave") (PairV #x #y) (Val #(({ x with AutoLeave' := y } : ConfState)))
 
@@ -547,7 +547,7 @@ attribute [instance] SnapshotMetadata.TypeAssumptions.type_repr
 
 structure Snapshot [FfiSyntax] where
   mk ::
-  Data' : slice.t
+  Data' : GoSlice
   Metadata' : SnapshotMetadata
 
 instance Snapshot.zero_val [FfiSyntax] : ZeroVal Snapshot :=
@@ -571,7 +571,7 @@ class Snapshot.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying Snapshot.underlying Snapshot
   underlying : go.UnderlyingDirectedEq Snapshot.ty Snapshot.underlying
   get_Data : ∀ (x : Snapshot), go.IsGoStepPureDetTagged under (StructFieldGet Snapshot.underlying go!"Data") #x (Val #(x.Data'))
-  set_Data : ∀ (x : Snapshot) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Snapshot.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : Snapshot)))
+  set_Data : ∀ (x : Snapshot) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Snapshot.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : Snapshot)))
   get_Metadata : ∀ (x : Snapshot), go.IsGoStepPureDetTagged under (StructFieldGet Snapshot.underlying go!"Metadata") #x (Val #(x.Metadata'))
   set_Metadata : ∀ (x : Snapshot) (y : SnapshotMetadata), go.IsGoStepPureDetTagged under (StructFieldSet Snapshot.underlying go!"Metadata") (PairV #x #y) (Val #(({ x with Metadata' := y } : Snapshot)))
 
@@ -590,14 +590,14 @@ structure Message [FfiSyntax] where
   Term' : w64
   LogTerm' : w64
   Index' : w64
-  Entries' : slice.t
+  Entries' : GoSlice
   Commit' : w64
   Vote' : w64
   Snapshot' : Loc
   Reject' : Bool
   RejectHint' : w64
-  Context' : slice.t
-  Responses' : slice.t
+  Context' : GoSlice
+  Responses' : GoSlice
 
 instance Message.zero_val [FfiSyntax] : ZeroVal Message :=
   ⟨Message.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -644,7 +644,7 @@ class Message.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   get_Index : ∀ (x : Message), go.IsGoStepPureDetTagged under (StructFieldGet Message.underlying go!"Index") #x (Val #(x.Index'))
   set_Index : ∀ (x : Message) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : Message)))
   get_Entries : ∀ (x : Message), go.IsGoStepPureDetTagged under (StructFieldGet Message.underlying go!"Entries") #x (Val #(x.Entries'))
-  set_Entries : ∀ (x : Message) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"Entries") (PairV #x #y) (Val #(({ x with Entries' := y } : Message)))
+  set_Entries : ∀ (x : Message) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"Entries") (PairV #x #y) (Val #(({ x with Entries' := y } : Message)))
   get_Commit : ∀ (x : Message), go.IsGoStepPureDetTagged under (StructFieldGet Message.underlying go!"Commit") #x (Val #(x.Commit'))
   set_Commit : ∀ (x : Message) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"Commit") (PairV #x #y) (Val #(({ x with Commit' := y } : Message)))
   get_Vote : ∀ (x : Message), go.IsGoStepPureDetTagged under (StructFieldGet Message.underlying go!"Vote") #x (Val #(x.Vote'))
@@ -656,9 +656,9 @@ class Message.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   get_RejectHint : ∀ (x : Message), go.IsGoStepPureDetTagged under (StructFieldGet Message.underlying go!"RejectHint") #x (Val #(x.RejectHint'))
   set_RejectHint : ∀ (x : Message) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"RejectHint") (PairV #x #y) (Val #(({ x with RejectHint' := y } : Message)))
   get_Context : ∀ (x : Message), go.IsGoStepPureDetTagged under (StructFieldGet Message.underlying go!"Context") #x (Val #(x.Context'))
-  set_Context : ∀ (x : Message) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : Message)))
+  set_Context : ∀ (x : Message) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : Message)))
   get_Responses : ∀ (x : Message), go.IsGoStepPureDetTagged under (StructFieldGet Message.underlying go!"Responses") #x (Val #(x.Responses'))
-  set_Responses : ∀ (x : Message) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"Responses") (PairV #x #y) (Val #(({ x with Responses' := y } : Message)))
+  set_Responses : ∀ (x : Message) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Message.underlying go!"Responses") (PairV #x #y) (Val #(({ x with Responses' := y } : Message)))
 
 attribute [instance] Message.TypeAssumptions.type_repr
   Message.TypeAssumptions.underlying
@@ -738,7 +738,7 @@ structure ConfChange [FfiSyntax] where
   mk ::
   Type' : ConfChangeType
   NodeID' : w64
-  Context' : slice.t
+  Context' : GoSlice
   ID' : w64
 
 instance ConfChange.zero_val [FfiSyntax] : ZeroVal ConfChange :=
@@ -768,7 +768,7 @@ class ConfChange.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   get_NodeID : ∀ (x : ConfChange), go.IsGoStepPureDetTagged under (StructFieldGet ConfChange.underlying go!"NodeID") #x (Val #(x.NodeID'))
   set_NodeID : ∀ (x : ConfChange) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ConfChange.underlying go!"NodeID") (PairV #x #y) (Val #(({ x with NodeID' := y } : ConfChange)))
   get_Context : ∀ (x : ConfChange), go.IsGoStepPureDetTagged under (StructFieldGet ConfChange.underlying go!"Context") #x (Val #(x.Context'))
-  set_Context : ∀ (x : ConfChange) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ConfChange.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : ConfChange)))
+  set_Context : ∀ (x : ConfChange) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ConfChange.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : ConfChange)))
   get_ID : ∀ (x : ConfChange), go.IsGoStepPureDetTagged under (StructFieldGet ConfChange.underlying go!"ID") #x (Val #(x.ID'))
   set_ID : ∀ (x : ConfChange) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ConfChange.underlying go!"ID") (PairV #x #y) (Val #(({ x with ID' := y } : ConfChange)))
 
@@ -823,8 +823,8 @@ attribute [instance] ConfChangeSingle.TypeAssumptions.type_repr
 structure ConfChangeV2 [FfiSyntax] where
   mk ::
   Transition' : ConfChangeTransition
-  Changes' : slice.t
-  Context' : slice.t
+  Changes' : GoSlice
+  Context' : GoSlice
 
 instance ConfChangeV2.zero_val [FfiSyntax] : ZeroVal ConfChangeV2 :=
   ⟨ConfChangeV2.mk zeroValDef zeroValDef zeroValDef⟩
@@ -850,9 +850,9 @@ class ConfChangeV2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   get_Transition : ∀ (x : ConfChangeV2), go.IsGoStepPureDetTagged under (StructFieldGet ConfChangeV2.underlying go!"Transition") #x (Val #(x.Transition'))
   set_Transition : ∀ (x : ConfChangeV2) (y : ConfChangeTransition), go.IsGoStepPureDetTagged under (StructFieldSet ConfChangeV2.underlying go!"Transition") (PairV #x #y) (Val #(({ x with Transition' := y } : ConfChangeV2)))
   get_Changes : ∀ (x : ConfChangeV2), go.IsGoStepPureDetTagged under (StructFieldGet ConfChangeV2.underlying go!"Changes") #x (Val #(x.Changes'))
-  set_Changes : ∀ (x : ConfChangeV2) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ConfChangeV2.underlying go!"Changes") (PairV #x #y) (Val #(({ x with Changes' := y } : ConfChangeV2)))
+  set_Changes : ∀ (x : ConfChangeV2) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ConfChangeV2.underlying go!"Changes") (PairV #x #y) (Val #(({ x with Changes' := y } : ConfChangeV2)))
   get_Context : ∀ (x : ConfChangeV2), go.IsGoStepPureDetTagged under (StructFieldGet ConfChangeV2.underlying go!"Context") #x (Val #(x.Context'))
-  set_Context : ∀ (x : ConfChangeV2) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ConfChangeV2.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : ConfChangeV2)))
+  set_Context : ∀ (x : ConfChangeV2) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ConfChangeV2.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : ConfChangeV2)))
 
 attribute [instance] ConfChangeV2.TypeAssumptions.type_repr
   ConfChangeV2.TypeAssumptions.underlying

@@ -30,7 +30,7 @@ open github_com.mit_pdos.perennial.goose.model
 
 /-! The specification state for a channel. -/
 namespace chanstate
-inductive t (V : Type) : Type where
+inductive _root_.Perennial.ChanState (V : Type) : Type where
   /-- Buffered channel with pending messages -/
   | Buffered (buff : List V)
   /-- Empty unbuffered channel, ready for operations -/
@@ -46,10 +46,10 @@ inductive t (V : Type) : Type where
   /-- Closed channel, possibly drain remaining messages -/
   | Closed (drain : List V)
 
-instance witness (V : Type) : Inhabited (t V) := ⟨.Idle⟩
+instance witness (V : Type) : Inhabited (ChanState V) := ⟨.Idle⟩
 
 /-- Encoding into `Nat × List V` (for `Pos.Countable`). -/
-def enc {V : Type} : t V → Nat × List V
+def enc {V : Type} : ChanState V → Nat × List V
   | .Buffered b => (0, b)
   | .Idle => (1, [])
   | .SndPending v => (2, [v])
@@ -62,7 +62,7 @@ theorem enc_inj {V : Type} : Function.Injective (enc (V := V)) := by
   intro a b h
   cases a <;> cases b <;> simp_all [enc]
 
-instance countable {V : Type} [Pos.Countable V] : Pos.Countable (t V) :=
+instance countable {V : Type} [Pos.Countable V] : Pos.Countable (ChanState V) :=
   .ofInjective (fun s => Pos.Countable.encode (enc s))
     (fun _ _ h => enc_inj (Pos.encode_inj h))
 
@@ -122,7 +122,7 @@ structure ChanNames where
   chanCap : w64
 
 /-- Validity of a logical state for a channel of capacity `cap`. -/
-def ChanCapValid {V : Type} (s : chanstate.t V) (cap : Int) : Prop :=
+def ChanCapValid {V : Type} (s : ChanState V) (cap : Int) : Prop :=
   match s with
   | .Buffered buf =>
       -- Buffered is only used for buffered channels, and buffer size is bounded
@@ -141,21 +141,21 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
-def chanstate (q : Qp) (s : chanstate.t V) : IProp GF :=
+def chanstate (q : Qp) (s : ChanState V) : IProp GF :=
   ghostVar γ.stateName q s
 
-def ownChanDef (s : chanstate.t V) : IProp GF :=
+def ownChanDef (s : ChanState V) : IProp GF :=
   iprop("Hchanrepfrag" ∷ chanstate γ V (1 : Qp).half s ∗
     "%Hcapvalid" ∷ ⌜ChanCapValid s (sint.Z γ.chanCap)⌝)
 /-- Represents ownership of a channel with its logical state. -/
-@[irreducible] def ownChan (s : chanstate.t V) : IProp GF := ownChanDef γ V s
+@[irreducible] def ownChan (s : ChanState V) : IProp GF := ownChanDef γ V s
 theorem ownChan_unseal : @ownChan = @ownChanDef := by funext; with_unfolding_all rfl
 
 variable [ZeroVal V]
 
 /-- Inner atomic update for receive completion (second phase of handshake). -/
 def recvNestedAu (Φ : V → Bool → IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hocinner" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
     "Hcontinner" ∷
     (match s with
       -- Case: Sender has committed, complete the exchange
@@ -166,7 +166,7 @@ def recvNestedAu (Φ : V → Bool → IProp GF) : IProp GF :=
 
 /-- Slow path receive: may need to block and wait. -/
 def recvAu (Φ : V → Bool → IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       -- Case: Sender is waiting, can complete immediately
@@ -183,7 +183,7 @@ def recvAu (Φ : V → Bool → IProp GF) : IProp GF :=
 
 /-- The atomic update of `nonblockingRecvAu` (Rocq inlines it). -/
 def nonblockingRecvAuInner (Φ : V → Bool → IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       -- Case: Sender is waiting, can complete immediately
@@ -202,7 +202,7 @@ def nonblockingRecvAu (Φ : V → Bool → IProp GF) (Φnotready : IProp GF) : I
 
 /-- See `nonblockingSendAuAlt` documentation below. -/
 def nonblockingRecvAuAlt (Φ : V → Bool → IProp GF) (Φnotready : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       | .SndPending v => iprop(ownChan γ V .RcvCommit ={∅,⊤}=∗ Φ v true)
@@ -215,7 +215,7 @@ variable {V}
 
 /-- Inner atomic update for send completion (second phase of handshake). -/
 def sendNestedAu (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hocinner" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
     "Hcontinner" ∷
     (match s with
       -- Case: Receiver has committed, complete the exchange
@@ -226,7 +226,7 @@ def sendNestedAu (Φ : IProp GF) : IProp GF :=
 
 /-- Slow path send: may need to block and wait. -/
 def sendAu (v : V) (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       -- Case: Receiver is waiting, can complete immediately
@@ -242,7 +242,7 @@ def sendAu (v : V) (Φ : IProp GF) : IProp GF :=
 
 /-- The atomic update of `nonblockingSendAu` (Rocq inlines it). -/
 def nonblockingSendAuInner (v : V) (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       -- Case: Receiver is waiting, can complete immediately
@@ -261,7 +261,7 @@ def nonblockingSendAu (v : V) (Φ Φnotready : IProp GF) : IProp GF :=
 This is only an illustrative example. Proofs and specs should always use
 `sendAu`. -/
 def bufferedSendAu (v : V) (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       | .Buffered buf => iprop(ownChan γ V (.Buffered (buf ++ [v])) ={∅,⊤}=∗ Φ)
@@ -290,7 +290,7 @@ nonblocking channel operations. To be worth it, it would also require having a
 canonical version of the select spec, for which there are currently two (see
 `Perennial/Golang/Theory/Chan.lean`). -/
 def nonblockingSendAuAlt (v : V) (Φ Φnotready : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       | .RcvPending => iprop(ownChan γ V (.SndCommit v) ={∅,⊤}=∗ Φ)
@@ -305,7 +305,7 @@ def nonblockingSendAuAlt (v : V) (Φ Φnotready : IProp GF) : IProp GF :=
 variable (V)
 
 def closeAu (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : chanstate.t V, "Hocinner" ∷ ownChan γ V s ∗
+  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
     "Hcontinner" ∷
     (match s with
       -- Case: Ready to close unbuffered
@@ -331,53 +331,53 @@ corresponds to specific field values in the Go struct. -/
 def chanPhys (s : ChanPhysState V) : IProp GF :=
   match s with
   | .Closed [] =>
-      iprop(∃ (slice_val : slice.t),
+      iprop(∃ (slice_val : GoSlice),
         "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 6) ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
         "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .Closed drain =>
-      iprop(∃ (slice_val : slice.t),
+      iprop(∃ (slice_val : GoSlice),
         "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 6) ∗
         "slice" ∷ slice_val ↦* drain ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
         "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .Buffered buff =>
-      iprop(∃ (slice_val : slice.t),
+      iprop(∃ (slice_val : GoSlice),
         "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 0) ∗
         "slice" ∷ slice_val ↦* buff ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
         "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .Idle =>
-      iprop(∃ (v0 : V) (slice_val : slice.t),
+      iprop(∃ (v0 : V) (slice_val : GoSlice),
         "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 1) ∗
         "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v0 ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
         "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .SndWait v =>
-      iprop(∃ (slice_val : slice.t),
+      iprop(∃ (slice_val : GoSlice),
         "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 2) ∗
         "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
         "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .RcvWait =>
-      iprop(∃ (v0 : V) (slice_val : slice.t),
+      iprop(∃ (v0 : V) (slice_val : GoSlice),
         "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 3) ∗
         "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v0 ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
         "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .SndDone v =>
-      iprop(∃ (slice_val : slice.t),
+      iprop(∃ (slice_val : GoSlice),
         "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 4) ∗
         "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
         "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .RcvDone =>
-      iprop(∃ (v0 : V) (slice_val : slice.t),
+      iprop(∃ (v0 : V) (slice_val : GoSlice),
         "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 5) ∗
         "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v0 ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
@@ -819,31 +819,31 @@ theorem savedOffer_half_full_invalid (lock1 : Option (OfferLock V)) (parked1 con
   show (1 : Rat) < (1 : Rat) / 2 + 1
   grind
 
-theorem chanstate_update (s s' : chanstate.t V) :
+theorem chanstate_update (s s' : ChanState V) :
     ⊢ chanstate (GF := GF) γ V 1 s ==∗ chanstate γ V 1 s' := by
   unfold chanstate
   exact ghostVar_update _ _ _
 
-theorem chanstate_agree (q1 q2 : Qp) (s s' : chanstate.t V) :
+theorem chanstate_agree (q1 q2 : Qp) (s s' : ChanState V) :
     ⊢ chanstate (GF := GF) γ V q1 s -∗ chanstate γ V q2 s' -∗ ⌜s = s'⌝ := by
   unfold chanstate
   exact ghostVar_agree _ _ _ _ _
 
-theorem chanstate_halves_update (s1 s2 s' : chanstate.t V) :
+theorem chanstate_halves_update (s1 s2 s' : ChanState V) :
     ⊢ chanstate (GF := GF) γ V (1 : Qp).half s1 -∗ chanstate γ V (1 : Qp).half s2 ==∗
       chanstate γ V (1 : Qp).half s' ∗ chanstate γ V (1 : Qp).half s' := by
   unfold chanstate
   exact ghostVar_update_halves _ _ _ _
 
 -- FIXME (Rocq): iCombine instances.
-theorem ownChan_agree (s s' : chanstate.t V) :
+theorem ownChan_agree (s s' : ChanState V) :
     ⊢ ownChan (GF := GF) γ V s -∗ ownChan γ V s' -∗ ⌜s = s'⌝ := by
   rw [ownChan_unseal]; unfold ownChanDef
   iintro ⟨H1, _⟩ ⟨H2, _⟩
   iapply chanstate_agree $$ H1 H2
 
 /-- Needs `ChanCapValid s'' cap` as precondition. -/
-theorem ownChan_halves_update (s'' s s' : chanstate.t V)
+theorem ownChan_halves_update (s'' s s' : ChanState V)
     (Hvalid : ChanCapValid s'' (sint.Z γ.chanCap)) :
     ⊢ ownChan (GF := GF) γ V s -∗ ownChan γ V s' ==∗ ownChan γ V s'' ∗ ownChan γ V s'' := by
   rw [ownChan_unseal]; unfold ownChanDef
@@ -853,7 +853,7 @@ theorem ownChan_halves_update (s'' s s' : chanstate.t V)
   iframe
   isplit <;> ipureintro <;> exact Hvalid
 
-theorem ownChan_cap_valid (s : chanstate.t V) :
+theorem ownChan_cap_valid (s : ChanState V) :
     ⊢ ownChan (GF := GF) γ V s -∗ ⌜ChanCapValid s (sint.Z γ.chanCap)⌝ := by
   rw [ownChan_unseal]; unfold ownChanDef
   iintro ⟨_, %Hcapvalid⟩
@@ -861,7 +861,7 @@ theorem ownChan_cap_valid (s : chanstate.t V) :
   exact Hcapvalid
 
 /-- Build `ownChan` from the ghost-state half (Rocq: `iFrame; iPureIntro`). -/
-theorem ownChan_intro (s : chanstate.t V) (Hvalid : ChanCapValid s (sint.Z γ.chanCap)) :
+theorem ownChan_intro (s : ChanState V) (Hvalid : ChanCapValid s (sint.Z γ.chanCap)) :
     ⊢ chanstate (GF := GF) γ V (1 : Qp).half s -∗ ownChan γ V s := by
   rw [ownChan_unseal]; unfold ownChanDef
   iintro H
@@ -890,7 +890,7 @@ variable [ZeroVal V] [TypedPointsto (GF := GF) V]
 instance isChan_pers : Persistent (isChan (GF := GF) ch γ V) := by
   rw [isChan_unseal]; unfold isChanDef; infer_instance
 
-instance ownChan_timeless (s : chanstate.t V) : Timeless (ownChan (GF := GF) γ V s) := by
+instance ownChan_timeless (s : ChanState V) : Timeless (ownChan (GF := GF) γ V s) := by
   rw [ownChan_unseal]; unfold ownChanDef chanstate; infer_instance
 
 theorem isChan_not_null : ⊢ isChan (GF := GF) ch γ V -∗ ⌜ch ≠ null⌝ := by

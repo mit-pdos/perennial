@@ -483,7 +483,7 @@ instance EncoderConfig_access_load_NewReflectedEncoder (l : Loc) (v : go_uber_or
  by
   solve_pointsto_access_struct
 
-instance EncoderConfig_access_store_NewReflectedEncoder (l : Loc) (v : go_uber_org.zap.zapcore.EncoderConfig) (NewReflectedEncoder' : func.t) :
+instance EncoderConfig_access_store_NewReflectedEncoder (l : Loc) (v : go_uber_org.zap.zapcore.EncoderConfig) (NewReflectedEncoder' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.EncoderConfig go!"NewReflectedEncoder" l) v.NewReflectedEncoder' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.EncoderConfig go!"NewReflectedEncoder" l) NewReflectedEncoder' (DFrac.own 1))
@@ -840,7 +840,7 @@ instance CheckedEntry_access_load_cores (l : Loc) (v : go_uber_org.zap.zapcore.C
  by
   solve_pointsto_access_struct
 
-instance CheckedEntry_access_store_cores (l : Loc) (v : go_uber_org.zap.zapcore.CheckedEntry) (cores' : slice.t) :
+instance CheckedEntry_access_store_cores (l : Loc) (v : go_uber_org.zap.zapcore.CheckedEntry) (cores' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.CheckedEntry go!"cores" l) v.cores' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.CheckedEntry go!"cores" l) cores' (DFrac.own 1))
@@ -880,7 +880,7 @@ instance errArrayElem_access_load_err (l : Loc) (v : go_uber_org.zap.zapcore.err
  by
   solve_pointsto_access_struct
 
-instance errArrayElem_access_store_err (l : Loc) (v : go_uber_org.zap.zapcore.errArrayElem) (err' : error.t) :
+instance errArrayElem_access_store_err (l : Loc) (v : go_uber_org.zap.zapcore.errArrayElem) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.errArrayElem go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.errArrayElem go!"err" l) err' (DFrac.own 1))
@@ -988,7 +988,7 @@ instance Field_access_load_Interface (l : Loc) (v : go_uber_org.zap.zapcore.Fiel
  by
   solve_pointsto_access_struct
 
-instance Field_access_store_Interface (l : Loc) (v : go_uber_org.zap.zapcore.Field) (Interface' : interface.t) :
+instance Field_access_store_Interface (l : Loc) (v : go_uber_org.zap.zapcore.Field) (Interface' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.Field go!"Interface" l) v.Interface' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.Field go!"Interface" l) Interface' (DFrac.own 1))
@@ -1045,7 +1045,7 @@ instance hooked_access_load_funcs (l : Loc) (v : go_uber_org.zap.zapcore.hooked)
  by
   solve_pointsto_access_struct
 
-instance hooked_access_store_funcs (l : Loc) (v : go_uber_org.zap.zapcore.hooked) (funcs' : slice.t) :
+instance hooked_access_store_funcs (l : Loc) (v : go_uber_org.zap.zapcore.hooked) (funcs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.hooked go!"funcs" l) v.funcs' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.hooked go!"funcs" l) funcs' (DFrac.own 1))
@@ -1212,7 +1212,7 @@ instance lazyWithCore_access_load_fields (l : Loc) (v : go_uber_org.zap.zapcore.
  by
   solve_pointsto_access_struct
 
-instance lazyWithCore_access_store_fields (l : Loc) (v : go_uber_org.zap.zapcore.lazyWithCore) (fields' : slice.t) :
+instance lazyWithCore_access_store_fields (l : Loc) (v : go_uber_org.zap.zapcore.lazyWithCore) (fields' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.lazyWithCore go!"fields" l) v.fields' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.lazyWithCore go!"fields" l) fields' (DFrac.own 1))
@@ -1253,7 +1253,7 @@ instance MapObjectEncoder_access_load_Fields (l : Loc) (v : go_uber_org.zap.zapc
  by
   solve_pointsto_access_struct
 
-instance MapObjectEncoder_access_store_Fields (l : Loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder) (Fields' : map.t) :
+instance MapObjectEncoder_access_store_Fields (l : Loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder) (Fields' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.MapObjectEncoder go!"Fields" l) v.Fields' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.MapObjectEncoder go!"Fields" l) Fields' (DFrac.own 1))
@@ -1269,7 +1269,7 @@ instance MapObjectEncoder_access_load_cur (l : Loc) (v : go_uber_org.zap.zapcore
  by
   solve_pointsto_access_struct
 
-instance MapObjectEncoder_access_store_cur (l : Loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder) (cur' : map.t) :
+instance MapObjectEncoder_access_store_cur (l : Loc) (v : go_uber_org.zap.zapcore.MapObjectEncoder) (cur' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.MapObjectEncoder go!"cur" l) v.cur' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.MapObjectEncoder go!"cur" l) cur' (DFrac.own 1))
@@ -1309,7 +1309,7 @@ instance sliceArrayEncoder_access_load_elems (l : Loc) (v : go_uber_org.zap.zapc
  by
   solve_pointsto_access_struct
 
-instance sliceArrayEncoder_access_store_elems (l : Loc) (v : go_uber_org.zap.zapcore.sliceArrayEncoder) (elems' : slice.t) :
+instance sliceArrayEncoder_access_store_elems (l : Loc) (v : go_uber_org.zap.zapcore.sliceArrayEncoder) (elems' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.sliceArrayEncoder go!"elems" l) v.elems' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.sliceArrayEncoder go!"elems" l) elems' (DFrac.own 1))
@@ -1491,7 +1491,7 @@ instance sampler_access_load_hook (l : Loc) (v : go_uber_org.zap.zapcore.sampler
  by
   solve_pointsto_access_struct
 
-instance sampler_access_store_hook (l : Loc) (v : go_uber_org.zap.zapcore.sampler) (hook' : func.t) :
+instance sampler_access_store_hook (l : Loc) (v : go_uber_org.zap.zapcore.sampler) (hook' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.sampler go!"hook" l) v.hook' (DFrac.own 1))
       (typedPointsto (structFieldRef go_uber_org.zap.zapcore.sampler go!"hook" l) hook' (DFrac.own 1))

@@ -503,7 +503,7 @@ instance ringBuffer_access_load_buffer {T' : Type} [TypedPointsto (GF := GF) T']
  by
   solve_pointsto_access_struct
 
-instance ringBuffer_access_store_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer T')) (buffer' : slice.t) :
+instance ringBuffer_access_store_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (go_etcd_io.etcd.cache.v3.ringBuffer T')) (buffer' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (go_etcd_io.etcd.cache.v3.ringBuffer T') go!"buffer" l) v.buffer' (DFrac.own 1))
       (typedPointsto (structFieldRef (go_etcd_io.etcd.cache.v3.ringBuffer T') go!"buffer" l) buffer' (DFrac.own 1))
@@ -630,7 +630,7 @@ instance demux_access_load_activeWatchers (l : Loc) (v : go_etcd_io.etcd.cache.v
  by
   solve_pointsto_access_struct
 
-instance demux_access_store_activeWatchers (l : Loc) (v : go_etcd_io.etcd.cache.v3.demux) (activeWatchers' : map.t) :
+instance demux_access_store_activeWatchers (l : Loc) (v : go_etcd_io.etcd.cache.v3.demux) (activeWatchers' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.demux go!"activeWatchers" l) v.activeWatchers' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.demux go!"activeWatchers" l) activeWatchers' (DFrac.own 1))
@@ -646,7 +646,7 @@ instance demux_access_load_laggingWatchers (l : Loc) (v : go_etcd_io.etcd.cache.
  by
   solve_pointsto_access_struct
 
-instance demux_access_store_laggingWatchers (l : Loc) (v : go_etcd_io.etcd.cache.v3.demux) (laggingWatchers' : map.t) :
+instance demux_access_store_laggingWatchers (l : Loc) (v : go_etcd_io.etcd.cache.v3.demux) (laggingWatchers' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.demux go!"laggingWatchers" l) v.laggingWatchers' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.demux go!"laggingWatchers" l) laggingWatchers' (DFrac.own 1))
@@ -710,7 +710,7 @@ instance demux_access_load_history (l : Loc) (v : go_etcd_io.etcd.cache.v3.demux
  by
   solve_pointsto_access_struct
 
-instance demux_access_store_history (l : Loc) (v : go_etcd_io.etcd.cache.v3.demux) (history' : (go_etcd_io.etcd.cache.v3.ringBuffer slice.t)) :
+instance demux_access_store_history (l : Loc) (v : go_etcd_io.etcd.cache.v3.demux) (history' : (go_etcd_io.etcd.cache.v3.ringBuffer GoSlice)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.demux go!"history" l) v.history' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.demux go!"history" l) history' (DFrac.own 1))
@@ -783,7 +783,7 @@ instance notifier_access_load_ch (l : Loc) (v : go_etcd_io.etcd.cache.v3.notifie
  by
   solve_pointsto_access_struct
 
-instance notifier_access_store_ch (l : Loc) (v : go_etcd_io.etcd.cache.v3.notifier) (ch' : chan.t) :
+instance notifier_access_store_ch (l : Loc) (v : go_etcd_io.etcd.cache.v3.notifier) (ch' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.notifier go!"ch" l) v.ch' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.notifier go!"ch" l) ch' (DFrac.own 1))
@@ -999,7 +999,7 @@ instance ready_access_load_stateCh (l : Loc) (v : go_etcd_io.etcd.cache.v3.ready
  by
   solve_pointsto_access_struct
 
-instance ready_access_store_stateCh (l : Loc) (v : go_etcd_io.etcd.cache.v3.ready) (stateCh' : chan.t) :
+instance ready_access_store_stateCh (l : Loc) (v : go_etcd_io.etcd.cache.v3.ready) (stateCh' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.ready go!"stateCh" l) v.stateCh' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.ready go!"stateCh" l) stateCh' (DFrac.own 1))
@@ -1321,7 +1321,7 @@ instance watcher_access_load_respCh (l : Loc) (v : go_etcd_io.etcd.cache.v3.watc
  by
   solve_pointsto_access_struct
 
-instance watcher_access_store_respCh (l : Loc) (v : go_etcd_io.etcd.cache.v3.watcher) (respCh' : chan.t) :
+instance watcher_access_store_respCh (l : Loc) (v : go_etcd_io.etcd.cache.v3.watcher) (respCh' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.watcher go!"respCh" l) v.respCh' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.watcher go!"respCh" l) respCh' (DFrac.own 1))
@@ -1353,7 +1353,7 @@ instance watcher_access_load_keyPred (l : Loc) (v : go_etcd_io.etcd.cache.v3.wat
  by
   solve_pointsto_access_struct
 
-instance watcher_access_store_keyPred (l : Loc) (v : go_etcd_io.etcd.cache.v3.watcher) (keyPred' : func.t) :
+instance watcher_access_store_keyPred (l : Loc) (v : go_etcd_io.etcd.cache.v3.watcher) (keyPred' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.watcher go!"keyPred" l) v.keyPred' (DFrac.own 1))
       (typedPointsto (structFieldRef go_etcd_io.etcd.cache.v3.watcher go!"keyPred" l) keyPred' (DFrac.own 1))

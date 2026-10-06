@@ -354,7 +354,7 @@ def forMapPostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IPro
     (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
     (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv))
 
-theorem wp_map_for_range (P : List K → Int → IProp GF) (body : func.t)
+theorem wp_map_for_range (P : List K → Int → IProp GF) (body : GoFunc)
     (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (dq : DFrac)
     [TypedPointsto (GF := GF) K] [IntoValTyped (GF := GF) K key_type] (Φ : val → IProp GF) :
     (mref ↦${dq} m : IProp GF) -∗
@@ -476,7 +476,7 @@ theorem wp_map_len {t key_type elem_type : go.GoType} [t ↓u go.MapType key_typ
   exact ⟨His_map, Hagree, Hdom, Hdefault⟩
 
 
-instance wp_map_nil_for_range (body : func.t) (key_type elem_type : go.GoType) :
+instance wp_map_nil_for_range (body : GoFunc) (key_type elem_type : go.GoType) :
     PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
       (App (App (Val (map.forRange key_type elem_type)) (Val #map.nil)) (Val #body))
       (Val executeVal) :=

@@ -603,7 +603,7 @@ variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 /-- Lean addition: `array_acc`, putting back the same element. -/
 theorem array_acc_same {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] (p : Loc) (i : Int)
-    (dq : DFrac) (n : Int) (a : array.t V n) (v : V)
+    (dq : DFrac) (n : Int) (a : GoArray V n) (v : V)
     (hpos : 0 ≤ i) (hlookup : a.arr[i.toNat]? = some v) :
     typedPointsto (GF := GF) p a dq ⊢
       iprop(typedPointsto (arrayIndexRef V i p) v dq ∗
@@ -801,7 +801,7 @@ theorem ownHeartbeatAuth_agree (stale_ids : GSet w64) (γ : RaftNames) (term : w
 set_option goose.wp.extras true in
 set_option maxHeartbeats 400000 in
 theorem wp_readOnly_recvAck (γ : RaftNames) (r : Loc) (term : w64) («from» : w64)
-    (ctx_sl : slice.t) (ctx : List w8) (v : w64) (n : Nat) :
+    (ctx_sl : GoSlice) (ctx : List w8) (v : w64) (n : Nat) :
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "Hown" ∷ ownReadOnly cfg γ r term n ∗
         "Hctx" ∷ ctx_sl ↦* ctx ∗
@@ -880,7 +880,7 @@ theorem wp_readOnly_recvAck (γ : RaftNames) (r : Loc) (term : w64) («from» : 
       ipureintro; exact ⟨Hoption, Hcount⟩
 
 /-- Rocq `ownAckedIndexer`. The Rocq Texan triple (an `iProp`) is written out. -/
-def ownAckedIndexer (i : interface.t_ok) (acks : GMap w64 w64) (I : IProp GF) : IProp GF :=
+def ownAckedIndexer (i : GoInterfaceOk) (acks : GMap w64 w64) (I : IProp GF) : IProp GF :=
   iprop("HI" ∷ I ∗
     "#HAckedIndex" ∷ (∀ voterID : w64, □ ∀ Φ : val → IProp GF, I -∗
       ▷ (I -∗ Φ (PairV #((acks !! voterID).getD (W64 0)) #(decide ((acks !! voterID).isSome)))) -∗
@@ -894,7 +894,7 @@ axiom JointConfig.wp_CommittedIndex (cfg : GSet w64)
     [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : go_etcd_io.raft.v3.quorum.Assumptions]
-    (l : interface.t_ok) (acks : GMap w64 w64) (c : v3.quorum.JointConfig) (voters_ref : Loc)
+    (l : GoInterfaceOk) (acks : GMap w64 w64) (c : v3.quorum.JointConfig) (voters_ref : Loc)
     (voters : GMap w64 Unit) (I : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.raft.v3.quorum ∗
         "Hl" ∷ ownAckedIndexer l acks I ∗
@@ -978,7 +978,7 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : Loc) (term : w64)
         "voters" ∷ voters_ref ↦$ voters ∗
         "%Hvoters_cfg" ∷ ⌜domSet voters = cfg⌝ }}
       (App (Val (r @!! go.GoType.PointerType v3.readOnly.ty @!! go!"maybeAdvance")) (Val #c))
-    {{ (rs : slice.t) (reads : List Loc), RET #rs;
+    {{ (rs : GoSlice) (reads : List Loc), RET #rs;
         ownReadOnly cfg γ r term n ∗
         voters_ref ↦$ voters ∗
         rs ↦* reads ∗

@@ -76,7 +76,7 @@ instance NumError_access_load_Err (l : Loc) (v : strconv.NumError) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance NumError_access_store_Err (l : Loc) (v : strconv.NumError) (Err' : error.t) :
+instance NumError_access_store_Err (l : Loc) (v : strconv.NumError) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef strconv.NumError go!"Err" l) Err' (DFrac.own 1))

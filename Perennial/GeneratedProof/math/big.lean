@@ -44,7 +44,7 @@ instance decimal_access_load_mant (l : Loc) (v : math.big.decimal) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance decimal_access_store_mant (l : Loc) (v : math.big.decimal) (mant' : slice.t) :
+instance decimal_access_store_mant (l : Loc) (v : math.big.decimal) (mant' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.decimal go!"mant" l) v.mant' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.decimal go!"mant" l) mant' (DFrac.own 1))
@@ -379,7 +379,7 @@ instance stack_access_load_w (l : Loc) (v : math.big.stack) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stack_access_store_w (l : Loc) (v : math.big.stack) (w' : slice.t) :
+instance stack_access_store_w (l : Loc) (v : math.big.stack) (w' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.stack go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.stack go!"w" l) w' (DFrac.own 1))

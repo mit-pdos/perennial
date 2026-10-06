@@ -3307,7 +3307,7 @@ structure Session [FfiSyntax] where
   id' : _root_.Perennial.go_etcd_io.etcd.client.v3.LeaseID
   ctx' : _root_.Perennial.context.Context
   cancel' : _root_.Perennial.context.CancelFunc
-  donec' : chan.t
+  donec' : GoChan
 
 instance Session.zero_val [FfiSyntax] : ZeroVal Session :=
   ⟨Session.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -3344,7 +3344,7 @@ class Session.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   get_cancel : ∀ (x : Session), go.IsGoStepPureDetTagged under (StructFieldGet Session.underlying go!"cancel") #x (Val #(x.cancel'))
   set_cancel : ∀ (x : Session) (y : _root_.Perennial.context.CancelFunc), go.IsGoStepPureDetTagged under (StructFieldSet Session.underlying go!"cancel") (PairV #x #y) (Val #(({ x with cancel' := y } : Session)))
   get_donec : ∀ (x : Session), go.IsGoStepPureDetTagged under (StructFieldGet Session.underlying go!"donec") #x (Val #(x.donec'))
-  set_donec : ∀ (x : Session) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet Session.underlying go!"donec") (PairV #x #y) (Val #(({ x with donec' := y } : Session)))
+  set_donec : ∀ (x : Session) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Session.underlying go!"donec") (PairV #x #y) (Val #(({ x with donec' := y } : Session)))
   ptr_Client_unfold : MethodUnfold (go.GoType.PointerType Session.ty) go!"Client" Session.Client.impl
   ptr_Close_unfold : MethodUnfold (go.GoType.PointerType Session.ty) go!"Close" Session.Close.impl
   ptr_Ctx_unfold : MethodUnfold (go.GoType.PointerType Session.ty) go!"Ctx" Session.Ctx.impl
@@ -3416,7 +3416,7 @@ attribute [instance] sessionOptions.TypeAssumptions.type_repr
   sessionOptions.TypeAssumptions.get_ctx
   sessionOptions.TypeAssumptions.set_ctx
 
-abbrev SessionOption [FfiSyntax] : Type := func.t
+abbrev SessionOption [FfiSyntax] : Type := GoFunc
 
 @[reducible] def SessionOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType sessionOptions.ty), (go.GoType.PointerType _root_.Perennial.go_uber_org.zap.Logger.ty)] false []))
@@ -3426,7 +3426,7 @@ class SessionOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] SessionOption.TypeAssumptions.underlying
 
-abbrev STM [FfiSyntax] : Type := interface.t
+abbrev STM [FfiSyntax] : Type := GoInterface
 
 @[reducible] def STM.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Del" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"Get" (go.signature.Signature [(go.GoType.SliceType go.string)] true [go.string])), (go.InterfaceElem.MethodElem go!"Put" (go.signature.Signature [go.string, go.string, (go.GoType.SliceType _root_.Perennial.go_etcd_io.etcd.client.v3.OpOption.ty)] true [])), (go.InterfaceElem.MethodElem go!"Rev" (go.signature.Signature [go.string] false [go.int64])), (go.InterfaceElem.MethodElem go!"commit" (go.signature.Signature [] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.TxnResponse.ty)])), (go.InterfaceElem.MethodElem go!"reset" (go.signature.Signature [] false []))])
@@ -3448,7 +3448,7 @@ attribute [instance] Isolation.TypeAssumptions.underlying
 
 structure stmError [FfiSyntax] where
   mk ::
-  err' : error.t
+  err' : GoError
 
 instance stmError.zero_val [FfiSyntax] : ZeroVal stmError :=
   ⟨stmError.mk zeroValDef⟩
@@ -3470,7 +3470,7 @@ class stmError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying stmError.underlying stmError
   underlying : go.UnderlyingDirectedEq stmError.ty stmError.underlying
   get_err : ∀ (x : stmError), go.IsGoStepPureDetTagged under (StructFieldGet stmError.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : stmError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet stmError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : stmError)))
+  set_err : ∀ (x : stmError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet stmError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : stmError)))
 
 attribute [instance] stmError.TypeAssumptions.type_repr
   stmError.TypeAssumptions.underlying
@@ -3481,7 +3481,7 @@ structure stmOptions [FfiSyntax] where
   mk ::
   iso' : Isolation
   ctx' : _root_.Perennial.context.Context
-  prefetch' : slice.t
+  prefetch' : GoSlice
 
 instance stmOptions.zero_val [FfiSyntax] : ZeroVal stmOptions :=
   ⟨stmOptions.mk zeroValDef zeroValDef zeroValDef⟩
@@ -3509,7 +3509,7 @@ class stmOptions.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   get_ctx : ∀ (x : stmOptions), go.IsGoStepPureDetTagged under (StructFieldGet stmOptions.underlying go!"ctx") #x (Val #(x.ctx'))
   set_ctx : ∀ (x : stmOptions) (y : _root_.Perennial.context.Context), go.IsGoStepPureDetTagged under (StructFieldSet stmOptions.underlying go!"ctx") (PairV #x #y) (Val #(({ x with ctx' := y } : stmOptions)))
   get_prefetch : ∀ (x : stmOptions), go.IsGoStepPureDetTagged under (StructFieldGet stmOptions.underlying go!"prefetch") #x (Val #(x.prefetch'))
-  set_prefetch : ∀ (x : stmOptions) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet stmOptions.underlying go!"prefetch") (PairV #x #y) (Val #(({ x with prefetch' := y } : stmOptions)))
+  set_prefetch : ∀ (x : stmOptions) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet stmOptions.underlying go!"prefetch") (PairV #x #y) (Val #(({ x with prefetch' := y } : stmOptions)))
 
 attribute [instance] stmOptions.TypeAssumptions.type_repr
   stmOptions.TypeAssumptions.underlying
@@ -3520,7 +3520,7 @@ attribute [instance] stmOptions.TypeAssumptions.type_repr
   stmOptions.TypeAssumptions.get_prefetch
   stmOptions.TypeAssumptions.set_prefetch
 
-abbrev stmOption [FfiSyntax] : Type := func.t
+abbrev stmOption [FfiSyntax] : Type := GoFunc
 
 @[reducible] def stmOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType stmOptions.ty)] false []))
@@ -3533,7 +3533,7 @@ attribute [instance] stmOption.TypeAssumptions.underlying
 structure stmResponse [FfiSyntax] where
   mk ::
   resp' : Loc
-  err' : error.t
+  err' : GoError
 
 instance stmResponse.zero_val [FfiSyntax] : ZeroVal stmResponse :=
   ⟨stmResponse.mk zeroValDef zeroValDef⟩
@@ -3558,7 +3558,7 @@ class stmResponse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   get_resp : ∀ (x : stmResponse), go.IsGoStepPureDetTagged under (StructFieldGet stmResponse.underlying go!"resp") #x (Val #(x.resp'))
   set_resp : ∀ (x : stmResponse) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet stmResponse.underlying go!"resp") (PairV #x #y) (Val #(({ x with resp' := y } : stmResponse)))
   get_err : ∀ (x : stmResponse), go.IsGoStepPureDetTagged under (StructFieldGet stmResponse.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : stmResponse) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet stmResponse.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : stmResponse)))
+  set_err : ∀ (x : stmResponse) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet stmResponse.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : stmResponse)))
 
 attribute [instance] stmResponse.TypeAssumptions.type_repr
   stmResponse.TypeAssumptions.underlying
@@ -3567,7 +3567,7 @@ attribute [instance] stmResponse.TypeAssumptions.type_repr
   stmResponse.TypeAssumptions.get_err
   stmResponse.TypeAssumptions.set_err
 
-abbrev readSet [FfiSyntax] : Type := map.t
+abbrev readSet [FfiSyntax] : Type := GoMap
 
 @[reducible] def readSet.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.string (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.client.v3.GetResponse.ty))
@@ -3592,7 +3592,7 @@ attribute [instance] readSet.TypeAssumptions.underlying
   readSet.TypeAssumptions.ptr_cmps_unfold
   readSet.TypeAssumptions.ptr_first_unfold
 
-abbrev writeSet [FfiSyntax] : Type := map.t
+abbrev writeSet [FfiSyntax] : Type := GoMap
 
 @[reducible] def writeSet.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.string stmPut.ty)
@@ -3623,8 +3623,8 @@ structure stm [FfiSyntax] where
   ctx' : _root_.Perennial.context.Context
   rset' : readSet
   wset' : writeSet
-  getOpts' : slice.t
-  conflicts' : func.t
+  getOpts' : GoSlice
+  conflicts' : GoFunc
 
 instance stm.zero_val [FfiSyntax] : ZeroVal stm :=
   ⟨stm.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -3659,9 +3659,9 @@ class stm.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   get_wset : ∀ (x : stm), go.IsGoStepPureDetTagged under (StructFieldGet stm.underlying go!"wset") #x (Val #(x.wset'))
   set_wset : ∀ (x : stm) (y : writeSet), go.IsGoStepPureDetTagged under (StructFieldSet stm.underlying go!"wset") (PairV #x #y) (Val #(({ x with wset' := y } : stm)))
   get_getOpts : ∀ (x : stm), go.IsGoStepPureDetTagged under (StructFieldGet stm.underlying go!"getOpts") #x (Val #(x.getOpts'))
-  set_getOpts : ∀ (x : stm) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet stm.underlying go!"getOpts") (PairV #x #y) (Val #(({ x with getOpts' := y } : stm)))
+  set_getOpts : ∀ (x : stm) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet stm.underlying go!"getOpts") (PairV #x #y) (Val #(({ x with getOpts' := y } : stm)))
   get_conflicts : ∀ (x : stm), go.IsGoStepPureDetTagged under (StructFieldGet stm.underlying go!"conflicts") #x (Val #(x.conflicts'))
-  set_conflicts : ∀ (x : stm) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet stm.underlying go!"conflicts") (PairV #x #y) (Val #(({ x with conflicts' := y } : stm)))
+  set_conflicts : ∀ (x : stm) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet stm.underlying go!"conflicts") (PairV #x #y) (Val #(({ x with conflicts' := y } : stm)))
   ptr_Del_unfold : MethodUnfold (go.GoType.PointerType stm.ty) go!"Del" stm.Del.impl
   ptr_Get_unfold : MethodUnfold (go.GoType.PointerType stm.ty) go!"Get" stm.Get.impl
   ptr_Put_unfold : MethodUnfold (go.GoType.PointerType stm.ty) go!"Put" stm.Put.impl
@@ -3732,7 +3732,7 @@ attribute [instance] stmPut.TypeAssumptions.type_repr
 structure stmSerializable [FfiSyntax] where
   mk ::
   stm' : stm
-  prefetch' : map.t
+  prefetch' : GoMap
 
 instance stmSerializable.zero_val [FfiSyntax] : ZeroVal stmSerializable :=
   ⟨stmSerializable.mk zeroValDef zeroValDef⟩
@@ -3757,7 +3757,7 @@ class stmSerializable.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
   get_stm : ∀ (x : stmSerializable), go.IsGoStepPureDetTagged under (StructFieldGet stmSerializable.underlying go!"stm") #x (Val #(x.stm'))
   set_stm : ∀ (x : stmSerializable) (y : stm), go.IsGoStepPureDetTagged under (StructFieldSet stmSerializable.underlying go!"stm") (PairV #x #y) (Val #(({ x with stm' := y } : stmSerializable)))
   get_prefetch : ∀ (x : stmSerializable), go.IsGoStepPureDetTagged under (StructFieldGet stmSerializable.underlying go!"prefetch") #x (Val #(x.prefetch'))
-  set_prefetch : ∀ (x : stmSerializable) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet stmSerializable.underlying go!"prefetch") (PairV #x #y) (Val #(({ x with prefetch' := y } : stmSerializable)))
+  set_prefetch : ∀ (x : stmSerializable) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet stmSerializable.underlying go!"prefetch") (PairV #x #y) (Val #(({ x with prefetch' := y } : stmSerializable)))
   ptr_Del_unfold : MethodUnfold (go.GoType.PointerType stmSerializable.ty) go!"Del" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType stm.ty) go!"Del"))) (App (Val (GoInstruction (StructFieldRef stmSerializable.ty go!"stm"))) (Var "$r"))))
   ptr_Get_unfold : MethodUnfold (go.GoType.PointerType stmSerializable.ty) go!"Get" stmSerializable.Get.impl

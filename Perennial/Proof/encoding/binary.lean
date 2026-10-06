@@ -130,10 +130,10 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_GlobalAlloc (V := interface.t) errOverflow go.error as _
+  wp_apply wp_GlobalAlloc (V := GoInterface) errOverflow go.error as _
   wp_apply wp_GlobalAlloc (V := littleEndian) LittleEndian littleEndian.ty as Hlit
   ipersist Hlit
-  wp_apply wp_GlobalAlloc (V := interface.t) errBufferTooSmall go.error as _
+  wp_apply wp_GlobalAlloc (V := GoInterface) errBufferTooSmall go.error as _
   wp_apply sync.wp_initialize' _ Hinit.2.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩
   wp_apply slices.wp_initialize' _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #H2⟩
   wp_apply math.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #H3⟩
@@ -144,7 +144,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   is_pkg_init_finish
 
-theorem wp_littleEndian_Uint64 (le : littleEndian) (b : slice.t) (bs rem : List w8) (dq : DFrac)
+theorem wp_littleEndian_Uint64 (le : littleEndian) (b : GoSlice) (bs rem : List w8) (dq : DFrac)
     (Hlen_bs : bs.length = 8) :
     {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
       (App (Val (le @!! littleEndian.ty @!! go!"Uint64")) (Val #b))
@@ -195,7 +195,7 @@ theorem wp_littleEndian_Uint64 (le : littleEndian) (b : slice.t) (bs rem : List 
   rw [leToU64_8]
   iapply HΦ $$ Hb
 
-theorem wp_littleEndian_PutUint64 (le : littleEndian) (b : slice.t) (space rem : List w8)
+theorem wp_littleEndian_PutUint64 (le : littleEndian) (b : GoSlice) (space rem : List w8)
     (v : w64) (Hlen_space : space.length = 8) :
     {{ (b ↦* (space ++ rem) : IProp GF) }}
       (App (App (Val (le @!! littleEndian.ty @!! go!"PutUint64")) (Val #b)) (Val #v))
@@ -279,7 +279,7 @@ theorem wp_littleEndian_PutUint64 (le : littleEndian) (b : slice.t) (space rem :
   simp only [Int.reduceToNat, List.cons_append, List.set_cons_succ, List.set_cons_zero]
   iexact Hb
 
-theorem wp_littleEndian_PutUint32 (le : littleEndian) (b : slice.t) (space rem : List w8)
+theorem wp_littleEndian_PutUint32 (le : littleEndian) (b : GoSlice) (space rem : List w8)
     (v : w32) (Hlen_space : space.length = 4) :
     {{ (b ↦* (space ++ rem) : IProp GF) }}
       (App (App (Val (le @!! littleEndian.ty @!! go!"PutUint32")) (Val #b)) (Val #v))
@@ -330,7 +330,7 @@ theorem wp_littleEndian_PutUint32 (le : littleEndian) (b : slice.t) (space rem :
   simp only [Int.reduceToNat, List.cons_append, List.set_cons_succ, List.set_cons_zero]
   iexact Hb
 
-theorem wp_littleEndian_Uint32 (le : littleEndian) (b : slice.t) (bs rem : List w8) (dq : DFrac)
+theorem wp_littleEndian_Uint32 (le : littleEndian) (b : GoSlice) (bs rem : List w8) (dq : DFrac)
     (Hlen_bs : bs.length = 4) :
     {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
       (App (Val (le @!! littleEndian.ty @!! go!"Uint32")) (Val #b))
@@ -363,7 +363,7 @@ theorem wp_littleEndian_Uint32 (le : littleEndian) (b : slice.t) (bs rem : List 
   rw [leToU32_4]
   iapply HΦ $$ Hb
 
-theorem wp_LittleEndian_PutUint64 (b : slice.t) (space rem : List w8) (v : w64)
+theorem wp_LittleEndian_PutUint64 (b : GoSlice) (space rem : List w8) (v : w64)
     (Hlen : space.length = 8) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦* (space ++ rem) }}
       (App (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian.ty @!! go!"PutUint64"))
@@ -377,7 +377,7 @@ theorem wp_LittleEndian_PutUint64 (b : slice.t) (space rem : List w8) (v : w64)
   wp_apply wp_littleEndian_PutUint64 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-theorem wp_LittleEndian_Uint64 (b : slice.t) (bs : List w8) (dq : DFrac) (rem : List w8)
+theorem wp_LittleEndian_Uint64 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : List w8)
     (Hlen : bs.length = 8) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦*{dq} (bs ++ rem) }}
       (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian.ty @!! go!"Uint64"))
@@ -391,7 +391,7 @@ theorem wp_LittleEndian_Uint64 (b : slice.t) (bs : List w8) (dq : DFrac) (rem : 
   wp_apply wp_littleEndian_Uint64 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-theorem wp_LittleEndian_PutUint32 (b : slice.t) (space rem : List w8) (v : w32)
+theorem wp_LittleEndian_PutUint32 (b : GoSlice) (space rem : List w8) (v : w32)
     (Hlen : space.length = 4) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦* (space ++ rem) }}
       (App (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian.ty @!! go!"PutUint32"))
@@ -405,7 +405,7 @@ theorem wp_LittleEndian_PutUint32 (b : slice.t) (space rem : List w8) (v : w32)
   wp_apply wp_littleEndian_PutUint32 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-theorem wp_LittleEndian_Uint32 (b : slice.t) (bs : List w8) (dq : DFrac) (rem : List w8)
+theorem wp_LittleEndian_Uint32 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : List w8)
     (Hlen : bs.length = 4) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦*{dq} (bs ++ rem) }}
       (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian.ty @!! go!"Uint32"))

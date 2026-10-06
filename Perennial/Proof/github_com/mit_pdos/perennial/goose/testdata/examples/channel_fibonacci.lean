@@ -93,7 +93,7 @@ set_option maxHeartbeats 400000 in
 theorem wp_fib_consumer :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! fib_consumer)) (Val #()))
-    {{ (sl : slice.t), RET #sl; sl ↦* fibList 10 }} := by
+    {{ (sl : GoSlice), RET #sl; sl ↦* fibList 10 }} := by
   wp_start
   wp_auto
   wp_apply chan.wp_make2 (V := w64) (W64 10) $$ [] as %c %γ ⟨#Hchan, %Hcap, Hown⟩
@@ -113,7 +113,7 @@ theorem wp_fib_consumer :
   · ipureintro; rfl
   iintro %sl ⟨Hsl, Hslcap⟩
   wp_auto
-  ihave HI : (∃ (k : Nat) (iv : w64) (sl : slice.t),
+  ihave HI : (∃ (k : Nat) (iv : w64) (sl : GoSlice),
       "i" ∷ i_ptr ↦ iv ∗
       "Hcons" ∷ spscConsumer γspsc (fibList k) ∗
       "Hsl" ∷ sl ↦* fibList k ∗

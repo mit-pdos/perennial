@@ -229,7 +229,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
-abbrev Source [FfiSyntax] : Type := interface.t
+abbrev Source [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Source.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Int63" (go.signature.Signature [] false [go.int64])), (go.InterfaceElem.MethodElem go!"Seed" (go.signature.Signature [go.int64] false []))])
@@ -239,7 +239,7 @@ class Source.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Source.TypeAssumptions.underlying
 
-abbrev Source64 [FfiSyntax] : Type := interface.t
+abbrev Source64 [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Source64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Source.ty)])])
@@ -370,7 +370,7 @@ structure rngSource [FfiSyntax] where
   mk ::
   tap' : w64
   feed' : w64
-  vec' : (array.t w64 607)
+  vec' : (GoArray w64 607)
 
 instance rngSource.zero_val [FfiSyntax] : ZeroVal rngSource :=
   ⟨rngSource.mk zeroValDef zeroValDef zeroValDef⟩
@@ -398,7 +398,7 @@ class rngSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   get_feed : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"feed") #x (Val #(x.feed'))
   set_feed : ∀ (x : rngSource) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"feed") (PairV #x #y) (Val #(({ x with feed' := y } : rngSource)))
   get_vec : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"vec") #x (Val #(x.vec'))
-  set_vec : ∀ (x : rngSource) (y : (array.t w64 607)), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"vec") (PairV #x #y) (Val #(({ x with vec' := y } : rngSource)))
+  set_vec : ∀ (x : rngSource) (y : (GoArray w64 607)), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"vec") (PairV #x #y) (Val #(({ x with vec' := y } : rngSource)))
 
 attribute [instance] rngSource.TypeAssumptions.type_repr
   rngSource.TypeAssumptions.underlying

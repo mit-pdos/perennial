@@ -48,7 +48,7 @@ def spscConsumer (γ : SpscNames) (received : List V) : IProp GF :=
   dghostVar γ.spscRecvName (DFrac.own (1 : Qp).half) received
 
 /-- Values that have been sent but not yet received. -/
-def inflight (s : chanstate.t V) : List V :=
+def inflight (s : ChanState V) : List V :=
   match s with
   | .Buffered buff => buff
   | .SndPending v | .SndCommit v => [v]
@@ -57,7 +57,7 @@ def inflight (s : chanstate.t V) : List V :=
 
 /-- The state-dependent part of the SPSC invariant. -/
 def spscInvMatch (γ : SpscNames) (P : Int → V → IProp GF) (R : List V → IProp GF)
-    (sent recv : List V) (s : chanstate.t V) : IProp GF :=
+    (sent recv : List V) (s : ChanState V) : IProp GF :=
   match s with
   -- P holds for all buffered values
   | .Buffered buff => iprop([∗list] i ↦ v ∈ buff, P ((recv.length : Int) + i) v)
@@ -71,7 +71,7 @@ def spscInvMatch (γ : SpscNames) (P : Int → V → IProp GF) (R : List V → I
   | _ => iprop(True)
 
 @[irreducible] def spscInv (γ : SpscNames) (P : Int → V → IProp GF) (R : List V → IProp GF) : IProp GF :=
-  iprop(∃ (s : chanstate.t V) (sent recv : List V),
+  iprop(∃ (s : ChanState V) (sent recv : List V),
     "Hch" ∷ ownChan γ.chanName V s ∗
     "HsentI" ∷ dghostVar γ.spscSentName (DFrac.own (1 : Qp).half) sent ∗
     "HrecvI" ∷ dghostVar γ.spscRecvName (DFrac.own (1 : Qp).half) recv ∗
@@ -175,7 +175,7 @@ theorem start_spsc (ch : Loc) (P : Int → V → IProp GF) (R : List V → IProp
 
 omit [IntoValTyped (GF := GF) V t] in
 theorem spscInv_intro (γ : SpscNames) (P : Int → V → IProp GF) (R : List V → IProp GF)
-    (s : chanstate.t V) (sent recv : List V) (h : sent = recv ++ inflight s) :
+    (s : ChanState V) (sent recv : List V) (h : sent = recv ++ inflight s) :
     ⊢ ownChan γ.chanName V s -∗
       dghostVar γ.spscSentName (DFrac.own (1 : Qp).half) sent -∗
       dghostVar γ.spscRecvName (DFrac.own (1 : Qp).half) recv -∗
@@ -192,7 +192,7 @@ theorem spscInv_intro (γ : SpscNames) (P : Int → V → IProp GF) (R : List V 
 
 omit [IntoValTyped (GF := GF) V t] in
 theorem spscInv_elim (γ : SpscNames) (P : Int → V → IProp GF) (R : List V → IProp GF) :
-    spscInv γ P R ⊢ ∃ (s : chanstate.t V) (sent recv : List V),
+    spscInv γ P R ⊢ ∃ (s : ChanState V) (sent recv : List V),
       ownChan γ.chanName V s ∗
       dghostVar γ.spscSentName (DFrac.own (1 : Qp).half) sent ∗
       dghostVar γ.spscRecvName (DFrac.own (1 : Qp).half) recv ∗

@@ -94,7 +94,7 @@ instance os_get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.os :=
 
 /-- Rocq `isInitialized`. -/
 def isInitialized : IProp GF :=
-  iprop(∃ errStopped : interface.t,
+  iprop(∃ errStopped : GoInterface,
     "ErrStopped" ∷ (globalAddr ErrStopped ↦□ errStopped : IProp GF) ∗
     "%HErrStopped" ∷ ⌜errStopped ≠ interface.nil⌝)
 

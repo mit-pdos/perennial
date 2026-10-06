@@ -44,7 +44,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-abbrev TracerProvider [FfiSyntax] : Type := interface.t
+abbrev TracerProvider [FfiSyntax] : Type := GoInterface
 
 @[reducible] def TracerProvider.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"tracerProvider" (go.signature.Signature [] false []))])
@@ -54,7 +54,7 @@ class TracerProvider.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
 
 attribute [instance] TracerProvider.TypeAssumptions.underlying
 
-abbrev Tracer [FfiSyntax] : Type := interface.t
+abbrev Tracer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Tracer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"tracer" (go.signature.Signature [] false []))])
@@ -64,7 +64,7 @@ class Tracer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Tracer.TypeAssumptions.underlying
 
-abbrev Span [FfiSyntax] : Type := interface.t
+abbrev Span [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Span.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"span" (go.signature.Signature [] false []))])
